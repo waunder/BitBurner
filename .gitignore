@@ -1,0 +1,13 @@
+# Generated Bitburner status files
+mcp_status.json
+mcp_status.log
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Node modules (if added later)
+node_modules/
+
+# VS Code workspace settings
+.vscode/

@@ -31,6 +31,14 @@ reading).
   version it started with. Edits require a restart (`run restart_mcp.js`).
   This burned a full hour once — fixes appeared not to work because the old
   process was still running.
+- **`ns.write` only accepts `.txt`, `.json`, `.css`, or a script extension.**
+  Anything else throws `File path should be a text file or script` at the
+  call site. `.log` hit this first; `.jsonl` hit it again for
+  `mcp_events.txt` — every write threw for the file's entire first day,
+  caught by a try/catch and printed only to `ns.print`, so the file never
+  existed in the game and nothing visible said so. If a new generated file
+  needs a "this is structured/line-delimited" hint, put it in the content or
+  the filename stem, not the extension.
 - **File sync auto-pushes, but a download reverses and re-affirms it.** The
   extension watches the filesystem (not just editor saves), so edits written
   by tooling *do* auto-push — but only while the server is running and the
@@ -38,15 +46,18 @@ reading).
   with the game's copies, and the watcher then pushes those straight back**,
   making the stale version authoritative on both sides. Observed 2026-08-08:
   `Downloaded: mcp.js` immediately followed by `Pushed: /mcp.js`.
-  - Use **"Download Files Matching Pattern..."** with exactly
-    `mcp_*.{json,txt}` — pulls only the three telemetry files. Never
-    bulk-download source. The extension remembers the last pattern, so it
-    pre-fills after the first use.
+  - Use **"Download Files Matching Pattern..."** with the pattern in
+    `docs/kensTodo.md` — pulls only generated telemetry, never source. Kept
+    in one place rather than duplicated here, so it can't drift out of sync
+    with itself. The extension remembers the last pattern, so it pre-fills
+    after the first use.
   - It is **one** minimatch pattern, not a list: `**/*.txt **/*.json`
     silently matches zero files. Use brace expansion instead. Patterns are
     matched against names without a leading slash (`mcp_status.json`,
     `scripts/hack.js`). Avoid `mcp_status*` — it also catches the
-    `mcp_status.js` *source* file.
+    `mcp_status.js` *source* file. `mcp_config.json` must never be in the
+    pattern — it's a hand-authored, committed file now, not generated
+    output.
   - Keep the tree committed regardless, so a bad pull costs a `git checkout`
     (and the restore itself auto-pushes the correct version back).
 - **Claude cannot trigger the download.** No CLI or API for the extension
@@ -74,6 +85,14 @@ Practical rules:
   what matters in files.
 - `ns.print` goes to the tail window; only `ns.tprint` reaches the terminal;
   neither reaches the JSON/log files. Know which channel the reader is using.
+- A caught exception silently `ns.print`'d is the same failure mode as an
+  unrecorded decision: `mcp_events.txt` (originally `.jsonl`, see the
+  `ns.write` constraint above) threw on every write for its entire first day
+  and nothing surfaced it, because the in-memory data that fed the status
+  file kept working regardless of whether the disk write succeeded. Route
+  failures the code didn't expect through the invariant system
+  (`ns.toast` + a status-file counter), not a print statement — see
+  `checkTickInvariants` in `mcp.js`.
 
 ## Git
 
@@ -83,8 +102,10 @@ habit-averse and has explicitly assigned version-control hygiene to Claude —
 do not hand him routines to remember, just keep the tree committed.
 
 Generated files (`mcp_status.json`, `mcp_status_log.txt`,
-`mcp_target_state.json`) are gitignored — they're game output, and the log
-lives inside the save file, so it must not grow without bound.
+`mcp_target_state.json`, `mcp_events.txt`) are gitignored — they're game
+output, and the log lives inside the save file, so it must not grow without
+bound. `mcp_config.json` is the one exception: it's hand-authored and must
+stay committed and out of the ignore list, or it can't sync into the game.
 
 ## Open work
 
@@ -92,8 +113,12 @@ lives inside the save file, so it must not grow without bound.
 2026-08-07 process audit against the loop as it now exists (CDP connection,
 supervisor, HUD, watcher), which invalidated that audit's "maximize
 information per click" premise. The audit itself stays as the historical
-record. Top items, in order: `runId`+`scriptVersion` stamps, one field list,
-hot-reloaded `mcp_config.json`, an event log with predicate inputs.
+record. Version stamps, the single field list, hot-reloaded config, the
+event log, and invariants all shipped 2026-08-08 — see the Done table there
+for what shipped and what's still worth watching about each. Remaining, in
+order: pure-function extraction for `node --test`, `probe=` experiment mode,
+ports as a telemetry ring buffer, revisit `mcp_doctor.js` once home RAM is
+large.
 
 Rooting is handled by `hacking/crawler.js` → `hacking/worm.js` (not by
 `mcp.js`), so the worker pool only grows while the crawler is running and

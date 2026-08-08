@@ -10,25 +10,24 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
-- [ ] **Update the "Download Files Matching Pattern…" pattern.** Currently
-  `mcp_*.{json,txt}`, which misses the new `mcp_events.jsonl` (added
-  2026-08-08). Change it to:
-
-  ```
-  mcp_{status,status_log,target_state,events}.{json,txt,jsonl}
-  ```
-
-  Verified against every current `mcp_*` filename with real `minimatch`: it
-  catches the four generated files (`mcp_status.json`, `mcp_status_log.txt`,
-  `mcp_target_state.json`, `mcp_events.jsonl`) and **excludes
-  `mcp_config.json`** on purpose — that file is now hand-authored and
-  committed, not generated output, so pulling it down could overwrite a local
-  edit with a stale in-game copy exactly the way bulk source downloads have
-  before (see `CLAUDE.md`). It also skips every `.js` source file, avoiding
-  the `mcp_status*` trap that used to catch `mcp_status.js`. The extension
-  remembers the last pattern, so this is a one-time change.
+- [ ] **Re-download once mcp has restarted with the `mcp_events.txt` fix.**
+  Ken correctly set the pattern to
+  `mcp_{status,status_log,target_state,events}.{json,txt,jsonl}` and it never
+  matched anything — not a pattern problem. The event file was named
+  `mcp_events.jsonl`, and Bitburner's `ns.write` only accepts `.txt`/`.json`/
+  `.css`/a script extension, so every write to it threw "File path should be
+  a text file or script" from the moment it shipped, caught silently by a
+  try/catch and printed only to a channel nobody reads. The file never
+  existed in the game. Fixed by renaming it to `mcp_events.txt` — the
+  pattern above already covers `.txt`, so **nothing about the pattern needs
+  to change**, just download again after the next restart.
 
 ## Done (kept for reference)
+
+- [x] **Download pattern.** Confirmed set to
+  `mcp_{status,status_log,target_state,events}.{json,txt,jsonl}` — correct
+  as originally recommended. The missing `mcp_events.jsonl` turned out to be
+  a code bug (invalid file extension), not a pattern problem; see Pending.
 
 - [x] `run mcp_supervisor.js` — confirmed running (PID 119, 2026-08-08).
   Restarts no longer need a keystroke; Claude bumps `mcp_restart.txt` directly.

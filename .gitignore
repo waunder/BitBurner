@@ -4,7 +4,7 @@
 mcp_status.json
 mcp_status_log.txt
 mcp_target_state.json
-mcp_events.jsonl
+mcp_events.txt
 
 # macOS
 .DS_Store

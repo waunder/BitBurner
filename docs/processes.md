@@ -104,7 +104,7 @@ plan, and allocates worker threads across every rooted host.
 - **Reads:** `mcp_config.json` every tick (see Tunables)
 - **Writes:** `mcp_status.json` (every tick, overwritten),
   `mcp_status_log.txt` (appended only when target/plan/bucket changes),
-  `mcp_events.jsonl` (one line per transition),
+  `mcp_events.txt` (one line per transition),
   `mcp_target_state.json` (exclusions, so they survive a restart)
 - **Deploys:** `/scripts/weaken.js`, `/scripts/grow.js`, `/scripts/hack.js`
 
@@ -213,6 +213,7 @@ Three things stamp or check every tick:
 
 | Invariant | Catches |
 | --- | --- |
+| `eventLogWrites` | A write to `mcp_events.txt` failing — this is what caught the file's own invalid-extension bug, see below |
 | `weakenBudgetNonNegative` | Budget over-allocation, found originally only by an accident of two fields lining up |
 | `tickWithinBounds` | The 70–380s ticks that silently multiplied every rate |
 | `poolNotIdle` | The network sitting 93% idle during weaken phases |
@@ -220,7 +221,21 @@ Three things stamp or check every tick:
 | `drainBelowEmptyTier` | A config edit that would strand recovering targets |
 | `configParses` | A malformed `mcp_config.json` |
 
-### `mcp_events.jsonl`
+### `mcp_events.txt`
+
+Content is JSON-lines (one JSON object per line), but the extension is
+`.txt`, not `.jsonl` — Bitburner's `ns.write` only accepts a path ending in
+`.txt`/`.json`/`.css` or a script extension; anything else throws `File path
+should be a text file or script`. This is the same bug class as the `.log`
+lesson elsewhere in this project, and it hit this file specifically for its
+entire first day: every write threw, caught by a try/catch and printed only
+to `ns.print`, so the file never actually existed in the game — invisible
+because the in-memory ring buffer that feeds `recentEvents` in the status
+file kept working regardless of whether the write succeeded, so everything
+*looked* fine. Found only by checking why a correctly-set download pattern
+still wasn't pulling the file down. Now caught structurally: a write failure
+here trips the `eventLogWrites` invariant, so a future extension mistake
+toasts instead of vanishing silently.
 
 One line per transition — `startup`, `target_adopt`, `target_drop`,
 `degraded_held`, `plan_flip`, `bucket_change`, `stall`, `config_change`,
@@ -437,7 +452,7 @@ so it must not grow without bound.
 | File | Written by | Notes |
 | --- | --- | --- |
 | `mcp_status.json` | `mcp.js`, every tick | Overwritten. The observation source of truth. Carries the last 20 events inline. |
-| `mcp_events.jsonl` | `mcp.js`, per transition | Appended; trimmed to 300 lines at startup. Survives restarts, which is the point. |
+| `mcp_events.txt` | `mcp.js`, per transition | Appended; trimmed to 300 lines at startup. Survives restarts, which is the point. |
 | `mcp_status_log.txt` | `mcp.js`, on state change | Appended. Logging every tick grew this ~800KB/day inside the save, burying the transitions that actually explain behaviour. |
 | `mcp_target_state.json` | `mcp.js`, every tick | Exclusions, so a restart doesn't relearn them. |
 | `mcp_restart.txt` | outside the game | Restart trigger. |

@@ -203,7 +203,18 @@ function hashSource(text) {
   return (hash >>> 0).toString(36)
 }
 
-const EVENT_FILE = "mcp_events.jsonl"
+// Content is JSON-lines (one JSON object per line), but the extension is
+// .txt, not .jsonl: Bitburner's ns.write only accepts a path ending in
+// .txt/.json/.css or a script extension, and throws "File path should be a
+// text file or script" otherwise. This is the exact same bug class as the
+// .log lesson in CLAUDE.md, and it bit this file specifically: every write
+// to mcp_events.jsonl threw from the moment this shipped, caught by the
+// try/catch below and printed only to ns.print, which nobody was reading —
+// the file never existed in the game at all, though the in-memory
+// `recent` ring buffer kept working (it's populated before the write is
+// attempted), which is why mcp_status.json's recentEvents looked fine the
+// whole time and hid the problem.
+const EVENT_FILE = "mcp_events.txt"
 // Events are transitions only — roughly 40 in a long session, not 1353 — so
 // the file stays small. Trimmed once at startup rather than rewritten per
 // event, which bounds growth inside the save game while still letting the
@@ -234,8 +245,13 @@ function makeEventLog(ns, runId, scriptVersion) {
 
   let seq = 0
   const recent = []
-  return {
+  // Exposed rather than only ns.print'd, so the tick loop can route a
+  // persistent write failure through the invariant system — a silent
+  // ns.print is exactly how mcp_events.jsonl's invalid extension went
+  // unnoticed from the moment it shipped.
+  const log = {
     recent,
+    lastWriteError: null,
     emit(kind, data) {
       seq += 1
       const event = Object.assign({ t: Date.now(), seq, runId, ver: scriptVersion, kind }, data)
@@ -243,12 +259,15 @@ function makeEventLog(ns, runId, scriptVersion) {
       if (recent.length > STATUS_EVENT_COUNT) recent.shift()
       try {
         ns.write(EVENT_FILE, JSON.stringify(event) + "\n", "a")
+        log.lastWriteError = null
       } catch (e) {
+        log.lastWriteError = String(e)
         ns.print("mcp: failed to write event: " + e)
       }
       return event
     },
   }
+  return log
 }
 
 // A violated invariant toasts once per name per run. The count keeps climbing
@@ -288,6 +307,15 @@ function makeInvariants(ns, events) {
  * actually happened and took multiple restart cycles to find.
  */
 function checkTickInvariants(invariants, ctx) {
+  // A write failing is exactly the kind of belief-vs-reality gap invariants
+  // exist for — mcp_events.jsonl threw on every single write for its entire
+  // life, caught and printed to a channel nobody read, and nothing else
+  // would have surfaced it: the in-memory ring buffer that feeds
+  // recentEvents keeps working regardless of whether the write succeeds.
+  invariants.check("eventLogWrites", !ctx.events.lastWriteError, {
+    error: ctx.events.lastWriteError,
+  })
+
   // Budget over-allocation was found only because maxWeaken happened to
   // decrement by exactly needWeaken each tick — an accident of two unrelated
   // fields lining up. This makes it an alarm instead.
@@ -1415,6 +1443,7 @@ export async function main(ns) {
     const expPerSec = ns.getTotalScriptExpGain()
 
     checkTickInvariants(invariants, {
+      events,
       interval,
       ramUtilization,
       weakenBudget,

@@ -53,6 +53,11 @@ let MIN_TARGET_COMMIT_MS = 600000
 // How long a drained target is deprioritized before it's eligible again —
 // long enough to make real progress on other (harder) targets first.
 let DEGRADED_SKIP_MS = 900000
+// Dead band around each work-weight bucket boundary — see
+// getWorkWeightBucket for why. 0.02 was picked to comfortably exceed one
+// grow/hack cycle's swing without being so wide that a target legitimately
+// crossing a tier takes noticeably longer to be recognized.
+let BUCKET_HYSTERESIS = 0.02
 const ACTION_SCRIPTS = ["/scripts/grow.js", "/scripts/hack.js", "/scripts/weaken.js"]
 const HACK_SEC_INCREASE = 0.002
 const GROW_SEC_INCREASE = 0.004
@@ -86,6 +91,7 @@ const CONFIG_DEFAULTS = {
   OPPORTUNITY_SWITCH_FACTOR,
   MIN_TARGET_COMMIT_MS,
   DEGRADED_SKIP_MS,
+  BUCKET_HYSTERESIS,
 }
 
 /**
@@ -148,6 +154,7 @@ function loadConfig(ns, state) {
     OPPORTUNITY_SWITCH_FACTOR,
     MIN_TARGET_COMMIT_MS,
     DEGRADED_SKIP_MS,
+    BUCKET_HYSTERESIS,
   }
   for (const key of Object.keys(CONFIG_DEFAULTS)) {
     if (current[key] !== resolved[key]) changes[key] = { from: current[key], to: resolved[key] }
@@ -168,6 +175,7 @@ function loadConfig(ns, state) {
   OPPORTUNITY_SWITCH_FACTOR = resolved.OPPORTUNITY_SWITCH_FACTOR
   MIN_TARGET_COMMIT_MS = resolved.MIN_TARGET_COMMIT_MS
   DEGRADED_SKIP_MS = resolved.DEGRADED_SKIP_MS
+  BUCKET_HYSTERESIS = resolved.BUCKET_HYSTERESIS
 
   if (Object.keys(changes).length === 0 && rejected.length === 0) return null
   return { changes, rejected }
@@ -648,7 +656,9 @@ const WORK_WEIGHTS_BY_BUCKET = {
   empty: { grow: 1, hack: 0 },
 }
 
-function getWorkWeightBucket(moneyPct) {
+const BUCKET_ORDER = ["empty", "low", "mid", "high", "goal"]
+
+function bucketForMoneyPct(moneyPct) {
   if (moneyPct >= TARGET_MONEY_GOAL) return "goal"
   if (moneyPct >= 0.92) return "high"
   if (moneyPct >= 0.85) return "mid"
@@ -656,7 +666,35 @@ function getWorkWeightBucket(moneyPct) {
   return "empty"
 }
 
-function buildPlan(ns, target, wasWorking) {
+/**
+ * The empty/low boundary (0.1) was observed live oscillating every 2-3
+ * minutes for the entire time a target sat near it: "empty" is grow:1/hack:0,
+ * which recovers money fast and crosses the boundary upward into "low";
+ * "low" immediately reintroduces hack, which drains it straight back down.
+ * 350 of 1373 work-plan log lines in one session (25%) were this single
+ * flip. It isn't cosmetic — a bucket change forces forceRebalance, which
+ * kills and redeploys every host's action scripts.
+ *
+ * Same fix as WORK_SECURITY_MARGIN below: require moneyPct to clear the
+ * boundary by BUCKET_HYSTERESIS, not merely touch it, before the bucket
+ * actually changes. Only resists single-step transitions — a jump of more
+ * than one tier (e.g. a huge one-tick swing, or a freshly adopted target
+ * where previousBucket is null) is accepted immediately rather than fought.
+ */
+function getWorkWeightBucket(moneyPct, previousBucket) {
+  const raw = bucketForMoneyPct(moneyPct)
+  if (!previousBucket || previousBucket === raw) return raw
+
+  const prevIdx = BUCKET_ORDER.indexOf(previousBucket)
+  const rawIdx = BUCKET_ORDER.indexOf(raw)
+  if (prevIdx < 0 || Math.abs(rawIdx - prevIdx) !== 1) return raw
+
+  const movingUp = rawIdx > prevIdx
+  const resisted = bucketForMoneyPct(movingUp ? moneyPct - BUCKET_HYSTERESIS : moneyPct + BUCKET_HYSTERESIS)
+  return resisted === previousBucket ? previousBucket : raw
+}
+
+function buildPlan(ns, target, wasWorking, previousWeightBucket) {
   const currentSecurity = ns.getServerSecurityLevel(target)
   const moneyPct = ns.getServerMoneyAvailable(target) / ns.getServerMaxMoney(target)
   // Only apply hysteresis when coming FROM a work phase, so a target that's
@@ -669,7 +707,7 @@ function buildPlan(ns, target, wasWorking) {
     return { type: "weaken", currentSecurity, moneyPct }
   }
 
-  const weightBucket = getWorkWeightBucket(moneyPct)
+  const weightBucket = getWorkWeightBucket(moneyPct, previousWeightBucket)
   return {
     type: "work",
     currentSecurity,
@@ -1281,7 +1319,7 @@ export async function main(ns) {
 
     const previousPlanType = lastPlanType
     const previousWeightBucket = lastWeightBucket
-    const plan = buildPlan(ns, currentTarget, lastPlanType === "work")
+    const plan = buildPlan(ns, currentTarget, lastPlanType === "work", previousWeightBucket)
     lastPlanType = plan.type
     // Redeploy when moneyPct crosses into a different hack/grow weight tier,
     // so the ratio actually adapts as money drains or recovers — otherwise
@@ -1444,6 +1482,7 @@ export async function main(ns) {
         OPPORTUNITY_SWITCH_FACTOR,
         MIN_TARGET_COMMIT_MS,
         DEGRADED_SKIP_MS,
+        BUCKET_HYSTERESIS,
       },
       invariantViolations: invariants.counts,
       // Last few transitions inline, so one file read gives both "now" and

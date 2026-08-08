@@ -34,6 +34,12 @@ const MONEY_PCT_SAMPLE_COUNT = 9
 // throws away accumulated grow progress, so it must clear a wide bar rather
 // than chase small differences and thrash.
 const OPPORTUNITY_SWITCH_FACTOR = 3
+// How long a *productive* target is committed to before better options are
+// even considered. Much longer than MIN_TARGET_HOLD_MS because leaving one
+// throws away its accumulated grow progress and the replacement must be
+// grown up from wherever it currently sits — so the move only pays off over
+// a long horizon, and shouldn't be re-litigated every minute.
+const MIN_TARGET_COMMIT_MS = 600000
 // How long a drained target is deprioritized before it's eligible again —
 // long enough to make real progress on other (harder) targets first.
 const DEGRADED_SKIP_MS = 900000
@@ -672,20 +678,41 @@ export async function main(ns) {
         }
       }
 
-      // Opportunity switch: adoption alone only happens when currentTarget is
-      // null, so without this the bot will grind an unproductive target for as
-      // long as it keeps inching upward (it isn't "degraded" — it's improving)
-      // while a fully grown, immediately productive server sits idle.
-      // Restricted to targets that are themselves producing nothing, so a
-      // working target is never interrupted mid-earn.
-      if (currentTarget && Date.now() - lastSwitchTime >= MIN_TARGET_HOLD_MS) {
+      // Opportunity switch. Adoption alone only happens when currentTarget is
+      // null, and BOTH abandonment paths (degraded, stuck) assume a target
+      // eventually runs dry. Now that grow keeps pace with hack, a target can
+      // be farmed sustainably forever — it never degrades, never empties, and
+      // without this the bot would happily farm the smallest server on the
+      // network indefinitely while far richer ones sit untouched.
+      //
+      // Two regimes, because the fair comparison differs:
+      //   - current target producing nothing ("empty"): compare readiness-
+      //     discounted scores, and move quickly. Escaping a dud is urgent.
+      //   - current target productive: both it and the candidate would sit at
+      //     their own equilibrium, so compare raw potential instead — current
+      //     money says nothing about which is the better long-run farm. Held
+      //     much longer first, since switching discards grow progress and the
+      //     replacement has to be grown up from wherever it sits.
+      if (currentTarget) {
+        const heldMs = Date.now() - lastSwitchTime
         const currentMoneyPct = ns.getServerMoneyAvailable(currentTarget) / ns.getServerMaxMoney(currentTarget)
-        if (getWorkWeightBucket(currentMoneyPct) === "empty") {
-          const best = rankTargets(ns, servers, maxWeaken, skippedTargets, drainedTargets)[0]
-          const currentEffective = getTargetEffectiveScore(ns, currentTarget)
-          if (best && best.server !== currentTarget && best.score > currentEffective * OPPORTUNITY_SWITCH_FACTOR) {
+        const idle = getWorkWeightBucket(currentMoneyPct) === "empty"
+        const committed = heldMs >= (idle ? MIN_TARGET_HOLD_MS : MIN_TARGET_COMMIT_MS)
+
+        if (committed) {
+          const ranked = rankTargets(ns, servers, maxWeaken, skippedTargets, drainedTargets)
+          const measure = idle
+            ? (server) => getTargetEffectiveScore(ns, server)
+            : (server) => getTargetScore(ns, server)
+          let best = null
+          for (const { server } of ranked) {
+            const score = measure(server)
+            if (!best || score > best.score) best = { server, score }
+          }
+          const currentScore = measure(currentTarget)
+          if (best && best.server !== currentTarget && best.score > currentScore * OPPORTUNITY_SWITCH_FACTOR) {
             ns.tprint(
-              `mcp: ${best.server} (score=${formatMoney(best.score)}/s) far outperforms idle ${currentTarget} (${formatMoney(currentEffective)}/s); switching`
+              `mcp: ${best.server} (${formatMoney(best.score)}/s) outperforms ${idle ? "idle" : "current"} ${currentTarget} (${formatMoney(currentScore)}/s) by ${(best.score / Math.max(currentScore, 1e-9)).toFixed(1)}x after ${Math.floor(heldMs / 1000)}s; switching`
             )
             currentTarget = null
             securityProgressTime = 0

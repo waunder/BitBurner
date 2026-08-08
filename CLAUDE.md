@@ -85,11 +85,12 @@ lives inside the save file, so it must not grow without bound.
 
 ## Open work
 
-`docs/audit-2026-08-07-process.md` holds the current backlog. The
-highest-value unimplemented items, in order: hot-reloaded `mcp_config.json`
-(lets tunables change without a restart, and without wiping history), an
-event log with predicate inputs, and in-game invariant assertions via
-`ns.toast`.
+`docs/process-backlog.md` holds the current backlog — it re-scores the
+2026-08-07 process audit against the loop as it now exists (CDP connection,
+supervisor, HUD, watcher), which invalidated that audit's "maximize
+information per click" premise. The audit itself stays as the historical
+record. Top items, in order: `runId`+`scriptVersion` stamps, one field list,
+hot-reloaded `mcp_config.json`, an event log with predicate inputs.
 
 Rooting is handled by `hacking/crawler.js` → `hacking/worm.js` (not by
 `mcp.js`), so the worker pool only grows while the crawler is running and

@@ -5,7 +5,9 @@ Live backlog, superseding the recommendations in
 historical record, and its diagnosis was right. This file re-scores its
 recommendations against the loop as it exists now.
 
-Reassessed 2026-08-08, after the loop changed substantially.
+Reassessed 2026-08-08, after the loop changed substantially. **Items 1–6 of
+"Still gold" were implemented later the same day** — see the Done section at
+the bottom for what shipped and what is still worth watching about each.
 
 ---
 
@@ -187,15 +189,29 @@ Already implemented: it logs only on target/plan/bucket change.
 
 ---
 
-## Order I would take them
+## Done — 2026-08-08
 
-1. `runId` + `scriptVersion` — smallest, and it removes a blind spot the new
-   remote-edit loop creates on every single iteration.
-2. One field list — 5 lines, and it stops the bug class that just recurred.
-3. `mcp_config.json` hot-reload — the only fix for evidence destruction.
-4. Event log with predicate inputs — the highest-value item, and easiest to
-   build well once (3) has made the tunables inspectable.
-5. Invariants, routed to both toast and status.
+Implemented in commit `c846381`. All of it is **unverified in-game at time of
+writing**; none of these claims should be trusted until a run has produced
+telemetry.
+
+| Item | Shipped as | Worth watching |
+| --- | --- | --- |
+| `runId` + `scriptVersion` | djb2 of `mcp.js`, stamped into every status write and event. `mcp_hud.js` hashes the file itself and compares → `OLD CODE` verdict. | The HUD's own version is not checked. A stale HUD reporting on a fresh mcp is still possible. |
+| One field list | `formatStatus(status)` is the only renderer; tail line and log line both derive from it. | Nothing enforces it. A future field can still be added to the object and never rendered — that's a lesser failure than the old one, but it is not zero. |
+| Event log | `mcp_events.jsonl`, transitions only, each carrying its predicate's inputs. Trimmed to 300 lines at startup; last 20 inline in the status. | Whether 300 lines and 20 inline are the right numbers. Also whether the file grows the save meaningfully. |
+| Invariants | Six checks, toast once per name per run, counts in the status, `INVARIANT` verdict. | `poolNotIdle` at `>= 0.5` is a guess. If it fires constantly during legitimate weaken phases it is noise, and noise is worse than nothing. Retune or drop it. |
+| `mcp_config.json` | Re-read per tick, per-key fallback, corrupt JSON keeps current values, `config_change` events, effective config in the status. | The tunables became module-level `let`. That is the low-risk shape, but it means any future helper can reassign one by accident. |
+| `ramUtilization`, income, XP | In the status and the HUD; `getTotalScriptIncome()[0]` and `getTotalScriptExpGain()`. | XP rate is now measurable, which is the evidence needed for the objective-mismatch question below. |
+
+## Order for what remains
+
+1. Pure functions + `node --test` — unblocked, and the only part of the loop
+   still genuinely slow is the game round trip these avoid entirely.
+2. `probe=` experiment mode — both ends are now automated.
+3. Ports as a telemetry ring buffer, if per-tick detail turns out to be wanted
+   after the event log has been used in anger.
+4. Revisit `mcp_doctor.js` only once home RAM is large.
 
 The audit's closing observation is worth keeping in view, because everything
 above is still an instance of it: *the four highest-leverage items are all

@@ -1,7 +1,10 @@
-# Generated Bitburner status files
+# Generated Bitburner status files. Note mcp_config.json is deliberately NOT
+# here — it is an input we author, and it must be in the repo to sync into
+# the game.
 mcp_status.json
 mcp_status_log.txt
 mcp_target_state.json
+mcp_events.jsonl
 
 # macOS
 .DS_Store

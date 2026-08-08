@@ -101,8 +101,10 @@ The orchestrator, and where nearly all the complexity lives. Each tick
 plan, and allocates worker threads across every rooted host.
 
 - **Start:** `run mcp.js` — optionally `run mcp.js target=<hostname>`
+- **Reads:** `mcp_config.json` every tick (see Tunables)
 - **Writes:** `mcp_status.json` (every tick, overwritten),
   `mcp_status_log.txt` (appended only when target/plan/bucket changes),
+  `mcp_events.jsonl` (one line per transition),
   `mcp_target_state.json` (exclusions, so they survive a restart)
 - **Deploys:** `/scripts/weaken.js`, `/scripts/grow.js`, `/scripts/hack.js`
 
@@ -160,22 +162,86 @@ the two blockers demand different responses. Losing on score means the 3×
 factor is what stands between the bot and a richer server. Losing on the hold
 timer just means waiting. `blockedBy` names which.
 
-#### Tunables
+#### Tunables — `mcp_config.json`
 
-Constants at the top of the file. The ones that actually get retuned:
+**Re-read at the top of every tick. No restart needed.** That matters because
+a restart wipes `rateSamples`, `moneyPctSamples`, `totalHacked` and
+`lastSwitchTime` — automating restarts made the evidence-destruction cycle
+faster, not smaller. Editing the config is the only way to change a constant
+and still have the history that says whether it helped.
 
-| Constant | Current | What it governs |
+The ones that actually get retuned:
+
+| Key | Default | What it governs |
 | --- | --- | --- |
 | `SECURITY_CAP` | 6 | Above this, the plan is pure weaken |
 | `WORK_SECURITY_MARGIN` | 1.5 | Absolute headroom kept during `work` |
 | `TARGET_MONEY_GOAL` | 0.95 | Money fraction the `goal` bucket aims at |
-| `DEGRADED_MONEY_PCT` | 0.05 | Drain threshold — **must** stay below the `empty` bucket's 0.1 |
+| `DEGRADED_MONEY_PCT` | 0.05 | Drain threshold — **must** stay below the `empty` bucket's 0.1, and an invariant enforces it |
 | `OPPORTUNITY_SWITCH_FACTOR` | 3 | Margin required to abandon a working target |
 | `LOOP_SLEEP_MS` | 10000 | Tick length |
 
-Changing any of these requires a restart, which also wipes `rateSamples`,
-`moneyPctSamples` and `totalHacked`. A hot-reloaded `mcp_config.json` is the
-top item in the process backlog for exactly this reason.
+Eleven more are configurable; the file in the repo lists all fifteen with
+their defaults. Rules: only numbers are accepted, unknown keys are rejected
+and reported, and **corrupt JSON keeps the current values** rather than
+reverting to defaults — a half-saved file should not silently undo a
+deliberate tune. Every change emits a `config_change` event with a diff, and
+the effective config rides in `mcp_status.json` so an edit can be confirmed to
+have taken.
+
+#### Telemetry
+
+Three things stamp or check every tick:
+
+- **`runId` + `scriptVersion`.** mcp hashes its own source (djb2 — a retuned
+  constant is exactly the same-size edit a length check would miss) and stamps
+  it into every status write and every event. `mcp_hud.js` hashes `mcp.js`
+  itself and compares, so **version drift shows up as an `OLD CODE` verdict.**
+  This exists because the loop now edits code here, lets the sync watcher push
+  it, and restarts by writing a token — nobody looks at the game in between,
+  so "is the running code the code on disk?" gets asked constantly and was
+  previously unanswerable.
+- **`formatStatus(status)`** is the single field list. The tail line and the
+  log line both derive from it. Add a field to `status`; that function is the
+  only place deciding how it renders. Three parallel hand-maintained lists is
+  how `lowMoneySeconds` reached `ns.print` only, and `switchEval` the JSON
+  only — the same miss, twelve hours apart.
+- **Invariants**, which assert on the code's own intentions and never on game
+  state. Game state may surprise us; our own bookkeeping may not. A violation
+  toasts once per name per run and increments a counter in the status file,
+  which the HUD renders and the out-of-game watcher wakes on.
+
+| Invariant | Catches |
+| --- | --- |
+| `weakenBudgetNonNegative` | Budget over-allocation, found originally only by an accident of two fields lining up |
+| `tickWithinBounds` | The 70–380s ticks that silently multiplied every rate |
+| `poolNotIdle` | The network sitting 93% idle during weaken phases |
+| `threadsFitHost` | The inconsistent-RAM class (`usedRam 3.5, freeRam 16, maxRam 16`) |
+| `drainBelowEmptyTier` | A config edit that would strand recovering targets |
+| `configParses` | A malformed `mcp_config.json` |
+
+### `mcp_events.jsonl`
+
+One line per transition — `startup`, `target_adopt`, `target_drop`,
+`degraded_held`, `plan_flip`, `bucket_change`, `stall`, `config_change`,
+`invariant_violation`. Never per tick.
+
+The rule that makes it worth having:
+
+> An event records the value of every variable that appeared in the predicate
+> that fired it — not the state afterward.
+
+So a `target_drop` for `drained` carries the whole sample array, `declining`,
+`rateDropped`, `lastAvgRate`, `heldMs` and every threshold involved. A wrong
+theory dies on reading. The same event carrying only `{reason: "drained"}`
+costs three restart cycles to disambiguate, because the reader has to infer
+backwards from effect to cause — which is exactly where this project
+repeatedly lost hours.
+
+Trimmed to the last 300 lines at startup, so it stays bounded inside the save
+file while still surviving the restarts that wipe every in-memory sample. The
+most recent 20 also ride inline in `mcp_status.json`, so one read gives both
+"now" and "how we got here".
 
 ### `scripts/weaken.js`, `scripts/grow.js`, `scripts/hack.js`
 
@@ -212,17 +278,36 @@ own Overview.
 |ram 97%           19 hosts|
 |lvl 341               920m|
 |next phantasy       1.8/3x|   see below
+|ver ok               inv 0|   code drift, invariant violations
 |tick 10.1s          age 0s|
 +--------------------------+
 ```
 
-The first word is a verdict — `OK`, `WEAKEN` (needs more weaken than the pool
-can supply), `DRAINED`, `SLOW`, `STALE`, `NO DATA` — and every line beneath it
-carries an input to that verdict, so it never asks you to trust the summary
-alone.
+The first word is a verdict, and every line beneath it carries an input to
+that verdict, so it never asks you to trust the summary alone. In priority
+order:
 
-`age` matters most: without it, a dead `mcp.js` would leave the panel showing
-frozen-but-plausible numbers indefinitely.
+| Verdict | Meaning |
+| --- | --- |
+| `NO DATA` | No readable `mcp_status.json` |
+| `STALE` | Status older than 90s — mcp is wedged or dead |
+| `OLD CODE` | The running mcp does not match `mcp.js` on disk |
+| `INVARIANT` | One of mcp's own assertions has failed |
+| `WEAKEN` | Needs more weaken threads than the pool can supply |
+| `DRAINED` | Average money share below the drain threshold |
+| `SLOW` | Tick longer than 30s |
+| `OK` | — |
+
+`OLD CODE` outranks every health signal deliberately: if the running code is
+not the code on disk, every judgement below that line is about the wrong
+program, and the fix is a restart rather than a diagnosis.
+
+`age` matters nearly as much: without it, a dead `mcp.js` would leave the panel
+showing frozen-but-plausible numbers indefinitely.
+
+The `ver`/`inv` row is always rendered, including its reassuring zeros, so the
+panel's height never changes — `placeTail` sizes once, and a row appearing
+later would clip.
 
 The `next` row renders `switchEval` in three states:
 
@@ -351,7 +436,11 @@ so it must not grow without bound.
 
 | File | Written by | Notes |
 | --- | --- | --- |
-| `mcp_status.json` | `mcp.js`, every tick | Overwritten. The observation source of truth. |
+| `mcp_status.json` | `mcp.js`, every tick | Overwritten. The observation source of truth. Carries the last 20 events inline. |
+| `mcp_events.jsonl` | `mcp.js`, per transition | Appended; trimmed to 300 lines at startup. Survives restarts, which is the point. |
 | `mcp_status_log.txt` | `mcp.js`, on state change | Appended. Logging every tick grew this ~800KB/day inside the save, burying the transitions that actually explain behaviour. |
 | `mcp_target_state.json` | `mcp.js`, every tick | Exclusions, so a restart doesn't relearn them. |
 | `mcp_restart.txt` | outside the game | Restart trigger. |
+
+`mcp_config.json` is **not** generated and **is** committed — it is an input we
+author, and it needs to be in the repo to sync into the game.

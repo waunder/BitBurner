@@ -213,12 +213,12 @@ function expireTargetExclusions(skippedTargets, drainedTargets) {
  * @param {Map<string, number>} drainedTargets
  * @returns {{server: string, score: number}[]} ranked best-first
  */
-function rankTargets(ns, servers, maxWeaken, skippedTargets, drainedTargets) {
+function rankTargets(ns, servers, maxWeaken, skippedTargets, drainedTargets, ignoreExclusions = false) {
   const candidates = []
 
   for (const server of servers) {
     if (!isHackableTarget(ns, server)) continue
-    if (skippedTargets.has(server) || drainedTargets.has(server)) continue
+    if (!ignoreExclusions && (skippedTargets.has(server) || drainedTargets.has(server))) continue
 
     const requiredWeaken = getTargetWeakenThreads(ns, server)
     if (requiredWeaken > maxWeaken) continue
@@ -230,8 +230,21 @@ function rankTargets(ns, servers, maxWeaken, skippedTargets, drainedTargets) {
   return candidates
 }
 
+// Exclusions are a *preference*, not a ban. When they rule out everything the
+// bot has nothing to run, and the no-target branch then kills all action
+// scripts every 60s — so it earns nothing, gains no XP, and cannot improve
+// the very conditions that would make a target attractive again. Observed
+// early-game: n00dles (the only weakenable target) got marked drained, and
+// the bot sat dead until the 15-minute penalty expired, then repeated.
+// Working a mediocre target always beats idling.
 function chooseTarget(ns, servers, maxWeaken, skippedTargets, drainedTargets) {
-  const ranked = rankTargets(ns, servers, maxWeaken, skippedTargets, drainedTargets)
+  let ranked = rankTargets(ns, servers, maxWeaken, skippedTargets, drainedTargets)
+  if (ranked.length === 0) {
+    ranked = rankTargets(ns, servers, maxWeaken, skippedTargets, drainedTargets, true)
+    if (ranked.length > 0) {
+      ns.print(`mcp: all candidates excluded; falling back to ${ranked[0].server}`)
+    }
+  }
   return ranked.length > 0 ? ranked[0].server : null
 }
 
@@ -658,23 +671,43 @@ export async function main(ns) {
         const avgMoneyPct = moneyPctSamples.reduce((sum, value) => sum + value, 0) / moneyPctSamples.length
         // "Low" alone isn't drained — a target mid-recovery is legitimately
         // low but climbing, and abandoning it there strands it at ~0 with no
-        // grow threads for the whole skip window. Only give up if it's also
-        // failing to improve across the sample window.
+        // grow threads for the whole skip window.
+        //
+        // Requires an actual *decline*, not merely absence of improvement.
+        // growTime scales inversely with hacking level, so early on a single
+        // grow can take longer than the whole 90s sample window: the earlier
+        // `!improving` test read "too slow to see yet" as "dead" and drained
+        // a perfectly good target on a level-1 character. Money genuinely
+        // being drained faster than it regrows shows up as a falling series.
         const windowFull = moneyPctSamples.length === MONEY_PCT_SAMPLE_COUNT
-        const improving = windowFull && moneyPctSamples[moneyPctSamples.length - 1] > moneyPctSamples[0]
-        const moneyDegraded = windowFull && avgMoneyPct < DEGRADED_MONEY_PCT && !improving
+        const declining = windowFull && moneyPctSamples[moneyPctSamples.length - 1] < moneyPctSamples[0]
+        const moneyDegraded = windowFull && avgMoneyPct < DEGRADED_MONEY_PCT && declining
 
         if (heldLongEnough && (rateDropped || moneyDegraded)) {
-          ns.tprint(
-            `mcp: target ${currentTarget} yield degraded (avgMoneyPct=${avgMoneyPct.toFixed(4)} improving=${improving} rateDropped=${rateDropped}); moving on`
+          // Only give up if there is somewhere else to go. Draining the sole
+          // viable target strands the bot with nothing to run, which stops
+          // the grow that would have recovered it — the penalty outlives the
+          // problem it was meant to solve.
+          const alternatives = rankTargets(ns, servers, maxWeaken, skippedTargets, drainedTargets).filter(
+            (c) => c.server !== currentTarget
           )
-          drainedTargets.set(currentTarget, Date.now())
-          currentTarget = null
-          securityProgressTime = 0
-          bestSecuritySeen = Infinity
-          lastPlanType = null
-          lastWeightBucket = null
-          moneyPctSamples.length = 0
+          if (alternatives.length === 0) {
+            ns.print(
+              `mcp: ${currentTarget} looks degraded (avgMoneyPct=${avgMoneyPct.toFixed(4)}) but is the only viable target; holding`
+            )
+            moneyPctSamples.length = 0
+          } else {
+            ns.tprint(
+              `mcp: target ${currentTarget} yield degraded (avgMoneyPct=${avgMoneyPct.toFixed(4)} declining=${declining} rateDropped=${rateDropped}); moving on`
+            )
+            drainedTargets.set(currentTarget, Date.now())
+            currentTarget = null
+            securityProgressTime = 0
+            bestSecuritySeen = Infinity
+            lastPlanType = null
+            lastWeightBucket = null
+            moneyPctSamples.length = 0
+          }
         }
       }
 

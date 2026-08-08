@@ -28,18 +28,12 @@ Ken's hand, and check it off once it's confirmed done — same rule as
   the `mcp_status*` trap that used to catch `mcp_status.js`. The extension
   remembers the last pattern, so this is a one-time change.
 
-- [ ] **Check `ps` for leftover `get_stats.js` processes and kill any but
-  one.** Before the self-supersede fix (commit `577061c`), three separate
-  copies were running (PIDs 4, 522, 601) — killing only shows up in `ns.ps`,
-  which Claude can't read directly over CDP, only tail windows that happen
-  to be open. A single `run get_stats.js` now supersedes any prior copy, so
-  running it once is enough, but it's worth confirming with `ps` on the
-  terminal that only one is left — two idle copies each hold RAM that would
-  otherwise go to workers.
-
 ## Done (kept for reference)
 
 - [x] `run mcp_supervisor.js` — confirmed running (PID 119, 2026-08-08).
   Restarts no longer need a keystroke; Claude bumps `mcp_restart.txt` directly.
 - [x] `run mcp_hud.js` — confirmed running and healthy (`OK`, `ver ok`,
   `inv 0`, 2026-08-08).
+- [x] **Leftover `get_stats.js` processes.** `ps` confirmed a single instance
+  (PID 914) alongside a single `mcp_hud.js` (PID 986) — the three stray
+  copies from before the self-supersede fix are gone.

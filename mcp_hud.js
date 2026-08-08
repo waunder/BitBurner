@@ -7,12 +7,15 @@
  * bot. get_stats.js is the wide per-server view; this is the "is it healthy?"
  * glance.
  *
- * Every ns call used here costs 0GB, so the whole script is the 1.6GB script
- * baseline — cheap enough to leave running on a 20GB home.
- *
  * Args (all optional, any order):
  *   x=<px> y=<px>   absolute tail position, overriding the default anchor
  *   w=<px> h=<px>   absolute tail size, overriding the fitted size
+ *
+ * Re-running with new args supersedes the previous instance rather than
+ * stacking another window beside it, so repositioning is just a re-run.
+ *
+ * Costs the 1.6GB script baseline plus ~0.75GB for that self-supersede check
+ * (ns.ps + ns.kill); everything in the display path itself is 0GB.
  *
  * @param {NS} ns
  */
@@ -171,8 +174,27 @@ function placeTail(ns, args, lines) {
   }
 }
 
+/**
+ * Bitburner gives every running script its own tail window, so `run mcp_hud.js
+ * y=220` to reposition would otherwise leave the old window behind rather than
+ * moving it. Kill any earlier copy of ourselves first.
+ *
+ * ns.ps reports filenames without a leading slash, which is the same trap that
+ * made mcp.js's killActionScripts silently match nothing for hours — normalize
+ * before comparing.
+ */
+function killPriorInstances(ns) {
+  const self = ns.pid
+  const me = "mcp_hud.js"
+  for (const proc of ns.ps(ns.getHostname())) {
+    const name = proc.filename.startsWith("/") ? proc.filename.slice(1) : proc.filename
+    if (name === me && proc.pid !== self) ns.kill(proc.pid)
+  }
+}
+
 export async function main(ns) {
   ns.disableLog("ALL")
+  killPriorInstances(ns)
   const args = parseArgs(ns)
   let placed = false
 

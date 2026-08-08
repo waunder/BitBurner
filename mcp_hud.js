@@ -83,6 +83,24 @@ function row(left, right) {
   return gap > 0 ? left + " ".repeat(gap) + right : left + " " + right
 }
 
+/**
+ * Same djb2 as mcp.js, deliberately duplicated rather than imported — six
+ * lines is cheaper than an in-game import path, and the two must agree.
+ *
+ * Hashing mcp.js here and comparing against the version stamped into the
+ * status file answers "is the running code the code on disk?" — the question
+ * the remote edit-push-restart loop raises on every iteration and could not
+ * previously answer. A drift means a fix that appears not to work has simply
+ * not been loaded.
+ */
+function hashSource(text) {
+  let hash = 5381
+  for (let i = 0; i < text.length; i++) {
+    hash = ((hash << 5) + hash + text.charCodeAt(i)) | 0
+  }
+  return (hash >>> 0).toString(36)
+}
+
 function readStatus(ns) {
   // ns.read returns "" for a file that does not exist, which costs nothing and
   // avoids ns.fileExists (0.1GB).
@@ -120,13 +138,26 @@ function ramUtilization(status) {
  * lines below always carry the inputs that produced it, so the verdict is
  * never the only evidence.
  */
-function verdict(status, ageMs) {
+function verdict(status, ageMs, drift, violations) {
   if (!status) return "NO DATA"
   if (ageMs > STALE_MS) return "STALE"
+  // Ranked above every health signal on purpose: if the running code is not
+  // the code on disk, every judgement below this line is about the wrong
+  // program, and the fix is a restart rather than a diagnosis.
+  if (drift) return "OLD CODE"
+  if (violations > 0) return "INVARIANT"
   if (status.needWeaken > status.maxWeaken) return "WEAKEN"
   if (status.avgMoneyPct < DRAINED_MONEY_PCT) return "DRAINED"
   if (status.tickSeconds > SLOW_TICK_S) return "SLOW"
   return "OK"
+}
+
+function violationSummary(status) {
+  const counts = status.invariantViolations || {}
+  const names = Object.keys(counts)
+  let total = 0
+  for (const name of names) total += counts[name]
+  return { total, worst: names.length ? names[0] : null }
 }
 
 function buildLines(ns, status) {
@@ -134,11 +165,16 @@ function buildLines(ns, status) {
     return [row("NO DATA", "--"), row(STATUS_FILE, ""), row("mcp running?", "")]
   }
   const ageS = Math.max(0, Math.round((Date.now() - status.ts) / 1000))
+  // Compare our own hash of mcp.js against the version it stamped when it
+  // started. Absent on a pre-versioning mcp, which reads as "no drift".
+  const onDisk = hashSource(ns.read("mcp.js"))
+  const drift = !!status.scriptVersion && status.scriptVersion !== onDisk
+  const violations = violationSummary(status)
   const threads = threadTotals(status)
   const pct = (value) => (Number.isFinite(value) ? Math.round(value * 100) + "%" : "--")
 
   return [
-    row(verdict(status, Date.now() - status.ts), status.target || "-"),
+    row(verdict(status, Date.now() - status.ts, drift, violations.total), status.target || "-"),
     row("plan", status.plan || "-"),
     row("money " + pct(status.moneyPct), "sec " + (status.currentSecurity || 0).toFixed(2)),
     row("rate " + money(status.rate), "avg " + money(status.avgRate)),
@@ -146,6 +182,10 @@ function buildLines(ns, status) {
     row("ram " + pct(ramUtilization(status)), (status.workers || []).length + " hosts"),
     row("lvl " + (status.player && status.player.skills ? status.player.skills.hacking : "-"), money(status.player ? status.player.money : 0)),
     switchRow(status),
+    // Always rendered, including the reassuring zero, so the panel's height
+    // never changes — placeTail sizes once and a row appearing later would
+    // clip.
+    row("ver " + (drift ? "DRIFT" : "ok"), violations.total ? "inv " + violations.total + " " + violations.worst : "inv 0"),
     row("tick " + (status.tickSeconds || 0).toFixed(1) + "s", "age " + ageS + "s"),
   ]
 }
@@ -229,8 +269,16 @@ export async function main(ns) {
   let placed = false
 
   while (true) {
-    const status = readStatus(ns)
-    const lines = buildLines(ns, status)
+    let status = null
+    let lines
+    try {
+      status = readStatus(ns)
+      lines = buildLines(ns, status)
+    } catch (e) {
+      // A display panel must never be the thing that dies. If the status shape
+      // changes under us, say so rather than vanishing.
+      lines = [row("HUD ERROR", "--"), String(e).slice(0, WIDTH_CHARS), row("check mcp_hud.js", "")]
+    }
 
     ns.clearLog()
     for (const line of lines) ns.print(WHITE + line + RESET)

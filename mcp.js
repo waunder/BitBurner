@@ -2,20 +2,30 @@
  * @param {NS} ns
  */
 
-const SECURITY_CAP = 6
-const TARGET_MONEY_GOAL = 0.95
-const MIN_TARGET_HOLD_MS = 60000
+// Tunables are declared with `let`, not `const`, so loadConfig can reassign
+// them in place from mcp_config.json at the top of every tick. Threading a
+// config object through every helper would be a large diff for no behavioural
+// gain; this way every existing reference keeps working untouched.
+//
+// The point is not remote control — the supervisor already gives us that. The
+// point is that a *restart* wipes rateSamples, moneyPctSamples, totalHacked
+// and lastSwitchTime. Automating restarts made the evidence-destruction cycle
+// faster, not smaller. Retuning through this file is the only way to change a
+// constant and still have the history that says whether it helped.
+let SECURITY_CAP = 6
+let TARGET_MONEY_GOAL = 0.95
+let MIN_TARGET_HOLD_MS = 60000
 // Absolute security margin (not a fraction) tolerated before a working target
 // is torn down for a weaken phase. Must exceed the security injected by one
 // grow/hack cycle landing at once (~1.0 observed), or the plan flips every
 // couple of ticks and no grow/hack thread ever survives to completion.
-const WORK_SECURITY_MARGIN = 1.5
-const RATE_DROP_FACTOR = 0.75
-const LOOP_SLEEP_MS = 10000
-const RATE_SAMPLE_COUNT = 5
-const WEAKEN_STUCK_MS = 60000
-const WEAKEN_STUCK_SECURITY_THRESHOLD = 0.05
-const SKIP_STUCK_MS = 60000
+let WORK_SECURITY_MARGIN = 1.5
+let RATE_DROP_FACTOR = 0.75
+let LOOP_SLEEP_MS = 10000
+let RATE_SAMPLE_COUNT = 5
+let WEAKEN_STUCK_MS = 60000
+let WEAKEN_STUCK_SECURITY_THRESHOLD = 0.05
+let SKIP_STUCK_MS = 60000
 // A target is considered "drained" once its money share averages below this
 // AND is not trending upward. Averaged rather than "continuously below"
 // because an over-leveled player can make grow() spike a near-empty server's
@@ -26,23 +36,23 @@ const SKIP_STUCK_MS = 60000
 // is by definition under that tier, so a higher threshold here would mark it
 // drained ~90s into a recovery that legitimately takes far longer, then
 // starve it of the grow threads it needs to ever climb back out.
-const DEGRADED_MONEY_PCT = 0.05
-const MONEY_PCT_SAMPLE_COUNT = 9
+let DEGRADED_MONEY_PCT = 0.05
+let MONEY_PCT_SAMPLE_COUNT = 9
 // A target only gets abandoned for a better one when it is itself producing
 // nothing (still in the "empty" tier, so hack threads are off) AND the
 // alternative scores this many times higher. Deliberately steep: switching
 // throws away accumulated grow progress, so it must clear a wide bar rather
 // than chase small differences and thrash.
-const OPPORTUNITY_SWITCH_FACTOR = 3
+let OPPORTUNITY_SWITCH_FACTOR = 3
 // How long a *productive* target is committed to before better options are
 // even considered. Much longer than MIN_TARGET_HOLD_MS because leaving one
 // throws away its accumulated grow progress and the replacement must be
 // grown up from wherever it currently sits — so the move only pays off over
 // a long horizon, and shouldn't be re-litigated every minute.
-const MIN_TARGET_COMMIT_MS = 600000
+let MIN_TARGET_COMMIT_MS = 600000
 // How long a drained target is deprioritized before it's eligible again —
 // long enough to make real progress on other (harder) targets first.
-const DEGRADED_SKIP_MS = 900000
+let DEGRADED_SKIP_MS = 900000
 const ACTION_SCRIPTS = ["/scripts/grow.js", "/scripts/hack.js", "/scripts/weaken.js"]
 const HACK_SEC_INCREASE = 0.002
 const GROW_SEC_INCREASE = 0.004
@@ -55,6 +65,327 @@ const WEAKEN_SEC_DECREASE = 0.05
 // a naive one-shot comparison suggests.
 const WEAKEN_PER_HACK_RATIO = 4
 const WEAKEN_PER_GROW_RATIO = 1.25
+
+const CONFIG_FILE = "mcp_config.json"
+
+// The defaults, captured before anything can overwrite them, so a malformed or
+// partial config falls back per-key rather than wholesale.
+const CONFIG_DEFAULTS = {
+  SECURITY_CAP,
+  TARGET_MONEY_GOAL,
+  MIN_TARGET_HOLD_MS,
+  WORK_SECURITY_MARGIN,
+  RATE_DROP_FACTOR,
+  LOOP_SLEEP_MS,
+  RATE_SAMPLE_COUNT,
+  WEAKEN_STUCK_MS,
+  WEAKEN_STUCK_SECURITY_THRESHOLD,
+  SKIP_STUCK_MS,
+  DEGRADED_MONEY_PCT,
+  MONEY_PCT_SAMPLE_COUNT,
+  OPPORTUNITY_SWITCH_FACTOR,
+  MIN_TARGET_COMMIT_MS,
+  DEGRADED_SKIP_MS,
+}
+
+/**
+ * Re-read tunables from mcp_config.json. Called at the top of every tick.
+ *
+ * Returns a diff of what changed, or null if nothing did — so a config_change
+ * event records what was tuned and when, which was previously unrecoverable
+ * from any log.
+ *
+ * Only numbers are accepted, and only keys that exist in CONFIG_DEFAULTS. A
+ * corrupt file leaves the previous values in place rather than reverting to
+ * defaults mid-run, because a half-saved file should not silently undo a
+ * deliberate tune.
+ */
+function loadConfig(ns, state) {
+  const raw = ns.read(CONFIG_FILE)
+  if (raw === state.lastRaw) return null
+  state.lastRaw = raw
+
+  let parsed = {}
+  if (raw.trim()) {
+    try {
+      parsed = JSON.parse(raw)
+    } catch (e) {
+      return { error: String(e) }
+    }
+  }
+
+  const resolved = {}
+  const rejected = []
+  for (const key of Object.keys(CONFIG_DEFAULTS)) {
+    const value = parsed[key]
+    if (value === undefined) {
+      resolved[key] = CONFIG_DEFAULTS[key]
+    } else if (typeof value === "number" && Number.isFinite(value)) {
+      resolved[key] = value
+    } else {
+      resolved[key] = CONFIG_DEFAULTS[key]
+      rejected.push(key)
+    }
+  }
+  for (const key of Object.keys(parsed)) {
+    if (!(key in CONFIG_DEFAULTS)) rejected.push(key)
+  }
+
+  const changes = {}
+  const current = {
+    SECURITY_CAP,
+    TARGET_MONEY_GOAL,
+    MIN_TARGET_HOLD_MS,
+    WORK_SECURITY_MARGIN,
+    RATE_DROP_FACTOR,
+    LOOP_SLEEP_MS,
+    RATE_SAMPLE_COUNT,
+    WEAKEN_STUCK_MS,
+    WEAKEN_STUCK_SECURITY_THRESHOLD,
+    SKIP_STUCK_MS,
+    DEGRADED_MONEY_PCT,
+    MONEY_PCT_SAMPLE_COUNT,
+    OPPORTUNITY_SWITCH_FACTOR,
+    MIN_TARGET_COMMIT_MS,
+    DEGRADED_SKIP_MS,
+  }
+  for (const key of Object.keys(CONFIG_DEFAULTS)) {
+    if (current[key] !== resolved[key]) changes[key] = { from: current[key], to: resolved[key] }
+  }
+
+  SECURITY_CAP = resolved.SECURITY_CAP
+  TARGET_MONEY_GOAL = resolved.TARGET_MONEY_GOAL
+  MIN_TARGET_HOLD_MS = resolved.MIN_TARGET_HOLD_MS
+  WORK_SECURITY_MARGIN = resolved.WORK_SECURITY_MARGIN
+  RATE_DROP_FACTOR = resolved.RATE_DROP_FACTOR
+  LOOP_SLEEP_MS = resolved.LOOP_SLEEP_MS
+  RATE_SAMPLE_COUNT = resolved.RATE_SAMPLE_COUNT
+  WEAKEN_STUCK_MS = resolved.WEAKEN_STUCK_MS
+  WEAKEN_STUCK_SECURITY_THRESHOLD = resolved.WEAKEN_STUCK_SECURITY_THRESHOLD
+  SKIP_STUCK_MS = resolved.SKIP_STUCK_MS
+  DEGRADED_MONEY_PCT = resolved.DEGRADED_MONEY_PCT
+  MONEY_PCT_SAMPLE_COUNT = resolved.MONEY_PCT_SAMPLE_COUNT
+  OPPORTUNITY_SWITCH_FACTOR = resolved.OPPORTUNITY_SWITCH_FACTOR
+  MIN_TARGET_COMMIT_MS = resolved.MIN_TARGET_COMMIT_MS
+  DEGRADED_SKIP_MS = resolved.DEGRADED_SKIP_MS
+
+  if (Object.keys(changes).length === 0 && rejected.length === 0) return null
+  return { changes, rejected }
+}
+
+/**
+ * Fingerprint of our own source, recorded in the status file so a reader can
+ * tell which code produced it.
+ *
+ * The loop now edits code here, lets the sync watcher push it, and restarts
+ * via a token write — nobody looks at the game in between. "Is the running
+ * code the code on disk?" therefore gets asked on nearly every iteration and,
+ * until this existed, was unanswerable. mcp_hud.js hashes mcp.js itself and
+ * compares, so a version drift shows up as a verdict rather than as an hour
+ * of confusion about why a fix "didn't work".
+ *
+ * djb2 rather than length: a retuned constant is exactly the same-size edit
+ * that a length check would miss. ns.read costs 0GB.
+ */
+function hashSource(text) {
+  let hash = 5381
+  for (let i = 0; i < text.length; i++) {
+    hash = ((hash << 5) + hash + text.charCodeAt(i)) | 0
+  }
+  return (hash >>> 0).toString(36)
+}
+
+const EVENT_FILE = "mcp_events.jsonl"
+// Events are transitions only — roughly 40 in a long session, not 1353 — so
+// the file stays small. Trimmed once at startup rather than rewritten per
+// event, which bounds growth inside the save game while still letting the
+// record survive the restarts that wipe every in-memory sample.
+const EVENT_FILE_KEEP = 300
+const STATUS_EVENT_COUNT = 20
+
+/**
+ * Transition log. The rule, which is the whole point of it:
+ *
+ *   An event records the value of every variable that appeared in the
+ *   predicate that fired it — not the state afterward.
+ *
+ * A `target_drop` carrying `{moneyDegraded:false, rateDropped:true}` kills a
+ * wrong theory on sight. The same event carrying only `{reason:"drained"}`
+ * costs three restart cycles to disambiguate, because the reader has to infer
+ * backwards from effect to cause. That inference step is where this project
+ * repeatedly lost hours.
+ */
+function makeEventLog(ns, runId, scriptVersion) {
+  const raw = ns.read(EVENT_FILE)
+  if (raw) {
+    const lines = raw.split("\n").filter((l) => l.trim())
+    if (lines.length > EVENT_FILE_KEEP) {
+      ns.write(EVENT_FILE, lines.slice(-EVENT_FILE_KEEP).join("\n") + "\n", "w")
+    }
+  }
+
+  let seq = 0
+  const recent = []
+  return {
+    recent,
+    emit(kind, data) {
+      seq += 1
+      const event = Object.assign({ t: Date.now(), seq, runId, ver: scriptVersion, kind }, data)
+      recent.push(event)
+      if (recent.length > STATUS_EVENT_COUNT) recent.shift()
+      try {
+        ns.write(EVENT_FILE, JSON.stringify(event) + "\n", "a")
+      } catch (e) {
+        ns.print("mcp: failed to write event: " + e)
+      }
+      return event
+    },
+  }
+}
+
+// A violated invariant toasts once per name per run. The count keeps climbing
+// in the status file, which is what the HUD and the out-of-game watcher read,
+// so a repeat violation still raises an alarm without spamming the UI.
+const INVARIANT_TOAST_MS = 8000
+
+/**
+ * Assert on the code's own intentions, never on game state.
+ *
+ * Game state is allowed to surprise us — a server can be richer or more
+ * secure than expected and nothing is wrong. Our own bookkeeping is not
+ * allowed to surprise us: if the weaken budget goes negative, or a host is
+ * running more RAM than it has, the code's beliefs are wrong and every number
+ * downstream is suspect.
+ */
+function makeInvariants(ns, events) {
+  const counts = {}
+  const toasted = new Set()
+  return {
+    counts,
+    check(name, ok, data) {
+      if (ok) return true
+      counts[name] = (counts[name] || 0) + 1
+      events.emit("invariant_violation", Object.assign({ invariant: name, count: counts[name] }, data))
+      if (!toasted.has(name)) {
+        toasted.add(name)
+        ns.toast(`mcp invariant violated: ${name}`, "error", INVARIANT_TOAST_MS)
+      }
+      return false
+    },
+  }
+}
+
+/**
+ * The per-tick invariant sweep. Each entry here corresponds to a bug that
+ * actually happened and took multiple restart cycles to find.
+ */
+function checkTickInvariants(invariants, ctx) {
+  // Budget over-allocation was found only because maxWeaken happened to
+  // decrement by exactly needWeaken each tick — an accident of two unrelated
+  // fields lining up. This makes it an alarm instead.
+  invariants.check("weakenBudgetNonNegative", ctx.weakenBudget.remaining >= 0, {
+    remaining: ctx.weakenBudget.remaining,
+    required: ctx.requiredWeaken,
+  })
+
+  // Tab throttling stretched "10s" ticks to 70-380s, silently multiplying
+  // every rate several-fold and tripping the degradation detector on an
+  // artifact. Bounds are wide because the point is to catch the 7-38x case.
+  const nominal = LOOP_SLEEP_MS / 1000
+  invariants.check("tickWithinBounds", ctx.interval >= nominal * 0.5 && ctx.interval <= nominal * 3, {
+    interval: ctx.interval,
+    nominal,
+  })
+
+  // The idle-network finding: utilization sat at 7% during weaken phases while
+  // the code believed it was saturating the pool. Only meaningful once there
+  // is a pool to speak of.
+  invariants.check("poolNotIdle", ctx.ramUtilization >= 0.5 || ctx.allocations.length === 0, {
+    ramUtilization: ctx.ramUtilization,
+    hosts: ctx.allocations.length,
+  })
+
+  // Threads deployed must fit the host that is running them. This is the
+  // inconsistent-RAM class: mcp once reported usedRam 3.5, freeRam 16 and
+  // maxRam 16 for the same host and had no way to see the contradiction.
+  for (const allocation of ctx.allocations) {
+    if (!allocation.actions || allocation.actions.length === 0) continue
+    let claimed = 0
+    for (const action of allocation.actions) {
+      const perThread =
+        action.script === "hack"
+          ? ctx.ramInfo.hackRam
+          : action.script === "grow"
+            ? ctx.ramInfo.growRam
+            : ctx.ramInfo.weakenRam
+      claimed += action.threads * perThread
+    }
+    if (
+      !invariants.check("threadsFitHost", claimed <= allocation.maxRam + SECURITY_EPSILON, {
+        host: allocation.host,
+        claimed,
+        maxRam: allocation.maxRam,
+        usedRam: allocation.usedRam,
+      })
+    ) {
+      // One report per tick is enough; the rest would be the same story.
+      break
+    }
+  }
+}
+
+/**
+ * The single field list.
+ *
+ * Both the tail line and the log line derive from the status object, so a
+ * field added to the status cannot be invisible to whichever channel is
+ * actually being read. Three hand-maintained lists is how `lowMoneySeconds`
+ * ended up in ns.print only, and how `switchEval` initially went into the JSON
+ * only — the same miss, twelve hours apart. Add fields to `status`; this
+ * function is the only place that decides how they render.
+ */
+function formatStatus(status) {
+  const parts = [
+    `mcp target=${status.target}`,
+    `plan=${status.plan}${status.weightBucket ? "/" + status.weightBucket : ""}`,
+    `held=${status.heldSeconds}s`,
+    `tick=${status.tickSeconds.toFixed(1)}s`,
+    `sec=${status.currentSecurity.toFixed(2)}`,
+    `moneyPct=${status.moneyPct.toFixed(4)}`,
+    `avgMoneyPct=${status.avgMoneyPct.toFixed(4)}`,
+    `moneySamples=${status.moneyPctSampleCount}/${status.moneyPctSampleTarget}`,
+    `needWeaken=${status.needWeaken}`,
+    `maxWeaken=${status.maxWeaken}`,
+    `ram=${(status.ramUtilization * 100).toFixed(0)}%`,
+    `hacked=${formatMoney(status.hacked)}`,
+    `rate=${formatMoney(status.rate)}/s`,
+    `avg=${formatMoney(status.avgRate)}/s`,
+    `income=${formatMoney(status.incomePerSec)}/s`,
+    `exp=${status.expPerSec.toFixed(1)}/s`,
+    `total=${formatMoney(status.totalHacked)}`,
+    `workers=${status.workers.length}`,
+    `hackTime=${status.hackTimeS.toFixed(1)}s`,
+    `growTime=${status.growTimeS.toFixed(1)}s`,
+    `weakenTime=${status.weakenTimeS.toFixed(1)}s`,
+    `hackChance=${(status.hackChance * 100).toFixed(1)}%`,
+    `playerMoney=${formatMoney(status.player.money)}`,
+    `hackLvl=${status.player.skills.hacking}`,
+    `run=${status.runId}`,
+    `ver=${status.scriptVersion}`,
+  ]
+  if (status.switchEval) {
+    parts.push(
+      `next=${status.switchEval.best || "-"}`,
+      `nextRatio=${status.switchEval.ratio.toFixed(2)}`,
+      `blockedBy=${status.switchEval.blockedBy || "none"}`
+    )
+  }
+  const violations = Object.keys(status.invariantViolations || {})
+  if (violations.length > 0) {
+    parts.push(`violations=${JSON.stringify(status.invariantViolations)}`)
+  }
+  return parts.join(" ")
+}
 
 function disableLogs(ns) {
   const logs = [
@@ -558,6 +889,19 @@ function saveTargetState(ns, skippedTargets, drainedTargets) {
 
 export async function main(ns) {
   disableLogs(ns)
+
+  // Stamp every status write and every event with which run and which code
+  // produced it. Without this, a log interleaving several revisions has to be
+  // dated by the *shape of its trailing fields*, which is archaeology.
+  const runId = Date.now().toString(36) + "-" + Math.floor(Math.random() * 1679616).toString(36)
+  const scriptVersion = hashSource(ns.read("mcp.js"))
+  const events = makeEventLog(ns, runId, scriptVersion)
+  const invariants = makeInvariants(ns, events)
+  // Holds the last raw config text so an unchanged file costs one 0GB read
+  // per tick and nothing else.
+  const configState = { lastRaw: null }
+  ns.tprint(`mcp: run=${runId} ver=${scriptVersion}`)
+
   cleanupOrphanedActionScripts(ns)
   const targetOverride = getTargetOverride(ns)
   if (targetOverride) {
@@ -594,7 +938,33 @@ export async function main(ns) {
   let lastWeightBucket = null
   let lastLogSignature = null
 
+  events.emit("startup", {
+    targetOverride: targetOverride || null,
+    restoredSkipped: skippedTargets.size,
+    restoredDrained: drainedTargets.size,
+    hackingLevel: ns.getHackingLevel(),
+  })
+
   while (true) {
+    const configUpdate = loadConfig(ns, configState)
+    if (configUpdate) {
+      if (configUpdate.error) {
+        ns.print(`mcp: ${CONFIG_FILE} is not valid JSON, keeping current values (${configUpdate.error})`)
+        invariants.check("configParses", false, { error: configUpdate.error })
+      } else {
+        ns.tprint(`mcp: config updated ${JSON.stringify(configUpdate.changes)}`)
+        events.emit("config_change", configUpdate)
+      }
+    }
+    // The one cross-tunable constraint worth enforcing: a drain threshold at
+    // or above the "empty" recovery tier marks a target drained partway into
+    // a recovery that is going exactly as intended, then starves it of the
+    // grow threads it needs to climb out.
+    invariants.check("drainBelowEmptyTier", DEGRADED_MONEY_PCT < 0.1, {
+      DEGRADED_MONEY_PCT,
+      emptyTier: 0.1,
+    })
+
     const servers = scanNetwork(ns)
     const workers = getWorkerHosts(ns, servers)
     const maxWeaken = getTotalWeakenCapacity(ns, workers)
@@ -623,6 +993,14 @@ export async function main(ns) {
       // make progress" within WEAKEN_STUCK_MS, which is the same underlying
       // problem with a sane grace window instead of none.
       if (!isHackableTarget(ns, currentTarget)) {
+        events.emit("target_drop", {
+          target: currentTarget,
+          reason: "unhackable",
+          hasRoot: ns.hasRootAccess(currentTarget),
+          requiredLevel: ns.getServerRequiredHackingLevel(currentTarget),
+          hackingLevel: ns.getHackingLevel(),
+          maxMoney: ns.getServerMaxMoney(currentTarget),
+        })
         skippedTargets.set(currentTarget, Date.now())
         currentTarget = null
         securityProgressTime = 0
@@ -644,6 +1022,17 @@ export async function main(ns) {
           ns.tprint(
             `mcp: target ${currentTarget} not weakening (sec=${currentSecurity.toFixed(2)} best=${bestSecuritySeen.toFixed(2)} need=${currentRequiredWeaken}); switching target`
           )
+          events.emit("target_drop", {
+            target: currentTarget,
+            reason: "stuck",
+            currentSecurity,
+            bestSecuritySeen,
+            progressThreshold: WEAKEN_STUCK_SECURITY_THRESHOLD,
+            stalledMs: Date.now() - securityProgressTime,
+            stuckAfterMs: WEAKEN_STUCK_MS,
+            requiredWeaken: currentRequiredWeaken,
+            maxWeaken,
+          })
           skippedTargets.set(currentTarget, Date.now())
           currentTarget = null
           securityProgressTime = 0
@@ -695,15 +1084,36 @@ export async function main(ns) {
           const alternatives = rankTargets(ns, servers, maxWeaken, skippedTargets, drainedTargets).filter(
             (c) => c.server !== currentTarget
           )
+          // Every value in the predicate that fired this, so a wrong theory
+          // dies on reading rather than three restarts later.
+          const predicate = {
+            target: currentTarget,
+            avgMoneyPct,
+            moneyPctSamples: moneyPctSamples.slice(),
+            sampleCount: moneyPctSamples.length,
+            sampleTarget: MONEY_PCT_SAMPLE_COUNT,
+            windowFull,
+            declining,
+            moneyDegraded,
+            degradedThreshold: DEGRADED_MONEY_PCT,
+            rateDropped,
+            rateSamples: rateSamples.slice(),
+            lastAvgRate,
+            rateDropFactor: RATE_DROP_FACTOR,
+            heldMs: Date.now() - lastSwitchTime,
+            alternatives: alternatives.length,
+          }
           if (alternatives.length === 0) {
             ns.print(
               `mcp: ${currentTarget} looks degraded (avgMoneyPct=${avgMoneyPct.toFixed(4)}) but is the only viable target; holding`
             )
+            events.emit("degraded_held", predicate)
             moneyPctSamples.length = 0
           } else {
             ns.tprint(
               `mcp: target ${currentTarget} yield degraded (avgMoneyPct=${avgMoneyPct.toFixed(4)} declining=${declining} rateDropped=${rateDropped}); moving on`
             )
+            events.emit("target_drop", Object.assign({ reason: "drained" }, predicate))
             drainedTargets.set(currentTarget, Date.now())
             currentTarget = null
             securityProgressTime = 0
@@ -778,6 +1188,7 @@ export async function main(ns) {
           ns.tprint(
             `mcp: ${best.server} (${formatMoney(best.score)}/s) outperforms ${idle ? "idle" : "current"} ${currentTarget} (${formatMoney(currentScore)}/s) by ${ratio.toFixed(1)}x after ${Math.floor(heldMs / 1000)}s; switching`
           )
+          events.emit("target_drop", Object.assign({ target: currentTarget, reason: "outbid" }, switchEval))
           currentTarget = null
           securityProgressTime = 0
           bestSecuritySeen = Infinity
@@ -805,6 +1216,18 @@ export async function main(ns) {
       rateSamples.length = 0
       lastAvgRate = null
       ns.tprint(`mcp: switching target to ${currentTarget} expectedIncome=${formatMoney(candidateExpectedIncome)}/s score=${formatMoney(candidateScore)}/s needWeaken=${requiredWeaken} availWeaken=${maxWeaken}`)
+      events.emit("target_adopt", {
+        target: currentTarget,
+        expectedIncome: candidateExpectedIncome,
+        score: candidateScore,
+        requiredWeaken,
+        maxWeaken,
+        moneyPct: ns.getServerMoneyAvailable(currentTarget) / ns.getServerMaxMoney(currentTarget),
+        security: ns.getServerSecurityLevel(currentTarget),
+        minSecurity: ns.getServerMinSecurityLevel(currentTarget),
+        skipped: skippedTargets.size,
+        drained: drainedTargets.size,
+      })
     }
 
     if (!currentTarget) {
@@ -819,6 +1242,17 @@ export async function main(ns) {
       ns.tprint(
         `mcp: no hackable target found (servers=${servers.length} hackable=${hackableCount} minRequiredWeaken=${minRequiredWeaken === Infinity ? "n/a" : minRequiredWeaken} maxWeaken=${maxWeaken} skipped=${skippedTargets.size} drained=${drainedTargets.size})`
       )
+      events.emit("stall", {
+        reason: "no_target",
+        servers: servers.length,
+        hackable: hackableCount,
+        minRequiredWeaken: minRequiredWeaken === Infinity ? null : minRequiredWeaken,
+        maxWeaken,
+        workers: workers.length,
+        skipped: skippedTargets.size,
+        drained: drainedTargets.size,
+        hackingLevel: ns.getHackingLevel(),
+      })
       // Release the network before idling. Leaving orphaned threads running
       // keeps every host saturated, which keeps weaken capacity at zero,
       // which keeps every candidate inadmissible — a stall with no exit.
@@ -829,6 +1263,8 @@ export async function main(ns) {
       continue
     }
 
+    const previousPlanType = lastPlanType
+    const previousWeightBucket = lastWeightBucket
     const plan = buildPlan(ns, currentTarget, lastPlanType === "work")
     lastPlanType = plan.type
     // Redeploy when moneyPct crosses into a different hack/grow weight tier,
@@ -836,6 +1272,31 @@ export async function main(ns) {
     // whatever split was deployed first just runs forever unchanged.
     const forceRebalance = plan.type === "work" && plan.weightBucket !== lastWeightBucket
     if (plan.type === "work") lastWeightBucket = plan.weightBucket
+
+    // Plan oscillation was previously noticed by eyeballing a wall of
+    // per-tick lines. As discrete events it is countable, and the hysteresis
+    // inputs travel with each flip so a thrash can be diagnosed from the
+    // record rather than reproduced.
+    if (previousPlanType !== null && previousPlanType !== plan.type) {
+      events.emit("plan_flip", {
+        target: currentTarget,
+        from: previousPlanType,
+        to: plan.type,
+        security: plan.currentSecurity,
+        securityCap: SECURITY_CAP,
+        workMargin: WORK_SECURITY_MARGIN,
+        moneyPct: plan.moneyPct,
+      })
+    }
+    if (plan.type === "work" && previousWeightBucket !== null && previousWeightBucket !== plan.weightBucket) {
+      events.emit("bucket_change", {
+        target: currentTarget,
+        from: previousWeightBucket,
+        to: plan.weightBucket,
+        moneyPct: plan.moneyPct,
+        moneyGoal: TARGET_MONEY_GOAL,
+      })
+    }
     const hackRam = ns.getScriptRam("/scripts/hack.js")
     const growRam = ns.getScriptRam("/scripts/grow.js")
     const weakenRam = ns.getScriptRam("/scripts/weaken.js")
@@ -878,40 +1339,104 @@ export async function main(ns) {
     const growTimeS = ns.getGrowTime(currentTarget) / 1000
     const weakenTimeS = ns.getWeakenTime(currentTarget) / 1000
     const hackChance = ns.hackAnalyzeChance(currentTarget)
-    ns.print(
-      `mcp target=${currentTarget} plan=${plan.type}${plan.weightBucket ? "/" + plan.weightBucket : ""} held=${heldSeconds}s tick=${interval.toFixed(1)}s sec=${plan.currentSecurity.toFixed(2)} moneyPct=${plan.moneyPct.toFixed(4)} avgMoneyPct=${avgMoneyPct.toFixed(4)} moneySamples=${moneyPctSamples.length}/${MONEY_PCT_SAMPLE_COUNT} needWeaken=${requiredWeaken} maxWeaken=${maxWeaken} hacked=${formatMoney(hacked)} rate=${formatMoney(rate)}/s avg=${formatMoney(avgRate)}/s total=${formatMoney(totalHacked)} workers=${workers.length} hackTime=${hackTimeS.toFixed(1)}s growTime=${growTimeS.toFixed(1)}s weakenTime=${weakenTimeS.toFixed(1)}s hackChance=${(hackChance * 100).toFixed(1)}%`
-    )
 
-    // Write structured status JSON (overwritten each loop) so the Bitburner File Sync extension can pull it
+    // Deployed action RAM over total worker RAM. A single number that made an
+    // audit-length finding (the network sitting 93% idle during weaken phases)
+    // into a glance. Read from the allocations, which re-read RAM after exec,
+    // so it describes one consistent moment.
+    let poolRam = 0
+    let poolUsed = 0
+    for (const allocation of allocations) {
+      poolRam += allocation.maxRam || 0
+      poolUsed += allocation.usedRam || 0
+    }
+    const ramUtilization = poolRam > 0 ? poolUsed / poolRam : 0
+
+    // Ground truth, rather than the money-decrease proxy `rate` computes.
+    // getTotalScriptIncome()[0] is $/s across all running scripts;
+    // getTotalScriptExpGain() is the XP rate, which matters because after an
+    // augmentation XP — not money — is the binding constraint.
+    const incomePair = ns.getTotalScriptIncome()
+    const incomePerSec = Array.isArray(incomePair) ? incomePair[0] : incomePair
+    const expPerSec = ns.getTotalScriptExpGain()
+
+    checkTickInvariants(invariants, {
+      interval,
+      ramUtilization,
+      weakenBudget,
+      requiredWeaken,
+      allocations,
+      ramInfo,
+    })
+
+    // Build the status object first, then derive every rendering from it.
+    const player = ns.getPlayer()
+    const status = {
+      ts: Date.now(),
+      runId: runId,
+      scriptVersion: scriptVersion,
+      player: {
+        money: player.money,
+        hp: player.hp,
+        skills: player.skills,
+      },
+      target: currentTarget,
+      plan: plan.type,
+      weightBucket: plan.weightBucket || null,
+      currentSecurity: plan.currentSecurity,
+      moneyPct: plan.moneyPct,
+      needWeaken: requiredWeaken,
+      maxWeaken: maxWeaken,
+      tickSeconds: interval,
+      hacked: hacked,
+      rate: rate,
+      avgRate: avgRate,
+      incomePerSec: incomePerSec,
+      expPerSec: expPerSec,
+      totalHacked: totalHacked,
+      ramUtilization: ramUtilization,
+      workers: allocations,
+      candidate: candidateTarget || null,
+      candidateScore: candidateScore || 0,
+      candidateExpectedIncome: candidateExpectedIncome || 0,
+      avgMoneyPct: avgMoneyPct,
+      moneyPctSampleCount: moneyPctSamples.length,
+      moneyPctSampleTarget: MONEY_PCT_SAMPLE_COUNT,
+      heldSeconds: heldSeconds,
+      hackTimeS: hackTimeS,
+      growTimeS: growTimeS,
+      weakenTimeS: weakenTimeS,
+      hackChance: hackChance,
+      switchEval: switchEval,
+      // The tunables actually in force, so a reader can confirm a config edit
+      // took effect rather than assuming it did.
+      config: {
+        SECURITY_CAP,
+        TARGET_MONEY_GOAL,
+        MIN_TARGET_HOLD_MS,
+        WORK_SECURITY_MARGIN,
+        RATE_DROP_FACTOR,
+        LOOP_SLEEP_MS,
+        RATE_SAMPLE_COUNT,
+        WEAKEN_STUCK_MS,
+        WEAKEN_STUCK_SECURITY_THRESHOLD,
+        SKIP_STUCK_MS,
+        DEGRADED_MONEY_PCT,
+        MONEY_PCT_SAMPLE_COUNT,
+        OPPORTUNITY_SWITCH_FACTOR,
+        MIN_TARGET_COMMIT_MS,
+        DEGRADED_SKIP_MS,
+      },
+      invariantViolations: invariants.counts,
+      // Last few transitions inline, so one file read gives both "now" and
+      // "how we got here" without cross-referencing a second file by hand.
+      recentEvents: events.recent,
+    }
+
+    const line = formatStatus(status)
+    ns.print(line)
+
     try {
-      const player = ns.getPlayer()
-      const status = {
-        ts: Date.now(),
-        player: {
-          money: player.money,
-          hp: player.hp,
-          skills: player.skills,
-        },
-        target: currentTarget,
-        plan: plan.type,
-        currentSecurity: plan.currentSecurity,
-        moneyPct: plan.moneyPct,
-        needWeaken: requiredWeaken,
-        maxWeaken: maxWeaken,
-        tickSeconds: interval,
-        hacked: hacked,
-        rate: rate,
-        avgRate: avgRate,
-        totalHacked: totalHacked,
-        workers: allocations,
-        candidate: candidateTarget || null,
-        candidateScore: candidateScore || 0,
-        candidateExpectedIncome: candidateExpectedIncome || 0,
-        avgMoneyPct: avgMoneyPct,
-        moneyPctSampleCount: moneyPctSamples.length,
-        heldSeconds: heldSeconds,
-        switchEval: switchEval,
-      }
       ns.write("mcp_status.json", JSON.stringify(status), "w")
 
       // Log only when something actually changed. Appending every tick grew
@@ -920,8 +1445,7 @@ export async function main(ns) {
       // buried the handful of transitions that actually explain behaviour.
       const signature = `${currentTarget}|${plan.type}|${plan.weightBucket || ""}`
       if (signature !== lastLogSignature) {
-        const line = `[${new Date(status.ts).toISOString()}] target=${status.target} plan=${status.plan}${plan.weightBucket ? "/" + plan.weightBucket : ""} needWeaken=${status.needWeaken} maxWeaken=${status.maxWeaken} tick=${interval.toFixed(1)}s rate=${formatMoney(status.rate)}/s workers=${status.workers.length} avgMoneyPct=${status.avgMoneyPct.toFixed(4)} playerMoney=${formatMoney(status.player.money)} hackLvl=${status.player.skills.hacking}\n`
-        ns.write("mcp_status_log.txt", line, "a")
+        ns.write("mcp_status_log.txt", `[${new Date(status.ts).toISOString()}] ${line}\n`, "a")
         lastLogSignature = signature
       }
     } catch (e) {

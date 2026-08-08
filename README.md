@@ -15,19 +15,22 @@ and writes, and how they fit together. The list below is just the short version.
 
 ## In-game workflow
 
-1. Start the manager:
+From a clean state (after `killall`, or an augmentation install, which wipes
+running scripts):
 
 ```bash
-run mcp.js
+run startup.js
 ```
 
-2. Start the tail helper for live UI log viewing:
+Brings up the whole suite in one shot — see
+[`docs/processes.md`](docs/processes.md#startupjs) for exactly what it
+starts and in what order. `mcp_supervisor.js` comes up first, so restarts and
+file inspection become remote-triggerable from then on; see
+[`docs/processes.md`](docs/processes.md#mcp_supervisorjs).
 
-```bash
-run mcp_status.js home 20
-```
-
-3. Use the BitBurner File Sync extension to sync `mcp_status.json` and `mcp_status_log.txt` back to this repo.
+Use the BitBurner File Sync extension's "Download Files Matching Pattern..."
+(pattern in [`docs/kensTodo.md`](docs/kensTodo.md)) to sync the generated
+status files back to this repo.
 
 ## Local workflow
 

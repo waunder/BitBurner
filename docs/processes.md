@@ -36,7 +36,12 @@ flowchart TB
     end
 
     subgraph life["Lifecycle"]
-        flag[(mcp_restart.txt)] --> sup[mcp_supervisor.js]
+        boot["startup.js<br/>(killall, then this)"] -->|ns.run, in order| sup[mcp_supervisor.js]
+        boot --> crawler
+        boot --> mcp
+        boot --> hud[mcp_hud.js]
+        boot --> stats
+        flag[(mcp_restart.txt)] --> sup
         sup --> restart[restart_mcp.js]
         restart -->|kill + relaunch| mcp
         dumpreq[(mcp_dump_request.txt)] --> sup
@@ -63,6 +68,12 @@ Three things are worth reading off that diagram:
   `ns.read()` directly — that only works from inside a running script. The
   supervisor's dump feature is the bridge: a local file write in, a rendered
   tail window out.
+- **`startup.js` is the only other thing that still needs a human.** Once
+  `mcp_supervisor.js` is up, restarts and dumps are remote-triggerable — but
+  nothing can remote-*launch* a script that isn't running yet, including the
+  supervisor itself. `killall` then `run startup.js` is the full recovery
+  procedure after anything that wipes running scripts (an augmentation
+  install, primarily).
 
 ---
 
@@ -437,6 +448,32 @@ download every time.
   position. If it virtualizes, a large dump would read back short over CDP
   despite rendering correctly on screen. Watch for this if a dump ever comes
   back truncated.
+
+### `startup.js`
+
+Brings up the whole suite from a clean slate in one command: `killall`, then
+`run startup.js`. Fire-and-forget — launches `mcp_supervisor.js`,
+`hacking/crawler.js`, `mcp.js`, `mcp_hud.js`, `get_stats.js` in that order via
+`ns.run`, then exits rather than staying resident, so its own footprint
+doesn't compete with what it just started.
+
+- **Start:** `run startup.js` — the one command besides the supervisor's own
+  bootstrap that still needs a human hand
+- **Cost:** 3.6GB while running (momentary) — 1.6GB baseline + `ns.scriptRunning`
+  (1.0GB) + `ns.run` (1.0GB)
+- Skips anything `ns.scriptRunning` already finds running rather than
+  launching a duplicate — checked *without* passing arguments, since the
+  function matches "any script with this filename," regardless of what it
+  was started with (confirmed against the game's own doc text, not assumed);
+  a live `mcp.js target=n00dles` still correctly reads as running. This
+  makes the script safe to re-run at any time, not only right after a
+  `killall`.
+- `mcp_supervisor.js` launches first deliberately: once it's up, restarts and
+  file dumps are remote-triggerable, so everything after it in the list is in
+  principle also recoverable without repeating this script.
+- Reports per-script outcome (`started (pid N)` / `already running,
+  skipping` / `FAILED — not enough RAM?`) plus a one-line summary count, so a
+  partial failure from insufficient home RAM is visible rather than silent.
 
 ---
 

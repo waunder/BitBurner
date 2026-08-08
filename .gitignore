@@ -19,5 +19,6 @@ node_modules/
 # VS Code workspace settings
 .vscode/
 
-# Out-of-game restart trigger (generated)
+# Out-of-game triggers (generated)
 mcp_restart.txt
+mcp_dump_request.txt

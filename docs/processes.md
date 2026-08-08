@@ -39,14 +39,17 @@ flowchart TB
         flag[(mcp_restart.txt)] --> sup[mcp_supervisor.js]
         sup --> restart[restart_mcp.js]
         restart -->|kill + relaunch| mcp
+        dumpreq[(mcp_dump_request.txt)] --> sup
+        sup -->|renders| dumptail[mcp_dump tail window]
     end
 
     subgraph out["Outside the game"]
         cdp["CDP watcher<br/>(scratchpad, session-scoped)"] -.->|reads the DOM| hud
+        cdp -.->|reads the DOM| dumptail
     end
 ```
 
-Two things are worth reading off that diagram:
+Three things are worth reading off that diagram:
 
 - **Nothing in `mcp.js` roots servers.** The worker pool only grows while
   `crawler.js` is running and you own the port-opener `.exe`s each server
@@ -55,6 +58,11 @@ Two things are worth reading off that diagram:
   reads it, the parser reads it, and the out-of-game watcher reads the HUD.
   Nothing downstream re-derives the numbers, so nothing downstream can
   disagree with the orchestrator about what is happening.
+- **CDP reads the DOM, not the filesystem.** It can see the HUD's curated
+  summary and now a full-file dump once rendered, but it can never call
+  `ns.read()` directly — that only works from inside a running script. The
+  supervisor's dump feature is the bridge: a local file write in, a rendered
+  tail window out.
 
 ---
 
@@ -385,20 +393,46 @@ state the old one is about to overwrite.
 
 ### `mcp_supervisor.js`
 
-Watches `mcp_restart.txt` and runs `restart_mcp.js` when its contents change.
-This is what makes a restart triggerable from outside the game: write a new
-token to the file, the sync extension pushes it in, the supervisor acts.
+Watches two files for requests from outside the game. Both use token
+comparison rather than deleting a flag, to keep RAM down: `ns.read` costs
+0GB and returns `""` for a missing file, so neither needs `ns.fileExists`
+(0.1GB) or `ns.rm` (1GB). Both seed from whatever is already on disk at
+startup, so restarting the supervisor doesn't immediately re-trigger on a
+stale token.
 
 - **Start:** `run mcp_supervisor.js` — **this one still needs a human, once**
-- **Protocol:** first line is the token, any further lines are passed to
-  `mcp.js` as arguments (so `target=n00dles` can be requested remotely)
-- **Cost:** ~2.6GB
+- **Cost:** ~2.6GB total. Every `ns.ui.*` call the dump feature uses is 0GB
+  (checked against the game's own cost table, not assumed), so the second
+  responsibility below added nothing to that figure.
 
-It compares tokens rather than deleting the flag, specifically to keep RAM
-down: `ns.read` costs 0GB and returns `""` for a missing file, so it needs
-neither `ns.fileExists` (0.1GB) nor `ns.rm` (1GB). It seeds from whatever is
-already on disk at startup, so restarting the supervisor doesn't immediately
-re-trigger on a stale token.
+**`mcp_restart.txt`** — runs `restart_mcp.js` when its contents change. First
+line is a token, any further lines are passed to `mcp.js` as arguments (so
+`target=n00dles` can be requested remotely).
+
+**`mcp_dump_request.txt`** — renders a file's full contents into a tail
+window titled `mcp_dump`, readable over CDP without a download. This exists
+because the CDP connection can only read what's already rendered on
+screen — the HUD deliberately shows a curated ~10-line summary, not full file
+contents, and nothing outside the game can call `ns.read()` directly, since
+that only works from inside a running script. Every deep-log finding this
+session (the bucket-hysteresis thrashing, the invalid-extension write
+failure) needed the actual file, which until this existed meant a manual
+download every time.
+
+- **Protocol:** line 1 a token/nonce (forces change-detection even when
+  re-requesting the same file), line 2 the filename, optional line 3 a line
+  count for non-JSON files
+- `.json` files are pretty-printed whole (with a raw fallback if the content
+  doesn't parse); everything else is tailed to the last N lines — default
+  150, hard-capped at 500 regardless of what's requested, since
+  `mcp_status_log.txt` has no size limit of its own and a request shouldn't
+  be able to try rendering an unbounded file into the browser tab
+- Open question, not yet confirmed either way: whether Bitburner virtualizes
+  a long tail window's rendering (only the scrolled-into-view lines actually
+  in the DOM) or keeps the full content present regardless of scroll
+  position. If it virtualizes, a large dump would read back short over CDP
+  despite rendering correctly on screen. Watch for this if a dump ever comes
+  back truncated.
 
 ---
 

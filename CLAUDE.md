@@ -64,6 +64,15 @@ reading).
   command, and its WebSocket port is occupied by the game. Getting in-game
   state onto disk requires Ken to click. Design telemetry accordingly:
   maximise information per click.
+- **A dropped sync session doesn't replay what it missed on reconnect.**
+  `startup.js` was created and committed while the session had silently
+  dropped (a known recurring issue — see the note above); reconnecting alone
+  did not push it, even after confirming the connection was back. The
+  watcher reacts to *new* filesystem events going forward, it doesn't diff
+  local against remote on reconnect. Fix: force a fresh event —
+  `touch <file>` from Claude's side (no content change needed) or a manual
+  save in the editor from Ken's — and it pushes normally. Worth checking for
+  after any reconnect if a file that should be new in-game isn't.
 
 ## Diagnosis discipline
 

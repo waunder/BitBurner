@@ -15,14 +15,14 @@ and writes, and how they fit together. The list below is just the short version.
 
 ## In-game workflow
 
-From a clean state (after `killall`, or an augmentation install, which wipes
-running scripts):
+Any time — after an augmentation install (which wipes running scripts), or
+whenever you want everything freshly running:
 
 ```bash
 run startup.js
 ```
 
-Brings up the whole suite in one shot — see
+Kills everything else on the host, then brings up the whole suite — see
 [`docs/processes.md`](docs/processes.md#startupjs) for exactly what it
 starts and in what order. `mcp_supervisor.js` comes up first, so restarts and
 file inspection become remote-triggerable from then on; see

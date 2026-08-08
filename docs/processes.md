@@ -36,7 +36,7 @@ flowchart TB
     end
 
     subgraph life["Lifecycle"]
-        boot["startup.js<br/>(killall, then this)"] -->|ns.run, in order| sup[mcp_supervisor.js]
+        boot["startup.js<br/>(killall, then relaunch)"] -->|ns.run, in order| sup[mcp_supervisor.js]
         boot --> crawler
         boot --> mcp
         boot --> hud[mcp_hud.js]
@@ -71,9 +71,9 @@ Three things are worth reading off that diagram:
 - **`startup.js` is the only other thing that still needs a human.** Once
   `mcp_supervisor.js` is up, restarts and dumps are remote-triggerable — but
   nothing can remote-*launch* a script that isn't running yet, including the
-  supervisor itself. `killall` then `run startup.js` is the full recovery
-  procedure after anything that wipes running scripts (an augmentation
-  install, primarily).
+  supervisor itself. `run startup.js` (it kills everything else itself first)
+  is the full recovery procedure after anything that wipes running scripts
+  (an augmentation install, primarily).
 
 ---
 
@@ -451,23 +451,30 @@ download every time.
 
 ### `startup.js`
 
-Brings up the whole suite from a clean slate in one command: `killall`, then
-`run startup.js`. Fire-and-forget — launches `mcp_supervisor.js`,
-`hacking/crawler.js`, `mcp.js`, `mcp_hud.js`, `get_stats.js` in that order via
-`ns.run`, then exits rather than staying resident, so its own footprint
-doesn't compete with what it just started.
+Brings up the whole suite from a clean slate in **one** command:
+`run startup.js`. Kills everything else on the host first, then launches
+`mcp_supervisor.js`, `hacking/crawler.js`, `mcp.js`, `mcp_hud.js`,
+`get_stats.js` in that order via `ns.run`, then exits rather than staying
+resident, so its own footprint doesn't compete with what it just started.
 
 - **Start:** `run startup.js` — the one command besides the supervisor's own
   bootstrap that still needs a human hand
-- **Cost:** 3.6GB while running (momentary) — 1.6GB baseline + `ns.scriptRunning`
-  (1.0GB) + `ns.run` (1.0GB)
-- Skips anything `ns.scriptRunning` already finds running rather than
-  launching a duplicate — checked *without* passing arguments, since the
-  function matches "any script with this filename," regardless of what it
-  was started with (confirmed against the game's own doc text, not assumed);
-  a live `mcp.js target=n00dles` still correctly reads as running. This
-  makes the script safe to re-run at any time, not only right after a
-  `killall`.
+- **Cost:** 4.1GB while running (momentary) — 1.6GB baseline + `ns.killall`
+  (0.5GB) + `ns.scriptRunning` (1.0GB) + `ns.run` (1.0GB)
+- **Calls `ns.killall(host)` first** — every other script on the host,
+  including anything unrelated to the mcp suite, since "clean and fresh" was
+  the explicit ask. Safe against killing itself: `safetyGuard` defaults to
+  `true`, documented as "skips the script that calls this function" and
+  confirmed against the actual implementation in the game's bundle (it
+  compares the target PID to the caller's and excludes a match), not just
+  the doc text.
+- Still checks `ns.scriptRunning` before each launch even though `killall`
+  already cleared the host — cheap, and belt-and-suspenders against an edge
+  case rather than the primary duplicate-prevention it was before `killall`
+  got folded in. Checked *without* passing arguments, since the function
+  matches "any script with this filename" regardless of what it was started
+  with (confirmed against the game's own doc text); a live
+  `mcp.js target=n00dles` still correctly reads as running.
 - `mcp_supervisor.js` launches first deliberately: once it's up, restarts and
   file dumps are remote-triggerable, so everything after it in the list is in
   principle also recoverable without repeating this script.

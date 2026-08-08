@@ -1,28 +1,35 @@
 /**
- * Brings up the whole mcp suite from a clean slate in one command: `killall`,
- * then `run startup.js`, and know every piece is either freshly running or
- * you've been told exactly which one failed and why.
+ * Brings up the whole mcp suite from a clean slate in one command: just
+ * `run startup.js`. Know every piece is either freshly running or you've
+ * been told exactly which one failed and why.
  *
- * Fire-and-forget — launches everything via ns.run and exits immediately
+ * Starts with ns.killall — every OTHER script on the host, including
+ * anything unrelated to the mcp suite, since "clean and fresh" was the
+ * explicit ask. safetyGuard defaults to true, which the game documents as
+ * "skips the script that calls this function" and the actual implementation
+ * confirms (checked against the game's bundle, not assumed: it compares the
+ * target PID against e.workerScript.pid and excludes a match) — so this
+ * cannot kill itself mid-run before it's relaunched everything.
+ *
+ * Fire-and-forget after that — launches everything via ns.run and exits
  * rather than staying resident, so its own RAM footprint doesn't compete
  * with what it just started.
  *
- * Skips anything already running rather than launching a second copy, which
- * makes this safe to re-run at any time, not only right after a killall.
- * mcp_hud.js, get_stats.js and mcp_supervisor.js already self-supersede on
- * their own if launched twice, but checking first avoids even briefly
- * running a redundant copy that immediately kills itself. It matters more
- * for hacking/crawler.js and mcp.js, which have no such logic and would
- * otherwise run as competing duplicates.
+ * Still checks ns.scriptRunning before each launch even though killall
+ * already cleared the host — cheap, and it's the belt-and-suspenders
+ * against any edge case (killall failing to report success, a future call
+ * site that skips the kill step) rather than the primary duplicate
+ * prevention it was before killall got folded in.
  *
  * mcp_supervisor.js is listed first deliberately: once it's up, restarts and
  * file dumps are remote-triggerable, so everything after it in this list is
  * (in principle) also recoverable without a repeat of this script.
  *
- * Cost: 3.6GB while running — 1.6GB baseline + ns.scriptRunning (1.0GB) +
- * ns.run (1.0GB), both read from the game's own cost table. Momentary only:
- * this needs that much free on top of whatever it's about to launch, but
- * only for the instant it takes to fire everything off, then it's gone.
+ * Cost: 4.1GB while running — 1.6GB baseline + ns.killall (0.5GB) +
+ * ns.scriptRunning (1.0GB) + ns.run (1.0GB), all four read from the game's
+ * own cost table. Momentary only: this needs that much free on top of
+ * whatever it's about to launch, but only for the instant it takes to fire
+ * everything off, then it's gone.
  *
  * @param {NS} ns
  */
@@ -31,6 +38,9 @@ const SCRIPTS = ["mcp_supervisor.js", "hacking/crawler.js", "mcp.js", "mcp_hud.j
 export async function main(ns) {
   ns.disableLog("ALL")
   const host = ns.getHostname()
+
+  ns.killall(host)
+  ns.tprint(`startup: killed everything else on ${host}`)
 
   let started = 0
   let skipped = 0

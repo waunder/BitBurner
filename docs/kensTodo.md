@@ -10,22 +10,17 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
-- [ ] **Restart `mcp_supervisor.js` once** to pick up the new file-dump
-  feature and self-supersede fix. `run mcp_supervisor.js` again is now safe
-  on its own (it kills any prior copy of itself first). Bitburner doesn't
-  hot-reload, and the supervisor is the thing that provides remote restarts
-  for everything else — it can't bootstrap itself, so this one genuinely
-  needs a human hand, same as its original launch.
-
-- [ ] **Try `startup.js` once, from a clean state, to confirm it actually
-  works end to end** — not yet run in the real game, only reasoned through
-  and RAM-verified against the game's own cost table. `killall` then
-  `run startup.js` should bring up `mcp_supervisor.js`, `hacking/crawler.js`,
-  `mcp.js`, `mcp_hud.js`, and `get_stats.js` in one shot, reporting which of
-  the five started, which were already running, and which failed (almost
-  certainly insufficient home RAM if so — it reports that explicitly rather
-  than failing silently). This is the "killall, start, know I'm clean"
-  workflow.
+- [ ] **Run `startup.js` once** — this single action now covers both of what
+  were two separate pending items: it kills the currently-running
+  `mcp_supervisor.js` (which is still on the pre-dump-feature code, since
+  Bitburner doesn't hot-reload) and launches a fresh copy from the current
+  file on disk, alongside `hacking/crawler.js`, `mcp.js`, `mcp_hud.js`, and
+  `get_stats.js`. **Not yet run in the real game** — reasoned through and
+  RAM-verified against the game's own cost table (including `ns.killall`'s
+  `safetyGuard` behavior, checked against the actual implementation, not
+  just the doc text), but unconfirmed end to end. It reports per-script
+  outcome, so a failure (almost certainly insufficient home RAM) will be
+  visible rather than silent.
 
 ## Done (kept for reference)
 

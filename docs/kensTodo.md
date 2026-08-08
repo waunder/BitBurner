@@ -10,19 +10,15 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
-- [ ] **Re-download once mcp has restarted with the `mcp_events.txt` fix.**
-  Ken correctly set the pattern to
-  `mcp_{status,status_log,target_state,events}.{json,txt,jsonl}` and it never
-  matched anything — not a pattern problem. The event file was named
-  `mcp_events.jsonl`, and Bitburner's `ns.write` only accepts `.txt`/`.json`/
-  `.css`/a script extension, so every write to it threw "File path should be
-  a text file or script" from the moment it shipped, caught silently by a
-  try/catch and printed only to a channel nobody reads. The file never
-  existed in the game. Fixed by renaming it to `mcp_events.txt` — the
-  pattern above already covers `.txt`, so **nothing about the pattern needs
-  to change**, just download again after the next restart.
+Nothing right now.
 
 ## Done (kept for reference)
+
+- [x] **`mcp_events.txt` downloading correctly.** Confirmed 2026-08-08: three
+  lines, valid JSON-lines, `startup` → `target_adopt` → `bucket_change`
+  (`low`→`empty` at moneyPct 0.0608 — below the 0.08 hysteresis floor, as
+  designed). The extension bug is fully closed; no pattern change was ever
+  needed.
 
 - [x] **Download pattern.** Confirmed set to
   `mcp_{status,status_log,target_state,events}.{json,txt,jsonl}` — correct

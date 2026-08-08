@@ -1,6 +1,10 @@
 # Generated Bitburner status files
 mcp_status.json
-mcp_status.log
+mcp_status_log.txt
+mcp_target_state.json
+
+# macOS
+.DS_Store
 
 # Python cache
 __pycache__/

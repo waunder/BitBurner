@@ -7,7 +7,7 @@ This workspace contains a BitBurner manager script plus helper status and parser
 - `mcp.js` - main manager script
 - `mcp_status.js` - BitBurner UI tail helper for `mcp.js`
 - `mcp_status.json` - generated runtime status file written by `mcp.js`
-- `mcp_status.log` - appended runtime summary log written by `mcp.js`
+- `mcp_status_log.txt` - appended runtime summary log written by `mcp.js`
 - `mcp_status_parser.py` - local Python script to parse `mcp_status.json`
 
 ## In-game workflow
@@ -24,7 +24,7 @@ run mcp.js
 run mcp_status.js home 20
 ```
 
-3. Use the BitBurner File Sync extension to sync `mcp_status.json` and `mcp_status.log` back to this repo.
+3. Use the BitBurner File Sync extension to sync `mcp_status.json` and `mcp_status_log.txt` back to this repo.
 
 ## Local workflow
 
@@ -40,5 +40,5 @@ That prints a summary of the latest manager status, including per-host allocatio
 ## Notes
 
 - `mcp.js` writes `mcp_status.json` every loop, overwriting the previous status.
-- `mcp_status.log` is appended each loop for historical review.
+- `mcp_status_log.txt` is appended each loop for historical review.
 - The parser is written in Python for local execution without Node.

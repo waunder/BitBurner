@@ -31,15 +31,31 @@ function get_all_servers(ns, all=false) {
 	return result
 }
 
-function get_action(ns, host) {
+function get_activity(ns, host) {
 	/*
-	Gets the first action in the list and returns it.
+	One ns.ps() call, both derivations: what's running (there can be several
+	actions at once, e.g. weaken + grow + hack) and what they're aimed at.
+	Reports every distinct target rather than just the first process's, so a
+	host mid-retarget doesn't silently misreport what it's actually doing.
 	*/
-	var actions = ns.ps(host)
-	if (actions.length == 0) {
-		return null
+	var procs = ns.ps(host)
+	if (procs.length == 0) {
+		return { action: "-", target: "-" }
 	}
-	return actions[0].filename.replace("scripts/", "").replace(".js", "")
+	var parts = []
+	var targets = []
+	for (var proc of procs) {
+		var name = proc.filename.replace("scripts/", "").replace(".js", "")
+		parts.push(`${name}:${proc.threads}`)
+		var target = proc.args.length > 0 ? String(proc.args[0]) : null
+		if (target && targets.indexOf(target) < 0) {
+			targets.push(target)
+		}
+	}
+	return {
+		action: parts.join("+"),
+		target: targets.length > 0 ? targets.join(",") : "-",
+	}
 }
 
 function pad_str(string, len) {
@@ -61,11 +77,12 @@ function get_server_data(ns, server) {
 	var securityLvl = ns.getServerSecurityLevel(server)
 	var securityMin = ns.getServerMinSecurityLevel(server)
 	var ram = ns.getServerMaxRam(server)
+	var activity = get_activity(ns, server)
 	return `${pad_str(server, 17)}`+
 			` money:${pad_str(parseInt(moneyAvailable), 12)}/${pad_str(parseInt(moneyMax), 12)}(${pad_str((moneyAvailable / moneyMax).toFixed(2), 4)})` +
 			` security:${pad_str(securityLvl.toFixed(2), 6)}(${pad_str(securityMin, 2)})` +
 			` RAM:${pad_str(parseInt(ram), 4)}` +
-			` Action:${pad_str(get_action(ns, server),7)}`
+			` Action:${activity.action} ${activity.target}`
 }
 
 function get_servers(ns) {
@@ -75,16 +92,52 @@ function get_servers(ns) {
 	return: list of servers
 	*/
 	if (ns.args.length >= 1) {
-		return ns.args
+		return ns.args.map(String)
 	} else {
 		return get_all_servers(ns, false)
 	}
 }
 
+// Width in pixels of Bitburner's left nav sidebar, so the tail box sits
+// beside it instead of underneath it. Adjust if it doesn't line up.
+const SIDEBAR_WIDTH = 233
+
 function openTail(ns) {
-	const tailHost = ns.args[1] || "home"
+	// This script always runs on the host it was launched from, so tail it
+	// there. Previously this read ns.args[1], which collided with get_servers()
+	// treating every arg as a server name: `run get_stats.js n00dles foodnstuff`
+	// tried to open the tail window on foodnstuff.
 	if (ns.ui && typeof ns.ui.openTail === "function") {
-		ns.ui.openTail("get_stats.js", tailHost)
+		ns.ui.openTail("get_stats.js", ns.getHostname(), ...ns.args)
+	}
+	if (ns.ui && typeof ns.ui.moveTail === "function") {
+		ns.ui.moveTail(SIDEBAR_WIDTH, 0)
+	}
+}
+
+// Extra buffer beyond the measured text size, to comfortably avoid word-wrap.
+const TAIL_PADDING_X = 60
+const TAIL_PADDING_Y = 40
+
+function resizeTailToFit(ns, lines) {
+	if (!ns.ui || typeof ns.ui.resizeTail !== "function" || typeof ns.ui.getStyles !== "function") {
+		return
+	}
+	var styles = ns.ui.getStyles()
+	var charWidth = styles.tailFontSize * 0.6
+	var lineHeight = styles.tailFontSize * styles.lineHeight
+
+	var maxLen = 0
+	for (var line of lines) {
+		if (line.length > maxLen) {
+			maxLen = line.length
+		}
+	}
+	var width = Math.max(150, Math.ceil(maxLen * charWidth) + TAIL_PADDING_X)
+	var height = Math.max(30, Math.ceil((lines.length + 1) * lineHeight) + TAIL_PADDING_Y)
+	ns.ui.resizeTail(width, height)
+	if (typeof ns.ui.renderTail === "function") {
+		ns.ui.renderTail()
 	}
 }
 
@@ -121,6 +174,7 @@ export async function main(ns) {
 		for (var item of stats) {
 			ns.print(item.line)
 		}
+		resizeTailToFit(ns, stats.map((item) => item.line))
 		await ns.sleep(5000)
 	}
 }

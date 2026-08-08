@@ -600,6 +600,10 @@ export async function main(ns) {
     const maxWeaken = getTotalWeakenCapacity(ns, workers)
     expireTargetExclusions(skippedTargets, drainedTargets)
 
+    // Filled by the opportunity-switch predicate below and surfaced in the
+    // status file. Null when there is no current target to compare against.
+    let switchEval = null
+
     if (targetOverride) {
       // Automatic selection/switching disabled — just keep working the
       // pinned target regardless of score, hold time, or stuck detection.
@@ -730,30 +734,56 @@ export async function main(ns) {
         const heldMs = Date.now() - lastSwitchTime
         const currentMoneyPct = ns.getServerMoneyAvailable(currentTarget) / ns.getServerMaxMoney(currentTarget)
         const idle = getWorkWeightBucket(currentMoneyPct) === "empty"
-        const committed = heldMs >= (idle ? MIN_TARGET_HOLD_MS : MIN_TARGET_COMMIT_MS)
+        const holdMs = idle ? MIN_TARGET_HOLD_MS : MIN_TARGET_COMMIT_MS
+        const committed = heldMs >= holdMs
 
-        if (committed) {
-          const ranked = rankTargets(ns, servers, maxWeaken, skippedTargets, drainedTargets)
-          const measure = idle
-            ? (server) => getTargetEffectiveScore(ns, server)
-            : (server) => getTargetScore(ns, server)
-          let best = null
-          for (const { server } of ranked) {
-            const score = measure(server)
-            if (!best || score > best.score) best = { server, score }
-          }
-          const currentScore = measure(currentTarget)
-          if (best && best.server !== currentTarget && best.score > currentScore * OPPORTUNITY_SWITCH_FACTOR) {
-            ns.tprint(
-              `mcp: ${best.server} (${formatMoney(best.score)}/s) outperforms ${idle ? "idle" : "current"} ${currentTarget} (${formatMoney(currentScore)}/s) by ${(best.score / Math.max(currentScore, 1e-9)).toFixed(1)}x after ${Math.floor(heldMs / 1000)}s; switching`
-            )
-            currentTarget = null
-            securityProgressTime = 0
-            bestSecuritySeen = Infinity
-            lastPlanType = null
-            lastWeightBucket = null
-            moneyPctSamples.length = 0
-          }
+        // Evaluate every tick, act only when committed. Previously the whole
+        // comparison was skipped while the hold timer ran, so "why is it still
+        // on this target?" had no recorded answer — and the two possible
+        // answers (losing on score / not held long enough) call for completely
+        // different responses. Recording both sides of the predicate is the
+        // rule from the process audit; the extra ranking pass is cheap next to
+        // the one chooseTarget already does each tick.
+        const ranked = rankTargets(ns, servers, maxWeaken, skippedTargets, drainedTargets)
+        const measure = idle
+          ? (server) => getTargetEffectiveScore(ns, server)
+          : (server) => getTargetScore(ns, server)
+        let best = null
+        for (const { server } of ranked) {
+          const score = measure(server)
+          if (!best || score > best.score) best = { server, score }
+        }
+        const currentScore = measure(currentTarget)
+        const ratio = best ? best.score / Math.max(currentScore, 1e-9) : 0
+        const outbid =
+          !!best && best.server !== currentTarget && best.score > currentScore * OPPORTUNITY_SWITCH_FACTOR
+
+        switchEval = {
+          basis: idle ? "effective" : "potential",
+          currentScore,
+          best: best ? best.server : null,
+          bestScore: best ? best.score : 0,
+          ratio,
+          factor: OPPORTUNITY_SWITCH_FACTOR,
+          heldSeconds: Math.floor(heldMs / 1000),
+          holdSeconds: Math.floor(holdMs / 1000),
+          committed,
+          outbid,
+          // What is actually preventing a switch right now, so the HUD can say
+          // so in one word instead of making it inferable from four numbers.
+          blockedBy: outbid ? (committed ? null : "hold") : "score",
+        }
+
+        if (committed && outbid) {
+          ns.tprint(
+            `mcp: ${best.server} (${formatMoney(best.score)}/s) outperforms ${idle ? "idle" : "current"} ${currentTarget} (${formatMoney(currentScore)}/s) by ${ratio.toFixed(1)}x after ${Math.floor(heldMs / 1000)}s; switching`
+          )
+          currentTarget = null
+          securityProgressTime = 0
+          bestSecuritySeen = Infinity
+          lastPlanType = null
+          lastWeightBucket = null
+          moneyPctSamples.length = 0
         }
       }
     }
@@ -879,6 +909,8 @@ export async function main(ns) {
         candidateExpectedIncome: candidateExpectedIncome || 0,
         avgMoneyPct: avgMoneyPct,
         moneyPctSampleCount: moneyPctSamples.length,
+        heldSeconds: heldSeconds,
+        switchEval: switchEval,
       }
       ns.write("mcp_status.json", JSON.stringify(status), "w")
 

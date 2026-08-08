@@ -138,8 +138,31 @@ function buildLines(ns, status) {
     row("wkn " + status.needWeaken + "/" + status.maxWeaken, "w" + threads.weaken + " g" + threads.grow + " h" + threads.hack),
     row("ram " + pct(ramUtilization(status)), (status.workers || []).length + " hosts"),
     row("lvl " + (status.player && status.player.skills ? status.player.skills.hacking : "-"), money(status.player ? status.player.money : 0)),
+    switchRow(status),
     row("tick " + (status.tickSeconds || 0).toFixed(1) + "s", "age " + ageS + "s"),
   ]
+}
+
+/**
+ * "Why is it still on this target?" — the question that came up over and over
+ * while debugging, whose answer was always computable and never written down.
+ *
+ * Three distinct states, and they call for different responses:
+ *   = <name>     nothing outranks the current target. Working as intended.
+ *   hold Ns      a better target exists but the commit timer is still running.
+ *   <name> N.Nx  a better target exists and it is not winning by enough.
+ * The last one is the interesting case: it means OPPORTUNITY_SWITCH_FACTOR is
+ * the thing standing between the bot and a richer server.
+ */
+function switchRow(status) {
+  const evaluation = status.switchEval
+  if (!evaluation) return row("next", status.target ? "-" : "choosing")
+  if (!evaluation.best || evaluation.best === status.target) return row("next", "= current")
+  if (evaluation.blockedBy === "hold") {
+    const left = Math.max(0, evaluation.holdSeconds - evaluation.heldSeconds)
+    return row("next " + evaluation.best, "hold " + left + "s")
+  }
+  return row("next " + evaluation.best, evaluation.ratio.toFixed(1) + "/" + evaluation.factor + "x")
 }
 
 function placeTail(ns, args, lines) {

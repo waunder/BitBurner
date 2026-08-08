@@ -291,11 +291,18 @@ function checkTickInvariants(invariants, ctx) {
   // Tab throttling stretched "10s" ticks to 70-380s, silently multiplying
   // every rate several-fold and tripping the degradation detector on an
   // artifact. Bounds are wide because the point is to catch the 7-38x case.
+  //
+  // Skipped on the first tick: lastTickTime is seeded just before the loop, so
+  // tick 0 measures only its own startup work and lands well under the floor.
+  // That fired on the very first run — a false positive baked into startup,
+  // and a persistent false alarm is worse than no alarm.
   const nominal = LOOP_SLEEP_MS / 1000
-  invariants.check("tickWithinBounds", ctx.interval >= nominal * 0.5 && ctx.interval <= nominal * 3, {
-    interval: ctx.interval,
-    nominal,
-  })
+  if (!ctx.firstTick) {
+    invariants.check("tickWithinBounds", ctx.interval >= nominal * 0.5 && ctx.interval <= nominal * 3, {
+      interval: ctx.interval,
+      nominal,
+    })
+  }
 
   // The idle-network finding: utilization sat at 7% during weaken phases while
   // the code believed it was saturating the pool. Only meaningful once there
@@ -927,6 +934,7 @@ export async function main(ns) {
   let securityProgressTime = 0
   let bestSecuritySeen = Infinity
   let lastTickTime = Date.now()
+  let tickIndex = 0
   const moneyPctSamples = []
   const rateSamples = []
   const { skippedTargets, drainedTargets } = loadTargetState(ns)
@@ -1367,7 +1375,9 @@ export async function main(ns) {
       requiredWeaken,
       allocations,
       ramInfo,
+      firstTick: tickIndex === 0,
     })
+    tickIndex += 1
 
     // Build the status object first, then derive every rendering from it.
     const player = ns.getPlayer()

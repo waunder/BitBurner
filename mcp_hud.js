@@ -154,10 +154,15 @@ function verdict(status, ageMs, drift, violations) {
 
 function violationSummary(status) {
   const counts = status.invariantViolations || {}
-  const names = Object.keys(counts)
   let total = 0
-  for (const name of names) total += counts[name]
-  return { total, worst: names.length ? names[0] : null }
+  let worst = null
+  for (const name of Object.keys(counts)) {
+    total += counts[name]
+    // Genuinely the highest count, not merely the first key inserted — with
+    // one line to spend, it should name the invariant failing hardest.
+    if (worst === null || counts[name] > counts[worst]) worst = name
+  }
+  return { total, worst }
 }
 
 function buildLines(ns, status) {

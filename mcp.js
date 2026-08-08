@@ -28,6 +28,12 @@ const SKIP_STUCK_MS = 60000
 // starve it of the grow threads it needs to ever climb back out.
 const DEGRADED_MONEY_PCT = 0.05
 const MONEY_PCT_SAMPLE_COUNT = 9
+// A target only gets abandoned for a better one when it is itself producing
+// nothing (still in the "empty" tier, so hack threads are off) AND the
+// alternative scores this many times higher. Deliberately steep: switching
+// throws away accumulated grow progress, so it must clear a wide bar rather
+// than chase small differences and thrash.
+const OPPORTUNITY_SWITCH_FACTOR = 3
 // How long a drained target is deprioritized before it's eligible again —
 // long enough to make real progress on other (harder) targets first.
 const DEGRADED_SKIP_MS = 900000
@@ -107,6 +113,30 @@ function getTargetScore(ns, server) {
   return (maxMoney * ns.hackAnalyze(server) * ns.hackAnalyzeChance(server)) / hackTime
 }
 
+// An empty server is still worth adopting if its ceiling is high enough to
+// justify the (long) grow-up, so readiness is floored rather than zeroed —
+// otherwise a rich-but-drained server could never be chosen at all.
+const READINESS_FLOOR = 0.05
+
+// Potential income rate discounted by how ready the server actually is right
+// now. Selection previously ranked purely on required hacking level, which
+// ignored current money entirely: on restart it abandoned a target sitting at
+// 65% money earning ~$4.6M/s to grind one at 0.6% earning nothing, and then
+// (correctly, per the recovery rules) refused to reconsider while that one
+// slowly climbed.
+//
+// Hacking level is deliberately no longer a sort key. isHackableTarget already
+// excludes anything above the player's level, and getTargetScore divides by
+// hackTime — so "easier servers cycle faster" is already priced in, and having
+// it as a *primary* key let it override the money signal completely.
+function getTargetEffectiveScore(ns, server) {
+  const potential = getTargetScore(ns, server)
+  if (potential <= 0) return 0
+  const maxMoney = ns.getServerMaxMoney(server)
+  const readiness = Math.max(ns.getServerMoneyAvailable(server) / maxMoney, READINESS_FLOOR)
+  return potential * readiness
+}
+
 // Security readings accumulate floating-point noise over many hack/grow/weaken
 // calls, so a target sitting exactly at its floor can read as e.g.
 // 9.000000000000002 instead of 9. Ignore deltas below this before rounding up
@@ -170,15 +200,14 @@ function expireTargetExclusions(skippedTargets, drainedTargets) {
 }
 
 /**
- * Picks the easiest viable target (lowest required hacking level) rather
- * than the richest, breaking ties by money/income score. The idea is to
- * work up through servers in difficulty order rather than jumping straight
- * to the biggest one, which tends to have painfully long hack/grow/weaken
- * times relative to current hacking level.
+ * Ranks viable targets by income rate discounted for current readiness, so a
+ * server that is already grown and immediately productive beats an equally
+ * capable one that would need many minutes of grow first.
  * @param {Map<string, number>} skippedTargets
  * @param {Map<string, number>} drainedTargets
+ * @returns {{server: string, score: number}[]} ranked best-first
  */
-function chooseTarget(ns, servers, maxWeaken, skippedTargets, drainedTargets) {
+function rankTargets(ns, servers, maxWeaken, skippedTargets, drainedTargets) {
   const candidates = []
 
   for (const server of servers) {
@@ -188,13 +217,16 @@ function chooseTarget(ns, servers, maxWeaken, skippedTargets, drainedTargets) {
     const requiredWeaken = getTargetWeakenThreads(ns, server)
     if (requiredWeaken > maxWeaken) continue
 
-    const requiredHackingLevel = ns.getServerRequiredHackingLevel(server)
-    const score = getTargetScore(ns, server)
-    candidates.push({ server, requiredHackingLevel, score })
+    candidates.push({ server, score: getTargetEffectiveScore(ns, server) })
   }
 
-  candidates.sort((a, b) => a.requiredHackingLevel - b.requiredHackingLevel || b.score - a.score)
-  return candidates.length > 0 ? candidates[0].server : null
+  candidates.sort((a, b) => b.score - a.score)
+  return candidates
+}
+
+function chooseTarget(ns, servers, maxWeaken, skippedTargets, drainedTargets) {
+  const ranked = rankTargets(ns, servers, maxWeaken, skippedTargets, drainedTargets)
+  return ranked.length > 0 ? ranked[0].server : null
 }
 
 function getHostFreeRam(ns, host) {
@@ -639,11 +671,36 @@ export async function main(ns) {
           moneyPctSamples.length = 0
         }
       }
+
+      // Opportunity switch: adoption alone only happens when currentTarget is
+      // null, so without this the bot will grind an unproductive target for as
+      // long as it keeps inching upward (it isn't "degraded" — it's improving)
+      // while a fully grown, immediately productive server sits idle.
+      // Restricted to targets that are themselves producing nothing, so a
+      // working target is never interrupted mid-earn.
+      if (currentTarget && Date.now() - lastSwitchTime >= MIN_TARGET_HOLD_MS) {
+        const currentMoneyPct = ns.getServerMoneyAvailable(currentTarget) / ns.getServerMaxMoney(currentTarget)
+        if (getWorkWeightBucket(currentMoneyPct) === "empty") {
+          const best = rankTargets(ns, servers, maxWeaken, skippedTargets, drainedTargets)[0]
+          const currentEffective = getTargetEffectiveScore(ns, currentTarget)
+          if (best && best.server !== currentTarget && best.score > currentEffective * OPPORTUNITY_SWITCH_FACTOR) {
+            ns.tprint(
+              `mcp: ${best.server} (score=${formatMoney(best.score)}/s) far outperforms idle ${currentTarget} (${formatMoney(currentEffective)}/s); switching`
+            )
+            currentTarget = null
+            securityProgressTime = 0
+            bestSecuritySeen = Infinity
+            lastPlanType = null
+            lastWeightBucket = null
+            moneyPctSamples.length = 0
+          }
+        }
+      }
     }
 
     const candidateTarget = chooseTarget(ns, servers, maxWeaken, skippedTargets, drainedTargets)
     const candidateExpectedIncome = candidateTarget ? getTargetExpectedIncome(ns, candidateTarget) : 0
-    const candidateScore = candidateTarget ? getTargetScore(ns, candidateTarget) : 0
+    const candidateScore = candidateTarget ? getTargetEffectiveScore(ns, candidateTarget) : 0
 
     if (!targetOverride && !currentTarget && candidateTarget) {
       const requiredWeaken = getTargetWeakenThreads(ns, candidateTarget)

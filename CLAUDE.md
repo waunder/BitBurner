@@ -2,13 +2,16 @@
 
 Operational notes for Claude. Deliberately short; process weight here should
 match a solo hobby project. See `README.md` for the workflow, and in `docs/`:
-`processes.md` for what every script does and how they connect, and the audit
+`processes.md` for what every script does and how they connect,
+`kensTodo.md` for actions that need Ken's hand specifically, and the audit
 reports for why the current design is what it is.
 
-**Keep `docs/processes.md` current.** If a script gains an argument, a file it
-reads or writes, or a failure mode, update it in the same commit. Ken asked
-for that map explicitly; a stale one is worse than none, because it gets
-trusted.
+**Keep `docs/processes.md` and `docs/kensTodo.md` current.** If a script
+gains an argument, a file it reads or writes, or a failure mode, update
+`processes.md` in the same commit. The moment something needs Ken's hand —
+a download, an in-game click, anything Claude structurally cannot do — add
+it to `kensTodo.md` right then, and check it off once confirmed done rather
+than assuming. A stale doc is worse than none, because it gets trusted.
 
 ## What this is
 

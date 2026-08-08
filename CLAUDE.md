@@ -1,8 +1,14 @@
 # BitBurner — Working Guide
 
 Operational notes for Claude. Deliberately short; process weight here should
-match a solo hobby project. See `README.md` for the workflow and `docs/` for
-the audit reports that produced most of the current design.
+match a solo hobby project. See `README.md` for the workflow, and in `docs/`:
+`processes.md` for what every script does and how they connect, and the audit
+reports for why the current design is what it is.
+
+**Keep `docs/processes.md` current.** If a script gains an argument, a file it
+reads or writes, or a failure mode, update it in the same commit. Ken asked
+for that map explicitly; a stale one is worse than none, because it gets
+trusted.
 
 ## What this is
 

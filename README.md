@@ -2,6 +2,9 @@
 
 This workspace contains a BitBurner manager script plus helper status and parser tools.
 
+**See [`docs/processes.md`](docs/processes.md)** for what every script does, what it reads
+and writes, and how they fit together. The list below is just the short version.
+
 ## Files
 
 - `mcp.js` - main manager script

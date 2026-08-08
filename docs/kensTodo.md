@@ -10,7 +10,13 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
-Nothing right now.
+- [ ] **Restart `mcp_supervisor.js` once** to pick up the new file-dump
+  feature (`run mcp_supervisor.js` again — it supersedes nothing on its own,
+  so kill the old one first if `ps` still shows it, or just `run` it and
+  check `ps` after). Bitburner doesn't hot-reload, and the supervisor is the
+  thing that provides remote restarts for everything else — it can't
+  bootstrap itself, so this one genuinely needs a human hand, same as its
+  original launch.
 
 ## Done (kept for reference)
 

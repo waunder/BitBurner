@@ -23,9 +23,11 @@
  * handshake, specifically to keep RAM down: ns.read costs 0GB and returns ""
  * for a missing file, so neither needs ns.fileExists (0.1GB) or ns.rm
  * (1GB). Every ns.ui.* call used for rendering the dump is also 0GB
- * (confirmed against the game's own cost table, not assumed) — so the
- * second responsibility added essentially nothing to this script's RAM
- * footprint. Total stays the 1.6GB script baseline plus ns.run's cost.
+ * (confirmed against the game's own cost table, not assumed).
+ *
+ * Total: 1.6GB script baseline + ns.run (1.0GB) + ns.ps (0.2GB) + ns.kill
+ * (0.5GB, for self-supersede below) = 3.3GB. All four figures read directly
+ * from the game's cost table, not estimated.
  *
  * @param {NS} ns
  */
@@ -142,8 +144,29 @@ function handleDumpRequest(ns, contents) {
   showDump(ns, formatDump(ns, filename, requestedLines))
 }
 
+/**
+ * Bitburner gives every running script its own process, so re-running this
+ * to pick up new code (it doesn't hot-reload) would otherwise leave the old
+ * copy running too — both watching the same trigger files, racing each
+ * other on restart requests and dump renders. Same trap that hit
+ * get_stats.js (three stray copies) and mcp_hud.js (two) earlier this
+ * session; fixed here before it could happen a third time.
+ *
+ * ns.ps reports filenames without a leading slash — the same normalization
+ * killActionScripts in mcp.js needed.
+ */
+function killPriorInstances(ns) {
+  const self = ns.pid
+  const me = "mcp_supervisor.js"
+  for (const proc of ns.ps(ns.getHostname())) {
+    const name = proc.filename.startsWith("/") ? proc.filename.slice(1) : proc.filename
+    if (name === me && proc.pid !== self) ns.kill(proc.pid)
+  }
+}
+
 export async function main(ns) {
   ns.disableLog("ALL")
+  killPriorInstances(ns)
   // Seed both from whatever is already on disk so a supervisor restart
   // doesn't immediately re-trigger on a stale token.
   let lastRestartToken = ns.read(RESTART_FILE)

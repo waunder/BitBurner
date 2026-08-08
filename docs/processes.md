@@ -401,9 +401,13 @@ startup, so restarting the supervisor doesn't immediately re-trigger on a
 stale token.
 
 - **Start:** `run mcp_supervisor.js` — **this one still needs a human, once**
-- **Cost:** ~2.6GB total. Every `ns.ui.*` call the dump feature uses is 0GB
-  (checked against the game's own cost table, not assumed), so the second
-  responsibility below added nothing to that figure.
+  (and again after any update to this script — Bitburner doesn't hot-reload,
+  and the supervisor can't remote-restart itself; it self-supersedes on
+  re-run so a second `run` cleanly replaces the first rather than stacking)
+- **Cost:** 3.3GB — 1.6GB baseline + `ns.run` (1.0GB) + `ns.ps` (0.2GB) +
+  `ns.kill` (0.5GB, for self-supersede). Every `ns.ui.*` call the dump
+  feature uses is 0GB (checked against the game's own cost table, not
+  assumed), so rendering itself added nothing to that figure.
 
 **`mcp_restart.txt`** — runs `restart_mcp.js` when its contents change. First
 line is a token, any further lines are passed to `mcp.js` as arguments (so

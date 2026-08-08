@@ -22,12 +22,17 @@ reading).
   version it started with. Edits require a restart (`run restart_mcp.js`).
   This burned a full hour once — fixes appeared not to work because the old
   process was still running.
-- **File sync is bidirectional and asymmetric.** "Bitburner: Sync All Files"
-  (local → game) is safe. **"Download Files from Server" (game → local)
-  overwrites local edits without warning** and has destroyed work here. Keep
-  the tree committed so a bad pull costs a `git checkout`.
-- **`autoSync` fires on editor save**, so edits written by tooling outside the
-  VS Code editor may never reach the game. Use the explicit sync command.
+- **File sync auto-pushes, but a download reverses and re-affirms it.** The
+  extension watches the filesystem (not just editor saves), so edits written
+  by tooling *do* auto-push — but only while the server is running and the
+  game is connected. **"Download Files from Server" overwrites local source
+  with the game's copies, and the watcher then pushes those straight back**,
+  making the stale version authoritative on both sides. Observed 2026-08-08:
+  `Downloaded: mcp.js` immediately followed by `Pushed: /mcp.js`.
+  - Use **"Download Files Matching Pattern..."** with `mcp_status*` to pull
+    only game-generated telemetry. Never bulk-download source.
+  - Keep the tree committed regardless, so a bad pull costs a `git checkout`
+    (and the restore itself auto-pushes the correct version back).
 - **Claude cannot trigger the download.** No CLI or API for the extension
   command, and its WebSocket port is occupied by the game. Getting in-game
   state onto disk requires Ken to click. Design telemetry accordingly:
@@ -71,5 +76,11 @@ lives inside the save file, so it must not grow without bound.
 highest-value unimplemented items, in order: hot-reloaded `mcp_config.json`
 (lets tunables change without a restart, and without wiping history), an
 event log with predicate inputs, and in-game invariant assertions via
-`ns.toast`. Also standing: nothing in this repo acquires root, so the worker
-and target pool only grows by manual nuking.
+`ns.toast`.
+
+Rooting is handled by `hacking/crawler.js` → `hacking/worm.js` (not by
+`mcp.js`), so the worker pool only grows while the crawler is running and
+you own enough port-opener `.exe`s for each server's requirement. Known bug:
+`crawler.js` does `Array(servers)` where it means `Array.from(servers)`, so
+`serv_set` nests the seed list one level down and home's immediate
+neighbours get re-queued on rediscovery. Wasteful, not fatal.

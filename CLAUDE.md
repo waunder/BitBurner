@@ -29,8 +29,15 @@ reading).
   with the game's copies, and the watcher then pushes those straight back**,
   making the stale version authoritative on both sides. Observed 2026-08-08:
   `Downloaded: mcp.js` immediately followed by `Pushed: /mcp.js`.
-  - Use **"Download Files Matching Pattern..."** with `mcp_status*` to pull
-    only game-generated telemetry. Never bulk-download source.
+  - Use **"Download Files Matching Pattern..."** with exactly
+    `mcp_*.{json,txt}` — pulls only the three telemetry files. Never
+    bulk-download source. The extension remembers the last pattern, so it
+    pre-fills after the first use.
+  - It is **one** minimatch pattern, not a list: `**/*.txt **/*.json`
+    silently matches zero files. Use brace expansion instead. Patterns are
+    matched against names without a leading slash (`mcp_status.json`,
+    `scripts/hack.js`). Avoid `mcp_status*` — it also catches the
+    `mcp_status.js` *source* file.
   - Keep the tree committed regardless, so a bad pull costs a `git checkout`
     (and the restore itself auto-pushes the correct version back).
 - **Claude cannot trigger the download.** No CLI or API for the extension

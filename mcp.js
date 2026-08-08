@@ -747,8 +747,16 @@ function allocateThreads(ns, host, target, plan, ramInfo, forceRebalance, weaken
       allocation.actions.push({ script, threads: proc.threads })
       // Threads left running still count against the shared budget — not
       // charging for them re-spent the whole budget on every host each tick,
-      // deploying several times the weaken actually needed.
-      if (script === "weaken") weakenBudget.remaining -= proc.threads
+      // deploying several times the weaken actually needed. Only meaningful
+      // during a "weaken" plan, which is the only place anything is actually
+      // drawn from this budget (maintenance weaken during "work" is computed
+      // independently via weakenThreadsToOffset). Charging it unconditionally
+      // drove it negative on every tick a host kept its maintenance weaken
+      // threads running — a real accounting bug the weakenBudgetNonNegative
+      // invariant caught on the first live run, harmless only because nothing
+      // had read `remaining` outside a weaken plan before that invariant
+      // existed.
+      if (script === "weaken" && plan.type === "weaken") weakenBudget.remaining -= proc.threads
     }
     return allocation
   }

@@ -102,6 +102,30 @@ function get_servers(ns) {
 // beside it instead of underneath it. Adjust if it doesn't line up.
 const SIDEBAR_WIDTH = 233
 
+// Bitburner renders ANSI escapes in tail windows. White separates our panels
+// from the game's green. Basic codes only — this build has no 256-colour
+// support, so \u001b[38;5;15m would render as literal text.
+const WHITE = "\u001b[37m"
+const RESET = "\u001b[0m"
+
+/**
+ * Bitburner gives every running script its own tail window, so re-running this
+ * to change the server list or reposition it leaves the old window behind.
+ * Three copies had accumulated before this existed. Kill any earlier copy.
+ *
+ * ns.ps reports filenames without a leading slash — the same trap that made
+ * killActionScripts in mcp.js silently match nothing for hours.
+ */
+function killPriorInstances(ns) {
+	var self = ns.pid
+	for (var proc of ns.ps(ns.getHostname())) {
+		var name = proc.filename.charAt(0) === "/" ? proc.filename.slice(1) : proc.filename
+		if (name === "get_stats.js" && proc.pid !== self) {
+			ns.kill(proc.pid)
+		}
+	}
+}
+
 function openTail(ns) {
 	// This script always runs on the host it was launched from, so tail it
 	// there. Previously this read ns.args[1], which collided with get_servers()
@@ -158,6 +182,7 @@ function disableLogs(ns) {
 
 export async function main(ns) {
 	disableLogs(ns)
+	killPriorInstances(ns)
 	openTail(ns)
 
 	while (true) {
@@ -172,7 +197,7 @@ export async function main(ns) {
 		}
 		stats.sort((a, b) => a.maxMoney - b.maxMoney)
 		for (var item of stats) {
-			ns.print(item.line)
+			ns.print(WHITE + item.line + RESET)
 		}
 		resizeTailToFit(ns, stats.map((item) => item.line))
 		await ns.sleep(5000)

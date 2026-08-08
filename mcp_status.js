@@ -1,3 +1,9 @@
+// Bitburner renders ANSI escapes in tail windows. White separates our panels
+// from the game's green. Basic codes only — no 256-colour support on this
+// build.
+const WHITE = "[37m"
+const RESET = "[0m"
+
 /** @param {NS} ns */
 export async function main(ns) {
   const script = "mcp.js"
@@ -19,7 +25,7 @@ export async function main(ns) {
     } else {
       const tail = logs.slice(-tailLines)
       for (const line of tail) {
-        ns.print(line)
+        ns.print(WHITE + line + RESET)
       }
     }
     await ns.sleep(1000)

@@ -22,6 +22,13 @@
 const STATUS_FILE = "mcp_status.json"
 const POLL_MS = 2000
 
+// Bitburner renders ANSI escapes in tail windows (its own ns.print docs
+// demonstrate it). White separates our panels from the game's green at a
+// glance. Basic codes only — this build has no 256-colour support, so
+// \u001b[38;5;15m would render as literal text.
+const WHITE = "\u001b[37m"
+const RESET = "\u001b[0m"
+
 // A status file older than this means mcp.js is wedged or dead. Its own loop
 // sleeps 10s, and ticks have been observed stretching past 60s, so this is
 // generous on purpose: the point is to catch "stopped", not "slow".
@@ -226,7 +233,7 @@ export async function main(ns) {
     const lines = buildLines(ns, status)
 
     ns.clearLog()
-    for (const line of lines) ns.print(line)
+    for (const line of lines) ns.print(WHITE + line + RESET)
 
     // Placed once rather than every tick: repositioning on a loop makes the
     // window impossible to drag somewhere else.

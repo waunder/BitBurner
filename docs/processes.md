@@ -401,7 +401,7 @@ orchestrator-disagreement risk to design around).
 
 ```
 +------------------------------+
-|money sources    since install|
+|since last aug                |
 |total                    3.06b|
 |hacking                  4.20b|
 |hacknet_expenses         -890m|

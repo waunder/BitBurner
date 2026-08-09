@@ -92,7 +92,10 @@ function buildLines(ns, pos) {
     .map((key) => ({ key, value: since[key] }))
     .sort((a, b) => Math.abs(b.value) - Math.abs(a.value))
 
-  const lines = [row("money sources", "since install"), row("total", money(since.total || 0))]
+  // "since install" was genuinely ambiguous — reads easily as "since the
+  // game was installed" (i.e. ever) rather than its actual meaning, "since
+  // your last augmentation install". Spelled out to remove the ambiguity.
+  const lines = [row("since last aug", ""), row("total", money(since.total || 0))]
   if (entries.length === 0) {
     lines.push(row("(nothing yet)", ""))
   } else {

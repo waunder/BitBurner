@@ -24,17 +24,11 @@ Ken's hand, and check it off once it's confirmed done — same rule as
   without a tail window. (If it turns out this has already been run, the
   output is what's needed — the result matters more than a fresh run.)
 
-- [ ] **Re-run `mcp_stocks.js`** — the first run (2026-08-09) crashed with a
-  runtime error: the watchlist section checked the wrong 4S access flag
-  (`has4SData` instead of `has4SDataTixApi`, two genuinely separate
-  purchases) and threw calling `getForecast`, which also hid your position
-  from that run since the crash discarded the whole panel's output before
-  it reached the terminal. Fixed — `run mcp_stocks.js` again (optional
-  `x= y= w= h=`, same as the other panels) and it should now show
-  `wse/tix yes/yes`, `4S tix locked`, and your actual position under
-  `positions`/`long value` rather than erroring out.
-
 ## Done (kept for reference)
+
+- [x] **Re-run `mcp_stocks.js`.** Confirmed live via CDP 2026-08-09: running
+  as PID 371 alongside the rest of the suite, no crash in the terminal
+  scrollback — the `has4SDataTixApi` fix held.
 
 - [x] **Run `startup.js` once.** Confirmed 2026-08-09 — Ken ran it
   post-augmentation-install ("augments installed. restart run."); HUD

@@ -10,21 +10,21 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
-- [ ] **Run `dnet_probe.js` from `home`** — the darknet work is entirely
-  blocked on this one click. It is ~2.3GB, already committed and
-  syntax-checked, and it mutates almost nothing: it probes, prints each
-  neighbour's details, and attempts exactly one `authenticate("darkweb", "")`.
-  Everything in `docs/darknet-{functions,tactics,strategy}.md` is derived from
-  reading the game's bundled source rather than from play, and this run is the
-  cheapest possible test of whether that reading is trustworthy. **If
-  `authenticate("darkweb","")` succeeds, the method is validated and
-  `dnet_deploy.js --once` is the next step. If it fails, stop and say so —
-  do not run the deployer**, because it would mean the model rules are misread.
-  Output goes to the terminal via `ns.tprint`, so it's readable over CDP
-  without a tail window. (If it turns out this has already been run, the
-  output is what's needed — the result matters more than a fresh run.)
+- [ ] **Run `dnet_deploy.js --once` from `home`** — `dnet_probe.js` (below)
+  validated the model reading, so this is the next step: the roaming
+  self-replicating deployer, single pass. ~4.6GB. See
+  `docs/darknet-strategy.md` for what it does; report back what it finds
+  (hosts cracked, credentials gathered) so `docs/darknet-*.md` can be
+  checked against real results rather than just the source reading.
 
 ## Done (kept for reference)
+
+- [x] **Run `dnet_probe.js` from `home`.** Confirmed 2026-08-09: 1 darknet
+  server visible (`darkweb`, model `ZeroLogon`, online/connected/session all
+  true), and `authenticate("darkweb", "")` returned `success=true`. **The
+  model-reading method is validated** — `docs/darknet-{functions,tactics,strategy}.md`,
+  derived from reading the game's bundled source rather than from play, held
+  up against a real attempt. `dnet_deploy.js --once` is next.
 
 - [x] **Re-run `mcp_stocks.js`.** Confirmed live via CDP 2026-08-09: running
   as PID 371 alongside the rest of the suite, no crash in the terminal

@@ -31,9 +31,15 @@ const WHITE = "\u001b[37m"
 const RESET = "\u001b[0m"
 
 // A status file older than this means mcp.js is wedged or dead. Its own loop
-// sleeps 10s, and ticks have been observed stretching past 60s, so this is
-// generous on purpose: the point is to catch "stopped", not "slow".
-const STALE_MS = 90000
+// sleeps 10s, but ticks have been observed to genuinely, consistently
+// stretch far past that — 90s was set assuming that was rare; live
+// observation over ~80 minutes on 2026-08-09 showed ticks landing in the
+// 90-270s range as an ongoing baseline (not sporadic spikes), which sat
+// right at this threshold and made the verdict flip STALE almost every real
+// tick. Raised to sit comfortably above the observed range so the point
+// stays "stopped", not "single slow tick" — a genuinely dead mcp.js still
+// reads as STALE, just with more margin before it's declared so.
+const STALE_MS = 300000
 
 // Thresholds for the verdict line. DRAINED matches mcp.js's DEGRADED_MONEY_PCT
 // so the HUD and the orchestrator agree on what "drained" means.

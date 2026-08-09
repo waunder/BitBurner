@@ -6,6 +6,10 @@ mcp_status_log.txt
 mcp_target_state.json
 mcp_events.txt
 
+# Darknet credential store — game output, and it holds cracked passwords.
+dnet_creds.txt
+dnet_cred_*.txt
+
 # macOS
 .DS_Store
 

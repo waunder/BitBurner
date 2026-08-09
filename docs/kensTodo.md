@@ -10,6 +10,20 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
+- [ ] **Run `dnet_probe.js` from `home`** — the darknet work is entirely
+  blocked on this one click. It is ~2.3GB, already committed and
+  syntax-checked, and it mutates almost nothing: it probes, prints each
+  neighbour's details, and attempts exactly one `authenticate("darkweb", "")`.
+  Everything in `docs/darknet-{functions,tactics,strategy}.md` is derived from
+  reading the game's bundled source rather than from play, and this run is the
+  cheapest possible test of whether that reading is trustworthy. **If
+  `authenticate("darkweb","")` succeeds, the method is validated and
+  `dnet_deploy.js --once` is the next step. If it fails, stop and say so —
+  do not run the deployer**, because it would mean the model rules are misread.
+  Output goes to the terminal via `ns.tprint`, so it's readable over CDP
+  without a tail window. (If it turns out this has already been run, the
+  output is what's needed — the result matters more than a fresh run.)
+
 - [ ] **Run `startup.js` once** — this single action now covers both of what
   were two separate pending items: it kills the currently-running
   `mcp_supervisor.js` (which is still on the pre-dump-feature code, since

@@ -593,6 +593,61 @@ rather than ticks. And it observes; it does not act.
 
 ---
 
+## Darknet (`ns.dnet`)
+
+A self-contained set, separate from everything above. It does not touch
+`mcp.js` and is **not** auto-started by `startup.js` or `mcp_supervisor.js` —
+deliberately, until it has worked by hand at least once.
+
+**None of it has run in Bitburner yet.** Design reasoning lives in
+`docs/darknet-functions.md` (API reference, model solvers, RAM costs),
+`docs/darknet-tactics.md` (per-decision reasoning) and
+`docs/darknet-strategy.md` (sequencing). The next real action is running
+`dnet_probe.js` — see `docs/kensTodo.md`.
+
+| File | Runs on | RAM (est.) | What it does |
+| --- | --- | --- | --- |
+| `dnet_probe.js` | `home` | ~2.3GB | First contact. Probes, reports each neighbour's details, attempts `authenticate("darkweb","")`. Mutates almost nothing. |
+| `dnet_lib.js` | — | 0GB alone | Shared module. Model-aware password candidates, credential store, session acquisition. Not runnable. |
+| `dnet_deploy.js` | `home`, then darknet | ~4.6GB | Roaming self-replicating deployer. Cracks, persists, spreads, follows mutations. |
+| `dnet_loot.js` | a darknet server | ~5.0GB | Frees blocked RAM (gated on the free `getBlockedRam`), opens `.cache` files, reports karma spent. |
+| `dnet_creds_merge.js` | `home` | ~2.0GB | Folds per-host credential shards into `dnet_creds.txt`. |
+
+### Arguments
+
+- `dnet_deploy.js` — `--once` (single pass, no loop), `--brute N` (allow up to
+  N numeric candidates per host; default 0 = off), `--quiet`.
+- `dnet_loot.js` — `--no-cache`, `--no-ram`, `--max-realloc N` (default 25).
+- `dnet_creds_merge.js` — `--prune` (delete shards after merging), `--quiet`.
+
+### Files
+
+| File | Written by | Notes |
+| --- | --- | --- |
+| `dnet_creds.txt` | `dnet_deploy.js`, `dnet_creds_merge.js` | JSON-lines, one record per line: `{host, password, model, at}`. `.txt` not `.jsonl` — `ns.write` rejects `.jsonl`. Carried along on every `scp` so a child agent inherits what its parent knew. |
+| `dnet_cred_<host>.txt` | `dnet_deploy.js` | Per-host shard, scp'd to `home`. Sharded so concurrent agents can't clobber one shared file. Hostnames are escaped (`meta:inc` → `metax3ainc`) because darknet hostnames contain `:`, `%`, `@` and emoji. |
+
+Both are game output and should be gitignored if they ever land locally.
+`dnet_creds.txt` is worth adding to the download pattern once the system is
+live, so its contents are readable outside the game.
+
+### Failure modes worth knowing
+
+- **Response code 408 (`RequestTimeOut`) does not mean "wrong password."** The
+  game rolls the instability timeout *after* the attempt resolves, so a correct
+  password can return 408. `dnet_lib.js` retries 408 with the same password and
+  only drops a candidate on 401. Any code that gets this wrong silently skips
+  the right answer.
+- **Backdoors, not authentications, drive instability.** Free allowance is 2;
+  each one past that adds 3% to the global authentication timeout chance,
+  capping at 50%. `dnet_deploy.js` never backdoors.
+- **`openCache` costs karma** (`difficulty + 1` per cache). `dnet_loot.js`
+  reports the total per run.
+- **A stored password that starts returning 401** means the server restarted
+  with a new one. `dnet_deploy.js` drops the stale credential and re-cracks.
+
+---
+
 ## Legacy and unused
 
 Kept because they cost nothing and occasionally get read, but not part of any

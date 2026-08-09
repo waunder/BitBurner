@@ -10,17 +10,29 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
-- [ ] **Check the VS Code Bitburner file-sync connection.** During the
-  2026-08-09 XP-mode/invariant diagnosis session, five separate writes to
+- [ ] **Check the VS Code Bitburner file-sync connection — now confirmed to
+  also block `mcp_restart.txt`, not just dumps.** During the 2026-08-09
+  XP-mode/invariant diagnosis session, five separate writes to
   `mcp_dump_request.txt` (with fresh tokens, one `touch`-forced) over ~1
-  minute never reached the game — `mcp_supervisor.js`'s own terminal log
-  showed no new `dump requested ->` line for any of them, only three old
-  ones from a prior session. The game was otherwise live (HUD ticking,
-  `mcp.js` actively switching targets), so this wasn't a frozen game, just a
-  dead push channel — matches the "dropped sync session doesn't replay"
-  failure mode CLAUDE.md already documents. A reconnect or manual save in
-  the editor should restore it (same fix as documented); worth confirming
-  next session that a fresh `mcp_dump_request.txt` write actually renders.
+  minute never reached the game. In the follow-up session implementing the
+  approved XP-eviction fix, the same day, two fresh-token writes to
+  `mcp_restart.txt` (~90s apart, ~2.5 minutes of polling total) also never
+  reached it: `mcp_supervisor.js` prints `mcp_supervisor: restart requested
+  (token=...)` via `ns.tprint` the instant it sees a changed token (2s poll
+  loop), and that line never appeared. Confirmed independently via `ps`:
+  `mcp.js` stayed on PID 4 and `mcp_supervisor.js` on PID 2 for the entire
+  session — if the restart had fired, `restart_mcp.js` would have killed and
+  re-exec'd `mcp.js` under a new PID. **Practical effect: Claude cannot
+  currently restart `mcp.js` at all**, only edit its source and commit/push
+  — a running instance keeps its old code indefinitely until something else
+  restarts it. The game was otherwise live (HUD ticking, `mcp.js` actively
+  switching targets), so this isn't a frozen game, just a dead push channel
+  — matches the "dropped sync session doesn't replay" failure mode CLAUDE.md
+  already documents. A reconnect or manual save in the editor should restore
+  it (same fix as documented). **Concretely needed now:** reconnect the
+  sync, then either save any file in the editor or ask Claude to re-touch
+  `mcp_restart.txt` — the 2026-08-09 XP-eviction fix (see git log) is
+  committed and pushed but has never actually run in-game because of this.
 
 - [ ] **Run `dnet_deploy.js --once` from `home`** — `dnet_probe.js` (below)
   validated the model reading, so this is the next step: the roaming

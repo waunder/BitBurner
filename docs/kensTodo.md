@@ -10,6 +10,18 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
+- [ ] **Check the VS Code Bitburner file-sync connection.** During the
+  2026-08-09 XP-mode/invariant diagnosis session, five separate writes to
+  `mcp_dump_request.txt` (with fresh tokens, one `touch`-forced) over ~1
+  minute never reached the game — `mcp_supervisor.js`'s own terminal log
+  showed no new `dump requested ->` line for any of them, only three old
+  ones from a prior session. The game was otherwise live (HUD ticking,
+  `mcp.js` actively switching targets), so this wasn't a frozen game, just a
+  dead push channel — matches the "dropped sync session doesn't replay"
+  failure mode CLAUDE.md already documents. A reconnect or manual save in
+  the editor should restore it (same fix as documented); worth confirming
+  next session that a fresh `mcp_dump_request.txt` write actually renders.
+
 - [ ] **Run `dnet_deploy.js --once` from `home`** — `dnet_probe.js` (below)
   validated the model reading, so this is the next step: the roaming
   self-replicating deployer, single pass. ~4.6GB. See

@@ -1097,12 +1097,22 @@ export async function main(ns) {
         // weaken<->work never accumulated the full window — the detector was
         // disarmed in exactly the thrashing case it exists to catch.
         const currentSecurity = ns.getServerSecurityLevel(currentTarget)
+        // WEAKEN_STUCK_MS is a floor, not the actual patience window. A
+        // weaken call has to COMPLETE before it can show progress, and
+        // weakenTime scales with target difficulty — omega-net sat at an
+        // identical sec/need reading across three consecutive 60s windows
+        // in the terminal log because its weakenTime exceeded 60s, so the
+        // very first completion hadn't happened yet each time the fixed
+        // window expired. ×2 leaves room for one full cycle plus slack
+        // against tick-boundary timing, rather than exactly one cycle with
+        // no margin.
+        const stuckWindowMs = Math.max(WEAKEN_STUCK_MS, ns.getWeakenTime(currentTarget) * 2)
         if (securityProgressTime === 0 || currentSecurity < bestSecuritySeen - WEAKEN_STUCK_SECURITY_THRESHOLD) {
           securityProgressTime = Date.now()
           bestSecuritySeen = currentSecurity
-        } else if (currentRequiredWeaken > 0 && Date.now() - securityProgressTime > WEAKEN_STUCK_MS) {
+        } else if (currentRequiredWeaken > 0 && Date.now() - securityProgressTime > stuckWindowMs) {
           ns.tprint(
-            `mcp: target ${currentTarget} not weakening (sec=${currentSecurity.toFixed(2)} best=${bestSecuritySeen.toFixed(2)} need=${currentRequiredWeaken}); switching target`
+            `mcp: target ${currentTarget} not weakening (sec=${currentSecurity.toFixed(2)} best=${bestSecuritySeen.toFixed(2)} need=${currentRequiredWeaken} window=${(stuckWindowMs / 1000).toFixed(0)}s); switching target`
           )
           events.emit("target_drop", {
             target: currentTarget,
@@ -1111,7 +1121,8 @@ export async function main(ns) {
             bestSecuritySeen,
             progressThreshold: WEAKEN_STUCK_SECURITY_THRESHOLD,
             stalledMs: Date.now() - securityProgressTime,
-            stuckAfterMs: WEAKEN_STUCK_MS,
+            stuckAfterMs: stuckWindowMs,
+            weakenTimeMs: ns.getWeakenTime(currentTarget),
             requiredWeaken: currentRequiredWeaken,
             maxWeaken,
           })

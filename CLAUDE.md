@@ -31,6 +31,16 @@ reading).
   version it started with. Edits require a restart (`run restart_mcp.js`).
   This burned a full hour once — fixes appeared not to work because the old
   process was still running.
+- **`ns.kill`/`ns.killall` do not close the killed script's tail window.**
+  The window is orphaned, frozen showing whatever it last rendered, and
+  stays open indefinitely — found because two `startup.js` runs left two
+  differently-stated "mcp" panels visible while `ps` showed only one live
+  process. `ns.ui.closeTail(pid)` closes it (0GB, takes an optional PID
+  specifically so another script can close a window that isn't its own);
+  `mcp_hud.js`/`get_stats.js`/`mcp_supervisor.js`'s self-supersede logic
+  calls it now. Only fixes it going forward — a window already orphaned by a
+  now-dead process has no PID left in `ns.ps` to target, so it needs one
+  manual close.
 - **`ns.write` only accepts `.txt`, `.json`, `.css`, or a script extension.**
   Anything else throws `File path should be a text file or script` at the
   call site. `.log` hit this first; `.jsonl` hit it again for

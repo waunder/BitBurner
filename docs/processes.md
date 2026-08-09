@@ -300,7 +300,16 @@ own Overview.
   disagree with the orchestrator.
 - **Cost:** ~2.35GB (1.6GB baseline plus `ns.ps` + `ns.kill`)
 - Re-running supersedes the previous instance instead of opening a second
-  window, so repositioning is just a re-run.
+  window, so repositioning is just a re-run — and now closes that instance's
+  window too, not just its process. `ns.kill` alone doesn't close a script's
+  tail window; found by observation after two `startup.js` runs left two
+  visibly different "mcp" panels open while `ps` showed only one live
+  process — the second was a frozen ghost from the instance the previous run
+  had already killed. Fixed with `ns.ui.closeTail(pid)`, which exists
+  specifically to close a window belonging to a script other than the
+  caller. This only prevents *future* ghosts — a window already orphaned by
+  an older, now-dead process has no live PID left for `ns.ps` to find, so it
+  can't be closed programmatically and needs one manual click.
 
 ```
 +--------------------------+

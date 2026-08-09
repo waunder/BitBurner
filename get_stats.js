@@ -115,12 +115,19 @@ const RESET = "\u001b[0m"
  *
  * ns.ps reports filenames without a leading slash — the same trap that made
  * killActionScripts in mcp.js silently match nothing for hours.
+ *
+ * ns.kill does NOT close the killed script's tail window — confirmed by
+ * observation: after two startup.js runs, ps showed exactly one process of
+ * each script, yet duplicate tail windows were still visible, one live and
+ * one a frozen ghost from the instance startup.js had just killed.
+ * ns.ui.closeTail(pid) is the separate call that actually closes it.
  */
 function killPriorInstances(ns) {
 	var self = ns.pid
 	for (var proc of ns.ps(ns.getHostname())) {
 		var name = proc.filename.charAt(0) === "/" ? proc.filename.slice(1) : proc.filename
 		if (name === "get_stats.js" && proc.pid !== self) {
+			if (ns.ui && typeof ns.ui.closeTail === "function") ns.ui.closeTail(proc.pid)
 			ns.kill(proc.pid)
 		}
 	}

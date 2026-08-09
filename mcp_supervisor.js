@@ -154,13 +154,22 @@ function handleDumpRequest(ns, contents) {
  *
  * ns.ps reports filenames without a leading slash — the same normalization
  * killActionScripts in mcp.js needed.
+ *
+ * ns.kill does NOT close the killed script's tail window — confirmed by
+ * observation in mcp_hud.js and get_stats.js, which had the same gap.
+ * Matters here specifically if a prior instance had an mcp_dump window open
+ * at the moment it's superseded; ns.ui.closeTail(pid) is the separate call
+ * that actually closes it.
  */
 function killPriorInstances(ns) {
   const self = ns.pid
   const me = "mcp_supervisor.js"
   for (const proc of ns.ps(ns.getHostname())) {
     const name = proc.filename.startsWith("/") ? proc.filename.slice(1) : proc.filename
-    if (name === me && proc.pid !== self) ns.kill(proc.pid)
+    if (name === me && proc.pid !== self) {
+      if (ns.ui && typeof ns.ui.closeTail === "function") ns.ui.closeTail(proc.pid)
+      ns.kill(proc.pid)
+    }
   }
 }
 

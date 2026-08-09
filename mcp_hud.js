@@ -257,13 +257,26 @@ function placeTail(ns, args, lines) {
  * ns.ps reports filenames without a leading slash, which is the same trap that
  * made mcp.js's killActionScripts silently match nothing for hours — normalize
  * before comparing.
+ *
+ * ns.kill does NOT close the killed script's tail window — confirmed by
+ * observation, not assumption: after two `startup.js` runs, `ps` showed
+ * exactly one mcp_hud.js process, yet two "mcp"-titled panels were visible,
+ * one live and one a frozen ghost from the instance startup.js had just
+ * killed. ns.ui.closeTail(pid) is the separate call needed to actually close
+ * it, confirmed against the doc — it takes an *optional* PID specifically so
+ * a different script can close a window that isn't its own. Every prior
+ * instance killed here without this would leave one more ghost window behind
+ * on every future restart.
  */
 function killPriorInstances(ns) {
   const self = ns.pid
   const me = "mcp_hud.js"
   for (const proc of ns.ps(ns.getHostname())) {
     const name = proc.filename.startsWith("/") ? proc.filename.slice(1) : proc.filename
-    if (name === me && proc.pid !== self) ns.kill(proc.pid)
+    if (name === me && proc.pid !== self) {
+      if (ns.ui && typeof ns.ui.closeTail === "function") ns.ui.closeTail(proc.pid)
+      ns.kill(proc.pid)
+    }
   }
 }
 

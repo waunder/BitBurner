@@ -94,11 +94,20 @@ function formatDump(ns, filename, requestedLines) {
 }
 
 /**
- * Same fit-to-content sizing as get_stats.js/mcp_hud.js, capped well below
- * their limits here since a dump can legitimately run to hundreds of lines —
- * the tail window scrolls past the cap; CDP's innerText read is not affected
- * by scroll position, only visual comfort for anyone looking at it directly
- * is.
+ * Same fit-to-content sizing as get_stats.js/mcp_hud.js.
+ *
+ * The height is NOT cosmetic — it was originally capped at 700px on the
+ * assumption that CDP's innerText read isn't affected by scroll position,
+ * matching how a normal scrollable div works. That assumption was wrong and
+ * cost real time to find: a 100-line dump request rendered only ~45 lines
+ * over CDP, always the tail end, while a 45-line request rendered
+ * completely. Bitburner's tail window only keeps in the DOM whatever fits
+ * the window's actual configured height — it isn't a scrollable div with
+ * everything present underneath, so undersizing the window silently drops
+ * content from what CDP can read, even though ns.print genuinely wrote all
+ * of it. The fix is to size tall enough to fit everything requested, not to
+ * cap for visual tidiness — nothing here is optimizing for how the window
+ * looks, only for what a reader outside the game can retrieve from it.
  */
 function showDump(ns, lines) {
   if (!ns.ui) return
@@ -114,8 +123,11 @@ function showDump(ns, lines) {
     const lineHeight = styles.tailFontSize * styles.lineHeight
     let maxLen = 0
     for (const line of lines) if (line.length > maxLen) maxLen = line.length
-    const width = Math.min(1000, Math.max(200, Math.ceil(maxLen * charWidth) + 60))
-    const height = Math.min(700, Math.max(80, Math.ceil((lines.length + 1) * lineHeight) + 40))
+    const width = Math.min(1400, Math.max(200, Math.ceil(maxLen * charWidth) + 60))
+    // No cap here on purpose — sized to DUMP_MAX_LINES's worst case
+    // (~500 lines) with headroom, since a short window on a long dump means
+    // lost content, not just a scrollbar.
+    const height = Math.max(80, Math.ceil((lines.length + 1) * lineHeight) + 40)
     ns.ui.resizeTail(width, height)
   }
   if (typeof ns.ui.renderTail === "function") ns.ui.renderTail()

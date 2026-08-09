@@ -31,6 +31,14 @@ reading).
   version it started with. Edits require a restart (`run restart_mcp.js`).
   This burned a full hour once — fixes appeared not to work because the old
   process was still running.
+- **A tail window only keeps in the DOM what fits its configured height —
+  it is not a scrollable div with everything present underneath.** Found via
+  the dump feature: a 100-line request rendered only ~45 lines over CDP
+  (always the tail end); a 45-line request rendered completely. Undersizing
+  the window for "visual tidiness" silently drops content a reader outside
+  the game can retrieve, even though `ns.print` genuinely wrote all of it.
+  Size tall enough for the actual content, uncapped, whenever a window's
+  purpose is being read over CDP rather than looked at directly.
 - **`ns.kill`/`ns.killall` do not close the killed script's tail window.**
   The window is orphaned, frozen showing whatever it last rendered, and
   stays open indefinitely — found because two `startup.js` runs left two

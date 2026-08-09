@@ -451,28 +451,43 @@ download every time.
   150, hard-capped at 500 regardless of what's requested, since
   `mcp_status_log.txt` has no size limit of its own and a request shouldn't
   be able to try rendering an unbounded file into the browser tab
-- Open question, not yet confirmed either way: whether Bitburner virtualizes
-  a long tail window's rendering (only the scrolled-into-view lines actually
-  in the DOM) or keeps the full content present regardless of scroll
-  position. If it virtualizes, a large dump would read back short over CDP
-  despite rendering correctly on screen. Watch for this if a dump ever comes
-  back truncated.
+- **Resolved, the hard way:** Bitburner's tail window only keeps in the DOM
+  whatever fits its actual configured height — it is not a scrollable div
+  with everything present underneath. A 100-line request originally rendered
+  only ~45 lines over CDP (always the tail end); a 45-line request rendered
+  completely. The window's height was being capped at 700px for assumed
+  visual tidiness, silently dropping content CDP could read even though
+  `ns.print` genuinely wrote all of it. Fixed by sizing the window tall
+  enough to fit whatever was requested, uncapped, since nothing about this
+  feature is optimizing for how the window looks.
 
 ### `startup.js`
 
 Brings up the whole suite from a clean slate in **one** command:
-`run startup.js`. Kills everything else on the host first, then launches
-`mcp_supervisor.js`, `hacking/crawler.js`, `mcp.js`, `mcp_hud.js`,
-`get_stats.js` in that order via `ns.run`, then exits rather than staying
-resident, so its own footprint doesn't compete with what it just started.
+`run startup.js`. Closes every open tail window, kills everything else on
+the host, then launches `mcp_supervisor.js`, `hacking/crawler.js`, `mcp.js`,
+`mcp_hud.js`, `get_stats.js` in that order via `ns.run`, then exits rather
+than staying resident, so its own footprint doesn't compete with what it
+just started.
 
 - **Start:** `run startup.js` — the one command besides the supervisor's own
   bootstrap that still needs a human hand
-- **Cost:** 4.1GB while running (momentary) — 1.6GB baseline + `ns.killall`
-  (0.5GB) + `ns.scriptRunning` (1.0GB) + `ns.run` (1.0GB)
-- **Calls `ns.killall(host)` first** — every other script on the host,
-  including anything unrelated to the mcp suite, since "clean and fresh" was
-  the explicit ask. Safe against killing itself: `safetyGuard` defaults to
+- **Cost:** 4.3GB while running (momentary) — 1.6GB baseline + `ns.ps`
+  (0.2GB) + `ns.killall` (0.5GB) + `ns.scriptRunning` (1.0GB) + `ns.run`
+  (1.0GB)
+- **Closes tail windows *before* killing, not after — order was a real bug.**
+  `ns.kill`/`ns.killall` never close a script's tail window; it's orphaned,
+  frozen on whatever it last rendered. `closeTail` needs a live PID from
+  `ns.ps` to target, and `killall` erases that PID the instant it runs. Two
+  actual `startup.js` runs each left a fresh ghost behind for `mcp_hud.js`
+  and `get_stats.js` despite both scripts' own self-supersede logic already
+  calling `closeTail` — their check runs from the *new* instance scanning
+  `ns.ps` for a prior copy, and by the time it ran, `startup.js`'s own
+  `killall` (which used to run first) had already erased that evidence. Now
+  closes every window it can see, then kills.
+- **Calls `ns.killall(host)`** — every other script on the host, including
+  anything unrelated to the mcp suite, since "clean and fresh" was the
+  explicit ask. Safe against killing itself: `safetyGuard` defaults to
   `true`, documented as "skips the script that calls this function" and
   confirmed against the actual implementation in the game's bundle (it
   compares the target PID to the caller's and excludes a match), not just

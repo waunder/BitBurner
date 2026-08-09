@@ -144,8 +144,9 @@ record. Version stamps, the single field list, hot-reloaded config, the
 event log, and invariants all shipped 2026-08-08 — see the Done table there
 for what shipped and what's still worth watching about each. Remaining, in
 order: pure-function extraction for `node --test`, `probe=` experiment mode,
-ports as a telemetry ring buffer, revisit `mcp_doctor.js` once home RAM is
-large.
+ports as a telemetry ring buffer, `mcp_doctor.js` (no longer RAM-gated — home
+is 128GB as of 2026-08-09, build if independent network measurement turns out
+to be wanted).
 
 Rooting is handled by `hacking/crawler.js` → `hacking/worm.js` (not by
 `mcp.js`), so the worker pool only grows while the crawler is running and

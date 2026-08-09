@@ -129,17 +129,23 @@ much closer at hand than the audit assumed.
 
 ## Demoted or superseded
 
-### `mcp_doctor.js` — superseded, for now
+### `mcp_doctor.js` — the RAM objection is gone; worth actually reconsidering now
 
 The audit's two arguments for it were belief-vs-reality divergence detection
 and surviving restarts. **The out-of-game CDP watcher now does both**, and does
 them better: it survives a *game* restart too, and it costs no in-game RAM —
-which matters at 20GB of total network capacity.
+which mattered enormously at the 20GB of total network capacity this note was
+originally written against.
 
-One capability the watcher lacks: independent measurement of the *network*
-(per-host RAM, running scripts, target security). The watcher only sees the
-DOM. So a doctor is not worthless — but it is not worth 2–3GB of a 20GB pool
-today. Revisit when home RAM is large.
+**Update 2026-08-09: home is now 128GB, ~100GB free.** The 2–3GB objection
+this was parked on no longer applies — that's a rounding error against
+current free capacity, not the meaningful fraction it was at 20GB total. The
+watcher still can't independently measure the *network* itself (per-host RAM,
+running scripts, target security — it only sees the DOM), which is the one
+capability a doctor would still add on top of what the watcher already does.
+Not built yet, but nothing is blocking it anymore; worth taking up if
+independent network measurement becomes something actually wanted, rather
+than automatically deferred on RAM grounds.
 
 ### `mcp_report.json` as "one file to read" — packaging obsolete, content still good
 
@@ -211,7 +217,10 @@ telemetry.
 2. `probe=` experiment mode — both ends are now automated.
 3. Ports as a telemetry ring buffer, if per-tick detail turns out to be wanted
    after the event log has been used in anger.
-4. Revisit `mcp_doctor.js` only once home RAM is large.
+4. `mcp_doctor.js` — home is 128GB now (was 20GB when this was parked), so
+   it's no longer gated on RAM. Build if independent network measurement
+   (per-host RAM/scripts/security, not just what the DOM shows) turns out to
+   be wanted.
 
 The audit's closing observation is worth keeping in view, because everything
 above is still an instance of it: *the four highest-leverage items are all

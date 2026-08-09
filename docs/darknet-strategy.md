@@ -15,39 +15,63 @@ built to make that the *first* thing that changes.
 Ranked, with the reasoning, because the ranking is not obvious and two of
 these are new categories rather than more of what `mcp.js` already does.
 
-### 1. Stock market access — the one genuinely new income category
+### 1. Stock market access — corrected: not darknet-exclusive, so this is weaker than originally written
 
-`.cache` files "can contain money, experience, programs, or **stock market
-access keys**". This player's stock income was **$0** at the last check: not
-underperforming, *absent*. There is no TIX API access, so there is no stock
-income to improve — the category doesn't exist yet.
+**Update, from Ken directly, after this doc's first draft:** the World Stock
+Exchange sells WSE Account access, TIX API access, and 4S Market Data
+directly — no darknet involvement. The original framing below ("the one path
+to a category that doesn't exist yet") was wrong on that specific point, and
+it was the load-bearing claim for ranking the darknet first. Correcting it
+rather than quietly editing it away, since the reasoning error is itself
+informative: I inferred "no TIX access" meant "no path to TIX access" without
+checking whether a direct purchase existed. It did.
 
-That makes darknet-sourced stock access qualitatively different from
-everything else here. Every other reward is *more money*, which `mcp.js`
-already produces continuously. A stock access key is a *new machine*, and it
-compounds independently of hacking level.
+**What this changes:** direct purchase is a *known, certain, immediate* way
+to open the stock-trading category — at this player's current money (multiple
+billions), the WSE/TIX/4S purchase cost is very likely trivial, versus a
+darknet path whose payoff was already flagged as unvalidated (drop rate
+unknown, whether it's gated to deep servers unknown, whether the drop is full
+or partial access unknown). If the goal is *access to the category*, buying
+it directly dominates waiting on an unvalidated random drop. That was true
+before this correction too — it just wasn't visible, because the doc never
+considered the direct path existed.
 
-It pairs with `promoteStock()` (2GB), which raises a stock's **volatility**
-without touching its forecast. Volatility is meaningless to a passive holder
-and valuable to an active trader — it widens the swings you trade against. So
-the darknet plausibly offers both the entry ticket and an edge on top of it.
+**What darknet involvement still adds, if pursued anyway:** `.cache` files
+can still drop stock-relevant rewards (money, possibly further access-adjacent
+items — the reward table wasn't fully characterized), and `promoteStock()`
+(2GB) raises a stock's *volatility* without touching its forecast — valuable
+to an active trader regardless of how the underlying TIX/4S access was
+obtained. So darknet work isn't worthless to a stock strategy even once
+direct purchase is in hand; it's just no longer the *gate*, only a possible
+*edge* on top of access already bought outright.
 
-**The uncertainty, stated plainly:** I have no evidence about the *drop rate*
-of stock access keys, or whether they're gated to deep servers, or whether
-what drops is full TIX + 4S access or something partial. The cache reward
-table picks a reward type at random from a small set, with `.d.cache` (deep
-variant) adding an extra possibility and a BitNode multiplier adding another.
-**source** for the mechanism, **unknown** for the specific odds of a stock
-key. This is the highest-value hypothesis in the doc and it is
-**unvalidated**. Do not restructure anything around it until a cache has
-actually been opened and its contents read.
+**One thing worth flagging plainly, unrelated to the darknet:** the game's
+own warning is that installing augmentations resets all stock *positions*
+(not the WSE/TIX/4S access itself, which persists). Ken is currently holding
+7 purchased-but-uninstalled augmentations. If stock trading starts before
+those get installed, positions need to be sold first — a real future gotcha,
+not a hypothetical one, worth a `kensTodo.md`-style reminder once trading
+actually starts.
+
+**Still unvalidated, independent of the above correction:** the darknet
+`.cache` drop rate and reward distribution. **source** for the mechanism
+(a small reward table, `.d.cache` and a BitNode multiplier both widening it),
+**unknown** for the specific odds. Don't restructure anything around it until
+a cache has actually been opened and read — that part of the original caution
+still holds, it just no longer justifies ranking the darknet *first*.
 
 ### 2. RAM
 
+**Update 2026-08-09: home is now 128GB, ~100GB free** (was 20GB when this
+project's RAM-scarcity habits — the careful HUD budgeting, `mcp_doctor.js`
+parked in the backlog — were established). Those habits stay good practice,
+but the *urgency* behind "home RAM has been the binding constraint
+repeatedly" is gone; this section's original framing assumed a scarcity that
+no longer holds at home. Darknet RAM is still worth having for the reasons
+below — it's real, separate capacity — just not because home is currently
+tight.
+
 The tutorial: "There is a lot of ram on the darknet." `darkweb` alone is 16GB.
-Home RAM has been the binding constraint on this project repeatedly — it's why
-`mcp_doctor.js` is parked in the backlog and why the HUD scripts are
-RAM-budgeted so carefully.
 
 But darknet RAM is **not** a drop-in extension of the worker pool. `exec`
 onto a darknet server needs a session plus either a direct connection, a
@@ -171,12 +195,14 @@ budget is ~2 before the timeout penalty starts (tactics §2).
 Run `dnet_loot.js` on held servers. It frees blocked RAM (gated on the free
 `getBlockedRam` check) and opens `.cache` files, reporting karma spent.
 
-**This is where the central hypothesis gets tested.** Read what the caches
-actually contain. If a stock market access key appears, that reframes the
-whole effort and the next question becomes how to farm caches deliberately —
-including `phishingAttack` as a cache source. If several caches yield only
-money and experience, the darknet is a RAM-and-charisma play with a money
-side-effect, and it should be prioritised accordingly — well below `mcp.js`.
+**Lower-stakes than originally written** — see the update at the top of §1.
+Reading what caches actually contain is still worth doing, but a stock key
+appearing here would now be a nice-to-have layered on access already bought
+directly, not the discovery that reframes the whole effort. If several caches
+yield only money and experience, the darknet is a RAM-and-charisma play with
+a money side-effect, and it should be prioritised accordingly — well below
+`mcp.js`, same conclusion as before, just no longer contingent on this
+specific hypothesis.
 
 Also check `ns.ls(host, ".data.txt")` on everything held. Data files carry
 credentials and password lists (**source** — one generator writes 15 entries
@@ -205,11 +231,16 @@ Gated on Phase 3, and on charisma from phishing.
 Kept explicit rather than buried, because most of this doc rests on reading
 minified source rather than on play.
 
-1. **The stock-access-key payoff is unvalidated.** It's the reason the darknet
-   ranks above other uses of attention, and it rests on one phrase in the
-   tutorial plus a reward table I read but whose odds I don't know. If caches
-   don't drop stock keys at a useful rate, the priority ordering in this doc
-   is wrong.
+1. **Superseded, not just unvalidated — read the update at the top of §1
+   first.** This item originally said the stock-access-key payoff was the
+   reason the darknet ranks above other uses of attention. That reasoning
+   depended on believing TIX/4S access had no other path, which was wrong:
+   it's a direct WSE purchase, unrelated to the darknet, and at this
+   player's money almost certainly affordable outright. The darknet's stock
+   angle is now at most an *edge* (`promoteStock`, possible cache drops) on
+   top of access bought directly, not the *gate* to the category. Whatever
+   priority ordering in this doc leaned on "the darknet is the only path to
+   a new income category" needs to be re-read with that gone.
 2. **Every model rule is source-read, not observed.** I reconstructed the
    generators locally and confirmed the decoders invert them — but that proves
    the decoder matches *my reading*, not that my reading is right. Phase 0

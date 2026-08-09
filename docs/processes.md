@@ -703,6 +703,22 @@ can raise an alarm.
 daemon. Each event costs a turn, which is why the filter watches transitions
 rather than ticks. And it observes; it does not act.
 
+### `tools/bb_remote.py` — direct Remote API client (prototype, not yet cut over)
+
+Built 2026-08-09 to replace the VS Code extension's file-sync as the write
+path into the game, after two same-day incidents where writes to
+`mcp_dump_request.txt`/`mcp_restart.txt` never reached it (dropped sync
+session, no replay on reconnect — see the `CLAUDE.md` note this traces to).
+Full protocol writeup, citations, and validation status:
+`docs/remote-api-migration.md`. Short version: the game dials **out** as a
+WebSocket client to an external server (Options → Remote API → hostname
+`localhost`, port `12525`, Connect); `tools/bb_remote.py` is a second
+implementation of that server, alongside the extension's own. Protocol
+self-tests pass against a spec-accurate mock; **not yet round-tripped
+against the live game** — that needs one supervised, reversible action from
+Ken (see the doc). Not wired into `mcp_supervisor.js` or anything
+live-running yet; this is groundwork, not the cutover.
+
 ---
 
 ## Darknet (`ns.dnet`)

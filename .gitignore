@@ -26,3 +26,7 @@ node_modules/
 # Out-of-game triggers (generated)
 mcp_restart.txt
 mcp_dump_request.txt
+
+# Bitburner save-file snapshots synced from the game (saves/tsconfig.json
+# stays tracked regardless — it's hand-authored, not game output)
+saves/*.json.gz

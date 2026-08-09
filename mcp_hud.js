@@ -14,8 +14,9 @@
  * Re-running with new args supersedes the previous instance rather than
  * stacking another window beside it, so repositioning is just a re-run.
  *
- * Costs the 1.6GB script baseline plus ~0.75GB for that self-supersede check
- * (ns.ps + ns.kill); everything in the display path itself is 0GB.
+ * Costs the 1.6GB script baseline plus ~0.75GB for the self-supersede check
+ * (ns.ps + ns.kill) plus 1.0GB for ns.getMoneySources (the earned-income
+ * row); everything else in the display path is 0GB.
  *
  * @param {NS} ns
  */
@@ -165,6 +166,29 @@ function violationSummary(status) {
   return { total, worst }
 }
 
+/**
+ * ns.getMoneySources().sinceInstall.{hacking,crime} are cumulative earned
+ * totals the game itself tracks per income category — never decremented by
+ * spending in any category, only ever added to. Using "since install" (not
+ * "since start") deliberately: it survives script and game restarts, only
+ * resetting on an actual augmentation install, which is rare and legible on
+ * its own (level/money visibly reset too) rather than something this project
+ * causes routinely.
+ *
+ * Built specifically to fix a real false-positive: the out-of-game watcher
+ * used to treat "player's total money didn't hit a new high in 10 minutes"
+ * as a stall, which fires constantly once heavy Hacknet spending is a normal
+ * part of play — the watcher had no way to tell "nothing is earning" apart
+ * from "you spent it as fast as it came in". Earned totals can't be
+ * polluted by spending, in any category, by construction.
+ */
+function earnedTotal(ns) {
+  const sources = ns.getMoneySources()
+  const since = sources && sources.sinceInstall
+  if (!since) return 0
+  return (since.hacking || 0) + (since.crime || 0)
+}
+
 function buildLines(ns, status) {
   if (!status) {
     return [row("NO DATA", "--"), row(STATUS_FILE, ""), row("mcp running?", "")]
@@ -185,7 +209,7 @@ function buildLines(ns, status) {
     row("rate " + money(status.rate), "avg " + money(status.avgRate)),
     row("wkn " + status.needWeaken + "/" + status.maxWeaken, "w" + threads.weaken + " g" + threads.grow + " h" + threads.hack),
     row("ram " + pct(ramUtilization(status)), (status.workers || []).length + " hosts"),
-    row("lvl " + (status.player && status.player.skills ? status.player.skills.hacking : "-"), money(status.player ? status.player.money : 0)),
+    row("lvl " + (status.player && status.player.skills ? status.player.skills.hacking : "-"), "earned " + money(earnedTotal(ns))),
     switchRow(status),
     // Always rendered, including the reassuring zero, so the panel's height
     // never changes — placeTail sizes once and a row appearing later would

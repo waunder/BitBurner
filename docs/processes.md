@@ -141,7 +141,8 @@ rejected at startup rather than silently ignored.
    RAM here was the bug that pinned `maxWeaken` at 0 for 98.8% of ticks.
 3. If a target is held: check whether it is **stuck** (security not falling)
    or **degraded** (money sustainably low *and* declining, or rate dropped).
-   Either marks it excluded and clears the target.
+   Either marks it excluded and clears the target. The money-degraded half of
+   this is disabled entirely in XP mode — see `OBJECTIVE` below.
 4. Evaluate the **opportunity switch** — see below.
 5. If no target, pick one: highest potential income discounted by readiness.
 6. Build a **plan**: `weaken` if security exceeds the cap, otherwise `work`
@@ -241,6 +242,18 @@ Target *selection* is unchanged in both modes — still scored by $/s. Making
 selection itself XP-aware is a larger, riskier change than reweighting
 hack/grow, and is deliberately not happening until real data justifies a
 specific formula rather than a guess.
+
+**Money-based eviction is disabled in XP mode.** The 0.8/0.2 split above is
+hack-heavy by design, so it drains every target's money toward zero and never
+lets it recover (grow is only 20% of the mix) — the `moneyDegraded` check
+described under "The opportunity switch"/step 3 above would then read that as
+every target "yield degraded" in turn and evict it, chaining from target to
+target indefinitely and defeating XP mode's entire point of sitting still to
+grind hack XP. Confirmed live 2026-08-09: three evictions in under a minute.
+`moneyDegraded` is now unconditionally `false` when `OBJECTIVE === "xp"`;
+`rateDropped` (a real stall, not a money read) still applies in both modes,
+and the opportunity switch (comparing against a much-better idle target) is
+untouched and remains the only way XP mode gives up a target on its own.
 
 #### Telemetry
 

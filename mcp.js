@@ -1237,7 +1237,13 @@ export async function main(ns) {
         // being drained faster than it regrows shows up as a falling series.
         const windowFull = moneyPctSamples.length === MONEY_PCT_SAMPLE_COUNT
         const declining = windowFull && moneyPctSamples[moneyPctSamples.length - 1] < moneyPctSamples[0]
-        const moneyDegraded = windowFull && avgMoneyPct < DEGRADED_MONEY_PCT && declining
+        // XP mode's fixed hack:0.8/grow:0.2 split (see buildPlan) drains
+        // every target's money toward zero by design and never lets it
+        // recover — moneyDegraded would fire on essentially every target in
+        // an endless chain, defeating XP mode's point of sitting still and
+        // grinding hack XP. Money-based eviction only makes sense when the
+        // objective is money; rateDropped (a real stall) still applies.
+        const moneyDegraded = OBJECTIVE !== "xp" && windowFull && avgMoneyPct < DEGRADED_MONEY_PCT && declining
 
         if (heldLongEnough && (rateDropped || moneyDegraded)) {
           // Only give up if there is somewhere else to go. Draining the sole

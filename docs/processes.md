@@ -606,6 +606,17 @@ download every time.
   `ns.print` genuinely wrote all of it. Fixed by sizing the window tall
   enough to fit whatever was requested, uncapped, since nothing about this
   feature is optimizing for how the window looks.
+- **Open, milder variant of the same bug (2026-08-09):** dumping
+  `mcp_status.json` over CDP showed only the tail (`recentEvents`, the last
+  field in the object) — the `config` block, inserted well before it, never
+  appeared, even though the doc above says `.json` renders whole. The window
+  resize itself isn't capped anymore, so this is likely the *screen's*
+  height clipping DOM content the window is sized taller than, not a
+  reintroduction of the 700px cap — unconfirmed. Didn't block anything this
+  time (OBJECTIVE's new value was independently confirmed via the terminal's
+  `config updated` log line and the HUD's `plan` row), so not chased further
+  yet. Worth a real fix if a future dump genuinely needs a large JSON file's
+  earlier fields and nothing else confirms them.
 
 ### `startup.js`
 

@@ -195,9 +195,9 @@ function earnedTotal(ns) {
   return (since.hacking || 0) + (since.crime || 0)
 }
 
-function buildLines(ns, status) {
+function buildLines(ns, status, pos) {
   if (!status) {
-    return [row("NO DATA", "--"), row(STATUS_FILE, ""), row("mcp running?", "")]
+    return [row("NO DATA", "--"), row(STATUS_FILE, ""), row("mcp running?", ""), row("x=" + pos.x, "y=" + pos.y)]
   }
   const ageS = Math.max(0, Math.round((Date.now() - status.ts) / 1000))
   // Compare our own hash of mcp.js against the version it stamped when it
@@ -222,6 +222,7 @@ function buildLines(ns, status) {
     // clip.
     row("ver " + (drift ? "DRIFT" : "ok"), violations.total ? "inv " + violations.total + " " + violations.worst : "inv 0"),
     row("tick " + (status.tickSeconds || 0).toFixed(1) + "s", "age " + ageS + "s"),
+    row("x=" + pos.x, "y=" + pos.y),
   ]
 }
 
@@ -247,7 +248,38 @@ function switchRow(status) {
   return row("next " + evaluation.best, evaluation.ratio.toFixed(1) + "/" + evaluation.factor + "x")
 }
 
-function placeTail(ns, args, lines) {
+/**
+ * Resolves where the window will land, independent of rendering it — split
+ * out from placeTail so the position can be known (and shown on the panel
+ * itself, per Ken's request) before the first paint, not just applied.
+ *
+ * Bitburner exposes no getter for a tail window's current position or size —
+ * checked against the ui cost table, not assumed: moveTail/resizeTail have
+ * no read-side counterpart. So a manual drag can never be read back; this is
+ * the closest substitute — show what was actually applied (args, or the
+ * computed default), so dialing in a position is "adjust the number, see
+ * where it lands, read the confirmation" instead of "drag, then capture".
+ *
+ * width is approximate here (WIDTH_CHARS-derived, not the post-content-fit
+ * value) — fine for x's right-edge anchor, which only needs to be close, and
+ * it means position doesn't have to wait on line count to resolve.
+ */
+function resolvePosition(ns, args) {
+  const styles = ns.ui && typeof ns.ui.getStyles === "function" ? ns.ui.getStyles() : null
+  const charWidth = styles ? styles.tailFontSize * 0.6 : 8
+  const approxWidth = args.w || Math.ceil(WIDTH_CHARS * charWidth) + 34
+
+  let x = args.x
+  if (x === undefined) {
+    const screenWidth =
+      ns.ui && typeof ns.ui.windowSize === "function" ? ns.ui.windowSize()[0] : 1280
+    x = Math.max(0, screenWidth - approxWidth - RIGHT_MARGIN)
+  }
+  const y = args.y === undefined ? OVERVIEW_DROP : args.y
+  return { x: Math.round(x), y: Math.round(y) }
+}
+
+function placeTail(ns, args, lines, pos) {
   if (!ns.ui) return
   if (typeof ns.ui.openTail === "function") ns.ui.openTail()
   if (typeof ns.ui.setTailTitle === "function") ns.ui.setTailTitle("mcp")
@@ -262,21 +294,7 @@ function placeTail(ns, args, lines) {
     height = height || Math.ceil((lines.length + 1) * lineHeight) + 40
   }
   if (typeof ns.ui.resizeTail === "function") ns.ui.resizeTail(width, height)
-
-  if (typeof ns.ui.moveTail === "function") {
-    let x = args.x
-    let y = args.y
-    if (x === undefined) {
-      // Hang off the right edge, under the Overview, without hardcoding a
-      // screen width. windowSize() is 0GB; fall back to a sane constant if
-      // this Bitburner build predates it.
-      const screenWidth =
-        typeof ns.ui.windowSize === "function" ? ns.ui.windowSize()[0] : 1280
-      x = Math.max(0, screenWidth - width - RIGHT_MARGIN)
-    }
-    if (y === undefined) y = OVERVIEW_DROP
-    ns.ui.moveTail(x, y)
-  }
+  if (typeof ns.ui.moveTail === "function") ns.ui.moveTail(pos.x, pos.y)
 }
 
 /**
@@ -314,6 +332,7 @@ export async function main(ns) {
   ns.disableLog("ALL")
   killPriorInstances(ns)
   const args = parseArgs(ns)
+  const pos = resolvePosition(ns, args)
   let placed = false
 
   while (true) {
@@ -321,11 +340,11 @@ export async function main(ns) {
     let lines
     try {
       status = readStatus(ns)
-      lines = buildLines(ns, status)
+      lines = buildLines(ns, status, pos)
     } catch (e) {
       // A display panel must never be the thing that dies. If the status shape
       // changes under us, say so rather than vanishing.
-      lines = [row("HUD ERROR", "--"), String(e).slice(0, WIDTH_CHARS), row("check mcp_hud.js", "")]
+      lines = [row("HUD ERROR", "--"), String(e).slice(0, WIDTH_CHARS), row("check mcp_hud.js", ""), row("x=" + pos.x, "y=" + pos.y)]
     }
 
     ns.clearLog()
@@ -334,7 +353,7 @@ export async function main(ns) {
     // Placed once rather than every tick: repositioning on a loop makes the
     // window impossible to drag somewhere else.
     if (!placed) {
-      placeTail(ns, args, lines)
+      placeTail(ns, args, lines, pos)
       placed = true
     }
     if (ns.ui && typeof ns.ui.renderTail === "function") ns.ui.renderTail()

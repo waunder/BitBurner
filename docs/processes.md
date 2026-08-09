@@ -33,6 +33,7 @@ flowchart TB
         status --> hud[mcp_hud.js]
         pool -.->|scanned| stats[get_stats.js]
         status -.->|after a manual download| parser[mcp_status_parser.py]
+        player[(player state)] -.->|ns.getMoneySources| moneypanel[mcp_money.js]
     end
 
     subgraph life["Lifecycle"]
@@ -319,10 +320,11 @@ own Overview.
 |rate 112k       avg 98.00k|
 |wkn 40/210    w40 g300 h12|   needed/available, then live threads
 |ram 97%           19 hosts|
-|lvl 341               920m|
+|lvl 341     earned 45.20m|   see below
 |next phantasy       1.8/3x|   see below
 |ver ok               inv 0|   code drift, invariant violations
 |tick 10.1s          age 0s|
+|x=950                y=190|   see below
 +--------------------------+
 ```
 
@@ -360,15 +362,71 @@ The `next` row renders `switchEval` in three states:
 | `hold 460s` | A better target exists; the commit timer is still running. |
 | `1.8/3x` | A better target exists but isn't winning by enough. |
 
+The `lvl`/`earned` row shows `ns.getMoneySources().sinceInstall.hacking +
+.crime` — cumulative, only ever added to by the game itself, so spending
+(Hacknet, servers, anything) can never move it. This exists because total
+player money couldn't answer "is anything actually earning" once heavy
+Hacknet spending became routine — see the out-of-game watcher section below.
+"Since install," not "since start," so it survives script and game restarts
+and only resets on an actual augmentation install.
+
+The `x=`/`y=` row echoes back whatever position was actually applied — the
+args passed in, or the computed default if none were. Bitburner exposes no
+getter for a tail window's current position or size anywhere in the `ns.ui`
+cost table (checked directly, not assumed), so a manual drag can never be
+read back by a script. This is the substitute: dialing in a position is
+"adjust the number, see where it lands, read the confirmation," not "drag,
+then capture." Every panel in this project that supports `x=`/`y=` carries
+this same row for the same reason.
+
+### `mcp_money.js`
+
+A second small panel, independent of the HUD — start/stop/roll-up like any
+tail window — answering a different question: not "is the bot healthy" but
+"where is money actually coming from and going." Reads
+`ns.getMoneySources().sinceInstall` directly (not `mcp_status.json` — this is
+whole-player accounting, not specific to the bot's own target, so there's no
+orchestrator-disagreement risk to design around).
+
+- **Start:** `run mcp_money.js` — optional `x= y= w= h=`, same as `mcp_hud.js`,
+  same echo-row substitute for the missing position getter
+- **Cost:** 3.3GB (1.6GB baseline + `ns.getMoneySources` 1.0GB + `ns.ps`
+  0.2GB + `ns.kill` 0.5GB)
+- Shows every non-zero category, sorted by magnitude, plus a `total` line.
+  Expense categories (`hacknet_expenses`, `gang_expenses`) render as negative
+  numbers with no special-casing needed — confirmed against the game's own
+  code, not assumed: `loseMoney()` calls
+  `recordMoneySource(-1 * amount, category)`, so the sign is already correct
+  at the source.
+
+```
++------------------------------+
+|money sources    since install|
+|total                    3.06b|
+|hacking                  4.20b|
+|hacknet_expenses         -890m|
+|crime                     320m|
+|hacknet                 15.00m|
+|x=1050                   y=430|
++------------------------------+
+```
+
 ### `get_stats.js`
 
 The wide view: one line per rooted server with money, security, RAM and what
 it is currently running. Auto-sizes its tail window to the text using real
-font metrics from `ns.ui.getStyles()`, and parks itself beside the sidebar.
+font metrics from `ns.ui.getStyles()`, and parks itself beside the sidebar by
+default.
 
 - **Start:** `run get_stats.js`, or `run get_stats.js <server> [<server>…]`
-  to restrict it
+  to restrict it — `x=`/`y=`/`w=`/`h=` also accepted, mixed in with server
+  names in any order. They're filtered out by pattern (`/^[xywh]=[\d.]+$/`)
+  before the remaining args are read as hostnames, so a real server named
+  e.g. `xylophone` is never mistaken for a stray `x=` — verified before
+  shipping, not just assumed safe.
 - **Reads:** the live game. This one *does* measure independently.
+- Carries the same `x=`/`y=` echo row as `mcp_hud.js`, for the same reason —
+  no way to read a window's position back after a manual drag.
 
 ### `mcp_status.js`
 

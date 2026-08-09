@@ -85,22 +85,45 @@ function get_server_data(ns, server) {
 			` Action:${activity.action} ${activity.target}`
 }
 
+// x=/y=/w=/h= look like server names to a naive "every arg is a hostname"
+// reader, so they have to be filtered out before get_servers() sees ns.args
+// — otherwise `run get_stats.js x=100` would try to show a server literally
+// named "x=100".
+function parsePlacementArgs(ns) {
+	var out = {}
+	for (var raw of ns.args) {
+		var text = String(raw)
+		var eq = text.indexOf("=")
+		if (eq < 0) continue
+		var key = text.slice(0, eq).trim()
+		if (key !== "x" && key !== "y" && key !== "w" && key !== "h") continue
+		var value = Number(text.slice(eq + 1))
+		if (Number.isFinite(value)) out[key] = value
+	}
+	return out
+}
+
 function get_servers(ns) {
 	/*
 	Gets servers. If specific servers requested, then returns those only.
 	Otherwise, scans and returns all servers.
 	return: list of servers
 	*/
-	if (ns.args.length >= 1) {
-		return ns.args.map(String)
+	var hostnames = ns.args.map(String).filter(function (a) {
+		return !/^[xywh]=[\d.]+$/.test(a)
+	})
+	if (hostnames.length >= 1) {
+		return hostnames
 	} else {
 		return get_all_servers(ns, false)
 	}
 }
 
 // Width in pixels of Bitburner's left nav sidebar, so the tail box sits
-// beside it instead of underneath it. Adjust if it doesn't line up.
+// beside it instead of underneath it by default. Adjust if it doesn't line
+// up, or override per-run with x=/y=.
 const SIDEBAR_WIDTH = 233
+const DEFAULT_Y = 0
 
 // Bitburner renders ANSI escapes in tail windows. White separates our panels
 // from the game's green. Basic codes only — this build has no 256-colour
@@ -133,7 +156,21 @@ function killPriorInstances(ns) {
 	}
 }
 
-function openTail(ns) {
+/**
+ * No getter for a tail window's actual position exists anywhere in the ui
+ * cost table — checked, not assumed — so a manual drag can never be read
+ * back. x=/y= let you specify where it lands; the panel echoes back
+ * whatever was actually applied (args, or these defaults), so dialing in a
+ * position is "adjust the number, see where it lands, read the
+ * confirmation" rather than "drag, then capture".
+ */
+function resolvePosition(placementArgs) {
+	var x = placementArgs.x === undefined ? SIDEBAR_WIDTH : placementArgs.x
+	var y = placementArgs.y === undefined ? DEFAULT_Y : placementArgs.y
+	return { x: Math.round(x), y: Math.round(y) }
+}
+
+function openTail(ns, pos) {
 	// This script always runs on the host it was launched from, so tail it
 	// there. Previously this read ns.args[1], which collided with get_servers()
 	// treating every arg as a server name: `run get_stats.js n00dles foodnstuff`
@@ -142,7 +179,7 @@ function openTail(ns) {
 		ns.ui.openTail("get_stats.js", ns.getHostname(), ...ns.args)
 	}
 	if (ns.ui && typeof ns.ui.moveTail === "function") {
-		ns.ui.moveTail(SIDEBAR_WIDTH, 0)
+		ns.ui.moveTail(pos.x, pos.y)
 	}
 }
 
@@ -150,7 +187,7 @@ function openTail(ns) {
 const TAIL_PADDING_X = 60
 const TAIL_PADDING_Y = 40
 
-function resizeTailToFit(ns, lines) {
+function resizeTailToFit(ns, lines, placementArgs) {
 	if (!ns.ui || typeof ns.ui.resizeTail !== "function" || typeof ns.ui.getStyles !== "function") {
 		return
 	}
@@ -164,8 +201,8 @@ function resizeTailToFit(ns, lines) {
 			maxLen = line.length
 		}
 	}
-	var width = Math.max(150, Math.ceil(maxLen * charWidth) + TAIL_PADDING_X)
-	var height = Math.max(30, Math.ceil((lines.length + 1) * lineHeight) + TAIL_PADDING_Y)
+	var width = placementArgs.w || Math.max(150, Math.ceil(maxLen * charWidth) + TAIL_PADDING_X)
+	var height = placementArgs.h || Math.max(30, Math.ceil((lines.length + 1) * lineHeight) + TAIL_PADDING_Y)
 	ns.ui.resizeTail(width, height)
 	if (typeof ns.ui.renderTail === "function") {
 		ns.ui.renderTail()
@@ -190,7 +227,9 @@ function disableLogs(ns) {
 export async function main(ns) {
 	disableLogs(ns)
 	killPriorInstances(ns)
-	openTail(ns)
+	var placementArgs = parsePlacementArgs(ns)
+	var pos = resolvePosition(placementArgs)
+	openTail(ns, pos)
 
 	while (true) {
 		ns.clearLog()
@@ -206,7 +245,9 @@ export async function main(ns) {
 		for (var item of stats) {
 			ns.print(WHITE + item.line + RESET)
 		}
-		resizeTailToFit(ns, stats.map((item) => item.line))
+		var posLine = `x=${pos.x} y=${pos.y}`
+		ns.print(WHITE + posLine + RESET)
+		resizeTailToFit(ns, stats.map((item) => item.line).concat([posLine]), placementArgs)
 		await ns.sleep(5000)
 	}
 }

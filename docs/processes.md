@@ -201,13 +201,45 @@ The ones that actually get retuned:
 | `OPPORTUNITY_SWITCH_FACTOR` | 3 | Margin required to abandon a working target |
 | `LOOP_SLEEP_MS` | 10000 | Tick length |
 
-Eleven more are configurable; the file in the repo lists all fifteen with
-their defaults. Rules: only numbers are accepted, unknown keys are rejected
-and reported, and **corrupt JSON keeps the current values** rather than
-reverting to defaults — a half-saved file should not silently undo a
-deliberate tune. Every change emits a `config_change` event with a diff, and
-the effective config rides in `mcp_status.json` so an edit can be confirmed to
-have taken.
+Fourteen more numeric keys are configurable; the file in the repo lists all
+seventeen (fourteen numeric + `OBJECTIVE`/`XP_WEIGHT_HACK`/`XP_WEIGHT_GROW`,
+see below) with their defaults. Rules for the numeric ones: only numbers are
+accepted, unknown keys are rejected and reported, and **corrupt JSON keeps
+the current values** rather than reverting to defaults — a half-saved file
+should not silently undo a deliberate tune. Every change emits a
+`config_change` event with a diff, and the effective config rides in
+`mcp_status.json` so an edit can be confirmed to have taken.
+
+#### `OBJECTIVE` — money vs. XP
+
+`"money"` (default) or `"xp"`, hot-reloadable like everything else. Validated
+as a string enum separately from the numeric tunables — an invalid value is
+rejected and reported the same way a bad number is, keeping the current
+setting rather than falling back to the default mid-run.
+
+Money mode is the bucket system described above. XP mode does **not** reuse
+it — deliberately. `hackExp(server, player)`'s own signature takes no money
+or percent argument, confirming hacking XP per completed action is
+independent of how much was actually stolen. The entire reason money mode
+avoids hacking a
+drained target (`empty`: `grow:1, hack:0`) is that a near-zero steal isn't
+worth the security cost — a reason that simply doesn't exist for XP. So XP
+mode uses one fixed split regardless of `moneyPct`: `XP_WEIGHT_HACK` (default
+0.8) and `XP_WEIGHT_GROW` (default 0.2), rendered as a single pseudo-bucket
+named `xp` that flows through the same bucket-change machinery money mode
+uses (`forceRebalance` still fires correctly when switching objective live).
+
+**That 0.8/0.2 split is reasoned, not measured** — hack has the shortest
+cycle time of the three actions, so more threads complete per second, all
+else equal. It has not been checked against real exp/sec/thread numbers for
+grow or weaken. `econ_probe.js` exists to gather exactly that (see its own
+header) and these two numbers are expected to change once real data exists —
+that's why they're config keys instead of a hardcoded table.
+
+Target *selection* is unchanged in both modes — still scored by $/s. Making
+selection itself XP-aware is a larger, riskier change than reweighting
+hack/grow, and is deliberately not happening until real data justifies a
+specific formula rather than a guess.
 
 #### Telemetry
 

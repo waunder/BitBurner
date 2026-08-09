@@ -58,6 +58,36 @@ let DEGRADED_SKIP_MS = 900000
 // grow/hack cycle's swing without being so wide that a target legitimately
 // crossing a tier takes noticeably longer to be recognized.
 let BUCKET_HYSTERESIS = 0.02
+
+// What the bot is farming for. "money" is the original, bucket-based
+// behaviour (see WORK_WEIGHTS_BY_BUCKET) — grow-heavy when a target is
+// drained, hack-heavy once it's full, because hack's take scales with
+// *available* money and stealing from a near-empty target is close to free
+// security cost for near-zero reward.
+//
+// "xp" exists because that reasoning doesn't apply to experience: the
+// game's own hackExp(server, player) formula takes no money/percent
+// argument at all — XP per completed action is independent of how much was
+// actually stolen. So unlike money mode, there is no reason to avoid
+// hacking a drained target for XP purposes, and no reason for the weighting
+// to depend on moneyPct at all. XP mode uses a single flat split
+// (XP_WEIGHT_HACK / XP_WEIGHT_GROW below) instead of the bucket table.
+//
+// Target SELECTION is unchanged in both modes — still scored by $/s. Making
+// selection itself XP-aware is a larger, riskier change than reweighting
+// hack/grow, and isn't happening until real per-action XP/sec numbers exist
+// to justify a specific formula (see econ_probe.js) rather than a guess.
+let OBJECTIVE = "money"
+
+// Provisional XP-mode split — hack favoured because it has the shortest
+// cycle time of the three actions, so more threads complete (and therefore
+// grant XP) per second, all else equal. This is reasoned, not measured: it
+// has not been checked against real exp/sec/thread numbers for grow or
+// weaken, which econ_probe.js exists to gather. Expect these two numbers
+// specifically to change once that data exists — that's why they're
+// separate hot-reloadable config keys rather than a hardcoded table.
+let XP_WEIGHT_HACK = 0.8
+let XP_WEIGHT_GROW = 0.2
 const ACTION_SCRIPTS = ["/scripts/grow.js", "/scripts/hack.js", "/scripts/weaken.js"]
 const HACK_SEC_INCREASE = 0.002
 const GROW_SEC_INCREASE = 0.004
@@ -92,7 +122,14 @@ const CONFIG_DEFAULTS = {
   MIN_TARGET_COMMIT_MS,
   DEGRADED_SKIP_MS,
   BUCKET_HYSTERESIS,
+  XP_WEIGHT_HACK,
+  XP_WEIGHT_GROW,
 }
+
+// OBJECTIVE is handled separately from CONFIG_DEFAULTS: it's a string enum,
+// not a number, so it needs its own validation rather than the numeric
+// typeof check every other tunable goes through.
+const OBJECTIVE_VALUES = ["money", "xp"]
 
 /**
  * Re-read tunables from mcp_config.json. Called at the top of every tick.
@@ -133,8 +170,18 @@ function loadConfig(ns, state) {
       rejected.push(key)
     }
   }
+
+  let resolvedObjective = OBJECTIVE
+  if (parsed.OBJECTIVE === undefined) {
+    resolvedObjective = OBJECTIVE
+  } else if (typeof parsed.OBJECTIVE === "string" && OBJECTIVE_VALUES.includes(parsed.OBJECTIVE)) {
+    resolvedObjective = parsed.OBJECTIVE
+  } else {
+    rejected.push("OBJECTIVE")
+  }
+
   for (const key of Object.keys(parsed)) {
-    if (!(key in CONFIG_DEFAULTS)) rejected.push(key)
+    if (!(key in CONFIG_DEFAULTS) && key !== "OBJECTIVE") rejected.push(key)
   }
 
   const changes = {}
@@ -155,10 +202,13 @@ function loadConfig(ns, state) {
     MIN_TARGET_COMMIT_MS,
     DEGRADED_SKIP_MS,
     BUCKET_HYSTERESIS,
+    XP_WEIGHT_HACK,
+    XP_WEIGHT_GROW,
   }
   for (const key of Object.keys(CONFIG_DEFAULTS)) {
     if (current[key] !== resolved[key]) changes[key] = { from: current[key], to: resolved[key] }
   }
+  if (OBJECTIVE !== resolvedObjective) changes.OBJECTIVE = { from: OBJECTIVE, to: resolvedObjective }
 
   SECURITY_CAP = resolved.SECURITY_CAP
   TARGET_MONEY_GOAL = resolved.TARGET_MONEY_GOAL
@@ -176,6 +226,9 @@ function loadConfig(ns, state) {
   MIN_TARGET_COMMIT_MS = resolved.MIN_TARGET_COMMIT_MS
   DEGRADED_SKIP_MS = resolved.DEGRADED_SKIP_MS
   BUCKET_HYSTERESIS = resolved.BUCKET_HYSTERESIS
+  XP_WEIGHT_HACK = resolved.XP_WEIGHT_HACK
+  XP_WEIGHT_GROW = resolved.XP_WEIGHT_GROW
+  OBJECTIVE = resolvedObjective
 
   if (Object.keys(changes).length === 0 && rejected.length === 0) return null
   return { changes, rejected }
@@ -415,6 +468,7 @@ function formatStatus(status) {
     `hackLvl=${status.player.skills.hacking}`,
     `run=${status.runId}`,
     `ver=${status.scriptVersion}`,
+    `objective=${status.config ? status.config.OBJECTIVE : "?"}`,
   ]
   if (status.switchEval) {
     parts.push(
@@ -733,6 +787,22 @@ function buildPlan(ns, target, wasWorking, previousWeightBucket) {
 
   if (requiredWeaken > 0) {
     return { type: "weaken", currentSecurity, moneyPct }
+  }
+
+  // XP mode ignores moneyPct entirely — see OBJECTIVE's comment for why —
+  // so it gets a single fixed pseudo-bucket rather than running the
+  // money-tier logic. Still goes through the same bucket-change machinery
+  // (forceRebalance triggers on weightBucket changing) so switching
+  // OBJECTIVE live via config correctly redeploys with the new weights,
+  // same as crossing a money tier does today.
+  if (OBJECTIVE === "xp") {
+    return {
+      type: "work",
+      currentSecurity,
+      moneyPct,
+      weightBucket: "xp",
+      weights: { hack: XP_WEIGHT_HACK, grow: XP_WEIGHT_GROW },
+    }
   }
 
   const weightBucket = getWorkWeightBucket(moneyPct, previousWeightBucket)
@@ -1523,6 +1593,9 @@ export async function main(ns) {
         MIN_TARGET_COMMIT_MS,
         DEGRADED_SKIP_MS,
         BUCKET_HYSTERESIS,
+        OBJECTIVE,
+        XP_WEIGHT_HACK,
+        XP_WEIGHT_GROW,
       },
       invariantViolations: invariants.counts,
       // Last few transitions inline, so one file read gives both "now" and

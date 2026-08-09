@@ -210,7 +210,7 @@ function buildLines(ns, status, pos) {
 
   return [
     row(verdict(status, Date.now() - status.ts, drift, violations.total), status.target || "-"),
-    row("plan", status.plan || "-"),
+    row("plan", (status.plan || "-") + (status.weightBucket ? "/" + status.weightBucket : "")),
     row("money " + pct(status.moneyPct), "sec " + (status.currentSecurity || 0).toFixed(2)),
     row("rate " + money(status.rate), "avg " + money(status.avgRate)),
     row("wkn " + status.needWeaken + "/" + status.maxWeaken, "w" + threads.weaken + " g" + threads.grow + " h" + threads.hack),

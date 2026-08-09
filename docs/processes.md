@@ -456,16 +456,29 @@ is bought — what looks worth buying.
 - **Start:** `run mcp_stocks.js` — optional `x= y= w= h=`, same echo-row
   substitute for the missing position getter as every other panel here.
 - **Cost:** 11.45GB (1.6GB baseline + `ns.ps` 0.2 + `ns.kill` 0.5,
-  self-supersede + `stock.hasWseAccount`/`hasTixApiAccess`/`has4SData` 0.05
-  each + `stock.getSymbols`/`getPrice`/`getPosition` 2.0 each +
+  self-supersede + `stock.hasWseAccount`/`hasTixApiAccess`/`has4SDataTixApi`
+  0.05 each + `stock.getSymbols`/`getPrice`/`getPosition` 2.0 each +
   `stock.getForecast`/`getVolatility` 2.5 each). Not in `startup.js`'s
   `SCRIPTS` list — same as `mcp_money.js`, it's an opt-in panel, not part of
   the always-on suite.
-- Without 4S Data, `getForecast`/`getVolatility` have no real signal, so the
-  panel skips a ~30-row undifferentiated symbol dump in favor of one
-  `watchlist  locked (buy 4S)` line. Buying 4S Data needs no script change —
-  the watchlist (top 10 symbols by `|forecast - 0.5|`, i.e. strongest
-  directional signal) activates on the next poll.
+- Without 4S Data **TIX API access specifically** — a separate purchase from
+  the UI-only 4S Market Data, `purchase4SMarketDataTixApi` vs
+  `purchase4SMarketData` in the game's own function list — `getForecast`/
+  `getVolatility` have no real signal, so the panel skips a ~30-row
+  undifferentiated symbol dump in favor of one `watchlist locked (buy 4S)`
+  line. Buying the TIX API variant needs no script change — the watchlist
+  (top 10 symbols by `|forecast - 0.5|`, i.e. strongest directional signal)
+  activates on the next poll.
+- **First live run (2026-08-09) threw a runtime error**: the original code
+  gated the watchlist on `has4SData()` (general 4S UI access), but
+  `getForecast`/`getVolatility` actually check `has4SDataTixApi` internally
+  (confirmed in source: `if(!r.ai.has4SDataTixApi)throw ...`) — two
+  genuinely different flags. Since a runtime error inside `buildLines`
+  discards the whole line array via the outer `catch`, the crash also hid
+  an already-open position, not just the watchlist. Fixed by gating on
+  `has4SDataTixApi()` instead; the error-display path was also widened from
+  a single 34-char slice to up to 6 wrapped lines, so a future misdiagnosis
+  like this one doesn't require re-deriving the cause from source again.
 - **Confirmed against source, not assumed:** the augmentation-install reset
   wipes stock *positions* but not `hasWseAccount`/`hasTixApiAccess` — those
   clear only on a BitNode-prestige reset, a different and much rarer path.
@@ -476,7 +489,7 @@ is bought — what looks worth buying.
 ```
 +----------------------------------+
 |wse/tix                   yes/yes|
-|4S data                    locked|
+|4S tix                     locked|
 |positions                       0|
 |long value                     0 |
 |short value                    0 |

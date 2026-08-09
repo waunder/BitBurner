@@ -11,11 +11,12 @@
  * source — only a BitNode-prestige reset clears those flags), so this panel
  * should show 0 positions and live TIX access simultaneously right now.
  *
- * Without 4S Data (not yet purchased — $25b, deferred), getForecast/
- * getVolatility have no signal to report, so the panel skips the full
- * symbol dump (would be ~30+ undifferentiated rows) in favor of a one-line
- * "locked" note. Once 4S is bought, no code change is needed — the
- * watchlist section activates on its own.
+ * getForecast/getVolatility gate on has4SDataTixApi specifically — a
+ * separate purchase from the UI-only 4S Market Data — not yet bought
+ * ($25b, deferred). Until it is, the panel skips the full symbol dump
+ * (would be ~30+ undifferentiated rows) in favor of a one-line "locked"
+ * note. Once bought, no code change is needed — the watchlist activates on
+ * its own.
  *
  * Args (all optional, any order):
  *   x=<px> y=<px>   absolute tail position, overriding the default anchor
@@ -25,7 +26,7 @@
  * than stacking another one beside it.
  *
  * Cost: 1.6GB baseline + ns.ps (0.2) + ns.kill (0.5, self-supersede) +
- * stock.hasWseAccount/hasTixApiAccess/has4SData (0.05 each) +
+ * stock.hasWseAccount/hasTixApiAccess/has4SDataTixApi (0.05 each) +
  * stock.getSymbols/getPrice/getPosition (2.0 each) +
  * stock.getForecast/getVolatility (2.5 each) = 11.45GB.
  *
@@ -89,7 +90,16 @@ function buildLines(ns, pos) {
     ]
   }
 
-  const has4S = ns.stock.has4SData()
+  // getForecast/getVolatility gate on has4SDataTixApi specifically, not
+  // has4SData — confirmed against source: both throw
+  // "You don't have 4S Market Data TIX API Access!" checking
+  // r.ai.has4SDataTixApi. The two are genuinely separate purchases in the
+  // game (purchase4SMarketData is UI-only, purchase4SMarketDataTixApi is
+  // the one that unlocks these two functions for a script) — has4SData()
+  // alone is the wrong flag to guard on here, and using it threw a runtime
+  // error the first time this ran, since it can be true while the TIX-API
+  // variant is still false.
+  const has4S = ns.stock.has4SDataTixApi()
   const symbols = ns.stock.getSymbols()
 
   const positions = []
@@ -115,7 +125,7 @@ function buildLines(ns, pos) {
 
   const lines = [
     row("wse/tix", "yes/yes"),
-    row("4S data", has4S ? "yes" : "locked"),
+    row("4S tix", has4S ? "yes" : "locked"),
     row("positions", String(positions.length)),
     row("long value", money(longValue)),
     row("short value", money(shortValue)),
@@ -207,7 +217,17 @@ export async function main(ns) {
     try {
       lines = buildLines(ns, pos)
     } catch (e) {
-      lines = [row("ERROR", "--"), String(e).slice(0, WIDTH_CHARS), row("x=" + pos.x, "y=" + pos.y)]
+      // Wrap across several lines rather than one 34-char slice — a single
+      // truncated line is exactly the failure mode that cost real time
+      // diagnosing this panel's first bug (getForecast threw on the wrong
+      // access flag; the truncated on-screen text alone wasn't enough to
+      // tell which flag without reading the game's source separately).
+      const text = String(e && e.message ? e.message : e).replace(/\s+/g, " ").trim()
+      const wrapped = []
+      for (let i = 0; i < text.length && wrapped.length < 6; i += WIDTH_CHARS) {
+        wrapped.push(text.slice(i, i + WIDTH_CHARS))
+      }
+      lines = [row("ERROR", "--"), ...wrapped, row("x=" + pos.x, "y=" + pos.y)]
     }
 
     ns.clearLog()

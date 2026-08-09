@@ -24,19 +24,21 @@ Ken's hand, and check it off once it's confirmed done — same rule as
   without a tail window. (If it turns out this has already been run, the
   output is what's needed — the result matters more than a fresh run.)
 
-- [ ] **Run `startup.js` once** — this single action now covers both of what
-  were two separate pending items: it kills the currently-running
-  `mcp_supervisor.js` (which is still on the pre-dump-feature code, since
-  Bitburner doesn't hot-reload) and launches a fresh copy from the current
-  file on disk, alongside `hacking/crawler.js`, `mcp.js`, `mcp_hud.js`, and
-  `get_stats.js`. **Not yet run in the real game** — reasoned through and
-  RAM-verified against the game's own cost table (including `ns.killall`'s
-  `safetyGuard` behavior, checked against the actual implementation, not
-  just the doc text), but unconfirmed end to end. It reports per-script
-  outcome, so a failure (almost certainly insufficient home RAM) will be
-  visible rather than silent.
+- [ ] **Run `mcp_stocks.js` once** — new read-only stock panel, built as the
+  first "trading script" groundwork per your go-ahead right before the
+  augmentation install. It never references any buy/sell/order function, so
+  it cannot move money regardless of args. `run mcp_stocks.js` (optional
+  `x= y= w= h=`, same as the other panels). Expect
+  `wse/tix yes/yes`, `4S data locked`, `positions 0` right now — WSE/TIX
+  access survives an install, positions don't, and 4S is still the deferred
+  $25b purchase. Not added to `startup.js`'s always-on list, same as
+  `mcp_money.js` — it's opt-in.
 
 ## Done (kept for reference)
+
+- [x] **Run `startup.js` once.** Confirmed 2026-08-09 — Ken ran it
+  post-augmentation-install ("augments installed. restart run."); HUD
+  reported `HEALTHY`/`OK` afterward with fresh (post-reset) telemetry.
 
 - [x] **`mcp_events.txt` downloading correctly.** Confirmed 2026-08-08: three
   lines, valid JSON-lines, `startup` → `target_adopt` → `bucket_change`

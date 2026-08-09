@@ -34,6 +34,7 @@ flowchart TB
         pool -.->|scanned| stats[get_stats.js]
         status -.->|after a manual download| parser[mcp_status_parser.py]
         player[(player state)] -.->|ns.getMoneySources| moneypanel[mcp_money.js]
+        player -.->|ns.stock.*| stockpanel[mcp_stocks.js]
     end
 
     subgraph life["Lifecycle"]
@@ -441,6 +442,48 @@ orchestrator-disagreement risk to design around).
 |hacknet                 15.00m|
 |x=1050                   y=430|
 +------------------------------+
+```
+
+### `mcp_stocks.js`
+
+Read-only stock market panel — groundwork for trading, not trading itself.
+**Never references `buyStock`/`sellStock`/`buyShort`/`sellShort`/
+`placeOrder`/`cancelOrder` anywhere in the file, so it cannot move money**
+regardless of what runs it or with what args. Answers three questions: do we
+have WSE/TIX access, what (if anything) are we holding, and — once 4S Data
+is bought — what looks worth buying.
+
+- **Start:** `run mcp_stocks.js` — optional `x= y= w= h=`, same echo-row
+  substitute for the missing position getter as every other panel here.
+- **Cost:** 11.45GB (1.6GB baseline + `ns.ps` 0.2 + `ns.kill` 0.5,
+  self-supersede + `stock.hasWseAccount`/`hasTixApiAccess`/`has4SData` 0.05
+  each + `stock.getSymbols`/`getPrice`/`getPosition` 2.0 each +
+  `stock.getForecast`/`getVolatility` 2.5 each). Not in `startup.js`'s
+  `SCRIPTS` list — same as `mcp_money.js`, it's an opt-in panel, not part of
+  the always-on suite.
+- Without 4S Data, `getForecast`/`getVolatility` have no real signal, so the
+  panel skips a ~30-row undifferentiated symbol dump in favor of one
+  `watchlist  locked (buy 4S)` line. Buying 4S Data needs no script change —
+  the watchlist (top 10 symbols by `|forecast - 0.5|`, i.e. strongest
+  directional signal) activates on the next poll.
+- **Confirmed against source, not assumed:** the augmentation-install reset
+  wipes stock *positions* but not `hasWseAccount`/`hasTixApiAccess` — those
+  clear only on a BitNode-prestige reset, a different and much rarer path.
+  So this panel can legitimately show live TIX access with 0 positions
+  immediately after an install, which is exactly what it showed on
+  2026-08-09's install.
+
+```
++----------------------------------+
+|wse/tix                   yes/yes|
+|4S data                    locked|
+|positions                       0|
+|long value                     0 |
+|short value                    0 |
+|(no positions)                   |
+|watchlist          locked (buy 4S)|
+|x=1050                      y=640|
++----------------------------------+
 ```
 
 ### `get_stats.js`

@@ -30,6 +30,9 @@ node_modules/
 mcp_restart.txt
 mcp_dump_request.txt
 
+# tools/bb_remote.py's connection-event diagnostic log (generated, local)
+tools/bb_remote_events.log
+
 # Bitburner save-file snapshots synced from the game (saves/tsconfig.json
 # stays tracked regardless — it's hand-authored, not game output)
 saves/*.json.gz

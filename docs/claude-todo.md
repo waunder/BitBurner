@@ -24,23 +24,49 @@ time needed Ken to fully quit and relaunch the whole Bitburner app, not
 just reconnect, before it recovered. This is now the top priority because
 it has cost real time twice in one day, not because it's newly noticed.
 
-- [ ] **Resume diagnosing the port-12526 connect-then-drop.** A prototype
-  direct client (`tools/bb_remote.py`, now merged to main —
-  `docs/remote-api-migration.md` has the full protocol writeup) was pointed
-  at port 12526 (chosen so it wouldn't disturb the real sync, which stays
-  on 12525) for a live test. It connected, then dropped back to offline.
-  **Root cause is genuinely unknown** — nothing beyond "connects, then
-  drops" was established before the session ended. Start from scratch:
-  check `tools/bb_remote.py`'s own logging/error handling around the
-  disconnect, check what the game's Options → Remote API status field
-  shows at the moment it drops, check whether it's a timeout, a protocol
-  mismatch on some message the self-test's mock never exercised, or
-  something else entirely.
-- [ ] **Validate a full round trip once the drop is fixed.** Push one real
-  file through `tools/bb_remote.py`, confirm it actually lands in the game
-  (read it back, or dump/tail it), without touching the VS Code extension
-  at all. This is the bar for "the direct connection actually works," not
+- [x] **Diagnose the port-12526 connect-then-drop.** Done 2026-08-10 — see
+  `docs/remote-api-diagnosis-log.md` for the full trail. Root cause found
+  and confirmed live (not just theorized): `cmd_serve` read commands from
+  `sys.stdin.readline()`, and under a non-interactive stdin (no
+  controlling TTY — how a tool-driven launch invokes it) that returns `''`
+  immediately, which the old code treated as `quit` and tore the
+  just-accepted connection down within ~1s. Reproduced against the actual
+  pre-fix commit with a real client (`ping` failed at t+1.02s, clean
+  `1000` close). Fixed: `serve` now only reads stdin commands on a real
+  TTY, otherwise holds the connection and logs heartbeats; added a
+  `watch` subcommand (no stdin dependency at all) for unattended live
+  tests; added full connect/disconnect/message logging to stdout + a
+  gitignored log file, since the old code logged nothing and that's what
+  made this take so long to pin down. Verified: `selftest` still passes
+  all seven checks; the fix was verified against a real (non-game) client
+  holding a connection past the point the old code would have killed it.
+  **Still not tested against the actual live game** — that's the next
+  item below.
+- [x] **Live-test the fix against the real game on port 12526.** Done
+  2026-08-10, confirmed live: a `watch` window caught a real `CONNECTED`
+  from the actual game process (`user-agent` shows `bitburner/3.0.1 ...
+  Electron/41.4.0`, not a mock), held stable for 170s+ with no drop. The
+  connect-then-drop bug is fixed, not just theorized-fixed. Full trail:
+  `docs/remote-api-diagnosis-log.md`.
+- [ ] **Validate a full round trip.** In progress 2026-08-10. First
+  attempt lost the connection: needed a separate `push`/`get` process,
+  switched tools to start it, and the game does not auto-reconnect on its
+  own once dropped (confirmed — waited the full 60s, nothing), so that
+  cost a wasted Connect click. **Lesson applied:** built one combined
+  script (scratchpad `bb_remote_roundtrip.py`, using `tools/bb_remote.py`'s
+  own `RemoteApiServer`/`BitburnerApi` classes) that does connect → push →
+  get → compare → report, all in one continuous connection, so the
+  remaining validation costs exactly one more Connect click, not one per
+  RPC call. This is the bar for "the direct connection actually works," not
   just "it connects."
+  After several quiet windows (all explained by Ken being away from the
+  Options screen, not a tool problem — see `docs/remote-api-diagnosis-log.md`),
+  stopped resuming on a timer and instead launched the round-trip script as
+  a **fully detached process** (`nohup` + `disown`, PPID `1`, confirmed not
+  tied to any Claude session) with a 60-minute wait, logging to
+  `tools/bb_remote_events.log`. Nothing further needed from Claude until
+  that log shows a connection — once it does, check the log for
+  `ROUND TRIP MATCH`/`MISMATCH` and close this item out accordingly.
 - [ ] **Design and build the replacement for the trigger-file mechanism.**
   `mcp_restart.txt` and `mcp_dump_request.txt` are currently the only
   remote-trigger channel into the game (`mcp_supervisor.js` polls them).

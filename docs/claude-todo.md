@@ -42,17 +42,24 @@ it has cost real time twice in one day, not because it's newly noticed.
   holding a connection past the point the old code would have killed it.
   **Still not tested against the actual live game** — that's the next
   item below.
-- [ ] **Live-test the fix against the real game on port 12526.** Ask Ken
-  to open Options → Remote API, set port to `12526`, click Connect, while
-  `tools/bb_remote.py watch --port 12526 --duration 180` is running and
-  being actively read from `tools/bb_remote_events.log`. If the connection
-  now holds (expected, given the fix reproduces and resolves the bug found
-  above), proceed straight to the round-trip item below in the same
-  session. If it still drops, the new logging will show close_code/
-  close_reason/exception this time instead of nothing.
-- [ ] **Validate a full round trip once the drop is fixed.** Push one real
-  file through `tools/bb_remote.py`, confirm it actually lands in the game
-  (read it back, or dump/tail it), without touching the VS Code extension
+- [x] **Live-test the fix against the real game on port 12526.** Done
+  2026-08-10, confirmed live: a `watch` window caught a real `CONNECTED`
+  from the actual game process (`user-agent` shows `bitburner/3.0.1 ...
+  Electron/41.4.0`, not a mock), held stable for 170s+ with no drop. The
+  connect-then-drop bug is fixed, not just theorized-fixed. Full trail:
+  `docs/remote-api-diagnosis-log.md`.
+- [ ] **Validate a full round trip.** In progress 2026-08-10. First
+  attempt lost the connection: needed a separate `push`/`get` process,
+  switched tools to start it, and the game does not auto-reconnect on its
+  own once dropped (confirmed — waited the full 60s, nothing), so that
+  cost a wasted Connect click. **Lesson applied:** built one combined
+  script (scratchpad `bb_remote_roundtrip.py`, using `tools/bb_remote.py`'s
+  own `RemoteApiServer`/`BitburnerApi` classes) that does connect → push →
+  get → compare → report, all in one continuous connection, so the
+  remaining validation costs exactly one more Connect click, not one per
+  RPC call. That script is what's currently running/waiting. Once it
+  reports a match, this item is done and only the production cutover
+  (item below) remains.
   at all. This is the bar for "the direct connection actually works," not
   just "it connects."
 - [ ] **Design and build the replacement for the trigger-file mechanism.**

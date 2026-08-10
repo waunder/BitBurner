@@ -291,3 +291,33 @@ during it.
 Started a third `watch --port 12526 --duration 180` at 2026-08-10 11:42:23
 (log cleared first so each window's file is self-contained), listening
 confirmed via `lsof`. This is the window to check next.
+
+**CONNECTED, live, confirmed at 11:44:06.** The third watch window caught
+it: `CONNECTED from ('127.0.0.1', 56023); headers={... 'user-agent':
+'Mozilla/5.0 ... bitburner/3.0.1 ... Electron/41.4.0 ...'}` — this is the
+real game process, not a mock. Held for at least 34 heartbeats (170s) with
+`connected=True` throughout, no drop. **This is the connect-then-drop bug,
+fixed and confirmed:** the earlier root cause (stdin EOF tearing down a
+non-interactive `serve`) doesn't apply to `watch` at all (no stdin
+interaction by design), and the connection simply held. First unambiguous
+live confirmation that the direct connection itself works end to end.
+
+**Round-trip attempt #1 lost the connection to a process-management
+mistake, not a protocol issue.** Needed to run `push`/`get` next, which
+requires its own `RemoteApiServer` instance — can't share the port with
+the already-running `watch` process. Stopped `watch` via `TaskStop`, which
+killed the process abruptly (no `STOPPING server`/`DISCONNECTED` line ever
+appeared in the log — the `finally` cleanup didn't get to run), then
+immediately ran `push --port 12526`. It waited the full 60s and got no
+reconnection: **the game does not auto-reconnect after the connection
+drops, regardless of the "Reconnection delay: 0" field** (or `0` means
+something other than "reconnect immediately" — not established which).
+Confirms a real operational rule for this tool going forward: **once
+connected, do all the RPC calls needed for a task in that same process
+before tearing it down** — a second Connect click from Ken is required
+every time the connection is lost, there is no free retry.
+
+Built `bb_remote_roundtrip.py` (scratchpad, not part of the repo) as a
+combined push+get+verify script using `tools/bb_remote.py`'s own classes,
+specifically so the round-trip validation only costs Ken one more Connect
+click instead of one per RPC call. Waiting on that click now.

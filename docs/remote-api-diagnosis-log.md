@@ -391,3 +391,19 @@ evidence of a tool-side problem, just no one at the Options screen yet.
 ~24 minutes of listening total across all windows with zero connection
 attempts logged. Continuing to restart quietly per the standing
 instruction.
+
+**Switched strategy again, per coordinator instruction: stopped
+resuming-on-a-timer entirely.** Restarting a session-managed background
+task every ~9 minutes was flagged as burning context for no new
+information, and the coordinator will watch `tools/bb_remote_events.log`
+directly rather than needing a wake-up each cycle. Widened
+`bb_remote_roundtrip.py`'s wait to 3600s (60 min) and launched it as a
+**fully detached process** — `nohup ... & disown`, not a
+harness-tracked background task — specifically so it survives past this
+turn/session with no notification tied to its lifecycle. Confirmed
+detached via `ps -o pid,ppid`: PPID is `1` (reparented to launchd), not
+this shell. Confirmed listening: `lsof -iTCP:12526` shows the new PID
+bound, and `tools/bb_remote_events.log` shows the fresh `LISTENING` /
+`Waiting up to 3600s` lines (log file was cleared first so this window is
+self-contained). This is the last action of this diagnosis turn — no
+further restarts from Claude's side until the log shows something new.

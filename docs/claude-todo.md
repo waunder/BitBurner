@@ -57,11 +57,16 @@ it has cost real time twice in one day, not because it's newly noticed.
   own `RemoteApiServer`/`BitburnerApi` classes) that does connect → push →
   get → compare → report, all in one continuous connection, so the
   remaining validation costs exactly one more Connect click, not one per
-  RPC call. That script is what's currently running/waiting. Once it
-  reports a match, this item is done and only the production cutover
-  (item below) remains.
-  at all. This is the bar for "the direct connection actually works," not
+  RPC call. This is the bar for "the direct connection actually works," not
   just "it connects."
+  After several quiet windows (all explained by Ken being away from the
+  Options screen, not a tool problem — see `docs/remote-api-diagnosis-log.md`),
+  stopped resuming on a timer and instead launched the round-trip script as
+  a **fully detached process** (`nohup` + `disown`, PPID `1`, confirmed not
+  tied to any Claude session) with a 60-minute wait, logging to
+  `tools/bb_remote_events.log`. Nothing further needed from Claude until
+  that log shows a connection — once it does, check the log for
+  `ROUND TRIP MATCH`/`MISMATCH` and close this item out accordingly.
 - [ ] **Design and build the replacement for the trigger-file mechanism.**
   `mcp_restart.txt` and `mcp_dump_request.txt` are currently the only
   remote-trigger channel into the game (`mcp_supervisor.js` polls them).

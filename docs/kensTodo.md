@@ -10,45 +10,14 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
-- [ ] **~30 seconds, supervised: validate the direct Remote API connection
-  against the live game.** Built 2026-08-09 (`tools/bb_remote.py`,
-  `docs/remote-api-migration.md`) as the planned replacement for the VS
-  Code extension's file-sync — protocol confirmed against the official
-  Bitburner docs and the installed extension's own source, and self-tests
-  pass against a spec-accurate mock, but nothing has round-tripped against
-  the actual running game yet, deliberately: doing so means the game's one
-  Remote API connection has to (briefly) point somewhere other than the
-  extension. Either works: (a) in-game Options → Remote API, change port
-  from `12525` to `12526`, click Connect, let Claude push/get/delete one
-  throwaway test file, then change the port back to `12525` and Connect
-  again to restore the extension's sync — or (b) close VS Code for a couple
-  minutes so `tools/bb_remote.py` can use port `12525` directly. Once this
-  confirms, the actual cutover (rewiring `mcp_restart.txt`/
-  `mcp_dump_request.txt` to use it) is separate future work.
-
-- [ ] **Check the VS Code Bitburner file-sync connection — now confirmed to
-  also block `mcp_restart.txt`, not just dumps.** During the 2026-08-09
-  XP-mode/invariant diagnosis session, five separate writes to
-  `mcp_dump_request.txt` (with fresh tokens, one `touch`-forced) over ~1
-  minute never reached the game. In the follow-up session implementing the
-  approved XP-eviction fix, the same day, two fresh-token writes to
-  `mcp_restart.txt` (~90s apart, ~2.5 minutes of polling total) also never
-  reached it: `mcp_supervisor.js` prints `mcp_supervisor: restart requested
-  (token=...)` via `ns.tprint` the instant it sees a changed token (2s poll
-  loop), and that line never appeared. Confirmed independently via `ps`:
-  `mcp.js` stayed on PID 4 and `mcp_supervisor.js` on PID 2 for the entire
-  session — if the restart had fired, `restart_mcp.js` would have killed and
-  re-exec'd `mcp.js` under a new PID. **Practical effect: Claude cannot
-  currently restart `mcp.js` at all**, only edit its source and commit/push
-  — a running instance keeps its old code indefinitely until something else
-  restarts it. The game was otherwise live (HUD ticking, `mcp.js` actively
-  switching targets), so this isn't a frozen game, just a dead push channel
-  — matches the "dropped sync session doesn't replay" failure mode CLAUDE.md
-  already documents. A reconnect or manual save in the editor should restore
-  it (same fix as documented). **Concretely needed now:** reconnect the
-  sync, then either save any file in the editor or ask Claude to re-touch
-  `mcp_restart.txt` — the 2026-08-09 XP-eviction fix (see git log) is
-  committed and pushed but has never actually run in-game because of this.
+- [ ] **Direct Remote API connection: no action needed from you right now.**
+  The supervised port-12526 test this note used to ask for already
+  happened — the game connected, then dropped back to offline within the
+  same session, before a real file round-tripped. Cause unknown; that
+  diagnosis is Claude's own next task (see `docs/claude-todo.md` priority
+  1), not something that needs your hand yet. This item will come back
+  with a concrete ask once Claude has something to test again — likely
+  another ~30-second supervised port switch, same shape as before.
 
 - [ ] **Run `dnet_deploy.js --once` from `home`** — `dnet_probe.js` (below)
   validated the model reading, so this is the next step: the roaming
@@ -58,6 +27,19 @@ Ken's hand, and check it off once it's confirmed done — same rule as
   checked against real results rather than just the source reading.
 
 ## Done (kept for reference)
+
+- [x] **VS Code file-sync dead push channel (blocked both
+  `mcp_dump_request.txt` and `mcp_restart.txt` on 2026-08-09).** Recovered
+  after Ken fully quit and relaunched the Bitburner app — not just a
+  reconnect. Confirmed resolved 2026-08-10 via CDP: the running `mcp.js`
+  now shows `ver ok`, meaning the sync did eventually push the XP-eviction
+  fix (commit `81814d6`) and a restart did land it. **This is a recurring
+  failure mode, not a one-time fix** — the same "dropped sync session
+  doesn't replay on reconnect" pattern documented in `CLAUDE.md` caused two
+  separate incidents in one day already, and nothing about this recovery
+  changes the underlying mechanism. Expect it to happen again; the actual
+  fix is replacing the extension's sync entirely (see
+  `docs/claude-todo.md` priority 1), not this recovery step.
 
 - [x] **Run `dnet_probe.js` from `home`.** Confirmed 2026-08-09: 1 darknet
   server visible (`darkweb`, model `ZeroLogon`, online/connected/session all

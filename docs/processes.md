@@ -715,6 +715,14 @@ decide; it is not appended to over chat, and chat goes back to short pings
 <https://claude.ai/code/artifact/a48a824c-7762-4b20-9e22-9f1827002e90> — same
 URL survives every redeploy of this path.
 
+### `docs/claude-todo.md`
+
+Claude's own granular, session-spanning working list — distinct from
+`docs/kensTodo.md` (Ken's-hand-only actions) and this file (what the code
+does). Read first at the start of every session, updated as work happens.
+Not part of the script map above; noted here only so it doesn't get missed
+alongside the other two standing docs.
+
 ### `tools/bb_remote.py` — direct Remote API client (prototype, not yet cut over)
 
 Built 2026-08-09 to replace the VS Code extension's file-sync as the write

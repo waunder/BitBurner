@@ -37,6 +37,43 @@ were solving a click-cost problem that no longer exists.
 
 ---
 
+## New, and now the top item: the VS Code extension's file sync itself
+
+Everything below this section was reassessed 2026-08-08 against a loop that
+still assumed the extension's sync as the write path into the game. That
+assumption is what's now in question, added 2026-08-09/10 after it cost a
+full evening twice in one day: writes to `mcp_dump_request.txt`, then
+separately to `mcp_restart.txt`, sat unread by the game for minutes at a
+time, and the second incident needed Ken to fully quit and relaunch
+Bitburner — not just reconnect — before the channel worked again. The
+underlying failure mode (a dropped sync session doesn't replay what it
+missed on reconnect) was already known and documented in `CLAUDE.md`; what's
+new is that it has now blocked the *only* remote-trigger channel into the
+game, not just a read-side convenience.
+
+This wasn't in the backlog before because it hadn't caused enough pain to
+rank above the items below. It has now, twice, the same day, and the second
+time cost more than a reconnect — so it displaces everything else as the
+top priority rather than joining the list beneath them.
+
+The direct fix in progress is `tools/bb_remote.py`, a from-scratch
+implementation of the same Remote API role the extension plays (the game
+dials out to an external WebSocket server; the extension is one such
+server, this is a second one) — see `docs/remote-api-migration.md` for the
+full protocol research and `docs/claude-todo.md` for the concrete next
+steps. Protocol correctness is validated against a spec-accurate mock; the
+live round trip against the actual game is not yet working (connects on
+port 12526, then drops to offline, cause unknown) — that diagnosis is
+next session's explicit first task, not re-litigated here.
+
+Why this ranks above `mcp_config.json` hot-reload and the rest: those are
+all about making iteration *inside* the game faster once code and config
+reach it. This is about whether code and config reach it *at all*, reliably,
+without a manual app relaunch. A faster iteration loop built on top of an
+unreliable write path is still an unreliable loop.
+
+---
+
 ## Still gold
 
 ### 1. `mcp_config.json`, re-read every tick

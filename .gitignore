@@ -13,6 +13,9 @@ dnet_cred_*.txt
 # macOS
 .DS_Store
 
+# Claude Code local state (permissions, worktrees) — machine-local, not repo content
+.claude/
+
 # Python cache
 __pycache__/
 *.pyc

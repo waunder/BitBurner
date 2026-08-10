@@ -121,6 +121,27 @@ Practical rules:
   (`ns.toast` + a status-file counter), not a print statement — see
   `checkTickInvariants` in `mcp.js`.
 
+## Communication channels
+
+Ken works from the counter, not the bench — he directs and confirms, he
+doesn't want the mechanics narrated at him. Practical rules:
+
+- **Default to background agents** for anything past a single trivial read.
+  Don't narrate tool calls in chat; that noise is exactly what he's opted
+  out of.
+- **A background agent's final report to Ken is one plain sentence** — no
+  code, no commit hashes, no jargon. Full detail goes to a file
+  (`docs/kensTodo.md`, `docs/claude-todo.md`, a doc, `docs/status-dashboard.html`),
+  never pasted into chat.
+- **Lead with a recommendation, not a menu**, whenever Ken has to decide
+  something. He wants to confirm or override, not analyze from scratch.
+- **Three lists, three jobs:** `docs/kensTodo.md` is only things Ken must
+  physically do; `docs/claude-todo.md` is Claude's own granular working
+  list, read first every session; `docs/status-dashboard.html` (published
+  as a Claude Artifact — URL in `docs/processes.md`) is the standing
+  at-a-glance view Ken checks on his own schedule, redeployed in place
+  rather than re-sent over chat.
+
 ## Git
 
 Standing approval: commit and push (non-force) to `origin main` at Claude's
@@ -140,13 +161,15 @@ stay committed and out of the ignore list, or it can't sync into the game.
 2026-08-07 process audit against the loop as it now exists (CDP connection,
 supervisor, HUD, watcher), which invalidated that audit's "maximize
 information per click" premise. The audit itself stays as the historical
-record. Version stamps, the single field list, hot-reloaded config, the
+record. **Top item as of 2026-08-10 is replacing the VS Code extension's
+file sync entirely** — see `docs/claude-todo.md` priority 1 for the concrete
+next steps. Version stamps, the single field list, hot-reloaded config, the
 event log, and invariants all shipped 2026-08-08 — see the Done table there
-for what shipped and what's still worth watching about each. Remaining, in
-order: pure-function extraction for `node --test`, `probe=` experiment mode,
-ports as a telemetry ring buffer, `mcp_doctor.js` (no longer RAM-gated — home
-is 128GB as of 2026-08-09, build if independent network measurement turns out
-to be wanted).
+for what shipped and what's still worth watching about each. Below the sync
+replacement, in order: pure-function extraction for `node --test`, `probe=`
+experiment mode, ports as a telemetry ring buffer, `mcp_doctor.js` (no
+longer RAM-gated — home is 128GB as of 2026-08-09, build if independent
+network measurement turns out to be wanted).
 
 **Stock trading stays read-only until Ken explicitly approves capital
 deployment.** `mcp_stocks.js` (built 2026-08-09) never references

@@ -226,3 +226,40 @@ the real `push`/`get`/`delete` round trip that's the actual bar in
 `docs/claude-todo.md`; if it still drops, the log will show close_code/
 close_reason/exception which narrows hypotheses C/E immediately instead of
 starting over.
+
+**Same day, first live attempt: self-inflicted failure, caught and fixed
+before it could confuse anything.** Started `watch` as `tools/bb_remote.py
+watch --port 12526 --duration 180` — this ordering (options after the
+subcommand) is a mistake: `--port`/`--server`/`--log-file` were only
+defined on the top-level parser, so argparse rejected `--port 12526` as
+"unrecognized arguments" and the process exited immediately, before ever
+binding to a port or writing a single log line. Ken clicked Connect on
+12526 during this window and, correctly, saw it fail — nothing was
+listening. `tools/bb_remote_events.log` didn't even exist afterward,
+confirming the process never got far enough to log anything.
+
+Fixed by adding `_normalize_argv()` in `tools/bb_remote.py`, which
+reorders recognized global flags to the front before argparse ever parses
+them, so `--port`/`--server`/`--log-file` now work in any position. First
+attempt at this fix used argparse's `parents=` mechanism to duplicate the
+options onto every subparser — **tested this and it was actively wrong**:
+confirmed by reading cpython's `argparse.py` (`_SubParsersAction.__call__`)
+directly, a subparser always parses its remaining tokens into a *fresh*
+namespace using its own defaults, then unconditionally overwrites every
+matching key on the parent namespace — so `--port 21218 watch` would
+silently reparse `port` back to the default (12525) the moment `watch`'s
+own (unset) `--port` got merged in. That's worse than the original bug: a
+loud "unrecognized arguments" error became a silent wrong value. Confirmed
+via direct testing (`build_parser().parse_args(...)` printing the parsed
+namespace) before shipping either version. The `_normalize_argv` approach
+avoids the whole class of problem by keeping the options declared in
+exactly one place and reordering argv text before argparse sees it —
+verified both `--port 21221 --log-file ... watch --duration 1` and `watch
+--port 21219 --log-file ... --duration 1` now parse identically, and
+`selftest` still passes all seven checks after the change.
+
+A second, correctly-invoked `watch --port 12526 --duration 180` (this
+time with `--port` in front, which was always going to work, plus the
+argv-normalization fix applied so either order works from now on) is
+running now, started 2026-08-10 11:38:10, listening confirmed via `lsof`.
+Waiting on Ken to click Connect again.

@@ -634,6 +634,59 @@ async def run_selftest():
 
 # --------------------------------------------------------------------------
 
+_GLOBAL_OPTS_WITH_VALUE = ("--port", "--server", "--log-file")
+
+
+def _normalize_argv(argv: list[str]) -> list[str]:
+    """Let --port/--server/--log-file appear anywhere on the command line,
+    not just before the subcommand.
+
+    Added 2026-08-10 after this exact ordering mistake bit a live
+    diagnosis session: ``watch --port 12526 --duration 180`` (port AFTER
+    the subcommand) failed argparse's "unrecognized arguments" check
+    because these three were only defined on the top-level parser, so the
+    watcher never actually started while Ken was clicking Connect — it
+    just silently wasn't listening. The obvious fix (defining the same
+    three options on every subparser too, via ``parents=``) was tried and
+    is actively wrong: argparse's ``_SubParsersAction.__call__`` parses
+    the subcommand's remaining tokens into a *brand new* namespace with
+    the subparser's own defaults, then unconditionally overwrites the
+    parent namespace with every key from it — so a value given *before*
+    the subcommand gets silently clobbered back to the default the
+    instant the same option is merely declared again on the subparser.
+    Confirmed by reading cpython's argparse.py directly, not guessed.
+    Silently reverting to the wrong port is worse than the loud error this
+    replaces, so: normalize the argv ourselves before argparse ever sees
+    it, and keep the options declared in exactly one place (top-level
+    only, as originally written).
+    """
+    global_part: list[str] = []
+    rest: list[str] = []
+    i = 0
+    while i < len(argv):
+        tok = argv[i]
+        matched = False
+        for opt in _GLOBAL_OPTS_WITH_VALUE:
+            if tok == opt:
+                if i + 1 < len(argv):
+                    global_part.extend([tok, argv[i + 1]])
+                    i += 2
+                else:
+                    global_part.append(tok)
+                    i += 1
+                matched = True
+                break
+            if tok.startswith(opt + "="):
+                global_part.append(tok)
+                i += 1
+                matched = True
+                break
+        if not matched:
+            rest.append(tok)
+            i += 1
+    return global_part + rest
+
+
 def build_parser():
     p = argparse.ArgumentParser(description="Direct client for Bitburner's Remote API.")
     p.add_argument("--port", type=int, default=DEFAULT_PORT)
@@ -685,7 +738,7 @@ def build_parser():
 
 def main():
     global _log_file_path
-    args = build_parser().parse_args()
+    args = build_parser().parse_args(_normalize_argv(sys.argv[1:]))
     _log_file_path = Path(args.log_file) if args.log_file else None
     dispatch = {
         "probe": cmd_probe,

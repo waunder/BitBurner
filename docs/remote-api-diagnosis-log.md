@@ -340,3 +340,18 @@ a quiet window that doesn't implicate the tool. Restarting the listener
 regardless; if this is right, the port field will need to be set to
 `12526` again after whatever Ken is doing settles, same as any other
 reconnect.
+
+**Second combined-script window (11:50:21-11:52:21) also timed out, no
+connection -- and this time confirmed why, directly.** Checked the
+Overview page again via CDP (read-only): HP 10/10, Hack 14, Money $619k,
+and "You are attempting to shoplift" / "Stop committing crime" mid-action
+with a live success-chance countdown. This is not idle -- Ken is actively
+playing through early-game manual crime-grinding right now, post-reset,
+nowhere near the Options screen. Fully explains both quiet windows;
+nothing about the tool or the fix is in question. Restarted the listener
+for a third window regardless (cheap, no reason not to keep it warm), but
+further silent windows should be expected and aren't a signal of a new
+problem -- this is a "wait for Ken to be free" situation, not a "debug the
+tool more" situation. Not sending a chat report about this per the
+standing instruction to only report once ready-for-click (already true)
+or validated; this note is the record instead.

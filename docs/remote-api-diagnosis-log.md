@@ -355,3 +355,11 @@ problem -- this is a "wait for Ken to be free" situation, not a "debug the
 tool more" situation. Not sending a chat report about this per the
 standing instruction to only report once ready-for-click (already true)
 or validated; this note is the record instead.
+
+**Third window (11:53:27-11:55:27) also quiet, as expected.** Relaunching
+every 2 minutes was pure churn given Ken is confirmed mid-gameplay with no
+fixed end time -- widened `bb_remote_roundtrip.py`'s wait from 120s to
+540s (9 min, kept under the 10-minute background-task cap) so there's one
+long-standing listener instead of a tight restart loop. Restarted with the
+wider window; will check in when it resolves (success or timeout) rather
+than every couple of minutes.

@@ -50,6 +50,13 @@ flowchart TB
         sup -->|renders| dumptail[mcp_dump tail window]
     end
 
+    subgraph direct["Direct Remote API connection (2026-08-10)"]
+        daemon["bb_remote.py daemon<br/>(persistent, local control channel)"]
+        daemon -->|pushFile, confirmed by getFile readback| flag
+        daemon -.->|getFile, bypasses sup + CDP entirely| status
+        daemon -.->|getFile| logfile
+    end
+
     subgraph out["Outside the game"]
         cdp["CDP watcher<br/>(scratchpad, session-scoped)"] -.->|reads the DOM| hud
         cdp -.->|reads the DOM| dumptail
@@ -76,6 +83,16 @@ Three things are worth reading off that diagram:
   supervisor itself. `run startup.js` (it kills everything else itself first)
   is the full recovery procedure after anything that wipes running scripts
   (an augmentation install, primarily).
+- **The restart trigger and file dumps no longer depend on the VS Code
+  extension's file sync.** `tools/bb_remote.py`'s `daemon` mode holds a
+  direct Remote API connection to the game and writes `mcp_restart.txt`
+  itself via `pushFile` (confirmed by an immediate `getFile` readback) —
+  `mcp_supervisor.js`'s poll loop is unchanged, only the delivery path into
+  the game's filesystem is. Dumps go further: `getFile` reads
+  `mcp_status.json`/`mcp_events.txt`/etc. directly, bypassing
+  `mcp_dump_request.txt`, the tail-window render, and the CDP watcher
+  entirely for anything readable this way. See the `tools/bb_remote.py`
+  section below for what's built vs. what's still unconfirmed live.
 
 ---
 
@@ -788,11 +805,6 @@ came back byte-identical (`ROUND TRIP MATCH`) and the pushed filename
 showed up in `getFileNames`'s listing. This is the bar this doc previously
 called "not yet round-tripped" — it's now met, with no VS Code extension
 involved at any point. Full trail: `docs/remote-api-diagnosis-log.md`.
-**Still not wired into `mcp_supervisor.js` or anything live-running** —
-the transport is proven, but the trigger-file replacement itself (what
-actually calls `pushFile`/`getFile` in place of the `mcp_restart.txt`/
-`mcp_dump_request.txt` polling) hasn't been designed yet; that's the next
-step, tracked in `docs/claude-todo.md`.
 
 One thing to check before building further on this connection: the
 `getFileNames` response in that same round trip included entries like
@@ -800,6 +812,81 @@ One thing to check before building further on this connection: the
 `.claude/settings...` alongside real game scripts — the game's view of
 `home`'s filesystem appears to include more of the local repo tree than
 intended. Not investigated yet, just flagged.
+
+#### The trigger-file replacement (built 2026-08-10, same session)
+
+`mcp_restart.txt`/`mcp_dump_request.txt` were the only remote-trigger
+channel into the game, and both had already failed once each on
+2026-08-09 when the extension's sync silently dropped. `tools/bb_remote.py`
+now has two layers that replace that dependency for these two specific
+actions:
+
+**One-shot commands** (`restart`, `dump`) — same connect/act/disconnect
+pattern as `push`/`get`:
+
+- `python3 tools/bb_remote.py restart [--target <hostname>]` — pushes a
+  fresh `mcp_restart.txt` (millisecond-timestamp token, optional
+  `target=<hostname>` line) via `pushFile`, then reads it back via
+  `getFile` to confirm the write actually landed — synchronous and
+  confirmable, unlike a local disk write that just hopes the extension
+  eventually syncs it. `mcp_supervisor.js`'s poll loop is **unchanged**:
+  it still just watches `mcp_restart.txt` for a content change and runs
+  `restart_mcp.js`. Only the delivery path changed.
+- `python3 tools/bb_remote.py dump <filename> [--lines N]` — fetches a
+  file's content directly via `getFile` and prints it (pretty JSON, or
+  raw/tailed text). This **bypasses `mcp_dump_request.txt`, the tail-window
+  render, and CDP entirely** — that whole path existed only because CDP
+  can't call `ns.read()` directly, and this doesn't go through CDP at all.
+  `mcp_supervisor.js`'s dump-request handling is left in place as a
+  fallback, not removed.
+
+**Daemon + local control channel** (`daemon`, `ctl-status`, `ctl-restart`,
+`ctl-dump`) — the recommended path for routine use, added after a design
+review flagged that the one-shot commands above re-do the game handshake
+on every single call, which is exactly the fragile step this migration
+exists to get away from (both prior failures — the extension's dropped
+sync, and `tools/bb_remote.py`'s own now-fixed connect-then-drop bug —
+were connection-*stability* problems, not request-shape problems). A
+one-shot process also exits immediately after, taking any diagnostic
+evidence with it.
+
+- `python3 tools/bb_remote.py daemon [--port 12526] [--control-port
+  12527]` — a **persistent** process, started once (e.g. `nohup ... &
+  disown`, confirmed via `ps -o ppid` reparenting to `launchd`/PID 1 so it
+  survives past the session that started it), that holds the game-facing
+  `RemoteApiServer` open for its entire lifetime and also serves a
+  loopback-only local control socket. Every connect/disconnect still logs
+  to `tools/bb_remote_events.log` for the whole time it runs, so a drop is
+  visible in one continuous log instead of a fresh unknown per call.
+- `python3 tools/bb_remote.py ctl-status|ctl-restart|ctl-dump
+  [--control-port 12527]` — cheap local calls (one JSON line in, one JSON
+  line out, over `127.0.0.1:<control-port>`) that ask the already-running
+  daemon to act, using its already-open game connection. No game handshake
+  on this path at all; if the daemon isn't running, these fail fast with a
+  clear "could not reach daemon control port" error instead of a 60s
+  timeout.
+
+The daemon **cannot** force the game to reconnect after a drop — the
+diagnosis log already established the game does not auto-reconnect
+regardless of the "Reconnection delay" field, so a fresh drop still needs
+one human Connect click regardless of transport. What it removes is the
+need to **restart a process** on Claude's side for that reconnect to be
+picked up: the daemon just keeps listening.
+
+**Live status as of 2026-08-10, end of this session:** built and validated
+at two levels — (1) the daemon + control-channel logic against an
+in-process mock game client (status/restart/dump/unknown-command all
+behave correctly), and (2) the full CLI subprocess path (`daemon` started
+for real, `ctl-status`/`ctl-restart`/`ctl-dump` invoked as real
+subprocesses against it, correct behavior both connected and
+disconnected). **Not yet confirmed against the live game specifically for
+`restart`/`dump`/`ctl-*`** — a detached daemon was started on port 12526
+(same port the earlier general round-trip test used) and left running,
+but a 90-second poll window at the end of this session saw no Connect
+click. The daemon is still running (`ps`/`lsof` confirmed, reparented to
+launchd) and will pick up a connection the moment Options → Remote API →
+port `12526` → Connect is clicked — no restart needed on Claude's side.
+See `docs/kensTodo.md`.
 
 ---
 

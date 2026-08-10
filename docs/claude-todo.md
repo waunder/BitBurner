@@ -60,15 +60,60 @@ it has cost real time twice in one day, not because it's newly noticed.
   "it connects." Full trail and one open scope question (home's file
   listing includes non-script repo cruft — venv, `.claude/`) in
   `docs/remote-api-diagnosis-log.md`.
-- [ ] **Design and build the replacement for the trigger-file mechanism.**
-  `mcp_restart.txt` and `mcp_dump_request.txt` are currently the only
-  remote-trigger channel into the game (`mcp_supervisor.js` polls them).
-  Once the direct connection round-trips reliably, design what replaces
-  that polling — likely `tools/bb_remote.py` (or a wrapper around it)
-  calling `pushFile`/`getFile` directly instead of writing a file and
-  waiting for the extension to sync it. Don't start this until the round
-  trip above is confirmed; building on an unconfirmed transport just moves
-  the unknown one layer up.
+- [x] **Design and build the replacement for the trigger-file mechanism.**
+  Built 2026-08-10. `tools/bb_remote.py` gained four new subcommands:
+  `restart`/`dump` (one-shot: push `mcp_restart.txt` directly via
+  `pushFile`+`getFile`-readback, or fetch a file directly via `getFile`,
+  bypassing `mcp_dump_request.txt`/tail-window/CDP entirely) and
+  `daemon`/`ctl-status`/`ctl-restart`/`ctl-dump` (persistent process +
+  local control channel — see the design-decision note right below this
+  item for why this second layer exists). `mcp_supervisor.js` itself is
+  **unchanged** — its poll loop still watches `mcp_restart.txt` for a
+  content change; only how that content gets written changed. Full
+  writeup: `docs/processes.md`'s "The trigger-file replacement" subsection
+  under `tools/bb_remote.py`.
+  - **Validated:** daemon+control-channel logic against an in-process mock
+    game client (all paths: status while disconnected, status/restart/dump
+    while connected, unknown-command error handling); the full CLI
+    subprocess path (`daemon` run for real, `ctl-status`/`ctl-restart`/
+    `ctl-dump` invoked as real subprocesses against it, correct behavior
+    both connected and disconnected); `selftest` still passes all seven
+    checks (no regression to the existing `push`/`get`/`list`/`delete`
+    commands).
+  - **Not yet validated:** the live game specifically exercising
+    `restart`/`dump`/`ctl-*`. A detached `daemon` was started on port
+    12526 (`nohup ... & disown`, confirmed reparented to launchd via
+    `ps -o ppid`) and is still running as of end-of-session, but a 90s
+    poll saw no Connect click during this session. **Needs one supervised
+    click** — see `docs/kensTodo.md`. This is a live-validation gap, not a
+    code-confidence gap: the mock+CLI coverage above exercises the exact
+    same code paths (`TriggerDaemon`, `_ctl_call`, `RemoteApiServer`) that
+    the earlier, already-live-confirmed `push`/`get`/`getFileNames` round
+    trip used underneath.
+
+  **Design decision, recorded so it isn't re-litigated:** the first cut of
+  this (this same session) was one-shot `restart`/`dump` commands — same
+  connect/act/disconnect pattern as the already-existing `push`/`get`.
+  Ken flagged, before this was called done, that this re-triggers the
+  exact fragile handshake path on every call, and that both failures
+  motivating this whole migration (the extension's silently-dropped sync,
+  and `tools/bb_remote.py`'s own now-fixed connect-then-drop bug) were
+  connection-*stability* problems, not request-shape problems — so a
+  process that reconnects per action and exits right after both re-risks
+  the fragile step and destroys the evidence of a drop the moment it
+  happens. **Chose:** kept the one-shot commands (useful for a single ad
+  hoc call, and already built/tested) but added `daemon` as the
+  recommended path — one persistent process holds the connection open for
+  its whole life and logs every connect/disconnect to
+  `tools/bb_remote_events.log` continuously; a local loopback control
+  channel (`ctl-status`/`ctl-restart`/`ctl-dump`) lets each per-turn Bash
+  call talk to the daemon instead of re-handshaking with the game. The
+  daemon still can't force the game to auto-reconnect after a drop (the
+  diagnosis log already established the game doesn't auto-reconnect
+  regardless of "Reconnection delay") — that part of the friction is
+  structural to the game's own Remote API, not something a daemon works
+  around — but it removes the need to restart a *process* on Claude's side
+  for the next reconnect to be picked up.
 
 Note on branch history: the task brief for this cleanup expected
 `tools/bb_remote.py`'s branch to carry multiple commits from being resumed
@@ -107,6 +152,27 @@ reasoning here; read it there.
   over-allocation) or is it noise given `ram 98%`/`18 hosts` are otherwise
   plausible-looking. `money 0%` + `rate 0` alongside 506 invariant hits
   suggests something is actually stuck, not just a noisy assertion.
+- [ ] **Two more live-observed items, flagged but not chased this session
+  (trigger-file work above was the priority):**
+  1. A separate live check reported **~199 accumulated
+     `weakenBudgetNonNegative` violations** — a different count than the
+     `inv 506` snapshot immediately above, so either the counter reset
+     between checks (a restart, which zeroes it) or this is a second,
+     independent sighting. Either way, `weakenBudgetNonNegative` firing
+     repeatedly across more than one session is worth a real look next
+     time: same open question as above (legitimate over-allocation vs.
+     noisy assertion), now with two independent data points instead of
+     one.
+  2. **`mcp.js`'s target-switching looked unusually thrashy**: switches on
+     a ~60-190s cadence, often immediately followed by a "yield
+     degraded... moving on" log line. Not yet diagnosed — worth checking
+     whether this is the same class of eviction-thrash bug fixed in
+     `81814d6` (money-degraded eviction chaining target-to-target) showing
+     up in a different code path, or something new. `mcp_logic.js`'s
+     `evaluateOpportunitySwitch`/`evaluateMoneyDegradation` and their
+     `node --test` coverage in `mcp_logic.test.js` are the place to start
+     — a synthetic test reproducing a 60-190s switch cadence would be far
+     cheaper than another multi-restart live diagnosis.
 - [ ] **Two worktree branches merged into main 2026-08-10** (status
   dashboard artifact, `tools/bb_remote.py` prototype) — both were clean
   except one conflict in `docs/processes.md` (both added a section in the

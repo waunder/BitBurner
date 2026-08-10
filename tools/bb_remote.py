@@ -52,6 +52,80 @@ to connect, perform one call, print the result as JSON, and exit:
         connection. Safe to run any time — it only attempts a local bind,
         never touches the game's existing connection.
 
+## Trigger-file replacement (added 2026-08-10)
+
+Two more one-shot subcommands, built specifically to replace
+`mcp_restart.txt`/`mcp_dump_request.txt`'s dependence on the VS Code
+extension's file-sync — see docs/claude-todo.md priority 1 and
+docs/remote-api-diagnosis-log.md for why: two same-day incidents where a
+write to one of those files never reached the game because the extension's
+sync had silently dropped and doesn't replay on reconnect.
+
+    python3 tools/bb_remote.py restart [--target <hostname>] [--port N]
+        Pushes a fresh mcp_restart.txt (timestamp token, optional
+        `target=<hostname>` line) directly into the game via `pushFile`,
+        then reads it back via `getFile` to confirm the push actually
+        landed — synchronous and confirmable, unlike a local disk write
+        that silently depends on a background watcher. mcp_supervisor.js's
+        existing poll loop is UNCHANGED: it still just watches
+        mcp_restart.txt for a content change and runs restart_mcp.js. Only
+        the delivery path into the game's filesystem changed.
+
+    python3 tools/bb_remote.py dump <remote_filename> [--lines N] [--port N]
+        Fetches a file's content directly via `getFile` and prints it
+        (pretty-printed for .json, raw or tailed to the last N lines
+        otherwise) — no mcp_dump_request.txt, no tail window, no CDP
+        involved. This supersedes the old dump-request/tail-window/CDP
+        path for any file readable this way (mcp_status.json,
+        mcp_events.txt, mcp_status_log.txt, mcp_target_state.json): that
+        path existed only because CDP can't call ns.read() directly, and
+        this doesn't go through CDP at all. mcp_supervisor.js's
+        mcp_dump_request.txt handling is left in place as a fallback (it
+        costs nothing idle), not removed.
+
+Both require the game's Options -> Remote API to be pointed at this
+script's port and connected — same one-active-connection-at-a-time
+constraint as `push`/`get` (see docs/remote-api-migration.md's
+"Coexistence" section). They are NOT meant to replace the VS Code
+extension's role for ongoing *source* file sync (mcp.js edits etc.) — that
+stays on the extension/port 12525 for now. These two commands are for the
+specific, occasional, ad hoc restart/dump actions that were the actual
+source of the two dropped-push incidents.
+
+## Daemon + local control channel (recommended over one-shot restart/dump)
+
+`restart`/`dump` above each reconnect to the game from scratch, which
+re-triggers the same fragile handshake path every call and gives no
+visibility into *why* a connection drops, since the process exits right
+after. `daemon` fixes both: one persistent process holds the game
+connection open for its whole lifetime and answers a local, loopback-only
+control channel that Claude's per-turn Bash calls talk to instead —
+no game handshake on the common path.
+
+    python3 tools/bb_remote.py daemon [--port 12526] [--control-port 12527]
+        Start once (e.g. via nohup ... & disown, so it survives past a
+        single turn/session — see the pattern in
+        docs/remote-api-diagnosis-log.md's detached-listener section).
+        Binds the game-facing port and waits indefinitely; also binds the
+        control port immediately, before the game connects, so ctl-status
+        works right away. Holds across drops and reconnects without
+        needing to be restarted — every connect/disconnect still logs to
+        tools/bb_remote_events.log, same as every other command here.
+
+    python3 tools/bb_remote.py ctl-status [--control-port 12527]
+    python3 tools/bb_remote.py ctl-restart [--target <hostname>] [--control-port 12527]
+    python3 tools/bb_remote.py ctl-dump <remote_filename> [--lines N] [--control-port 12527]
+        Cheap local calls against a running `daemon` — connect to
+        127.0.0.1:<control-port>, send one JSON line, get one JSON line
+        back, exit. `ctl-restart`/`ctl-dump` do exactly what `restart`/
+        `dump` do, just routed through the daemon's already-open game
+        connection instead of opening a new one. If the daemon isn't
+        running, these fail fast with a clear "could not reach daemon
+        control port" error rather than a 60s timeout.
+
+`restart`/`dump` (one-shot) are kept for a single ad hoc call when no
+daemon is running. `daemon` + `ctl-*` is the path for routine/repeated use.
+
 Long-lived mode:
 
     python3 tools/bb_remote.py serve --port 12525
@@ -339,7 +413,7 @@ class BitburnerApi:
 # CLI plumbing
 # --------------------------------------------------------------------------
 
-async def _run_one_shot(port: int, action):
+async def _run_one_shot(port: int, action, raw_output: bool = False, connect_timeout: float = CONNECT_TIMEOUT_S):
     """Start the server, wait for the game, run `action(api)`, stop."""
     rpc = RemoteApiServer(port=port)
     try:
@@ -352,18 +426,21 @@ async def _run_one_shot(port: int, action):
             "conflict documented in docs/remote-api-migration.md."
         )
         return 1
-    _log(f"Waiting up to {CONNECT_TIMEOUT_S}s for game connection. In-game: "
+    _log(f"Waiting up to {connect_timeout}s for game connection. In-game: "
          f"Options -> Remote API -> port {port} -> Connect (if not already connected there).")
     try:
-        await rpc.wait_for_connection(timeout=CONNECT_TIMEOUT_S)
+        await rpc.wait_for_connection(timeout=connect_timeout)
     except asyncio.TimeoutError:
-        _log(f"No game connection within {CONNECT_TIMEOUT_S}s.")
+        _log(f"No game connection within {connect_timeout}s.")
         await rpc.stop()
         return 1
     api = BitburnerApi(rpc)
     try:
         result = await action(api)
-        print(json.dumps(result, indent=2))
+        if raw_output:
+            print(result)
+        else:
+            print(json.dumps(result, indent=2))
         return 0
     except JsonRpcError as e:
         _log(f"RPC error: {e}")
@@ -426,6 +503,281 @@ async def cmd_servers(args):
         return await api.get_all_servers()
 
     return await _run_one_shot(args.port, action)
+
+
+# --------------------------------------------------------------------------
+# Trigger-file replacement — see the module docstring's "Trigger-file
+# replacement" section. `restart` pushes mcp_restart.txt directly instead of
+# writing it to local disk and waiting on the VS Code extension's watcher;
+# `dump` reads a file's content directly instead of triggering
+# mcp_supervisor.js's tail-window render and reading it back over CDP.
+# Neither changes mcp_supervisor.js — restart still relies on its poll loop
+# noticing the new mcp_restart.txt content and running restart_mcp.js, since
+# the Remote API protocol has no "run this script" method, only file
+# read/write. Only the delivery path for the restart trigger changed; the
+# dump path is bypassed entirely rather than changed.
+# --------------------------------------------------------------------------
+
+RESTART_TRIGGER_FILE = "mcp_restart.txt"
+
+
+async def cmd_restart(args):
+    token = str(int(time.time() * 1000))
+    lines = [token]
+    if args.target:
+        lines.append(f"target={args.target}")
+    content = "\n".join(lines) + "\n"
+
+    async def action(api):
+        push_result = await api.push_file(RESTART_TRIGGER_FILE, content, args.server)
+        # Read back immediately to confirm the write actually landed in the
+        # game's filesystem — this is the whole point versus a local disk
+        # write, which had no way to confirm the extension ever pushed it.
+        readback = await api.get_file(RESTART_TRIGGER_FILE, args.server)
+        return {
+            "pushed_content": content,
+            "push_result": push_result,
+            "readback": readback,
+            "readback_matches": readback.strip() == content.strip(),
+            "note": (
+                "mcp_supervisor.js's poll loop (POLL_MS=2000ms, unchanged) "
+                "should notice this within ~2s and run restart_mcp.js."
+            ),
+        }
+
+    return await _run_one_shot(args.port, action)
+
+
+def _format_dump(filename: str, raw: str | None, lines: int | None) -> str:
+    """Mirrors mcp_supervisor.js's formatDump — pretty-print whole .json,
+    otherwise raw content (or tailed to the last `lines`) — but as a plain
+    string for a terminal instead of a tail-window render, since this is
+    read directly via getFile with no CDP involved.
+    """
+    if not raw:
+        return f"(empty or does not exist: {filename})"
+    if filename.endswith(".json"):
+        try:
+            return json.dumps(json.loads(raw), indent=2)
+        except json.JSONDecodeError as e:
+            return f"(invalid JSON: {e})\n\n{raw}"
+    if lines:
+        all_lines = raw.split("\n")
+        if all_lines and all_lines[-1] == "":
+            all_lines.pop()
+        return "\n".join(all_lines[-lines:])
+    return raw
+
+
+async def cmd_dump(args):
+    async def action(api):
+        raw = await api.get_file(args.remote_filename, args.server)
+        return _format_dump(args.remote_filename, raw, args.lines)
+
+    return await _run_one_shot(args.port, action, raw_output=True)
+
+
+# --------------------------------------------------------------------------
+# Daemon + local control channel (added 2026-08-10, same session as
+# `restart`/`dump` above, per Ken's design correction before this was
+# considered done).
+#
+# `restart`/`dump` above each start a fresh RemoteApiServer, wait for a game
+# connection, do one thing, and tear the connection down — the same
+# connect/disconnect cycle every single call. That's a problem specifically
+# because *both* failures that motivated this whole migration (the VS Code
+# extension's socket dropping silently with no replay on reconnect, and
+# tools/bb_remote.py's own now-fixed connect-then-drop bug) were connection
+# *stability* problems, not request/response problems — so re-doing the
+# handshake on every action keeps walking back through the exact fragile
+# step being engineered around, and a one-shot process that exits right
+# after gives no ongoing visibility into a drop; the evidence leaves with
+# the process.
+#
+# The fix: `daemon` is a persistent process, started once, that holds the
+# single game-facing RemoteApiServer open for its entire lifetime — reconnect
+# instability becomes visible in one long-lived log instead of a fresh
+# unknown each call, per CLAUDE.md's "log decisions, not just state"
+# discipline. It also runs a second, local-only TCP control server
+# (loopback only, plain JSON-lines, one request/response per connection) so
+# that a per-turn Bash call — `ctl-restart`, `ctl-dump`, `ctl-status` — talks
+# to the *daemon* over a cheap local socket instead of re-handshaking with
+# the game. The daemon can't force the game to reconnect after a drop (the
+# diagnosis log already established the game does not auto-reconnect
+# regardless of the Reconnection-delay field — that needs a human click
+# regardless of transport), but it stays listening the whole time so the very
+# next Connect click is picked up with no process to (re)start on Claude's
+# side, and every connect/disconnect is timestamped in
+# tools/bb_remote_events.log for exactly the reason the diagnosis logging was
+# added in the first place.
+#
+# `restart`/`dump` (the one-shot commands above) are kept, not removed —
+# useful for a single ad hoc call when no daemon is running — but `daemon` +
+# `ctl-*` is the recommended path for routine use from here on; see
+# docs/processes.md.
+# --------------------------------------------------------------------------
+
+DEFAULT_CONTROL_PORT = 12527
+
+
+class TriggerDaemon:
+    """Owns the long-lived game-facing RemoteApiServer and answers local
+    control-channel requests against it. One JSON object per line in, one
+    JSON object per line out, one request per connection (simplest thing
+    that works for infrequent, low-concurrency calls from Claude's own Bash
+    tool — no need for persistent client connections or multiplexing).
+    """
+
+    def __init__(self, rpc: RemoteApiServer, server: str = DEFAULT_SERVER):
+        self.rpc = rpc
+        self.api = BitburnerApi(rpc, default_server=server)
+        self.started_at = time.monotonic()
+
+    async def _do_restart(self, target):
+        token = str(int(time.time() * 1000))
+        lines = [token]
+        if target:
+            lines.append(f"target={target}")
+        content = "\n".join(lines) + "\n"
+        push_result = await self.api.push_file(RESTART_TRIGGER_FILE, content)
+        readback = await self.api.get_file(RESTART_TRIGGER_FILE)
+        return {
+            "pushed_content": content,
+            "push_result": push_result,
+            "readback_matches": readback.strip() == content.strip(),
+            "note": "mcp_supervisor.js's poll loop (POLL_MS=2000ms) should notice this within ~2s.",
+        }
+
+    async def _do_dump(self, filename, lines):
+        raw = await self.api.get_file(filename)
+        return _format_dump(filename, raw, lines)
+
+    async def _do_status(self):
+        return {
+            "connected": self.rpc.is_connected,
+            "daemon_uptime_s": round(time.monotonic() - self.started_at, 1),
+        }
+
+    async def handle_control_connection(self, reader, writer):
+        peer = writer.get_extra_info("peername")
+        try:
+            raw = await asyncio.wait_for(reader.readline(), timeout=10)
+        except asyncio.TimeoutError:
+            writer.close()
+            return
+        if not raw:
+            writer.close()
+            return
+        try:
+            req = json.loads(raw.decode())
+        except json.JSONDecodeError as e:
+            await self._respond(writer, {"ok": False, "error": f"bad JSON: {e}"})
+            return
+        cmd = req.get("cmd")
+        _log(f"CTL: {peer} -> {cmd} {req}")
+        try:
+            if cmd == "status":
+                result = await self._do_status()
+            elif cmd == "restart":
+                result = await self._do_restart(req.get("target"))
+            elif cmd == "dump":
+                result = await self._do_dump(req["file"], req.get("lines"))
+            elif cmd == "push":
+                result = await self.api.push_file(req["file"], req["content"], req.get("server"))
+            elif cmd == "get":
+                result = await self.api.get_file(req["file"], req.get("server"))
+            else:
+                raise ValueError(f"unknown cmd: {cmd!r}")
+            await self._respond(writer, {"ok": True, "result": result})
+        except JsonRpcError as e:
+            await self._respond(writer, {"ok": False, "error": str(e)})
+        except Exception as e:
+            await self._respond(writer, {"ok": False, "error": f"{type(e).__name__}: {e}"})
+
+    async def _respond(self, writer, obj):
+        try:
+            writer.write((json.dumps(obj) + "\n").encode())
+            await writer.drain()
+        finally:
+            writer.close()
+
+
+async def cmd_daemon(args):
+    rpc = RemoteApiServer(port=args.port)
+    try:
+        await rpc.start()
+    except OSError as e:
+        _log(f"Could not bind game-facing port 127.0.0.1:{args.port}: {e}")
+        return 1
+
+    daemon = TriggerDaemon(rpc, server=args.server)
+    try:
+        control_server = await asyncio.start_server(
+            daemon.handle_control_connection, "127.0.0.1", args.control_port
+        )
+    except OSError as e:
+        _log(f"Could not bind control port 127.0.0.1:{args.control_port}: {e}")
+        await rpc.stop()
+        return 1
+
+    _log(
+        f"DAEMON running: game-facing port {args.port} (Options -> Remote API "
+        f"-> port {args.port} -> Connect), control port {args.control_port} "
+        f"(loopback only). Holds the connection open indefinitely and "
+        f"survives drops/reconnects without restarting. Use `ctl-status` / "
+        f"`ctl-restart` / `ctl-dump` against --control-port {args.control_port} "
+        f"instead of `restart`/`dump` while this is running."
+    )
+    async with control_server:
+        await control_server.serve_forever()
+    return 0
+
+
+async def _ctl_call(control_port: int, req: dict, timeout: float = 15.0) -> dict:
+    try:
+        reader, writer = await asyncio.wait_for(
+            asyncio.open_connection("127.0.0.1", control_port), timeout=5
+        )
+    except (ConnectionRefusedError, OSError, asyncio.TimeoutError) as e:
+        return {
+            "ok": False,
+            "error": (
+                f"could not reach daemon control port 127.0.0.1:{control_port}: {e}. "
+                f"Is `bb_remote.py daemon --control-port {control_port}` running?"
+            ),
+        }
+    try:
+        writer.write((json.dumps(req) + "\n").encode())
+        await writer.drain()
+        raw = await asyncio.wait_for(reader.readline(), timeout=timeout)
+        if not raw:
+            return {"ok": False, "error": "daemon closed the connection with no response"}
+        return json.loads(raw.decode())
+    except asyncio.TimeoutError:
+        return {"ok": False, "error": f"daemon did not respond within {timeout}s"}
+    finally:
+        writer.close()
+
+
+async def cmd_ctl_status(args):
+    result = await _ctl_call(args.control_port, {"cmd": "status"})
+    print(json.dumps(result, indent=2))
+    return 0 if result.get("ok") else 1
+
+
+async def cmd_ctl_restart(args):
+    result = await _ctl_call(args.control_port, {"cmd": "restart", "target": args.target})
+    print(json.dumps(result, indent=2))
+    return 0 if result.get("ok") else 1
+
+
+async def cmd_ctl_dump(args):
+    result = await _ctl_call(args.control_port, {"cmd": "dump", "file": args.remote_filename, "lines": args.lines})
+    if result.get("ok"):
+        print(result["result"])
+        return 0
+    print(json.dumps(result, indent=2))
+    return 1
 
 
 async def cmd_serve(args):
@@ -634,7 +986,7 @@ async def run_selftest():
 
 # --------------------------------------------------------------------------
 
-_GLOBAL_OPTS_WITH_VALUE = ("--port", "--server", "--log-file")
+_GLOBAL_OPTS_WITH_VALUE = ("--port", "--server", "--log-file", "--control-port")
 
 
 def _normalize_argv(argv: list[str]) -> list[str]:
@@ -699,6 +1051,13 @@ def build_parser():
             f"Default: {DEFAULT_LOG_FILE}. Pass an empty string to disable file logging."
         ),
     )
+    p.add_argument(
+        "--control-port", type=int, default=DEFAULT_CONTROL_PORT,
+        help=(
+            f"Loopback-only port for the daemon's local control channel "
+            f"(`daemon` binds it, `ctl-*` connects to it). Default: {DEFAULT_CONTROL_PORT}."
+        ),
+    )
     sub = p.add_subparsers(dest="cmd", required=True)
 
     sub.add_parser("probe")
@@ -733,6 +1092,47 @@ def build_parser():
     sp = sub.add_parser("ram")
     sp.add_argument("remote_filename")
 
+    sp = sub.add_parser(
+        "restart",
+        help=(
+            "Trigger an mcp.js restart via the direct connection: pushes a "
+            "fresh mcp_restart.txt straight into the game via pushFile and "
+            "confirms via getFile, instead of writing the local file and "
+            "waiting on the VS Code extension's sync watcher."
+        ),
+    )
+    sp.add_argument("--target", default=None, help="hostname to pin, passed as target=<hostname> to restart_mcp.js")
+
+    sp = sub.add_parser(
+        "dump",
+        help=(
+            "Fetch a file's content directly via getFile and print it "
+            "(pretty JSON, or raw/tailed text) — no tail window, no CDP."
+        ),
+    )
+    sp.add_argument("remote_filename")
+    sp.add_argument("--lines", type=int, default=None, help="Tail to the last N lines (non-JSON only); default: show everything")
+
+    sub.add_parser(
+        "daemon",
+        help=(
+            "Persistent process: holds the game-facing Remote API connection "
+            "open indefinitely and serves a local control channel (see "
+            "--control-port) for ctl-status/ctl-restart/ctl-dump. Recommended "
+            "over one-shot restart/dump for routine use — see the module "
+            "docstring's Daemon section."
+        ),
+    )
+
+    sub.add_parser("ctl-status", help="Ask a running `daemon` whether the game is connected, via the local control channel.")
+
+    sp = sub.add_parser("ctl-restart", help="Ask a running `daemon` to push a fresh mcp_restart.txt, via the local control channel (no game handshake per call).")
+    sp.add_argument("--target", default=None, help="hostname to pin, passed as target=<hostname> to restart_mcp.js")
+
+    sp = sub.add_parser("ctl-dump", help="Ask a running `daemon` to fetch a file, via the local control channel (no game handshake per call).")
+    sp.add_argument("remote_filename")
+    sp.add_argument("--lines", type=int, default=None, help="Tail to the last N lines (non-JSON only); default: show everything")
+
     return p
 
 
@@ -750,6 +1150,12 @@ def main():
         "servers": cmd_servers,
         "serve": cmd_serve,
         "watch": cmd_watch,
+        "restart": cmd_restart,
+        "dump": cmd_dump,
+        "daemon": cmd_daemon,
+        "ctl-status": cmd_ctl_status,
+        "ctl-restart": cmd_ctl_restart,
+        "ctl-dump": cmd_ctl_dump,
         "selftest": lambda _args: run_selftest(),
     }
     code = asyncio.run(dispatch[args.cmd](args))

@@ -10,15 +10,23 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
-- [ ] **Direct Remote API connection: ready for another supervised
-  ~30-second test.** The earlier drop is now diagnosed and a fix is in —
-  see `docs/remote-api-diagnosis-log.md`. When Claude's ready to test:
-  Options → Remote API → set Port to `12526` → Connect. Leave it connected
-  for a couple minutes if nothing seems to happen immediately; Claude will
-  be actively watching the connection over a log file the moment you
-  click, not waiting for you to describe what you see. Once confirmed
+- [ ] **Trigger-file replacement daemon is running and waiting — one
+  Connect click confirms it.** A persistent `tools/bb_remote.py daemon`
+  process is already running (started 2026-08-10, `nohup`'d so it survives
+  independent of any Claude session) and listening on port `12526` — the
+  same port used for the earlier general round-trip test, so no new setup
+  is needed. It replaces `mcp_restart.txt`/`mcp_dump_request.txt`'s
+  dependence on the VS Code extension's file sync, which dropped silently
+  twice on 2026-08-09. When convenient: **Options → Remote API → confirm
+  Port reads `12526` → Connect.** Nothing else needs clicking — the daemon
+  picks the connection up immediately and stays connected (no re-click
+  needed for follow-up restarts/dumps this session). Once confirmed
   working, switch the port back to `12525` and Connect again to restore
-  the normal VS Code sync (same reversible action as before).
+  the normal VS Code sync for ongoing source-file edits (same reversible
+  action as always) — Claude will ask again next time the direct channel
+  is needed. See `docs/claude-todo.md` priority 1 and
+  `docs/processes.md`'s `tools/bb_remote.py` section for what this
+  confirms.
 
 - [ ] **Run `dnet_deploy.js --once` from `home`** — `dnet_probe.js` (below)
   validated the model reading, so this is the next step: the roaming

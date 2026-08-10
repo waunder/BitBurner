@@ -48,25 +48,18 @@ it has cost real time twice in one day, not because it's newly noticed.
   Electron/41.4.0`, not a mock), held stable for 170s+ with no drop. The
   connect-then-drop bug is fixed, not just theorized-fixed. Full trail:
   `docs/remote-api-diagnosis-log.md`.
-- [ ] **Validate a full round trip.** In progress 2026-08-10. First
-  attempt lost the connection: needed a separate `push`/`get` process,
-  switched tools to start it, and the game does not auto-reconnect on its
-  own once dropped (confirmed — waited the full 60s, nothing), so that
-  cost a wasted Connect click. **Lesson applied:** built one combined
-  script (scratchpad `bb_remote_roundtrip.py`, using `tools/bb_remote.py`'s
-  own `RemoteApiServer`/`BitburnerApi` classes) that does connect → push →
-  get → compare → report, all in one continuous connection, so the
-  remaining validation costs exactly one more Connect click, not one per
-  RPC call. This is the bar for "the direct connection actually works," not
-  just "it connects."
-  After several quiet windows (all explained by Ken being away from the
-  Options screen, not a tool problem — see `docs/remote-api-diagnosis-log.md`),
-  stopped resuming on a timer and instead launched the round-trip script as
-  a **fully detached process** (`nohup` + `disown`, PPID `1`, confirmed not
-  tied to any Claude session) with a 60-minute wait, logging to
-  `tools/bb_remote_events.log`. Nothing further needed from Claude until
-  that log shows a connection — once it does, check the log for
-  `ROUND TRIP MATCH`/`MISMATCH` and close this item out accordingly.
+- [x] **Validate a full round trip.** Done 2026-08-10 12:26. The detached
+  listener caught a real game connection and the combined round-trip
+  script (connect → `pushFile` → `getFile` → compare → `getFileNames`, all
+  in one continuous session using `tools/bb_remote.py`'s own
+  `RemoteApiServer`/`BitburnerApi` classes) ran clean: push returned `OK`,
+  the immediate read back matched the pushed content exactly
+  (`ROUND TRIP MATCH`), and `getFileNames` listed the pushed file. This is
+  a real, live, end-to-end round trip with no VS Code extension involved —
+  the bar for "the direct connection actually works" is now met, not just
+  "it connects." Full trail and one open scope question (home's file
+  listing includes non-script repo cruft — venv, `.claude/`) in
+  `docs/remote-api-diagnosis-log.md`.
 - [ ] **Design and build the replacement for the trigger-file mechanism.**
   `mcp_restart.txt` and `mcp_dump_request.txt` are currently the only
   remote-trigger channel into the game (`mcp_supervisor.js` polls them).

@@ -407,3 +407,26 @@ bound, and `tools/bb_remote_events.log` shows the fresh `LISTENING` /
 `Waiting up to 3600s` lines (log file was cleared first so this window is
 self-contained). This is the last action of this diagnosis turn — no
 further restarts from Claude's side until the log shows something new.
+
+**Round trip confirmed 2026-08-10 12:26.** The detached listener caught a
+real game connection at 12:26:42 and the combined script ran connect →
+`pushFile` → `getFile` → compare → `getFileNames` in one continuous
+session: `pushFile` returned `OK`, the immediate `getFile` echoed back the
+exact pushed content (`ROUND TRIP MATCH`), and `getFileNames` listed the
+pushed filename among home's files. This is a real, live, end-to-end
+round trip through the direct connection with no VS Code extension
+involved — the bar set by `docs/claude-todo.md` for "the direct connection
+actually works." Full log:
+`/private/tmp/claude-501/-Users-kth-Documents-BitBurner/d8e9405e-cd89-41ac-ae76-1fa810f2623f/tasks/bvvz0uw0v.output`
+(scratchpad, not committed — the finding is recorded here instead).
+
+**Worth checking before building anything permanent on this connection:**
+that same `getFileNames` response included entries like
+`.venv/lib/python3.9/site-packages/setuptools-58.0.4.dist-info/entry_points.txt`
+and `.claude/settings...` alongside real game scripts (`saves/tsconfig.json`
+was also in there, which itself looks off). Whatever the game currently
+sees as `home`'s filesystem appears to include more of the local repo tree
+than just the intended script set — venv/tooling cruft, not only
+Bitburner scripts. Not investigated or fixed here, just flagged: worth
+understanding the scope of what's exposed (and why) before the trigger-file
+replacement starts writing/reading through this connection routinely.

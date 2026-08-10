@@ -311,6 +311,12 @@
     .pulse { animation: none; }
   }
 
+  .pulse.idle {
+    animation: none;
+    background: var(--text-faint);
+    box-shadow: none;
+  }
+
   .progress-card .row-title { font-size: 0.98rem; }
 
   .progress-card p {
@@ -397,8 +403,8 @@
 
   <div class="glance">
     <span class="chip"><span class="dot dot-accent"></span>needs you <span class="n mono">3</span></span>
-    <span class="chip"><span class="dot dot-neutral"></span>in progress <span class="n mono">1</span></span>
-    <span class="chip"><span class="dot dot-good"></span>done today <span class="n mono">5</span></span>
+    <span class="chip"><span class="dot dot-neutral"></span>up next <span class="n mono">1</span></span>
+    <span class="chip"><span class="dot dot-good"></span>done today <span class="n mono">4</span></span>
   </div>
 
   <section aria-labelledby="needs-title">
@@ -452,17 +458,42 @@
 
   <section aria-labelledby="progress-title">
     <div class="block-head">
-      <h2 class="block-title" id="progress-title">In progress</h2>
-      <span class="block-count mono">1 running</span>
+      <h2 class="block-title" id="progress-title">Up next</h2>
+      <span class="block-count mono">1 queued</span>
     </div>
     <div class="progress-card">
       <div class="progress-top">
-        <span class="pulse" aria-hidden="true"></span>
-        <span class="row-title">tools/bb_remote.py &mdash; port-12526 direct connection: round-trip validation</span>
+        <span class="pulse idle" aria-hidden="true"></span>
+        <span class="row-title">tools/bb_remote.py &mdash; replace the trigger-file mechanism</span>
       </div>
-      <p>The port-12526 connect-then-drop that blocked this all of 2026&#8209;08&#8209;09 is past: after several failed retries tonight, the direct Remote API client held a live connection. A background agent is now validating a full round trip &mdash; pushing a real file and reading it back from inside the game &mdash; before this replaces the VS Code extension's file sync as the write path. No action needed from Ken yet.</p>
-      <div class="stale-note">This card goes stale the moment that agent finishes. The main session updates it here &mdash; no need to ask for a status check.</div>
+      <p>The direct Remote API connection is now fully validated (see Done, below) &mdash; a real push/read/list round trip against the live game, no VS Code extension involved. That unblocks the next phase: designing and building a direct-connection replacement for <code>mcp_restart.txt</code>/<code>mcp_dump_request.txt</code>, the trigger files <code>mcp_supervisor.js</code> currently polls. Not started yet, no action needed from Ken &mdash; queued as the next real step in <code>docs/claude-todo.md</code>.</p>
+      <div class="stale-note">Also worth a look before this goes further: the round trip's file listing showed the game's view of &quot;home&quot; includes more of the local repo tree than just game scripts (venv/tooling files). Not a blocker, just flagged in <code>docs/remote-api-diagnosis-log.md</code>.</div>
     </div>
+  </section>
+
+  <section aria-labelledby="done-title-0810">
+    <div class="block-head">
+      <h2 class="block-title" id="done-title-0810">Done this session <span class="mono" style="font-weight:400; text-transform:none; letter-spacing:0;">&mdash; 2026&#8209;08&#8209;10</span></h2>
+      <span class="block-count mono">4</span>
+    </div>
+    <ul class="done-list">
+      <li class="done-item">
+        <span class="done-check mono">&#10003;</span>
+        <p><span class="tag">fixed</span> Diagnosed and fixed the port-12526 connect-then-drop: <code>cmd_serve</code> read commands from stdin, and a non-interactive stdin returns EOF immediately &mdash; treated as <code>quit</code>, tearing the connection down within ~1s. Full trail in <code>docs/remote-api-diagnosis-log.md</code>.</p>
+      </li>
+      <li class="done-item">
+        <span class="done-check mono">&#10003;</span>
+        <p><span class="tag">verified</span> Live-tested the fix against the real game on port 12526 &mdash; held a stable connection 170s+, no drop.</p>
+      </li>
+      <li class="done-item">
+        <span class="done-check mono">&#10003;</span>
+        <p><span class="tag">verified</span> Validated a full round trip &mdash; <code>pushFile</code> &rarr; <code>getFile</code> &rarr; compare &rarr; <code>getFileNames</code>, all against the live game, no VS Code extension involved. This is the bar for &quot;the direct connection actually works.&quot;</p>
+      </li>
+      <li class="done-item">
+        <span class="done-check mono">&#10003;</span>
+        <p><span class="tag">merged</span> Folded the diagnosis/round-trip branch into <code>main</code>; <code>node --test</code> (22/22) and <code>node --check mcp.js</code> both clean afterward.</p>
+      </li>
+    </ul>
   </section>
 
   <section aria-labelledby="done-title">

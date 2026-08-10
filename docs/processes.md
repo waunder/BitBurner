@@ -780,6 +780,27 @@ subcommand (`python3 tools/bb_remote.py watch --port 12526 --duration
 no stdin interaction at all, built specifically for an unattended/
 tool-driven live test.
 
+**2026-08-10, later: full round trip confirmed against the live game.** A
+detached `watch`-style listener caught a real connection (`bitburner/3.0.1`
+user agent, not a mock) and a combined script ran `pushFile` → `getFile` →
+compare → `getFileNames` in one continuous session: the pushed content
+came back byte-identical (`ROUND TRIP MATCH`) and the pushed filename
+showed up in `getFileNames`'s listing. This is the bar this doc previously
+called "not yet round-tripped" — it's now met, with no VS Code extension
+involved at any point. Full trail: `docs/remote-api-diagnosis-log.md`.
+**Still not wired into `mcp_supervisor.js` or anything live-running** —
+the transport is proven, but the trigger-file replacement itself (what
+actually calls `pushFile`/`getFile` in place of the `mcp_restart.txt`/
+`mcp_dump_request.txt` polling) hasn't been designed yet; that's the next
+step, tracked in `docs/claude-todo.md`.
+
+One thing to check before building further on this connection: the
+`getFileNames` response in that same round trip included entries like
+`.venv/lib/python3.9/site-packages/.../entry_points.txt` and
+`.claude/settings...` alongside real game scripts — the game's view of
+`home`'s filesystem appears to include more of the local repo tree than
+intended. Not investigated yet, just flagged.
+
 ---
 
 ## Darknet (`ns.dnet`)

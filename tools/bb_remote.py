@@ -126,6 +126,47 @@ no game handshake on the common path.
 `restart`/`dump` (one-shot) are kept for a single ad hoc call when no
 daemon is running. `daemon` + `ctl-*` is the path for routine/repeated use.
 
+## Routine script sync (added 2026-08-10, replaces the VS Code extension)
+
+`daemon` also now pushes every watched live-game script/config file
+directly — the piece that was still missing after the trigger-file
+replacement above, and the reason the VS Code extension's own sync watcher
+could not yet be retired. `WATCHED_FILES` (module-level list, mirrors
+`docs/processes.md`'s script map — add a file there in the same commit as
+adding a new live script) lists every `mcp.js`/`hacking/`/`scripts/`/
+`dnet_*.js`/etc. file that actually loads into the game, deliberately
+excluding generated game-output files (`mcp_status.json` etc. — those flow
+game-to-disk, pushing them back would be backwards) and non-game local
+tooling (`mcp_status_parser.py`, `mcp_logic.test.js`, `.d.ts` files,
+`tsconfig.json`).
+
+Two triggers push these files, both routed through the same daemon
+connection `restart`/`dump` already use — no new game handshake:
+
+- **Full resync on every game (re)connection.** `RemoteApiServer` now
+  supports an `on_connect` hook; `TriggerDaemon` registers one that pushes
+  every watched file's *current on-disk content*, unconditionally, the
+  moment the game connects — first connect or any reconnect after a drop.
+  This is deliberate, not incremental-only: the whole point is that a drop
+  (which CLAUDE.md documents as the VS Code extension's core recurring
+  flaw, "doesn't replay what it missed on reconnect") must never leave the
+  game silently stale. Whatever changed on disk while disconnected lands
+  the instant the connection comes back, without needing to know what
+  changed.
+- **Incremental push while connected**, polled every `SYNC_POLL_S` (2s,
+  matching `mcp_supervisor.js`'s own poll interval) — only files whose
+  content actually differs from the last successfully pushed content are
+  re-pushed, so an idle daemon does not spam `pushFile` every 2 seconds.
+
+Both are logged (`SYNC: ...` lines) to the same `tools/bb_remote_events.log`
+as everything else here. `ctl-resync` forces an immediate full pass
+on-demand (same logic the connect hook runs); `ctl-push`/`ctl-get` expose
+the daemon's already-present generic push/get control-channel handlers as
+CLI subcommands, for a one-off file outside the watched set. `daemon
+--no-sync` disables all of this and falls back to exactly the
+restart/dump-only behavior from before this section, for isolating a
+regression.
+
 Long-lived mode:
 
     python3 tools/bb_remote.py serve --port 12525
@@ -172,6 +213,7 @@ import asyncio
 import datetime
 import json
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -241,10 +283,19 @@ class RemoteApiServer:
         self._connected_event = asyncio.Event()
         self._next_id = 1
         self._pending: dict[int, asyncio.Future] = {}
+        # Set by TriggerDaemon (see "Routine script sync" below) so a fresh
+        # game connection — first connect OR a reconnect after a drop — can
+        # trigger a full resync pass. Fired via asyncio.create_task, not
+        # awaited inline, so a slow/failing hook can never delay accepting
+        # the connection itself or block the message-receive loop.
+        self._on_connect_hook = None
 
     @property
     def is_connected(self) -> bool:
         return self._client is not None
+
+    def set_on_connect_hook(self, hook) -> None:
+        self._on_connect_hook = hook
 
     async def start(self):
         self._server = await websockets.serve(
@@ -279,6 +330,8 @@ class RemoteApiServer:
         connect_started = time.monotonic()
         self._client = ws
         self._connected_event.set()
+        if self._on_connect_hook is not None:
+            asyncio.create_task(self._run_on_connect_hook())
         exc_info = ""
         try:
             async for raw in ws:
@@ -328,6 +381,12 @@ class RemoteApiServer:
             fut.set_exception(JsonRpcError(message))
         else:
             fut.set_result(msg.get("result"))
+
+    async def _run_on_connect_hook(self):
+        try:
+            await self._on_connect_hook()
+        except Exception as e:
+            _log(f"ON-CONNECT HOOK ERROR: {type(e).__name__}: {e}")
 
     def _reject_all_pending(self, reason: str):
         pending, self._pending = self._pending, {}
@@ -618,6 +677,60 @@ async def cmd_dump(args):
 # --------------------------------------------------------------------------
 
 DEFAULT_CONTROL_PORT = 12527
+REPO_ROOT = Path(__file__).resolve().parent.parent
+
+# Every file that actually loads into the game, mirrored from
+# docs/processes.md's script map. Repo-relative, POSIX separators, no
+# leading slash (the leading slash the game's own filesystem wants is added
+# at push time — see _remote_name below — matching what the VS Code
+# extension's own PathMapper does: `r.startsWith("/")||(r="/"+r)`, read
+# directly out of its bundled extension.js).
+#
+# Deliberately excludes: generated game-output files (mcp_status.json,
+# mcp_status_log.txt, mcp_target_state.json, mcp_events.txt, mcp_restart.txt,
+# mcp_dump_request.txt — these flow game-to-disk; pushing them back would
+# overwrite live game state with a stale local copy), mcp_logic.test.js (a
+# node --test file, never loaded by the game), mcp_status_parser.py/js
+# (local out-of-game tooling), and NetscriptDefinitions.d.ts/
+# NetscriptGlobals.d.ts/tsconfig.json/README.md (editor support, not
+# netscript). If a new live script is added to the repo, add it here in the
+# same commit — same rule docs/processes.md itself follows.
+WATCHED_FILES = [
+    "mcp.js",
+    "mcp_logic.js",
+    "mcp_config.json",
+    "mcp_hud.js",
+    "mcp_money.js",
+    "mcp_stocks.js",
+    "mcp_status.js",
+    "mcp_supervisor.js",
+    "get_stats.js",
+    "restart_mcp.js",
+    "startup.js",
+    "tail_mcp.js",
+    "econ_probe.js",
+    "dnet_probe.js",
+    "dnet_deploy.js",
+    "dnet_lib.js",
+    "dnet_loot.js",
+    "dnet_creds_merge.js",
+    "purchaseServer-8GB.js",
+    "hacking/crawler.js",
+    "hacking/worm.js",
+    "scripts/copyScripts.js",
+    "scripts/copy_scripts.js",
+    "scripts/execute.js",
+    "scripts/grow.js",
+    "scripts/hack.js",
+    "scripts/weaken.js",
+    "scripts/weakenGrowHack.js",
+]
+
+SYNC_POLL_S = 2.0  # mirrors mcp_supervisor.js's own POLL_MS
+
+
+def _remote_name(relpath: str) -> str:
+    return relpath if relpath.startswith("/") else "/" + relpath
 
 
 class TriggerDaemon:
@@ -626,12 +739,103 @@ class TriggerDaemon:
     JSON object per line out, one request per connection (simplest thing
     that works for infrequent, low-concurrency calls from Claude's own Bash
     tool — no need for persistent client connections or multiplexing).
+
+    Also owns the routine watched-file sync (see the module docstring's
+    "Routine script sync" section): a full push of every WATCHED_FILES entry
+    on every game (re)connection, plus an incremental push of only-changed
+    files while connected. `watched_files`/`repo_root` are constructor
+    params (not just the module globals) specifically so tests can point
+    this at a small temp fixture instead of the real repo tree.
     """
 
-    def __init__(self, rpc: RemoteApiServer, server: str = DEFAULT_SERVER):
+    def __init__(
+        self,
+        rpc: RemoteApiServer,
+        server: str = DEFAULT_SERVER,
+        sync_enabled: bool = True,
+        watched_files: list[str] | None = None,
+        repo_root: Path | None = None,
+    ):
         self.rpc = rpc
         self.api = BitburnerApi(rpc, default_server=server)
         self.started_at = time.monotonic()
+        self.sync_enabled = sync_enabled
+        self.watched_files = watched_files if watched_files is not None else WATCHED_FILES
+        self.repo_root = repo_root if repo_root is not None else REPO_ROOT
+        # relpath -> content last successfully pushed. Drives the
+        # incremental poll's diff; a full resync ignores this (pushes
+        # everything unconditionally) but still refreshes it afterward.
+        self._last_pushed: dict[str, str] = {}
+        self._missing_warned: set[str] = set()
+        if sync_enabled:
+            rpc.set_on_connect_hook(self.on_game_connected)
+
+    def _read_watched(self, relpath: str) -> str | None:
+        try:
+            return (self.repo_root / relpath).read_text()
+        except FileNotFoundError:
+            if relpath not in self._missing_warned:
+                _log(f"SYNC: watched file missing on disk, skipping: {relpath}")
+                self._missing_warned.add(relpath)
+            return None
+        except OSError as e:
+            _log(f"SYNC: could not read {relpath}: {e}")
+            return None
+
+    async def _resync(self, full: bool) -> dict:
+        """Push every watched file (full=True) or only those whose on-disk
+        content differs from what was last successfully pushed (full=False).
+        Returns a summary dict; always safe to call even while disconnected
+        (push_file will just raise, which is caught per-file below) though
+        callers should generally guard on rpc.is_connected first.
+        """
+        pushed, failed, missing = [], [], []
+        for relpath in self.watched_files:
+            content = self._read_watched(relpath)
+            if content is None:
+                missing.append(relpath)
+                continue
+            if not full and self._last_pushed.get(relpath) == content:
+                continue
+            try:
+                await self.api.push_file(_remote_name(relpath), content)
+                self._last_pushed[relpath] = content
+                pushed.append(relpath)
+            except JsonRpcError as e:
+                failed.append(relpath)
+                _log(f"SYNC: push failed for {relpath}: {e}")
+        if full or pushed or failed:
+            kind = "full resync" if full else "incremental sync"
+            _log(
+                f"SYNC: {kind} done — pushed {len(pushed)}, failed {len(failed)}, "
+                f"missing {len(missing)}"
+                + (f" pushed={pushed}" if pushed and len(pushed) <= 12 else "")
+            )
+        return {"pushed": pushed, "failed": failed, "missing": missing}
+
+    async def on_game_connected(self):
+        """Registered as RemoteApiServer's on_connect hook. Fires on first
+        connect AND every reconnect after a drop — see the module
+        docstring's "Routine script sync" section for why a full (not
+        incremental) push here is the whole point.
+        """
+        if not self.sync_enabled:
+            return
+        _log("SYNC: game (re)connected — running full resync pass of all watched files")
+        await self._resync(full=True)
+
+    async def sync_poll_loop(self):
+        """Runs for the daemon's whole lifetime as a background task.
+        Cancelled (via task.cancel()) when the daemon shuts down.
+        """
+        while True:
+            await asyncio.sleep(SYNC_POLL_S)
+            if not self.sync_enabled or not self.rpc.is_connected:
+                continue
+            try:
+                await self._resync(full=False)
+            except Exception as e:
+                _log(f"SYNC: poll loop error: {type(e).__name__}: {e}")
 
     async def _do_restart(self, target):
         token = str(int(time.time() * 1000))
@@ -656,6 +860,9 @@ class TriggerDaemon:
         return {
             "connected": self.rpc.is_connected,
             "daemon_uptime_s": round(time.monotonic() - self.started_at, 1),
+            "sync_enabled": self.sync_enabled,
+            "watched_files": len(self.watched_files),
+            "files_synced_this_connection": len(self._last_pushed),
         }
 
     async def handle_control_connection(self, reader, writer):
@@ -686,6 +893,8 @@ class TriggerDaemon:
                 result = await self.api.push_file(req["file"], req["content"], req.get("server"))
             elif cmd == "get":
                 result = await self.api.get_file(req["file"], req.get("server"))
+            elif cmd == "resync":
+                result = await self._resync(full=True)
             else:
                 raise ValueError(f"unknown cmd: {cmd!r}")
             await self._respond(writer, {"ok": True, "result": result})
@@ -710,7 +919,8 @@ async def cmd_daemon(args):
         _log(f"Could not bind game-facing port 127.0.0.1:{args.port}: {e}")
         return 1
 
-    daemon = TriggerDaemon(rpc, server=args.server)
+    sync_enabled = not args.no_sync
+    daemon = TriggerDaemon(rpc, server=args.server, sync_enabled=sync_enabled)
     try:
         control_server = await asyncio.start_server(
             daemon.handle_control_connection, "127.0.0.1", args.control_port
@@ -720,16 +930,32 @@ async def cmd_daemon(args):
         await rpc.stop()
         return 1
 
+    sync_task = None
+    if sync_enabled:
+        sync_task = asyncio.create_task(daemon.sync_poll_loop())
+        _log(
+            f"SYNC: enabled — watching {len(daemon.watched_files)} files under "
+            f"{daemon.repo_root}. Full resync on every game (re)connect; "
+            f"incremental push every {SYNC_POLL_S}s while connected."
+        )
+    else:
+        _log("SYNC: disabled (--no-sync) — restart/dump/ctl-* only, same as before this feature.")
+
     _log(
         f"DAEMON running: game-facing port {args.port} (Options -> Remote API "
         f"-> port {args.port} -> Connect), control port {args.control_port} "
         f"(loopback only). Holds the connection open indefinitely and "
         f"survives drops/reconnects without restarting. Use `ctl-status` / "
-        f"`ctl-restart` / `ctl-dump` against --control-port {args.control_port} "
-        f"instead of `restart`/`dump` while this is running."
+        f"`ctl-restart` / `ctl-dump` / `ctl-push` / `ctl-get` / `ctl-resync` "
+        f"against --control-port {args.control_port} instead of one-shot "
+        f"commands while this is running."
     )
-    async with control_server:
-        await control_server.serve_forever()
+    try:
+        async with control_server:
+            await control_server.serve_forever()
+    finally:
+        if sync_task is not None:
+            sync_task.cancel()
     return 0
 
 
@@ -778,6 +1004,27 @@ async def cmd_ctl_dump(args):
         return 0
     print(json.dumps(result, indent=2))
     return 1
+
+
+async def cmd_ctl_push(args):
+    content = Path(args.local_file).read_text()
+    result = await _ctl_call(
+        args.control_port, {"cmd": "push", "file": args.remote_filename, "content": content}
+    )
+    print(json.dumps(result, indent=2))
+    return 0 if result.get("ok") else 1
+
+
+async def cmd_ctl_get(args):
+    result = await _ctl_call(args.control_port, {"cmd": "get", "file": args.remote_filename})
+    print(json.dumps(result, indent=2))
+    return 0 if result.get("ok") else 1
+
+
+async def cmd_ctl_resync(args):
+    result = await _ctl_call(args.control_port, {"cmd": "resync"}, timeout=30.0)
+    print(json.dumps(result, indent=2))
+    return 0 if result.get("ok") else 1
 
 
 async def cmd_serve(args):
@@ -974,6 +1221,48 @@ async def run_selftest():
     )
     checks.append(("concurrent gets don't cross ids", (a, b, c) == ("A", "B", "C")))
 
+    # -- TriggerDaemon routine sync (added 2026-08-10, see the module
+    # docstring's "Routine script sync" section) — exercised against a small
+    # temp-directory fixture, not the real repo, so this stays isolated and
+    # fast. Reuses the same mock game connection/`files` dict above.
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        (tmp_path / "a.js").write_text("console.log('a')")
+        (tmp_path / "sub").mkdir()
+        (tmp_path / "sub" / "b.js").write_text("console.log('b')")
+        watched = ["a.js", "sub/b.js", "missing.js"]
+        daemon = TriggerDaemon(rpc, watched_files=watched, repo_root=tmp_path)
+
+        # Simulate what fires automatically on every game (re)connect —
+        # on_game_connected() is exactly RemoteApiServer's on_connect hook.
+        await daemon.on_game_connected()
+        checks.append(("on_game_connected pushed the present watched files", sorted(daemon._last_pushed.keys()) == ["a.js", "sub/b.js"]))
+
+        # Direct full resync (what ctl-resync / the "resync" control cmd
+        # calls): pushes both real files again, reports the missing one,
+        # doesn't raise.
+        result1 = await daemon._resync(full=True)
+        checks.append((
+            "full resync pushes all present watched files",
+            sorted(result1["pushed"]) == ["a.js", "sub/b.js"],
+        ))
+        checks.append(("full resync reports the missing file, doesn't raise", result1["missing"] == ["missing.js"]))
+        checks.append(("full resync pushed content under the leading-slash remote name", files.get("/a.js") == "console.log('a')" and files.get("/sub/b.js") == "console.log('b')"))
+
+        # Incremental pass with nothing changed on disk: no-op.
+        result2 = await daemon._resync(full=False)
+        checks.append(("incremental sync is a no-op when nothing changed", result2["pushed"] == [] and result2["failed"] == []))
+
+        # Change one file on disk; incremental pass should push only that one.
+        (tmp_path / "a.js").write_text("console.log('a v2')")
+        result3 = await daemon._resync(full=False)
+        checks.append(("incremental sync pushes only the changed file", result3["pushed"] == ["a.js"]))
+        checks.append(("changed content actually landed", files.get("/a.js") == "console.log('a v2')"))
+
+        # Control-channel "resync" cmd dispatch does the same full pass.
+        ctl_result = await daemon._do_status()
+        checks.append(("status reports sync_enabled + watched count", ctl_result["sync_enabled"] is True and ctl_result["watched_files"] == 3))
+
     await rpc.stop()
     mock_task.cancel()
 
@@ -1113,18 +1402,25 @@ def build_parser():
     sp.add_argument("remote_filename")
     sp.add_argument("--lines", type=int, default=None, help="Tail to the last N lines (non-JSON only); default: show everything")
 
-    sub.add_parser(
+    sp = sub.add_parser(
         "daemon",
         help=(
             "Persistent process: holds the game-facing Remote API connection "
-            "open indefinitely and serves a local control channel (see "
-            "--control-port) for ctl-status/ctl-restart/ctl-dump. Recommended "
-            "over one-shot restart/dump for routine use — see the module "
-            "docstring's Daemon section."
+            "open indefinitely, serves a local control channel (see "
+            "--control-port) for ctl-status/ctl-restart/ctl-dump/ctl-push/"
+            "ctl-get/ctl-resync, and (unless --no-sync) pushes every "
+            "WATCHED_FILES entry on every game (re)connect plus incrementally "
+            "while connected. Recommended over one-shot commands for routine "
+            "use — see the module docstring's Daemon and Routine script sync "
+            "sections."
         ),
     )
+    sp.add_argument(
+        "--no-sync", action="store_true",
+        help="Disable the watched-file push/resync loop; daemon still serves restart/dump/ctl-* as before this feature existed.",
+    )
 
-    sub.add_parser("ctl-status", help="Ask a running `daemon` whether the game is connected, via the local control channel.")
+    sub.add_parser("ctl-status", help="Ask a running `daemon` whether the game is connected (and sync state), via the local control channel.")
 
     sp = sub.add_parser("ctl-restart", help="Ask a running `daemon` to push a fresh mcp_restart.txt, via the local control channel (no game handshake per call).")
     sp.add_argument("--target", default=None, help="hostname to pin, passed as target=<hostname> to restart_mcp.js")
@@ -1132,6 +1428,15 @@ def build_parser():
     sp = sub.add_parser("ctl-dump", help="Ask a running `daemon` to fetch a file, via the local control channel (no game handshake per call).")
     sp.add_argument("remote_filename")
     sp.add_argument("--lines", type=int, default=None, help="Tail to the last N lines (non-JSON only); default: show everything")
+
+    sp = sub.add_parser("ctl-push", help="Ask a running `daemon` to push one file (any path, not just WATCHED_FILES) via pushFile, via the local control channel.")
+    sp.add_argument("remote_filename")
+    sp.add_argument("local_file")
+
+    sp = sub.add_parser("ctl-get", help="Ask a running `daemon` to fetch one file via getFile, via the local control channel (same as ctl-dump but no pretty-printing/tailing).")
+    sp.add_argument("remote_filename")
+
+    sub.add_parser("ctl-resync", help="Ask a running `daemon` to immediately push the full current on-disk content of every watched file — the same pass that runs automatically on every game (re)connect.")
 
     return p
 
@@ -1156,6 +1461,9 @@ def main():
         "ctl-status": cmd_ctl_status,
         "ctl-restart": cmd_ctl_restart,
         "ctl-dump": cmd_ctl_dump,
+        "ctl-push": cmd_ctl_push,
+        "ctl-get": cmd_ctl_get,
+        "ctl-resync": cmd_ctl_resync,
         "selftest": lambda _args: run_selftest(),
     }
     code = asyncio.run(dispatch[args.cmd](args))

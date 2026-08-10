@@ -382,11 +382,11 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">rebuilt 2026&#8209;08&#8209;10 12:45 PDT</div>
+    <div class="updated mono">rebuilt 2026&#8209;08&#8209;10 13:40 PDT</div>
   </div>
 
   <div class="glance">
-    <span class="chip"><span class="dot dot-accent"></span>needs you <span class="n mono">1</span></span>
+    <span class="chip"><span class="dot dot-accent"></span>needs you <span class="n mono">2</span></span>
     <span class="chip"><span class="dot dot-warn"></span>flagged <span class="n mono">2</span></span>
     <span class="chip"><span class="dot dot-neutral"></span>in progress <span class="n mono">1</span></span>
   </div>
@@ -398,9 +398,30 @@
   <section aria-labelledby="needs-title">
     <div class="block-head">
       <h2 class="block-title" id="needs-title">Needs your call</h2>
-      <span class="block-count mono">1 open</span>
+      <span class="block-count mono">2 open</span>
     </div>
     <div class="rows">
+
+      <div class="row action">
+        <div class="row-stripe"></div>
+        <div class="row-body">
+          <div class="row-top">
+            <span class="tag">action</span>
+            <span class="row-date mono">open since 2026&#8209;08&#8209;10</span>
+          </div>
+          <div class="row-title">One Connect click retires the VS Code extension for good</div>
+          <p><strong>Options &rarr; Remote API &rarr; confirm Port reads <code>12526</code> &rarr; Connect.</strong>
+            The daemon (<code class="cite">tools/bb_remote.py daemon</code>) now pushes every live script/config
+            file into the game itself &mdash; not just the restart/dump trigger it handled before &mdash; with a
+            full resync on every connection (including a reconnect after a drop) so a dropped connection can
+            never leave the game silently stale, which is the exact flaw that made the VS Code extension's own
+            sync unreliable. <strong>Leave Options pointed at <code>12526</code> permanently after this click</strong>
+            &mdash; there is no "switch back to 12525" step anymore; that used to be the advice and it's now
+            wrong. Built and self-tested this session (all 28 watched files resolve correctly on disk, mock
+            round trips pass); the one thing not yet confirmed is an actual live push, which this click provides.
+            See <code class="cite">docs/kensTodo.md</code>.</p>
+        </div>
+      </div>
 
       <div class="row action">
         <div class="row-stripe"></div>
@@ -473,19 +494,18 @@
     <div class="progress-card">
       <div class="progress-top">
         <span class="pulse" aria-hidden="true"></span>
-        <span class="row-title">Replacing the trigger-file restart/dump mechanism</span>
+        <span class="row-title">Retiring the VS Code extension &mdash; code complete, awaiting live confirmation</span>
         <span class="row-date mono">2026&#8209;08&#8209;10</span>
       </div>
-      <p>The direct Remote API round trip (<code>pushFile</code> &rarr; <code>getFile</code> &rarr; compare &rarr;
-        <code>getFileNames</code>) is confirmed working end-to-end against the live game, no VS Code extension
-        involved. That's the transport proven. <span class="fig">The next phase &mdash; actually replacing
-        <code>mcp_restart.txt</code>/<code>mcp_dump_request.txt</code>, the trigger files
-        <code>mcp_supervisor.js</code> currently polls, with direct calls through
-        <code>tools/bb_remote.py</code> &mdash; is queued and in progress, not finished.</span> Most recent commit
-        on it: <code class="cite">e087c9a</code>, today. No action needed from Ken; this is Claude's own work.</p>
-      <div class="stale-note">While this is active, the game's Remote API is pointed at port 12526 rather than
-        the extension's default 12525, so normal VS Code file sync is effectively paused. Not a decision needed
-        right now &mdash; flagged so it isn't mistaken for the sync being broken again if noticed.</div>
+      <p>Full arc this session: direct Remote API round trip proven &rarr; restart/dump trigger moved off the
+        extension &rarr; Ken's own reconnect on port 12525 dropped the daemon's connection outright, proving live
+        that the game only ever holds one Remote API connection regardless of port &rarr;
+        <span class="fig">the daemon now also pushes every routine script/config file (28 watched files) on its
+        own, the same job the extension's sync used to do, with a full resync on every reconnect so a drop can't
+        leave the game stale.</span> Self-tested clean (mock round trips, all 28 file paths resolve on disk); the
+        one remaining gap is a live push, which needs the Connect click above. Most recent commit on it:
+        <code class="cite">e087c9a</code> and this pass's changes. No action needed from Ken beyond that one
+        click.</p>
     </div>
   </section>
 

@@ -50,11 +50,13 @@ flowchart TB
         sup -->|renders| dumptail[mcp_dump tail window]
     end
 
-    subgraph direct["Direct Remote API connection (2026-08-10)"]
-        daemon["bb_remote.py daemon<br/>(persistent, local control channel)"]
+    subgraph direct["Direct Remote API connection (2026-08-10) — replaces VS Code sync entirely"]
+        daemon["bb_remote.py daemon<br/>(persistent, local control channel,<br/>full resync on every (re)connect)"]
         daemon -->|pushFile, confirmed by getFile readback| flag
         daemon -.->|getFile, bypasses sup + CDP entirely| status
         daemon -.->|getFile| logfile
+        daemon ==>|pushFile, routine sync, 28 watched files| mcp
+        daemon ==>|pushFile, routine sync| actions
     end
 
     subgraph out["Outside the game"]
@@ -83,16 +85,20 @@ Three things are worth reading off that diagram:
   supervisor itself. `run startup.js` (it kills everything else itself first)
   is the full recovery procedure after anything that wipes running scripts
   (an augmentation install, primarily).
-- **The restart trigger and file dumps no longer depend on the VS Code
-  extension's file sync.** `tools/bb_remote.py`'s `daemon` mode holds a
-  direct Remote API connection to the game and writes `mcp_restart.txt`
-  itself via `pushFile` (confirmed by an immediate `getFile` readback) —
-  `mcp_supervisor.js`'s poll loop is unchanged, only the delivery path into
-  the game's filesystem is. Dumps go further: `getFile` reads
-  `mcp_status.json`/`mcp_events.txt`/etc. directly, bypassing
-  `mcp_dump_request.txt`, the tail-window render, and the CDP watcher
-  entirely for anything readable this way. See the `tools/bb_remote.py`
-  section below for what's built vs. what's still unconfirmed live.
+- **Routine script sync no longer depends on the VS Code extension either
+  — the daemon now covers everything the extension did.** As of 2026-08-10,
+  `tools/bb_remote.py`'s `daemon` mode pushes every watched live-game
+  script/config file (`mcp.js`, `hacking/*`, `scripts/*`, `mcp_config.json`,
+  `dnet_*.js`, etc. — see `WATCHED_FILES` in the script) directly into the
+  game via `pushFile`: a full push of everything on every game connection
+  (first connect or any reconnect after a drop, closing the exact
+  "doesn't replay on reconnect" gap `CLAUDE.md` documents), plus an
+  incremental only-changed-files push every 2s while connected. The
+  restart trigger and file dumps work the same way they did before this:
+  `mcp_restart.txt` via `pushFile`+`getFile`-readback, dumps via `getFile`
+  directly, bypassing `mcp_dump_request.txt`/tail-window/CDP. See the
+  `tools/bb_remote.py` section below for the full design and what's
+  confirmed live vs. not yet.
 
 ---
 
@@ -873,20 +879,88 @@ one human Connect click regardless of transport. What it removes is the
 need to **restart a process** on Claude's side for that reconnect to be
 picked up: the daemon just keeps listening.
 
-**Live status as of 2026-08-10, end of this session:** built and validated
-at two levels — (1) the daemon + control-channel logic against an
-in-process mock game client (status/restart/dump/unknown-command all
-behave correctly), and (2) the full CLI subprocess path (`daemon` started
-for real, `ctl-status`/`ctl-restart`/`ctl-dump` invoked as real
-subprocesses against it, correct behavior both connected and
-disconnected). **Not yet confirmed against the live game specifically for
-`restart`/`dump`/`ctl-*`** — a detached daemon was started on port 12526
-(same port the earlier general round-trip test used) and left running,
-but a 90-second poll window at the end of this session saw no Connect
-click. The daemon is still running (`ps`/`lsof` confirmed, reparented to
-launchd) and will pick up a connection the moment Options → Remote API →
-port `12526` → Connect is clicked — no restart needed on Claude's side.
-See `docs/kensTodo.md`.
+#### Routine script sync (added 2026-08-10 — the actual VS Code cutover)
+
+Everything above only replaced the restart trigger and file dumps — routine
+edits to `mcp.js`/`hacking/*`/`scripts/*`/etc. still reached the game
+**only** via the VS Code extension's own file-sync watcher, confirmed by
+directly re-reading `tools/bb_remote.py`'s code and its own docstring
+("NOT meant to replace the VS Code extension's role for ongoing *source*
+file sync ... that stays on the extension/port 12525 for now"). Ken
+reconnecting the extension on port 12525 this same session dropped the
+daemon's game-side connection on 12526 outright (`close_code=1005`, exact
+timestamp match) — confirming directly, not just by protocol reading, that
+**the game holds exactly one outbound Remote API connection regardless of
+which port is configured**, so the two-port design (12525 for the
+extension, 12526 for the daemon) was never actually coexisting; whichever
+one the game's Options panel points at wins, full stop.
+
+Fix: `daemon` now also pushes `WATCHED_FILES` — every file that actually
+loads into the game (28 as of this writing: `mcp.js`, `mcp_logic.js`,
+`mcp_config.json`, everything under `hacking/` and `scripts/`, the
+`dnet_*.js` set, `mcp_hud.js`/`mcp_money.js`/`mcp_stocks.js`/
+`mcp_status.js`/`mcp_supervisor.js`, `get_stats.js`, `restart_mcp.js`,
+`startup.js`, `tail_mcp.js`, `econ_probe.js`, `purchaseServer-8GB.js` —
+deliberately excludes generated game-output files, `mcp_logic.test.js`,
+the two `mcp_status_parser.*` local tools, and editor-only files like the
+`.d.ts`s):
+
+- **Full resync on every game (re)connection** — `RemoteApiServer` gained
+  an `on_connect` hook; `TriggerDaemon` registers one that pushes every
+  watched file's current on-disk content, unconditionally, the instant the
+  game connects (first connect or any reconnect after a drop). This is the
+  actual fix for the flaw this whole migration exists to get away from —
+  a drop can no longer leave the game silently running stale code, because
+  reconnecting always re-pushes everything rather than only resuming
+  incremental watching from that point forward.
+- **Incremental push every 2s while connected** (`SYNC_POLL_S`, matches
+  `mcp_supervisor.js`'s own poll interval) — only files whose content
+  differs from what was last successfully pushed, so an idle daemon
+  doesn't spam `pushFile`.
+- New CLI: `ctl-push <remote> <local>` / `ctl-get <remote>` (the daemon's
+  generic push/get control-channel handlers, already present, now exposed
+  as commands — for a one-off file outside `WATCHED_FILES`) and
+  `ctl-resync` (force an immediate full pass on demand — the same logic
+  the connect hook runs automatically). `daemon --no-sync` disables all of
+  this and falls back to exactly the restart/dump-only behavior from
+  before this feature, for isolating a regression.
+
+**Port decision: daemon stays on 12526; Options gets pointed there once and
+left there — it does not take over 12525.** The alternative (daemon binds
+12525, the extension's own long-standing port, so Options never needs to
+change at all) was considered and rejected: port 12525 is held by the VS
+Code extension's own background listener the whole time VS Code is open
+with the extension active (confirmed via `lsof` — a `Code Helper` process
+holds it), so taking that port over would require Ken to quit or disable
+the extension first — a real manual step, and a less familiar one than a
+field he's already changed several times today. Pointing Options at 12526
+is exactly as durable: the game's Remote API host/port setting persists
+across sessions, so this is genuinely one click, not a recurring one — the
+same way it would be for 12525. The daemon can't be dropped back onto by
+an unrelated "reconnect the extension" action either, since after this
+change there is no reason to ever touch the extension again. See
+`docs/kensTodo.md` for the exact click.
+
+**Live status as of 2026-08-10, end of this session:** validated at three
+levels short of a live-game round trip — (1) `selftest` (`python3
+tools/bb_remote.py selftest`) now covers the new sync logic directly:
+full resync pushes all present watched files under their leading-slash
+remote name, correctly reports a missing file without raising, incremental
+resync is a no-op when nothing changed and pushes only the one file that
+did change, all passing against an in-process mock game client; (2) a real
+`daemon` subprocess (scratch ports, not the live 12526) answered
+`ctl-status`/`ctl-resync`/`ctl-push` correctly while disconnected —
+`ctl-status` reported `sync_enabled: true`/`watched_files: 28`, a
+disconnected `ctl-resync` reported all 28 as failed-not-crashed (each
+`pushFile` correctly raised "Not connected to Bitburner" and was caught
+per-file), `ctl-push` failed cleanly the same way; (3) that same run
+confirmed **all 28 `WATCHED_FILES` paths resolve against the real repo
+tree with zero "missing"** — the list is accurate as of this commit. A
+fresh daemon (replacing the earlier restart/dump-only one, same port
+12526) is running now, `nohup`'d and reparented to launchd (confirmed via
+`ps -o ppid`), waiting for a connection. **Not yet confirmed against the
+live game** — no live `pushFile`/`getFile` round trip has run against this
+session's code; that needs the Connect click in `docs/kensTodo.md`.
 
 ---
 

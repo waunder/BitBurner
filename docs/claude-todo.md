@@ -115,50 +115,66 @@ it has cost real time twice in one day, not because it's newly noticed.
   around — but it removes the need to restart a *process* on Claude's side
   for the next reconnect to be picked up.
 
-**Fact-check (2026-08-10, later): routine script *source* push is still NOT
-migrated — do not read the checked-off items above as "VS Code extension no
-longer needed."** Verified directly against `tools/bb_remote.py`'s current
-code (not just its docstrings) plus `docs/processes.md`:
+**Fact-check (2026-08-10, mid-session): routine script *source* push was
+NOT yet migrated at that point** — only the `mcp_restart.txt` restart
+trigger and read-only file dumps had moved off the extension; ordinary
+source edits still reached the game only via the VS Code extension's
+file-sync watcher, and `tools/bb_remote.py`'s own docstring said so
+outright. **Superseded by the item directly below — this gap is now
+closed in code, pending one live confirmation.**
 
-- Only two actions have moved off the extension: the `mcp_restart.txt`
-  restart trigger (`restart`/`ctl-restart`) and read-only file dumps
-  (`dump`/`ctl-dump`, via `getFile`).
-- Ordinary source edits (`mcp.js`, anything under `hacking/` or `scripts/`,
-  `mcp_logic.js`, etc.) still reach the running game **only** via the VS
-  Code extension's file-sync watcher auto-pushing on save/write — exactly
-  the CLAUDE.md "File sync auto-pushes" mechanism, unchanged.
-- `tools/bb_remote.py` does already have a generic single-file push:
-  `python3 tools/bb_remote.py push <remote_filename> <local_file>` (a
-  live-validated `pushFile` call, not just a mock), and `TriggerDaemon`'s
-  control-channel handler even has generic `"push"`/`"get"` cases coded in
-  already — but there is **no `ctl-push`/`ctl-get` CLI subcommand** exposed
-  (`build_parser()` only defines `ctl-status`/`ctl-restart`/`ctl-dump`), and
-  nothing in this repo calls `push` automatically on a file change. It's a
-  capability that exists, not a wired-up path.
-- The module's own docstring says this outright: the restart/dump commands
-  "are NOT meant to replace the VS Code extension's role for ongoing
-  *source* file sync (mcp.js edits etc.) — that stays on the
-  extension/port 12525 for now."
-- They're also **mutually exclusive at the connection level**, not just
-  by convention: the game's Options → Remote API panel holds one outbound
-  connection to one hostname:port at a time, so while it's pointed at
-  `bb_remote.py` (port 12526, for a restart/dump/push call) it is *not*
-  simultaneously connected to the extension on 12525 — a manual switch in
-  that panel is required either direction.
+- [x] **Wire up routine script sync and retire the VS Code extension
+  dependency entirely.** Done 2026-08-10, same session, triggered directly
+  by Ken hitting the exact failure this was warning about: reconnecting
+  the extension on port 12525 dropped the daemon's connection on 12526
+  outright (`close_code=1005`), proving live — not just by protocol
+  reading — that the game holds exactly one outbound Remote API connection
+  no matter which port is configured, so the "keep both" design this
+  fact-check flagged was never actually viable. Ken approved the fix
+  directly ("concur with the recommendation. Let's implement the fix.").
+  - `TriggerDaemon` now pushes `WATCHED_FILES` (28 files — every live
+    script/config, mirrors `docs/processes.md`'s map) via two triggers:
+    a **full** resync of every watched file's current on-disk content on
+    every game (re)connection (closes the exact "doesn't replay on
+    reconnect" flaw `CLAUDE.md` documents against the extension), plus an
+    **incremental** only-changed push every 2s while connected.
+  - New CLI: `ctl-push`/`ctl-get` (the generic control-channel handlers,
+    already coded, now exposed as subcommands — the exact gap this
+    fact-check flagged) and `ctl-resync` (force a full pass on demand).
+    `daemon --no-sync` disables the new behavior for isolating a
+    regression.
+  - **Port decision: daemon stays on 12526, Options gets pointed there
+    once and left there — does not take over 12525.** Reasoning: 12525 is
+    held by the extension's own background listener the whole time VS
+    Code is open with it active, so taking that port over would need Ken
+    to quit/disable the extension first (a real, less-familiar manual
+    step) instead of a one-time Options field change (which he's already
+    done several times today, and which persists across sessions the same
+    way either port choice would). Full reasoning in
+    `docs/processes.md`'s `tools/bb_remote.py` section.
+  - **Validated:** `selftest` extended with direct coverage of the new
+    sync logic (full resync pushes present files under their
+    leading-slash remote name, correctly skips-and-reports a missing file
+    without raising, incremental resync no-ops when nothing changed and
+    pushes only the one file that did) — all pass against the in-process
+    mock. A real `daemon` subprocess (scratch ports) answered
+    `ctl-status`/`ctl-resync`/`ctl-push` correctly while disconnected, and
+    that same run confirmed **all 28 `WATCHED_FILES` entries resolve
+    against the real repo tree with zero "missing."** A fresh daemon
+    (replacing the earlier restart/dump-only process, same port 12526) is
+    running now, reparented to launchd, waiting for a connection.
+  - **Not yet validated:** an actual live `pushFile`/`getFile` round trip
+    against the game using this session's code — needs the Connect click
+    in `docs/kensTodo.md`. Until that click happens and is confirmed, do
+    not treat routine sync as proven live — the mock/subprocess coverage
+    above is real but is not a substitute for it, per `CLAUDE.md`'s "every
+    behavioural claim is unverified until it has actually run in
+    Bitburner."
 
-**Bottom line: if Ken stops using the VS Code Bitburner extension right
-now, routine script edits Claude makes would silently stop reaching the
-live game.** Only the restart trigger and diagnostic dumps would still
-work.
-
-**Candidate next step, not started:** wire a `ctl-push` CLI subcommand
-(the daemon-side handler already supports `cmd: "push"`) and switch
-Claude's own edit-then-deploy workflow to call it instead of relying on
-the extension's watcher — that would need the Remote API panel pointed at
-the daemon's port as the new steady state, which is itself a one-time
-manual switch Ken would need to make. Worth doing if/when Ken wants to
-drop the extension entirely; out of scope for a fact-finding pass, and not
-started here.
+**Bottom line, updated:** the code path that makes the VS Code extension
+fully unnecessary is now built and passing every test that doesn't require
+the live game. It is not yet *confirmed* unnecessary — that's one Connect
+click away, tracked in `docs/kensTodo.md`.
 
 Note on branch history: the task brief for this cleanup expected
 `tools/bb_remote.py`'s branch to carry multiple commits from being resumed

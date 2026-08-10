@@ -10,23 +10,41 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
-- [ ] **Trigger-file replacement daemon is running and waiting — one
-  Connect click confirms it.** A persistent `tools/bb_remote.py daemon`
-  process is already running (started 2026-08-10, `nohup`'d so it survives
-  independent of any Claude session) and listening on port `12526` — the
-  same port used for the earlier general round-trip test, so no new setup
-  is needed. It replaces `mcp_restart.txt`/`mcp_dump_request.txt`'s
-  dependence on the VS Code extension's file sync, which dropped silently
-  twice on 2026-08-09. When convenient: **Options → Remote API → confirm
-  Port reads `12526` → Connect.** Nothing else needs clicking — the daemon
-  picks the connection up immediately and stays connected (no re-click
-  needed for follow-up restarts/dumps this session). Once confirmed
-  working, switch the port back to `12525` and Connect again to restore
-  the normal VS Code sync for ongoing source-file edits (same reversible
-  action as always) — Claude will ask again next time the direct channel
-  is needed. See `docs/claude-todo.md` priority 1 and
-  `docs/processes.md`'s `tools/bb_remote.py` section for what this
-  confirms.
+- [ ] **One Connect click retires the VS Code extension entirely — point
+  Options → Remote API at port `12526` and leave it there.** As of
+  2026-08-10, `tools/bb_remote.py`'s `daemon` now handles *all* routine
+  game sync, not just the restart/dump trigger: it pushes every live
+  script/config file (`mcp.js`, everything under `hacking/` and `scripts/`,
+  `mcp_config.json`, `mcp_hud.js`, the `dnet_*.js` set, etc. — 28 files,
+  see `WATCHED_FILES` in `tools/bb_remote.py` or `docs/processes.md`)
+  straight into the game itself, the same way the VS Code extension's file
+  watcher used to. **This is the actual fix for the extension's core flaw**
+  (silently drops and doesn't replay on reconnect, see `CLAUDE.md`): the
+  daemon does a *full* push of every watched file's current content on
+  every game connection — first connect or any reconnect after a drop —
+  so a drop can never leave the game silently stale the way it did on
+  2026-08-09.
+
+  **What to do:** Options → Remote API → confirm Port reads `12526` →
+  Connect. A fresh daemon (PID replacing the earlier one, same port) is
+  already running, `nohup`'d so it survives independent of any Claude
+  session — confirmed via `ps`/`lsof` reparented to launchd, and via a
+  local `ctl-status` call reporting `sync_enabled: true`, `watched_files:
+  28`, all 28 resolving with zero "missing" against the real repo tree.
+  **Not yet confirmed against the live game** — no live `pushFile`/`getFile`
+  round trip has happened since this session's changes; see
+  `docs/claude-todo.md` for exactly what's validated (mock + real-file-path
+  checks) vs. what still needs the live game (the actual round trip).
+
+  **This time, do not switch back to port `12525` afterward.** The earlier
+  version of this item said to flip back to `12525` to restore VS Code
+  sync — that advice is now wrong and has been removed. The whole point of
+  this change is that VS Code sync is no longer needed for anything, ever,
+  once this click lands: routine edits, restarts, and dumps all go through
+  the daemon on `12526` from here on. Options should simply stay pointed
+  at `12526` permanently — there is no more "switch back" step, and no
+  reason to reopen the VS Code Bitburner extension's sync again. (You can
+  leave the extension installed; it just won't be doing anything anymore.)
 
 - [ ] **Run `dnet_deploy.js --once` from `home`** — `dnet_probe.js` (below)
   validated the model reading, so this is the next step: the roaming

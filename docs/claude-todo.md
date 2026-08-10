@@ -93,3 +93,24 @@ reasoning here; read it there.
   except one conflict in `docs/processes.md` (both added a section in the
   same spot), resolved by keeping both sections. Nothing further needed
   here; noted so the merge isn't re-discovered as a surprise.
+- [x] **Pure-function extraction for `node --test`** (the
+  `process-backlog.md` "Still gold #6" item). `mcp_logic.js` now holds
+  `evaluateMoneyDegradation`, `evaluateOpportunitySwitch`,
+  `selectWorkWeights`/`getWorkWeightBucket`, and
+  `computeTickInvariantChecks`; `mcp.js` imports it and calls into it for
+  those decisions instead of computing them inline. `mcp_logic.test.js`
+  covers all four with `node --test`, including a direct regression test
+  for the `moneyDegraded`/XP-mode bug fixed in `81814d6`. Landed in git
+  only — **not yet deployed/restarted live**, since that's a separate step
+  (sync watcher needs to push `mcp_logic.js` too, then a normal restart).
+
+## Workflow
+
+- **Any future change to the logic in `mcp_logic.js` (or new logic worth
+  extracting out of `mcp.js`) should get a `node --test` test added and run
+  before being shipped.** Diagnosing the `moneyDegraded`/XP-mode eviction
+  bug the night of 2026-08-09 required three separate live restarts and
+  4-5 minutes each of watching the game over CDP, for a bug that a
+  millisecond-scale unit test now catches directly — see
+  `docs/processes.md`'s `mcp.js` section and `mcp_logic.test.js` for what
+  that regression test actually looks like.

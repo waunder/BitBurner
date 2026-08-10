@@ -129,6 +129,24 @@ plan, and allocates worker threads across every rooted host.
   `mcp_target_state.json` (exclusions, so they survive a restart)
 - **Deploys:** `/scripts/weaken.js`, `/scripts/grow.js`, `/scripts/hack.js`
 
+**`mcp_logic.js` holds the pure decision logic** — `evaluateMoneyDegradation`
+(the eviction predicate at the center of the `moneyDegraded`/XP-mode bug
+fixed in `81814d6`), `evaluateOpportunitySwitch` (the switch comparison),
+`selectWorkWeights`/`getWorkWeightBucket` (the bucket table + hysteresis),
+and `computeTickInvariantChecks` (the invariant predicates). No `ns` calls,
+no side effects — `mcp.js` imports it the same way `dnet_deploy.js` imports
+`dnet_lib.js`, and does all the `ns` calls and mutation itself, calling into
+this module only for "given these inputs, what's the decision."
+
+Test it with `node --test mcp_logic.test.js` — runs in well under a second,
+no game round trip, and covers the exact regression scenario that took three
+live restarts and 4-5 minutes each over CDP to diagnose the night `81814d6`
+was fixed. `node --check mcp.js mcp_logic.js` is the syntax-only sanity check
+for both files (imports aren't resolved outside the game, so this doesn't
+catch a bad import path — only parse errors). **Any future change to the
+logic in `mcp_logic.js` should get a test added/run before being shipped** —
+see `docs/claude-todo.md`'s workflow note.
+
 **Argument:** `target=<hostname>` pins the target, bypassing selection. It is
 validated against the scanned network — a name that isn't a hackable server is
 rejected at startup rather than silently ignored.

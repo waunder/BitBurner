@@ -2,6 +2,18 @@
  * @param {NS} ns
  */
 
+// Pure decision logic (no `ns` calls, no side effects) lives in mcp_logic.js
+// and is unit-tested with `node --test mcp_logic.test.js` — see that file's
+// header for why. Imported the same way dnet_deploy.js imports dnet_lib.js.
+import {
+  SECURITY_EPSILON,
+  selectWorkWeights,
+  getWorkWeightBucket,
+  evaluateMoneyDegradation,
+  evaluateOpportunitySwitch,
+  computeTickInvariantChecks,
+} from "mcp_logic.js"
+
 // Tunables are declared with `let`, not `const`, so loadConfig can reassign
 // them in place from mcp_config.json at the top of every tick. Threading a
 // config object through every helper would be a large diff for no behavioural
@@ -357,76 +369,28 @@ function makeInvariants(ns, events) {
 
 /**
  * The per-tick invariant sweep. Each entry here corresponds to a bug that
- * actually happened and took multiple restart cycles to find.
+ * actually happened and took multiple restart cycles to find. The predicates
+ * themselves (what's checked and against what data) live in mcp_logic.js's
+ * computeTickInvariantChecks, tested with `node --test`; this function is
+ * just the thin ns/side-effect wiring that feeds it and applies the results
+ * through `invariants.check` (toast + count + event, see makeInvariants).
  */
 function checkTickInvariants(invariants, ctx) {
-  // A write failing is exactly the kind of belief-vs-reality gap invariants
-  // exist for — mcp_events.jsonl threw on every single write for its entire
-  // life, caught and printed to a channel nobody read, and nothing else
-  // would have surfaced it: the in-memory ring buffer that feeds
-  // recentEvents keeps working regardless of whether the write succeeds.
-  invariants.check("eventLogWrites", !ctx.events.lastWriteError, {
-    error: ctx.events.lastWriteError,
-  })
-
-  // Budget over-allocation was found only because maxWeaken happened to
-  // decrement by exactly needWeaken each tick — an accident of two unrelated
-  // fields lining up. This makes it an alarm instead.
-  invariants.check("weakenBudgetNonNegative", ctx.weakenBudget.remaining >= 0, {
-    remaining: ctx.weakenBudget.remaining,
-    required: ctx.requiredWeaken,
-  })
-
-  // Tab throttling stretched "10s" ticks to 70-380s, silently multiplying
-  // every rate several-fold and tripping the degradation detector on an
-  // artifact. Bounds are wide because the point is to catch the 7-38x case.
-  //
-  // Skipped on the first tick: lastTickTime is seeded just before the loop, so
-  // tick 0 measures only its own startup work and lands well under the floor.
-  // That fired on the very first run — a false positive baked into startup,
-  // and a persistent false alarm is worse than no alarm.
-  const nominal = LOOP_SLEEP_MS / 1000
-  if (!ctx.firstTick) {
-    invariants.check("tickWithinBounds", ctx.interval >= nominal * 0.5 && ctx.interval <= nominal * 3, {
+  const checks = computeTickInvariantChecks(
+    {
+      eventLogLastWriteError: ctx.events.lastWriteError,
+      weakenBudgetRemaining: ctx.weakenBudget.remaining,
+      requiredWeaken: ctx.requiredWeaken,
       interval: ctx.interval,
-      nominal,
-    })
-  }
-
-  // The idle-network finding: utilization sat at 7% during weaken phases while
-  // the code believed it was saturating the pool. Only meaningful once there
-  // is a pool to speak of.
-  invariants.check("poolNotIdle", ctx.ramUtilization >= 0.5 || ctx.allocations.length === 0, {
-    ramUtilization: ctx.ramUtilization,
-    hosts: ctx.allocations.length,
-  })
-
-  // Threads deployed must fit the host that is running them. This is the
-  // inconsistent-RAM class: mcp once reported usedRam 3.5, freeRam 16 and
-  // maxRam 16 for the same host and had no way to see the contradiction.
-  for (const allocation of ctx.allocations) {
-    if (!allocation.actions || allocation.actions.length === 0) continue
-    let claimed = 0
-    for (const action of allocation.actions) {
-      const perThread =
-        action.script === "hack"
-          ? ctx.ramInfo.hackRam
-          : action.script === "grow"
-            ? ctx.ramInfo.growRam
-            : ctx.ramInfo.weakenRam
-      claimed += action.threads * perThread
-    }
-    if (
-      !invariants.check("threadsFitHost", claimed <= allocation.maxRam + SECURITY_EPSILON, {
-        host: allocation.host,
-        claimed,
-        maxRam: allocation.maxRam,
-        usedRam: allocation.usedRam,
-      })
-    ) {
-      // One report per tick is enough; the rest would be the same story.
-      break
-    }
+      firstTick: ctx.firstTick,
+      ramUtilization: ctx.ramUtilization,
+      allocations: ctx.allocations,
+      ramInfo: ctx.ramInfo,
+    },
+    { LOOP_SLEEP_MS }
+  )
+  for (const check of checks) {
+    invariants.check(check.name, check.ok, check.data)
   }
 }
 
@@ -571,12 +535,13 @@ function getTargetEffectiveScore(ns, server) {
   return potential * readiness
 }
 
-// Security readings accumulate floating-point noise over many hack/grow/weaken
-// calls, so a target sitting exactly at its floor can read as e.g.
-// 9.000000000000002 instead of 9. Ignore deltas below this before rounding up
-// to a thread count, or such targets look like they perpetually need 1 more
-// weaken thread and never move on to hacking/growing.
-const SECURITY_EPSILON = 1e-6
+// SECURITY_EPSILON is imported from mcp_logic.js (used there by
+// computeTickInvariantChecks' threadsFitHost check too, hence one shared
+// definition): security readings accumulate floating-point noise over many
+// hack/grow/weaken calls, so a target sitting exactly at its floor can read
+// as e.g. 9.000000000000002 instead of 9. Ignore deltas below this before
+// rounding up to a thread count, or such targets look like they perpetually
+// need 1 more weaken thread and never move on to hacking/growing.
 
 /**
  * @param {number} [margin] - Absolute security points allowed above the goal
@@ -723,58 +688,12 @@ function formatMoney(value) {
   return value.toFixed(0)
 }
 
-// Named tiers instead of raw weight objects so a redeploy can be triggered
-// specifically when moneyPct crosses into a different tier, rather than on
-// every loop tick (which would defeat the whole point of not re-execing
-// long-running hack/grow threads constantly).
-const WORK_WEIGHTS_BY_BUCKET = {
-  goal: { grow: 0.25, hack: 0.75 },
-  high: { grow: 0.4, hack: 0.6 },
-  mid: { grow: 0.55, hack: 0.45 },
-  low: { grow: 0.7, hack: 0.3 },
-  // Hacking a near-empty server steals close to nothing (hack take scales
-  // with *available* money) while still adding security load that has to be
-  // weakened back off — pure waste. Go all-in on recovery instead.
-  empty: { grow: 1, hack: 0 },
-}
-
-const BUCKET_ORDER = ["empty", "low", "mid", "high", "goal"]
-
-function bucketForMoneyPct(moneyPct) {
-  if (moneyPct >= TARGET_MONEY_GOAL) return "goal"
-  if (moneyPct >= 0.92) return "high"
-  if (moneyPct >= 0.85) return "mid"
-  if (moneyPct >= 0.1) return "low"
-  return "empty"
-}
-
-/**
- * The empty/low boundary (0.1) was observed live oscillating every 2-3
- * minutes for the entire time a target sat near it: "empty" is grow:1/hack:0,
- * which recovers money fast and crosses the boundary upward into "low";
- * "low" immediately reintroduces hack, which drains it straight back down.
- * 350 of 1373 work-plan log lines in one session (25%) were this single
- * flip. It isn't cosmetic — a bucket change forces forceRebalance, which
- * kills and redeploys every host's action scripts.
- *
- * Same fix as WORK_SECURITY_MARGIN below: require moneyPct to clear the
- * boundary by BUCKET_HYSTERESIS, not merely touch it, before the bucket
- * actually changes. Only resists single-step transitions — a jump of more
- * than one tier (e.g. a huge one-tick swing, or a freshly adopted target
- * where previousBucket is null) is accepted immediately rather than fought.
- */
-function getWorkWeightBucket(moneyPct, previousBucket) {
-  const raw = bucketForMoneyPct(moneyPct)
-  if (!previousBucket || previousBucket === raw) return raw
-
-  const prevIdx = BUCKET_ORDER.indexOf(previousBucket)
-  const rawIdx = BUCKET_ORDER.indexOf(raw)
-  if (prevIdx < 0 || Math.abs(rawIdx - prevIdx) !== 1) return raw
-
-  const movingUp = rawIdx > prevIdx
-  const resisted = bucketForMoneyPct(movingUp ? moneyPct - BUCKET_HYSTERESIS : moneyPct + BUCKET_HYSTERESIS)
-  return resisted === previousBucket ? previousBucket : raw
-}
+// WORK_WEIGHTS_BY_BUCKET, bucketForMoneyPct, and getWorkWeightBucket (the
+// hysteresis logic for the empty/low boundary oscillation — 350 of 1373
+// work-plan log lines in one session were this single flip) now live in
+// mcp_logic.js as selectWorkWeights/getWorkWeightBucket, parameterized on
+// TARGET_MONEY_GOAL/BUCKET_HYSTERESIS instead of reading the module-level
+// `let`s directly, so they're testable with `node --test` outside the game.
 
 function buildPlan(ns, target, wasWorking, previousWeightBucket) {
   const currentSecurity = ns.getServerSecurityLevel(target)
@@ -795,24 +714,16 @@ function buildPlan(ns, target, wasWorking, previousWeightBucket) {
   // (forceRebalance triggers on weightBucket changing) so switching
   // OBJECTIVE live via config correctly redeploys with the new weights,
   // same as crossing a money tier does today.
-  if (OBJECTIVE === "xp") {
-    return {
-      type: "work",
-      currentSecurity,
-      moneyPct,
-      weightBucket: "xp",
-      weights: { hack: XP_WEIGHT_HACK, grow: XP_WEIGHT_GROW },
-    }
-  }
-
-  const weightBucket = getWorkWeightBucket(moneyPct, previousWeightBucket)
-  return {
-    type: "work",
-    currentSecurity,
+  const { weightBucket, weights } = selectWorkWeights({
+    objective: OBJECTIVE,
     moneyPct,
-    weightBucket,
-    weights: WORK_WEIGHTS_BY_BUCKET[weightBucket],
-  }
+    previousWeightBucket,
+    targetMoneyGoal: TARGET_MONEY_GOAL,
+    bucketHysteresis: BUCKET_HYSTERESIS,
+    xpWeightHack: XP_WEIGHT_HACK,
+    xpWeightGrow: XP_WEIGHT_GROW,
+  })
+  return { type: "work", currentSecurity, moneyPct, weightBucket, weights }
 }
 
 function getRunningActions(ns, host) {
@@ -1224,26 +1135,30 @@ export async function main(ns) {
 
         moneyPctSamples.push(currentMoneyPct)
         if (moneyPctSamples.length > MONEY_PCT_SAMPLE_COUNT) moneyPctSamples.shift()
-        const avgMoneyPct = moneyPctSamples.reduce((sum, value) => sum + value, 0) / moneyPctSamples.length
         // "Low" alone isn't drained — a target mid-recovery is legitimately
         // low but climbing, and abandoning it there strands it at ~0 with no
-        // grow threads for the whole skip window.
+        // grow threads for the whole skip window. Requires an actual
+        // *decline*, not merely absence of improvement — growTime scales
+        // inversely with hacking level, so early on a single grow can take
+        // longer than the whole 90s sample window: the earlier `!improving`
+        // test read "too slow to see yet" as "dead" and drained a perfectly
+        // good target on a level-1 character.
         //
-        // Requires an actual *decline*, not merely absence of improvement.
-        // growTime scales inversely with hacking level, so early on a single
-        // grow can take longer than the whole 90s sample window: the earlier
-        // `!improving` test read "too slow to see yet" as "dead" and drained
-        // a perfectly good target on a level-1 character. Money genuinely
-        // being drained faster than it regrows shows up as a falling series.
-        const windowFull = moneyPctSamples.length === MONEY_PCT_SAMPLE_COUNT
-        const declining = windowFull && moneyPctSamples[moneyPctSamples.length - 1] < moneyPctSamples[0]
         // XP mode's fixed hack:0.8/grow:0.2 split (see buildPlan) drains
         // every target's money toward zero by design and never lets it
         // recover — moneyDegraded would fire on essentially every target in
         // an endless chain, defeating XP mode's point of sitting still and
         // grinding hack XP. Money-based eviction only makes sense when the
-        // objective is money; rateDropped (a real stall) still applies.
-        const moneyDegraded = OBJECTIVE !== "xp" && windowFull && avgMoneyPct < DEGRADED_MONEY_PCT && declining
+        // objective is money; rateDropped (a real stall) still applies. See
+        // mcp_logic.js's evaluateMoneyDegradation for the pure predicate and
+        // its regression test — this exact OBJECTIVE gate is what commit
+        // 81814d6 fixed after three restart cycles of live diagnosis.
+        const { avgMoneyPct, windowFull, declining, moneyDegraded } = evaluateMoneyDegradation({
+          objective: OBJECTIVE,
+          moneyPctSamples,
+          sampleTarget: MONEY_PCT_SAMPLE_COUNT,
+          degradedThreshold: DEGRADED_MONEY_PCT,
+        })
 
         if (heldLongEnough && (rateDropped || moneyDegraded)) {
           // Only give up if there is somewhere else to go. Draining the sole
@@ -1312,9 +1227,8 @@ export async function main(ns) {
       if (currentTarget) {
         const heldMs = Date.now() - lastSwitchTime
         const currentMoneyPct = ns.getServerMoneyAvailable(currentTarget) / ns.getServerMaxMoney(currentTarget)
-        const idle = getWorkWeightBucket(currentMoneyPct) === "empty"
+        const idle = getWorkWeightBucket(currentMoneyPct, undefined, TARGET_MONEY_GOAL, BUCKET_HYSTERESIS) === "empty"
         const holdMs = idle ? MIN_TARGET_HOLD_MS : MIN_TARGET_COMMIT_MS
-        const committed = heldMs >= holdMs
 
         // Evaluate every tick, act only when committed. Previously the whole
         // comparison was skipped while the hold timer ran, so "why is it still
@@ -1327,35 +1241,24 @@ export async function main(ns) {
         const measure = idle
           ? (server) => getTargetEffectiveScore(ns, server)
           : (server) => getTargetScore(ns, server)
-        let best = null
-        for (const { server } of ranked) {
-          const score = measure(server)
-          if (!best || score > best.score) best = { server, score }
-        }
+        const candidates = ranked.map(({ server }) => ({ server, score: measure(server) }))
         const currentScore = measure(currentTarget)
-        const ratio = best ? best.score / Math.max(currentScore, 1e-9) : 0
-        const outbid =
-          !!best && best.server !== currentTarget && best.score > currentScore * OPPORTUNITY_SWITCH_FACTOR
 
-        switchEval = {
-          basis: idle ? "effective" : "potential",
+        // The comparison itself — best-of, ratio, outbid, blockedBy — is a
+        // pure function of the scores above; see mcp_logic.js.
+        switchEval = evaluateOpportunitySwitch({
+          idle,
+          candidates,
+          currentTarget,
           currentScore,
-          best: best ? best.server : null,
-          bestScore: best ? best.score : 0,
-          ratio,
+          heldMs,
+          holdMs,
           factor: OPPORTUNITY_SWITCH_FACTOR,
-          heldSeconds: Math.floor(heldMs / 1000),
-          holdSeconds: Math.floor(holdMs / 1000),
-          committed,
-          outbid,
-          // What is actually preventing a switch right now, so the HUD can say
-          // so in one word instead of making it inferable from four numbers.
-          blockedBy: outbid ? (committed ? null : "hold") : "score",
-        }
+        })
 
-        if (committed && outbid) {
+        if (switchEval.committed && switchEval.outbid) {
           ns.tprint(
-            `mcp: ${best.server} (${formatMoney(best.score)}/s) outperforms ${idle ? "idle" : "current"} ${currentTarget} (${formatMoney(currentScore)}/s) by ${ratio.toFixed(1)}x after ${Math.floor(heldMs / 1000)}s; switching`
+            `mcp: ${switchEval.best} (${formatMoney(switchEval.bestScore)}/s) outperforms ${idle ? "idle" : "current"} ${currentTarget} (${formatMoney(currentScore)}/s) by ${switchEval.ratio.toFixed(1)}x after ${switchEval.heldSeconds}s; switching`
           )
           events.emit("target_drop", Object.assign({ target: currentTarget, reason: "outbid" }, switchEval))
           currentTarget = null

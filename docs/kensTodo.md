@@ -10,6 +10,22 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
+- [ ] **~30 seconds, supervised: validate the direct Remote API connection
+  against the live game.** Built 2026-08-09 (`tools/bb_remote.py`,
+  `docs/remote-api-migration.md`) as the planned replacement for the VS
+  Code extension's file-sync — protocol confirmed against the official
+  Bitburner docs and the installed extension's own source, and self-tests
+  pass against a spec-accurate mock, but nothing has round-tripped against
+  the actual running game yet, deliberately: doing so means the game's one
+  Remote API connection has to (briefly) point somewhere other than the
+  extension. Either works: (a) in-game Options → Remote API, change port
+  from `12525` to `12526`, click Connect, let Claude push/get/delete one
+  throwaway test file, then change the port back to `12525` and Connect
+  again to restore the extension's sync — or (b) close VS Code for a couple
+  minutes so `tools/bb_remote.py` can use port `12525` directly. Once this
+  confirms, the actual cutover (rewiring `mcp_restart.txt`/
+  `mcp_dump_request.txt` to use it) is separate future work.
+
 - [ ] **Check the VS Code Bitburner file-sync connection — now confirmed to
   also block `mcp_restart.txt`, not just dumps.** During the 2026-08-09
   XP-mode/invariant diagnosis session, five separate writes to

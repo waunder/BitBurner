@@ -715,6 +715,22 @@ decide; it is not appended to over chat, and chat goes back to short pings
 <https://claude.ai/code/artifact/a48a824c-7762-4b20-9e22-9f1827002e90> — same
 URL survives every redeploy of this path.
 
+### `tools/bb_remote.py` — direct Remote API client (prototype, not yet cut over)
+
+Built 2026-08-09 to replace the VS Code extension's file-sync as the write
+path into the game, after two same-day incidents where writes to
+`mcp_dump_request.txt`/`mcp_restart.txt` never reached it (dropped sync
+session, no replay on reconnect — see the `CLAUDE.md` note this traces to).
+Full protocol writeup, citations, and validation status:
+`docs/remote-api-migration.md`. Short version: the game dials **out** as a
+WebSocket client to an external server (Options → Remote API → hostname
+`localhost`, port `12525`, Connect); `tools/bb_remote.py` is a second
+implementation of that server, alongside the extension's own. Protocol
+self-tests pass against a spec-accurate mock; **not yet round-tripped
+against the live game** — that needs one supervised, reversible action from
+Ken (see the doc). Not wired into `mcp_supervisor.js` or anything
+live-running yet; this is groundwork, not the cutover.
+
 ---
 
 ## Darknet (`ns.dnet`)

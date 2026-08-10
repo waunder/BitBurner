@@ -24,18 +24,32 @@ time needed Ken to fully quit and relaunch the whole Bitburner app, not
 just reconnect, before it recovered. This is now the top priority because
 it has cost real time twice in one day, not because it's newly noticed.
 
-- [ ] **Resume diagnosing the port-12526 connect-then-drop.** A prototype
-  direct client (`tools/bb_remote.py`, now merged to main —
-  `docs/remote-api-migration.md` has the full protocol writeup) was pointed
-  at port 12526 (chosen so it wouldn't disturb the real sync, which stays
-  on 12525) for a live test. It connected, then dropped back to offline.
-  **Root cause is genuinely unknown** — nothing beyond "connects, then
-  drops" was established before the session ended. Start from scratch:
-  check `tools/bb_remote.py`'s own logging/error handling around the
-  disconnect, check what the game's Options → Remote API status field
-  shows at the moment it drops, check whether it's a timeout, a protocol
-  mismatch on some message the self-test's mock never exercised, or
-  something else entirely.
+- [x] **Diagnose the port-12526 connect-then-drop.** Done 2026-08-10 — see
+  `docs/remote-api-diagnosis-log.md` for the full trail. Root cause found
+  and confirmed live (not just theorized): `cmd_serve` read commands from
+  `sys.stdin.readline()`, and under a non-interactive stdin (no
+  controlling TTY — how a tool-driven launch invokes it) that returns `''`
+  immediately, which the old code treated as `quit` and tore the
+  just-accepted connection down within ~1s. Reproduced against the actual
+  pre-fix commit with a real client (`ping` failed at t+1.02s, clean
+  `1000` close). Fixed: `serve` now only reads stdin commands on a real
+  TTY, otherwise holds the connection and logs heartbeats; added a
+  `watch` subcommand (no stdin dependency at all) for unattended live
+  tests; added full connect/disconnect/message logging to stdout + a
+  gitignored log file, since the old code logged nothing and that's what
+  made this take so long to pin down. Verified: `selftest` still passes
+  all seven checks; the fix was verified against a real (non-game) client
+  holding a connection past the point the old code would have killed it.
+  **Still not tested against the actual live game** — that's the next
+  item below.
+- [ ] **Live-test the fix against the real game on port 12526.** Ask Ken
+  to open Options → Remote API, set port to `12526`, click Connect, while
+  `tools/bb_remote.py watch --port 12526 --duration 180` is running and
+  being actively read from `tools/bb_remote_events.log`. If the connection
+  now holds (expected, given the fix reproduces and resolves the bug found
+  above), proceed straight to the round-trip item below in the same
+  session. If it still drops, the new logging will show close_code/
+  close_reason/exception this time instead of nothing.
 - [ ] **Validate a full round trip once the drop is fixed.** Push one real
   file through `tools/bb_remote.py`, confirm it actually lands in the game
   (read it back, or dump/tail it), without touching the VS Code extension

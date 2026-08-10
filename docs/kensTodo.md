@@ -10,14 +10,15 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
-- [ ] **Direct Remote API connection: no action needed from you right now.**
-  The supervised port-12526 test this note used to ask for already
-  happened — the game connected, then dropped back to offline within the
-  same session, before a real file round-tripped. Cause unknown; that
-  diagnosis is Claude's own next task (see `docs/claude-todo.md` priority
-  1), not something that needs your hand yet. This item will come back
-  with a concrete ask once Claude has something to test again — likely
-  another ~30-second supervised port switch, same shape as before.
+- [ ] **Direct Remote API connection: ready for another supervised
+  ~30-second test.** The earlier drop is now diagnosed and a fix is in —
+  see `docs/remote-api-diagnosis-log.md`. When Claude's ready to test:
+  Options → Remote API → set Port to `12526` → Connect. Leave it connected
+  for a couple minutes if nothing seems to happen immediately; Claude will
+  be actively watching the connection over a log file the moment you
+  click, not waiting for you to describe what you see. Once confirmed
+  working, switch the port back to `12525` and Connect again to restore
+  the normal VS Code sync (same reversible action as before).
 
 - [ ] **Run `dnet_deploy.js --once` from `home`** — `dnet_probe.js` (below)
   validated the model reading, so this is the next step: the roaming

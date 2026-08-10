@@ -137,3 +137,92 @@ doesn't require any interactive input at all — this is what a Claude-run
 Bash-tool invocation actually needs, since it has no real TTY. Recording
 this plan now, before implementing it, per the task's explicit instruction
 not to wait until "done" to write things down.
+
+**Implemented the logging.** `RemoteApiServer._on_connection` now logs, for
+every connection: `CONNECTED from <addr>; headers=...` on open,
+`DISCONNECTED after N.NNs (close_code=..., close_reason=...)` on close
+(plus the exception type/message if the receive loop ended on one),
+`REFUSED` for a second simultaneous connection attempt, and every
+send/recv/timeout/dropped-message at the RPC layer. All of it goes to
+stdout and appends to `tools/bb_remote_events.log` (gitignored, path
+overridable with `--log-file`), specifically so a process that dies
+mid-session doesn't take the evidence with it. Verified working by running
+`selftest` — real `CONNECTED`/`SEND`/`RECV`/`OK`/`DISCONNECTED` lines came
+out for every step, all seven checks still pass.
+
+**Fixed the stdin-EOF bug in `cmd_serve`**, and — critically — **confirmed
+it live against the actual pre-fix code, not just reasoned about it.**
+Extracted the original committed version (`git show
+e8a6794:tools/bb_remote.py`) to `/tmp/bb_remote_original.py` and ran it as
+`serve --port 21217 < /dev/null` (stdin from `/dev/null`, exactly what a
+non-interactive/tool-driven launch looks like — no controlling TTY) with a
+real `websockets` client connecting to it. Result, timestamped from the
+client's own clock:
+
+```
+t+0.02s: client connected
+t+1.02s: ping FAILED (ConnectionClosedOK: received 1000 (OK); then sent 1000 (OK)) -- connection is dead
+server process GONE (confirmed via kill -0 on the server PID, within 1-2s of connect)
+```
+
+The server's own stdout showed only `Listening...` then `Game connected.`
+— nothing else, no error, because the old code has no logging on the path
+that killed it. This is **hypothesis A, now confirmed live** (not merely
+plausible): `sys.stdin.readline()` on a non-TTY stdin returns `''`
+immediately, `cmd_serve` treats that identically to typing `quit`, breaks
+the loop, and calls `rpc.stop()`, which force-closes the just-accepted
+game connection within about a second of it being accepted — a clean
+`1000` (normal) close on the wire, not a crash, not a timeout, not
+anything the game did wrong. **This is very likely what happened in the
+lost session**: however `bb_remote.py serve` was invoked back then, if it
+ran the way any Bash-tool-driven invocation runs (no controlling terminal
+attached to stdin), this bug alone fully explains "connects, then drops
+back to offline within seconds, before any real file operation happened."
+Hypothesis B (background process death from session churn) is no longer
+needed to explain the symptom, though it may still be worth hardening
+against separately since it's a real risk for long-lived background runs.
+
+**Fix verified working**: re-ran the same client-connects-then-idles
+pattern against the *patched* `tools/bb_remote.py serve --duration 8
+< /dev/null`, and this time the connection survived the full 6-second
+client-side sleep, with the log showing the non-TTY branch was taken
+(`stdin is not a TTY ... NOT reading commands from it`), a heartbeat while
+connected, then a clean disconnect only when the *client* voluntarily
+closed — the server no longer tears down the connection on its own. Full
+transcript:
+
+```
+[...] LISTENING on 127.0.0.1:21214
+[...] CONNECTED from ('127.0.0.1', 55700); headers={...}
+[...] stdin is not a TTY (non-interactive invocation) — NOT reading commands from it, ...
+[...] heartbeat #1: connected=True
+[...] DISCONNECTED after 6.00s (close_code=1000, close_reason='')
+[...] heartbeat #2: connected=False
+[...] hold duration (8.0s) elapsed, stopping.
+```
+
+**New `watch` subcommand added** (`python3 tools/bb_remote.py watch --port
+12526 --duration 180`): binds, then just logs every connect/disconnect it
+sees for up to `--duration` seconds (default 180), no stdin interaction at
+all, safe to run repeatedly as reconnects happen. This is what should be
+used for the live test with Ken, instead of `serve`, since it has no
+stdin-related failure mode at all by construction.
+
+**What's still open, going into the live test:** hypotheses C
+(ping/pong — read the extension's own heartbeat code, timers are 15s+5s,
+too slow to explain "within seconds," kept as a fallback not the leading
+theory), D (websockets handler-signature mismatch — checked, installed
+version is 15.0.1, ruled out on this machine), and E (an unsolicited
+game-side handshake message the old code silently discarded — now would
+be logged as `DROPPED: message has no integer id` if it happens, so the
+next live test will surface it if it's real) are unresolved but now
+instrumented: if any of them is *also* in play, the next live test against
+port 12526 will show it in the log instead of nothing.
+
+**Not yet done / next steps for whoever resumes this:** run `watch`
+against port 12526 during an actual Ken-supervised Connect click and read
+`tools/bb_remote_events.log` afterward; if the connection now holds, do
+the real `push`/`get`/`delete` round trip that's the actual bar in
+`docs/claude-todo.md`; if it still drops, the log will show close_code/
+close_reason/exception which narrows hypotheses C/E immediately instead of
+starting over.

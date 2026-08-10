@@ -739,6 +739,29 @@ against the live game** — that needs one supervised, reversible action from
 Ken (see the doc). Not wired into `mcp_supervisor.js` or anything
 live-running yet; this is groundwork, not the cutover.
 
+**2026-08-10: found and fixed a confirmed connect-then-drop bug, added
+logging.** A first live attempt (port 12526) connected then dropped within
+seconds with no clue why — `RemoteApiServer`'s connection lifecycle logged
+*nothing* on connect/disconnect. Fixed: every connect, disconnect (with
+close code/reason/duration), refused second connection, and sent/received/
+dropped message now logs to stdout and appends to
+`tools/bb_remote_events.log` (gitignored; `--log-file` to override, empty
+string to disable). Full trail: `docs/remote-api-diagnosis-log.md`.
+
+While adding that logging, reproduced the actual bug live: `cmd_serve`
+read commands from `sys.stdin.readline()`, and on a non-interactive stdin
+(no controlling TTY — exactly how a tool-driven launch invokes it),
+`readline()` returns `''` immediately, which the old code treated as
+`quit` and tore the just-accepted connection down within about a second —
+confirmed with a real client against the pre-fix commit (`ping` failed at
+t+1.02s with a clean `1000` close). Fixed: `serve` now only reads
+interactive commands when stdin is a real TTY; otherwise it holds the
+connection open and logs heartbeats instead. Also added a `watch`
+subcommand (`python3 tools/bb_remote.py watch --port 12526 --duration
+180`) — binds and logs every connect/disconnect for a bounded duration,
+no stdin interaction at all, built specifically for an unattended/
+tool-driven live test.
+
 ---
 
 ## Darknet (`ns.dnet`)

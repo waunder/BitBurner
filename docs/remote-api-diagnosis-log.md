@@ -321,3 +321,22 @@ Built `bb_remote_roundtrip.py` (scratchpad, not part of the repo) as a
 combined push+get+verify script using `tools/bb_remote.py`'s own classes,
 specifically so the round-trip validation only costs Ken one more Connect
 click instead of one per RPC call. Waiting on that click now.
+
+**First combined-script window (11:47:26–11:49:26) timed out, no
+connection.** Checked the game's own Overview page via CDP right after
+(read-only, no click) to see if there was a clue: **stats had reset to
+base (HP 10/10, Hack 1, Str/Def/Dex/Agi/Cha all 1) and money dropped to
+$801k**, a sharp change from the mid-game state seen earlier in this same
+session (Hack 373, $37m+). This is consistent with an **augmentation
+install / soft reset** happening around this time — which reloads the
+whole game page and would both explain why nothing was listening on
+Ken's end (he's plausibly mid-install, not on the Options screen) and
+would reset the Remote API port field back to its default (`12525`) since
+that's an in-memory UI setting, not a save-file value, per
+`docs/remote-api-migration.md`'s original config reading. **Not confirmed
+this is what happened** — inferred from the stat/money pattern only, not
+asked or observed directly — but it's a plausible, non-alarming reason for
+a quiet window that doesn't implicate the tool. Restarting the listener
+regardless; if this is right, the port field will need to be set to
+`12526` again after whatever Ken is doing settles, same as any other
+reconnect.

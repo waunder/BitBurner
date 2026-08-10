@@ -378,3 +378,16 @@ only flag it as a real concern if activity on the Overview page itself
 goes quiet for a long stretch (which would suggest Ken stepped away
 entirely, at which point a status ping might be more useful than another
 silent restart).
+
+**Fourth 9-minute window (12:06:00-12:15:00) also timed out.** Checked
+again: money $21.1m (up from $11.4m), Hack 213 (up from 157), now
+"Working for CyberSec" earning faction rep. Revising the earlier read
+slightly: this steady, automatic-looking progression (money/rep climbing
+smoothly, no more one-off crime action visible) looks more like the mcp
+farming loop running unattended post-`startup` than Ken actively clicking
+through menus -- i.e. Ken may be AFK while his own automation runs, not
+mid-task at the keyboard. Either way the conclusion is the same: no
+evidence of a tool-side problem, just no one at the Options screen yet.
+~24 minutes of listening total across all windows with zero connection
+attempts logged. Continuing to restart quietly per the standing
+instruction.

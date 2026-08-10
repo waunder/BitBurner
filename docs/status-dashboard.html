@@ -16,6 +16,8 @@
     --good: #1f7a45;
     --good-soft: #dcefe1;
     --warn: #a3661a;
+    --warn-soft: #f3e6d3;
+    --warn-strong: #7d4d10;
     --shadow: 0 1px 2px rgba(22, 33, 29, 0.06), 0 1px 1px rgba(22, 33, 29, 0.04);
   }
 
@@ -34,6 +36,8 @@
       --good: #4cbf7d;
       --good-soft: #163b28;
       --warn: #d99b46;
+      --warn-soft: #382a13;
+      --warn-strong: #f0b96e;
       --shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
     }
   }
@@ -52,6 +56,8 @@
     --good: #4cbf7d;
     --good-soft: #163b28;
     --warn: #d99b46;
+    --warn-soft: #382a13;
+    --warn-strong: #f0b96e;
     --shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
   }
 
@@ -112,7 +118,7 @@
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
-    margin-bottom: 2.25rem;
+    margin-bottom: 1.4rem;
   }
 
   .chip {
@@ -139,7 +145,15 @@
 
   .dot-accent { background: var(--accent); }
   .dot-good { background: var(--good); }
+  .dot-warn { background: var(--warn); }
   .dot-neutral { background: var(--text-faint); }
+
+  .lede {
+    font-size: 0.92rem;
+    color: var(--text-dim);
+    max-width: 62ch;
+    margin: 0 0 2.1rem;
+  }
 
   /* ---------- sections ---------- */
 
@@ -169,7 +183,7 @@
 
   .rows { display: flex; flex-direction: column; gap: 0.65rem; }
 
-  /* ---------- needs-your-call rows ---------- */
+  /* ---------- row cards ---------- */
 
   .row {
     display: grid;
@@ -184,6 +198,7 @@
   .row-stripe { background: var(--border); }
   .row.decision .row-stripe { background: var(--accent); }
   .row.action .row-stripe { background: var(--text-faint); }
+  .row.flag .row-stripe { background: var(--warn); }
 
   .row-body { padding: 0.85rem 1rem 0.95rem; }
 
@@ -210,6 +225,19 @@
     color: var(--accent-strong);
     border-color: var(--accent);
     background: var(--accent-soft);
+  }
+
+  .row.flag .tag {
+    color: var(--warn-strong);
+    border-color: var(--warn);
+    background: var(--warn-soft);
+  }
+
+  .row-date {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+    font-size: 0.7rem;
+    color: var(--text-faint);
+    letter-spacing: 0.02em;
   }
 
   .row-title {
@@ -289,6 +317,7 @@
     align-items: center;
     gap: 0.55rem;
     margin-bottom: 0.4rem;
+    flex-wrap: wrap;
   }
 
   .pulse {
@@ -335,51 +364,6 @@
     font-style: italic;
   }
 
-  /* ---------- done list ---------- */
-
-  .done-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .done-item {
-    display: grid;
-    grid-template-columns: 1.4rem 1fr;
-    gap: 0.15rem 0.6rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.6rem 0.85rem;
-    box-shadow: var(--shadow);
-    align-items: start;
-  }
-
-  .done-check {
-    color: var(--good);
-    font-weight: 700;
-    font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
-    line-height: 1.5;
-  }
-
-  .done-item p {
-    margin: 0;
-    font-size: 0.9rem;
-    color: var(--text-dim);
-  }
-
-  .done-item .fig { color: var(--text); }
-
-  .done-item .tag {
-    color: var(--good);
-    border-color: var(--good);
-    background: var(--good-soft);
-    margin-right: 0.4rem;
-  }
-
   /* ---------- footer ---------- */
 
   footer {
@@ -398,58 +382,83 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">last updated 2026&#8209;08&#8209;10</div>
+    <div class="updated mono">rebuilt 2026&#8209;08&#8209;10 12:45 PDT</div>
   </div>
 
   <div class="glance">
-    <span class="chip"><span class="dot dot-accent"></span>needs you <span class="n mono">3</span></span>
-    <span class="chip"><span class="dot dot-neutral"></span>up next <span class="n mono">1</span></span>
-    <span class="chip"><span class="dot dot-good"></span>done today <span class="n mono">4</span></span>
+    <span class="chip"><span class="dot dot-accent"></span>needs you <span class="n mono">1</span></span>
+    <span class="chip"><span class="dot dot-warn"></span>flagged <span class="n mono">2</span></span>
+    <span class="chip"><span class="dot dot-neutral"></span>in progress <span class="n mono">1</span></span>
   </div>
+
+  <p class="lede">Rebuilt clean this pass &mdash; the running changelog is gone. Every row below is dated;
+    nothing on this page is presented as current unless it was confirmed current at that date. History
+    lives in <code class="cite">git log</code> and the docs it points to, not here.</p>
 
   <section aria-labelledby="needs-title">
     <div class="block-head">
       <h2 class="block-title" id="needs-title">Needs your call</h2>
-      <span class="block-count mono">3 open</span>
+      <span class="block-count mono">1 open</span>
     </div>
     <div class="rows">
 
-      <div class="row decision">
-        <div class="row-stripe"></div>
-        <div class="row-body">
-          <div class="row-top">
-            <span class="tag">decision</span>
-          </div>
-          <div class="row-title">Buy the $1b 4S Market Data (UI) tier now, or wait?</div>
-          <p><span class="fig">Recommendation: wait.</span> Net worth is ~<span class="fig">$70.2m</span> per the last known <code>mcp_status.json</code> &mdash; that file was stale as of this session, so treat the figure as approximate, not a live read. At that level $1b is roughly 14&times; net worth.</p>
-          <details class="more">
-            <summary>why wait</summary>
-            <div class="row-body-inner">
-              <p>Buying now would gut the hacking-farm runway for a data feed with no capital left over to act on. Full reasoning in <code class="cite">docs/stock-trading-strategy.md</code>: worth it once net worth comfortably clears ~$10b, so $1b is a minor allocation with real trading capital still in hand. This is independent of the separate $25b TIX API tier, which stays off the table until scripted trading is explicitly approved.</p>
-            </div>
-          </details>
-        </div>
-      </div>
-
       <div class="row action">
         <div class="row-stripe"></div>
         <div class="row-body">
           <div class="row-top">
             <span class="tag">action</span>
-          </div>
-          <div class="row-title">Check the VS Code Bitburner file-sync connection</div>
-          <p>Five writes to <code>mcp_dump_request.txt</code> in about a minute never reached the game during this session's diagnosis &mdash; a dropped push channel, not a frozen game. A reconnect or a manual save in the editor should restore it; worth confirming a fresh write actually renders in-game.</p>
-        </div>
-      </div>
-
-      <div class="row action">
-        <div class="row-stripe"></div>
-        <div class="row-body">
-          <div class="row-top">
-            <span class="tag">action</span>
+            <span class="row-date mono">open since 2026&#8209;08&#8209;09</span>
           </div>
           <div class="row-title">Run <code>dnet_deploy.js --once</code> from home</div>
-          <p><code>dnet_probe.js</code> already validated the model-reading approach against real play. This is the next step &mdash; the roaming self-replicating deployer, one pass, ~4.6GB. Report back what it finds (hosts cracked, credentials gathered) so the darknet docs can be checked against real results.</p>
+          <p><code>dnet_probe.js</code> validated the darknet model-reading approach against real play on
+            2026&#8209;08&#8209;09. This is the next step &mdash; the roaming self-replicating deployer, one
+            pass, ~4.6GB. Report back what it finds (hosts cracked, credentials gathered) so
+            <code class="cite">docs/darknet-*.md</code> can be checked against real results.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section aria-labelledby="flag-title">
+    <div class="block-head">
+      <h2 class="block-title" id="flag-title">Flagged &mdash; not yet chased down</h2>
+      <span class="block-count mono">2</span>
+    </div>
+    <div class="rows">
+
+      <div class="row flag">
+        <div class="row-stripe"></div>
+        <div class="row-body">
+          <div class="row-top">
+            <span class="tag">unconfirmed</span>
+            <span class="row-date mono">seen 2026&#8209;08&#8209;10</span>
+          </div>
+          <div class="row-title">Farm may be stuck &mdash; <code>weakenBudgetNonNegative</code> firing repeatedly</div>
+          <p>A CDP check earlier today found <code>mcp</code>'s HUD reporting verdict <span class="fig">INVARIANT</span>,
+            506 hits all attributed to <code>weakenBudgetNonNegative</code>, <span class="fig">money 0%</span>,
+            <span class="fig">rate 0</span>, avg 3 &mdash; while <code>ram 98%</code> / 18 hosts still looked
+            plausible on their own. Not diagnosed: could be a real over-allocation or a noisy assertion, but
+            money-0%/rate-0 alongside repeated invariant hits suggests something is actually stuck, not just an
+            assertion glitch. Next real step, not started. See <code class="cite">docs/claude-todo.md</code>.</p>
+        </div>
+      </div>
+
+      <div class="row flag">
+        <div class="row-stripe"></div>
+        <div class="row-body">
+          <div class="row-top">
+            <span class="tag">no live read</span>
+            <span class="row-date mono">this rebuild, 2026&#8209;08&#8209;10</span>
+          </div>
+          <div class="row-title">No money/level figures on this board &mdash; couldn't confirm them live</div>
+          <p>This rebuild tried to read current state straight from the running game over CDP instead of
+            trusting old files. The connection was refused: the game process wasn't launched with
+            <code>--remote-allow-origins</code>, so a DOM read isn't available this session.
+            <code class="mono">mcp_status.json</code> on disk is dated 2026&#8209;08&#8209;08 14:40 &mdash; over two
+            days stale, and predates a likely augmentation-install reset noted in
+            <code class="cite">docs/remote-api-diagnosis-log.md</code>. Any money or hacking-level number pulled
+            from it would be fiction dressed as fact, so none is shown here. Worth a fresh CDP read next session.</p>
         </div>
       </div>
 
@@ -458,75 +467,34 @@
 
   <section aria-labelledby="progress-title">
     <div class="block-head">
-      <h2 class="block-title" id="progress-title">Up next</h2>
-      <span class="block-count mono">1 queued</span>
+      <h2 class="block-title" id="progress-title">In progress</h2>
+      <span class="block-count mono">1</span>
     </div>
     <div class="progress-card">
       <div class="progress-top">
-        <span class="pulse idle" aria-hidden="true"></span>
-        <span class="row-title">tools/bb_remote.py &mdash; replace the trigger-file mechanism</span>
+        <span class="pulse" aria-hidden="true"></span>
+        <span class="row-title">Replacing the trigger-file restart/dump mechanism</span>
+        <span class="row-date mono">2026&#8209;08&#8209;10</span>
       </div>
-      <p>The direct Remote API connection is now fully validated (see Done, below) &mdash; a real push/read/list round trip against the live game, no VS Code extension involved. That unblocks the next phase: designing and building a direct-connection replacement for <code>mcp_restart.txt</code>/<code>mcp_dump_request.txt</code>, the trigger files <code>mcp_supervisor.js</code> currently polls. Not started yet, no action needed from Ken &mdash; queued as the next real step in <code>docs/claude-todo.md</code>.</p>
-      <div class="stale-note">Also worth a look before this goes further: the round trip's file listing showed the game's view of &quot;home&quot; includes more of the local repo tree than just game scripts (venv/tooling files). Not a blocker, just flagged in <code>docs/remote-api-diagnosis-log.md</code>.</div>
+      <p>The direct Remote API round trip (<code>pushFile</code> &rarr; <code>getFile</code> &rarr; compare &rarr;
+        <code>getFileNames</code>) is confirmed working end-to-end against the live game, no VS Code extension
+        involved. That's the transport proven. <span class="fig">The next phase &mdash; actually replacing
+        <code>mcp_restart.txt</code>/<code>mcp_dump_request.txt</code>, the trigger files
+        <code>mcp_supervisor.js</code> currently polls, with direct calls through
+        <code>tools/bb_remote.py</code> &mdash; is queued and in progress, not finished.</span> Most recent commit
+        on it: <code class="cite">e087c9a</code>, today. No action needed from Ken; this is Claude's own work.</p>
+      <div class="stale-note">While this is active, the game's Remote API is pointed at port 12526 rather than
+        the extension's default 12525, so normal VS Code file sync is effectively paused. Not a decision needed
+        right now &mdash; flagged so it isn't mistaken for the sync being broken again if noticed.</div>
     </div>
-  </section>
-
-  <section aria-labelledby="done-title-0810">
-    <div class="block-head">
-      <h2 class="block-title" id="done-title-0810">Done this session <span class="mono" style="font-weight:400; text-transform:none; letter-spacing:0;">&mdash; 2026&#8209;08&#8209;10</span></h2>
-      <span class="block-count mono">4</span>
-    </div>
-    <ul class="done-list">
-      <li class="done-item">
-        <span class="done-check mono">&#10003;</span>
-        <p><span class="tag">fixed</span> Diagnosed and fixed the port-12526 connect-then-drop: <code>cmd_serve</code> read commands from stdin, and a non-interactive stdin returns EOF immediately &mdash; treated as <code>quit</code>, tearing the connection down within ~1s. Full trail in <code>docs/remote-api-diagnosis-log.md</code>.</p>
-      </li>
-      <li class="done-item">
-        <span class="done-check mono">&#10003;</span>
-        <p><span class="tag">verified</span> Live-tested the fix against the real game on port 12526 &mdash; held a stable connection 170s+, no drop.</p>
-      </li>
-      <li class="done-item">
-        <span class="done-check mono">&#10003;</span>
-        <p><span class="tag">verified</span> Validated a full round trip &mdash; <code>pushFile</code> &rarr; <code>getFile</code> &rarr; compare &rarr; <code>getFileNames</code>, all against the live game, no VS Code extension involved. This is the bar for &quot;the direct connection actually works.&quot;</p>
-      </li>
-      <li class="done-item">
-        <span class="done-check mono">&#10003;</span>
-        <p><span class="tag">merged</span> Folded the diagnosis/round-trip branch into <code>main</code>; <code>node --test</code> (22/22) and <code>node --check mcp.js</code> both clean afterward.</p>
-      </li>
-    </ul>
-  </section>
-
-  <section aria-labelledby="done-title">
-    <div class="block-head">
-      <h2 class="block-title" id="done-title">Done this session <span class="mono" style="font-weight:400; text-transform:none; letter-spacing:0;">&mdash; 2026&#8209;08&#8209;09</span></h2>
-      <span class="block-count mono">5</span>
-    </div>
-    <ul class="done-list">
-      <li class="done-item">
-        <span class="done-check mono">&#10003;</span>
-        <p><span class="tag">verified</span> <code>dnet_probe.js</code> run &mdash; validated the darknet model-reading approach against real play.</p>
-      </li>
-      <li class="done-item">
-        <span class="done-check mono">&#10003;</span>
-        <p><span class="tag">verified</span> <code>mcp_stocks.js</code> re-run confirmed working &mdash; the <code>has4SDataTixApi</code> fix from the earlier session held.</p>
-      </li>
-      <li class="done-item">
-        <span class="done-check mono">&#10003;</span>
-        <p><span class="tag">written</span> <code>docs/stock-trading-mechanics.md</code> and <code>docs/stock-trading-strategy.md</code>, grounded in the game's own source.</p>
-      </li>
-      <li class="done-item">
-        <span class="done-check mono">&#10003;</span>
-        <p><span class="tag">housekept</span> Untracked save snapshot found and gitignored.</p>
-      </li>
-      <li class="done-item">
-        <span class="done-check mono">&#10003;</span>
-        <p><span class="tag">housekept</span> <code>docs/kensTodo.md</code> kept current throughout.</p>
-      </li>
-    </ul>
   </section>
 
   <footer>
-    <p>This page is the standing dashboard for the BitBurner project &mdash; Claude redeploys it in place from <code class="mono">docs/status-dashboard.html</code> whenever there's something new to see, instead of narrating status in chat.</p>
-    <p>Nothing here is live &mdash; it reflects the state as of the redeploy above. See <code class="mono">docs/processes.md</code> for how it fits the rest of the toolchain.</p>
+    <p>This page is the standing dashboard for the BitBurner project &mdash; Claude redeploys it in place from
+      <code class="mono">docs/status-dashboard.html</code> whenever there's something new to see, instead of
+      narrating status in chat. It shows current state only; resolved items and one-off completed tasks are
+      removed once they stop being decision-relevant, not accumulated here.</p>
+    <p>For what shipped and when, see <code class="mono">git log</code> and <code class="mono">docs/claude-todo.md</code>.
+      For how the pieces fit together, see <code class="mono">docs/processes.md</code>.</p>
   </footer>
 </div>

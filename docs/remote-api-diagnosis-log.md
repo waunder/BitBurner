@@ -363,3 +363,18 @@ fixed end time -- widened `bb_remote_roundtrip.py`'s wait from 120s to
 long-standing listener instead of a tight restart loop. Restarted with the
 wider window; will check in when it resolves (success or timeout) rather
 than every couple of minutes.
+
+**9-minute window (11:56:12-12:05:12) also timed out.** Checked the
+Overview page again: money now $11.455m (up sharply from $619k), Hack 157
+(up from 14), and the terminal shows a fresh `[home /]> startup` /
+"Running script with 1 thread" line -- Ken (or the mcp suite reacting to a
+fresh boot) has been actively working through post-reset setup this whole
+time, consistent with the earlier crime-grinding observation, just
+further along. Nothing suggests a problem with the Remote API side
+specifically -- no failed-connect evidence, no error, just continued
+occupancy elsewhere. Restarting another 9-minute window; will keep doing
+so without a chat report each time per the standing instruction, and will
+only flag it as a real concern if activity on the Overview page itself
+goes quiet for a long stretch (which would suggest Ken stepped away
+entirely, at which point a status ping might be more useful than another
+silent restart).

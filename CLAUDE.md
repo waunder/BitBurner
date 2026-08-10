@@ -141,6 +141,11 @@ doesn't want the mechanics narrated at him. Practical rules:
   as a Claude Artifact — URL in `docs/processes.md`) is the standing
   at-a-glance view Ken checks on his own schedule, redeployed in place
   rather than re-sent over chat.
+- **A live coordination task that needs Ken's hand and hits repeated
+  retries or corrections only puts the first ask and the final outcome in
+  chat** — intermediate retry/failure updates go to the dashboard instead.
+  Learned from the port-12526 saga (2026-08-09/10), where several failed
+  rounds got narrated in chat before Ken asked for this fix himself.
 
 ## Git
 

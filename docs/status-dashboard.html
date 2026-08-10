@@ -392,7 +392,7 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">last updated 2026&#8209;08&#8209;09</div>
+    <div class="updated mono">last updated 2026&#8209;08&#8209;10</div>
   </div>
 
   <div class="glance">
@@ -458,9 +458,9 @@
     <div class="progress-card">
       <div class="progress-top">
         <span class="pulse" aria-hidden="true"></span>
-        <span class="row-title">mcp.js &mdash; XP-mode target-eviction thrash fix</span>
+        <span class="row-title">tools/bb_remote.py &mdash; port-12526 direct connection: round-trip validation</span>
       </div>
-      <p>A background agent is implementing and live-verifying a fix that exempts XP mode from money-based target abandonment &mdash; XP mode's hack-heavy weighting drains every target's money by design, which was tripping the same eviction check money mode relies on and chaining from target to target instead of settling.</p>
+      <p>The port-12526 connect-then-drop that blocked this all of 2026&#8209;08&#8209;09 is past: after several failed retries tonight, the direct Remote API client held a live connection. A background agent is now validating a full round trip &mdash; pushing a real file and reading it back from inside the game &mdash; before this replaces the VS Code extension's file sync as the write path. No action needed from Ken yet.</p>
       <div class="stale-note">This card goes stale the moment that agent finishes. The main session updates it here &mdash; no need to ask for a status check.</div>
     </div>
   </section>

@@ -703,6 +703,18 @@ can raise an alarm.
 daemon. Each event costs a turn, which is why the filter watches transitions
 rather than ticks. And it observes; it does not act.
 
+### The status dashboard
+
+`docs/status-dashboard.html` (git-tracked source) is a published Artifact —
+the standing "needs your call / in progress / done this session" page built
+2026-08-09 after Ken flagged chat as too noisy to actually use. Claude
+**redeploys it in place** by editing this file and calling the Artifact tool
+again on the same path whenever there's something new for Ken to see or
+decide; it is not appended to over chat, and chat goes back to short pings
+("dashboard has one thing for you") once it exists. Published at
+<https://claude.ai/code/artifact/a48a824c-7762-4b20-9e22-9f1827002e90> — same
+URL survives every redeploy of this path.
+
 ---
 
 ## Darknet (`ns.dnet`)

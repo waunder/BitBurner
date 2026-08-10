@@ -1,0 +1,501 @@
+<!doctype html>
+<title>BitBurner Status Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --bg: #eef1ef;
+    --surface: #ffffff;
+    --surface-2: #e3e8e5;
+    --border: #ccd5d0;
+    --text: #16211d;
+    --text-dim: #57655f;
+    --text-faint: #7c8983;
+    --accent: #0d7d6c;
+    --accent-soft: #d7ece6;
+    --accent-strong: #075e51;
+    --good: #1f7a45;
+    --good-soft: #dcefe1;
+    --warn: #a3661a;
+    --shadow: 0 1px 2px rgba(22, 33, 29, 0.06), 0 1px 1px rgba(22, 33, 29, 0.04);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1512;
+      --surface: #141d19;
+      --surface-2: #1b2521;
+      --border: #2a3733;
+      --text: #e8efe9;
+      --text-dim: #94a49d;
+      --text-faint: #64726c;
+      --accent: #45d6b9;
+      --accent-soft: #17332c;
+      --accent-strong: #7fe9d3;
+      --good: #4cbf7d;
+      --good-soft: #163b28;
+      --warn: #d99b46;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0e1512;
+    --surface: #141d19;
+    --surface-2: #1b2521;
+    --border: #2a3733;
+    --text: #e8efe9;
+    --text-dim: #94a49d;
+    --text-faint: #64726c;
+    --accent: #45d6b9;
+    --accent-soft: #17332c;
+    --accent-strong: #7fe9d3;
+    --good: #4cbf7d;
+    --good-soft: #163b28;
+    --warn: #d99b46;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .mono {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 2.25rem 1.5rem 4rem;
+  }
+
+  /* ---------- top bar ---------- */
+
+  .topbar {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .brand {
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .brand strong {
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  .updated {
+    font-size: 0.72rem;
+    color: var(--text-faint);
+    letter-spacing: 0.04em;
+  }
+
+  .glance {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 2.25rem;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.32rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+    box-shadow: var(--shadow);
+  }
+
+  .chip .dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    flex: none;
+  }
+
+  .chip .n { font-weight: 700; }
+
+  .dot-accent { background: var(--accent); }
+  .dot-good { background: var(--good); }
+  .dot-neutral { background: var(--text-faint); }
+
+  /* ---------- sections ---------- */
+
+  section + section { margin-top: 2.25rem; }
+
+  .block-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 0.8rem;
+  }
+
+  .block-title {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    margin: 0;
+  }
+
+  .block-count {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+    font-size: 0.78rem;
+    color: var(--text-faint);
+  }
+
+  .rows { display: flex; flex-direction: column; gap: 0.65rem; }
+
+  /* ---------- needs-your-call rows ---------- */
+
+  .row {
+    display: grid;
+    grid-template-columns: 4px 1fr;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .row-stripe { background: var(--border); }
+  .row.decision .row-stripe { background: var(--accent); }
+  .row.action .row-stripe { background: var(--text-faint); }
+
+  .row-body { padding: 0.85rem 1rem 0.95rem; }
+
+  .row-top {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    padding: 0.12rem 0.4rem;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+
+  .row.decision .tag {
+    color: var(--accent-strong);
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .row-title {
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-weight: 600;
+    font-size: 0.98rem;
+    color: var(--text);
+  }
+
+  .row-body p {
+    margin: 0.25rem 0 0;
+    font-size: 0.92rem;
+    color: var(--text-dim);
+    max-width: 62ch;
+  }
+
+  .row-body p + p { margin-top: 0.5rem; }
+
+  .row-body .fig {
+    color: var(--text);
+  }
+
+  .row-body code, .cite {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+    font-size: 0.85em;
+    color: var(--text-dim);
+  }
+
+  details.more {
+    margin-top: 0.5rem;
+  }
+
+  details.more summary {
+    cursor: pointer;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.82rem;
+    color: var(--accent-strong);
+    list-style: none;
+  }
+
+  details.more summary::-webkit-details-marker { display: none; }
+
+  details.more summary::before {
+    content: "+ ";
+  }
+
+  details.more[open] summary::before {
+    content: "\2212 ";
+  }
+
+  details.more summary:focus-visible,
+  a:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  details.more .row-body-inner {
+    margin-top: 0.45rem;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    max-width: 62ch;
+  }
+
+  /* ---------- in progress ---------- */
+
+  .progress-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.9rem 1rem;
+    box-shadow: var(--shadow);
+  }
+
+  .progress-top {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .pulse {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: var(--accent);
+    flex: none;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent);
+    animation: pulse 2.2s ease-out infinite;
+  }
+
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent); }
+    70%  { box-shadow: 0 0 0 7px color-mix(in srgb, var(--accent) 0%, transparent); }
+    100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pulse { animation: none; }
+  }
+
+  .progress-card .row-title { font-size: 0.98rem; }
+
+  .progress-card p {
+    margin: 0.3rem 0 0;
+    font-size: 0.92rem;
+    color: var(--text-dim);
+    max-width: 64ch;
+  }
+
+  .stale-note {
+    margin-top: 0.55rem;
+    padding-top: 0.55rem;
+    border-top: 1px dashed var(--border);
+    font-size: 0.8rem;
+    color: var(--text-faint);
+    font-style: italic;
+  }
+
+  /* ---------- done list ---------- */
+
+  .done-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .done-item {
+    display: grid;
+    grid-template-columns: 1.4rem 1fr;
+    gap: 0.15rem 0.6rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.6rem 0.85rem;
+    box-shadow: var(--shadow);
+    align-items: start;
+  }
+
+  .done-check {
+    color: var(--good);
+    font-weight: 700;
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+    line-height: 1.5;
+  }
+
+  .done-item p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+  }
+
+  .done-item .fig { color: var(--text); }
+
+  .done-item .tag {
+    color: var(--good);
+    border-color: var(--good);
+    background: var(--good-soft);
+    margin-right: 0.4rem;
+  }
+
+  /* ---------- footer ---------- */
+
+  footer {
+    margin-top: 2.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.76rem;
+    color: var(--text-faint);
+    max-width: 62ch;
+  }
+
+  footer p { margin: 0.3rem 0 0; }
+</style>
+
+<div class="page">
+  <div class="topbar">
+    <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
+    <div class="updated mono">last updated 2026&#8209;08&#8209;09</div>
+  </div>
+
+  <div class="glance">
+    <span class="chip"><span class="dot dot-accent"></span>needs you <span class="n mono">3</span></span>
+    <span class="chip"><span class="dot dot-neutral"></span>in progress <span class="n mono">1</span></span>
+    <span class="chip"><span class="dot dot-good"></span>done today <span class="n mono">5</span></span>
+  </div>
+
+  <section aria-labelledby="needs-title">
+    <div class="block-head">
+      <h2 class="block-title" id="needs-title">Needs your call</h2>
+      <span class="block-count mono">3 open</span>
+    </div>
+    <div class="rows">
+
+      <div class="row decision">
+        <div class="row-stripe"></div>
+        <div class="row-body">
+          <div class="row-top">
+            <span class="tag">decision</span>
+          </div>
+          <div class="row-title">Buy the $1b 4S Market Data (UI) tier now, or wait?</div>
+          <p><span class="fig">Recommendation: wait.</span> Net worth is ~<span class="fig">$70.2m</span> per the last known <code>mcp_status.json</code> &mdash; that file was stale as of this session, so treat the figure as approximate, not a live read. At that level $1b is roughly 14&times; net worth.</p>
+          <details class="more">
+            <summary>why wait</summary>
+            <div class="row-body-inner">
+              <p>Buying now would gut the hacking-farm runway for a data feed with no capital left over to act on. Full reasoning in <code class="cite">docs/stock-trading-strategy.md</code>: worth it once net worth comfortably clears ~$10b, so $1b is a minor allocation with real trading capital still in hand. This is independent of the separate $25b TIX API tier, which stays off the table until scripted trading is explicitly approved.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <div class="row action">
+        <div class="row-stripe"></div>
+        <div class="row-body">
+          <div class="row-top">
+            <span class="tag">action</span>
+          </div>
+          <div class="row-title">Check the VS Code Bitburner file-sync connection</div>
+          <p>Five writes to <code>mcp_dump_request.txt</code> in about a minute never reached the game during this session's diagnosis &mdash; a dropped push channel, not a frozen game. A reconnect or a manual save in the editor should restore it; worth confirming a fresh write actually renders in-game.</p>
+        </div>
+      </div>
+
+      <div class="row action">
+        <div class="row-stripe"></div>
+        <div class="row-body">
+          <div class="row-top">
+            <span class="tag">action</span>
+          </div>
+          <div class="row-title">Run <code>dnet_deploy.js --once</code> from home</div>
+          <p><code>dnet_probe.js</code> already validated the model-reading approach against real play. This is the next step &mdash; the roaming self-replicating deployer, one pass, ~4.6GB. Report back what it finds (hosts cracked, credentials gathered) so the darknet docs can be checked against real results.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section aria-labelledby="progress-title">
+    <div class="block-head">
+      <h2 class="block-title" id="progress-title">In progress</h2>
+      <span class="block-count mono">1 running</span>
+    </div>
+    <div class="progress-card">
+      <div class="progress-top">
+        <span class="pulse" aria-hidden="true"></span>
+        <span class="row-title">mcp.js &mdash; XP-mode target-eviction thrash fix</span>
+      </div>
+      <p>A background agent is implementing and live-verifying a fix that exempts XP mode from money-based target abandonment &mdash; XP mode's hack-heavy weighting drains every target's money by design, which was tripping the same eviction check money mode relies on and chaining from target to target instead of settling.</p>
+      <div class="stale-note">This card goes stale the moment that agent finishes. The main session updates it here &mdash; no need to ask for a status check.</div>
+    </div>
+  </section>
+
+  <section aria-labelledby="done-title">
+    <div class="block-head">
+      <h2 class="block-title" id="done-title">Done this session <span class="mono" style="font-weight:400; text-transform:none; letter-spacing:0;">&mdash; 2026&#8209;08&#8209;09</span></h2>
+      <span class="block-count mono">5</span>
+    </div>
+    <ul class="done-list">
+      <li class="done-item">
+        <span class="done-check mono">&#10003;</span>
+        <p><span class="tag">verified</span> <code>dnet_probe.js</code> run &mdash; validated the darknet model-reading approach against real play.</p>
+      </li>
+      <li class="done-item">
+        <span class="done-check mono">&#10003;</span>
+        <p><span class="tag">verified</span> <code>mcp_stocks.js</code> re-run confirmed working &mdash; the <code>has4SDataTixApi</code> fix from the earlier session held.</p>
+      </li>
+      <li class="done-item">
+        <span class="done-check mono">&#10003;</span>
+        <p><span class="tag">written</span> <code>docs/stock-trading-mechanics.md</code> and <code>docs/stock-trading-strategy.md</code>, grounded in the game's own source.</p>
+      </li>
+      <li class="done-item">
+        <span class="done-check mono">&#10003;</span>
+        <p><span class="tag">housekept</span> Untracked save snapshot found and gitignored.</p>
+      </li>
+      <li class="done-item">
+        <span class="done-check mono">&#10003;</span>
+        <p><span class="tag">housekept</span> <code>docs/kensTodo.md</code> kept current throughout.</p>
+      </li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>This page is the standing dashboard for the BitBurner project &mdash; Claude redeploys it in place from <code class="mono">docs/status-dashboard.html</code> whenever there's something new to see, instead of narrating status in chat.</p>
+    <p>Nothing here is live &mdash; it reflects the state as of the redeploy above. See <code class="mono">docs/processes.md</code> for how it fits the rest of the toolchain.</p>
+  </footer>
+</div>

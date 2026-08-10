@@ -263,3 +263,31 @@ time with `--port` in front, which was always going to work, plus the
 argv-normalization fix applied so either order works from now on) is
 running now, started 2026-08-10 11:38:10, listening confirmed via `lsof`.
 Waiting on Ken to click Connect again.
+
+**That second window (11:38:10–11:41:10) ran the full 180s and captured
+zero connection attempts** — 36 heartbeats, `connected=False` throughout,
+no `CONNECTED`/`REFUSED`/error line at all. Checked the game's own Options
+→ Remote API panel afterward via CDP (read-only navigation, no state
+changed): `Status: Offline`, but the Port field already reads `12526` —
+so Ken did change the port at some point, just not necessarily inside this
+specific 180s window. Most likely explanation: the relay through the
+coordinator ("ask him to click again") took longer than the 3-minute
+window to reach him, so he simply hadn't clicked yet by the time it
+elapsed — not a new failure mode. Can't confirm this from logs alone
+though; noting it as the leading explanation, not a fact.
+
+Also worth flagging as a real gap, not yet fixed: `RemoteApiServer`'s
+`_on_connection` only fires *after* the `websockets` library completes the
+WebSocket handshake at the protocol level. If the game's Connect attempt
+were rejected before that (bad headers, TLS/`wss` mismatch, anything at
+the raw-HTTP-upgrade stage), our handler would never run and nothing would
+log — same class of silent gap as the original bug, just one layer lower.
+Not instrumented yet because nothing so far has pointed at it being the
+actual cause, but worth adding lower-level handshake-rejection logging via
+`websockets.serve(..., process_request=...)` or similar if the next
+window also comes up empty despite Ken confirming he actually clicked
+during it.
+
+Started a third `watch --port 12526 --duration 180` at 2026-08-10 11:42:23
+(log cleared first so each window's file is self-contained), listening
+confirmed via `lsof`. This is the window to check next.

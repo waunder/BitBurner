@@ -115,6 +115,51 @@ it has cost real time twice in one day, not because it's newly noticed.
   around — but it removes the need to restart a *process* on Claude's side
   for the next reconnect to be picked up.
 
+**Fact-check (2026-08-10, later): routine script *source* push is still NOT
+migrated — do not read the checked-off items above as "VS Code extension no
+longer needed."** Verified directly against `tools/bb_remote.py`'s current
+code (not just its docstrings) plus `docs/processes.md`:
+
+- Only two actions have moved off the extension: the `mcp_restart.txt`
+  restart trigger (`restart`/`ctl-restart`) and read-only file dumps
+  (`dump`/`ctl-dump`, via `getFile`).
+- Ordinary source edits (`mcp.js`, anything under `hacking/` or `scripts/`,
+  `mcp_logic.js`, etc.) still reach the running game **only** via the VS
+  Code extension's file-sync watcher auto-pushing on save/write — exactly
+  the CLAUDE.md "File sync auto-pushes" mechanism, unchanged.
+- `tools/bb_remote.py` does already have a generic single-file push:
+  `python3 tools/bb_remote.py push <remote_filename> <local_file>` (a
+  live-validated `pushFile` call, not just a mock), and `TriggerDaemon`'s
+  control-channel handler even has generic `"push"`/`"get"` cases coded in
+  already — but there is **no `ctl-push`/`ctl-get` CLI subcommand** exposed
+  (`build_parser()` only defines `ctl-status`/`ctl-restart`/`ctl-dump`), and
+  nothing in this repo calls `push` automatically on a file change. It's a
+  capability that exists, not a wired-up path.
+- The module's own docstring says this outright: the restart/dump commands
+  "are NOT meant to replace the VS Code extension's role for ongoing
+  *source* file sync (mcp.js edits etc.) — that stays on the
+  extension/port 12525 for now."
+- They're also **mutually exclusive at the connection level**, not just
+  by convention: the game's Options → Remote API panel holds one outbound
+  connection to one hostname:port at a time, so while it's pointed at
+  `bb_remote.py` (port 12526, for a restart/dump/push call) it is *not*
+  simultaneously connected to the extension on 12525 — a manual switch in
+  that panel is required either direction.
+
+**Bottom line: if Ken stops using the VS Code Bitburner extension right
+now, routine script edits Claude makes would silently stop reaching the
+live game.** Only the restart trigger and diagnostic dumps would still
+work.
+
+**Candidate next step, not started:** wire a `ctl-push` CLI subcommand
+(the daemon-side handler already supports `cmd: "push"`) and switch
+Claude's own edit-then-deploy workflow to call it instead of relying on
+the extension's watcher — that would need the Remote API panel pointed at
+the daemon's port as the new steady state, which is itself a one-time
+manual switch Ken would need to make. Worth doing if/when Ken wants to
+drop the extension entirely; out of scope for a fact-finding pass, and not
+started here.
+
 Note on branch history: the task brief for this cleanup expected
 `tools/bb_remote.py`'s branch to carry multiple commits from being resumed
 several times. Checked directly — it has exactly one commit

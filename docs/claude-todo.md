@@ -14,6 +14,46 @@ Distinct from the other two lists:
 
 ---
 
+## 2026-08-11: found the real cause of the "farm may be stuck" flag — bucket/redeploy thrash
+
+Ken pushed back on "no hacking while empty" as a sign the algorithm needs a
+rework. That specific behavior is correct by design (see
+`WORK_WEIGHTS_BY_BUCKET`'s comment), but pulling `mcp_status.json` directly
+via `ctl-get` (not the terminal — `cat` turned out to only work for
+`.lit`/`.msg` lore files, not `.json`/`.txt`) found a real bug underneath the
+symptom:
+
+- `foodnstuff`'s `moneyPct` was swinging ~0.045 &harr; 0.125 every single
+  10s tick — confirmed directly from `recentEvents`: `bucket_change
+  low->empty->low->empty...`, exactly 10s apart, held for 4.3+ hours.
+  `BUCKET_HYSTERESIS` (0.02) can't resist an ~0.08 swing.
+- Every bucket flip sets `forceRebalance = true` (`mcp.js:1345`), which
+  kills and redeploys **every host's** action scripts (`mcp.js:745-789`).
+- `growTimeS`/`weakenTimeS` were ~13-16s — both longer than the 10s tick.
+  So every single grow/weaken call was getting killed before it could ever
+  finish. Not a policy bug (the hack/grow weights were correct for each
+  bucket); a redeploy-cadence bug that made the correct policy meaningless.
+
+**Mitigation shipped and confirmed live**: `BUCKET_HYSTERESIS` 0.02 → 0.08
+via `ctl-push` (routine auto-sync is still down, see the item above).
+Watched `mcp_status.json` afterward — bucket held steady at `empty`, no
+new `bucket_change` events, vs. one every tick before.
+
+- [ ] **Structural fix still open**: hysteresis-tuned-per-target is fragile
+  — a different target with a bigger swing could still thrash. The real
+  fix is decoupling `forceRebalance` from action durations: don't force a
+  full redeploy on a bucket change if the currently-running actions
+  haven't had time to complete yet (compare elapsed time on a host's
+  current action against its own `growTimeS`/`weakenTimeS`/`hackTimeS`
+  before killing it). Worth a `mcp_logic.test.js` case reproducing this
+  exact scenario (a target whose bucket boundary sits inside its natural
+  moneyPct swing) before touching `mcp.js`'s redeploy logic live, same
+  discipline as the `moneyDegraded` fix in `81814d6`.
+- [ ] `tickWithinBounds` had 27 violations in the same status snapshot —
+  several ticks took 30-238s instead of the nominal 10s. Not yet
+  root-caused; worth a look once the pull loop is live and this can be
+  watched over multiple sessions instead of one snapshot.
+
 ## Priority 1: kill the VS Code extension dependency
 
 The extension's file sync silently drops and does not replay on reconnect

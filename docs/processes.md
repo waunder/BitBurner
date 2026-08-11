@@ -1205,6 +1205,38 @@ live, so its contents are readable outside the game.
 
 ---
 
+## IPvGO (`ns.go`)
+
+A self-contained set, same shape as the darknet set above: not touched by
+`mcp.js`, not auto-started by `startup.js` or `mcp_supervisor.js`. Full API
+reference (with RAM costs, gating, and citations to the in-game
+documentation itself), the reward-structure writeup, and the move-priority
+design all live in `docs/ipvgo-strategy.md` — this entry is just the map.
+
+| File | Runs on | RAM (est., not yet measured) | What it does |
+| --- | --- | --- | --- |
+| `ipvgo_player.js` | any host with `ns.go` access (the API is not tied to a specific server) | ~33.6GB arithmetic (see the strategy doc) | Plays the current IPvGO subnet forever: capture > defend > expand > random-with-airspace > anything-valid > pass, self-supersedes, never discards an in-progress game, starts a fresh one (default `Netburners` 7x7 — a placeholder, not tuned) once the current one ends. |
+
+**Built 2026-08-11, not yet run in Bitburner.** `node --check ipvgo_player.js`
+passes; nothing further is confirmed until it actually executes. Next step:
+`ctl-push /ipvgo_player.js ipvgo_player.js` (routine, no live-game action
+needed) then one `run ipvgo_player.js` in the live terminal — see
+`docs/claude-todo.md`'s IPvGO entry for exactly what to run and why this
+needs a human/terminal-write step rather than the daemon (there is no
+remote-exec RPC — the Remote API only supports file push/pull, confirmed
+this session, same limitation `docs/processes.md`'s `tools/bb_remote.py`
+section already documents for every other script).
+
+**Deliberately never references `ns.go.cheat.*`** — that surface needs
+Source-File 14.2 (confirmed live this session Ken doesn't have it, and
+doesn't have SF4 yet either), and Bitburner only RAM-gates/needs functions a
+script actually references, so simply not writing `ns.go.cheat` anywhere
+means there's nothing to guard against at runtime, the same class of fix
+`hacking/backdoor.js` had to add *after* hitting an uncaught `RUNTIME ERROR`
+for `ns.singularity` without SF4 — done up front here instead.
+
+---
+
 ## Legacy and unused
 
 Kept because they cost nothing and occasionally get read, but not part of any

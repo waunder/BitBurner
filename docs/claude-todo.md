@@ -1,5 +1,52 @@
 # Claude's working list
 
+## 2026-08-11: IPvGO player built, needs one live run
+
+Ken asked to "put a man on the IPvGO game." Built as a new, separate
+subsystem — doesn't touch `mcp.js`/the money loop. Full design, API
+citations, and reward-structure notes: `docs/ipvgo-strategy.md`.
+`docs/processes.md` has the short map entry.
+
+- [x] Read the full `Go`/`GoAnalysis`/`GoCheat` API in
+  `NetscriptDefinitions.d.ts` (~5143–5715). Confirmed `ns.go.cheat` needs
+  SF14.2 (Ken has neither that nor SF4); base `ns.go` carries no Source-File
+  gate at all.
+- [x] Read the in-game "How to Play" tab and the in-game "Automating IPvGO"
+  documentation page live over CDP — got the real reward structure (area
+  scoring, komi, stat-multiplier bonuses for territory held regardless of
+  win/loss, favor on a two-win streak against a faction you're a member of)
+  and the exact starter-script logic Bitburner's own docs walk through.
+- [x] Confirmed live there's already a game in progress (7x7, Netburners,
+  Black 21/White 25.5) — `ipvgo_player.js` is built to continue it, not
+  discard it, on first run.
+- [x] Built `ipvgo_player.js` at repo root: capture > defend > expand >
+  random-with-airspace > anything-valid > pass, self-supersede, defensive
+  Go-API-availability check. `node --check` passes.
+- [ ] **Not yet pushed or run.** Next concrete step, in order:
+  1. `python3 tools/bb_remote.py ctl-push /ipvgo_player.js ipvgo_player.js
+     --control-port 12527` — routine, no live-game action, same mechanism
+     already confirmed working for every other script.
+  2. Then it needs to actually execute in-game. **There is no remote-exec
+     RPC** (confirmed this session — the Remote API only supports file
+     push/pull, never running something), so this needs either (a) the
+     CDP-driven terminal-write technique already proven working earlier
+     this session for `backdoor` (see `hacking/backdoor.js`'s entry in
+     `docs/processes.md`) to type `run ipvgo_player.js` into the live
+     terminal, or (b) Ken typing that one line himself. **Asked the parent
+     conversation to do (a)** rather than reimplementing the terminal-write
+     mechanism independently in this task, per this task's own instruction
+     — if that didn't happen yet, do it before adding anything to
+     `docs/kensTodo.md`.
+  3. Once it's running, watch its `ns.tprint` output (CDP tail read or
+     terminal scrollback) for: the real `ns.getScriptRam()` figure (arithmetic
+     estimate in the strategy doc is ~33.6GB, unconfirmed), whether moves are
+     actually landing without silently-caught errors, and the first few
+     games' win/loss record.
+- [ ] Check `ns.getPlayer().factions` before tuning opponent choice —
+  the two-wins-in-a-row favor payout only applies to factions Ken is already
+  a member of, and it's unconfirmed whether `Netburners` (today's default)
+  is even one of them.
+
 Claude's own granular task list, session to session. Read this first at the
 start of every session; update it as you work — check items off, add new
 ones the moment they surface, don't let it go stale.
@@ -39,20 +86,107 @@ via `ctl-push` (routine auto-sync is still down, see the item above).
 Watched `mcp_status.json` afterward — bucket held steady at `empty`, no
 new `bucket_change` events, vs. one every tick before.
 
-- [ ] **Structural fix still open**: hysteresis-tuned-per-target is fragile
-  — a different target with a bigger swing could still thrash. The real
-  fix is decoupling `forceRebalance` from action durations: don't force a
-  full redeploy on a bucket change if the currently-running actions
-  haven't had time to complete yet (compare elapsed time on a host's
-  current action against its own `growTimeS`/`weakenTimeS`/`hackTimeS`
-  before killing it). Worth a `mcp_logic.test.js` case reproducing this
-  exact scenario (a target whose bucket boundary sits inside its natural
-  moneyPct swing) before touching `mcp.js`'s redeploy logic live, same
-  discipline as the `moneyDegraded` fix in `81814d6`.
-- [ ] `tickWithinBounds` had 27 violations in the same status snapshot —
-  several ticks took 30-238s instead of the nominal 10s. Not yet
-  root-caused; worth a look once the pull loop is live and this can be
-  watched over multiple sessions instead of one snapshot.
+- [x] **Structural fix built and unit-tested 2026-08-11 (later same day).**
+  `hostNeedsRedeploy` moved to `mcp_logic.js` (pure, `node --test`-able) and
+  changed so a `forceRebalance` that isn't backed by a structural mismatch
+  (wrong target, no actions running, wrong action type for the plan — those
+  still redeploy immediately, unconditionally, same as before) now waits
+  until **every** currently-running action type on that host has had at
+  least one full call's worth of time (`elapsedS >= actionDurationsS[script]`)
+  before it's allowed to kill and redeploy. A bucket flip that lands
+  mid-call now just sets the new weights for the *next* redeploy instead of
+  retroactively cutting off the call in flight. `mcp.js` now reads
+  `ns.getRunningScript(pid).onlineRunningTime` per running action to get
+  real elapsed seconds (0.3GB static RAM cost on `home`, negligible against
+  128GB) and computes `hackTimeS`/`growTimeS`/`weakenTimeS` earlier in the
+  tick (`actionDurationsS`) so `allocateThreads` has them to pass down.
+  8 new `mcp_logic.test.js` cases added (30/30 passing): the exact
+  regression scenario (forceRebalance + a grow call 4s into a 15s
+  `growTimeS`, asserts no redeploy), the "waits for the *slowest* running
+  action type, not just any one" case, and one case per structural
+  mismatch confirming those still redeploy immediately regardless of
+  elapsed time. `node --check mcp.js mcp_logic.js` clean.
+  **Not yet deployed live** — the daemon's real-game connection on port
+  12526 dropped at 15:10:17 (`close_code=1006`, same abnormal-closure
+  pattern as every other drop seen today — see the tick-gap notes below)
+  and hadn't reconnected as of this writing. `mcp.js`/`mcp_logic.js` are
+  both in `WATCHED_FILES` so the next (re)connect's full-resync will push
+  both automatically; still needs an explicit `ctl-restart` afterward
+  (Bitburner doesn't hot-reload) and a `ctl-pull` to confirm the new
+  `scriptVersion` shows up and the bot's still behaving. **Next session:
+  check `ctl-status` for `connected: true`, then push+restart+verify** —
+  don't re-diagnose or re-test the logic, that part is done.
+- [ ] `tickWithinBounds`: pulled fresh telemetry live this session (the
+  pull loop is now confirmed working end-to-end, not just built) and found
+  a strong new lead, not yet fully confirmed:
+  - All 27 violations from the original finding, plus a further batch (93
+    total in the pulled `mcp_events.txt`), cluster entirely inside one
+    window: 2026-08-11 10:29:48–12:44:08. **Zero violations before or
+    after** in the data pulled (checked back to the run's 09:37:21 startup,
+    and forward to 15:07 when this session pulled — nearly 2.5 clean
+    hours at time of writing).
+  - That exact window sits entirely inside a real-game remote-API
+    disconnect: `tools/bb_remote_events.log` shows the actual game
+    (`bitburner/3.0.1 ... Electron/41.4.0`) dropped at 10:24:43
+    (`close_code=1006`, "no close frame received or sent" — an abnormal
+    closure, not a clean quit) and didn't reconnect until 14:21:19. The
+    violations start 5 minutes into that gap and stop about 1.5 hours
+    *before* the reconnect — so "disconnected" and "violating" correlate
+    but aren't the same window, and nothing in `mcp.js` reads or depends on
+    the remote-API socket at all (it runs inside the game independent of
+    whether a debug client is attached), so a dropped debug connection
+    can't directly cause a stalled game tick. Treat as a correlated
+    symptom of "nobody was actively at the machine," not a cause.
+  - **Checked and ruled out**: full OS sleep. `pmset -g log` for
+    10:00-13:30 on 2026-08-11 shows no `Sleep`/`DarkWake` transition in
+    that window — `kDisp` (display-awake) assertions are continuous
+    throughout, so the Mac itself did not sleep. This also argues against
+    the already-disproven Electron `backgroundThrottling` theory
+    (`docs/process-backlog.md` "Not process, but open and known") staying
+    disproven for the right reason — that flag is about a backgrounded
+    Chromium *tab/page*, which is a different mechanism than either OS
+    sleep or macOS **App Nap** (which throttles a whole unfocused/inactive
+    process's timers without requiring sleep, and is not obviously covered
+    by `backgroundThrottling: false` — that flag doesn't touch App Nap).
+    **App Nap is the one live-plausible mechanism not yet ruled out** —
+    fits the data better than sleep: violations are scattered irregularly
+    (33s to 908s, not one monotonic block), which is what intermittent
+    App Nap throttling of a background app looks like, rather than one
+    clean "resume from suspend" gap.
+  - Also checked and ruled out for *this* window specifically: repeated
+    daemon reconnect cycles (a hypothesis `process-backlog.md` already
+    raised in general) — `bb_remote_events.log` shows zero `CONNECT`/
+    `DISCONNECT` events at all between 10:24:43 and 14:21:19, so there was
+    no reconnect thrash happening during the violation window, just one
+    long unbroken disconnect.
+  - **Next step, concrete**: confirm whether Ken (or anyone) was away from
+    the machine 10:24–13:37 that day — if so, App Nap on an unfocused
+    Bitburner window becomes a much stronger claim, and the fix is
+    `app.setActivationPolicy`/a `powerSaveBlocker`/explicit App Nap opt-out
+    in the Electron main process (outside this repo, in Bitburner's own
+    shell), not anything in `mcp.js`. If confirmed instead that someone
+    *was* actively using the machine throughout, App Nap is ruled out too
+    and this needs a different lead — instrument `mcp.js` itself next
+    (e.g. log `Date.now()` immediately before and after `await
+    ns.sleep(LOOP_SLEEP_MS)` specifically, to see whether the stall is in
+    the sleep call itself or in the tick's own work).
+  - Separate, smaller finding from the same pull: **`weakenBudgetNonNegative`
+    fired 228 times in the pulled log**, and one clean consecutive run (ticks
+    at `required=41→40→40→40→40→40→68→68` while `remaining` stayed at
+    `-44/-45/-45/-45/-45/-45/-17/-17`) shows the same ~85 weaken threads
+    deployed and unchanged across 8+ ticks while the target's actual
+    requirement swung 40-68. This answers the open "legitimate
+    over-allocation vs. noisy assertion" question from the loose-ends list
+    below: **it's real, confirmed over-allocation**, not noise — a
+    consequence of the same "don't redeploy unless something's structurally
+    wrong" design this session's `hostNeedsRedeploy` fix builds on: once
+    weaken threads are deployed they run forever (the worker scripts loop),
+    and nothing trims the excess back down as the target's security
+    recovers and needs less. Real yield left on the table (that RAM could
+    be growing/hacking instead) but out of scope for this session's fix —
+    worth a follow-up: a partial-rebalance path that kills only the excess
+    weaken threads on a host without touching a host that's running
+    grow/hack, rather than today's all-or-nothing redeploy.
 
 ## Priority 1: kill the VS Code extension dependency
 

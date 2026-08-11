@@ -10,7 +10,17 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
-- [ ] **None right now.**
+- [ ] **Reconnect the Remote API — currently Offline.** Confirmed live
+  2026-08-11 (both over CDP, the in-game "Remote API status" badge reads
+  "Remote API: Offline", and `tools/bb_remote.py`'s daemon on port 12526
+  independently confirms `connected: false`; `bb_remote_events.log` shows
+  the drop at 15:10:17, `close_code=1006`, no reconnect since). This is the
+  same "the game never auto-reconnects, regardless of the Reconnection
+  delay setting" limitation already documented in
+  `docs/processes.md`/`docs/claude-todo.md` — one click needed: **Options →
+  Remote API → host `localhost`, port `12526` → Connect.** Blocks pushing
+  `ipvgo_player.js` (see `docs/claude-todo.md`'s IPvGO entry) and any other
+  routine sync until it's done.
 
 ## Done (kept for reference)
 

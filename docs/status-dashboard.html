@@ -387,7 +387,7 @@
 
   <div class="glance">
     <span class="chip"><span class="dot dot-good"></span>resolved today <span class="n mono">1</span></span>
-    <span class="chip"><span class="dot dot-accent"></span>needs you <span class="n mono">1</span></span>
+    <span class="chip"><span class="dot dot-accent"></span>needs you <span class="n mono">2</span></span>
     <span class="chip"><span class="dot dot-warn"></span>flagged <span class="n mono">2</span></span>
   </div>
 
@@ -426,9 +426,25 @@
   <section aria-labelledby="needs-title">
     <div class="block-head">
       <h2 class="block-title" id="needs-title">Needs your call</h2>
-      <span class="block-count mono">1 open</span>
+      <span class="block-count mono">2 open</span>
     </div>
     <div class="rows">
+
+      <div class="row action">
+        <div class="row-stripe"></div>
+        <div class="row-body">
+          <div class="row-top">
+            <span class="tag">action</span>
+            <span class="row-date mono">open since 2026&#8209;08&#8209;11</span>
+          </div>
+          <div class="row-title"><code>git push</code> &mdash; one commit local, unpushed</div>
+          <p>Today runs through Cowork, which has no SSH key or stored HTTPS credentials for GitHub in its
+            shell sandbox &mdash; commits work (no network needed), pushes don't. Commit
+            <code class="mono">60e2886</code> is sitting on <code>main</code>, one ahead of
+            <code>origin/main</code>, fast-forward, no conflicts. Run <code class="mono">git push</code> from a
+            terminal on your Mac to land it.</p>
+        </div>
+      </div>
 
       <div class="row action">
         <div class="row-stripe"></div>

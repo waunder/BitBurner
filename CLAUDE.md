@@ -154,6 +154,19 @@ discretion. Repo is private at github.com/waunder/BitBurner. Ken is
 habit-averse and has explicitly assigned version-control hygiene to Claude —
 do not hand him routines to remember, just keep the tree committed.
 
+**Under Cowork, "push" is only half-available.** Found 2026-08-11: Cowork's
+shell sandbox has no SSH key for `git@github.com` and no stored HTTPS
+credentials — `git push` fails (SSH: DNS resolution fails through the
+sandbox's proxy; HTTPS: reaches GitHub but has no username/token). Plain
+`git commit` works fine (no network needed) since the mounted folder is
+Ken's real filesystem, so the commit is real and local, just not pushed.
+**When this happens: commit as normal, then add a `git push` item to
+`docs/kensTodo.md`** (one line, name the commit hash) rather than silently
+leaving work unpushed or trying workarounds (no SSH agent forwarding or
+credential injection available in this sandbox). This constraint is
+Cowork-specific — a session running via Claude Code CLI directly on Ken's
+Mac has his real SSH agent and doesn't hit it.
+
 Generated files (`mcp_status.json`, `mcp_status_log.txt`,
 `mcp_target_state.json`, `mcp_events.txt`) are gitignored — they're game
 output, and the log lives inside the save file, so it must not grow without

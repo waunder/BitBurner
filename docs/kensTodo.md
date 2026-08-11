@@ -10,6 +10,17 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
+- [ ] **`git push origin main` — one commit sitting local, unpushed.**
+  Found 2026-08-11: today's session runs through Cowork, not a terminal on
+  your Mac with your SSH agent. Cowork's shell sandbox has no SSH key for
+  `git@github.com` and no stored HTTPS credentials either (both tested
+  directly — SSH fails DNS resolution through the sandbox's proxy, HTTPS
+  reaches GitHub but has no username/token). Commits still work fine (pure
+  local git, no network needed) — only the push leg needs your machine.
+  Commit `60e2886` ("Confirm VS Code retirement push-side live; flag
+  pull-side gap") is sitting on `main`, one ahead of `origin/main`. Run
+  `git push` from a terminal on your Mac to land it — no conflicts
+  expected, it's a fast-forward.
 - [ ] **Run `dnet_deploy.js --once` from `home`** — `dnet_probe.js` (below)
   validated the model reading, so this is the next step: the roaming
   self-replicating deployer, single pass. ~4.6GB. See

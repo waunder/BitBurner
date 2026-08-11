@@ -17,9 +17,9 @@ Ken's hand, and check it off once it's confirmed done — same rule as
   directly — SSH fails DNS resolution through the sandbox's proxy, HTTPS
   reaches GitHub but has no username/token). Commits still work fine (pure
   local git, no network needed) — only the push leg needs your machine.
-  Commit `60e2886` ("Confirm VS Code retirement push-side live; flag
-  pull-side gap") is sitting on `main`, one ahead of `origin/main`. Run
-  `git push` from a terminal on your Mac to land it — no conflicts
+  `main` is a few commits ahead of `origin/main` from this session's doc
+  updates (`git log origin/main..main` to see exactly which). Run
+  `git push` from a terminal on your Mac to land them — no conflicts
   expected, it's a fast-forward.
 - [ ] **Run `dnet_deploy.js --once` from `home`** — `dnet_probe.js` (below)
   validated the model reading, so this is the next step: the roaming

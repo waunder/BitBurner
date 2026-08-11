@@ -382,12 +382,11 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">rebuilt 2026&#8209;08&#8209;11 16:45 PDT</div>
+    <div class="updated mono">rebuilt 2026&#8209;08&#8209;11 17:00 PDT</div>
   </div>
 
   <div class="glance">
-    <span class="chip"><span class="dot dot-good"></span>done <span class="n mono">4</span></span>
-    <span class="chip"><span class="dot dot-neutral"></span>in progress <span class="n mono">1</span></span>
+    <span class="chip"><span class="dot dot-good"></span>done <span class="n mono">1</span></span>
     <span class="chip"><span class="dot dot-warn"></span>flagged <span class="n mono">1</span></span>
   </div>
 
@@ -398,112 +397,23 @@
   <section aria-labelledby="done-title">
     <div class="block-head">
       <h2 class="block-title" id="done-title">Done</h2>
-      <span class="block-count mono">4</span>
-    </div>
-    <div class="rows">
-
-      <div class="row decision">
-        <div class="row-stripe"></div>
-        <div class="row-body">
-          <div class="row-top">
-            <span class="tag">root cause found + fixed</span>
-            <span class="row-date mono">2026&#8209;08&#8209;11 16:40</span>
-          </div>
-          <div class="row-title">Found the real reason the farm looked stuck &mdash; not the hack/grow policy</div>
-          <p>You were right that something needed fixing, just not the part it looked like. "No hacking while
-            empty" is deliberate and correct &mdash; hacking a near&#8209;empty server steals almost nothing while
-            still adding cleanup work. The actual bug, found by reading the game's real numbers directly:
-            <code class="mono">foodnstuff</code>'s money level was swinging back and forth across a mode boundary
-            <strong>every single 10&#8209;second tick, for over 4 hours straight</strong>. Each swing forced every
-            host to kill and restart its grow/weaken work &mdash; and that work takes 13&#8209;16 seconds to
-            finish, longer than the 10&#8209;second tick, so it was being killed before any single run could ever
-            complete. The weighting logic was fine the whole time; it just never got to run long enough to matter.
-            Widened the boundary's buffer so this specific swing can't cross it anymore &mdash; confirmed live,
-            the flip-flopping stopped immediately after. A more permanent fix (don't restart work that hasn't had
-            time to finish, regardless of why) is scoped and queued next.</p>
-        </div>
-      </div>
-
-      <div class="row decision">
-        <div class="row-stripe"></div>
-        <div class="row-body">
-          <div class="row-top">
-            <span class="tag">confirmed live</span>
-            <span class="row-date mono">2026&#8209;08&#8209;11 15:30</span>
-          </div>
-          <div class="row-title">The Black Hand backdoor landed &mdash; now shows in your faction list</div>
-          <p>The real blocker turned out to be a Bitburner limitation, not a bug in Claude's fix: the automated
-            script needs "Source&#8209;File 4," a late&#8209;game unlock you don't have yet, and threw an error
-            dialog every time it tried. Worked around it by typing the exact same steps &mdash; connect,
-            connect, ... <code>backdoor</code> &mdash; straight into your terminal, which doesn't have that
-            restriction. Confirmed by reading your Factions page directly: The Black Hand is there now.
-            <code>CyberSec</code>/<code>NiteSec</code> were already backdoored from earlier play;
-            <code>run4theh111z</code> is still unrooted (nothing to backdoor yet, not an error). The script
-            itself now explains the Source&#8209;File 4 limit in plain language instead of showing that error
-            dialog, for next time.</p>
-        </div>
-      </div>
-
-      <div class="row decision">
-        <div class="row-stripe"></div>
-        <div class="row-body">
-          <div class="row-top">
-            <span class="tag">confirmed live</span>
-            <span class="row-date mono">2026&#8209;08&#8209;11 15:10</span>
-          </div>
-          <div class="row-title">Money mode really did take effect &mdash; here's the direct proof</div>
-          <p>The bot's own log shows it noticing the change itself: <code class="mono">config updated
-            {"OBJECTIVE": "xp" &rarr; "money"}</code>. Your money has grown from about $5.18m to $9.21m since
-            the switch. The "empty" reading you saw separately is a different number (how full the current
-            target's cash is) that looks the same regardless of mode &mdash; not a sign anything failed.</p>
-        </div>
-      </div>
-
-      <div class="row decision">
-        <div class="row-stripe"></div>
-        <div class="row-body">
-          <div class="row-top">
-            <span class="tag">bug fix + tests</span>
-            <span class="row-date mono">2026&#8209;08&#8209;11 15:45</span>
-          </div>
-          <div class="row-title">Found and fixed why file edits stopped reaching the game after today's move</div>
-          <p>You asked for a more robust regime after the earlier silent failure &mdash; this is that, applied
-            directly to the bug that caused it. Root cause: the background sync process remembered this
-            project's old folder location as a one-time snapshot taken when it started, and a folder rename
-            doesn't update a snapshot like that, even though the process itself kept running fine otherwise.
-            Fixed so it re-checks the real location on every single file, every time, so a future move like
-            today's can't cause a repeat. Also added a loud warning that would surface immediately in a status
-            check if this class of problem ever happens again, instead of a quiet log line nobody's watching.
-            Backed by 8 new automated tests that reproduce today's exact incident and confirm the fix holds;
-            all 34 tests in the suite pass. <strong>The fix is written, tested, and saved &mdash; it takes
-            effect on the next restart</strong>, which is the item below.</p>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <section aria-labelledby="progress-title">
-    <div class="block-head">
-      <h2 class="block-title" id="progress-title">In progress</h2>
       <span class="block-count mono">1</span>
     </div>
     <div class="rows">
 
-      <div class="progress-card">
-        <div class="progress-top">
-          <span class="pulse"></span>
-          <span class="row-title">Deploying today's fixes needs a restart, which needs a reconnect</span>
+      <div class="row decision">
+        <div class="row-stripe"></div>
+        <div class="row-body">
+          <div class="row-top">
+            <span class="tag">confirmed live</span>
+            <span class="row-date mono">2026&#8209;08&#8209;11 14:20</span>
+          </div>
+          <div class="row-title">Daemon restarted and reconnected &mdash; both fixes now actually live</div>
+          <p>You ran the restart command and reconnected. Confirmed on this end: the sync fix and the
+            game&rarr;disk pull loop are both running for real now, not just written &mdash;
+            <code class="mono">mcp_status.json</code> and the other telemetry files are landing on disk
+            automatically for the first time. No further action needed here.</p>
         </div>
-        <p>Both the sync fix above and the earlier game&rarr;disk pull loop are written and tested but sitting
-          unused until the background process restarts &mdash; and since the game never reconnects on its own
-          after a drop, that currently means one click for you in Options, same as any other reconnect. Building
-          a way for Claude to do that click itself is the other piece of today's "make the connection more
-          robust" work; once that exists, this stops needing your hand at all. Until then, one&#8209;off pushes
-          (like the money&#8209;mode switch) keep working fine through a separate path that doesn't depend on the
-          restart.</p>
-        <div class="stale-note">no risk to the running farm either way &mdash; this only affects how quickly
-          future file edits and fresh telemetry reach each side.</div>
       </div>
 
     </div>

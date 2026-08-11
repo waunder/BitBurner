@@ -10,14 +10,19 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
-- [ ] **Run `dnet_deploy.js --once` from `home`** — `dnet_probe.js` (below)
-  validated the model reading, so this is the next step: the roaming
-  self-replicating deployer, single pass. ~4.6GB. See
-  `docs/darknet-strategy.md` for what it does; report back what it finds
-  (hosts cracked, credentials gathered) so `docs/darknet-*.md` can be
-  checked against real results rather than just the source reading.
+- [ ] **None right now.**
 
 ## Done (kept for reference)
+
+- [x] **Ran `dnet_deploy.js --once` from `home`** — confirmed by Ken
+  2026-08-11. Results (hosts cracked, credentials in `dnet_creds.txt`) live
+  only in the game's filesystem right now — `bb_remote.py`'s daemon was
+  disconnected at the time (last connect dropped 10:24:43, `close_code=1006`)
+  and has no pull-side sync yet (that gap is being closed right now, see
+  `docs/claude-todo.md`), so Claude cannot read the actual output yet. Will
+  report back what it found against `docs/darknet-*.md` as soon as either
+  the pull mechanism ships and the game reconnects, or a manual download
+  happens — no action needed from Ken for this specifically.
 
 - [x] **`git push origin main` — landed 2026-08-11 (`29f63b2`).** The
   Cowork-session block noted below no longer applies: this session runs via

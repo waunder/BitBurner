@@ -767,12 +767,32 @@ rather than ticks. And it observes; it does not act.
 `docs/status-dashboard.html` (git-tracked source) is a published Artifact —
 the standing "needs your call / in progress / done this session" page built
 2026-08-09 after Ken flagged chat as too noisy to actually use. Claude
-**redeploys it in place** by editing this file and calling the Artifact tool
-again on the same path whenever there's something new for Ken to see or
+**redeploys it in place** whenever there's something new for Ken to see or
 decide; it is not appended to over chat, and chat goes back to short pings
-("dashboard has one thing for you") once it exists. Published at
-<https://claude.ai/code/artifact/a48a824c-7762-4b20-9e22-9f1827002e90> — same
-URL survives every redeploy of this path.
+("dashboard has one thing for you") once it exists.
+
+**Two separate publishing surfaces exist, and they do not share state —
+found the hard way 2026-08-11.** The original was published via claude.ai's
+classic Artifact tool at
+<https://claude.ai/code/artifact/a48a824c-7762-4b20-9e22-9f1827002e90>, last
+redeployed 2026-08-10 13:40 from a session on that surface. **A session
+running in Cowork mode cannot reach or update that URL at all** — Cowork has
+its own separate artifact system (`mcp__cowork__create_artifact` /
+`update_artifact`), which persists to the Cowork sidebar under its own ID,
+not a public URL. Editing `docs/status-dashboard.html` alone updates neither
+surface by itself; publishing requires calling that surface's own tool.
+Ken spent a whole exchange looking at the stale claude.ai-hosted copy while
+this session had already rebuilt the file, because nothing had redeployed
+to the surface he was actually checking.
+
+**Current state:** a Cowork artifact was created 2026-08-11, id
+`bitburner-status-dashboard`, visible in the Cowork sidebar for this
+workspace — no external URL. **Whichever surface a session is running on
+(Cowork vs. claude.ai chat) is the one it must redeploy to** — check which
+one Ken is actually looking at before assuming a file edit was enough.
+If future sessions run outside Cowork again, the original claude.ai URL
+above may still be the one in front of Ken; don't assume the Cowork
+artifact replaced it for him, ask if unsure which he's checking.
 
 ### `docs/claude-todo.md`
 

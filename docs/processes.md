@@ -50,11 +50,11 @@ flowchart TB
         sup -->|renders| dumptail[mcp_dump tail window]
     end
 
-    subgraph direct["Direct Remote API connection (2026-08-10/11) — push side replaces VS Code sync; pull side still partial"]
-        daemon["bb_remote.py daemon<br/>(persistent, local control channel,<br/>full resync on every (re)connect)"]
+    subgraph direct["Direct Remote API connection (2026-08-10/11) — both directions built; push side is live-confirmed, pull side is mock/subprocess-validated only"]
+        daemon["bb_remote.py daemon<br/>(persistent, local control channel,<br/>full resync/pull on every (re)connect)"]
         daemon -->|pushFile, confirmed by getFile readback| flag
-        daemon -.->|getFile, one-shot, prints only — no disk write yet| status
-        daemon -.->|getFile, one-shot, prints only — no disk write yet| logfile
+        daemon ==>|getFile, routine pull, full pull on (re)connect + 2s incremental — writes to disk now, not yet live-tested| status
+        daemon ==>|getFile, routine pull — same as above| logfile
         daemon ==>|pushFile, routine sync, 28 watched files, live-confirmed 2026-08-11| mcp
         daemon ==>|pushFile, routine sync| actions
     end
@@ -100,10 +100,19 @@ Three things are worth reading off that diagram:
   2026-08-11:** the real game connected on port 12526 and a full resync
   pushed all 28 watched files with zero failures. See the `tools/bb_remote.py`
   section below for the full design.
-  **This only covers disk → game.** The game → disk direction (pulling
-  `mcp_status.json` and friends back out) still has no automated path — see
-  `docs/claude-todo.md`'s "game → disk direction" item — so the VS Code
-  extension isn't fully unnecessary yet, just for routine edits/restarts.
+  **The other direction (game → disk) is now built too, as of 2026-08-11,
+  same session** — the daemon pulls `mcp_status.json`, `mcp_status_log.txt`,
+  `mcp_target_state.json`, and `mcp_events.txt` back onto disk the same way
+  it pushes: full pull on every (re)connect, incremental pull every 2s
+  while connected. **Validated only against `selftest`'s in-process mock
+  and a real subprocess daemon on scratch ports (disconnected-state
+  behavior) — not yet against the real game actually writing these files
+  while the daemon is connected.** A daemon is running live on port 12526
+  right now, but it started before this pull code existed, so it doesn't
+  have it yet; the next restart of that process (or the next session) picks
+  it up. See `docs/claude-todo.md`'s "game → disk direction" item for the
+  precise validated/not-validated line and `tools/bb_remote.py`'s section
+  below for the design.
 
 ---
 
@@ -588,22 +597,27 @@ Mirrors `mcp.js`'s tail output into its own window, so the orchestrator's
 Local, out-of-game. Pretty-prints `mcp_status.json` including per-host
 allocations, once that file has been pulled out of the game.
 
-**As of 2026-08-11, `tools/bb_remote.py`'s daemon does not yet pull this
-file automatically** — its game→disk direction is limited to one-shot
-`get`/`dump`/`ctl-get`/`ctl-dump`, which fetch via the same live `getFile`
-RPC the push round trip uses but only print the result to stdout/the
-control socket, not write it to disk. Getting a fresh copy of
-`mcp_status.json` onto disk still needs **either**:
+**As of 2026-08-11, `tools/bb_remote.py`'s `daemon` mode now pulls this file
+(and `mcp_status_log.txt`/`mcp_target_state.json`/`mcp_events.txt`)
+automatically** — full pull on every game (re)connect plus an incremental
+pull every 2s while connected, the same shape as the existing push loop
+(`PULL_FILES`/`_pull`/`pull_poll_loop` in the script; `ctl-pull` forces an
+immediate pass on demand). **Validated against `selftest`'s mock and a real
+subprocess daemon's disconnected-state behavior only — not yet confirmed
+against the real game actually writing a fresh `mcp_status.json` while
+connected**, since the live daemon on port 12526 predates this code and
+wasn't restarted to pick it up (see `CLAUDE.md`/this task's constraints on
+not touching a live connection). Until that live confirmation happens,
+getting a fresh copy onto disk **also** still works via either of the
+older paths:
 
 - the VS Code extension's **Download Files Matching Pattern…**, exactly
   `mcp_*.{json,txt}` (never bulk-download — see `CLAUDE.md` for why that
   overwrites local source and pushes the stale copy back), or
 - a CDP read via `mcp_dump_request.txt` (see below) — no download needed.
 
-See `docs/claude-todo.md`'s "game → disk direction" item for the
-recommended fix (extend the daemon with a pull loop, same shape as its
-existing push loop) — until that's built, the extension isn't fully
-retired, just half.
+See `docs/claude-todo.md`'s "game → disk direction" item for the exact
+validated/not-validated line.
 
 Largely superseded by reading the game directly over CDP, but it still works
 and needs nothing running.
@@ -999,6 +1013,54 @@ fresh daemon (replacing the earlier restart/dump-only one, same port
 `ps -o ppid`), waiting for a connection. **Not yet confirmed against the
 live game** — no live `pushFile`/`getFile` round trip has run against this
 session's code; that needs the Connect click in `docs/kensTodo.md`.
+
+#### Game -> disk pull (built 2026-08-11, closes the other half of the gap)
+
+The routine sync above is disk → game only. `mcp_status.json`,
+`mcp_status_log.txt`, `mcp_target_state.json`, and `mcp_events.txt`
+(`PULL_FILES` in the script — deliberately the same four files
+`WATCHED_FILES`'s own comment excludes, for the opposite reason: they flow
+game-to-disk) previously had no automated way back onto local disk —
+`get`/`dump`/`ctl-get`/`ctl-dump` already called the live `getFile` RPC the
+push round trip proved works, but every one of them only printed or
+returned the result, never wrote it anywhere. Fixed by mirroring the push
+side's own design exactly, just in the opposite direction:
+
+- **Full pull on every game (re)connection** — the same `on_connect` hook
+  that runs a full push resync now also fetches every `PULL_FILES` entry
+  via `getFile` and writes it to its matching local path, unconditionally.
+  A `getFile` on a file the game hasn't created yet raises the same way a
+  deleted file does; caught per-file and reported as `missing`, never
+  raised — the exact "skipped-and-reported, not raising" contract the
+  push side already has for a file missing on local disk.
+- **Incremental pull every 2s (`PULL_POLL_S`) while connected** — only
+  files whose fetched content differs from what was last written locally
+  get rewritten.
+- New CLI: `ctl-pull` forces an immediate full pull pass on demand (the
+  pull-side analog of `ctl-resync`). `daemon --no-pull` disables this half
+  independently of `--no-sync` — push and pull can be toggled separately.
+
+**Validated so far:** `selftest` extended with direct coverage (full pull
+writes correct content to the right local path; a missing remote file is
+skipped-and-reported without raising; incremental pull no-ops when the
+game side hasn't changed the content; incremental pull picks up and writes
+only the one file that did change) — all pass against the in-process mock.
+A real `daemon` subprocess (scratch ports 31526/31527, not the live
+12526/12527) answered `ctl-status`/`ctl-pull` correctly while disconnected:
+`ctl-status` reported `pull_enabled: true`/`pull_files: 4`, and a
+disconnected `ctl-pull` reported all four files as `missing` (each
+`getFile` correctly raised "Not connected to Bitburner", caught per-file,
+no crash) — the pull-side equivalent of the push-side disconnected check
+above.
+
+**Not yet validated against the live game** — no live `getFile` call
+writing a real `mcp_status.json` (etc.) to disk has run against this code
+yet. The daemon that's actually connected to the game right now on port
+12526 was started before this pull code existed, so it doesn't have it;
+this needs that process restarted with the current code and then the next
+natural reconnect (or a fresh Connect click), not a new action from Ken
+specifically — see `docs/claude-todo.md` for the exact status and what
+still needs watching.
 
 ---
 

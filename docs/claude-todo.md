@@ -173,9 +173,11 @@ closed in code, pending one live confirmation.**
     the real game.
 
 **Bottom line, updated 2026-08-11:** the disk → game direction is now fully
-proven live, not just built. **What's not done:** the game → disk direction
-(see new item directly below) — discovered today, this priority isn't fully
-closed until that's built too.
+proven live, not just built. The game → disk direction (see item directly
+below) is now also built and mock/subprocess-validated, same session — but
+**not yet proven live**, since the daemon actually holding the game
+connection right now predates this code. This priority isn't fully closed
+until a live pull round trip is confirmed the same way the push side was.
 
 ### New gap found 2026-08-11: game → disk direction still has no automated path
 
@@ -202,21 +204,59 @@ directions, and only one is done:
   successfully since this morning, which confirms the gap is real, not
   theoretical.
 
-  **Recommended next step** (not yet built — this is a recommendation, not
-  a decision that needs Ken, since it's an engineering task Claude can just
-  do): extend `tools/bb_remote.py`'s daemon with a pull-side counterpart to
-  its existing push loop — either poll `getFile` on the four telemetry
-  filenames on a timer (mirrors the existing 2s incremental-push cadence)
-  or expose a `ctl-pull`/`pull` subcommand that writes the fetched content
-  to the matching local path instead of printing it, and wire that into the
-  same daemon loop. Either closes the loop fully and makes the VS Code
-  extension genuinely unnecessary for the first time — right now it's only
-  half-retired.
-  - Until this is built, getting current numbers onto disk still needs
-    **either** the VS Code extension's one-off download command **or** a
-    CDP read (`mcp_dump_request.txt` → `mcp_dump` tail window, see
-    `docs/processes.md`) — both still work, neither requires reopening the
-    extension's file-sync watcher specifically.
+  - [x] **Built 2026-08-11, same session as this gap was found.** Chose the
+    "extend the daemon" design (option 1 from the recommendation below,
+    folded into `ctl-pull` from option 2 as the on-demand escape hatch) —
+    mirrors the push side's own structure exactly rather than inventing a
+    new shape: `TriggerDaemon` gained `PULL_FILES` (the same four files:
+    `mcp_status.json`, `mcp_status_log.txt`, `mcp_target_state.json`,
+    `mcp_events.txt`), a `_pull(full)` method paralleling `_resync(full)`,
+    and a `pull_poll_loop` paralleling `sync_poll_loop`. The existing
+    `on_connect` hook now runs a full pull right after its full push
+    resync, so a (re)connect refreshes both directions in one pass; an
+    incremental pull runs every `PULL_POLL_S` (2s, same cadence as the push
+    side) while connected, writing to disk only the files whose fetched
+    content actually changed. New CLI: `ctl-pull` (force an immediate full
+    pull, the exact analog of `ctl-resync`) and `daemon --no-pull`
+    (disables the pull half independently of `--no-sync`). A `getFile` on
+    a remote file that doesn't exist yet is caught per-file into `missing`
+    and never raises — the same skip-and-report contract the push side
+    already has for a file missing on local disk. Full design write-up:
+    `docs/processes.md`'s new "Game -> disk pull" subsection under
+    `tools/bb_remote.py`.
+    - **Validated:** `selftest` extended with direct coverage of the pull
+      logic (full pull writes correct content to the right local path; a
+      missing remote file is skipped-and-reported without raising;
+      incremental pull no-ops when the game side's content is unchanged;
+      incremental pull writes only the one file that did change) — all
+      pass against the in-process mock, alongside every pre-existing check
+      (24/24 total). A real `daemon` subprocess on scratch ports
+      (31526/31527, not the live 12526/12527 — the real daemon was left
+      completely untouched per this task's constraint) answered
+      `ctl-status`/`ctl-pull` correctly while disconnected: `ctl-status`
+      reported `pull_enabled: true`/`pull_files: 4`, `ctl-pull` reported
+      all four files as `missing` (each `getFile` correctly raised "Not
+      connected to Bitburner", caught per-file, no crash) — the pull-side
+      equivalent of the disconnected-state check the push feature was
+      validated with.
+    - **Not validated:** the live game actually round-tripping this —
+      no real `getFile` call has written a real `mcp_status.json` (etc.)
+      to disk under this code yet. The daemon actually connected to the
+      game right now on port 12526 predates this change (it's the same
+      process from the earlier push-sync work, left running and untouched
+      per this task's constraints), so it's still running the old code
+      without the pull loop. This needs that process restarted with the
+      current code, then either the game's next natural reconnect or one
+      fresh Connect click — **not a Ken-specific action**, since Claude can
+      do the restart and then watch `tools/bb_remote_events.log` for the
+      next reconnect itself in a later session; noted here rather than
+      added to `docs/kensTodo.md`.
+  - Until the live confirmation above happens, getting current numbers
+    onto disk **also** still works via **either** the VS Code extension's
+    one-off download command **or** a CDP read (`mcp_dump_request.txt` →
+    `mcp_dump` tail window, see `docs/processes.md`) — both still work,
+    neither requires reopening the extension's file-sync watcher
+    specifically, and neither is removed by this change.
 
 Note on branch history: the task brief for this cleanup expected
 `tools/bb_remote.py`'s branch to carry multiple commits from being resumed

@@ -382,132 +382,17 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">rebuilt 2026&#8209;08&#8209;11 14:05 PDT</div>
+    <div class="updated mono">rebuilt 2026&#8209;08&#8209;11 15:05 PDT</div>
   </div>
 
   <div class="glance">
-    <span class="chip"><span class="dot dot-good"></span>resolved today <span class="n mono">4</span></span>
-    <span class="chip"><span class="dot dot-accent"></span>needs you <span class="n mono">1</span></span>
     <span class="chip"><span class="dot dot-neutral"></span>in progress <span class="n mono">1</span></span>
-    <span class="chip"><span class="dot dot-warn"></span>flagged <span class="n mono">1</span></span>
+    <span class="chip"><span class="dot dot-warn"></span>flagged <span class="n mono">2</span></span>
   </div>
 
   <p class="lede">Every row below is dated; nothing on this page is presented as current unless it was
     confirmed current at that date. History lives in <code class="cite">git log</code> and the docs it
     points to, not here.</p>
-
-  <section aria-labelledby="resolved-title">
-    <div class="block-head">
-      <h2 class="block-title" id="resolved-title">Resolved today</h2>
-      <span class="block-count mono">4</span>
-    </div>
-    <div class="rows">
-
-      <div class="row decision">
-        <div class="row-stripe"></div>
-        <div class="row-body">
-          <div class="row-top">
-            <span class="tag">confirmed live</span>
-            <span class="row-date mono">2026&#8209;08&#8209;11 09:38</span>
-          </div>
-          <div class="row-title">VS Code extension retired for routine sync &mdash; push side proven live</div>
-          <p>The real game connected to the daemon on <code>12526</code> and triggered a full resync:
-            <span class="fig">pushed 28, failed 0, missing 0</span>. Every watched script/config file landed in
-            the game with no VS Code involved. Routine edits, restarts, and dumps all go through
-            <code class="mono">tools/bb_remote.py daemon</code> from here on; Options stays pointed at
-            <code>12526</code> permanently. Repo also moved house today &mdash;
-            <code class="mono">~/Documents/BitBurner</code> &rarr; <code class="mono">/Users/Shared/BitBurner</code>,
-            same disk, daemon never dropped &mdash; and this session's commits are pushed to
-            <code class="cite">origin/main</code>, nothing local-only left behind.</p>
-        </div>
-      </div>
-
-      <div class="row decision">
-        <div class="row-stripe"></div>
-        <div class="row-body">
-          <div class="row-top">
-            <span class="tag">done</span>
-            <span class="row-date mono">2026&#8209;08&#8209;11</span>
-          </div>
-          <div class="row-title">Ran <code>dnet_deploy.js --once</code> from home</div>
-          <p>Your half is done. The results &mdash; hosts cracked, credentials gathered &mdash; live only in the
-            game's filesystem for now; no automated way yet to read a file back out of the game at the moment
-            you ran it. The pull loop below closes exactly this gap once it's live. Nothing further needed from
-            you here.</p>
-        </div>
-      </div>
-
-      <div class="row decision">
-        <div class="row-stripe"></div>
-        <div class="row-body">
-          <div class="row-top">
-            <span class="tag">built</span>
-            <span class="row-date mono">2026&#8209;08&#8209;11</span>
-          </div>
-          <div class="row-title">Game&rarr;disk pull loop &mdash; the last piece of the VS Code retirement</div>
-          <p><code class="cite">tools/bb_remote.py</code>'s daemon now has a pull-side counterpart to its
-            existing push loop, so <code class="mono">mcp_status.json</code> and the other telemetry files can
-            come back onto disk automatically instead of staying stale. Validated clean against
-            <code class="mono">selftest</code> and a mock game client; <strong>not yet validated against the
-            real running daemon</strong>, which is deliberately untouched so today's live connection is never put
-            at risk. That live check happens for free the next time the daemon restarts &mdash; see the
-            reconnect item below for why a restart isn't being forced right now.</p>
-        </div>
-      </div>
-
-      <div class="row decision">
-        <div class="row-stripe"></div>
-        <div class="row-body">
-          <div class="row-top">
-            <span class="tag">bug fix</span>
-            <span class="row-date mono">2026&#8209;08&#8209;11</span>
-          </div>
-          <div class="row-title">Fixed a silent bug: faction-server backdoors were never actually installing</div>
-          <p>You asked whether backdooring every server has any value &mdash; checked against the game's own
-            API definitions: no, not in general. It only matters for four specific servers
-            (<code>CSEC</code>, <code>avmnite-02h</code>, <code>I.I.I.I</code>, <code>run4theh111z</code>,
-            each unlocks a faction invite) plus the very last server in the game. On darknet servers it's
-            actively harmful past 2&ndash;4 total &mdash; it taxes every future password crack network-wide.
-            <code class="cite">hacking/worm.js</code> has been trying to backdoor those four exact servers on
-            every successful hack for a while, but the file it calls didn't exist in this repo, so it silently
-            did nothing every time. Written, tested, and pushed live. <strong>Only catches future hacks</strong>
-            &mdash; if any of the four were already rooted before today, they need one more pass to actually get
-            backdoored; see "needs you" below for the fastest way to do that.</p>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <section aria-labelledby="needs-title">
-    <div class="block-head">
-      <h2 class="block-title" id="needs-title">Needs your call</h2>
-      <span class="block-count mono">1 open</span>
-    </div>
-    <div class="rows">
-
-      <div class="row action">
-        <div class="row-stripe"></div>
-        <div class="row-body">
-          <div class="row-top">
-            <span class="tag">permission</span>
-            <span class="row-date mono">found 2026&#8209;08&#8209;11</span>
-          </div>
-          <div class="row-title">Go-ahead to actually type into the game's terminal, not just push files</div>
-          <p>You asked whether Claude could write to the in-game terminal. Found the real mechanism: the game
-            exposes a debug port that can read and drive its own UI, and the terminal input box
-            (<code class="mono">#terminal-input</code>) is a normal, addressable element &mdash; the same
-            technique already used elsewhere to click through Options menus should work to type a command and
-            press Enter. <strong>Not run against the live game yet</strong> &mdash; Claude Code's own safety
-            layer stopped the one test attempt because it changes state in your actively-running game, which is
-            exactly the right call for something this new. Wanted here rather than just tried again: say the
-            word and the first live test would double as the fix for the four already-rooted backdoor servers
-            above &mdash; one real, useful command instead of a throwaway one.</p>
-        </div>
-      </div>
-
-    </div>
-  </section>
 
   <section aria-labelledby="progress-title">
     <div class="block-head">
@@ -519,16 +404,20 @@
       <div class="progress-card">
         <div class="progress-top">
           <span class="pulse"></span>
-          <span class="row-title">Making the daemon connection able to recover from a drop on its own</span>
+          <span class="row-title">Fixing routine file sync, which today's repo move quietly broke</span>
         </div>
-        <p>Confirmed the game never auto-reconnects after a drop, no matter the "Reconnection delay" setting
-          &mdash; a click in Options has always been the only way back, today included. But the same debug
-          access behind the terminal-write item above has already been proven, in an earlier session, able to
-          click through that exact Options screen. The plan taking shape: have the daemon notice a drop and
-          click Connect again itself, closing the one remaining reason a dropped connection needs your hand.
-          Not built yet &mdash; today's session prioritized confirming it's possible over building it blind.</p>
-        <div class="stale-note">research only so far, 2026&#8209;08&#8209;11 &mdash; no changes to the live daemon,
-          no risk to the running farm.</div>
+        <p>Making the config change above surfaced a real bug: the running sync process still remembers this
+          project's <em>old</em> folder location from before today's move, so its automatic
+          "push my edits into the game" behavior has been silently failing all day &mdash; it just never had a
+          reason to notice until now. Worked around it for the money-mode change by pushing that one file
+          directly, which still works fine, but ordinary edits won't reach the game on their own until this is
+          properly fixed. The fix is a restart of that background process, which is exactly the same "make the
+          connection recover on its own" work already underway &mdash; a restart currently needs your one click
+          in Options to reconnect, and building a way for Claude to do that click itself (now proven possible,
+          per the terminal-typing work below) is the plan. Nothing broken in the game itself; this is purely
+          about Claude's own ability to push future edits.</p>
+        <div class="stale-note">found 2026&#8209;08&#8209;11 14:50 &mdash; no risk to the running farm, only to
+          how quickly future file edits reach it.</div>
       </div>
 
     </div>
@@ -537,9 +426,32 @@
   <section aria-labelledby="flag-title">
     <div class="block-head">
       <h2 class="block-title" id="flag-title">Flagged &mdash; not yet chased down</h2>
-      <span class="block-count mono">1</span>
+      <span class="block-count mono">2</span>
     </div>
     <div class="rows">
+
+      <div class="row flag">
+        <div class="row-stripe"></div>
+        <div class="row-body">
+          <div class="row-top">
+            <span class="tag">seen live</span>
+            <span class="row-date mono">2026&#8209;08&#8209;11 14:50</span>
+          </div>
+          <div class="row-title">Farm may be stuck &mdash; <code>weakenBudgetNonNegative</code>, seen again just now</div>
+          <p>Looked at the game directly rather than trusting an old file: target <code>foodnstuff</code>,
+            plan <code class="fig">work/empty</code>, <code class="fig">money 0%</code>,
+            <code class="fig">rate 0</code>, security 3.00, verdict <span class="fig">INVARIANT</span> &mdash;
+            same shape as the 2026&#8209;08&#8209;10 sighting below, now confirmed still happening today. You
+            noticed the same thing independently right after &mdash; the "empty" you saw on the HUD is this
+            same <code class="fig">work/empty</code> reading, not a sign the money&#8209;mode switch failed
+            (that part is confirmed working separately, by reading the live config back out of the game).
+            "Empty" describes how full the <em>current target's money</em> is, not which mode the bot is in.
+            Real diagnosis needs the full invariant breakdown from <code class="mono">mcp_status.json</code>,
+            which is blocked on the sync fix above (can't read the file back out reliably until that's sorted).
+            Should resolve on its own once the money-mode switch takes effect, if this was XP-mode-specific
+            &mdash; worth one more look after a few minutes rather than assuming either way.</p>
+        </div>
+      </div>
 
       <div class="row flag">
         <div class="row-stripe"></div>
@@ -548,15 +460,40 @@
             <span class="tag">unconfirmed</span>
             <span class="row-date mono">seen 2026&#8209;08&#8209;10</span>
           </div>
-          <div class="row-title">Farm may be stuck &mdash; <code>weakenBudgetNonNegative</code> firing repeatedly</div>
-          <p>A CDP check on 2026&#8209;08&#8209;10 found <code>mcp</code>'s HUD reporting verdict
-            <span class="fig">INVARIANT</span>, 506 hits all attributed to
-            <code>weakenBudgetNonNegative</code>, <span class="fig">money 0%</span>, <span class="fig">rate 0</span>,
-            avg 3 &mdash; while <code>ram 98%</code> / 18 hosts still looked plausible on their own. Not
-            diagnosed: could be a real over-allocation or a noisy assertion, but money-0%/rate-0 alongside
-            repeated invariant hits suggests something is actually stuck. Waiting on the pull loop above to go
-            live so this can be re-checked with real numbers instead of a stale snapshot. See
-            <code class="cite">docs/claude-todo.md</code>.</p>
+          <div class="row-title">Same invariant, first sighting</div>
+          <p>A CDP check on 2026&#8209;08&#8209;10 found the same <span class="fig">INVARIANT</span> verdict,
+            506 hits attributed to <code>weakenBudgetNonNegative</code>, money 0%, rate 0, avg 3 &mdash; while
+            RAM/host counts still looked plausible on their own. Could be a real stuck state or a noisy
+            assertion; kept separate from today's sighting above rather than merged, since the hit count wasn't
+            re-read this time. See <code class="cite">docs/claude-todo.md</code>.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section aria-labelledby="unclear-title">
+    <div class="block-head">
+      <h2 class="block-title" id="unclear-title">Worth your eyes, not fully confirmed</h2>
+      <span class="block-count mono">1</span>
+    </div>
+    <div class="rows">
+
+      <div class="row flag">
+        <div class="row-stripe"></div>
+        <div class="row-body">
+          <div class="row-top">
+            <span class="tag">ambiguous</span>
+            <span class="row-date mono">2026&#8209;08&#8209;11 14:4x</span>
+          </div>
+          <div class="row-title">Backdoor fix: probably worked for at least one server, couldn't fully confirm</div>
+          <p>Ran the fixed backdoor script (see below) against all four faction-gateway servers through the
+            terminal. Good sign: the game now shows you actively doing hacking work for
+            <strong>NiteSec</strong>, which normally means the <code>avmnite-02h</code> backdoor landed.
+            Couldn't confirm the other three the same way &mdash; partway through, the game's view moved off
+            the Terminal tab (most likely because you were actively at the keyboard), and Claude stopped there
+            rather than click back to your Terminal while you might be using it. Worth a glance at your faction
+            list when convenient; no urgency.</p>
         </div>
       </div>
 

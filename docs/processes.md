@@ -802,6 +802,14 @@ the standing "needs your call / in progress / done this session" page built
 decide; it is not appended to over chat, and chat goes back to short pings
 ("dashboard has one thing for you") once it exists.
 
+**Rows are removed only when Ken says he's reviewed them, not on Claude's
+own schedule.** Found 2026-08-11: Claude had been auto-pruning "resolved"
+rows on its own judgment of what's no longer decision-relevant; Ken wants
+that decision to be his. Practical rule: a resolved/flagged/in-progress row
+stays on the page until he names it (or says "clear resolved", "clear the
+board", etc.) in chat, at which point the next redeploy drops it. Don't
+silently age anything out.
+
 **Two separate publishing surfaces exist, and they do not share state —
 found the hard way 2026-08-11.** The original was published via claude.ai's
 classic Artifact tool at

@@ -10,17 +10,6 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
-- [ ] **`git push origin main` — one commit sitting local, unpushed.**
-  Found 2026-08-11: today's session runs through Cowork, not a terminal on
-  your Mac with your SSH agent. Cowork's shell sandbox has no SSH key for
-  `git@github.com` and no stored HTTPS credentials either (both tested
-  directly — SSH fails DNS resolution through the sandbox's proxy, HTTPS
-  reaches GitHub but has no username/token). Commits still work fine (pure
-  local git, no network needed) — only the push leg needs your machine.
-  `main` is a few commits ahead of `origin/main` from this session's doc
-  updates (`git log origin/main..main` to see exactly which). Run
-  `git push` from a terminal on your Mac to land them — no conflicts
-  expected, it's a fast-forward.
 - [ ] **Run `dnet_deploy.js --once` from `home`** — `dnet_probe.js` (below)
   validated the model reading, so this is the next step: the roaming
   self-replicating deployer, single pass. ~4.6GB. See
@@ -30,6 +19,12 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Done (kept for reference)
 
+- [x] **`git push origin main` — landed 2026-08-11 (`29f63b2`).** The
+  Cowork-session block noted below no longer applies: this session runs via
+  Claude Code CLI directly on your Mac (repo also relocated
+  `~/Documents/BitBurner` → `/Users/Shared/BitBurner` the same session, same
+  volume, no disruption to the live daemon connection), so the real SSH
+  agent was available and push just worked, no hand-off needed.
 - [x] **One Connect click retired the VS Code extension's push side —
   confirmed live 2026-08-11.** `tools/bb_remote_events.log` shows the real
   game (`bitburner/3.0.1 ... Electron/41.4.0`) connecting to the daemon on

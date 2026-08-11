@@ -382,10 +382,11 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">rebuilt 2026&#8209;08&#8209;11 15:05 PDT</div>
+    <div class="updated mono">rebuilt 2026&#8209;08&#8209;11 16:10 PDT</div>
   </div>
 
   <div class="glance">
+    <span class="chip"><span class="dot dot-good"></span>done <span class="n mono">3</span></span>
     <span class="chip"><span class="dot dot-neutral"></span>in progress <span class="n mono">1</span></span>
     <span class="chip"><span class="dot dot-warn"></span>flagged <span class="n mono">2</span></span>
   </div>
@@ -393,6 +394,72 @@
   <p class="lede">Every row below is dated; nothing on this page is presented as current unless it was
     confirmed current at that date. History lives in <code class="cite">git log</code> and the docs it
     points to, not here.</p>
+
+  <section aria-labelledby="done-title">
+    <div class="block-head">
+      <h2 class="block-title" id="done-title">Done</h2>
+      <span class="block-count mono">3</span>
+    </div>
+    <div class="rows">
+
+      <div class="row decision">
+        <div class="row-stripe"></div>
+        <div class="row-body">
+          <div class="row-top">
+            <span class="tag">confirmed live</span>
+            <span class="row-date mono">2026&#8209;08&#8209;11 15:30</span>
+          </div>
+          <div class="row-title">The Black Hand backdoor landed &mdash; now shows in your faction list</div>
+          <p>The real blocker turned out to be a Bitburner limitation, not a bug in Claude's fix: the automated
+            script needs "Source&#8209;File 4," a late&#8209;game unlock you don't have yet, and threw an error
+            dialog every time it tried. Worked around it by typing the exact same steps &mdash; connect,
+            connect, ... <code>backdoor</code> &mdash; straight into your terminal, which doesn't have that
+            restriction. Confirmed by reading your Factions page directly: The Black Hand is there now.
+            <code>CyberSec</code>/<code>NiteSec</code> were already backdoored from earlier play;
+            <code>run4theh111z</code> is still unrooted (nothing to backdoor yet, not an error). The script
+            itself now explains the Source&#8209;File 4 limit in plain language instead of showing that error
+            dialog, for next time.</p>
+        </div>
+      </div>
+
+      <div class="row decision">
+        <div class="row-stripe"></div>
+        <div class="row-body">
+          <div class="row-top">
+            <span class="tag">confirmed live</span>
+            <span class="row-date mono">2026&#8209;08&#8209;11 15:10</span>
+          </div>
+          <div class="row-title">Money mode really did take effect &mdash; here's the direct proof</div>
+          <p>The bot's own log shows it noticing the change itself: <code class="mono">config updated
+            {"OBJECTIVE": "xp" &rarr; "money"}</code>. Your money has grown from about $5.18m to $9.21m since
+            the switch. The "empty" reading you saw separately is a different number (how full the current
+            target's cash is) that looks the same regardless of mode &mdash; not a sign anything failed.</p>
+        </div>
+      </div>
+
+      <div class="row decision">
+        <div class="row-stripe"></div>
+        <div class="row-body">
+          <div class="row-top">
+            <span class="tag">bug fix + tests</span>
+            <span class="row-date mono">2026&#8209;08&#8209;11 15:45</span>
+          </div>
+          <div class="row-title">Found and fixed why file edits stopped reaching the game after today's move</div>
+          <p>You asked for a more robust regime after the earlier silent failure &mdash; this is that, applied
+            directly to the bug that caused it. Root cause: the background sync process remembered this
+            project's old folder location as a one-time snapshot taken when it started, and a folder rename
+            doesn't update a snapshot like that, even though the process itself kept running fine otherwise.
+            Fixed so it re-checks the real location on every single file, every time, so a future move like
+            today's can't cause a repeat. Also added a loud warning that would surface immediately in a status
+            check if this class of problem ever happens again, instead of a quiet log line nobody's watching.
+            Backed by 8 new automated tests that reproduce today's exact incident and confirm the fix holds;
+            all 34 tests in the suite pass. <strong>The fix is written, tested, and saved &mdash; it takes
+            effect on the next restart</strong>, which is the item below.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
 
   <section aria-labelledby="progress-title">
     <div class="block-head">
@@ -404,20 +471,17 @@
       <div class="progress-card">
         <div class="progress-top">
           <span class="pulse"></span>
-          <span class="row-title">Fixing routine file sync, which today's repo move quietly broke</span>
+          <span class="row-title">Deploying today's fixes needs a restart, which needs a reconnect</span>
         </div>
-        <p>Making the config change above surfaced a real bug: the running sync process still remembers this
-          project's <em>old</em> folder location from before today's move, so its automatic
-          "push my edits into the game" behavior has been silently failing all day &mdash; it just never had a
-          reason to notice until now. Worked around it for the money-mode change by pushing that one file
-          directly, which still works fine, but ordinary edits won't reach the game on their own until this is
-          properly fixed. The fix is a restart of that background process, which is exactly the same "make the
-          connection recover on its own" work already underway &mdash; a restart currently needs your one click
-          in Options to reconnect, and building a way for Claude to do that click itself (now proven possible,
-          per the terminal-typing work below) is the plan. Nothing broken in the game itself; this is purely
-          about Claude's own ability to push future edits.</p>
-        <div class="stale-note">found 2026&#8209;08&#8209;11 14:50 &mdash; no risk to the running farm, only to
-          how quickly future file edits reach it.</div>
+        <p>Both the sync fix above and the earlier game&rarr;disk pull loop are written and tested but sitting
+          unused until the background process restarts &mdash; and since the game never reconnects on its own
+          after a drop, that currently means one click for you in Options, same as any other reconnect. Building
+          a way for Claude to do that click itself is the other piece of today's "make the connection more
+          robust" work; once that exists, this stops needing your hand at all. Until then, one&#8209;off pushes
+          (like the money&#8209;mode switch) keep working fine through a separate path that doesn't depend on the
+          restart.</p>
+        <div class="stale-note">no risk to the running farm either way &mdash; this only affects how quickly
+          future file edits and fresh telemetry reach each side.</div>
       </div>
 
     </div>
@@ -437,19 +501,12 @@
             <span class="tag">seen live</span>
             <span class="row-date mono">2026&#8209;08&#8209;11 14:50</span>
           </div>
-          <div class="row-title">Farm may be stuck &mdash; <code>weakenBudgetNonNegative</code>, seen again just now</div>
-          <p>Looked at the game directly rather than trusting an old file: target <code>foodnstuff</code>,
-            plan <code class="fig">work/empty</code>, <code class="fig">money 0%</code>,
-            <code class="fig">rate 0</code>, security 3.00, verdict <span class="fig">INVARIANT</span> &mdash;
-            same shape as the 2026&#8209;08&#8209;10 sighting below, now confirmed still happening today. You
-            noticed the same thing independently right after &mdash; the "empty" you saw on the HUD is this
-            same <code class="fig">work/empty</code> reading, not a sign the money&#8209;mode switch failed
-            (that part is confirmed working separately, by reading the live config back out of the game).
-            "Empty" describes how full the <em>current target's money</em> is, not which mode the bot is in.
-            Real diagnosis needs the full invariant breakdown from <code class="mono">mcp_status.json</code>,
-            which is blocked on the sync fix above (can't read the file back out reliably until that's sorted).
-            Should resolve on its own once the money-mode switch takes effect, if this was XP-mode-specific
-            &mdash; worth one more look after a few minutes rather than assuming either way.</p>
+          <div class="row-title">Farm may be stuck &mdash; <code>weakenBudgetNonNegative</code>, seen again today</div>
+          <p>Looked at the game directly: target <code>foodnstuff</code>, plan <code class="fig">work/empty</code>,
+            money near 0%, rate 0, verdict <span class="fig">INVARIANT</span> &mdash; same shape as the
+            2026&#8209;08&#8209;10 sighting below. Real diagnosis needs the full invariant breakdown from
+            <code class="mono">mcp_status.json</code>, which is blocked on the restart above (can't read fresh
+            numbers back out reliably until then).</p>
         </div>
       </div>
 
@@ -464,36 +521,7 @@
           <p>A CDP check on 2026&#8209;08&#8209;10 found the same <span class="fig">INVARIANT</span> verdict,
             506 hits attributed to <code>weakenBudgetNonNegative</code>, money 0%, rate 0, avg 3 &mdash; while
             RAM/host counts still looked plausible on their own. Could be a real stuck state or a noisy
-            assertion; kept separate from today's sighting above rather than merged, since the hit count wasn't
-            re-read this time. See <code class="cite">docs/claude-todo.md</code>.</p>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <section aria-labelledby="unclear-title">
-    <div class="block-head">
-      <h2 class="block-title" id="unclear-title">Worth your eyes, not fully confirmed</h2>
-      <span class="block-count mono">1</span>
-    </div>
-    <div class="rows">
-
-      <div class="row flag">
-        <div class="row-stripe"></div>
-        <div class="row-body">
-          <div class="row-top">
-            <span class="tag">ambiguous</span>
-            <span class="row-date mono">2026&#8209;08&#8209;11 14:4x</span>
-          </div>
-          <div class="row-title">Backdoor fix: probably worked for at least one server, couldn't fully confirm</div>
-          <p>Ran the fixed backdoor script (see below) against all four faction-gateway servers through the
-            terminal. Good sign: the game now shows you actively doing hacking work for
-            <strong>NiteSec</strong>, which normally means the <code>avmnite-02h</code> backdoor landed.
-            Couldn't confirm the other three the same way &mdash; partway through, the game's view moved off
-            the Terminal tab (most likely because you were actively at the keyboard), and Claude stopped there
-            rather than click back to your Terminal while you might be using it. Worth a glance at your faction
-            list when convenient; no urgency.</p>
+            assertion. See <code class="cite">docs/claude-todo.md</code>.</p>
         </div>
       </div>
 

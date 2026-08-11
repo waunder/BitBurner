@@ -22,8 +22,119 @@ import {
   getWorkWeightBucket,
   bucketForMoneyPct,
   computeTickInvariantChecks,
+  hostNeedsRedeploy,
   WORK_WEIGHTS_BY_BUCKET,
 } from "./mcp_logic.js"
+
+describe("hostNeedsRedeploy — the 2026-08-11 forceRebalance/redeploy-timing bug", () => {
+  // The exact scenario found live: a target's work-weight bucket flips every
+  // tick (moneyPct swinging faster than BUCKET_HYSTERESIS can resist), and
+  // growTimeS/weakenTimeS (13-16s) are longer than the 10s tick. Before the
+  // fix, forceRebalance short-circuited to `true` unconditionally, so this
+  // host was killed and redeployed every single tick and no grow/weaken call
+  // ever survived long enough to finish.
+  const actionDurationsS = { hack: 5, grow: 15, weaken: 16 }
+
+  test("regression: forceRebalance alone does not kill a grow call that hasn't had time to finish", () => {
+    const running = [{ script: "grow", target: "foodnstuff", elapsedS: 4 }] // 4s into a 15s call
+    const needsRedeploy = hostNeedsRedeploy({
+      target: "foodnstuff",
+      plan: { type: "work" },
+      running,
+      forceRebalance: true,
+      actionDurationsS,
+    })
+    assert.equal(needsRedeploy, false, "a bucket flip must not cut off an in-flight grow call")
+  })
+
+  test("forceRebalance redeploys once every running action has had a full call's worth of time", () => {
+    const running = [{ script: "grow", target: "foodnstuff", elapsedS: 15 }] // >= growTimeS
+    const needsRedeploy = hostNeedsRedeploy({
+      target: "foodnstuff",
+      plan: { type: "work" },
+      running,
+      forceRebalance: true,
+      actionDurationsS,
+    })
+    assert.equal(needsRedeploy, true)
+  })
+
+  test("forceRebalance waits for the slowest running action type, not just any of them", () => {
+    // grow has had enough time (15 >= 15) but weaken hasn't (10 < 16) — must
+    // not redeploy and cut the weaken call short just because grow is ready.
+    const running = [
+      { script: "grow", target: "foodnstuff", elapsedS: 15 },
+      { script: "weaken", target: "foodnstuff", elapsedS: 10 },
+    ]
+    const needsRedeploy = hostNeedsRedeploy({
+      target: "foodnstuff",
+      plan: { type: "weaken" },
+      running,
+      forceRebalance: true,
+      actionDurationsS,
+    })
+    assert.equal(needsRedeploy, false)
+  })
+
+  test("without forceRebalance, matching running actions never redeploy regardless of elapsed time", () => {
+    const running = [{ script: "grow", target: "foodnstuff", elapsedS: 0.1 }]
+    const needsRedeploy = hostNeedsRedeploy({
+      target: "foodnstuff",
+      plan: { type: "work" },
+      running,
+      forceRebalance: false,
+      actionDurationsS,
+    })
+    assert.equal(needsRedeploy, false)
+  })
+
+  test("structural mismatch — no running actions at all — redeploys immediately even without forceRebalance", () => {
+    const needsRedeploy = hostNeedsRedeploy({
+      target: "foodnstuff",
+      plan: { type: "work" },
+      running: [],
+      forceRebalance: false,
+      actionDurationsS,
+    })
+    assert.equal(needsRedeploy, true)
+  })
+
+  test("structural mismatch — running against the wrong target — redeploys immediately, ignoring elapsed time", () => {
+    const running = [{ script: "grow", target: "some-other-server", elapsedS: 0 }]
+    const needsRedeploy = hostNeedsRedeploy({
+      target: "foodnstuff",
+      plan: { type: "work" },
+      running,
+      forceRebalance: false,
+      actionDurationsS,
+    })
+    assert.equal(needsRedeploy, true, "stale target's actions are never worth waiting out")
+  })
+
+  test("structural mismatch — weaken plan with a hack thread running — redeploys immediately", () => {
+    const running = [{ script: "hack", target: "foodnstuff", elapsedS: 0 }]
+    const needsRedeploy = hostNeedsRedeploy({
+      target: "foodnstuff",
+      plan: { type: "weaken" },
+      running,
+      forceRebalance: false,
+      actionDurationsS,
+    })
+    assert.equal(needsRedeploy, true, "hack fights an active weaken phase and must go regardless of forceRebalance")
+  })
+
+  test("structural mismatch — work plan with only weaken running (no grow/hack yet) — redeploys immediately", () => {
+    const running = [{ script: "weaken", target: "foodnstuff", elapsedS: 0 }]
+    const needsRedeploy = hostNeedsRedeploy({
+      target: "foodnstuff",
+      plan: { type: "work" },
+      running,
+      forceRebalance: false,
+      actionDurationsS,
+    })
+    assert.equal(needsRedeploy, true)
+  })
+})
 
 describe("evaluateMoneyDegradation — the moneyDegraded/OBJECTIVE bug", () => {
   // A full, declining, low-average sample window — the exact shape that

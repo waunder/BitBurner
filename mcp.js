@@ -12,6 +12,7 @@ import {
   evaluateMoneyDegradation,
   evaluateOpportunitySwitch,
   computeTickInvariantChecks,
+  hostNeedsRedeploy,
 } from "mcp_logic.js"
 
 // Tunables are declared with `let`, not `const`, so loadConfig can reassign
@@ -737,25 +738,25 @@ function getRunningActions(ns, host) {
   return running
 }
 
-// hack/grow/weaken calls routinely take 1-4+ minutes (see hackTime/growTime/
-// weakenTime in the status line), far longer than one mcp loop tick. Killing
-// and re-execing every tick regardless of state means threads never survive
-// long enough to complete, so a host is only redeployed when its currently
-// running actions no longer match what's actually needed.
-function hostNeedsRedeploy(target, plan, running, forceRebalance) {
-  if (forceRebalance) return true
-  if (running.length === 0) return true
-  if (running.some(({ proc }) => proc.args[0] !== target)) return true
-
-  const hasGrow = running.some(({ normalized }) => normalized === "/scripts/grow.js")
-  const hasHack = running.some(({ normalized }) => normalized === "/scripts/hack.js")
-  if (plan.type === "work" && !hasGrow && !hasHack) return true
-  // Grow is welcome during a weaken phase (leftover capacity goes to it, and
-  // refilling money is always useful); hack is not — it fights the weaken by
-  // adding security while stealing from a server we're trying to stabilize.
-  if (plan.type === "weaken" && hasHack) return true
-
-  return false
+// hostNeedsRedeploy itself now lives in mcp_logic.js (imported above) so the
+// forceRebalance/action-duration fix from 2026-08-11 is node --test-able —
+// see that file's comment on the function for the full story. This helper
+// translates mcp.js's `ns`-shaped running-process info into the plain data
+// the pure function takes: which script, which target, and how long (in
+// seconds) the process has actually been running — the last of which is
+// what lets a forceRebalance-only redeploy wait for an in-flight call to
+// finish instead of cutting it short.
+function describeRunningActions(ns, running) {
+  return running.map(({ proc, normalized }) => {
+    let elapsedS = Infinity
+    const runningScript = ns.getRunningScript(proc.pid)
+    if (runningScript) elapsedS = runningScript.onlineRunningTime
+    return {
+      script: normalized.replace("/scripts/", "").replace(".js", ""),
+      target: proc.args[0],
+      elapsedS,
+    }
+  })
 }
 
 // Security added per action thread, expressed in weaken-threads needed to
@@ -769,7 +770,7 @@ function weakenThreadsToOffset(hackThreads, growThreads) {
   )
 }
 
-function allocateThreads(ns, host, target, plan, ramInfo, forceRebalance, weakenBudget) {
+function allocateThreads(ns, host, target, plan, ramInfo, forceRebalance, weakenBudget, actionDurationsS) {
   /** @type {{script: string, threads: number}[]} */
   const actions = []
   const allocation = {
@@ -786,7 +787,14 @@ function allocateThreads(ns, host, target, plan, ramInfo, forceRebalance, weaken
   }
 
   const running = getRunningActions(ns, host)
-  if (!hostNeedsRedeploy(target, plan, running, forceRebalance)) {
+  const needsRedeploy = hostNeedsRedeploy({
+    target,
+    plan,
+    running: describeRunningActions(ns, running),
+    forceRebalance,
+    actionDurationsS,
+  })
+  if (!needsRedeploy) {
     allocation.usedRam = ns.getServerUsedRam(host)
     allocation.freeRam = getHostFreeRam(ns, host)
     for (const { proc, normalized } of running) {
@@ -1375,6 +1383,16 @@ export async function main(ns) {
     const minRam = Math.min(hackRam, growRam, weakenRam)
     const ramInfo = { hackRam, growRam, weakenRam, minRam }
 
+    // Computed here (rather than down with the rest of the status fields)
+    // because allocateThreads/hostNeedsRedeploy need them this tick, to
+    // decide whether a forceRebalance-only redeploy should wait for an
+    // in-flight call to finish — see hostNeedsRedeploy's comment in
+    // mcp_logic.js.
+    const hackTimeS = ns.getHackTime(currentTarget) / 1000
+    const growTimeS = ns.getGrowTime(currentTarget) / 1000
+    const weakenTimeS = ns.getWeakenTime(currentTarget) / 1000
+    const actionDurationsS = { hack: hackTimeS, grow: growTimeS, weaken: weakenTimeS }
+
     // Shared across hosts so a weaken-phase target only ever gets exactly as
     // many threads as it actually needs, rather than every host independently
     // maxing out. Hosts that keep already-running weaken threads charge the
@@ -1383,7 +1401,9 @@ export async function main(ns) {
 
     const allocations = []
     for (const host of workers) {
-      allocations.push(allocateThreads(ns, host, currentTarget, plan, ramInfo, forceRebalance, weakenBudget))
+      allocations.push(
+        allocateThreads(ns, host, currentTarget, plan, ramInfo, forceRebalance, weakenBudget, actionDurationsS)
+      )
     }
 
     const currentMoney = ns.getServerMoneyAvailable(currentTarget)
@@ -1407,9 +1427,9 @@ export async function main(ns) {
         ? moneyPctSamples.reduce((sum, value) => sum + value, 0) / moneyPctSamples.length
         : plan.moneyPct
     const requiredWeaken = getTargetWeakenThreads(ns, currentTarget)
-    const hackTimeS = ns.getHackTime(currentTarget) / 1000
-    const growTimeS = ns.getGrowTime(currentTarget) / 1000
-    const weakenTimeS = ns.getWeakenTime(currentTarget) / 1000
+    // hackTimeS/growTimeS/weakenTimeS were already computed earlier this
+    // tick (actionDurationsS, used by allocateThreads/hostNeedsRedeploy) —
+    // reused here rather than re-read, since currentTarget hasn't changed.
     const hackChance = ns.hackAnalyzeChance(currentTarget)
 
     // Deployed action RAM over total worker RAM. A single number that made an

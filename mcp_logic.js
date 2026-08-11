@@ -178,6 +178,69 @@ export function evaluateOpportunitySwitch({ idle, candidates, currentTarget, cur
 }
 
 /**
+ * hostNeedsRedeploy — moved here from mcp.js verbatim (see that file's own
+ * comment, preserved below) plus one fix for the bug found live 2026-08-11:
+ * "farm may be stuck" traced back to `foodnstuff`'s moneyPct swinging ~0.08
+ * every 10s tick, well past `BUCKET_HYSTERESIS` (0.02 at the time), which
+ * flipped its work-weight bucket every single tick. Every bucket flip sets
+ * `forceRebalance = true`, which this function used to treat as an
+ * unconditional "kill and redeploy" — but grow/weaken calls on that target
+ * were taking 13-16s, longer than the 10s tick, so every single one was cut
+ * off before it could ever finish. Not a policy bug (the hack/grow weights
+ * were correct for each bucket) — a redeploy-cadence bug that made the
+ * correct policy meaningless: nothing ever ran long enough to matter.
+ *
+ * Raising BUCKET_HYSTERESIS to 0.08 mitigated this by making flips rarer,
+ * but it's a per-target tuning knob, not a fix — a different target with a
+ * bigger natural swing could thrash the exact same way. The structural fix:
+ * a forceRebalance that isn't backed by anything actually wrong with what's
+ * running (see the structural checks below — those still redeploy
+ * immediately, unconditionally) now waits until every currently running
+ * action type has had at least one full call's worth of time
+ * (elapsedS >= its own current *TimeS) to complete before it's allowed to
+ * kill and redeploy. A bucket flip that lands mid-call just sets the new
+ * weights for the *next* redeploy instead of retroactively invalidating the
+ * call already in flight.
+ *
+ * mcp.js's original comment, preserved: "hack/grow/weaken calls routinely
+ * take 1-4+ minutes (see hackTime/growTime/weakenTime in the status line),
+ * far longer than one mcp loop tick. Killing and re-execing every tick
+ * regardless of state means threads never survive long enough to complete,
+ * so a host is only redeployed when its currently running actions no
+ * longer match what's actually needed."
+ *
+ * @param {object} args
+ * @param {string} args.target
+ * @param {{type: string}} args.plan
+ * @param {{script: string, target: string, elapsedS: number}[]} args.running
+ *   - one entry per currently-running action process on the host.
+ * @param {boolean} args.forceRebalance
+ * @param {{hack: number, grow: number, weaken: number}} args.actionDurationsS
+ *   - current ns.get*Time()-derived duration for each action type, seconds.
+ */
+export function hostNeedsRedeploy({ target, plan, running, forceRebalance, actionDurationsS }) {
+  if (running.length === 0) return true
+  if (running.some((r) => r.target !== target)) return true
+
+  const hasGrow = running.some((r) => r.script === "grow")
+  const hasHack = running.some((r) => r.script === "hack")
+  // Grow is welcome during a weaken phase (leftover capacity goes to it, and
+  // refilling money is always useful); hack is not — it fights the weaken by
+  // adding security while stealing from a server we're trying to stabilize.
+  if (plan.type === "work" && !hasGrow && !hasHack) return true
+  if (plan.type === "weaken" && hasHack) return true
+
+  if (!forceRebalance) return false
+
+  // The only reason left to redeploy is forceRebalance itself (e.g. a
+  // work-weight bucket change) — nothing structurally wrong with what's
+  // running. Hold off until every action type currently running has had at
+  // least one full call's worth of time to complete, so the redeploy lands
+  // between calls instead of inside one.
+  return running.every((r) => r.elapsedS >= (actionDurationsS[r.script] ?? 0))
+}
+
+/**
  * The per-tick invariant sweep's predicates, decoupled from the toast/count/
  * event-emit side effects that live in mcp.js's `invariants.check`. Returns
  * checks in the same order they used to run inline, including the

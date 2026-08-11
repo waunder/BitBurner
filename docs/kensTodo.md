@@ -19,7 +19,9 @@ Ken's hand, and check it off once it's confirmed done — same rule as
   delay setting" limitation already documented in
   `docs/processes.md`/`docs/claude-todo.md` — one click needed: **Options →
   Remote API → host `localhost`, port `12526` → Connect.** Blocks pushing
-  `ipvgo_player.js` (see `docs/claude-todo.md`'s IPvGO entry) and any other
+  `ipvgo_player.js` (see `docs/claude-todo.md`'s IPvGO entry), the
+  tested-and-ready `hostNeedsRedeploy`/forceRebalance fix (same file, "found
+  the real cause of the 'farm may be stuck' flag" entry), and any other
   routine sync until it's done.
 
 ## Done (kept for reference)

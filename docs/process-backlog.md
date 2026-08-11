@@ -226,7 +226,13 @@ Already implemented: it logs only on target/plan/bucket change.
   completed hack/grow/weaken calls grant XP.
 - **70–380s tick gaps** and repeated sync disconnect/reconnect cycles. No
   confirmed cause; the Electron background-throttling theory was disproven
-  (`gameWindow.js` sets `backgroundThrottling: false`).
+  (`gameWindow.js` sets `backgroundThrottling: false`). **2026-08-11
+  update:** live telemetry pulled this session narrows this further — see
+  `docs/claude-todo.md`'s `tickWithinBounds` entry. Full OS sleep and
+  daemon-reconnect-thrash are now ruled out for the one window checked;
+  macOS App Nap (a different mechanism than the already-disproven
+  Chromium `backgroundThrottling`) is the current leading, still-unconfirmed
+  hypothesis.
 - **`crawler.js` `Array(servers)`** should be `Array.from(servers)`.
 - **Dangling references** — see the legacy table in `processes.md`.
 

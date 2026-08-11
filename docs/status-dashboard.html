@@ -382,13 +382,13 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">rebuilt 2026&#8209;08&#8209;11 16:10 PDT</div>
+    <div class="updated mono">rebuilt 2026&#8209;08&#8209;11 16:45 PDT</div>
   </div>
 
   <div class="glance">
-    <span class="chip"><span class="dot dot-good"></span>done <span class="n mono">3</span></span>
+    <span class="chip"><span class="dot dot-good"></span>done <span class="n mono">4</span></span>
     <span class="chip"><span class="dot dot-neutral"></span>in progress <span class="n mono">1</span></span>
-    <span class="chip"><span class="dot dot-warn"></span>flagged <span class="n mono">2</span></span>
+    <span class="chip"><span class="dot dot-warn"></span>flagged <span class="n mono">1</span></span>
   </div>
 
   <p class="lede">Every row below is dated; nothing on this page is presented as current unless it was
@@ -398,9 +398,31 @@
   <section aria-labelledby="done-title">
     <div class="block-head">
       <h2 class="block-title" id="done-title">Done</h2>
-      <span class="block-count mono">3</span>
+      <span class="block-count mono">4</span>
     </div>
     <div class="rows">
+
+      <div class="row decision">
+        <div class="row-stripe"></div>
+        <div class="row-body">
+          <div class="row-top">
+            <span class="tag">root cause found + fixed</span>
+            <span class="row-date mono">2026&#8209;08&#8209;11 16:40</span>
+          </div>
+          <div class="row-title">Found the real reason the farm looked stuck &mdash; not the hack/grow policy</div>
+          <p>You were right that something needed fixing, just not the part it looked like. "No hacking while
+            empty" is deliberate and correct &mdash; hacking a near&#8209;empty server steals almost nothing while
+            still adding cleanup work. The actual bug, found by reading the game's real numbers directly:
+            <code class="mono">foodnstuff</code>'s money level was swinging back and forth across a mode boundary
+            <strong>every single 10&#8209;second tick, for over 4 hours straight</strong>. Each swing forced every
+            host to kill and restart its grow/weaken work &mdash; and that work takes 13&#8209;16 seconds to
+            finish, longer than the 10&#8209;second tick, so it was being killed before any single run could ever
+            complete. The weighting logic was fine the whole time; it just never got to run long enough to matter.
+            Widened the boundary's buffer so this specific swing can't cross it anymore &mdash; confirmed live,
+            the flip-flopping stopped immediately after. A more permanent fix (don't restart work that hasn't had
+            time to finish, regardless of why) is scoped and queued next.</p>
+        </div>
+      </div>
 
       <div class="row decision">
         <div class="row-stripe"></div>
@@ -490,7 +512,7 @@
   <section aria-labelledby="flag-title">
     <div class="block-head">
       <h2 class="block-title" id="flag-title">Flagged &mdash; not yet chased down</h2>
-      <span class="block-count mono">2</span>
+      <span class="block-count mono">1</span>
     </div>
     <div class="rows">
 
@@ -499,29 +521,14 @@
         <div class="row-body">
           <div class="row-top">
             <span class="tag">seen live</span>
-            <span class="row-date mono">2026&#8209;08&#8209;11 14:50</span>
+            <span class="row-date mono">2026&#8209;08&#8209;11 16:40</span>
           </div>
-          <div class="row-title">Farm may be stuck &mdash; <code>weakenBudgetNonNegative</code>, seen again today</div>
-          <p>Looked at the game directly: target <code>foodnstuff</code>, plan <code class="fig">work/empty</code>,
-            money near 0%, rate 0, verdict <span class="fig">INVARIANT</span> &mdash; same shape as the
-            2026&#8209;08&#8209;10 sighting below. Real diagnosis needs the full invariant breakdown from
-            <code class="mono">mcp_status.json</code>, which is blocked on the restart above (can't read fresh
-            numbers back out reliably until then).</p>
-        </div>
-      </div>
-
-      <div class="row flag">
-        <div class="row-stripe"></div>
-        <div class="row-body">
-          <div class="row-top">
-            <span class="tag">unconfirmed</span>
-            <span class="row-date mono">seen 2026&#8209;08&#8209;10</span>
-          </div>
-          <div class="row-title">Same invariant, first sighting</div>
-          <p>A CDP check on 2026&#8209;08&#8209;10 found the same <span class="fig">INVARIANT</span> verdict,
-            506 hits attributed to <code>weakenBudgetNonNegative</code>, money 0%, rate 0, avg 3 &mdash; while
-            RAM/host counts still looked plausible on their own. Could be a real stuck state or a noisy
-            assertion. See <code class="cite">docs/claude-todo.md</code>.</p>
+          <div class="row-title">Some ticks are taking up to 4 minutes instead of 10 seconds</div>
+          <p>Found while diagnosing the item above &mdash; 27 ticks in the same snapshot ran 30&ndash;238
+            seconds instead of the normal 10. Not yet root&#8209;caused, and not urgent on its own, but worth
+            understanding since a slow tick makes the redeploy&#8209;timing problem above worse, not better.
+            (The earlier "506 invariant hits" figure from 2026&#8209;08&#8209;10 turned out to be from a
+            different, unrelated counter that's since reset &mdash; not the same issue as either of these.)</p>
         </div>
       </div>
 

@@ -382,13 +382,13 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">rebuilt 2026&#8209;08&#8209;11 09:50 PDT</div>
+    <div class="updated mono">rebuilt 2026&#8209;08&#8209;11 13:12 PDT</div>
   </div>
 
   <div class="glance">
-    <span class="chip"><span class="dot dot-good"></span>resolved today <span class="n mono">1</span></span>
-    <span class="chip"><span class="dot dot-accent"></span>needs you <span class="n mono">2</span></span>
-    <span class="chip"><span class="dot dot-warn"></span>flagged <span class="n mono">2</span></span>
+    <span class="chip"><span class="dot dot-good"></span>resolved today <span class="n mono">2</span></span>
+    <span class="chip"><span class="dot dot-accent"></span>in progress <span class="n mono">2</span></span>
+    <span class="chip"><span class="dot dot-warn"></span>flagged <span class="n mono">1</span></span>
   </div>
 
   <p class="lede">Every row below is dated; nothing on this page is presented as current unless it was
@@ -398,7 +398,7 @@
   <section aria-labelledby="resolved-title">
     <div class="block-head">
       <h2 class="block-title" id="resolved-title">Resolved today</h2>
-      <span class="block-count mono">1</span>
+      <span class="block-count mono">2</span>
     </div>
     <div class="rows">
 
@@ -410,54 +410,70 @@
             <span class="row-date mono">2026&#8209;08&#8209;11 09:38</span>
           </div>
           <div class="row-title">VS Code extension retired for routine sync &mdash; push side proven live</div>
-          <p>Ken connected with his own extension (Options &rarr; Remote API &rarr; <code>12526</code>) and the
-            real game showed up in the daemon's log at 09:38:55, triggering a full resync:
+          <p>The real game connected to the daemon on <code>12526</code> and triggered a full resync:
             <span class="fig">pushed 28, failed 0, missing 0</span>. Every watched script/config file landed in
-            the game with no VS Code involved. This was the one open gap as of 2026&#8209;08&#8209;10 &mdash;
-            it's closed. Routine edits, restarts, and dumps all go through
-            <code class="mono">tools/bb_remote.py daemon</code> on <code>12526</code> from here on; leave Options
-            pointed there permanently.</p>
+            the game with no VS Code involved. Routine edits, restarts, and dumps all go through
+            <code class="mono">tools/bb_remote.py daemon</code> from here on; Options stays pointed at
+            <code>12526</code> permanently. Repo also moved house today &mdash;
+            <code class="mono">~/Documents/BitBurner</code> &rarr; <code class="mono">/Users/Shared/BitBurner</code>,
+            same disk, daemon never dropped &mdash; and this session's commits are pushed to
+            <code class="cite">origin/main</code>, nothing local-only left behind.</p>
+        </div>
+      </div>
+
+      <div class="row decision">
+        <div class="row-stripe"></div>
+        <div class="row-body">
+          <div class="row-top">
+            <span class="tag">done</span>
+            <span class="row-date mono">2026&#8209;08&#8209;11</span>
+          </div>
+          <div class="row-title">Ran <code>dnet_deploy.js --once</code> from home</div>
+          <p>Your half is done. The results &mdash; hosts cracked, credentials gathered &mdash; live only in the
+            game's filesystem for now; the daemon had dropped its connection when you ran it, and there's no
+            automated way yet to read a file back out of the game (see <em>in progress</em> below, which closes
+            exactly this gap). Nothing further needed from you here.</p>
         </div>
       </div>
 
     </div>
   </section>
 
-  <section aria-labelledby="needs-title">
+  <section aria-labelledby="progress-title">
     <div class="block-head">
-      <h2 class="block-title" id="needs-title">Needs your call</h2>
-      <span class="block-count mono">2 open</span>
+      <h2 class="block-title" id="progress-title">In progress</h2>
+      <span class="block-count mono">2</span>
     </div>
     <div class="rows">
 
-      <div class="row action">
-        <div class="row-stripe"></div>
-        <div class="row-body">
-          <div class="row-top">
-            <span class="tag">action</span>
-            <span class="row-date mono">open since 2026&#8209;08&#8209;11</span>
-          </div>
-          <div class="row-title"><code>git push</code> &mdash; today's commits are local, unpushed</div>
-          <p>Today runs through Cowork, which has no SSH key or stored HTTPS credentials for GitHub in its
-            shell sandbox &mdash; commits work (no network needed), pushes don't. <code>main</code> is a few
-            commits ahead of <code>origin/main</code> from this session's doc updates, fast-forward, no
-            conflicts. Run <code class="mono">git push</code> from a terminal on your Mac to land them.</p>
+      <div class="progress-card">
+        <div class="progress-top">
+          <span class="pulse"></span>
+          <span class="row-title">Building the game&rarr;disk half of the sync &mdash; the last piece of the VS Code retirement</span>
         </div>
+        <p>Disk&rarr;game push has been live since this morning. The other direction &mdash; pulling
+          <code class="mono">mcp_status.json</code> and the three other telemetry files back onto disk, so the
+          parser/dashboard can read fresh numbers instead of a stale copy &mdash; is being built into
+          <code class="cite">tools/bb_remote.py</code>'s daemon right now, mirroring its existing push cadence.
+          Doesn't need your hand. Once it lands, this dashboard can also finally re-check the
+          <code>weakenBudgetNonNegative</code> flag below with real numbers instead of a three&#8209;day&#8209;old
+          snapshot.</p>
+        <div class="stale-note">started 2026&#8209;08&#8209;11 13:12, no live-game validation yet &mdash; disk&rarr;game
+          sync stays untouched while this is built, no risk to the running farm.</div>
       </div>
 
-      <div class="row action">
-        <div class="row-stripe"></div>
-        <div class="row-body">
-          <div class="row-top">
-            <span class="tag">action</span>
-            <span class="row-date mono">open since 2026&#8209;08&#8209;09</span>
-          </div>
-          <div class="row-title">Run <code>dnet_deploy.js --once</code> from home</div>
-          <p><code>dnet_probe.js</code> validated the darknet model-reading approach against real play on
-            2026&#8209;08&#8209;09. This is the next step &mdash; the roaming self-replicating deployer, one
-            pass, ~4.6GB. Report back what it finds (hosts cracked, credentials gathered) so
-            <code class="cite">docs/darknet-*.md</code> can be checked against real results.</p>
+      <div class="progress-card">
+        <div class="progress-top">
+          <span class="pulse"></span>
+          <span class="row-title">Hardening the daemon connection, and checking whether it can drive the in&#8209;game terminal</span>
         </div>
+        <p>Two things you asked for after today's reconnect: making the daemon's hold on the connection more
+          resilient to drops, and finding out whether there's any legitimate way for Claude to type into the
+          game's own terminal (rather than only pushing script files). Research in progress &mdash; the Remote
+          API protocol and the existing CDP read-only access (port <code class="mono">9222</code>) are both
+          being checked for what's actually possible before anything gets built.</p>
+        <div class="stale-note">started 2026&#8209;08&#8209;11 13:12 &mdash; no code changes yet, this is still the
+          research step.</div>
       </div>
 
     </div>
@@ -466,32 +482,9 @@
   <section aria-labelledby="flag-title">
     <div class="block-head">
       <h2 class="block-title" id="flag-title">Flagged &mdash; not yet chased down</h2>
-      <span class="block-count mono">2</span>
+      <span class="block-count mono">1</span>
     </div>
     <div class="rows">
-
-      <div class="row flag">
-        <div class="row-stripe"></div>
-        <div class="row-body">
-          <div class="row-top">
-            <span class="tag">recommendation</span>
-            <span class="row-date mono">found 2026&#8209;08&#8209;11</span>
-          </div>
-          <div class="row-title">VS Code is only half-retired &mdash; game&rarr;disk direction still manual</div>
-          <p>Today's fix covers disk&rarr;game (pushing source into the game). The other direction &mdash;
-            pulling <code class="mono">mcp_status.json</code> and friends back out so the dashboard/parser can
-            read fresh numbers &mdash; has no automated path yet.
-            <code class="cite">tools/bb_remote.py</code>'s <code>get</code>/<code>dump</code> commands already
-            call the same live <code>getFile</code> RPC the push side proved works, but they only print the
-            result &mdash; nothing writes it to disk. Proof it's real, not theoretical:
-            <code class="mono">mcp_status.json</code> on disk is still dated 2026&#8209;08&#8209;08, three days
-            stale, despite the daemon syncing cleanly all morning. <strong>Recommendation:</strong> extend the
-            daemon with a pull loop mirroring its existing 2s push cadence &mdash; small, same pattern, no new
-            design risk. Doesn't need your hand, just time in a session. Until built, a one-off VS Code download
-            or a CDP read (<code class="mono">mcp_dump_request.txt</code>) still works for a fresh number.
-            See <code class="cite">docs/claude-todo.md</code>.</p>
-        </div>
-      </div>
 
       <div class="row flag">
         <div class="row-stripe"></div>
@@ -506,9 +499,9 @@
             <code>weakenBudgetNonNegative</code>, <span class="fig">money 0%</span>, <span class="fig">rate 0</span>,
             avg 3 &mdash; while <code>ram 98%</code> / 18 hosts still looked plausible on their own. Not
             diagnosed: could be a real over-allocation or a noisy assertion, but money-0%/rate-0 alongside
-            repeated invariant hits suggests something is actually stuck. Not chased yet &mdash; the on-disk
-            <code class="mono">mcp_status.json</code> is still too stale (2026&#8209;08&#8209;08) to re-check
-            without a fresh pull. See <code class="cite">docs/claude-todo.md</code>.</p>
+            repeated invariant hits suggests something is actually stuck. Blocked on the pull-loop build above
+            &mdash; the on-disk <code class="mono">mcp_status.json</code> is still too stale to re-check without
+            a fresh pull. See <code class="cite">docs/claude-todo.md</code>.</p>
         </div>
       </div>
 

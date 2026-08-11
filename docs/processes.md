@@ -140,9 +140,26 @@ Opens as many ports as it has `.exe`s for, then `ns.nuke()`s a single server.
 
 - **Start:** normally by `crawler.js`; manually `run hacking/worm.js <server>`
 - **Exits early** if the server needs more ports than it can open
-- **Dangling reference:** on success against `CSEC`, `avmnite-02h`, `I.I.I.I`,
-  or `run4theh111z` it execs `hacking/backdoor.js`, which is **not in this
-  repo**. `ns.exec` returns 0 and the failure is silent.
+- **`hacking/backdoor.js`** (fixed 2026&#8209;08&#8209;11 — previously
+  referenced here but missing from the repo, so this `ns.exec` silently
+  returned 0 every time): on success against `CSEC`, `avmnite-02h`,
+  `I.I.I.I`, or `run4theh111z` (the four regular-network servers whose
+  backdoor unlocks a faction invite — checked against `NetscriptDefinitions.d.ts`
+  2026&#8209;08&#8209;11: there's no general benefit to backdooring a
+  regular server beyond faction-invite/endgame requirements like this, and
+  for **darknet** servers specifically it's actively costly, not just
+  neutral — see `docs/darknet-tactics.md`'s §2, backdoors compound
+  network-wide authentication instability, budget ~2&ndash;4 total, "do not
+  backdoor anything" during exploration), walks the terminal connection
+  there from `home` via BFS over `ns.scan` (`ns.singularity.connect` only
+  hops to direct neighbours) and calls `ns.singularity.installBackdoor()`,
+  then returns the terminal to `home`. **Only fires on a fresh nuke** — if
+  any of the four were already rooted before this fix landed, worm.js won't
+  re-trigger it (the nuke branch is gated on `!ns.hasRootAccess`), so those
+  need one manual `run hacking/worm.js <server>` (harmless no-op re-nuke,
+  falls through to backdoor) or `run hacking/backdoor.js <server>` from Ken,
+  or the same via Claude's in-game terminal write once that's built (see
+  `docs/claude-todo.md`).
 
 After an augmentation install your `.exe`s are gone and hacking level resets,
 so the pool shrinks to what needs no ports. Rebuilding it means Create Program

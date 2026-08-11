@@ -332,6 +332,32 @@ reasoning here; read it there.
   only — **not yet deployed/restarted live**, since that's a separate step
   (sync watcher needs to push `mcp_logic.js` too, then a normal restart).
 
+## 2026-08-11: repo move broke daemon sync silently; fixed with tests
+
+- [x] **Found and fixed the `REPO_ROOT`-frozen-at-import bug** that broke
+  `tools/bb_remote.py`'s daemon's auto-sync (both directions) for ~2 hours
+  after this session's repo relocation, silently. Root cause, fix, and the
+  8 new selftest checks covering it are written up in full in
+  `docs/processes.md`'s `tools/bb_remote.py` section (search "silent,
+  hours-long sync outage"). Applied the 2026-08-07 audit's "assert on the
+  code's own intentions" principle to the Python/tooling side for the first
+  time — a loud `sync_root_alarm`/`pull_root_alarm` now surfaces via
+  `ctl-status` instead of a rate-limited log line nobody's tailing.
+  **Not yet deployed to the live daemon** — the fix only takes effect on
+  the next process restart, which still needs a reconnect (manual click or
+  the CDP-auto-reconnect work, still not built). Ordinary file pushes in
+  the meantime should use `ctl-push` directly (bypasses the cached root
+  entirely) rather than relying on the broken auto-sync until that restart
+  happens.
+- [x] **`hacking/backdoor.js` needs Source-File 4** — confirmed live,
+  uncaught `RUNTIME ERROR` modal, before Ken had SF4. Added a guard
+  (`hasSourceFile4`, checks `ns.getResetInfo().ownedSF` — never gated) that
+  prints one clear line instead. Added `hacking/findpath.js` (BFS over
+  `ns.scan`, never gated either) to print the connect-chain to type by
+  hand. **Confirmed working this way live**: typed the real chain +
+  `backdoor` for `I.I.I.I` via Claude's terminal-write path — The Black
+  Hand now shows under Ken's joined factions.
+
 ## Workflow
 
 - **Any future change to the logic in `mcp_logic.js` (or new logic worth

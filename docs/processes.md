@@ -155,11 +155,26 @@ Opens as many ports as it has `.exe`s for, then `ns.nuke()`s a single server.
   hops to direct neighbours) and calls `ns.singularity.installBackdoor()`,
   then returns the terminal to `home`. **Only fires on a fresh nuke** — if
   any of the four were already rooted before this fix landed, worm.js won't
-  re-trigger it (the nuke branch is gated on `!ns.hasRootAccess`), so those
-  need one manual `run hacking/worm.js <server>` (harmless no-op re-nuke,
-  falls through to backdoor) or `run hacking/backdoor.js <server>` from Ken,
-  or the same via Claude's in-game terminal write once that's built (see
-  `docs/claude-todo.md`).
+  re-trigger it (the nuke branch is gated on `!ns.hasRootAccess`).
+
+  **Needs Source-File 4 — confirmed live 2026&#8209;08&#8209;11, before Ken
+  had it: every `ns.singularity.*` call throws an uncaught `RUNTIME ERROR`
+  modal without SF4**, not just a soft failure. `hasSourceFile4` (checks
+  `ns.getResetInfo().ownedSF` — a base-`ns` call, never gated, safe to probe
+  with) now guards the whole function and prints one clear `ns.tprint` line
+  instead of letting the error modal surface. **Until SF4 exists, the actual
+  fix is typing the same steps by hand**: `connect <hop1>`, `connect <hop2>`,
+  ... `connect <target>`, `backdoor` — plain terminal commands are never
+  Singularity-gated, only the `ns.singularity` API wrapper around them is.
+  `hacking/findpath.js <target>` (added alongside this fix, `ns.scan`
+  only, never gated either) prints the exact hop sequence to type.
+  **Confirmed working this way 2026&#8209;08&#8209;11**: typed the real
+  connect-chain + `backdoor` into the live terminal via Claude's
+  CDP-driven terminal write for `I.I.I.I` — The Black Hand now shows under
+  Ken's joined factions. `CSEC`/`avmnite-02h` (CyberSec/NiteSec) were
+  already backdoored from earlier play, before this fix existed;
+  `run4theh111z` is still unrooted, so untested end-to-end past the
+  root-access check.
 
 After an augmentation install your `.exe`s are gone and hacking level resets,
 so the pool shrinks to what needs no ports. Rebuilding it means Create Program
@@ -1086,6 +1101,52 @@ this needs that process restarted with the current code and then the next
 natural reconnect (or a fresh Connect click), not a new action from Ken
 specifically — see `docs/claude-todo.md` for the exact status and what
 still needs watching.
+
+**2026-08-11: found and fixed a silent, hours-long sync outage caused by
+this repo's own move.** Moving `~/Documents/BitBurner` → `/Users/Shared/BitBurner`
+this session (see `docs/kensTodo.md`) did not disrupt the live WebSocket
+connection — the OS keeps a running process's cwd valid across a rename,
+confirmed via `lsof -a -p <pid> -d cwd` before and after. What it did break:
+`REPO_ROOT = Path(__file__).resolve().parent.parent`, computed **once at
+import time** and stored as a frozen absolute path. That value still
+pointed at the old, now-nonexistent location, so every watched-file read
+(`_read_watched`) started raising `FileNotFoundError` — caught, and logged
+once per file via `_missing_warned`'s rate limiting, to a gitignored log
+file nobody was tailing. Auto-sync (both directions) was fully broken for
+roughly two hours before this was noticed, purely by accident, while
+pushing an unrelated `mcp_config.json` change via `ctl-push` (which bypasses
+the daemon's cached root entirely, since it's a fresh CLI subprocess with
+its own correct cwd — that's the only reason anything got through during
+the outage).
+
+**Root-cause fix:** `TriggerDaemon._resolve_repo_root()` now resolves
+`Path.cwd()` **fresh on every single read/write**, never cached, when no
+explicit `repo_root` override is given (production always uses this path;
+tests still pin an explicit fixture directory). `Path.cwd()` reflects a live
+rename immediately, confirmed by the new selftest below, so a daemon that's
+already running survives its own directory being moved without needing a
+restart at all — only new code changes (like this one) still need one.
+
+**Defense in depth, mirroring `docs/audit-2026-08-07-process.md`'s "assert on
+the code's own intentions, not on game state" principle** — applied here to
+the Python/tooling side for the first time, not just `mcp.js`: `_resync` and
+`_pull` now each track a loud alarm (`sync_root_alarm`/`pull_root_alarm`)
+that fires specifically when **every single** watched/pull file fails at
+once — a qualitatively different signal than one file legitimately missing,
+and exactly what a bad `repo_root` looks like. Surfaced in `ctl-status`'s
+JSON response, not just a log line, so it's checkable without tailing
+anything. This wouldn't have prevented today's incident by itself (the
+already-running process still needed the code fix), but it means the *next*
+class of "everything silently stopped working" gets noticed in one
+`ctl-status` call instead of by accident.
+
+**New selftest coverage** (8 checks, all passing): constructs a real temp
+directory, resyncs successfully, `os.rename`s it out from under the
+still-running test process (faithfully reproducing the actual incident
+in-process, not just in theory), and asserts a dynamic-root daemon survives
+untouched while a daemon pinned to the old path reproduces the original bug
+and trips the alarm; a separate check covers the pull-side write-failure
+alarm the same way. Run with `python3 tools/bb_remote.py selftest`.
 
 ---
 

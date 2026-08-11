@@ -246,6 +246,7 @@ import argparse
 import asyncio
 import datetime
 import json
+import os
 import sys
 import tempfile
 import time
@@ -795,6 +796,23 @@ class TriggerDaemon:
     files while connected. `watched_files`/`repo_root` are constructor
     params (not just the module globals) specifically so tests can point
     this at a small temp fixture instead of the real repo tree.
+
+    **`repo_root=None` (the production default) is resolved fresh via
+    `Path.cwd()` on every single file read/write, never cached** — see
+    `_resolve_repo_root`. This was a real incident, not a hypothetical:
+    2026-08-11, moving this repo's directory while a `daemon` process kept
+    running left it holding `REPO_ROOT = Path(__file__).resolve().parent.parent`,
+    a value frozen at import time from the *old* location. The OS updates a
+    running process's cwd across a rename (confirmed via `lsof -d cwd`), but
+    a Python `Path` computed once from `__file__` does not — so every watched
+    file read failed with `FileNotFoundError`, silently, rate-limited to one
+    quiet log line each (see `_missing_warned`) in a gitignored file nobody
+    was tailing. Sync had been fully broken for roughly two hours before it
+    was noticed, purely by accident, while pushing an unrelated config
+    change. `repo_root` can still be pinned to a fixed `Path` explicitly
+    (what the test fixtures below do) for cases that intentionally want a
+    directory other than cwd, or want fixed behavior across a test's own
+    chdir/rename gymnastics.
     """
 
     def __init__(
@@ -812,12 +830,25 @@ class TriggerDaemon:
         self.started_at = time.monotonic()
         self.sync_enabled = sync_enabled
         self.watched_files = watched_files if watched_files is not None else WATCHED_FILES
-        self.repo_root = repo_root if repo_root is not None else REPO_ROOT
+        # None means "resolve dynamically" -- see _resolve_repo_root and the
+        # class docstring for why this must not be resolved once and cached.
+        self._repo_root_override = repo_root
         # relpath -> content last successfully pushed. Drives the
         # incremental poll's diff; a full resync ignores this (pushes
         # everything unconditionally) but still refreshes it afterward.
         self._last_pushed: dict[str, str] = {}
         self._missing_warned: set[str] = set()
+        # Loud, non-rate-limited alarm state: true only when an entire full
+        # pass came back with every single watched/pull file missing at
+        # once -- the "code's own intention" (repo_root points at a real
+        # tree containing these files) being violated wholesale, as opposed
+        # to one file legitimately having been deleted. Surfaced via
+        # _do_status so it's impossible to miss without tailing a log file,
+        # per CLAUDE.md's "route failures through the invariant system, not
+        # a print statement" rule -- this is that rule applied to the
+        # Python/tooling side, not just mcp.js.
+        self.sync_root_alarm: str | None = None
+        self.pull_root_alarm: str | None = None
         # Pull side (game -> disk), mirrors the push side's bookkeeping
         # exactly: relpath -> content last successfully written to local
         # disk, drives the incremental pull's diff.
@@ -828,9 +859,17 @@ class TriggerDaemon:
         if sync_enabled or pull_enabled:
             rpc.set_on_connect_hook(self.on_game_connected)
 
+    def _resolve_repo_root(self) -> Path:
+        """Fresh every call, deliberately -- see the class docstring's
+        2026-08-11 incident note. `Path.cwd()` reflects a live process's
+        current working directory even across a directory rename; a value
+        computed once from `__file__` or cached in `__init__` does not.
+        """
+        return self._repo_root_override if self._repo_root_override is not None else Path.cwd()
+
     def _read_watched(self, relpath: str) -> str | None:
         try:
-            return (self.repo_root / relpath).read_text()
+            return (self._resolve_repo_root() / relpath).read_text()
         except FileNotFoundError:
             if relpath not in self._missing_warned:
                 _log(f"SYNC: watched file missing on disk, skipping: {relpath}")
@@ -862,6 +901,16 @@ class TriggerDaemon:
             except JsonRpcError as e:
                 failed.append(relpath)
                 _log(f"SYNC: push failed for {relpath}: {e}")
+        if self.watched_files and len(missing) == len(self.watched_files):
+            self.sync_root_alarm = (
+                f"all {len(missing)} watched files missing under "
+                f"repo_root={self._resolve_repo_root()} -- this almost always means the "
+                f"daemon's working directory moved out from under it, not that every "
+                f"file was deleted. See TriggerDaemon's docstring."
+            )
+            _log(f"SYNC: CRITICAL — {self.sync_root_alarm}")
+        else:
+            self.sync_root_alarm = None
         if full or pushed or failed:
             kind = "full resync" if full else "incremental sync"
             _log(
@@ -923,12 +972,28 @@ class TriggerDaemon:
             if not full and self._last_pulled.get(relpath) == content:
                 continue
             try:
-                (self.repo_root / relpath).write_text(content)
+                (self._resolve_repo_root() / relpath).write_text(content)
                 self._last_pulled[relpath] = content
                 pulled.append(relpath)
             except OSError as e:
                 failed.append(relpath)
                 _log(f"PULL: write failed for {relpath}: {e}")
+        # Unlike _resync's "missing" (a local-read problem, so all-missing
+        # signals a bad repo_root), pull's "missing" means the *remote* file
+        # doesn't exist on the game side yet -- not a repo_root symptom. A
+        # bad repo_root shows up here as "failed" (the local write raising)
+        # instead, so that's what gets the all-of-them alarm check.
+        attempted = len(self.pull_files) - len(missing)
+        if attempted > 0 and len(failed) == attempted:
+            self.pull_root_alarm = (
+                f"every pull write failed under repo_root={self._resolve_repo_root()} -- "
+                f"this almost always means the daemon's working directory moved out from "
+                f"under it, not that every write independently broke. See TriggerDaemon's "
+                f"docstring."
+            )
+            _log(f"PULL: CRITICAL — {self.pull_root_alarm}")
+        else:
+            self.pull_root_alarm = None
         if full or pulled or failed:
             kind = "full pull" if full else "incremental pull"
             _log(
@@ -977,12 +1042,15 @@ class TriggerDaemon:
         return {
             "connected": self.rpc.is_connected,
             "daemon_uptime_s": round(time.monotonic() - self.started_at, 1),
+            "repo_root": str(self._resolve_repo_root()),
             "sync_enabled": self.sync_enabled,
             "watched_files": len(self.watched_files),
             "files_synced_this_connection": len(self._last_pushed),
+            "sync_root_alarm": self.sync_root_alarm,
             "pull_enabled": self.pull_enabled,
             "pull_files": len(self.pull_files),
             "files_pulled_this_connection": len(self._last_pulled),
+            "pull_root_alarm": self.pull_root_alarm,
         }
 
     async def handle_control_connection(self, reader, writer):
@@ -1058,7 +1126,7 @@ async def cmd_daemon(args):
         sync_task = asyncio.create_task(daemon.sync_poll_loop())
         _log(
             f"SYNC: enabled — watching {len(daemon.watched_files)} files under "
-            f"{daemon.repo_root}. Full resync on every game (re)connect; "
+            f"{daemon._resolve_repo_root()}. Full resync on every game (re)connect; "
             f"incremental push every {SYNC_POLL_S}s while connected."
         )
     else:
@@ -1069,7 +1137,7 @@ async def cmd_daemon(args):
         pull_task = asyncio.create_task(daemon.pull_poll_loop())
         _log(
             f"PULL: enabled — pulling {len(daemon.pull_files)} telemetry files "
-            f"into {daemon.repo_root}. Full pull on every game (re)connect; "
+            f"into {daemon._resolve_repo_root()}. Full pull on every game (re)connect; "
             f"incremental pull every {PULL_POLL_S}s while connected."
         )
     else:
@@ -1445,6 +1513,89 @@ async def run_selftest():
         ctl_result = await daemon._do_status()
         checks.append(("status reports sync_enabled + watched count", ctl_result["sync_enabled"] is True and ctl_result["watched_files"] == 3))
         checks.append(("status reports pull_enabled + pull_files count", ctl_result["pull_enabled"] is True and ctl_result["pull_files"] == 3))
+
+    # -- Repo-root resolution regression (added 2026-08-11 after the real
+    # incident described in TriggerDaemon's docstring: moving this repo's
+    # directory while a `daemon` process kept running silently broke every
+    # watched-file read for hours). Faithfully reproduces the incident
+    # in-process: renaming a real directory out from under the *current*
+    # process, the same thing `mv` does to a long-running one, and checking
+    # that dynamic (repo_root=None) resolution survives it while a pinned
+    # root reproduces the original bug and trips the loud alarm.
+    with tempfile.TemporaryDirectory() as outer:
+        old_dir = Path(outer) / "old_location"
+        old_dir.mkdir()
+        (old_dir / "watched.js").write_text("console.log('v1')")
+        watched2 = ["watched.js"]
+
+        prior_cwd = os.getcwd()
+        os.chdir(old_dir)
+        try:
+            dynamic_daemon = TriggerDaemon(rpc, watched_files=watched2, pull_enabled=False)
+            result_before = await dynamic_daemon._resync(full=True)
+            checks.append((
+                "dynamic repo_root resolves against cwd before any move",
+                result_before["missing"] == [] and result_before["pushed"] == ["watched.js"],
+            ))
+
+            # A second daemon pinned to the pre-move path, to reproduce the
+            # actual bug for contrast -- this is exactly what the frozen
+            # module-level REPO_ROOT used to do.
+            stale_daemon = TriggerDaemon(rpc, watched_files=watched2, repo_root=old_dir, pull_enabled=False)
+
+            new_dir = Path(outer) / "new_location"
+            old_dir.rename(new_dir)
+            # No explicit chdir after the rename -- os.getcwd() is expected
+            # to reflect it automatically (kernel tracks cwd by inode, not
+            # by path string), exactly like the live daemon's cwd tracked
+            # `mv` in the real incident. If this assumption is ever wrong
+            # on some platform, this check itself is what should catch it.
+            checks.append((
+                "this process's cwd followed the rename, unassisted",
+                Path(os.getcwd()).resolve() == new_dir.resolve(),
+            ))
+
+            result_dynamic_after = await dynamic_daemon._resync(full=True)
+            checks.append((
+                "dynamic repo_root survives a live directory rename with no restart",
+                result_dynamic_after["missing"] == [] and result_dynamic_after["pushed"] == ["watched.js"],
+            ))
+            checks.append(("dynamic daemon has no alarm after surviving the rename", dynamic_daemon.sync_root_alarm is None))
+
+            result_stale_after = await stale_daemon._resync(full=True)
+            checks.append((
+                "pinned (stale) repo_root reproduces the original incident",
+                result_stale_after["missing"] == ["watched.js"],
+            ))
+            checks.append((
+                "stale repo_root trips the loud alarm instead of failing silently",
+                stale_daemon.sync_root_alarm is not None and str(old_dir) in stale_daemon.sync_root_alarm,
+            ))
+            status_while_alarmed = await stale_daemon._do_status()
+            checks.append(("the alarm is visible via ctl-status, not just a log line", status_while_alarmed["sync_root_alarm"] is not None))
+
+            # Alarm is a live read of the current pass, not sticky: pointing
+            # the same daemon back at a real root clears it on the next call.
+            stale_daemon._repo_root_override = new_dir
+            result_recovered = await stale_daemon._resync(full=True)
+            checks.append(("alarm clears once repo_root is healthy again", result_recovered["missing"] == [] and stale_daemon.sync_root_alarm is None))
+        finally:
+            os.chdir(prior_cwd)
+
+    # -- Pull-side counterpart: every write failing (not "missing", since
+    # missing means the remote file doesn't exist -- see _pull's comment)
+    # under a bad repo_root should trip pull_root_alarm the same way.
+    files["/only_pull_target.txt"] = "remote content"
+    broken_pull_daemon = TriggerDaemon(
+        rpc, sync_enabled=False, pull_files=["only_pull_target.txt"],
+        repo_root=Path("/definitely/does/not/exist/anywhere"),
+    )
+    pull_result_broken = await broken_pull_daemon._pull(full=True)
+    checks.append(("pull write failure under a bad repo_root is reported as failed, not raised", pull_result_broken["failed"] == ["only_pull_target.txt"]))
+    checks.append((
+        "all-writes-failed trips pull_root_alarm",
+        broken_pull_daemon.pull_root_alarm is not None and "does/not/exist" in broken_pull_daemon.pull_root_alarm,
+    ))
 
     await rpc.stop()
     mock_task.cancel()

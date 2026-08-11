@@ -163,18 +163,60 @@ closed in code, pending one live confirmation.**
     against the real repo tree with zero "missing."** A fresh daemon
     (replacing the earlier restart/dump-only process, same port 12526) is
     running now, reparented to launchd, waiting for a connection.
-  - **Not yet validated:** an actual live `pushFile`/`getFile` round trip
-    against the game using this session's code — needs the Connect click
-    in `docs/kensTodo.md`. Until that click happens and is confirmed, do
-    not treat routine sync as proven live — the mock/subprocess coverage
-    above is real but is not a substitute for it, per `CLAUDE.md`'s "every
-    behavioural claim is unverified until it has actually run in
-    Bitburner."
+  - **Validated live 2026-08-11.** Ken connected (Options → Remote API →
+    `12526`) with his own extension, no VS Code involved. `tools/bb_remote_events.log`
+    at 09:38:55: real game user-agent (`bitburner/3.0.1 ... Electron/41.4.0`)
+    connected, daemon ran its full-resync pass, `SYNC: full resync done —
+    pushed 28, failed 0, missing 0`. Every one of the 28 `WATCHED_FILES`
+    landed in the game. This is the live confirmation this item was
+    waiting on — not mock/subprocess coverage, an actual round trip against
+    the real game.
 
-**Bottom line, updated:** the code path that makes the VS Code extension
-fully unnecessary is now built and passing every test that doesn't require
-the live game. It is not yet *confirmed* unnecessary — that's one Connect
-click away, tracked in `docs/kensTodo.md`.
+**Bottom line, updated 2026-08-11:** the disk → game direction is now fully
+proven live, not just built. **What's not done:** the game → disk direction
+(see new item directly below) — discovered today, this priority isn't fully
+closed until that's built too.
+
+### New gap found 2026-08-11: game → disk direction still has no automated path
+
+Retiring VS Code was framed as one migration, but it's really two
+directions, and only one is done:
+
+- **disk → game (push):** done, live-confirmed above.
+- **game → disk (pull):** `mcp_status.json`, `mcp_status_log.txt`,
+  `mcp_target_state.json`, `mcp_events.txt` are generated *by the game* and
+  need to land back on local disk for the parser/dashboard to read fresh
+  numbers. Previously this was the VS Code extension's "Download Files
+  Matching Pattern…" command — deliberately excluded from `WATCHED_FILES`
+  in `tools/bb_remote.py` (pushing them back would overwrite live game
+  state with a stale local copy, see the comment at the top of that list).
+  `tools/bb_remote.py` already has the primitive this needs —
+  `get_file`/`cmd_dump`/`ctl-dump`/`ctl-get` all call the same `getFile` RPC
+  that the original push/pull round-trip test proved works live — but
+  every one of those just `print()`s the result to stdout or returns it
+  over the control socket. **None of them write the result to a local
+  file.** So even the on-demand path doesn't close the loop today; a caller
+  would have to redirect the output itself, and nothing in the repo does.
+  On disk right now: `mcp_status.json` is still dated 2026-08-08 14:40 —
+  three days stale — even though the daemon has been connected and syncing
+  successfully since this morning, which confirms the gap is real, not
+  theoretical.
+
+  **Recommended next step** (not yet built — this is a recommendation, not
+  a decision that needs Ken, since it's an engineering task Claude can just
+  do): extend `tools/bb_remote.py`'s daemon with a pull-side counterpart to
+  its existing push loop — either poll `getFile` on the four telemetry
+  filenames on a timer (mirrors the existing 2s incremental-push cadence)
+  or expose a `ctl-pull`/`pull` subcommand that writes the fetched content
+  to the matching local path instead of printing it, and wire that into the
+  same daemon loop. Either closes the loop fully and makes the VS Code
+  extension genuinely unnecessary for the first time — right now it's only
+  half-retired.
+  - Until this is built, getting current numbers onto disk still needs
+    **either** the VS Code extension's one-off download command **or** a
+    CDP read (`mcp_dump_request.txt` → `mcp_dump` tail window, see
+    `docs/processes.md`) — both still work, neither requires reopening the
+    extension's file-sync watcher specifically.
 
 Note on branch history: the task brief for this cleanup expected
 `tools/bb_remote.py`'s branch to carry multiple commits from being resumed

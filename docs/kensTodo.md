@@ -10,42 +10,6 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
-- [ ] **One Connect click retires the VS Code extension entirely — point
-  Options → Remote API at port `12526` and leave it there.** As of
-  2026-08-10, `tools/bb_remote.py`'s `daemon` now handles *all* routine
-  game sync, not just the restart/dump trigger: it pushes every live
-  script/config file (`mcp.js`, everything under `hacking/` and `scripts/`,
-  `mcp_config.json`, `mcp_hud.js`, the `dnet_*.js` set, etc. — 28 files,
-  see `WATCHED_FILES` in `tools/bb_remote.py` or `docs/processes.md`)
-  straight into the game itself, the same way the VS Code extension's file
-  watcher used to. **This is the actual fix for the extension's core flaw**
-  (silently drops and doesn't replay on reconnect, see `CLAUDE.md`): the
-  daemon does a *full* push of every watched file's current content on
-  every game connection — first connect or any reconnect after a drop —
-  so a drop can never leave the game silently stale the way it did on
-  2026-08-09.
-
-  **What to do:** Options → Remote API → confirm Port reads `12526` →
-  Connect. A fresh daemon (PID replacing the earlier one, same port) is
-  already running, `nohup`'d so it survives independent of any Claude
-  session — confirmed via `ps`/`lsof` reparented to launchd, and via a
-  local `ctl-status` call reporting `sync_enabled: true`, `watched_files:
-  28`, all 28 resolving with zero "missing" against the real repo tree.
-  **Not yet confirmed against the live game** — no live `pushFile`/`getFile`
-  round trip has happened since this session's changes; see
-  `docs/claude-todo.md` for exactly what's validated (mock + real-file-path
-  checks) vs. what still needs the live game (the actual round trip).
-
-  **This time, do not switch back to port `12525` afterward.** The earlier
-  version of this item said to flip back to `12525` to restore VS Code
-  sync — that advice is now wrong and has been removed. The whole point of
-  this change is that VS Code sync is no longer needed for anything, ever,
-  once this click lands: routine edits, restarts, and dumps all go through
-  the daemon on `12526` from here on. Options should simply stay pointed
-  at `12526` permanently — there is no more "switch back" step, and no
-  reason to reopen the VS Code Bitburner extension's sync again. (You can
-  leave the extension installed; it just won't be doing anything anymore.)
-
 - [ ] **Run `dnet_deploy.js --once` from `home`** — `dnet_probe.js` (below)
   validated the model reading, so this is the next step: the roaming
   self-replicating deployer, single pass. ~4.6GB. See
@@ -54,6 +18,31 @@ Ken's hand, and check it off once it's confirmed done — same rule as
   checked against real results rather than just the source reading.
 
 ## Done (kept for reference)
+
+- [x] **One Connect click retired the VS Code extension's push side —
+  confirmed live 2026-08-11.** `tools/bb_remote_events.log` shows the real
+  game (`bitburner/3.0.1 ... Electron/41.4.0`) connecting to the daemon on
+  port `12526` at 09:38:55 and triggering a full resync: **pushed 28,
+  failed 0, missing 0**, all 28 `WATCHED_FILES` landed. This is the actual
+  live round trip that was the one open gap as of 2026-08-10 — no longer
+  theoretical. Routine script edits, restarts, and dumps all go through the
+  daemon now; **Options should stay pointed at `12526` permanently, no
+  "switch back" step.**
+  - **Correction to the retired advice above:** it's not quite true yet
+    that "the extension just won't be doing anything anymore." The daemon
+    only covers the **disk → game** direction (source pushes). The
+    **game → disk** direction — pulling `mcp_status.json`,
+    `mcp_status_log.txt`, `mcp_target_state.json`, `mcp_events.txt` back
+    out so the dashboard/parser can read fresh numbers — still has no
+    automated path; historically that was the VS Code extension's
+    "Download Files Matching Pattern…" command. Found 2026-08-11: this is
+    a genuinely open gap, not just an unconfirmed one — see
+    `docs/claude-todo.md` for the recommended fix (extend the daemon with
+    a pull loop using the same `getFile` RPC the round-trip test already
+    proved works). Until that's built, either that one VS Code download
+    command or a fresh CDP read is still the only way to get current
+    numbers onto disk — this doesn't require reopening the sync watcher,
+    just the one-off download command.
 
 - [x] **VS Code file-sync dead push channel (blocked both
   `mcp_dump_request.txt` and `mcp_restart.txt` on 2026-08-09).** Recovered

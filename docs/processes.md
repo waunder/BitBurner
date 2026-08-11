@@ -50,12 +50,12 @@ flowchart TB
         sup -->|renders| dumptail[mcp_dump tail window]
     end
 
-    subgraph direct["Direct Remote API connection (2026-08-10) — replaces VS Code sync entirely"]
+    subgraph direct["Direct Remote API connection (2026-08-10/11) — push side replaces VS Code sync; pull side still partial"]
         daemon["bb_remote.py daemon<br/>(persistent, local control channel,<br/>full resync on every (re)connect)"]
         daemon -->|pushFile, confirmed by getFile readback| flag
-        daemon -.->|getFile, bypasses sup + CDP entirely| status
-        daemon -.->|getFile| logfile
-        daemon ==>|pushFile, routine sync, 28 watched files| mcp
+        daemon -.->|getFile, one-shot, prints only — no disk write yet| status
+        daemon -.->|getFile, one-shot, prints only — no disk write yet| logfile
+        daemon ==>|pushFile, routine sync, 28 watched files, live-confirmed 2026-08-11| mcp
         daemon ==>|pushFile, routine sync| actions
     end
 
@@ -96,9 +96,14 @@ Three things are worth reading off that diagram:
   incremental only-changed-files push every 2s while connected. The
   restart trigger and file dumps work the same way they did before this:
   `mcp_restart.txt` via `pushFile`+`getFile`-readback, dumps via `getFile`
-  directly, bypassing `mcp_dump_request.txt`/tail-window/CDP. See the
-  `tools/bb_remote.py` section below for the full design and what's
-  confirmed live vs. not yet.
+  directly, bypassing `mcp_dump_request.txt`/tail-window/CDP. **Live-confirmed
+  2026-08-11:** the real game connected on port 12526 and a full resync
+  pushed all 28 watched files with zero failures. See the `tools/bb_remote.py`
+  section below for the full design.
+  **This only covers disk → game.** The game → disk direction (pulling
+  `mcp_status.json` and friends back out) still has no automated path — see
+  `docs/claude-todo.md`'s "game → disk direction" item — so the VS Code
+  extension isn't fully unnecessary yet, just for routine edits/restarts.
 
 ---
 
@@ -583,9 +588,22 @@ Mirrors `mcp.js`'s tail output into its own window, so the orchestrator's
 Local, out-of-game. Pretty-prints `mcp_status.json` including per-host
 allocations, once that file has been pulled out of the game.
 
-Pull it with the extension's **Download Files Matching Pattern…** and exactly
-`mcp_*.{json,txt}`. Never bulk-download — see `CLAUDE.md` for why that
-overwrites local source and then pushes the stale copy back.
+**As of 2026-08-11, `tools/bb_remote.py`'s daemon does not yet pull this
+file automatically** — its game→disk direction is limited to one-shot
+`get`/`dump`/`ctl-get`/`ctl-dump`, which fetch via the same live `getFile`
+RPC the push round trip uses but only print the result to stdout/the
+control socket, not write it to disk. Getting a fresh copy of
+`mcp_status.json` onto disk still needs **either**:
+
+- the VS Code extension's **Download Files Matching Pattern…**, exactly
+  `mcp_*.{json,txt}` (never bulk-download — see `CLAUDE.md` for why that
+  overwrites local source and pushes the stale copy back), or
+- a CDP read via `mcp_dump_request.txt` (see below) — no download needed.
+
+See `docs/claude-todo.md`'s "game → disk direction" item for the
+recommended fix (extend the daemon with a pull loop, same shape as its
+existing push loop) — until that's built, the extension isn't fully
+retired, just half.
 
 Largely superseded by reading the game directly over CDP, but it still works
 and needs nothing running.

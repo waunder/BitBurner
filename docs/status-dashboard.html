@@ -382,46 +382,53 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">rebuilt 2026&#8209;08&#8209;10 13:40 PDT</div>
+    <div class="updated mono">rebuilt 2026&#8209;08&#8209;11 09:50 PDT</div>
   </div>
 
   <div class="glance">
-    <span class="chip"><span class="dot dot-accent"></span>needs you <span class="n mono">2</span></span>
+    <span class="chip"><span class="dot dot-good"></span>resolved today <span class="n mono">1</span></span>
+    <span class="chip"><span class="dot dot-accent"></span>needs you <span class="n mono">1</span></span>
     <span class="chip"><span class="dot dot-warn"></span>flagged <span class="n mono">2</span></span>
-    <span class="chip"><span class="dot dot-neutral"></span>in progress <span class="n mono">1</span></span>
   </div>
 
-  <p class="lede">Rebuilt clean this pass &mdash; the running changelog is gone. Every row below is dated;
-    nothing on this page is presented as current unless it was confirmed current at that date. History
-    lives in <code class="cite">git log</code> and the docs it points to, not here.</p>
+  <p class="lede">Every row below is dated; nothing on this page is presented as current unless it was
+    confirmed current at that date. History lives in <code class="cite">git log</code> and the docs it
+    points to, not here.</p>
+
+  <section aria-labelledby="resolved-title">
+    <div class="block-head">
+      <h2 class="block-title" id="resolved-title">Resolved today</h2>
+      <span class="block-count mono">1</span>
+    </div>
+    <div class="rows">
+
+      <div class="row decision">
+        <div class="row-stripe"></div>
+        <div class="row-body">
+          <div class="row-top">
+            <span class="tag">confirmed live</span>
+            <span class="row-date mono">2026&#8209;08&#8209;11 09:38</span>
+          </div>
+          <div class="row-title">VS Code extension retired for routine sync &mdash; push side proven live</div>
+          <p>Ken connected with his own extension (Options &rarr; Remote API &rarr; <code>12526</code>) and the
+            real game showed up in the daemon's log at 09:38:55, triggering a full resync:
+            <span class="fig">pushed 28, failed 0, missing 0</span>. Every watched script/config file landed in
+            the game with no VS Code involved. This was the one open gap as of 2026&#8209;08&#8209;10 &mdash;
+            it's closed. Routine edits, restarts, and dumps all go through
+            <code class="mono">tools/bb_remote.py daemon</code> on <code>12526</code> from here on; leave Options
+            pointed there permanently.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
 
   <section aria-labelledby="needs-title">
     <div class="block-head">
       <h2 class="block-title" id="needs-title">Needs your call</h2>
-      <span class="block-count mono">2 open</span>
+      <span class="block-count mono">1 open</span>
     </div>
     <div class="rows">
-
-      <div class="row action">
-        <div class="row-stripe"></div>
-        <div class="row-body">
-          <div class="row-top">
-            <span class="tag">action</span>
-            <span class="row-date mono">open since 2026&#8209;08&#8209;10</span>
-          </div>
-          <div class="row-title">One Connect click retires the VS Code extension for good</div>
-          <p><strong>Options &rarr; Remote API &rarr; confirm Port reads <code>12526</code> &rarr; Connect.</strong>
-            The daemon (<code class="cite">tools/bb_remote.py daemon</code>) now pushes every live script/config
-            file into the game itself &mdash; not just the restart/dump trigger it handled before &mdash; with a
-            full resync on every connection (including a reconnect after a drop) so a dropped connection can
-            never leave the game silently stale, which is the exact flaw that made the VS Code extension's own
-            sync unreliable. <strong>Leave Options pointed at <code>12526</code> permanently after this click</strong>
-            &mdash; there is no "switch back to 12525" step anymore; that used to be the advice and it's now
-            wrong. Built and self-tested this session (all 28 watched files resolve correctly on disk, mock
-            round trips pass); the one thing not yet confirmed is an actual live push, which this click provides.
-            See <code class="cite">docs/kensTodo.md</code>.</p>
-        </div>
-      </div>
 
       <div class="row action">
         <div class="row-stripe"></div>
@@ -452,16 +459,22 @@
         <div class="row-stripe"></div>
         <div class="row-body">
           <div class="row-top">
-            <span class="tag">unconfirmed</span>
-            <span class="row-date mono">seen 2026&#8209;08&#8209;10</span>
+            <span class="tag">recommendation</span>
+            <span class="row-date mono">found 2026&#8209;08&#8209;11</span>
           </div>
-          <div class="row-title">Farm may be stuck &mdash; <code>weakenBudgetNonNegative</code> firing repeatedly</div>
-          <p>A CDP check earlier today found <code>mcp</code>'s HUD reporting verdict <span class="fig">INVARIANT</span>,
-            506 hits all attributed to <code>weakenBudgetNonNegative</code>, <span class="fig">money 0%</span>,
-            <span class="fig">rate 0</span>, avg 3 &mdash; while <code>ram 98%</code> / 18 hosts still looked
-            plausible on their own. Not diagnosed: could be a real over-allocation or a noisy assertion, but
-            money-0%/rate-0 alongside repeated invariant hits suggests something is actually stuck, not just an
-            assertion glitch. Next real step, not started. See <code class="cite">docs/claude-todo.md</code>.</p>
+          <div class="row-title">VS Code is only half-retired &mdash; game&rarr;disk direction still manual</div>
+          <p>Today's fix covers disk&rarr;game (pushing source into the game). The other direction &mdash;
+            pulling <code class="mono">mcp_status.json</code> and friends back out so the dashboard/parser can
+            read fresh numbers &mdash; has no automated path yet.
+            <code class="cite">tools/bb_remote.py</code>'s <code>get</code>/<code>dump</code> commands already
+            call the same live <code>getFile</code> RPC the push side proved works, but they only print the
+            result &mdash; nothing writes it to disk. Proof it's real, not theoretical:
+            <code class="mono">mcp_status.json</code> on disk is still dated 2026&#8209;08&#8209;08, three days
+            stale, despite the daemon syncing cleanly all morning. <strong>Recommendation:</strong> extend the
+            daemon with a pull loop mirroring its existing 2s push cadence &mdash; small, same pattern, no new
+            design risk. Doesn't need your hand, just time in a session. Until built, a one-off VS Code download
+            or a CDP read (<code class="mono">mcp_dump_request.txt</code>) still works for a fresh number.
+            See <code class="cite">docs/claude-todo.md</code>.</p>
         </div>
       </div>
 
@@ -469,43 +482,21 @@
         <div class="row-stripe"></div>
         <div class="row-body">
           <div class="row-top">
-            <span class="tag">no live read</span>
-            <span class="row-date mono">this rebuild, 2026&#8209;08&#8209;10</span>
+            <span class="tag">unconfirmed</span>
+            <span class="row-date mono">seen 2026&#8209;08&#8209;10</span>
           </div>
-          <div class="row-title">No money/level figures on this board &mdash; couldn't confirm them live</div>
-          <p>This rebuild tried to read current state straight from the running game over CDP instead of
-            trusting old files. The connection was refused: the game process wasn't launched with
-            <code>--remote-allow-origins</code>, so a DOM read isn't available this session.
-            <code class="mono">mcp_status.json</code> on disk is dated 2026&#8209;08&#8209;08 14:40 &mdash; over two
-            days stale, and predates a likely augmentation-install reset noted in
-            <code class="cite">docs/remote-api-diagnosis-log.md</code>. Any money or hacking-level number pulled
-            from it would be fiction dressed as fact, so none is shown here. Worth a fresh CDP read next session.</p>
+          <div class="row-title">Farm may be stuck &mdash; <code>weakenBudgetNonNegative</code> firing repeatedly</div>
+          <p>A CDP check on 2026&#8209;08&#8209;10 found <code>mcp</code>'s HUD reporting verdict
+            <span class="fig">INVARIANT</span>, 506 hits all attributed to
+            <code>weakenBudgetNonNegative</code>, <span class="fig">money 0%</span>, <span class="fig">rate 0</span>,
+            avg 3 &mdash; while <code>ram 98%</code> / 18 hosts still looked plausible on their own. Not
+            diagnosed: could be a real over-allocation or a noisy assertion, but money-0%/rate-0 alongside
+            repeated invariant hits suggests something is actually stuck. Not chased yet &mdash; the on-disk
+            <code class="mono">mcp_status.json</code> is still too stale (2026&#8209;08&#8209;08) to re-check
+            without a fresh pull. See <code class="cite">docs/claude-todo.md</code>.</p>
         </div>
       </div>
 
-    </div>
-  </section>
-
-  <section aria-labelledby="progress-title">
-    <div class="block-head">
-      <h2 class="block-title" id="progress-title">In progress</h2>
-      <span class="block-count mono">1</span>
-    </div>
-    <div class="progress-card">
-      <div class="progress-top">
-        <span class="pulse" aria-hidden="true"></span>
-        <span class="row-title">Retiring the VS Code extension &mdash; code complete, awaiting live confirmation</span>
-        <span class="row-date mono">2026&#8209;08&#8209;10</span>
-      </div>
-      <p>Full arc this session: direct Remote API round trip proven &rarr; restart/dump trigger moved off the
-        extension &rarr; Ken's own reconnect on port 12525 dropped the daemon's connection outright, proving live
-        that the game only ever holds one Remote API connection regardless of port &rarr;
-        <span class="fig">the daemon now also pushes every routine script/config file (28 watched files) on its
-        own, the same job the extension's sync used to do, with a full resync on every reconnect so a drop can't
-        leave the game stale.</span> Self-tested clean (mock round trips, all 28 file paths resolve on disk); the
-        one remaining gap is a live push, which needs the Connect click above. Most recent commit on it:
-        <code class="cite">e087c9a</code> and this pass's changes. No action needed from Ken beyond that one
-        click.</p>
     </div>
   </section>
 

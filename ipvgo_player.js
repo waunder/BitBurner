@@ -214,6 +214,19 @@ function checkGoApiAvailable(ns) {
   }
 }
 
+// Persisted so lifetime record/last result can be checked from outside the
+// game (ctl-pull, same pattern as mcp_status.json) instead of only living in
+// terminal scrollback, which nobody was actually watching -- found 2026-08-11
+// when Ken asked whether anyone was tracking results and the honest answer
+// was no, there was no way to check without staring at the terminal live.
+function writeStatus(ns, { gamesPlayed, wins, opponent, size, lastResult }) {
+	ns.write(
+		"ipvgo_status.json",
+		JSON.stringify({ ts: Date.now(), gamesPlayed, wins, opponent, size, lastResult }, null, 2),
+		"w"
+	)
+}
+
 function killDuplicates(ns) {
   const self = ns.getScriptName()
   const here = ns.getHostname()
@@ -241,6 +254,7 @@ export async function main(ns) {
 
   let gamesPlayed = 0
   let wins = 0
+  writeStatus(ns, { gamesPlayed, wins, opponent, size, lastResult: null })
 
   while (true) {
     try {
@@ -255,6 +269,13 @@ export async function main(ns) {
             `ipvgo_player: game over -- black ${state.blackScore} vs white ${state.whiteScore} ` +
               `(${won ? "WIN" : "loss"}). Lifetime ${wins}/${gamesPlayed}.`
           )
+          writeStatus(ns, {
+            gamesPlayed,
+            wins,
+            opponent,
+            size,
+            lastResult: { won, blackScore: state.blackScore, whiteScore: state.whiteScore },
+          })
         }
         ns.go.resetBoardState(opponent, size)
         ns.tprint(`ipvgo_player: new subnet vs ${opponent}, ${size}x${size}.`)

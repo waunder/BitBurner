@@ -750,6 +750,7 @@ WATCHED_FILES = [
     "dnet_loot.js",
     "dnet_creds_merge.js",
     "purchaseServer-8GB.js",
+    "ipvgo_player.js",
     "hacking/crawler.js",
     "hacking/worm.js",
     "scripts/copyScripts.js",
@@ -774,6 +775,7 @@ PULL_FILES = [
     "mcp_status_log.txt",
     "mcp_target_state.json",
     "mcp_events.txt",
+    "ipvgo_status.json",
 ]
 
 PULL_POLL_S = 2.0  # mirrors SYNC_POLL_S / mcp_supervisor.js's POLL_MS

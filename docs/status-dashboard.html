@@ -484,11 +484,10 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">rebuilt 2026&#8209;08&#8209;12 12:44 PDT</div>
+    <div class="updated mono">rebuilt 2026&#8209;08&#8209;12 13:15 PDT</div>
   </div>
 
   <div class="glance">
-    <span class="chip"><span class="dot dot-good"></span>done <span class="n mono">1</span></span>
     <span class="chip"><span class="dot dot-neutral"></span>in progress <span class="n mono">1</span></span>
     <span class="chip"><span class="dot dot-warn"></span>flagged <span class="n mono">1</span></span>
   </div>
@@ -496,31 +495,6 @@
   <p class="lede">Every row below is dated; nothing on this page is presented as current unless it was
     confirmed current at that date. History lives in <code class="cite">git log</code> and the docs it
     points to, not here.</p>
-
-  <section aria-labelledby="done-title">
-    <div class="block-head">
-      <h2 class="block-title" id="done-title">Done</h2>
-      <span class="block-count mono">1</span>
-    </div>
-    <div class="rows">
-
-      <div class="row decision">
-        <div class="row-stripe"></div>
-        <div class="row-body">
-          <div class="row-top">
-            <span class="tag">confirmed live</span>
-            <span class="row-date mono">2026&#8209;08&#8209;12 11:11</span>
-          </div>
-          <div class="row-title">IPvGO fix deployed &mdash; won its very next game, 46 to 1.5</div>
-          <p>The daemon crash&#8209;loop from yesterday is also fixed and confirmed holding (the file that
-            was crashing it now pulls cleanly). Got the fixed IPvGO player running in the same pass. First
-            result afterward: a decisive win, a big swing from the near&#8209;total shutouts it was losing
-            before. Too early to call a trend off one game, but a strong sign the fix is real.</p>
-        </div>
-      </div>
-
-    </div>
-  </section>
 
   <section aria-labelledby="scoreboard-title">
     <div class="block-head">
@@ -530,36 +504,42 @@
 
     <div class="scoreboard">
       <div class="scoreboard-head">
-        <span class="scoreboard-title">vs Netburners &middot; 7&times;7</span>
-        <span class="scoreboard-sub">as of 2026&#8209;08&#8209;12 12:44 PDT</span>
+        <span class="scoreboard-title">vs Netburners &middot; 7&times;7 &middot; new algorithm</span>
+        <span class="scoreboard-sub">as of 2026&#8209;08&#8209;12 13:15 PDT</span>
       </div>
 
       <div class="stat-row">
         <div class="stat-tile win-rate">
-          <span class="stat-value">34%</span>
-          <span class="stat-label">Win rate</span>
+          <span class="stat-value">41%</span>
+          <span class="stat-label">Win rate (last 32)</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">58</span>
+          <span class="stat-value">32</span>
           <span class="stat-label">Games played</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">20</span>
-          <span class="stat-label">Wins</span>
+          <span class="stat-value">1</span>
+          <span class="stat-label">Current streak</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">38</span>
-          <span class="stat-label">Losses</span>
+          <span class="stat-value">4</span>
+          <span class="stat-label">Best streak</span>
+        </div>
+        <div class="stat-tile">
+          <span class="stat-value">+18%</span>
+          <span class="stat-label">Stat bonus</span>
         </div>
       </div>
 
       <div class="scoreboard-footnote">
-        Last game: <span class="last-result win">&#9679; WIN, 41&ndash;1.5</span> &mdash;
-        this is a lifetime cumulative number right now, so it's still dragged down by the old,
-        weaker version of the bot. A new version (a real algorithm, not hand-tuned rules) is being
-        built below, and it'll switch this to a rolling last-100-games rate once live &mdash; a much
-        more honest read on whether a change actually helped. Win/loss streak-and-favor rewards are
-        also being added in that same pass rather than built twice.
+        Last game: <span class="last-result win">&#9679; WIN, 48&ndash;1.5</span> &mdash;
+        this is the <strong>real algorithm rewrite</strong> talked about earlier (a proper published
+        approach, not hand-tuned rules), and this number is scoped to just its own games, not diluted
+        by the old version's losses. 41% over 32 games is a real, meaningful jump from where it
+        started (roughly 0%), but still well short of the 90% goal &mdash; worth watching as the sample
+        grows rather than reading too much into it yet. The <strong>+18% stat bonus</strong> ("increased
+        hacknet production") comes from territory held regardless of win/loss &mdash; that's a reward
+        landing right now, every game, win or not.
       </div>
     </div>
   </section>
@@ -573,47 +553,44 @@
     <div class="scoreboard">
       <div class="scoreboard-head">
         <span class="scoreboard-title">Cracked servers, network&#8209;wide</span>
-        <span class="scoreboard-sub">as of 2026&#8209;08&#8209;12 12:44 PDT</span>
+        <span class="scoreboard-sub">as of 2026&#8209;08&#8209;12 13:15 PDT</span>
       </div>
 
       <div class="stat-row">
         <div class="stat-tile win-rate">
-          <span class="stat-value">55</span>
+          <span class="stat-value">103</span>
           <span class="stat-label">Total cracked</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">15</span>
-          <span class="stat-label">CloudBlare(tm)</span>
-        </div>
-        <div class="stat-tile">
-          <span class="stat-value">13</span>
+          <span class="stat-value">28</span>
           <span class="stat-label">FreshInstall_1.0</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">12</span>
-          <span class="stat-label">ZeroLogon</span>
-        </div>
-        <div class="stat-tile">
-          <span class="stat-value">10</span>
+          <span class="stat-value">24</span>
           <span class="stat-label">DeskMemo_3.1</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">4</span>
-          <span class="stat-label">Laika4</span>
+          <span class="stat-value">24</span>
+          <span class="stat-label">ZeroLogon</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">1</span>
-          <span class="stat-label">PHP 5.4</span>
+          <span class="stat-value">21</span>
+          <span class="stat-label">CloudBlare(tm)</span>
+        </div>
+        <div class="stat-tile">
+          <span class="stat-value">5</span>
+          <span class="stat-label">Laika4</span>
         </div>
       </div>
 
       <div class="scoreboard-footnote">
-        Real, network&#8209;wide number &mdash; consolidated from every credential the roaming
-        crawler has found and saved, pulled automatically from the game. The crawler is left
-        running on its own (autonomous by design, costs nothing to let it keep going) and this
-        number should keep climbing on its own. Nothing here has been backdoored or pinned in
-        place &mdash; that has a real, one&#8209;way cost (see <code class="cite">docs/darknet-tactics.md</code>)
-        and hasn't been worth spending yet on anything seen so far.
+        Nearly doubled since the last check (55 &rarr; 103) &mdash; the crawler is left running on its
+        own and this should keep climbing by itself. <strong>Actually collecting the reward from a
+        cracked server (money, freed capacity) is a separate step that just got built</strong> and
+        hasn't paid out yet (0 so far) &mdash; the first attempt found most cracked servers go offline
+        again before you come back for them, so looting is being taught to happen the instant a server
+        is confirmed online instead of on a separate later pass. Nothing here has been backdoored or
+        pinned in place &mdash; that has a real, one&#8209;way cost and hasn't been worth spending yet.
       </div>
     </div>
   </section>
@@ -628,15 +605,14 @@
       <div class="progress-card">
         <div class="progress-top">
           <span class="pulse"></span>
-          <span class="row-title">Researching a genuinely strong Go algorithm, per your ask</span>
+          <span class="row-title">Teaching the darknet crawler to loot as it goes</span>
         </div>
-        <p>You asked for a real, internet-sourced approach rather than another hand-tuned heuristic, aiming
-          for a 90% win rate on the current board before trying a bigger one. Research in progress into
-          proper approaches (the kind used before neural-network Go engines existed) rather than re-deriving
-          rules of thumb from the game's own tutorial again. Will report back with what it finds and a
-          measured win rate over a real number of games, not a guess off a handful.</p>
-        <div class="stale-note">started 2026&#8209;08&#8209;12 11:20 &mdash; no changes to the live game yet,
-          this is still the research/build step.</div>
+        <p>The batch "loot everything already cracked" approach found nothing to loot &mdash; servers
+          go offline again before a later pass comes back for them. The fix in progress: loot a server
+          the instant the crawler confirms it's online, not afterward. Will report real numbers (money,
+          capacity freed) once it's live and has actually run.</p>
+        <div class="stale-note">started 2026&#8209;08&#8209;12 13:05 &mdash; the crawler itself is
+          untouched and still running normally in the meantime.</div>
       </div>
 
     </div>

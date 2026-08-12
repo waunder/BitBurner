@@ -547,6 +547,79 @@ own scripts), `phishingAttack` (2GB, wanted the loot script to stay small
 enough for a cramped server), `promoteStock` (belongs with the stock strategy,
 not with looting), and `unleashStormSeed`.
 
+`dnet_loot.js` writes its own report as a per-host shard
+(`dnet_loot_<host>.json`, same sharding reasoning as the credential shards)
+and ships it to home; `dnet_loot_merge.js` folds these into `dnet_status.json`'s
+`"loot"` section (total karma spent, RAM freed, caches opened, per-host
+breakdown), same relationship `dnet_creds_merge.js` has to credential shards.
+
+### Phase 3 (2026-08-12): why a standalone batch pass doesn't work, and the two RAM-fit bugs found getting the inline version live
+
+`dnet_loot_all.js` runs `dnet_loot.js` against every host in the merged
+`dnet_creds.txt`, one at a time from home, using `connectToSession` (a
+stored password works at any distance, zero instability cost — tactics §2).
+Run live against 103 known hosts: **0 looted.** 48/103 came back "no
+session" — `connectToSession` itself works fine (confirmed on the one host
+that was online), the failure is `ServiceUnavailable`/503 because
+`getServerDetails(host).isOnline` is false. **confirmed live.** Most
+previously-cracked servers simply aren't online anymore by the time a
+*later, separate* pass comes back to check — `nextMutation`'s own
+documented behavior ("servers go offline... in many cases permanent") means
+"cracked once" and "online now" are different facts, and only the second
+one matters for looting. The other 7/103 were reported as "maxRam too
+small" — see bug 1 below for why that number is unreliable.
+
+**Bug 1, in `dnet_loot_all.js`, not fixed (kept as manual/one-off tool,
+out of scope for the Phase 3 change):** its RAM-fit check reads
+`ns.dnet.getServerDetails(host).maxRam`. `DarknetServerDetails` has no
+`maxRam` field — checked against the full interface in
+`NetscriptDefinitions.d.ts` (see the "What `getServerDetails` actually
+returns" section above); `maxRam` lives on the general `Server` object from
+`ns.getServer`/`ns.getServerMaxRam` instead. The read is always
+`undefined`, `?? 0` makes it always `0`, so the check fails for *every* host
+that reaches it regardless of that host's real RAM. **source** for the
+missing field, **derived** for the consequence. The "7 too little RAM" from
+the live run may not reflect those hosts' actual capacity at all.
+
+**The fix, in `dnet_deploy.js` instead of a separate batch script:** loot
+right when a session is freshly confirmed — `acquireSession` just succeeded
+means the target is online *right now* — by scp+exec'ing `dnet_loot.js`
+onto every neighbour, in the same place `dnet_deploy.js` already scp+execs
+itself (`spread()`). This sidesteps the staleness problem entirely: there is
+no "later" pass to go stale before.
+
+**Bug 2, in the new inline path, found live and fixed:** the first version
+of this check used `ns.getServerMaxRam(target)` alone — *total* RAM, correct
+field this time, but not *free* RAM. Live test against `darkweb`:
+`dnet_loot.js` and `dnet_lib.js` landed there fine (scp succeeded, confirmed
+by reading the files directly off the `darkweb` host via the Remote API's
+`getFile`), but `exec` silently returned pid 0 and `dnet_loot.js` never ran
+— no shard, no error, no signal beyond the silent `pid === 0`. **confirmed
+live.** Root cause: `darkweb`'s 16GB is mostly consumed by the already-running,
+long-lived `dnet_deploy.js` swarm occupant sitting there since Phase 2 — total
+RAM looked sufficient, free RAM wasn't. Fixed to check
+`getServerMaxRam(target) - getServerUsedRam(target)`, the same free-RAM
+pattern `mcp.js` already uses for the regular network. A hand-built mock
+test (`getServerUsedRam` returning a large value for a "busy" host) was
+added specifically to catch a regression back to the total-RAM-only version.
+
+**Why `darkweb` itself may stay un-looted for a while, and that's expected,
+not broken:** `darkweb` can only be reached by a *fresh* (new-code)
+`dnet_deploy.js` instance launched from `home` — the existing swarm's
+already-spread copies are running the pre-loot code and will never gain
+`lootDeploy` without a restart (Bitburner does not hot-reload). A fresh
+instance's very first hop is `darkweb`, and as long as the old occupant is
+still squatting there consuming most of its RAM, the free-RAM check will
+correctly keep reporting `why: "ram"` for it. This is now a *visible,
+diagnosable* state (`LOOT-SKIP darkweb why=ram` printed, and
+`dnet_status.json`'s `deployer.thisPass.lootSkipped.ram` incremented)
+instead of the old silent, uncategorized failure. Getting real network-wide
+loot numbers past this point needs either natural attrition (mutations
+eventually restart/kill old-code occupants) or a deliberate kill-and-restart
+of the swarm so fresh code can take their place — not done as part of this
+change, since it means briefly interrupting an otherwise healthy,
+continuously-productive process.
+
 ## `unleashStormSeed` — do not automate
 
 0.1GB, synchronous, executes `STORM_SEED.exe` if present on the current

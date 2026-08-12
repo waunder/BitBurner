@@ -1203,8 +1203,10 @@ does what the UI does). Design reasoning lives in `docs/darknet-functions.md`
 | --- | --- | --- | --- |
 | `dnet_probe.js` | `home` | ~2.3GB | First contact. Probes, reports each neighbour's details, attempts `authenticate("darkweb","")`. Mutates almost nothing. |
 | `dnet_lib.js` | — | 0GB alone | Shared module. Model-aware password candidates, credential store, session acquisition, and `mergeStatus`/`shipStatus` (the `dnet_status.json` helpers both scripts below use). Not runnable. |
-| `dnet_deploy.js` | `home`, then darknet | ~4.6GB | Roaming self-replicating deployer. Cracks, persists, spreads, follows mutations. Writes a "deployer" heartbeat section of `dnet_status.json` every pass (this instance's own view — visible/cracked/sessions/failed this pass and since process start, plus the genuinely-global `getDarknetInstability()` reading) and ships it to home. |
-| `dnet_loot.js` | a darknet server | ~5.0GB | Frees blocked RAM (gated on the free `getBlockedRam`), opens `.cache` files, reports karma spent. |
+| `dnet_deploy.js` | `home`, then darknet | ~4.8GB | Roaming self-replicating deployer. Cracks, persists, spreads, follows mutations. **2026-08-12 (Phase 3):** also scp+execs `dnet_loot.js` onto every neighbour right when a session is freshly confirmed on it (see `dnet_loot.js`'s row and `docs/darknet-functions.md`'s Phase 3 section for why a later separate pass doesn't work). Writes a "deployer" heartbeat section of `dnet_status.json` every pass (this instance's own view — visible/cracked/sessions/failed/looted/lootSkipped this pass and since process start, plus the genuinely-global `getDarknetInstability()` reading) and ships it to home. |
+| `dnet_loot.js` | a darknet server | ~5.0GB | Frees blocked RAM (gated on the free `getBlockedRam`), opens `.cache` files, reports karma spent. Writes its own per-host shard (`dnet_loot_<host>.json`) and ships it to home, same sharding reasoning as credentials. As of 2026-08-12, launched inline by `dnet_deploy.js` (see above) rather than only via the standalone batch tool below. |
+| `dnet_loot_all.js` | `home` | ~3.0GB | Manual/one-off: loots every host in `dnet_creds.txt`, one at a time, via `connectToSession`. **Superseded as the primary loot path 2026-08-12** — tried live against 103 known hosts, 0 looted (48 offline by the time it circled back, 7 "RAM too small" via a check that reads a field that doesn't exist on `DarknetServerDetails` and always evaluates to 0 — see `docs/darknet-functions.md`, not fixed here, kept only for manual/one-off use). Kept as a tool, not removed. |
+| `dnet_loot_merge.js` | `home` | ~2.0GB | Folds `dnet_loot_<host>.json` shards into `dnet_status.json`'s `"loot"` section (total karma spent, RAM freed, caches opened, per-host breakdown) — same relationship `dnet_creds_merge.js` has to credential shards. |
 | `dnet_creds_merge.js` | `home` | ~2.0GB | Folds per-host credential shards into `dnet_creds.txt`. Also writes the "credsMerge" section of `dnet_status.json` — total cracked count and a per-model breakdown off the merged file, the one genuinely network-wide number in that file (stale until re-run after new cracks land, but not a guess). |
 
 ### Arguments
@@ -1212,6 +1214,9 @@ does what the UI does). Design reasoning lives in `docs/darknet-functions.md`
 - `dnet_deploy.js` — `--once` (single pass, no loop), `--brute N` (allow up to
   N numeric candidates per host; default 0 = off), `--quiet`.
 - `dnet_loot.js` — `--no-cache`, `--no-ram`, `--max-realloc N` (default 25).
+- `dnet_loot_all.js` — `--limit N` (stop after N hosts, default: all),
+  `--wait-ms N` (per-host completion timeout, default 15000).
+- `dnet_loot_merge.js` — `--prune` (delete shards after merging), `--quiet`.
 - `dnet_creds_merge.js` — `--prune` (delete shards after merging), `--quiet`.
 
 ### Files
@@ -1220,9 +1225,10 @@ does what the UI does). Design reasoning lives in `docs/darknet-functions.md`
 | --- | --- | --- |
 | `dnet_creds.txt` | `dnet_deploy.js`, `dnet_creds_merge.js` | JSON-lines, one record per line: `{host, password, model, at}`. `.txt` not `.jsonl` — `ns.write` rejects `.jsonl`. Carried along on every `scp` so a child agent inherits what its parent knew. |
 | `dnet_cred_<host>.txt` | `dnet_deploy.js` | Per-host shard, scp'd to `home`. Sharded so concurrent agents can't clobber one shared file. Hostnames are escaped (`meta:inc` → `metax3ainc`) because darknet hostnames contain `:`, `%`, `@` and emoji. |
-| `dnet_status.json` | `dnet_deploy.js` (`deployer` section), `dnet_creds_merge.js` (`credsMerge` section) | Read-merge-write at the JSON-object level (`mergeStatus` in `dnet_lib.js`) so the two writers don't stomp each other's section. In `WATCHED_FILES`/`PULL_FILES` (added 2026-08-12, same pattern as `ipvgo_status.json`), so it pushes/pulls automatically for `docs/status-dashboard.html`'s darknet scoreboard. `deployer.*` is one roaming instance's own view only, not a network total (many independent copies run at once, each seeing only its own `probe()` neighbours) — `deployer.instability` is the one exception, since `getDarknetInstability()` is genuinely global regardless of which host calls it. `credsMerge.totalCracked`/`byModel` is the trustworthy network-wide figure, but only as fresh as the last `dnet_creds_merge.js` run. |
+| `dnet_loot_<host>.json` | `dnet_loot.js` | Per-host shard, scp'd to `home`, same sharding reasoning as credential shards. `{host, model, difficulty, ram:{before,after,calls,why}, caches:{found,opened,karma,detail}, at}`. |
+| `dnet_status.json` | `dnet_deploy.js` (`deployer` section), `dnet_creds_merge.js` (`credsMerge` section), `dnet_loot_merge.js` (`loot` section) | Read-merge-write at the JSON-object level (`mergeStatus` in `dnet_lib.js`) so the three writers don't stomp each other's section. In `WATCHED_FILES`/`PULL_FILES` (added 2026-08-12, same pattern as `ipvgo_status.json`), so it pushes/pulls automatically for `docs/status-dashboard.html`'s darknet scoreboard. `deployer.*` is one roaming instance's own view only, not a network total (many independent copies run at once, each seeing only its own `probe()` neighbours) — `deployer.instability` is the one exception, since `getDarknetInstability()` is genuinely global regardless of which host calls it. `credsMerge.totalCracked`/`byModel` and `loot.*` are the trustworthy network-wide figures, but only as fresh as the last `dnet_creds_merge.js`/`dnet_loot_merge.js` run. |
 
-All three are game output and should be gitignored if they ever land locally.
+All of the above are game output and should be gitignored if they ever land locally.
 `dnet_creds.txt` is worth adding to the download pattern once the system is
 live, so its contents are readable outside the game.
 
@@ -1240,6 +1246,20 @@ live, so its contents are readable outside the game.
   reports the total per run.
 - **A stored password that starts returning 401** means the server restarted
   with a new one. `dnet_deploy.js` drops the stale credential and re-cracks.
+- **`ns.dnet.getServerDetails()` has no `maxRam` field.** `maxRam` lives on
+  the general `Server` object (`ns.getServer`/`ns.getServerMaxRam`), not on
+  `DarknetServerDetails`. `dnet_loot_all.js`'s RAM-fit check reads the
+  nonexistent field and always sees `0`, so it always skips — its "RAM too
+  small" counts don't reflect real capacity. Not fixed there (kept as a
+  manual tool); `dnet_deploy.js`'s inline loot path uses
+  `ns.getServerMaxRam` correctly.
+- **A RAM-fit check needs *free* RAM (`maxRam - usedRam`), not just
+  `maxRam`.** `dnet_deploy.js`'s inline loot path first checked `maxRam`
+  alone and passed a target (`darkweb`) whose *total* RAM was fine but whose
+  *free* RAM wasn't — files landed via `scp`, then `exec` silently returned
+  pid 0 (Bitburner's normal "not enough RAM" signal) and nothing ran, no
+  error. Fixed to check `getServerMaxRam(host) - getServerUsedRam(host)`,
+  the same pattern `mcp.js` already uses for the regular network.
 
 ---
 

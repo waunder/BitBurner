@@ -209,10 +209,25 @@ Watch, each pass:
 instability cost. Backdoors are for `exec` reach and terminal access, and the
 budget is ~2 before the timeout penalty starts (tactics §2).
 
-### Phase 3 — Loot, and find out whether the stock hypothesis is real
+### Phase 3 — Loot, and find out whether the stock hypothesis is real. **Ken-approved 2026-08-12.**
 
 Run `dnet_loot.js` on held servers. It frees blocked RAM (gated on the free
 `getBlockedRam` check) and opens `.cache` files, reporting karma spent.
+
+**Update 2026-08-12: a standalone batch pass doesn't work, so this is now
+inline in `dnet_deploy.js` instead.** `dnet_loot_all.js` (loot every
+previously-cracked host from home, one at a time) was tried live first and
+came back 0/103 looted — most previously-cracked servers are simply offline
+again by the time a later, separate pass comes back to them (`nextMutation`
+churns the net continuously; being cracked once doesn't mean still online
+later). The one moment a server is *known* online is the instant a session
+is freshly established on it, so `dnet_deploy.js` now scp+execs
+`dnet_loot.js` right there, in the same place it already scp+execs itself —
+see `docs/darknet-functions.md`'s "Phase 3" section for the two RAM-fit bugs
+found and fixed getting this live (one in `dnet_loot_all.js`, not fixed
+there since it's kept only as a manual/one-off tool now; one in the new
+inline path itself, fixed). `dnet_loot_all.js`/`dnet_loot_merge.js` are
+kept for manual one-off use, not replaced.
 
 **Lower-stakes than originally written** — see the update at the top of §1.
 Reading what caches actually contain is still worth doing, but a stock key

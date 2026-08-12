@@ -364,6 +364,108 @@
     font-style: italic;
   }
 
+  /* ---------- scoreboard ---------- */
+
+  .scoreboard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    padding: 1.1rem 1.2rem 1.2rem;
+  }
+
+  .scoreboard-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.9rem;
+  }
+
+  .scoreboard-title {
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text);
+  }
+
+  .scoreboard-sub {
+    font-size: 0.78rem;
+    color: var(--text-faint);
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+    gap: 0.5rem;
+  }
+
+  .stat-tile {
+    background: var(--surface-2);
+    border-radius: 6px;
+    padding: 0.65rem 0.7rem;
+    text-align: center;
+  }
+
+  .stat-tile.win-rate {
+    background: var(--good-soft);
+  }
+
+  .stat-value {
+    display: block;
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.15;
+  }
+
+  .stat-tile.win-rate .stat-value {
+    color: var(--good);
+  }
+
+  .stat-label {
+    display: block;
+    margin-top: 0.2rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  .scoreboard-footnote {
+    margin-top: 0.85rem;
+    padding-top: 0.7rem;
+    border-top: 1px dashed var(--border);
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    max-width: 62ch;
+  }
+
+  .last-result {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+    font-size: 0.72rem;
+    border: 1px solid var(--border);
+  }
+
+  .last-result.win {
+    color: var(--good);
+    border-color: var(--good);
+    background: var(--good-soft);
+  }
+
+  .last-result.loss {
+    color: var(--text-dim);
+  }
+
   /* ---------- footer ---------- */
 
   footer {
@@ -382,7 +484,7 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">rebuilt 2026&#8209;08&#8209;12 11:20 PDT</div>
+    <div class="updated mono">rebuilt 2026&#8209;08&#8209;12 12:08 PDT</div>
   </div>
 
   <div class="glance">
@@ -417,6 +519,49 @@
         </div>
       </div>
 
+    </div>
+  </section>
+
+  <section aria-labelledby="scoreboard-title">
+    <div class="block-head">
+      <h2 class="block-title" id="scoreboard-title">IPvGO Scoreboard</h2>
+      <span class="block-count mono">live</span>
+    </div>
+
+    <div class="scoreboard">
+      <div class="scoreboard-head">
+        <span class="scoreboard-title">vs Netburners &middot; 7&times;7</span>
+        <span class="scoreboard-sub">as of 2026&#8209;08&#8209;12 12:08 PDT</span>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat-tile win-rate">
+          <span class="stat-value">39%</span>
+          <span class="stat-label">Win rate</span>
+        </div>
+        <div class="stat-tile">
+          <span class="stat-value">33</span>
+          <span class="stat-label">Games played</span>
+        </div>
+        <div class="stat-tile">
+          <span class="stat-value">13</span>
+          <span class="stat-label">Wins</span>
+        </div>
+        <div class="stat-tile">
+          <span class="stat-value">20</span>
+          <span class="stat-label">Losses</span>
+        </div>
+      </div>
+
+      <div class="scoreboard-footnote">
+        Last game: <span class="last-result loss">&#9679; loss, 0&ndash;46.5</span> &mdash;
+        this number moves fast (dozens of games an hour) and jumps around a lot game-to-game, so
+        read it as a rough trend, not a precise score. It's the real number either way, pulled
+        automatically from the game rather than a snapshot someone remembered to check.
+        <strong>Rewards (favor from win streaks, the territory-held stat bonus) aren't tracked here
+        yet</strong> &mdash; only win/loss is currently recorded; that's the next thing to add, likely
+        alongside the stronger algorithm being built right now (below), so it isn't built twice.
+      </div>
     </div>
   </section>
 

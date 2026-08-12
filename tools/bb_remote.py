@@ -763,6 +763,8 @@ WATCHED_FILES = [
     "dnet_deploy.js",
     "dnet_lib.js",
     "dnet_loot.js",
+    "dnet_loot_all.js",
+    "dnet_loot_merge.js",
     "dnet_creds_merge.js",
     "purchaseServer-8GB.js",
     "ipvgo_player.js",

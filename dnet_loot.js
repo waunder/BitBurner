@@ -24,6 +24,13 @@
  * getServerDetails 0.1 + ls 0.2 + getHostname 0.05. getBlockedRam is 0GB.
  * The game's RAM readout is the authority.
  *
+ * Added 2026-08-12: writes its own report as a per-host shard
+ * (dnet_loot_<host>.json, same reasoning as dnet_lib.js's credential
+ * shards -- many roaming instances looting concurrently would clobber one
+ * shared file) and ships it to home. dnet_loot_merge.js folds these into
+ * dnet_status.json's "loot" section, same relationship dnet_creds_merge.js
+ * has to credential shards.
+ *
  * @param {NS} ns
  */
 import { CODE } from "dnet_lib.js"
@@ -49,6 +56,16 @@ export async function main(ns) {
   if (!flags["no-cache"]) report.caches = openCaches(ns, host)
 
   ns.tprint(`dnet_loot: ${JSON.stringify(report)}`)
+
+  const shard = `dnet_loot_${host}.json`
+  ns.write(shard, JSON.stringify({ ...report, at: Date.now() }), "w")
+  if (host !== "home") {
+    try {
+      ns.scp(shard, "home")
+    } catch (err) {
+      ns.print(`WARN shipping ${shard} to home: ${err}`)
+    }
+  }
 }
 
 /**

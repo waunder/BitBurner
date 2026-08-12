@@ -16,9 +16,66 @@ usual:
 | **speculative** | A guess. Called out as one. |
 | **untested** | No live run. **Every script in this repo's darknet set is untested**, without exception. |
 
-**Nothing in this document has been executed in Bitburner.** Same standing as
-`dnet_probe.js`. The one thing that has been confirmed live is the `darkweb`
-entry point (see below).
+**Update 2026-08-12: no longer true.** `dnet_deploy.js` has now run live on
+`home` (fresh `--once` invocation, still active — see the reconciliation note
+right below and `darknet-tactics.md` §1) and has cracked servers under all
+four solved models with zero failures. The line above is kept as the
+document's original standing assumption; treat every **untested** tag below
+as superseded wherever this session's live results say otherwise (flagged
+inline). The one thing that had been confirmed live before this session was
+the `darkweb` entry point (see below).
+
+## Reconciled 2026-08-12: why `probe()` and the "Dark Net" UI tab disagree on server count
+
+Real discrepancy, now resolved by reading the full `Darknet` interface in
+`NetscriptDefinitions.d.ts` end to end (all ~20 methods, not just the subset
+this doc originally covered) and cross-checking against a live
+`dnet_deploy.js --once` run. **source** + **confirmed live**:
+
+- `probe()`'s own doc comment: *"Returns a list of all darknet servers
+  connected to the script's current server. For example, if called from a
+  script running on `home`, it will return `["darkweb"]`."* A fresh
+  `dnet_probe.js` run from `home` returned exactly `["darkweb"]` — matching
+  the doc's own example precisely, not a bug and not a narrower-than-expected
+  result. `probe()` is deliberately **adjacency-only from wherever the
+  calling script's process actually lives**, not a network-wide enumeration.
+- **There is no `ns.dnet` function that returns "every darknet server."**
+  Confirmed by reading the entire `Darknet` interface: `authenticate`,
+  `connectToSession`, `heartbleed`, `openCache`, `probe`, `setStasisLink`,
+  `getStasisLinkLimit`, `getStasisLinkedServers`, `getServerDetails`,
+  `induceServerMigration`, `unleashStormSeed`, `isDarknetServer`,
+  `memoryReallocation`, `getBlockedRam`, `getDepth`, `promoteStock`,
+  `phishingAttack`, `getDarknetInstability`, `nextMutation`,
+  `getServerRequiredCharismaLevel`. None enumerates the whole net. The
+  game's internal `darknetServers()` (referenced in the instability formula,
+  `darknet-tactics.md` §2) clearly does exist and clearly feeds the
+  in-game "Dark Net" UI tab directly — but it is **not exposed to
+  Netscript**, by design, the same way the tutorial frames discovery as
+  something you're "supposed to experiment" your way into.
+- **So the UI tab and the scripting API are reading from different
+  privilege levels, not disagreeing about reality.** The UI, being part of
+  the game's own renderer, can show the full known map (however large that
+  actually is at any instant); a script is deliberately restricted to
+  "what's adjacent to wherever I'm actually running," and the only way to
+  see more is to physically get a session running further out (exactly
+  `dnet_deploy.js`'s whole design — copy itself onto each cracked host and
+  call `probe()` again from there).
+- **The network is also genuinely growing/churning in real time**,
+  independent of the above. The UI tab read twice in this session, minutes
+  apart, went from ~16 named servers to ~31, with several names dropping out
+  entirely (`terminal.oasis`, `facebucks`, `neon.tech`, `granny-s@neo^systems`,
+  `tetr4d5` — all present in the first read, absent in the second) and many
+  new ones appearing. This matches `nextMutation()`'s own documented
+  behavior ("servers go offline... new servers appear") to the letter — it
+  is not a counting error on either side, it's the darknet actually mutating
+  while both reads happened. **confirmed live.**
+
+**Bottom line: `dnet_probe.js` and `dnet_lib.js` are not broken.** The
+discovery-count "mismatch" was always the expected, documented shape of the
+API — Phase 0 of `darknet-strategy.md` literally predicted this exact
+outcome as the success case ("Does `probe()` from home return `["darkweb"]`,
+or more? ... If more appears, my model of the entry point is wrong.") and
+it did not appear. No code change needed here.
 
 ### Where the facts came from
 
@@ -236,8 +293,23 @@ rule holds*, which is exactly the assumption a live run tests.
 
 ### The four models we can actually solve
 
-All four are **source** for the rule, **derived** for the solver, **untested**
-in game.
+All four are **source** for the rule, **derived** for the solver, and as of
+2026-08-12 **confirmed live** — every one of them has now cracked a real
+server on the live darknet with zero failures, via a fresh `dnet_deploy.js
+--once` run on `home` (results read back through `tools/bb_remote.py`'s
+`ctl-get`, since the shards land on `home` the moment a crack lands):
+
+| Model | Confirmed host(s) | Password |
+| --- | --- | --- |
+| `ZeroLogon` | `darksys`, `apex^solutions` | `""` |
+| `CloudBlare(tm)` | `EZ_BAKE_OVEN`, `apex_industries`, `apexoasis`, `ultra$blade`, `bachman_&_associates` | e.g. `49137`, `375`, `9051`, `62566`, `4636` |
+| `FreshInstall_1.0` | `church_of_the_machine_god`, `blade.systems` | `admin`, `12345` |
+| `DeskMemo_3.1` | `rho_construction`, `ten_noen`, `skrowt3n@thgil` | `588`, `265`, `65` |
+
+Twelve cracks, zero misses, across all four solved models — the strongest
+possible validation of `candidatesFor()` short of running it against every
+server in the shallow net. **The `data`/`hint` decoders described below were
+read correctly.**
 
 **`ZeroLogon` (NoPassword)** — password is `""`.
 Generator: `h(0, [""], [...hints...], NoPassword)`. Confirmed twice over: the
@@ -418,6 +490,33 @@ deeper servers may not be, which is what `memoryReallocation` is for.
 everything, run `dnet_creds_merge.js` on home, re-run `dnet_deploy.js` from
 home, and every previously-cracked server is re-entered via
 `connectToSession` at 0.05GB with no authentication delay at all.
+
+**Bug found live 2026-08-12, not yet fixed:** `spread()`'s
+`ns.exec(self, target, { preventDuplicates: true })` passes no `...args`, so
+every child copy runs with `flags.once === false` regardless of how the
+*parent* was invoked. **source** — confirmed against `exec`'s signature,
+`exec(script, host, threadOrOptions?, ...args)`, in `NetscriptDefinitions.d.ts`.
+Concretely: `run dnet_deploy.js --once` on `home` still does exactly one pass
+*on home*, but the moment it spreads onto `darkweb`, that copy (and every
+copy it spreads in turn) loops forever, waiting on `nextMutation()` between
+passes. **Observed live**: a single `--once` invocation cascaded into an
+autonomous, indefinitely-running crawl that cracked 12+ servers across the
+shallow net within minutes, with no further input. This means `--once` only
+ever limits the *first* process's pass count, not the network-wide spread —
+Phase 2 of `darknet-strategy.md` ("let it loop, no `--once`") turns out to
+already be what happens by default, one hop in, whether or not it was asked
+for.
+
+**Assessed as low-risk, not fixed yet:** the deployer never calls
+`setStasisLink` or anything backdoor-adjacent, and `darknet-tactics.md` §2
+established that `authenticate` itself carries **zero** instability cost —
+only backdoors do. So the unplanned autonomous spread is doing exactly the
+harmless, valuable work Phase 2 wanted (mapping and cracking the shallow
+net), just without the deliberate go/no-go `darknet-strategy.md` describes.
+Worth a one-line fix (`ns.exec(self, target, { preventDuplicates: true },
+...(flags.once ? ["--once"] : []))`) if a truly-bounded single pass is ever
+needed for testing, but not urgent — the current live behavior is safe and
+is exactly what the actual roadmap wants next anyway.
 
 ## (d) Safe secondary actions
 

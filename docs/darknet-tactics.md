@@ -4,9 +4,17 @@ One section per real decision point. `darknet-functions.md` has the API
 reference, the model registry, and the status vocabulary (**source** /
 **derived** / **speculative** / **untested**) used here too.
 
-**Nothing here has been run in Bitburner.** Where a recommendation depends on
-something only a live run can settle, that dependency is stated inline rather
-than smoothed over.
+**Update 2026-08-12: no longer true that nothing has run.** A fresh
+`dnet_deploy.js --once` run from `home` is live right now — see
+`darknet-functions.md`'s "Reconciled 2026-08-12" note for the full story and
+the confirmed-live model table. Short version: the apparent
+discovery-count mismatch that triggered this check (`dnet_probe.js` seeing 1
+server, the "Dark Net" UI tab showing 16+) is not a bug — `probe()` is
+adjacency-only by design, the UI reads the game's full internal state, and
+there is no `ns.dnet` call that does what the UI does. All four solved
+password models have now cracked a real server live, zero misses. Sections
+below are otherwise unchanged from the pre-live-run analysis; where a
+number below was a prediction, it has held up.
 
 ---
 
@@ -148,11 +156,25 @@ written yet; write it when there is a specific server to spend a slot on.
 unknown** — it may well be small enough that the entire question is "which one
 server", not "which four".
 
-## 4. Which of the 16 to target first
+## 4. Which of the ~16 (now ~31 and climbing) to target first
 
-Topology is unknown — it's drawn on a canvas, so DOM inspection got the node
-list but not the edges, and `probe()` from a live script is the only way to
-learn it. So this is a *policy*, not a target list.
+**Update 2026-08-12:** the "16" in this heading was already stale before
+this update — the live "Dark Net" UI tab read ~31 named servers minutes
+later in the same session, several names from the original 16 gone
+(`terminal.oasis`, `facebucks`, `neon.tech`, `granny-s@neo^systems`,
+`tetr4d5`) and many new ones present. The net is not a fixed-size list to
+memorize; it mutates on its own schedule regardless of anyone's action, per
+`nextMutation()`'s own documented behavior. Treat every count in this
+document as a snapshot, not a spec.
+
+Topology is unknown by static inspection — it's drawn on a canvas, so DOM
+inspection got the node list but not the edges — but as of 2026-08-12 this is
+no longer purely theoretical: `dnet_deploy.js`, once it has a session on a
+server, calls `probe()` *from* that server and learns its real neighbours,
+which is exactly how it has autonomously cracked 12+ servers across several
+hops from `home` already (see `darknet-functions.md`'s deployer section).
+The policy below still applies to anything not yet reached; `probe()` from a
+live script remains the only way to learn the edges for certain.
 
 **Ordering policy, cheapest and most certain first:**
 

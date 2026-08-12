@@ -1186,19 +1186,26 @@ A self-contained set, separate from everything above. It does not touch
 `mcp.js` and is **not** auto-started by `startup.js` or `mcp_supervisor.js` —
 deliberately, until it has worked by hand at least once.
 
-**None of it has run in Bitburner yet.** Design reasoning lives in
-`docs/darknet-functions.md` (API reference, model solvers, RAM costs),
-`docs/darknet-tactics.md` (per-decision reasoning) and
-`docs/darknet-strategy.md` (sequencing). The next real action is running
-`dnet_probe.js` — see `docs/kensTodo.md`.
+**Confirmed live 2026-08-12.** `dnet_probe.js` and a fresh `dnet_deploy.js
+--once` run from `home` both ran for real: `probe()` from home returned
+exactly `["darkweb"]` as predicted, and the deployer went on to crack 12+
+servers across all four solved password models with zero failures, spreading
+autonomously across the shallow net (see `docs/darknet-functions.md`'s
+2026-08-12 notes for the full reconciliation of why the scripting API sees
+far fewer servers than the in-game "Dark Net" UI tab at any given moment —
+short version: `probe()` is deliberately adjacency-only, the UI reads the
+game's full internal state directly, and there is no `ns.dnet` call that
+does what the UI does). Design reasoning lives in `docs/darknet-functions.md`
+(API reference, model solvers, RAM costs), `docs/darknet-tactics.md`
+(per-decision reasoning) and `docs/darknet-strategy.md` (sequencing).
 
 | File | Runs on | RAM (est.) | What it does |
 | --- | --- | --- | --- |
 | `dnet_probe.js` | `home` | ~2.3GB | First contact. Probes, reports each neighbour's details, attempts `authenticate("darkweb","")`. Mutates almost nothing. |
-| `dnet_lib.js` | — | 0GB alone | Shared module. Model-aware password candidates, credential store, session acquisition. Not runnable. |
-| `dnet_deploy.js` | `home`, then darknet | ~4.6GB | Roaming self-replicating deployer. Cracks, persists, spreads, follows mutations. |
+| `dnet_lib.js` | — | 0GB alone | Shared module. Model-aware password candidates, credential store, session acquisition, and `mergeStatus`/`shipStatus` (the `dnet_status.json` helpers both scripts below use). Not runnable. |
+| `dnet_deploy.js` | `home`, then darknet | ~4.6GB | Roaming self-replicating deployer. Cracks, persists, spreads, follows mutations. Writes a "deployer" heartbeat section of `dnet_status.json` every pass (this instance's own view — visible/cracked/sessions/failed this pass and since process start, plus the genuinely-global `getDarknetInstability()` reading) and ships it to home. |
 | `dnet_loot.js` | a darknet server | ~5.0GB | Frees blocked RAM (gated on the free `getBlockedRam`), opens `.cache` files, reports karma spent. |
-| `dnet_creds_merge.js` | `home` | ~2.0GB | Folds per-host credential shards into `dnet_creds.txt`. |
+| `dnet_creds_merge.js` | `home` | ~2.0GB | Folds per-host credential shards into `dnet_creds.txt`. Also writes the "credsMerge" section of `dnet_status.json` — total cracked count and a per-model breakdown off the merged file, the one genuinely network-wide number in that file (stale until re-run after new cracks land, but not a guess). |
 
 ### Arguments
 
@@ -1213,8 +1220,9 @@ deliberately, until it has worked by hand at least once.
 | --- | --- | --- |
 | `dnet_creds.txt` | `dnet_deploy.js`, `dnet_creds_merge.js` | JSON-lines, one record per line: `{host, password, model, at}`. `.txt` not `.jsonl` — `ns.write` rejects `.jsonl`. Carried along on every `scp` so a child agent inherits what its parent knew. |
 | `dnet_cred_<host>.txt` | `dnet_deploy.js` | Per-host shard, scp'd to `home`. Sharded so concurrent agents can't clobber one shared file. Hostnames are escaped (`meta:inc` → `metax3ainc`) because darknet hostnames contain `:`, `%`, `@` and emoji. |
+| `dnet_status.json` | `dnet_deploy.js` (`deployer` section), `dnet_creds_merge.js` (`credsMerge` section) | Read-merge-write at the JSON-object level (`mergeStatus` in `dnet_lib.js`) so the two writers don't stomp each other's section. In `WATCHED_FILES`/`PULL_FILES` (added 2026-08-12, same pattern as `ipvgo_status.json`), so it pushes/pulls automatically for `docs/status-dashboard.html`'s darknet scoreboard. `deployer.*` is one roaming instance's own view only, not a network total (many independent copies run at once, each seeing only its own `probe()` neighbours) — `deployer.instability` is the one exception, since `getDarknetInstability()` is genuinely global regardless of which host calls it. `credsMerge.totalCracked`/`byModel` is the trustworthy network-wide figure, but only as fresh as the last `dnet_creds_merge.js` run. |
 
-Both are game output and should be gitignored if they ever land locally.
+All three are game output and should be gitignored if they ever land locally.
 `dnet_creds.txt` is worth adding to the download pattern once the system is
 live, so its contents are readable outside the game.
 
@@ -1245,26 +1253,22 @@ design all live in `docs/ipvgo-strategy.md` — this entry is just the map.
 
 | File | Runs on | RAM | What it does |
 | --- | --- | --- | --- |
-| `ipvgo_player.js` | any host with `ns.go` access (the API is not tied to a specific server) | 34.45GB, confirmed live via its own startup `ns.tprint` (arithmetic estimate in the strategy doc was ~33.6GB) | Plays the current IPvGO subnet forever: capture > defend > expand > random-with-airspace > anything-valid > pass, self-supersedes, never discards an in-progress game, starts a fresh one (default `Netburners` 7x7 — a placeholder, not tuned) once the current one ends. Writes `ipvgo_status.json` (gamesPlayed, wins, opponent, size, lastResult) on startup and after every game — in `WATCHED_FILES`/`PULL_FILES` both, so it pushes/pulls automatically like every other script/status file. |
-| `ipvgo_player.test.js` | local only, `node --test ipvgo_player.test.js` | n/a | Tests for the pure board-logic functions in `ipvgo_player.js` (`findCaptureMoves`, `findDefendMoves`, `isSafeExtension`, `findExpandMoves`, `pickMove`), which export themselves for this purpose (harmless extra exports — Bitburner only ever calls `main`). Kept in the same file as the logic (not split into a separate `ipvgo_logic.js` the way `mcp.js`/`mcp_logic.js` split) so it stays on the existing `WATCHED_FILES` entry — see `docs/claude-todo.md`'s 2026-08-11 diagnosis entry for why a second watched file wasn't practical that session. |
+| `ipvgo_player.js` | any host with `ns.go` access (the API is not tied to a specific server) | ~17.6GB arithmetic estimate as of the 2026-08-12 rewrite (down from 34.45GB measured live pre-rewrite) — **not yet measured live**, see its own header comment | The `ns.go` event loop only, as of 2026-08-12: fetches the real board/valid-move grid each turn and asks `ipvgo_logic.js`'s `chooseBestMove()` (flat Monte Carlo — see below) which move to play. Self-supersedes, never discards an in-progress game, starts a fresh one (default `Netburners` 7x7 — still a placeholder, not tuned) once the current one ends. Writes `ipvgo_status.json` on startup and after every game — in `WATCHED_FILES`/`PULL_FILES` both. Fields: `gamesPlayed`/`wins` (this script *process's* own tally, resets on restart), `algorithm`, `opponent`, `size`, `lastResult` (now includes `avgMoveMs`/`maxMoveMs`), and — added 2026-08-12 for the dashboard's "rewards" section — `winStreak`, `highestWinStreak`, `favorRep`, `bonusPercent`, `bonusDescription`, `opponentLifetimeWins`, `opponentLifetimeLosses`, all read from `ns.go.analysis.getStats()` (0GB, survives script restarts unlike the process-local counters — see `ipvgo_player.js`'s `readOpponentStats()`). |
+| `ipvgo_logic.js` | local only + pushed to the game as an import target for `ipvgo_player.js` | n/a (pure logic, no `ns` calls) | New 2026-08-12, mirroring the `mcp.js`/`mcp_logic.js` split. A from-scratch local Go rules engine (flood-fill chains/liberties, capture, suicide prevention with the game's own "except when it captures" exception, a simplified single-capture ko rule, area scoring, a diagonal-based simple-eye heuristic) plus a flat Monte Carlo move-selection algorithm built on top of it (`chooseBestMove`/`evaluateMove`/`runPlayout`). Full citations and design rationale — including a documented, profiled performance rewrite (rejection-sampling instead of full-board-scan move selection, after the first draft took multiple *seconds* per move) — are in the file's own header and `docs/ipvgo-strategy.md`'s 2026-08-12 section. |
+| `ipvgo_logic.test.js` | local only, `node --test ipvgo_logic.test.js` | n/a | 23 tests against small hand-built boards (using the real `board[x][y]` convention): capture (single- and multi-stone chains), suicide prevention and its capture exception, the simplified ko rule (both a real ko shape and a negative control), simple-eye detection (interior/edge/corner cases), area scoring (including contested space and dead nodes), and — the ones that actually validate the algorithm choice, not just the plumbing — that `evaluateMove`/`chooseBestMove` reliably prefer a real capture over a self-atari move. |
 
-**Running live as of 2026-08-11.** Confirmed via the terminal-write path
-(there is no remote-exec RPC — the Remote API only supports file push/pull —
-so getting it running the first time needed Claude's CDP-driven terminal
-write, same technique proven for `hacking/backdoor.js`). First results were
-a near-total shutout pattern (1 win in 22 games) — **root-caused, not just
-"heuristic needs work"**: `findExpandMoves` had no liberty-safety check, so
-the bot's stones always merged into one no-separate-eyes network that a
-competent opponent could (and did) capture whole-board-at-once. Fixed by
-reusing `findDefendMoves`'s own safety check for expansion too. Full
-diagnosis (CDP-observed score collapse, move-log evidence) and the fix are
-in `docs/ipvgo-strategy.md`'s 2026-08-11 (later) section. **The fix is
-committed and tested but not yet re-verified live** — pushing it surfaced
-an unrelated daemon bug (see this file's `tools/bb_remote.py` section and
-`docs/claude-todo.md` for the unblock steps). Check current record any
-time via `cat ipvgo_status.json` or `python3 tools/bb_remote.py ctl-get
-/ipvgo_status.json --control-port 12527` (works once the daemon connection
-is stable again).
+**Running live as of 2026-08-11 (the prior heuristic version); the 2026-08-12
+Monte Carlo rewrite above is pushed to the game (`ctl-push`, confirmed via a
+round-trip `ctl-get`) but has not yet been started with `run
+ipvgo_player.js` in the live terminal** — see `docs/claude-todo.md`'s
+2026-08-12 section for the exact one-line next step. The 2026-08-11
+heuristic version did run live and collected real data (see
+`docs/ipvgo-strategy.md`'s 2026-08-11 (later) section for the
+single-network-collapse diagnosis and its fix, and the 2026-08-12 section
+for the last heuristic-era sample: 3 wins / 5 games, most recently a 45-1.5
+win, before this rewrite). Check current record any time via `cat
+ipvgo_status.json` or `python3 tools/bb_remote.py ctl-get
+/ipvgo_status.json --control-port 12527`.
 
 **Deliberately never references `ns.go.cheat.*`** — that surface needs
 Source-File 14.2 (confirmed live this session Ken doesn't have it, and

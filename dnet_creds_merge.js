@@ -7,24 +7,32 @@
  * leave the store truncated. This folds the shards into dnet_creds.txt, newest
  * record per host wins, and reports which hosts are known.
  *
- * NOT YET RUN IN BITBURNER.
- *
  * Run this on home before re-seeding the net after a mass script death: the
  * merged dnet_creds.txt is what a fresh deployer carries out with it, and
  * every password in it turns a multi-second authenticate into a free
  * connectToSession.
  *
+ * Also writes the "credsMerge" section of dnet_status.json — total cracked
+ * count and a per-model breakdown, straight off the merged (deduplicated)
+ * dnet_creds.txt. This is the one genuinely network-wide number in that
+ * status file: unlike dnet_deploy.js's own "deployer" heartbeat (one
+ * roaming instance's partial view), this reads every shard that has ever
+ * reached home, so it's the real total as of whenever this last ran — not
+ * live, but not a guess either. Stale until this script is run again after
+ * new cracks land.
+ *
  * Args: --prune (delete shards after a successful merge), --quiet.
  *
- * Reads:  dnet_cred_*.txt shards, dnet_creds.txt
- * Writes: dnet_creds.txt
+ * Reads:  dnet_cred_*.txt shards, dnet_creds.txt, dnet_status.json (merged
+ *         into, not overwritten)
+ * Writes: dnet_creds.txt, dnet_status.json
  *
  * RAM estimate ~2.0GB: 1.6 base + ls 0.2 + getHostname 0.05 + rm 1.0 when
  * --prune is reachable. read/write are 0GB.
  *
  * @param {NS} ns
  */
-import { CREDS_FILE, SHARD_PREFIX, parseCreds } from "dnet_lib.js"
+import { CREDS_FILE, SHARD_PREFIX, mergeStatus, parseCreds } from "dnet_lib.js"
 
 export async function main(ns) {
   const flags = ns.flags([
@@ -67,6 +75,13 @@ export async function main(ns) {
     `dnet_creds_merge: ${hosts.length} host(s) known; ${shards.length} shard(s) read, ` +
       `${added} new, ${updated} rotated${flags.prune ? ", shards pruned" : ""}`
   )
+
+  const byModel = {}
+  for (const name of hosts) {
+    const model = merged[name].model || "unknown"
+    byModel[model] = (byModel[model] ?? 0) + 1
+  }
+  mergeStatus(ns, "credsMerge", { totalCracked: hosts.length, byModel })
 }
 
 export function autocomplete() {

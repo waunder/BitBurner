@@ -5,8 +5,25 @@ model solvers, `darknet-tactics.md` for the per-decision reasoning. This doc
 answers: what are we actually trying to get out of the darknet, in what order,
 and what has to be true before each step is worth taking.
 
-**Nothing in the darknet set has been run in Bitburner.** The roadmap below is
-built to make that the *first* thing that changes.
+**Update 2026-08-12: Phases 0-2 are now live and working.** `dnet_probe.js`
+confirmed the entry-point model exactly as predicted (`["darkweb"]`, nothing
+more — see the "Reconciled" note in `darknet-functions.md` for why the
+"Dark Net" UI tab showing far more than that is expected, not a
+contradiction). A fresh `dnet_deploy.js --once` run from `home` is live and,
+due to a found-but-low-risk bug in `spread()` (child copies don't inherit
+`--once` — see `darknet-functions.md`'s deployer section), has already
+cascaded into exactly the autonomous Phase-2 crawl this roadmap describes:
+12+ servers cracked across all four solved password models, zero failures,
+credentials shipped to `home` as shards. **Recommended next concrete step:
+run `dnet_creds_merge.js` on `home` now** to fold those shards into
+`dnet_creds.txt` — they exist only as loose per-host shards right now, and
+merging is what makes the "recovery after mass script death" design
+actually pay off if anything kills the running copies. Do **not** run
+anything that backdoors or `setStasisLink`s a server yet — nothing has hit a
+point in this net that clearly justifies spending 1 of the ~2-4 backdoor
+budget (tactics §2/§3), and the crawl itself costs zero instability. The
+paragraphs below are the original pre-live-run plan, kept as-is; where they
+predicted a number, it held.
 
 ---
 
@@ -117,7 +134,7 @@ because it should influence anything now.
 
 ## Roadmap
 
-### Phase 0 — Run `dnet_probe.js`. Nothing else, first.
+### Phase 0 — Run `dnet_probe.js`. Nothing else, first. **DONE 2026-08-12.**
 
 **This is the next real-world action, and everything below is blocked on it.**
 
@@ -149,9 +166,11 @@ hasn't been run yet, adding those fields to its print line — or running
 `dnet_deploy.js --once --quiet=false` instead, whose `describe()` dumps every
 field — is a strictly better use of the same click.
 
-### Phase 1 — Establish `darkweb` as the beachhead
+### Phase 1 — Establish `darkweb` as the beachhead. **DONE 2026-08-12.**
 
-Only after Phase 0 succeeds.
+Only after Phase 0 succeeds. `darkweb` was cracked (`""`, `ZeroLogon`, as
+predicted) and the deployer spread from it. `dnet_creds_merge.js` (step 3)
+has **not** been run yet — see the top-of-file update.
 
 1. `run dnet_deploy.js --once` **from home**. One pass, no loop: it cracks
    `darkweb`, ships the credential to `home`, copies itself and `dnet_lib.js`

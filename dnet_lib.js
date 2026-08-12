@@ -20,6 +20,7 @@
 export const CREDS_FILE = "dnet_creds.txt"
 export const SHARD_PREFIX = "dnet_cred_"
 export const SHARD_SUFFIX = ".txt"
+export const STATUS_FILE = "dnet_status.json"
 
 /** Response codes, copied from the game's DarknetResponseCodeType. */
 export const CODE = {
@@ -246,6 +247,56 @@ export function shipCred(ns, shard, destination = "home") {
     return ns.scp(shard, destination)
   } catch (err) {
     ns.print(`WARN shipCred ${shard} -> ${destination}: ${err}`)
+    return false
+  }
+}
+
+/**
+ * Update one top-level section of the shared status file without clobbering
+ * sections another script (or another roaming instance) wrote.
+ *
+ * Two different scripts write into STATUS_FILE (dnet_deploy.js's own
+ * heartbeat, dnet_creds_merge.js's merged totals), and many concurrent
+ * dnet_deploy.js instances may each hold a session on this file's target
+ * host. A blind `ns.write(file, ..., "w")` would let whichever writer runs
+ * last erase every other section. Read-merge-write at the JSON-object level
+ * keeps each writer's own key intact; last-writer-wins only within a single
+ * section, which is the correct behavior for a liveness heartbeat.
+ *
+ * Not safe against two writers racing on the exact same section within the
+ * same tick (no lock exists), but that only happens if two dnet_deploy.js
+ * instances are both mid-write to the same host's file in the same instant,
+ * which the 5s+ mutation floor between passes makes very unlikely. Good
+ * enough for a dashboard heartbeat; not a durability guarantee.
+ *
+ * @param {NS} ns
+ * @param {string} section - top-level key to set, e.g. "deployer" or "credsMerge"
+ * @param {object} patch - value to assign at that key (ts is added automatically if absent)
+ * @param {string} [file]
+ */
+export function mergeStatus(ns, section, patch, file = STATUS_FILE) {
+  let current = {}
+  try {
+    const raw = ns.read(file)
+    if (raw) current = JSON.parse(raw)
+  } catch (err) {
+    ns.print(`WARN mergeStatus: couldn't parse existing ${file}, overwriting: ${err}`)
+  }
+  current[section] = { ts: Date.now(), ...patch }
+  ns.write(file, JSON.stringify(current, null, 2), "w")
+  return current
+}
+
+/**
+ * Best-effort mirror of the status file to home, same pattern as shipCred.
+ * A no-op (and harmless) when already running on home.
+ */
+export function shipStatus(ns, destination = "home", file = STATUS_FILE) {
+  if (ns.getHostname() === destination) return true
+  try {
+    return ns.scp(file, destination)
+  } catch (err) {
+    ns.print(`WARN shipStatus ${file} -> ${destination}: ${err}`)
     return false
   }
 }

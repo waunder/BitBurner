@@ -790,6 +790,7 @@ PULL_FILES = [
     "mcp_target_state.json",
     "mcp_events.txt",
     "ipvgo_status.json",
+    "dnet_status.json",
 ]
 
 PULL_POLL_S = 2.0  # mirrors SYNC_POLL_S / mcp_supervisor.js's POLL_MS

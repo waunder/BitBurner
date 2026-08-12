@@ -10,10 +10,22 @@
  * per host (rather than assuming a fixed budget for N simultaneous
  * copies) is simpler and safer when nothing here is time-critical.
  *
- * Skips a host if its maxRam can't fit dnet_loot.js -- reported, not an
+ * Skips a host if its free RAM can't fit dnet_loot.js -- reported, not an
  * error. Waits for each copy to finish (isRunning poll, capped) before
  * moving on, since dnet_loot.js's own shard write needs to have happened
  * before dnet_loot_merge.js is worth running.
+ *
+ * Bug fixed 2026-08-12: originally checked
+ * `ns.dnet.getServerDetails(host).maxRam`, a field that does not exist on
+ * `DarknetServerDetails` (checked NetscriptDefinitions.d.ts directly --
+ * the interface has no maxRam/usedRam/freeRam field at all, only
+ * `blockedRam`, which is a different concept: RAM the server owner has
+ * blocked, reclaimable via memoryReallocation, not the host's exec
+ * capacity). Every "too little RAM" skip this reported was actually
+ * `undefined < lootRam`, always true -- it skipped every host
+ * unconditionally, regardless of real capacity. The correct check is the
+ * same one `mcp.js`/`dnet_deploy.js` use for any host, darknet or not:
+ * `ns.getServerMaxRam(host) - ns.getServerUsedRam(host)`.
  *
  * Args: --limit N (stop after N hosts, default: all), --wait-ms N
  * (per-host completion timeout, default 15000).
@@ -22,8 +34,8 @@
  * Writes: nothing directly -- each spawned dnet_loot.js writes its own
  *         shard (see that file)
  *
- * RAM estimate ~3.0GB: 1.6 base + scp 0.6 + exec 1.3 + getScriptRam 0.
- * getServerDetails is 0.1 (already counted via acquireSession's import).
+ * RAM estimate ~3.2GB: 1.6 base + scp 0.6 + exec 1.3 + getServerMaxRam 0.05
+ * + getServerUsedRam 0.05. getScriptRam is 0GB.
  *
  * @param {NS} ns
  */
@@ -60,9 +72,9 @@ export async function main(ns) {
       continue
     }
 
-    const details = ns.dnet.getServerDetails(host)
-    if ((details.maxRam ?? 0) < lootRam) {
-      ns.print(`SKIP ${host}: maxRam ${details.maxRam} < ${lootRam} needed`)
+    const freeRam = ns.getServerMaxRam(host) - ns.getServerUsedRam(host)
+    if (freeRam < lootRam) {
+      ns.print(`SKIP ${host}: free RAM ${freeRam} < ${lootRam} needed`)
       skippedRam++
       continue
     }

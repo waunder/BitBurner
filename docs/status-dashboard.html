@@ -484,7 +484,7 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">rebuilt 2026&#8209;08&#8209;12 12:08 PDT</div>
+    <div class="updated mono">rebuilt 2026&#8209;08&#8209;12 12:44 PDT</div>
   </div>
 
   <div class="glance">
@@ -531,36 +531,89 @@
     <div class="scoreboard">
       <div class="scoreboard-head">
         <span class="scoreboard-title">vs Netburners &middot; 7&times;7</span>
-        <span class="scoreboard-sub">as of 2026&#8209;08&#8209;12 12:08 PDT</span>
+        <span class="scoreboard-sub">as of 2026&#8209;08&#8209;12 12:44 PDT</span>
       </div>
 
       <div class="stat-row">
         <div class="stat-tile win-rate">
-          <span class="stat-value">39%</span>
+          <span class="stat-value">34%</span>
           <span class="stat-label">Win rate</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">33</span>
+          <span class="stat-value">58</span>
           <span class="stat-label">Games played</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">13</span>
+          <span class="stat-value">20</span>
           <span class="stat-label">Wins</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">20</span>
+          <span class="stat-value">38</span>
           <span class="stat-label">Losses</span>
         </div>
       </div>
 
       <div class="scoreboard-footnote">
-        Last game: <span class="last-result loss">&#9679; loss, 0&ndash;46.5</span> &mdash;
-        this number moves fast (dozens of games an hour) and jumps around a lot game-to-game, so
-        read it as a rough trend, not a precise score. It's the real number either way, pulled
-        automatically from the game rather than a snapshot someone remembered to check.
-        <strong>Rewards (favor from win streaks, the territory-held stat bonus) aren't tracked here
-        yet</strong> &mdash; only win/loss is currently recorded; that's the next thing to add, likely
-        alongside the stronger algorithm being built right now (below), so it isn't built twice.
+        Last game: <span class="last-result win">&#9679; WIN, 41&ndash;1.5</span> &mdash;
+        this is a lifetime cumulative number right now, so it's still dragged down by the old,
+        weaker version of the bot. A new version (a real algorithm, not hand-tuned rules) is being
+        built below, and it'll switch this to a rolling last-100-games rate once live &mdash; a much
+        more honest read on whether a change actually helped. Win/loss streak-and-favor rewards are
+        also being added in that same pass rather than built twice.
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="darknet-scoreboard-title">
+    <div class="block-head">
+      <h2 class="block-title" id="darknet-scoreboard-title">Dark Net Scoreboard</h2>
+      <span class="block-count mono">live</span>
+    </div>
+
+    <div class="scoreboard">
+      <div class="scoreboard-head">
+        <span class="scoreboard-title">Cracked servers, network&#8209;wide</span>
+        <span class="scoreboard-sub">as of 2026&#8209;08&#8209;12 12:44 PDT</span>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat-tile win-rate">
+          <span class="stat-value">55</span>
+          <span class="stat-label">Total cracked</span>
+        </div>
+        <div class="stat-tile">
+          <span class="stat-value">15</span>
+          <span class="stat-label">CloudBlare(tm)</span>
+        </div>
+        <div class="stat-tile">
+          <span class="stat-value">13</span>
+          <span class="stat-label">FreshInstall_1.0</span>
+        </div>
+        <div class="stat-tile">
+          <span class="stat-value">12</span>
+          <span class="stat-label">ZeroLogon</span>
+        </div>
+        <div class="stat-tile">
+          <span class="stat-value">10</span>
+          <span class="stat-label">DeskMemo_3.1</span>
+        </div>
+        <div class="stat-tile">
+          <span class="stat-value">4</span>
+          <span class="stat-label">Laika4</span>
+        </div>
+        <div class="stat-tile">
+          <span class="stat-value">1</span>
+          <span class="stat-label">PHP 5.4</span>
+        </div>
+      </div>
+
+      <div class="scoreboard-footnote">
+        Real, network&#8209;wide number &mdash; consolidated from every credential the roaming
+        crawler has found and saved, pulled automatically from the game. The crawler is left
+        running on its own (autonomous by design, costs nothing to let it keep going) and this
+        number should keep climbing on its own. Nothing here has been backdoored or pinned in
+        place &mdash; that has a real, one&#8209;way cost (see <code class="cite">docs/darknet-tactics.md</code>)
+        and hasn't been worth spending yet on anything seen so far.
       </div>
     </div>
   </section>

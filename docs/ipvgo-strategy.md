@@ -9,9 +9,13 @@ then build a first working version. Citation style matches
 **derived** (reasoned from the above, not directly observed), or
 **speculative**/**unknown**.
 
-**`ipvgo_player.js` is built and syntax-checked, but has not run in Bitburner
-yet as of this writing (2026-08-11).** See "Status" at the bottom for exactly
-what that means and the one concrete next step.
+**As of 2026-08-12: a heuristic version ran live and won 3/5 recent games
+(most recently 45-1.5), then was replaced with a real, cited algorithm
+(flat Monte Carlo — see the 2026-08-12 section below) targeting a 90% win
+rate. The rewrite is pushed live and syntax/unit-tested (23 tests,
+`node --test ipvgo_logic.test.js`) but has not yet been started with `run
+ipvgo_player.js` in the live terminal** — see "Status" at the bottom and
+`docs/claude-todo.md`'s 2026-08-12 section for the one concrete next step.
 
 ---
 
@@ -293,25 +297,49 @@ are `run ipvgo_player.js` in the live terminal to reload, then watching
    (later) section above for what that watching actually found.
 3. ~~Check faction membership before tuning opponent choice for favor.~~
    **Done** — Ken is in Netburners. **confirmed live.**
-4. **Get the self-atari fix above actually running and watch its effect on
-   the win rate.** Blocked on the daemon bug described above — see
-   `docs/claude-todo.md` for the exact unblock steps.
-5. **Add real eye-shape awareness** (`getChains()` +
-   `getControlledEmptyNodes()`, 16GB apiece) once the cheap fix's real
-   effect is known — the fix above stops the bot from volunteering weak
-   connections, but doesn't teach it to deliberately keep two separate
-   living groups, which is what actually prevents a whole-board capture in
-   real Go. Worth doing once there's a baseline win rate to compare against.
-6. **Add the documented smother/encircle move types** once 4-5 have
-   produced real win/loss data to know whether they're still worth it — the
-   in-game doc says capture+defend+expand alone already scores against most
-   opponents, so this stays a refinement, not a blocker.
-7. **Stat-multiplier bonuses accrue from territory held regardless of win/
-   loss** (see "Scoring and rewards") — worth eventually reading
-   `ns.getPlayer()`'s multiplier fields before/after a session of games to
-   confirm this is actually moving a number Ken cares about, the same
-   "don't restructure around an unvalidated hypothesis" discipline
-   `docs/darknet-strategy.md` used for the stock-access-key question.
+4. ~~Get the self-atari fix actually running and watch its effect on the win
+   rate.~~ **Done** — 3 wins / 5 games, most recently 45-1.5. Then
+   superseded by the Monte Carlo rewrite before a large-enough sample
+   accumulated under the heuristic alone.
+5. **Run the 2026-08-12 Monte Carlo rewrite live and measure a real sample
+   against the 90% target.** This is now the single most important next
+   step — everything above it is done, and item 6 below only matters if
+   this one falls short. Needs one `run ipvgo_player.js` in the live
+   terminal (already pushed; see `docs/claude-todo.md`'s 2026-08-12 section
+   for the exact remaining step) and then enough games for the number to
+   mean something — this doc's own standing discipline says not to declare
+   victory *or* failure off a handful of games.
+6. **If 90% isn't hit, the next lever is more playouts per move (currently
+   20) before reaching for a structurally different algorithm** — flat
+   Monte Carlo's accuracy scales with sample size, and the profiled timing
+   headroom (~150-300ms/move at 20 playouts, well under any tick-starving
+   threshold) suggests there's room to raise it substantially before
+   timing becomes the constraint. MCTS/UCT (reallocating playouts toward
+   promising moves instead of a fixed budget per candidate) is the
+   documented structural next step after that, per Coulom's paper cited
+   above.
+7. **Add real eye-shape awareness via `getChains()`/`getControlledEmptyNodes()`
+   is likely no longer the right next step** — the Monte Carlo rewrite
+   addresses the same underlying problem (groups dying because nothing
+   evaluates their survival) more generally, via actual simulated outcomes
+   rather than a hand-written shape rule. Revisit only if live results show
+   the bot still losing to whole-group captures despite Monte Carlo
+   evaluation, which would suggest playout count/quality, not missing eye
+   detection, is the bottleneck.
+8. **Add the documented smother/encircle move types** — largely superseded
+   by the Monte Carlo rewrite (a move that smothers/encircles well should
+   already show up as high-margin in simulation); revisit only if a
+   specific tactical pattern keeps losing games after 90%-target
+   measurement.
+9. **Stat-multiplier bonuses accrue from territory held regardless of win/
+   loss** (see "Scoring and rewards") — `bonusPercent`/`bonusDescription`
+   are now plumbed into `ipvgo_status.json` (see the 2026-08-12 section
+   above), but their exact live meaning still isn't independently
+   confirmed by reading a real value — a one-line check once the rewrite is
+   running live.
+10. **Once 90% is genuinely demonstrated** (this task's own explicit
+    ordering — not before), try a larger board via
+    `ns.go.resetBoardState(opponent, size)`.
 
 ## Where this genuinely might be wrong
 
@@ -358,9 +386,198 @@ are `run ipvgo_player.js` in the live terminal to reload, then watching
   liberty-safety check, letting the bot's stones merge into one
   no-separate-eyes network that dies all at once. Fixed by reusing
   `findDefendMoves`'s own safety check (`isSafeExtension`) for expansion
-  too. 16 new tests in `ipvgo_player.test.js`, all passing.
-- [ ] **Fix not yet re-verified against live games** — blocked on an
-  unrelated `tools/bb_remote.py` daemon bug (oversized-file disconnect) that
-  needs a process restart this session couldn't perform. See
-  `docs/claude-todo.md` for the exact unblock steps and what to check once
-  it's running again.
+  too. 16 tests at the time, all passing. (This heuristic and its tests
+  were superseded and removed by the 2026-08-12 Monte Carlo rewrite below —
+  kept here only as the historical record of what shipped and why.)
+- [x] **Fix re-verified against live games**, once the daemon bug was
+  unblocked: `ipvgo_status.json` showed 5 games / 3 wins under the
+  self-atari-fixed heuristic by the time the 2026-08-12 rewrite below
+  started, most recently a 45–1.5 win (vs. the pre-fix 1-in-22 record) —
+  real signal the fix worked, on a sample too small to call a rate. This is
+  the heuristic-era baseline the 2026-08-12 Monte Carlo rewrite below is
+  actually trying to beat.
+- [x] **2026-08-12: replaced the heuristic with a real, cited algorithm
+  (flat Monte Carlo) and a from-scratch local rules engine** — see the new
+  section immediately below for the full writeup. Pushed live
+  (`ctl-push`, round-trip-verified via `ctl-get`) but **not yet started
+  with `run ipvgo_player.js` in the live terminal** — see
+  `docs/claude-todo.md`'s 2026-08-12 section for the one remaining step.
+
+## 2026-08-12: flat Monte Carlo rewrite — real algorithm, cited, targeting 90%
+
+Ken's own words, relayed verbatim: **"find on the internet a good
+rudimentary go algorithm to implement. Goal, 90% win rate, then move up to
+a larger board."** This is a request for a *found*, published, citable
+algorithm — not another from-scratch heuristic derived from the game's own
+tutorial text (which is what both the original version and the 2026-08-11
+fix were). What follows is what was actually searched for, what was found,
+what got built, and — critically, since a good algorithm badly measured is
+indistinguishable from a bad one — what's actually confirmed vs. still
+pending.
+
+### What was searched for and found
+
+**source**, all via live web search this session:
+
+- **Bernd Bruegmann's GOBBLE (1993)** — the first program to use Monte
+  Carlo evaluation in Go. Its algorithm, per Bouzy & Helmstetter's own
+  historical account: to pick a move, play a large number of *almost
+  entirely random* games to completion from that move, score each one, and
+  average the scores — the move with the best average wins. Its *only*
+  domain-specific knowledge was forbidding a move that fills your own eye.
+  **source**: Bouzy & Helmstetter, "Developments on Monte-Carlo Go"
+  (https://helios2.mi.parisdescartes.fr/~bouzy/publications/acg10.pdf).
+- **Bouzy & Helmstetter's own Olga/Oleg programs (early 2000s)** — a
+  deliberately *simpler* Monte Carlo approach than Bruegmann's, cheap
+  enough to generate ~7000 random 9x9 games/sec on 2GHz-era hardware. This
+  is the concrete evidence that "flat" (no tree search) Monte Carlo Go is
+  genuinely implementable in a scripting language against small boards,
+  which is exactly this repo's situation (5/7/9/13, currently 7x7). Same
+  source as above.
+- **Rémi Coulom, "The Monte-Carlo Revolution in Go"**
+  (https://www.remi-coulom.fr/JFFoS/JFFoS.pdf) — corroborates the above and
+  discusses the "light" (pattern/capture-biased) playout refinement that
+  came later; used here to make an informed choice *not* to implement that
+  refinement this round (see "Playout policy" below).
+- **"Implementing the Game of Go, Part 1"**
+  (https://www.moderndescartes.com/essays/implementing_go/) — a
+  from-first-principles rules-implementation guide: flood-fill chain/
+  liberty discovery, capture-then-suicide-check ordering, a simple-ko-by-
+  single-capture detection rule, border-flood-fill area scoring. This is
+  the shape `ipvgo_logic.js`'s rules engine follows, cross-checked against
+  this doc's own transcription of Bitburner's actual rules text above.
+- **Wikipedia's "Two eyes"** (https://en.wikipedia.org/wiki/Two_eyes) and
+  Polgote's "Eyes and False Eyes in Go"
+  (https://polgote.com/blog/eyes-and-false-eyes-go/) — the standard
+  diagonal-based "true eye" heuristic used to keep the random playout
+  policy from filling in its own group's eye.
+
+This is exactly the "Monte Carlo Go / light random-playout evaluation"
+approach flagged as worth investigating in this task's own brief — real,
+published, predates deep learning, and well suited to small boards.
+Deliberately the *flat* version (no tree search / UCT) — see "Known
+limitations" below for why, and what the actual next step would be if this
+round's numbers justify it.
+
+### What got built
+
+All in `ipvgo_logic.js` (new — split out of `ipvgo_player.js` the same way
+`mcp_logic.js` split out of `mcp.js`, since this is now meaningfully more
+pure logic than a single file should carry):
+
+- **A from-scratch local Go rules engine**, run only against in-memory
+  board copies, never against the real game — `applyMoveFlat` (capture,
+  suicide prevention with the game's own "except when it captures"
+  exception, a simplified single-capture ko rule), `findChain` (flood-fill
+  chains/liberties), `scoreAreaFlat` (area scoring matching this doc's own
+  "Scoring and rewards" section above: one point per stone, one point per
+  empty point fully surrounded by one color, dead nodes never count).
+  Satisfies this task's own constraint that no hypothetical move may ever
+  be played for real via `ns.go.makeMove` — every simulation runs against a
+  local `Uint8Array` copy seeded once per turn from the real
+  `ns.go.getBoardState()`.
+- **`chooseBestMove`**: for every point the real game currently reports as
+  valid (`ns.go.analysis.getValidMoves()`), play it locally, then run
+  `NUM_PLAYOUTS` (20, tunable in `ipvgo_player.js`) random rollouts to
+  completion from the result and average the score margin. Play whichever
+  candidate has the best average margin. This is literally Gobble's own
+  algorithm, applied to Bitburner's IPvGO ruleset.
+- **Why this should be a real improvement, not just a different
+  heuristic**: the 2026-08-11 bug (a single no-eyes blob dying whole-board
+  at once) was a *life-and-death* failure — the old heuristic had no way to
+  evaluate whether a shape survives. Monte Carlo doesn't need a hand-written
+  rule for that: a move that leads to the whole group dying shows up
+  directly as a bad average score across the simulated continuations that
+  follow it, because those continuations are *actual simulated Go games*,
+  not a proxy heuristic. This is a more general fix than the specific
+  `isSafeExtension` patch, and does it without `getChains()`/
+  `getControlledEmptyNodes()` (16GB apiece) — arguably resolving open
+  question #5 below by a different, cheaper route than the one originally
+  planned.
+
+### Playout policy: simpler than first drafted, on purpose, after profiling
+
+The first draft added a capture-seeking bias to the random playout policy
+(the "light playout" refinement Coulom's paper describes as generally
+stronger than pure-uniform rollouts). Implementing it required enumerating
+every legal move each rollout step to know which ones captured something.
+**Profiling this on an empty 7x7 board found it took multiple *seconds* per
+move** (`chooseBestMove` at 10 playouts: 2.4s; at 20 playouts: 5.3s) —
+unacceptable given this task's own "don't starve the shared game/event
+loop" constraint, since move selection runs synchronously on the same
+single JS thread as the rest of the game and `mcp.js`.
+
+**Fix**: switched move selection inside playouts to rejection sampling (try
+random empty points, accept the first legal non-eye-filling one) instead of
+enumerating every point's legality every step. This cut the same benchmark
+to ~100-300ms at 10-40 playouts — roughly a 20-30x speedup — simply by
+needing ~1 legality check per accepted move instead of ~n. The tradeoff:
+implementing the capture bias efficiently under rejection sampling wasn't
+straightforward, so it was dropped rather than re-added at the cost of the
+same slowdown. The resulting playout policy — uniform random among
+non-eye-filling legal moves, nothing else — is actually a *closer* match to
+Bruegmann's original Gobble policy than the first draft was, so this
+counts as a fidelity improvement as much as a performance one. **derived +
+confirmed live (locally, via `node -e` profiling, not yet in the actual
+game)**: see `ipvgo_logic.js`'s own header for the full before/after story.
+
+### Known limitations (stated up front, not discovered by surprise later)
+
+- **Ko is a simplified single-capture rule, not full superko** — matters
+  only inside simulated playouts (used for move *evaluation*), since the
+  actual move submitted to the live game is always gated by
+  `ns.go.analysis.getValidMoves()`, the real authoritative check.
+- **Eye detection is a diagonal heuristic, not true life-and-death
+  analysis** — good enough to keep rollouts from self-destructing, not a
+  claim of correctness in unusual shapes.
+- **Flat Monte Carlo, not MCTS** — every candidate gets a fixed playout
+  budget; nothing reallocates simulation time to promising moves the way
+  UCT-based search does. This is a known, published limitation of the
+  original approach (Coulom's paper), not a bug — the documented next step
+  if this round's numbers justify further investment.
+- **No capture bias in the playout policy** (see above) — a deliberate
+  simplicity/speed tradeoff, closer to Gobble's original policy, not an
+  oversight.
+- **NUM_PLAYOUTS=20 and the resulting ~150-300ms/move timing are profiled
+  locally against synthetic boards, not yet measured against the actual
+  live game's real move cadence** — see "Status" below for the concrete
+  next step.
+
+### Status file additions (2026-08-12, at the coordinator's request)
+
+Two follow-up asks arrived from the coordinator while this rewrite was in
+progress, both folded into the same `ipvgo_status.json` schema pass rather
+than done as separate changes:
+
+1. **Streak/reward fields for the dashboard's "rewards" section**:
+   `winStreak`, `highestWinStreak`, `favorRep`, `bonusPercent`,
+   `bonusDescription`, `opponentLifetimeWins`, `opponentLifetimeLosses` —
+   all read from `ns.go.analysis.getStats()` (**official doc**,
+   `NetscriptDefinitions.d.ts`'s `SimpleOpponentStats` type, 0GB,
+   persistent across script restarts since it's the game's own record, not
+   this script's memory). **Not independently confirmed live**:
+   `bonusPercent`/`bonusDescription`'s exact real-world meaning (i.e.
+   whether it really is the "territory held" stat-multiplier bonus this
+   doc's "Scoring and rewards" section describes) hasn't been checked
+   against an actual live value yet — the .d.ts only documents the field
+   names as "stat boost"/"description of stat boost", and this is the only
+   stat-boost-shaped field anywhere in the Go API, so it's a reasonable
+   inference, not a confirmed fact. Flagged explicitly rather than
+   asserted, per the coordinator's own "say so rather than guessing"
+   instruction.
+2. **A rolling last-100-games win rate**, so the dashboard's win rate isn't
+   diluted by a previous (weaker) algorithm generation's results — Ken's
+   own reasoning, relayed by the coordinator, and directly relevant to this
+   task's own 90%-win-rate measurement too. Implemented as `recentGames`
+   (capped ring buffer, each `{won, blackScore, whiteScore, ts}`),
+   `recentGamesCount`, `recentWinRate`. Restart-safe (read back from the
+   existing file on startup) but scoped to an `algorithm` tag
+   (`"monte-carlo-flat-v1"` for this version) — a restart of the *same*
+   algorithm resumes the window, but this rewrite itself (and any future
+   one) starts its own window fresh rather than blending across algorithm
+   generations, which would reproduce the exact dilution problem the
+   window exists to solve. This also fixed a pre-existing, previously
+   unnoticed bug: `gamesPlayed`/`wins` used to reset to 0 on every script
+   restart (an in-memory-only counter, contrary to CLAUDE.md's own "keep
+   what matters in files" discipline) — now restart-safe via the same
+   mechanism.

@@ -738,12 +738,13 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 # Deliberately excludes: generated game-output files (mcp_status.json,
 # mcp_status_log.txt, mcp_target_state.json, mcp_events.txt, mcp_restart.txt,
 # mcp_dump_request.txt — these flow game-to-disk; pushing them back would
-# overwrite live game state with a stale local copy), mcp_logic.test.js (a
-# node --test file, never loaded by the game), mcp_status_parser.py/js
-# (local out-of-game tooling), and NetscriptDefinitions.d.ts/
-# NetscriptGlobals.d.ts/tsconfig.json/README.md (editor support, not
-# netscript). If a new live script is added to the repo, add it here in the
-# same commit — same rule docs/processes.md itself follows.
+# overwrite live game state with a stale local copy), mcp_logic.test.js and
+# ipvgo_logic.test.js (node --test files, never loaded by the game),
+# mcp_status_parser.py/js (local out-of-game tooling), and
+# NetscriptDefinitions.d.ts/NetscriptGlobals.d.ts/tsconfig.json/README.md
+# (editor support, not netscript). If a new live script is added to the
+# repo, add it here in the same commit — same rule docs/processes.md
+# itself follows.
 WATCHED_FILES = [
     "mcp.js",
     "mcp_logic.js",
@@ -765,6 +766,7 @@ WATCHED_FILES = [
     "dnet_creds_merge.js",
     "purchaseServer-8GB.js",
     "ipvgo_player.js",
+    "ipvgo_logic.js",
     "hacking/crawler.js",
     "hacking/worm.js",
     "scripts/copyScripts.js",

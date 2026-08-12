@@ -153,18 +153,109 @@ someone with permission to kill it restarts it with the same command.
   `docs/processes.md`'s IPvGO entry and this file's earlier IPvGO section
   for the exact steps already proven working this session for reading, if
   not yet for writing) or Ken typing the one line himself.
-- [ ] **Then watch a handful of games** (`cat ipvgo_status.json` or
+- [x] **Watched a handful of games** — `ipvgo_status.json` showed 5
+  games / 3 wins under the self-atari-fixed heuristic, most recently a
+  45-1.5 win (vs. the pre-fix 1-in-22 record). Real signal the fix worked,
+  too small a sample to call a rate — and superseded before a bigger sample
+  accumulated by the 2026-08-12 rewrite below (Ken's own next ask: a real
+  cited algorithm, not another heuristic patch).
+- [x] Eye-shape awareness (`getChains()`/`getControlledEmptyNodes()`) —
+  superseded, not built: the 2026-08-12 Monte Carlo rewrite addresses the
+  same problem (evaluating whether a group survives) more generally, via
+  actual simulated outcomes, without the extra 16GB+16GB RAM. See below.
+
+## 2026-08-12: Monte Carlo rewrite — real cited algorithm, targeting 90% win rate
+
+Ken's own ask, verbatim: **"find on the internet a good rudimentary go
+algorithm to implement. Goal, 90% win rate, then move up to a larger
+board."** Full research citations, algorithm design, and a documented
+performance rewrite are in `docs/ipvgo-strategy.md`'s new 2026-08-12
+section — this entry is the working-list version: what's done, what's
+pending, and the exact next action.
+
+**What shipped**: `ipvgo_logic.js` (new file) — a from-scratch local Go
+rules engine (flood-fill capture/liberties, suicide prevention, a
+simplified ko rule, area scoring, simple-eye detection) plus a flat Monte
+Carlo move-selection algorithm (`chooseBestMove`/`evaluateMove`/
+`runPlayout`), citing Bruegmann's GOBBLE (1993, the original Monte Carlo Go
+program) and Bouzy & Helmstetter's Olga/Oleg as the specific published
+precedent. `ipvgo_player.js` rewritten to be just the `ns.go` event loop
+around it. 23 tests in `ipvgo_logic.test.js` (capture, suicide, ko, eye
+detection, area scoring, and — the ones that validate the algorithm choice
+itself — that Monte Carlo evaluation reliably prefers a real capture over a
+self-atari move), all passing, plus the full repo suite (69 tests across
+`node --test *.test.js`). `ipvgo_player.test.js` (the old heuristic's
+tests) removed, mirroring the `mcp.js`/`mcp_logic.js` split's own
+convention of testing only the pure-logic file. `tools/bb_remote.py`'s
+`WATCHED_FILES` updated to include the new `ipvgo_logic.js`.
+
+**Performance finding worth knowing about**: the first draft added a
+capture-seeking bias to the random playout policy (a published refinement
+that's generally stronger than pure-uniform rollouts). Profiling on an
+empty 7x7 board found it took **multiple seconds per move** — a real risk
+to the "don't starve the shared game loop" constraint, since move selection
+runs synchronously on the same JS thread as the rest of the game and
+`mcp.js`. Switched to rejection sampling for playout move selection, which
+cut it to ~150-300ms/move at 10-40 playouts (a ~20-30x speedup) and, as a
+side effect, ended up closer to Gobble's original (simpler) policy anyway.
+Also RAM should be *lower* than before (~17.6GB arithmetic estimate vs. the
+old 34.45GB measured), since `getLiberties()` (16GB) is no longer called —
+all liberty/chain computation is local now. Neither number is confirmed
+live yet — see next steps.
+
+**Two follow-up asks arrived from the coordinator mid-task** (extending the
+status-dashboard's IPvGO scoreboard) and were folded into the same
+`ipvgo_status.json` schema pass:
+
+1. Reward/streak fields, from `ns.go.analysis.getStats()` (0GB, official
+   doc, persists across restarts): **`winStreak`, `highestWinStreak`,
+   `favorRep`, `bonusPercent`, `bonusDescription`, `opponentLifetimeWins`,
+   `opponentLifetimeLosses`**. Caveat flagged explicitly (not asserted as
+   fact): `bonusPercent`/`bonusDescription`'s exact live meaning (whether
+   it's really the territory-held stat-multiplier bonus) isn't
+   independently confirmed by reading an actual live value yet.
+2. A rolling last-100-games win rate, so the number isn't diluted by an
+   older/weaker algorithm generation: **`recentGames`** (capped array of
+   `{won, blackScore, whiteScore, ts}`), **`recentGamesCount`**,
+   **`recentWinRate`**. Restart-safe (reads the existing file back on
+   startup) but scoped to an `algorithm` tag (`"monte-carlo-flat-v1"`) so
+   this rewrite's own window starts fresh rather than blending in the old
+   heuristic's games — same dilution problem the window exists to solve.
+   Also fixed a pre-existing bug this surfaced: `gamesPlayed`/`wins` used
+   to reset to 0 on every script restart; now restart-safe via the same
+   read-back mechanism, still scoped per-algorithm.
+
+**Field names for the coordinator's dashboard wiring**, all top-level in
+`ipvgo_status.json`: `algorithm`, `gamesPlayed`, `wins`, `recentGames`,
+`recentGamesCount`, `recentWinRate`, `winStreak`, `highestWinStreak`,
+`favorRep`, `bonusPercent`, `bonusDescription`, `opponentLifetimeWins`,
+`opponentLifetimeLosses`, `opponent`, `size`, `lastResult` (now includes
+`avgMoveMs`/`maxMoveMs`).
+
+- [x] Researched and cited a real algorithm (see `docs/ipvgo-strategy.md`).
+- [x] Built and tested locally (23 + 69 tests passing, `node --check` clean
+  on both new/changed files).
+- [x] Pushed live: `python3 tools/bb_remote.py ctl-push /ipvgo_player.js
+  ipvgo_player.js --control-port 12527` and the same for `ipvgo_logic.js` —
+  both confirmed via a round-trip `ctl-get`.
+- [ ] **Needs a human/CDP-capable hand**: `run ipvgo_player.js` in the live
+  terminal to actually reload the script (self-supersede kills the old
+  heuristic-era copy automatically; there is no remote-exec RPC, only file
+  push/pull). This session had no CDP/browser connection to the actual
+  running game to do this itself.
+- [ ] **Then, measure a real sample** via `cat ipvgo_status.json` or
   `python3 tools/bb_remote.py ctl-get /ipvgo_status.json --control-port
-  12527` once pull is stable again) to confirm the fix actually moves the
-  win rate, not just that it looks correct on the unit tests — a change
-  that passes a hand-built 3x3 test case can still be wrong against the
-  real live scoring, per this repo's own standing discipline. Update this
-  section (or a new dated one) with the result either way.
-- [ ] Once eye-shape awareness is worth building (i.e., once this simpler
-  fix's real win-rate effect is known), the concrete next step is
-  `getChains()` + `getControlledEmptyNodes()` (16GB apiece) to let the bot
-  recognize when it needs a second separate group instead of always
-  merging into one, per `docs/ipvgo-strategy.md`'s "Open questions."
+  12527` — specifically `recentWinRate`/`recentGamesCount` once enough
+  games accumulate. Per this doc's own standing discipline: don't declare
+  90% hit or missed off a handful of games either way.
+- [ ] **If the sample is good enough and the rate is short of 90%**, the
+  first lever is raising `NUM_PLAYOUTS` (currently 20, in
+  `ipvgo_player.js`) before reaching for a structurally different
+  algorithm — see `docs/ipvgo-strategy.md`'s updated "Open questions" for
+  the reasoning and the MCTS/UCT next step after that.
+- [ ] **Only once 90% is genuinely demonstrated**, try a larger board via
+  `ns.go.resetBoardState(opponent, size)` — this task's own explicit
+  ordering, not a thing to rush into.
 
 ## 2026-08-11: found the real cause of the "farm may be stuck" flag — bucket/redeploy thrash
 

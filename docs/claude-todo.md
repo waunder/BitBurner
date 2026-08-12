@@ -1,5 +1,80 @@
 # Claude's working list
 
+## 2026-08-12: Darknet Phase 3 (loot) — inline fix live, swarm restarted, darkweb currently RAM-blocked (handoff, session ending)
+
+**Checkpointed mid-flight — Ken shutting the session down.** Read this
+section first if resuming darknet work. Short version: the code is right
+and pushed; getting past `darkweb`'s current RAM situation is the open
+question, not a bug to fix.
+
+**What's done, committed, and pushed to `origin/main`:**
+- `e74762f` — `dnet_deploy.js` now scp+execs `dnet_loot.js` onto every
+  neighbour the instant `acquireSession` confirms a session, instead of
+  relying on `dnet_loot_all.js`'s separate batch pass (which came back
+  0/103 looted live — most previously-cracked hosts are offline again by
+  the time a later pass checks). Fixed two RAM-fit bugs finding this:
+  `spread()` wasn't carrying `dnet_loot.js` onward at all, and the RAM
+  check used `getServerMaxRam` alone (total) instead of
+  `getServerMaxRam - getServerUsedRam` (free) — the second one is exactly
+  what's biting `darkweb` right now, see below.
+- `403228b` — Ken's own fix to `dnet_loot_all.js`'s RAM check (read a field,
+  `maxRam`, that doesn't exist on `DarknetServerDetails`).
+- `25f1501` — `dnet_killswarm.js` added: kills every `dnet_deploy.js`/
+  `dnet_loot.js` process on every known host (`dnet_creds.txt`) + `darkweb`,
+  so a fresh, fixed-code deployer can replace old-code occupants that
+  `preventDuplicates` would otherwise block forever (Bitburner doesn't
+  hot-reload). Hand-tested with mocked `ns` before running. **Run live**
+  (this session, via CDP terminal-write): touched 5/104 known hosts (99 were
+  already offline — consistent with the "cracked once ≠ online now" finding
+  above), killed 5 old processes, one of which was on `darkweb` itself.
+- `dnet_ramcheck.js` — new one-off diagnostic (`maxRam`/`usedRam`/`freeRam`/
+  `blockedRam` for a host + whether `dnet_loot.js` fits), added and
+  committed in this same checkpoint so it isn't a mystery untracked file.
+
+**What's mid-flight, exactly:** a fresh `dnet_deploy.js` (no `--once`, pid
+22200 as of this checkpoint) is running on `home` and looping normally —
+**this is a safe, intended, non-broken state**, not a half-killed one. It
+has *not* yet managed to spread onto `darkweb` or beyond: `dnet_status.json`
+showed `deployed: 0` across 11 consecutive passes, every one correctly
+reporting `lootSkipped.ram` (not silently failing — that's the point of the
+earlier fix). `dnet_ramcheck.js darkweb` confirmed why: `maxRam=16,
+usedRam=14.4, freeRam=1.6, blockedRam=0` — `dnet_loot.js` needs ~5.55GB and
+even a fresh `dnet_deploy.js` copy (~4.8GB) doesn't fit in 1.6GB free.
+
+**Real numbers as of this checkpoint (all still zero, honestly reported,
+not a bug):** `dnet_status.json`'s `"loot"` section: `hostsLooted: 0`,
+`totalRamFreed: 0`, `totalCachesOpened: 0`, `totalKarmaSpent: 0`.
+`credsMerge.totalCracked: 103` (unchanged by this session's work, that's
+from before). Only 5 of the 103+1 known hosts were reachable at all when
+`dnet_killswarm.js` ran — the darknet's continuous churn means most
+previously-cracked hosts are genuinely offline most of the time, which is
+also why `dnet_loot_all.js` never worked as a standalone batch tool.
+
+**Open question, not yet answered — this is the actual next step:** is
+`darkweb`'s 14.4GB "used" a fluctuating thing (background/simulated load
+that might free up on its own) or something durably stuck there? `blockedRam:
+0` rules out the "needs memoryReallocation" explanation. Killing the one
+old `dnet_deploy.js` process there (~4.8GB) did **not** bring `freeRam`
+above the ~1.6GB seen post-kill, which is a real, slightly uncomfortable
+finding worth sitting with rather than glossing over: it's possible
+`darkweb` simply doesn't have room for a resident script most of the time,
+and the old occupant that *was* there got lucky on timing when it first
+spread, back when free RAM happened to be higher. **Next concrete step:**
+re-run `run dnet_ramcheck.js darkweb` from `home` after some real time has
+passed to see if `usedRam` moved on its own; if it drops enough, the
+already-running fresh `dnet_deploy.js` on `home` will pick up the spread
+automatically on its next pass with no further action needed (it retries
+every pass, no `--once`). If it never drops, the next real question is
+where that 14.4GB is coming from — not guessed at here, deliberately, since
+that's exactly the kind of thing worth reading source for rather than
+speculating.
+
+**Live game state confirmed safe at handoff:** `mcp.js`, `ipvgo_player.js`,
+and the `bb_remote.py` daemon (port 12526/12527, connected) are all running
+normally, untouched by any of this. The darknet crawl is running (not
+stopped, not erroring) — it's just currently unable to spread past
+`darkweb` for a RAM reason it now correctly reports rather than hiding.
+
 ## 2026-08-11: IPvGO player built, needs one live run
 
 Ken asked to "put a man on the IPvGO game." Built as a new, separate

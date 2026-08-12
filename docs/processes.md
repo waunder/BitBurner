@@ -1148,6 +1148,36 @@ untouched while a daemon pinned to the old path reproduces the original bug
 and trips the alarm; a separate check covers the pull-side write-failure
 alarm the same way. Run with `python3 tools/bb_remote.py selftest`.
 
+**2026-08-11 (later): an oversized pull file was killing the whole
+connection, not just failing one `getFile` call.** Found while trying to
+push the `ipvgo_player.js` fix described in this file's IPvGO section:
+`mcp_status_log.txt` (a `PULL_FILES` entry, gitignored, and this doc's own
+"Generated files" section already warned it "must not grow without bound")
+crossed 1MB, `websockets.serve`'s default `max_size`. Every reconnect after
+that logged `SYNC: full resync done` (sometimes completing all 29 files,
+sometimes not, depending on how the concurrent push-resync and pull-full-pass
+tasks happened to interleave on the same socket) immediately followed by
+`ConnectionClosedError: sent 1009 (message too big)... exceeds limit of
+1048576 bytes` the instant the pull loop reached that one file — tearing
+down the *entire* connection, not just failing that `getFile`, then looping:
+reconnect → partial push → die on pull → reconnect again, forever. This is
+the same class of failure `docs/claude-todo.md`'s repo-move incident above
+was, just in the opposite place — one bad input killing a shared resource
+instead of degrading gracefully.
+
+**Fixed in code:** `RemoteApiServer.start()` now passes a `WS_MAX_SIZE`
+(20MB, arbitrary headroom) to `websockets.serve`, so one large file no
+longer takes the whole socket down. **Not yet live** — Python doesn't
+hot-reload any more than Bitburner does, and the already-running daemon
+process (started before this fix existed) needs a restart to pick it up.
+That restart could not happen the session this was found in (the sandbox's
+own auto-mode classifier blocks process-kill commands) — see
+`docs/claude-todo.md`'s matching entry for the exact unblock steps once a
+session/person with permission to kill the process is available. The
+underlying growth problem (`mcp_status_log.txt` itself growing past 1MB) is
+still unaddressed and will recur — this fix only stops one oversized file
+from taking the daemon down with it, it doesn't cap the file's growth.
+
 ---
 
 ## Darknet (`ns.dnet`)
@@ -1213,22 +1243,28 @@ reference (with RAM costs, gating, and citations to the in-game
 documentation itself), the reward-structure writeup, and the move-priority
 design all live in `docs/ipvgo-strategy.md` — this entry is just the map.
 
-| File | Runs on | RAM (est., not yet measured) | What it does |
+| File | Runs on | RAM | What it does |
 | --- | --- | --- | --- |
 | `ipvgo_player.js` | any host with `ns.go` access (the API is not tied to a specific server) | 34.45GB, confirmed live via its own startup `ns.tprint` (arithmetic estimate in the strategy doc was ~33.6GB) | Plays the current IPvGO subnet forever: capture > defend > expand > random-with-airspace > anything-valid > pass, self-supersedes, never discards an in-progress game, starts a fresh one (default `Netburners` 7x7 — a placeholder, not tuned) once the current one ends. Writes `ipvgo_status.json` (gamesPlayed, wins, opponent, size, lastResult) on startup and after every game — in `WATCHED_FILES`/`PULL_FILES` both, so it pushes/pulls automatically like every other script/status file. |
+| `ipvgo_player.test.js` | local only, `node --test ipvgo_player.test.js` | n/a | Tests for the pure board-logic functions in `ipvgo_player.js` (`findCaptureMoves`, `findDefendMoves`, `isSafeExtension`, `findExpandMoves`, `pickMove`), which export themselves for this purpose (harmless extra exports — Bitburner only ever calls `main`). Kept in the same file as the logic (not split into a separate `ipvgo_logic.js` the way `mcp.js`/`mcp_logic.js` split) so it stays on the existing `WATCHED_FILES` entry — see `docs/claude-todo.md`'s 2026-08-11 diagnosis entry for why a second watched file wasn't practical that session. |
 
 **Running live as of 2026-08-11.** Confirmed via the terminal-write path
 (there is no remote-exec RPC — the Remote API only supports file push/pull —
 so getting it running the first time needed Claude's CDP-driven terminal
-write, same technique proven for `hacking/backdoor.js`). First results:
-lost the in-progress game it inherited (already a lost position when
-picked up), then started losing fresh 7x7 games against Netburners too —
-expected for a capture/defend/expand heuristic with no komi/territory
-awareness yet, see `docs/ipvgo-strategy.md` for the actual reward
-mechanics and what a stronger version would need. Check current record any
+write, same technique proven for `hacking/backdoor.js`). First results were
+a near-total shutout pattern (1 win in 22 games) — **root-caused, not just
+"heuristic needs work"**: `findExpandMoves` had no liberty-safety check, so
+the bot's stones always merged into one no-separate-eyes network that a
+competent opponent could (and did) capture whole-board-at-once. Fixed by
+reusing `findDefendMoves`'s own safety check for expansion too. Full
+diagnosis (CDP-observed score collapse, move-log evidence) and the fix are
+in `docs/ipvgo-strategy.md`'s 2026-08-11 (later) section. **The fix is
+committed and tested but not yet re-verified live** — pushing it surfaced
+an unrelated daemon bug (see this file's `tools/bb_remote.py` section and
+`docs/claude-todo.md` for the unblock steps). Check current record any
 time via `cat ipvgo_status.json` or `python3 tools/bb_remote.py ctl-get
-/ipvgo_status.json --control-port 12527` (works even before the next
-daemon restart picks up automatic pulling).
+/ipvgo_status.json --control-port 12527` (works once the daemon connection
+is stable again).
 
 **Deliberately never references `ns.go.cheat.*`** — that surface needs
 Source-File 14.2 (confirmed live this session Ken doesn't have it, and

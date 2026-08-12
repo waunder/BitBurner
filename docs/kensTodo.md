@@ -10,19 +10,28 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
-- [ ] **Reconnect the Remote API — currently Offline.** Confirmed live
-  2026-08-11 (both over CDP, the in-game "Remote API status" badge reads
-  "Remote API: Offline", and `tools/bb_remote.py`'s daemon on port 12526
-  independently confirms `connected: false`; `bb_remote_events.log` shows
-  the drop at 15:10:17, `close_code=1006`, no reconnect since). This is the
-  same "the game never auto-reconnects, regardless of the Reconnection
-  delay setting" limitation already documented in
-  `docs/processes.md`/`docs/claude-todo.md` — one click needed: **Options →
-  Remote API → host `localhost`, port `12526` → Connect.** Blocks pushing
-  `ipvgo_player.js` (see `docs/claude-todo.md`'s IPvGO entry), the
-  tested-and-ready `hostNeedsRedeploy`/forceRebalance fix (same file, "found
-  the real cause of the 'farm may be stuck' flag" entry), and any other
-  routine sync until it's done.
+- [ ] **Restart the `tools/bb_remote.py daemon` process — it's stuck
+  crash-looping.** Found and root-caused 2026-08-11 (later session):
+  `mcp_status_log.txt` grew past 1MB, which trips the websocket library's
+  default message-size limit and kills the **entire** connection (not just
+  that one file read) every time the daemon tries to pull it — so every
+  reconnect now goes reconnect → partial push → crash on that one file →
+  reconnect again, forever. The fix is already committed
+  (`tools/bb_remote.py` now allows 20MB messages), but a running Python
+  process doesn't pick up a code change without being restarted, and this
+  session's sandbox blocked the `kill` command needed to do that. **What's
+  needed: kill the existing daemon process and run this again from the repo
+  root:** `python3 tools/bb_remote.py daemon --port 12526 --control-port
+  12527`. (The game's own Options → Remote API → Connect button doesn't
+  need to be touched separately — the daemon does that handshake on its
+  own once it's listening and the game reconnects, or one Connect click
+  will do it if the game doesn't auto-retry.) Once it's up, confirm with
+  `python3 tools/bb_remote.py ctl-status --control-port 12527` showing
+  `"connected": true` and no repeated `DISCONNECTED` lines appearing in
+  `tools/bb_remote_events.log` afterward. This blocks getting the
+  already-tested `ipvgo_player.js` self-atari fix running live (see
+  `docs/claude-todo.md`'s IPvGO diagnosis entry) and any other routine sync
+  until it's done.
 
 ## Done (kept for reference)
 

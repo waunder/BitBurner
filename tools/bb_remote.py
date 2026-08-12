@@ -267,6 +267,20 @@ DEFAULT_PORT = 12525
 DEFAULT_SERVER = "home"
 CONNECT_TIMEOUT_S = 60
 REQUEST_TIMEOUT_S = 15
+# websockets' own default max_size (2**20 = 1048576 bytes) killed the whole
+# connection outright the moment a single getFile response exceeded it --
+# found live 2026-08-11 when mcp_status_log.txt (a PULL_FILES entry that
+# grows without bound per CLAUDE.md's own warning on that file) crossed 1MB:
+# every reconnect did a full push resync successfully, then died with
+# "ConnectionClosedError: sent 1009 (message too big)... exceeds limit of
+# 1048576 bytes" the instant the pull loop tried to fetch that one file,
+# looping forever (reconnect -> push -> die on pull -> reconnect...) and
+# never reaching ipvgo_status.json (later in PULL_FILES) or leaving the
+# connection open long enough for any ctl-* command to land. One oversized
+# file should fail that one getFile call, not tear down the socket -- see
+# the pull loop's own per-file try/except for the *intended* failure mode.
+# 20MB is arbitrary headroom, not a tuned number.
+WS_MAX_SIZE = 20 * 1024 * 1024
 DEFAULT_LOG_FILE = Path(__file__).resolve().parent / "bb_remote_events.log"
 DEFAULT_WATCH_DURATION_S = 180.0
 
@@ -334,7 +348,7 @@ class RemoteApiServer:
 
     async def start(self):
         self._server = await websockets.serve(
-            self._on_connection, self.host, self.port
+            self._on_connection, self.host, self.port, max_size=WS_MAX_SIZE
         )
         _log(f"LISTENING on {self.host}:{self.port}")
 

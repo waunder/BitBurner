@@ -55,11 +55,11 @@
 // is never one move from having zero empty-node connections" — exclude
 // points with even x AND even y from the lowest-priority random-move tier.
 // Sourced directly from the in-game IPvGO documentation's getRandomMove().
-function isReservedSpace(x, y) {
+export function isReservedSpace(x, y) {
   return x % 2 === 0 && y % 2 === 0
 }
 
-function neighbors(x, y) {
+export function neighbors(x, y) {
   return [
     [x + 1, y],
     [x - 1, y],
@@ -68,14 +68,14 @@ function neighbors(x, y) {
   ]
 }
 
-function pointAt(board, x, y) {
+export function pointAt(board, x, y) {
   if (x < 0 || x >= board.length) return undefined
   const col = board[x]
   if (y < 0 || y >= col.length) return undefined
   return col[y]
 }
 
-function countEmptyNeighbors(board, x, y) {
+export function countEmptyNeighbors(board, x, y) {
   let count = 0
   for (const [nx, ny] of neighbors(x, y)) {
     if (pointAt(board, nx, ny) === ".") count++
@@ -83,9 +83,26 @@ function countEmptyNeighbors(board, x, y) {
   return count
 }
 
+// Shared safety check, extracted 2026-08-11 from what was originally just
+// findDefendMoves' inline logic (the in-game doc's own "is this defense
+// instantly recapturable" test: the new point needs two+ empty neighbors of
+// its own, or a connection to a *different* friendly chain with 3+
+// liberties already). Now also used by findExpandMoves — see the comment
+// there for why: the doc only specifies this check for defending an
+// already-atari'd chain, but nothing analogous ever guarded ordinary
+// expansion, and that gap is what let the bot walk its own single big
+// network down to zero liberties in one shot. Same math, two call sites.
+export function isSafeExtension(board, liberties, x, y) {
+  if (countEmptyNeighbors(board, x, y) >= 2) return true
+  for (const [nx, ny] of neighbors(x, y)) {
+    if (pointAt(board, nx, ny) === "X" && (liberties[nx]?.[ny] ?? 0) >= 3) return true
+  }
+  return false
+}
+
 // Any valid move adjacent to an opponent ("O") chain with exactly one
 // liberty left captures and removes that whole chain — always worth taking.
-function findCaptureMoves(board, validMoves, liberties) {
+export function findCaptureMoves(board, validMoves, liberties) {
   const moves = []
   for (let x = 0; x < board.length; x++) {
     for (let y = 0; y < board[x].length; y++) {
@@ -107,7 +124,7 @@ function findCaptureMoves(board, validMoves, liberties) {
 // of its own, or it also touches a different friendly chain with 3+
 // liberties already). Same safety check the in-game doc gives for this move
 // type.
-function findDefendMoves(board, validMoves, liberties) {
+export function findDefendMoves(board, validMoves, liberties) {
   const moves = []
   for (let x = 0; x < board.length; x++) {
     for (let y = 0; y < board[x].length; y++) {
@@ -120,17 +137,7 @@ function findDefendMoves(board, validMoves, liberties) {
         }
       }
       if (!threatened) continue
-
-      let safe = countEmptyNeighbors(board, x, y) >= 2
-      if (!safe) {
-        for (const [nx, ny] of neighbors(x, y)) {
-          if (pointAt(board, nx, ny) === "X" && (liberties[nx]?.[ny] ?? 0) >= 3) {
-            safe = true
-            break
-          }
-        }
-      }
-      if (safe) moves.push([x, y])
+      if (isSafeExtension(board, liberties, x, y)) moves.push([x, y])
     }
   }
   return moves
@@ -139,24 +146,55 @@ function findDefendMoves(board, validMoves, liberties) {
 // Any valid, non-reserved move touching a friendly chain grows it — the
 // in-game doc's "network expansion" step, the first real improvement over
 // pure random play.
-function findExpandMoves(board, validMoves) {
-  const moves = []
+//
+// Fixed 2026-08-11: this used to accept ANY move that touched a friendly
+// chain, with no liberty check at all — unlike findDefendMoves, which only
+// fires once a chain is already down to 1 liberty. Live games watched over
+// CDP this session showed the actual failure shape this produced: black
+// would climb to a solid mid-game lead (e.g. 29-18.5 on a 7x7), then
+// collapse to near-zero within the same game. The reason: because "expand"
+// always joins the *nearest* friendly stone with no regard for the
+// resulting shape, every one of the bot's own groups merges into one
+// single connected network with one shared liberty count and no separate
+// eye shapes (getChains()/getControlledEmptyNodes() were never consulted,
+// so the bot has no concept of "two eyes" at all — see
+// docs/ipvgo-strategy.md). A single blob with no eyes is unconditionally
+// capturable once a competent-enough opponent finds the vital point, and
+// when it goes, EVERY stone on the board goes with it in one move — which
+// matches the 0-vs-49.5-style shutouts in ipvgo_status.json exactly.
+// Building real eye-shape awareness is future work (needs getChains/
+// getControlledEmptyNodes, 16GB more RAM apiece — see the strategy doc's
+// next steps). This fix is the cheap, no-extra-RAM half of that: reuse the
+// exact same "is this extension instantly recapturable" check the in-game
+// doc already specifies for *defending* an atari'd chain, and apply it
+// here too, so expansion at least stops volunteering thin, easily-cut
+// connections. Safe extensions are preferred; if none exist, this still
+// falls back to the same unsafe candidates as before (nothing is lost,
+// just deprioritized below "random" in effect, since pickMove tries
+// findExpandMoves before findRandomMoves regardless).
+export function findExpandMoves(board, validMoves, liberties) {
+  const safe = []
+  const risky = []
   for (let x = 0; x < board.length; x++) {
     for (let y = 0; y < board[x].length; y++) {
       if (!validMoves[x]?.[y]) continue
       if (isReservedSpace(x, y)) continue
+      let touchesFriendly = false
       for (const [nx, ny] of neighbors(x, y)) {
         if (pointAt(board, nx, ny) === "X") {
-          moves.push([x, y])
+          touchesFriendly = true
           break
         }
       }
+      if (!touchesFriendly) continue
+      if (isSafeExtension(board, liberties, x, y)) safe.push([x, y])
+      else risky.push([x, y])
     }
   }
-  return moves
+  return safe.length ? safe : risky
 }
 
-function findRandomMoves(board, validMoves, allowReserved) {
+export function findRandomMoves(board, validMoves, allowReserved) {
   const moves = []
   for (let x = 0; x < board.length; x++) {
     for (let y = 0; y < board[x].length; y++) {
@@ -168,21 +206,21 @@ function findRandomMoves(board, validMoves, allowReserved) {
   return moves
 }
 
-function pickRandom(moves) {
+export function pickRandom(moves) {
   return moves[Math.floor(Math.random() * moves.length)]
 }
 
 // Priority order per docs/ipvgo-strategy.md, sourced from the in-game
 // IPvGO documentation: capture > defend > expand > random-with-airspace >
 // anything valid > pass.
-function pickMove(board, validMoves, liberties) {
+export function pickMove(board, validMoves, liberties) {
   const capture = findCaptureMoves(board, validMoves, liberties)
   if (capture.length) return { move: pickRandom(capture), kind: "capture" }
 
   const defend = findDefendMoves(board, validMoves, liberties)
   if (defend.length) return { move: pickRandom(defend), kind: "defend" }
 
-  const expand = findExpandMoves(board, validMoves)
+  const expand = findExpandMoves(board, validMoves, liberties)
   if (expand.length) return { move: pickRandom(expand), kind: "expand" }
 
   const random = findRandomMoves(board, validMoves, false)

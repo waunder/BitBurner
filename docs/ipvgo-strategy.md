@@ -213,30 +213,100 @@ after any such change, don't just re-add to this estimate by hand.
 
 ---
 
+## 2026-08-11 (later): why the first ~22 games were 1 win, and the fix
+
+Ken asked directly whether anyone was actually watching/revising IPvGO
+results. First live run happened earlier the same day (see "Status" below);
+by the time this follow-up investigation started, `ipvgo_status.json` showed
+**1 win in 22 games**, several near-total shutouts (0 vs 49.5, 2 vs 45.5 —
+on a 7x7 board with only 49 total points). Investigated per this task's own
+priority order: verify scoring/color assumptions first, then look for an
+actual logic bug, before assuming the heuristic just needs to be smarter.
+
+**Scoring interpretation and color assignment: both confirmed correct, not
+the bug.** Read the live IPvGO Subnet page directly over CDP
+(`document.body.innerText` after clicking the nav item — no game state
+touched, purely observational) several times across one game, and compared
+its own `Score: Black: N White: M` line against `ns.go.getGameState()`'s
+`blackScore`/`whiteScore` as written to `ipvgo_status.json` — they match
+exactly. Player color stayed Black throughout, never flipped. **confirmed
+live.** Also settled the open faction-membership question from "Open
+questions" below: Ken **is** a member of Netburners (112.491 favor via the
+Factions page, read live over CDP), so the two-wins-streak favor payout
+against the current default opponent is real, not moot.
+
+**What was actually wrong, found by watching a game evolve, not just its
+final score:** polled the live board repeatedly (~6-10s apart) across one
+game and saw Black's score go 23 → 29 → 13 → 6 → 2 while White climbed
+steadily to 45.5 — a solid mid-game lead (Black *ahead* 29-18.5 at one
+point) collapsing to a near-total shutout within that same game, not a slow
+loss. Pulled the script's own move log via the in-game tail window (Active
+Scripts → ipvgo_player.js → LOG, read over CDP) to see why: `findExpandMoves`
+dominates the middle of every game (capture/defend fire rarely — most
+turns fall through to expand), and it had **zero liberty-safety checking**,
+unlike `findDefendMoves`. It accepted any move touching *any* friendly
+stone regardless of the resulting shape. The consequence: the bot's stones
+all merge into one single connected network sharing one liberty pool, with
+no separate eye shapes — exactly the "eyes" gap this doc's own next-steps
+list already named as unbuilt. A single blob with no eyes is
+unconditionally capturable once an opponent finds the vital point, and the
+*entire board* dies in one move when it goes — matching the shutout scores
+in `ipvgo_status.json` exactly. **confirmed live** (the CDP score trace and
+move log) + **derived** (the single-network causal mechanism — reasoned
+from the move log and the game's documented capture rules, not directly
+observed as a single board-state diff at the moment of collapse).
+
+**Fix applied**: extracted `findDefendMoves`'s existing "is this extension
+instantly recapturable" safety check (2+ empty neighbors of its own, or a
+link to a *different* friendly chain with 3+ liberties — the in-game doc's
+own logic, previously only used for defending an already-atari'd chain)
+into a shared `isSafeExtension` helper, and now also apply it to
+`findExpandMoves`: safe extensions are preferred; a risky one is only
+played if nothing safer touches a friendly chain at all (so nothing is lost
+versus before — a risky move that's the *only* candidate still gets played,
+just deprioritized when a safer alternative exists). This is the
+no-extra-RAM half of "give the bot some life-and-death sense" — it does
+**not** build real eye-shape awareness (still needs `getChains()` /
+`getControlledEmptyNodes()`, 16GB apiece, unbuilt — see "Open questions"
+below), but it stops the bot from *volunteering* the thin, easily-cut
+connections that make a one-move total collapse likely in the first place.
+Covered by 16 new tests in `ipvgo_player.test.js` (`node --test
+ipvgo_player.test.js`) against small hand-built boards using the real
+`board[x][y]` convention — all pass, as does the full repo suite (46 tests).
+
+**Not yet re-verified live** — see `docs/claude-todo.md`'s matching
+2026-08-11 entry for why: pushing the fix surfaced a separate, unrelated,
+already-live bug in `tools/bb_remote.py` (an oversized `mcp_status_log.txt`
+tripping the websocket library's default 1MB message-size limit and killing
+the whole daemon connection on every reconnect). Fixed in code
+(`max_size=20MB` on the server), but needs the daemon *process* restarted
+to take effect, which this session could not do (process-kill blocked by
+the sandbox). Once that's unblocked, the already-committed fix pushes
+automatically (it's already in `WATCHED_FILES`) — the only remaining steps
+are `run ipvgo_player.js` in the live terminal to reload, then watching
+`ipvgo_status.json` for a real change in the win rate / shutout frequency.
+
 ## Open questions / next steps, in the order they're actually worth doing
 
-1. **Get it running live, once.** Nothing here has executed inside
-   Bitburner yet — `node --check` only confirms syntax. Needs
-   `ctl-push /ipvgo_player.js ipvgo_player.js` (routine, Claude can do this
-   any time) and then one `run ipvgo_player.js` in the live terminal.
-   Per this task's own instructions, that terminal-write step is being
-   handed to the parent conversation rather than reimplemented independently
-   here — see `docs/claude-todo.md`'s IPvGO entry for the exact command.
-2. **Watch the first few games' `tprint` output** (via CDP tail read, or the
-   terminal scrollback directly) to confirm the RAM figure, confirm moves
-   are actually landing (no silently-caught errors), and see the real
-   win/loss shape against whatever the fresh-subnet default ends up playing.
-3. **Check faction membership before tuning opponent choice for favor.**
-   The 500-rep-on-two-wins-in-a-row payout only applies to factions Ken is
-   already a member of (see "Scoring and rewards" above) — `"Netburners"`
-   may or may not even be one of them. Worth one `ns.getPlayer().factions`
-   check before spending any thought on opponent selection.
-4. **Add the documented smother/encircle/"eyes" move types** once steps 1–3
-   have produced real win/loss data to know whether they're actually needed
-   — the in-game doc is explicit that capture+defend+expand alone already
-   scores points against most opponents, so this is a refinement, not a
-   blocker.
-5. **Stat-multiplier bonuses accrue from territory held regardless of win/
+1. ~~Get it running live, once.~~ **Done** — see "Status" below.
+2. ~~Watch the first few games.~~ **Done, then some** — see the 2026-08-11
+   (later) section above for what that watching actually found.
+3. ~~Check faction membership before tuning opponent choice for favor.~~
+   **Done** — Ken is in Netburners. **confirmed live.**
+4. **Get the self-atari fix above actually running and watch its effect on
+   the win rate.** Blocked on the daemon bug described above — see
+   `docs/claude-todo.md` for the exact unblock steps.
+5. **Add real eye-shape awareness** (`getChains()` +
+   `getControlledEmptyNodes()`, 16GB apiece) once the cheap fix's real
+   effect is known — the fix above stops the bot from volunteering weak
+   connections, but doesn't teach it to deliberately keep two separate
+   living groups, which is what actually prevents a whole-board capture in
+   real Go. Worth doing once there's a baseline win rate to compare against.
+6. **Add the documented smother/encircle move types** once 4-5 have
+   produced real win/loss data to know whether they're still worth it — the
+   in-game doc says capture+defend+expand alone already scores against most
+   opponents, so this stays a refinement, not a blocker.
+7. **Stat-multiplier bonuses accrue from territory held regardless of win/
    loss** (see "Scoring and rewards") — worth eventually reading
    `ns.getPlayer()`'s multiplier fields before/after a session of games to
    confirm this is actually moving a number Ken cares about, the same
@@ -249,14 +319,21 @@ after any such change, don't just re-add to this estimate by hand.
   here has actually compared win rates across opponents. It's the opponent
   of the subnet that happened to already be live, kept as the default out of
   convenience, not evidence.
-- **The defend-move safety check is a direct transcription of the in-game
+- **The defend/expand safety check is a direct transcription of the in-game
   doc's own logic, not independently verified against edge cases** — e.g. it
   doesn't check whether the "different friendly chain" it's connecting to
-  is actually still there after superko considerations. Real games will be
-  the actual test.
-- **RAM is arithmetic, not measured**, flagged twice above deliberately —
-  this repo's specific prior experience is that estimates and Bitburner's
-  actual static analysis can disagree.
+  is actually still there after superko considerations. It's also a
+  heuristic, not real life-and-death analysis — it can still be wrong about
+  whether a shape is actually safe in cases the in-game doc's simple rule
+  doesn't cover. Real games are the actual test, and the live re-verification
+  of this exact fix is still pending (see above).
+- **RAM is now measured, not arithmetic** — 34.45GB confirmed via the
+  script's own startup `ns.tprint`, superseding the ~33.6GB estimate below.
+- **The single-network collapse mechanism is derived, not directly
+  observed as a board-state diff** — the CDP score trace (29→13→6→2) and
+  the move log strongly support it, and it matches the game's documented
+  capture rules exactly, but no single board state was captured at the
+  literal moment of a whole-network capture this session.
 
 ## Status
 
@@ -272,9 +349,18 @@ after any such change, don't just re-add to this estimate by hand.
   expand > random-with-airspace > anything-valid > pass, self-supersede, and
   a defensive Go-API-availability check.
 - [x] `node --check ipvgo_player.js` passes.
-- [ ] **Not yet pushed into the game or run.** Next concrete step:
-  `ctl-push`, then one `run ipvgo_player.js` — see `docs/claude-todo.md`.
-- [ ] RAM not yet empirically confirmed (arithmetic estimate only, see
-  above).
-- [ ] No live win/loss data yet — everything under "Open questions" above is
-  blocked on the first live run.
+- [x] **Pushed and run live.** RAM confirmed at 34.45GB via its own startup
+  `ns.tprint`.
+- [x] Live win/loss data collected: 1 win in 22 games before this
+  investigation, several shutout-shaped losses — see the 2026-08-11 (later)
+  section above for the diagnosis and fix.
+- [x] Root-caused the shutout pattern: `findExpandMoves` had no
+  liberty-safety check, letting the bot's stones merge into one
+  no-separate-eyes network that dies all at once. Fixed by reusing
+  `findDefendMoves`'s own safety check (`isSafeExtension`) for expansion
+  too. 16 new tests in `ipvgo_player.test.js`, all passing.
+- [ ] **Fix not yet re-verified against live games** — blocked on an
+  unrelated `tools/bb_remote.py` daemon bug (oversized-file disconnect) that
+  needs a process restart this session couldn't perform. See
+  `docs/claude-todo.md` for the exact unblock steps and what to check once
+  it's running again.

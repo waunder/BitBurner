@@ -22,30 +22,15 @@ citations, and reward-structure notes: `docs/ipvgo-strategy.md`.
 - [x] Built `ipvgo_player.js` at repo root: capture > defend > expand >
   random-with-airspace > anything-valid > pass, self-supersede, defensive
   Go-API-availability check. `node --check` passes.
-- [ ] **Not yet pushed or run.** Next concrete step, in order:
-  1. `python3 tools/bb_remote.py ctl-push /ipvgo_player.js ipvgo_player.js
-     --control-port 12527` — routine, no live-game action, same mechanism
-     already confirmed working for every other script.
-  2. Then it needs to actually execute in-game. **There is no remote-exec
-     RPC** (confirmed this session — the Remote API only supports file
-     push/pull, never running something), so this needs either (a) the
-     CDP-driven terminal-write technique already proven working earlier
-     this session for `backdoor` (see `hacking/backdoor.js`'s entry in
-     `docs/processes.md`) to type `run ipvgo_player.js` into the live
-     terminal, or (b) Ken typing that one line himself. **Asked the parent
-     conversation to do (a)** rather than reimplementing the terminal-write
-     mechanism independently in this task, per this task's own instruction
-     — if that didn't happen yet, do it before adding anything to
-     `docs/kensTodo.md`.
-  3. Once it's running, watch its `ns.tprint` output (CDP tail read or
-     terminal scrollback) for: the real `ns.getScriptRam()` figure (arithmetic
-     estimate in the strategy doc is ~33.6GB, unconfirmed), whether moves are
-     actually landing without silently-caught errors, and the first few
-     games' win/loss record.
-- [ ] Check `ns.getPlayer().factions` before tuning opponent choice —
-  the two-wins-in-a-row favor payout only applies to factions Ken is already
-  a member of, and it's unconfirmed whether `Netburners` (today's default)
-  is even one of them.
+- [x] **Pushed and run** — confirmed live, RAM measured at 34.45GB (vs.
+  ~33.6GB arithmetic estimate). See the 2026-08-11 diagnosis section below
+  for what the first ~22 games actually looked like (1 win) and the fix
+  that came out of watching them.
+- [x] Checked `ns.getPlayer().factions` (read live via the Factions page
+  over CDP this session): Ken **is** a member of Netburners (112.491 favor,
+  no augmentations left to buy), so the two-wins-in-a-row favor payout
+  against the current default opponent is live/relevant, not moot.
+  **confirmed live.**
 
 Claude's own granular task list, session to session. Read this first at the
 start of every session; update it as you work — check items off, add new
@@ -60,6 +45,126 @@ Distinct from the other two lists:
   `kensTodo.md`, kept current rather than written once and left.
 
 ---
+
+## 2026-08-11 (later): IPvGO diagnosis — found the collapse cause, fixed it, deploy blocked on an unrelated daemon bug
+
+Ken asked directly whether anyone was watching/revising the IPvGO results.
+Record at the start of this session: `ipvgo_status.json` showed 0 wins
+across the first several games, some near-total shutouts (e.g. black 0 vs
+white 49.5 on 7x7 — 49 total points on the board). Task was to find out
+whether that's a real bug or just weak-but-working heuristic play, per this
+task's own instructions: watch real games (not just re-read the strategy
+doc), question the scoring assumptions first, then look for a structural
+bug in `pickMove`/`findCaptureMoves`/`findDefendMoves`/`findExpandMoves`
+before assuming the heuristic just needs to be smarter.
+
+**Scoring/color assumptions: confirmed correct, not the problem.**
+Watched the live IPvGO Subnet page directly over CDP (`document.body.innerText`
+after clicking the nav item, several times across one game) and compared
+its own displayed `Score: Black: N White: M` line against
+`ns.go.getGameState()`'s `blackScore`/`whiteScore` as logged in
+`ipvgo_status.json` and the terminal tail — they match exactly, and the
+color assignment is stable (always Black, never flips). **confirmed live.**
+Also confirmed live: Ken **is** in Netburners (112.491 favor, `ns.getPlayer
+().factions` question from the strategy doc's "Open questions" — settled).
+
+**The real finding, watching an actual game evolve:** polled the live board
+several times across ~30 seconds and saw black's score go 23 → 29 → 13 → 6
+→ 2 while white climbed steadily to 45.5 — a *solid mid-game lead
+collapsing to a near-total shutout within the same game*, not a slow bleed.
+Pulling the script's own `ns.print` move log (via the in-game tail window,
+read over CDP — Active Scripts → ipvgo_player.js → LOG) showed why:
+`findExpandMoves` (the move type that dominates most of the game, since
+capture/defend are rare) had **zero liberty-safety checking** — it accepted
+any move that touched *any* friendly stone, with no regard for the
+resulting shape, unlike `findDefendMoves`, which only fires (and only after
+a safety check) once a chain is already at exactly 1 liberty. The
+consequence: every one of the bot's stones merges into one single connected
+network with one shared liberty pool and no separate eye shapes — exactly
+the "eyes" gap the strategy doc's own "next steps" already flagged as not
+yet built. A single blob with no eyes is unconditionally capturable once an
+opponent finds the vital point, and when it goes, **every stone on the
+board goes with it in one move** — which is exactly the shutout shape in
+`ipvgo_status.json` (0 vs 49.5, 2 vs 45.5, etc. — 22 games played, 1 win by
+the time this was checked). **confirmed live** (the CDP score trace) +
+**derived** (the single-network mechanism, reasoned from the move log +
+the game's own documented capture rules, not directly observed as a single
+board-state diff).
+
+**Fix applied** (`ipvgo_player.js`): extracted `findDefendMoves`' own
+"is this extension instantly recapturable" check (2+ empty neighbors of its
+own, or a link to a different friendly chain with 3+ liberties — the
+in-game doc's own logic) into a shared `isSafeExtension` helper, and
+applied it to `findExpandMoves` too: safe extensions are preferred, and a
+risky one is only played if literally nothing safer touches a friendly
+chain (so nothing is lost versus before — a risky move that was the only
+candidate is still offered, just deprioritized when a safer one exists).
+This is the free half of "give the bot some life-and-death sense" — it
+doesn't build real eye-shape awareness (that still needs
+`getChains()`/`getControlledEmptyNodes()`, 16GB more RAM apiece, unbuilt),
+but it stops the bot from volunteering the thin, easily-cut connections
+that make one-shot total collapse likely in the first place.
+
+**Tests**: `ipvgo_player.test.js` (`node --test ipvgo_player.test.js`, 16
+tests, all pass) — covers `findCaptureMoves`, `findDefendMoves`,
+`isSafeExtension`, `findExpandMoves` (including the specific
+prefers-safe-over-risky and falls-back-when-nothing-safer cases), and
+`pickMove`'s priority order, all against small hand-built boards using the
+real `board[x][y]` convention. Kept in the *same* file as the pure
+functions (just added `export` to each) rather than splitting into a
+separate `ipvgo_logic.js` the way `mcp.js`/`mcp_logic.js` split — see the
+deploy-blocker note below for why a second watched file wasn't practical
+this session. `node --check ipvgo_player.js` and the full repo test suite
+(`node --test *.test.js`, 46 tests) both pass.
+
+**Deploy is blocked on a separate, unrelated, already-live daemon bug —
+found while trying to push this fix.** `tools/bb_remote.py`'s
+`RemoteApiServer` used the `websockets` library's default `max_size` (1MB).
+`mcp_status_log.txt` (a `PULL_FILES` entry, gitignored, grows without bound
+per this repo's own long-standing warning on that file) crossed 1MB during
+this session, and pulling it doesn't just fail that one `getFile` call —
+**it kills the entire connection** (`ConnectionClosedError: sent 1009
+(message too big)...`), which then loops forever: reconnect → push resync
+(sometimes completes, sometimes dies partway through depending on how the
+concurrent push/pull tasks interleave) → die on the oversized pull →
+reconnect again. **Fixed in code**: `tools/bb_remote.py` now passes
+`max_size=20*1024*1024` to `websockets.serve` (a new `WS_MAX_SIZE`
+constant). **This fix cannot take effect without restarting the daemon
+process** (Python doesn't hot-reload any more than Bitburner does), and
+this session's sandbox auto-mode classifier blocked the `kill` command
+needed to restart it ("Blocked by classifier" — a process-kill guard, not
+something to work around). The already-running daemon (pid was 95448 at
+session start, cwd `/Users/Shared/BitBurner`, started via `python3
+tools/bb_remote.py daemon --port 12526 --control-port 12527`) is still
+running the old code and will keep crash-looping on every reconnect until
+someone with permission to kill it restarts it with the same command.
+- [ ] **Needs a human/parent-conversation action**: kill the existing
+  `bb_remote.py daemon` process and relaunch it (same command as above, from
+  repo root — it self-explains its own flags with `--help` if the exact
+  invocation needs double-checking). Once it's back up and *stays* connected
+  (check with `python3 tools/bb_remote.py ctl-status --control-port 12527`
+  — `"connected": true` and no repeated DISCONNECTED lines in
+  `tools/bb_remote_events.log`), the already-committed, already-tested
+  `ipvgo_player.js` fix will push automatically on the next reconnect (it's
+  already in `WATCHED_FILES`) — no extra step needed for the push itself.
+- [ ] **Then**, get the fix running in-game: `run ipvgo_player.js` in the
+  live terminal (self-supersede logic in the script kills the old running
+  copy automatically) — either via the CDP terminal-write technique (see
+  `docs/processes.md`'s IPvGO entry and this file's earlier IPvGO section
+  for the exact steps already proven working this session for reading, if
+  not yet for writing) or Ken typing the one line himself.
+- [ ] **Then watch a handful of games** (`cat ipvgo_status.json` or
+  `python3 tools/bb_remote.py ctl-get /ipvgo_status.json --control-port
+  12527` once pull is stable again) to confirm the fix actually moves the
+  win rate, not just that it looks correct on the unit tests — a change
+  that passes a hand-built 3x3 test case can still be wrong against the
+  real live scoring, per this repo's own standing discipline. Update this
+  section (or a new dated one) with the result either way.
+- [ ] Once eye-shape awareness is worth building (i.e., once this simpler
+  fix's real win-rate effect is known), the concrete next step is
+  `getChains()` + `getControlledEmptyNodes()` (16GB apiece) to let the bot
+  recognize when it needs a second separate group instead of always
+  merging into one, per `docs/ipvgo-strategy.md`'s "Open questions."
 
 ## 2026-08-11: found the real cause of the "farm may be stuck" flag — bucket/redeploy thrash
 

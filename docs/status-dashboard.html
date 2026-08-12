@@ -382,12 +382,13 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">rebuilt 2026&#8209;08&#8209;11 18:25 PDT</div>
+    <div class="updated mono">rebuilt 2026&#8209;08&#8209;12 11:20 PDT</div>
   </div>
 
   <div class="glance">
     <span class="chip"><span class="dot dot-good"></span>done <span class="n mono">1</span></span>
-    <span class="chip"><span class="dot dot-warn"></span>flagged <span class="n mono">2</span></span>
+    <span class="chip"><span class="dot dot-neutral"></span>in progress <span class="n mono">1</span></span>
+    <span class="chip"><span class="dot dot-warn"></span>flagged <span class="n mono">1</span></span>
   </div>
 
   <p class="lede">Every row below is dated; nothing on this page is presented as current unless it was
@@ -406,14 +407,38 @@
         <div class="row-body">
           <div class="row-top">
             <span class="tag">confirmed live</span>
-            <span class="row-date mono">2026&#8209;08&#8209;11 14:20</span>
+            <span class="row-date mono">2026&#8209;08&#8209;12 11:11</span>
           </div>
-          <div class="row-title">Daemon restarted and reconnected &mdash; both fixes now actually live</div>
-          <p>You ran the restart command and reconnected. Confirmed on this end: the sync fix and the
-            game&rarr;disk pull loop are both running for real now, not just written &mdash;
-            <code class="mono">mcp_status.json</code> and the other telemetry files are landing on disk
-            automatically for the first time. No further action needed here.</p>
+          <div class="row-title">IPvGO fix deployed &mdash; won its very next game, 46 to 1.5</div>
+          <p>The daemon crash&#8209;loop from yesterday is also fixed and confirmed holding (the file that
+            was crashing it now pulls cleanly). Got the fixed IPvGO player running in the same pass. First
+            result afterward: a decisive win, a big swing from the near&#8209;total shutouts it was losing
+            before. Too early to call a trend off one game, but a strong sign the fix is real.</p>
         </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section aria-labelledby="progress-title">
+    <div class="block-head">
+      <h2 class="block-title" id="progress-title">In progress</h2>
+      <span class="block-count mono">1</span>
+    </div>
+    <div class="rows">
+
+      <div class="progress-card">
+        <div class="progress-top">
+          <span class="pulse"></span>
+          <span class="row-title">Researching a genuinely strong Go algorithm, per your ask</span>
+        </div>
+        <p>You asked for a real, internet-sourced approach rather than another hand-tuned heuristic, aiming
+          for a 90% win rate on the current board before trying a bigger one. Research in progress into
+          proper approaches (the kind used before neural-network Go engines existed) rather than re-deriving
+          rules of thumb from the game's own tutorial again. Will report back with what it finds and a
+          measured win rate over a real number of games, not a guess off a handful.</p>
+        <div class="stale-note">started 2026&#8209;08&#8209;12 11:20 &mdash; no changes to the live game yet,
+          this is still the research/build step.</div>
       </div>
 
     </div>
@@ -422,31 +447,9 @@
   <section aria-labelledby="flag-title">
     <div class="block-head">
       <h2 class="block-title" id="flag-title">Flagged &mdash; not yet chased down</h2>
-      <span class="block-count mono">2</span>
+      <span class="block-count mono">1</span>
     </div>
     <div class="rows">
-
-      <div class="row flag">
-        <div class="row-stripe"></div>
-        <div class="row-body">
-          <div class="row-top">
-            <span class="tag">needs your call</span>
-            <span class="row-date mono">2026&#8209;08&#8209;11 18:25</span>
-          </div>
-          <div class="row-title">IPvGO fix is ready and tested, but the daemon needs restarting again to send it</div>
-          <p>Found why the Go player was winning almost nothing (1 win in 22 games, several
-            near&#8209;total shutouts): it kept merging all its own pieces into one blob with no
-            separate safe groups, so a single capture wiped the whole board at once. Fixed, tested,
-            and pushed to git &mdash; but sending the fix into the game needs the sync daemon, and
-            it's stuck crash&#8209;looping again (a status log file grew past a size limit and takes
-            the whole connection down every time it reconnects). Also fixed in code, but that fix
-            needs the daemon process restarted to take effect, same as the one you did at 14:20 today.</p>
-          <p><strong>What's needed:</strong> kill the running <code class="mono">bb_remote.py daemon</code>
-            process and start it again the same way (<code class="mono">python3 tools/bb_remote.py daemon
-            --port 12526 --control-port 12527</code> from the repo root). Full detail in
-            <code class="mono">docs/kensTodo.md</code>.</p>
-        </div>
-      </div>
 
       <div class="row flag">
         <div class="row-stripe"></div>

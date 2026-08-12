@@ -382,12 +382,12 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">rebuilt 2026&#8209;08&#8209;11 17:00 PDT</div>
+    <div class="updated mono">rebuilt 2026&#8209;08&#8209;11 18:25 PDT</div>
   </div>
 
   <div class="glance">
     <span class="chip"><span class="dot dot-good"></span>done <span class="n mono">1</span></span>
-    <span class="chip"><span class="dot dot-warn"></span>flagged <span class="n mono">1</span></span>
+    <span class="chip"><span class="dot dot-warn"></span>flagged <span class="n mono">2</span></span>
   </div>
 
   <p class="lede">Every row below is dated; nothing on this page is presented as current unless it was
@@ -422,9 +422,31 @@
   <section aria-labelledby="flag-title">
     <div class="block-head">
       <h2 class="block-title" id="flag-title">Flagged &mdash; not yet chased down</h2>
-      <span class="block-count mono">1</span>
+      <span class="block-count mono">2</span>
     </div>
     <div class="rows">
+
+      <div class="row flag">
+        <div class="row-stripe"></div>
+        <div class="row-body">
+          <div class="row-top">
+            <span class="tag">needs your call</span>
+            <span class="row-date mono">2026&#8209;08&#8209;11 18:25</span>
+          </div>
+          <div class="row-title">IPvGO fix is ready and tested, but the daemon needs restarting again to send it</div>
+          <p>Found why the Go player was winning almost nothing (1 win in 22 games, several
+            near&#8209;total shutouts): it kept merging all its own pieces into one blob with no
+            separate safe groups, so a single capture wiped the whole board at once. Fixed, tested,
+            and pushed to git &mdash; but sending the fix into the game needs the sync daemon, and
+            it's stuck crash&#8209;looping again (a status log file grew past a size limit and takes
+            the whole connection down every time it reconnects). Also fixed in code, but that fix
+            needs the daemon process restarted to take effect, same as the one you did at 14:20 today.</p>
+          <p><strong>What's needed:</strong> kill the running <code class="mono">bb_remote.py daemon</code>
+            process and start it again the same way (<code class="mono">python3 tools/bb_remote.py daemon
+            --port 12526 --control-port 12527</code> from the repo root). Full detail in
+            <code class="mono">docs/kensTodo.md</code>.</p>
+        </div>
+      </div>
 
       <div class="row flag">
         <div class="row-stripe"></div>

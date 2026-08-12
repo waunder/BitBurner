@@ -1215,17 +1215,20 @@ design all live in `docs/ipvgo-strategy.md` — this entry is just the map.
 
 | File | Runs on | RAM (est., not yet measured) | What it does |
 | --- | --- | --- | --- |
-| `ipvgo_player.js` | any host with `ns.go` access (the API is not tied to a specific server) | ~33.6GB arithmetic (see the strategy doc) | Plays the current IPvGO subnet forever: capture > defend > expand > random-with-airspace > anything-valid > pass, self-supersedes, never discards an in-progress game, starts a fresh one (default `Netburners` 7x7 — a placeholder, not tuned) once the current one ends. |
+| `ipvgo_player.js` | any host with `ns.go` access (the API is not tied to a specific server) | 34.45GB, confirmed live via its own startup `ns.tprint` (arithmetic estimate in the strategy doc was ~33.6GB) | Plays the current IPvGO subnet forever: capture > defend > expand > random-with-airspace > anything-valid > pass, self-supersedes, never discards an in-progress game, starts a fresh one (default `Netburners` 7x7 — a placeholder, not tuned) once the current one ends. Writes `ipvgo_status.json` (gamesPlayed, wins, opponent, size, lastResult) on startup and after every game — in `WATCHED_FILES`/`PULL_FILES` both, so it pushes/pulls automatically like every other script/status file. |
 
-**Built 2026-08-11, not yet run in Bitburner.** `node --check ipvgo_player.js`
-passes; nothing further is confirmed until it actually executes. Next step:
-`ctl-push /ipvgo_player.js ipvgo_player.js` (routine, no live-game action
-needed) then one `run ipvgo_player.js` in the live terminal — see
-`docs/claude-todo.md`'s IPvGO entry for exactly what to run and why this
-needs a human/terminal-write step rather than the daemon (there is no
-remote-exec RPC — the Remote API only supports file push/pull, confirmed
-this session, same limitation `docs/processes.md`'s `tools/bb_remote.py`
-section already documents for every other script).
+**Running live as of 2026-08-11.** Confirmed via the terminal-write path
+(there is no remote-exec RPC — the Remote API only supports file push/pull —
+so getting it running the first time needed Claude's CDP-driven terminal
+write, same technique proven for `hacking/backdoor.js`). First results:
+lost the in-progress game it inherited (already a lost position when
+picked up), then started losing fresh 7x7 games against Netburners too —
+expected for a capture/defend/expand heuristic with no komi/territory
+awareness yet, see `docs/ipvgo-strategy.md` for the actual reward
+mechanics and what a stronger version would need. Check current record any
+time via `cat ipvgo_status.json` or `python3 tools/bb_remote.py ctl-get
+/ipvgo_status.json --control-port 12527` (works even before the next
+daemon restart picks up automatic pulling).
 
 **Deliberately never references `ns.go.cheat.*`** — that surface needs
 Source-File 14.2 (confirmed live this session Ken doesn't have it, and

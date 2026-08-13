@@ -363,6 +363,90 @@ export async function acquireSession(ns, host, known, opts = {}) {
   }
 }
 
+/**
+ * Reclaim blocked RAM on the calling script's current server, checking
+ * getBlockedRam (0GB) before and after each 1GB memoryReallocation call so a
+ * call that had nothing to reclaim, or that frees nothing, terminates the
+ * loop instead of spinning or paying for calls with nothing to gain.
+ *
+ * Moved here 2026-08-12 from dnet_loot.js so it can be shared with
+ * dnet_loot_realloc.js (the RAM-only lean variant for hosts too
+ * RAM-constrained to also fit openCache -- see that file and
+ * dnet_deploy.js's lootDeploy()) without the two scripts drifting out of
+ * sync on the actual reallocation loop.
+ *
+ * @param {NS} ns
+ * @param {string} host - for the log line only; the call always targets the
+ *   current server (memoryReallocation has no target argument)
+ * @param {number} maxCalls
+ * @returns {Promise<{before: number, after: number, calls: number, why: string}>}
+ */
+export async function freeBlockedRam(ns, host, maxCalls) {
+  const before = ns.dnet.getBlockedRam()
+  if (before <= 0) return { before, after: before, calls: 0, why: "nothing blocked" }
+
+  let calls = 0
+  let why = "hit call cap"
+  while (calls < maxCalls) {
+    const remaining = ns.dnet.getBlockedRam()
+    if (remaining <= 0) {
+      why = "fully reclaimed"
+      break
+    }
+
+    const res = await ns.dnet.memoryReallocation()
+    calls++
+
+    if (!res.success) {
+      why = res.code === CODE.NoBlockRAM ? "fully reclaimed" : `stopped on code ${res.code}: ${res.message}`
+      break
+    }
+
+    if (ns.dnet.getBlockedRam() >= remaining) {
+      why = "call freed nothing; stopping rather than spinning"
+      break
+    }
+  }
+
+  const after = ns.dnet.getBlockedRam()
+  ns.print(`REALLOC ${host} before=${before} after=${after} calls=${calls} why=${why}`)
+  return { before, after, calls, why }
+}
+
+/**
+ * Which loot script variant fits a target's free RAM, cheapest useful
+ * action first. Pure: takes plain numbers (read live by the caller via
+ * ns.getScriptRam/ns.getServerMaxRam/ns.getServerUsedRam -- the game's own
+ * readout is the authority, never a hardcoded constant here), so it is
+ * unit-testable without the game.
+ *
+ * Policy encoded: prefer "full" whenever it fits (strictly more work done
+ * for the same host); fall back to "realloc" -- memoryReallocation only, no
+ * openCache -- when the full script doesn't fit but the leaner one does,
+ * rather than the old flat skip. `null` means neither fits; the caller
+ * skips and reports why, same as before.
+ *
+ * Realloc was chosen as the fallback capability over cache-only for two
+ * reasons, not just because it happens to be cheaper (see
+ * docs/darknet-tactics.md for the fuller argument): it drops openCache
+ * (2GB, the single largest line item after the 1.6GB base) rather than
+ * memoryReallocation (1GB), so it reaches more RAM-constrained hosts; and
+ * darknet-strategy.md's own RAM section ranks blockedRam recovery as more
+ * durably useful than cache contents (mostly money/karma-cost, "least
+ * strategically interesting" per that doc), so the cheaper fallback is also
+ * the higher-value one to keep.
+ *
+ * @param {number} freeRam
+ * @param {number} fullRam
+ * @param {number} reallocRam
+ * @returns {"full"|"realloc"|null}
+ */
+export function chooseLootMode(freeRam, fullRam, reallocRam) {
+  if (freeRam >= fullRam) return "full"
+  if (freeRam >= reallocRam) return "realloc"
+  return null
+}
+
 /** One-line summary of a neighbour, for logs that need the decision inputs. */
 export function describe(details, host) {
   return (

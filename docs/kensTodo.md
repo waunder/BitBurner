@@ -10,6 +10,25 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
+- [ ] **Confirm the Darknet Phase 3b loot fix is live and check
+  `dnet_status.json`'s `deployer.*.lootMode` for `realloc` count movement.**
+  Built 2026-08-12: `dnet_loot_realloc.js` (a leaner RAM-only loot variant)
+  plus a `dnet_deploy.js` fallback so a host too RAM-constrained for the
+  full 5.55GB loot script now gets the cheaper ~3.35GB one instead of a
+  flat skip. Full reasoning and the $362M/100%-skip-rate findings that
+  motivated it: `docs/claude-todo.md`'s 2026-08-12 "Darknet Phase 3b"
+  entry. This session ran directly against the daemon-watched checkout at
+  `/Users/Shared/BitBurner` (confirmed via `git worktree list` before
+  starting, not one of the isolated `.claude/worktrees/agent-*` copies —
+  see the entry directly below this one for why that distinction mattered
+  last time), so a plain push should be enough this time; a quick
+  `git log -1` in that checkout after pulling/restarting is worth
+  double-checking anyway given the precedent. Once a fresh
+  `dnet_deploy.js` is running the new code (restart required — Bitburner
+  doesn't hot-reload), the useful signal is `dnet_status.json`'s
+  `deployer.thisPass.lootMode`/`sinceProcessStart.lootMode` fields moving
+  `realloc` off zero. Nothing here could be run live this session — no
+  in-game execution access from this context.
 - [x] **Pull `origin/main` into the actual synced checkout at
   `/Users/Shared/BitBurner`.** Done — plain `git pull`, fast-forwarded
   `001e504..d2e3ae3` (brought in `c33c13f`'s `NUM_SIMULATIONS` 1500→6000

@@ -79,14 +79,38 @@
  * getServerUsedRam 0.05 (the last three added for lootDeploy's free-RAM
  * check). nextMutation, read, write, toast, and getDarknetInstability are
  * 0GB, so the status heartbeat adds nothing. The game's RAM readout is the
- * authority; imports can pull in more than this.
+ * authority; imports can pull in more than this. chooseLootMode (added
+ * Phase 3b, below) is a pure function and costs nothing extra; the second
+ * ns.getScriptRam call it feeds doesn't add RAM either, since the function
+ * itself is already paid for once regardless of call count.
+ *
+ * Phase 3b (2026-08-12): lootDeploy() no longer just skips a host whose
+ * free RAM can't fit dnet_loot.js (5.55GB) -- it now falls back to
+ * dnet_loot_realloc.js, a ~3.35GB RAM-only lean variant (see that file and
+ * docs/darknet-functions.md), before giving up. spread() carries both loot
+ * scripts onward so every instance can make the same choice. See
+ * docs/claude-todo.md's 2026-08-12 entry for the $362M/100%-skip-rate
+ * findings that motivated this and what a live check still needs to
+ * confirm.
  *
  * @param {NS} ns
  */
-import { CODE, CREDS_FILE, acquireSession, describe, mergeStatus, readCreds, recordCred, shipCred, shipStatus } from "dnet_lib.js"
+import {
+  CODE,
+  CREDS_FILE,
+  acquireSession,
+  chooseLootMode,
+  describe,
+  mergeStatus,
+  readCreds,
+  recordCred,
+  shipCred,
+  shipStatus,
+} from "dnet_lib.js"
 
 const MUTATION_FLOOR_MS = 5000
 const LOOT_SCRIPT = "dnet_loot.js"
+const LOOT_REALLOC_SCRIPT = "dnet_loot_realloc.js"
 
 export async function main(ns) {
   ns.disableLog("ALL")
@@ -102,7 +126,15 @@ export async function main(ns) {
   // Lifetime-of-this-process counters, for the "deployer" status heartbeat.
   // These are this instance's own view only -- see writeDeployerStatus's
   // doc comment for why they are not a network-wide total.
-  const lifetime = { cracked: 0, sessions: 0, failed: 0, deployed: 0, looted: 0, lootSkipped: { ram: 0, scp: 0, exec: 0 } }
+  const lifetime = {
+    cracked: 0,
+    sessions: 0,
+    failed: 0,
+    deployed: 0,
+    looted: 0,
+    lootMode: { full: 0, realloc: 0 },
+    lootSkipped: { ram: 0, scp: 0, exec: 0 },
+  }
 
   do {
     pass++
@@ -117,6 +149,7 @@ export async function main(ns) {
       deployed: 0,
       failed: 0,
       looted: 0,
+      lootMode: { full: 0, realloc: 0 },
       lootSkipped: { ram: 0, scp: 0, exec: 0 },
     }
 
@@ -158,13 +191,22 @@ export async function main(ns) {
       const loot = lootDeploy(ns, target)
       if (loot.ok) {
         summary.looted++
+        summary.lootMode[loot.mode] = (summary.lootMode[loot.mode] ?? 0) + 1
       } else {
         // Always printed, not gated on --quiet -- a silent scp/exec failure
         // here was genuinely ambiguous to diagnose live on 2026-08-12 (no
         // tail window open, so `ok:false` gave no way to tell "RAM too
         // small" from "scp failed" from "exec failed" apart after the fact).
         summary.lootSkipped[loot.why] = (summary.lootSkipped[loot.why] ?? 0) + 1
-        ns.print(`LOOT-SKIP ${target} why=${loot.why}`)
+        // Phase 3b: on a "ram" skip, log the exact numbers the decision was
+        // made from -- freeRam vs both scripts' costs -- per this repo's own
+        // diagnosis-discipline rule (CLAUDE.md: "an event should record
+        // every variable that appeared in the predicate that fired it").
+        // Neither variant fit means this is genuinely a hard skip, not a
+        // silent one.
+        const detail =
+          loot.why === "ram" ? ` freeRam=${loot.freeRam} fullRam=${loot.fullRam} reallocRam=${loot.reallocRam}` : ""
+        ns.print(`LOOT-SKIP ${target} why=${loot.why}${detail}`)
       }
     }
 
@@ -175,6 +217,7 @@ export async function main(ns) {
     lifetime.failed += summary.failed
     lifetime.deployed += summary.deployed
     lifetime.looted += summary.looted
+    for (const k of Object.keys(lifetime.lootMode)) lifetime.lootMode[k] += summary.lootMode[k] ?? 0
     for (const k of Object.keys(lifetime.lootSkipped)) lifetime.lootSkipped[k] += summary.lootSkipped[k] ?? 0
     writeDeployerStatus(ns, { pass, host, summary, lifetime, localKnownCreds: Object.keys(creds).length })
 
@@ -213,6 +256,7 @@ function writeDeployerStatus(ns, { pass, host, summary, lifetime, localKnownCred
         deployed: summary.deployed,
         failed: summary.failed,
         looted: summary.looted,
+        lootMode: { ...summary.lootMode },
         lootSkipped: { ...summary.lootSkipped },
       },
       sinceProcessStart: { ...lifetime },
@@ -227,14 +271,15 @@ function writeDeployerStatus(ns, { pass, host, summary, lifetime, localKnownCred
 
 /**
  * Copy this script, its dependencies, and the credential store onto a
- * target we hold a session on. Carries LOOT_SCRIPT along too -- lootDeploy
- * below needs a local copy of dnet_loot.js to hand onward to whatever this
- * copy loots next, and the only way every instance on the net ends up with
- * one is if every spread also ships it, the same way dnet_lib.js already
- * has to ride along for `self` to even run.
+ * target we hold a session on. Carries both loot scripts along too --
+ * lootDeploy below needs local copies of dnet_loot.js and (Phase 3b)
+ * dnet_loot_realloc.js to hand onward to whatever this copy loots next, and
+ * the only way every instance on the net ends up with both is if every
+ * spread also ships them, the same way dnet_lib.js already has to ride
+ * along for `self` to even run.
  */
 function spread(ns, self, target) {
-  const files = [self, "dnet_lib.js", LOOT_SCRIPT]
+  const files = [self, "dnet_lib.js", LOOT_SCRIPT, LOOT_REALLOC_SCRIPT]
   if (ns.fileExists(CREDS_FILE)) files.push(CREDS_FILE)
   try {
     if (!ns.scp(files, target)) {
@@ -258,11 +303,11 @@ function spread(ns, self, target) {
 }
 
 /**
- * scp + exec dnet_loot.js onto a target we just confirmed a live session on.
- * Cheapest check first: getScriptRam (0.1GB) + getServerMaxRam (0.05GB) +
+ * scp + exec a loot script onto a target we just confirmed a live session
+ * on. Cheapest checks first: two getScriptRam calls (0.1GB the function,
+ * regardless of how many times it's called) + getServerMaxRam (0.05GB) +
  * getServerUsedRam (0.05GB) are all far cheaper than an scp+exec attempt
- * that would just fail, and skip cleanly (reported, not an error) when the
- * server can't currently fit the ~4.95GB dnet_loot.js needs.
+ * that would just fail.
  *
  * Deliberately uses ns.getServerMaxRam(target), NOT
  * ns.dnet.getServerDetails(target).maxRam -- see the file-level doc comment
@@ -279,25 +324,40 @@ function spread(ns, self, target) {
  * elsewhere (`getServerMaxRam(host) - getServerUsedRam(host)`), just not
  * applied here the first time.
  *
+ * Phase 3b (2026-08-12): a flat "doesn't fit, skip" was too coarse -- the
+ * live darkweb checkpoint (docs/claude-todo.md) showed 100% of loot
+ * attempts on that instance skipped for exactly this reason. Now tries the
+ * full 5.55GB dnet_loot.js first, falls back to the ~3.35GB
+ * dnet_loot_realloc.js (RAM-freeing only, no cache-opening) if the full
+ * script doesn't fit, and only skips if neither does. chooseLootMode
+ * (dnet_lib.js) is the pure policy function, unit-tested in
+ * dnet_lib.test.js.
+ *
  * Runs unconditionally every pass a session succeeds, same as spread() --
- * not gated on "newly cracked this pass". Re-running dnet_loot.js on an
+ * not gated on "newly cracked this pass". Re-running a loot script on an
  * already-looted host is safe (openCache/memoryReallocation both report
  * nothing left to do rather than erroring or double-spending karma) and
  * matches how spread() already re-execs every pass with preventDuplicates
  * doing the actual dedup work. `preventDuplicates` here mainly protects
  * against exec-ing a second copy while a prior one is still mid-run.
  *
- * @returns {{ok: boolean, why?: "ram"|"scp"|"exec", pid?: number}}
+ * @returns {{ok: boolean, why?: "ram"|"scp"|"exec", pid?: number, mode?: "full"|"realloc",
+ *   freeRam?: number, fullRam?: number, reallocRam?: number}}
  */
 function lootDeploy(ns, target) {
-  const lootRam = ns.getScriptRam(LOOT_SCRIPT, ns.getHostname())
+  const self = ns.getHostname()
+  const fullRam = ns.getScriptRam(LOOT_SCRIPT, self)
+  const reallocRam = ns.getScriptRam(LOOT_REALLOC_SCRIPT, self)
   const freeRam = ns.getServerMaxRam(target) - ns.getServerUsedRam(target)
-  if (!(freeRam >= lootRam)) {
-    return { ok: false, why: "ram" }
+
+  const mode = chooseLootMode(freeRam, fullRam, reallocRam)
+  if (!mode) {
+    return { ok: false, why: "ram", freeRam, fullRam, reallocRam }
   }
+  const script = mode === "full" ? LOOT_SCRIPT : LOOT_REALLOC_SCRIPT
 
   try {
-    if (!ns.scp([LOOT_SCRIPT, "dnet_lib.js"], target)) {
+    if (!ns.scp([script, "dnet_lib.js"], target)) {
       ns.print(`WARN loot scp to ${target} returned false`)
       return { ok: false, why: "scp" }
     }
@@ -307,10 +367,10 @@ function lootDeploy(ns, target) {
   }
 
   try {
-    const pid = ns.exec(LOOT_SCRIPT, target, { preventDuplicates: true })
+    const pid = ns.exec(script, target, { preventDuplicates: true })
     if (pid === 0) return { ok: false, why: "exec" }
-    ns.print(`LOOT ${target} pid=${pid}`)
-    return { ok: true, pid }
+    ns.print(`LOOT ${target} pid=${pid} mode=${mode}`)
+    return { ok: true, pid, mode }
   } catch (err) {
     ns.print(`WARN loot exec on ${target} threw: ${err}`)
     return { ok: false, why: "exec" }

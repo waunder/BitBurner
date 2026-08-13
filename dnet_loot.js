@@ -20,20 +20,30 @@
  * Args: --no-cache (skip cache opening), --no-ram (skip reallocation),
  * --max-realloc N (cap reallocation calls, default 25).
  *
- * RAM estimate ~4.95GB: 1.6 base + openCache 2 + memoryReallocation 1 +
- * getServerDetails 0.1 + ls 0.2 + getHostname 0.05. getBlockedRam is 0GB.
- * The game's RAM readout is the authority.
+ * RAM estimate ~5.55GB: 1.6 base + openCache 2 + memoryReallocation 1 +
+ * getServerDetails 0.1 + ls 0.2 + getHostname 0.05 + scp 0.6 = 5.55.
+ * Corrected 2026-08-12: the original ~4.95GB estimate above simply forgot
+ * the ns.scp(shard, "home") call a few lines down in main() -- 4.95 + 0.6
+ * (scp) = 5.55 exactly, which is also the number a live dnet_ramcheck.js
+ * run against this file measured (see docs/darknet-functions.md's Phase 3b
+ * section and docs/claude-todo.md's 2026-08-12 entry). Not a mystery once
+ * checked, but it was quietly wrong for a while -- the doc comment counted
+ * one fewer reachable ns call than the code actually makes. getBlockedRam
+ * is 0GB. The game's own RAM readout is still the authority, not this
+ * arithmetic.
  *
  * Added 2026-08-12: writes its own report as a per-host shard
  * (dnet_loot_<host>.json, same reasoning as dnet_lib.js's credential
  * shards -- many roaming instances looting concurrently would clobber one
  * shared file) and ships it to home. dnet_loot_merge.js folds these into
  * dnet_status.json's "loot" section, same relationship dnet_creds_merge.js
- * has to credential shards.
+ * has to credential shards. The report carries `mode: "full"` so a merge
+ * can tell a full pass apart from a dnet_loot_realloc.js (RAM-only lean
+ * variant, added same day) pass over the same host.
  *
  * @param {NS} ns
  */
-import { CODE } from "dnet_lib.js"
+import { freeBlockedRam } from "dnet_lib.js"
 
 export async function main(ns) {
   ns.disableLog("ALL")
@@ -50,7 +60,7 @@ export async function main(ns) {
     return
   }
 
-  const report = { host, model: details.modelId, difficulty: details.difficulty }
+  const report = { host, model: details.modelId, difficulty: details.difficulty, mode: "full" }
 
   if (!flags["no-ram"]) report.ram = await freeBlockedRam(ns, host, flags["max-realloc"])
   if (!flags["no-cache"]) report.caches = openCaches(ns, host)
@@ -66,43 +76,6 @@ export async function main(ns) {
       ns.print(`WARN shipping ${shard} to home: ${err}`)
     }
   }
-}
-
-/**
- * Reclaim blocked RAM, checking getBlockedRam (0GB) before and after each 1GB
- * call so we never pay for a reallocation that had nothing to reclaim, and so
- * a call that frees nothing terminates the loop instead of spinning.
- */
-async function freeBlockedRam(ns, host, maxCalls) {
-  const before = ns.dnet.getBlockedRam()
-  if (before <= 0) return { before, after: before, calls: 0, why: "nothing blocked" }
-
-  let calls = 0
-  let why = "hit call cap"
-  while (calls < maxCalls) {
-    const remaining = ns.dnet.getBlockedRam()
-    if (remaining <= 0) {
-      why = "fully reclaimed"
-      break
-    }
-
-    const res = await ns.dnet.memoryReallocation()
-    calls++
-
-    if (!res.success) {
-      why = res.code === CODE.NoBlockRAM ? "fully reclaimed" : `stopped on code ${res.code}: ${res.message}`
-      break
-    }
-
-    if (ns.dnet.getBlockedRam() >= remaining) {
-      why = "call freed nothing; stopping rather than spinning"
-      break
-    }
-  }
-
-  const after = ns.dnet.getBlockedRam()
-  ns.print(`REALLOC ${host} before=${before} after=${after} calls=${calls} why=${why}`)
-  return { before, after, calls, why }
 }
 
 /**

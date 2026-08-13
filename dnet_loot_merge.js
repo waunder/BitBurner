@@ -10,6 +10,14 @@
  * opened, and a per-host breakdown for anything worth investigating
  * individually.
  *
+ * Phase 3b (2026-08-12): a shard may come from dnet_loot.js ("full") or
+ * dnet_loot_realloc.js ("realloc-only", RAM-freeing only -- see
+ * docs/darknet-functions.md). Both write to the same per-host shard
+ * filename (latest pass wins, same snapshot semantics this always had), so
+ * perHost's `mode` field says which kind the *most recent* pass over that
+ * host was -- a "realloc-only" entry with opened=0/found=0 means caches
+ * genuinely weren't checked that pass, not that there were none.
+ *
  * Args: --prune (delete shards after a successful merge), --quiet.
  *
  * Reads:  dnet_loot_*.json shards, dnet_status.json (merged into, not
@@ -52,7 +60,16 @@ export async function main(ns) {
     const opened = rec.caches?.opened ?? 0
     const found = rec.caches?.found ?? 0
 
-    perHost[rec.host] = { model: rec.model, difficulty: rec.difficulty, ramFreed, karma, opened, found, at: rec.at }
+    perHost[rec.host] = {
+      model: rec.model,
+      difficulty: rec.difficulty,
+      mode: rec.mode ?? "full", // pre-Phase-3b shards have no mode field; they were all full passes
+      ramFreed,
+      karma,
+      opened,
+      found,
+      at: rec.at,
+    }
     totalRamFreed += ramFreed
     totalKarma += karma
     totalCachesOpened += opened

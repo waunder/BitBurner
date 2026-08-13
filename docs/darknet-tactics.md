@@ -249,3 +249,40 @@ territory.
   `getDarknetInstability()` — see section 2.
 - **Treating a 408 as a wrong password** — see `darknet-functions.md`. This is
   the single most likely way for a correct cracker to silently fail.
+
+## 7. Loot RAM-fit: which capability to drop when the full script doesn't fit
+
+Added 2026-08-12, Phase 3b. `dnet_loot.js` does two independent things —
+`openCache` (2GB) and `memoryReallocation` (1GB, via `getBlockedRam`-gated
+`freeBlockedRam`) — and the live 2026-08-12 checkpoint found a real host
+(`darkweb`, later corroborated by a second host, `meg4c0rp`, showing 100% of
+its loot attempts skipped for the same reason) where the *whole* 5.55GB
+script didn't fit in free RAM. The question this section answers: if a host
+can only afford one of the two capabilities, which one should it get?
+
+**RAM says memoryReallocation.** Dropping `openCache` saves 2GB; dropping
+`memoryReallocation` only saves 1GB. A RAM-freeing-only variant is cheaper
+by construction, so it clears more of the RAM-constrained population than a
+cache-only variant would, full stop — this isn't a judgment call, it's
+arithmetic against the RAM table in `darknet-functions.md`.
+
+**Value also says memoryReallocation, independently.** `darknet-strategy.md`
+§2 (RAM) and §4 (money/caches) already rank these two rewards without this
+RAM-fit question in mind: `blockedRam` recovery is durable capacity on a
+server (RAM is "the scarce resource for spreading" per §4 of this doc, and
+a server with a lot of blocked RAM is "a large server in disguise"), while
+cache contents are money and occasional programs — explicitly ranked
+**"the least strategically interesting"** payout in the whole system,
+because `mcp.js` already generates that resource by other means. So the
+cheaper capability to keep also happens to be the more valuable one to
+keep. When those two arguments agree, there isn't much of a decision left
+to make.
+
+**What this doesn't solve:** a host whose free RAM is below the leaner
+script's own floor (~3.35GB) still gets nothing — see
+`darknet-functions.md`'s Phase 3b section for why `darkweb` specifically
+(observed at 1.6GB free) is very likely still in this bucket, and why no
+further RAM-diet on the loot script's side can rescue a host that tight; a
+script with the 1.6GB Bitburner base cost and zero further calls is already
+close to that ceiling. The fallback narrows the population that gets a flat
+skip; it does not eliminate the possibility of one.

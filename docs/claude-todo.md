@@ -1,6 +1,118 @@
 # Claude's working list
 
-## 2026-08-12 (latest): `NUM_SIMULATIONS` 1500 → 6000, algorithm tag `v1` → `v2` — loss-margin diagnosis said search depth, not eye-awareness
+## 2026-08-12 (latest): Darknet Phase 3b — quantified the RAM-fit skip, built a lean loot fallback, not yet run live
+
+Picked up the Phase 3 handoff checkpoint (below, "Darknet Phase 3 (loot)").
+Two things confirmed real before touching code, per this repo's own
+diagnosis discipline:
+
+- Ken's own `mcp_money.js` panel: **$362M in `darknet`-category income
+  since the last augmentation install**, via `ns.getMoneySources()`'s own
+  category breakdown — the system genuinely pays out, not a hypothesis.
+- A `dnet_status.json` pull this session (deployer instance on
+  `meg4c0rp`) showed `sinceProcessStart: { cracked: 3, looted: 0,
+  lootSkipped: { ram: 8 } }` — **100% of this instance's loot attempts
+  skipped for insufficient free RAM**, the same bottleneck the Phase 3
+  checkpoint diagnosed for `darkweb`, now confirmed on a second,
+  independent host. So the real picture: money is flowing, but from
+  whichever fraction of the net happens to have free RAM at the moment,
+  while an unmeasured but real fraction of potential loot is silently
+  skipped elsewhere.
+
+**Quantified before designing anything**, per this task's own instruction
+not to guess: read `dnet_loot.js`'s reachable ns calls against the RAM
+table in `docs/darknet-functions.md`. Its own header comment claimed
+~4.95GB; the actual reachable-call total is **5.55GB** — the comment had
+simply omitted the `ns.scp(shard, "home")` call it ships its own report
+with. `4.95 + 0.6 (scp) = 5.55` exactly, matching the live
+`dnet_ramcheck.js` reading from the Phase 3 checkpoint. Not waste — every
+one of the six calls does real work — so the fix isn't "shrink the
+script," it's "have a cheaper script that does less."
+
+**Built:**
+- `dnet_loot_realloc.js` — new lean script, RAM-freeing only
+  (`memoryReallocation`, gated on `getBlockedRam`), no cache-opening.
+  Estimated ~3.35GB (arithmetic, not yet measured live). Chosen over a
+  cache-only lean variant for two independent reasons that happen to agree:
+  it's cheaper (drops `openCache`'s 2GB vs. `memoryReallocation`'s 1GB, so
+  it reaches more RAM-constrained hosts), and it's the more valuable
+  capability to keep per `darknet-strategy.md`'s own ranking (RAM recovery
+  is durable capacity; cache money is explicitly "the least strategically
+  interesting" payout, since `mcp.js` already generates that resource by
+  other means). Full reasoning: `docs/darknet-tactics.md` §7.
+- `freeBlockedRam` moved from a `dnet_loot.js`-local function into
+  `dnet_lib.js` as a shared export, so `dnet_loot.js` and
+  `dnet_loot_realloc.js` can't drift apart on the actual reallocation loop.
+- `chooseLootMode(freeRam, fullRam, reallocRam)` — new pure function in
+  `dnet_lib.js` encoding the fallback policy (full if it fits, else
+  realloc-only if *that* fits, else skip). Unit-tested in new
+  `dnet_lib.test.js` (11 tests: the policy boundaries, plus a regression
+  test using the exact `darkweb`-at-handoff numbers — `freeRam=1.6` still
+  correctly returns "skip" even against the new lower `reallocRam=3.35`
+  floor — and 5 tests on the relocated `freeBlockedRam`'s stop conditions
+  via a hand-built mock `ns`). Full repo suite: **76/76 passing**
+  (`node --test *.test.js`), up from 65 at session start.
+- `dnet_deploy.js`'s `lootDeploy()` now tries the full script, falls back
+  to the lean one, and only reports `why: "ram"` if neither fits — and that
+  skip line now prints the exact `freeRam`/`fullRam`/`reallocRam` inputs
+  that produced the decision, per `CLAUDE.md`'s "log decisions, not just
+  state" rule. `spread()` now carries both loot scripts so every deployed
+  instance can make the same choice. `dnet_status.json`'s
+  `deployer.thisPass.lootMode`/`sinceProcessStart.lootMode` now break out
+  `{full, realloc}` counts. `dnet_loot_merge.js` reads a new `mode` field
+  per shard so a merged "loot" section doesn't misread a realloc-only
+  pass's `opened: 0` as "no caches found" when it actually means "not
+  checked this pass."
+- `node --check` clean on every touched file
+  (`dnet_lib.js`, `dnet_loot.js`, `dnet_loot_realloc.js`, `dnet_deploy.js`,
+  `dnet_loot_merge.js`, `dnet_lib.test.js`). A stray unused `CODE` import
+  left behind in `dnet_loot.js` by the `freeBlockedRam` move, and a missed
+  `lifetime.lootMode` accumulator in `dnet_deploy.js`'s per-pass tally
+  (mirrored the existing `lootSkipped` loop but wasn't there for the new
+  field), were both caught and fixed before commit, not left as follow-up.
+
+**Honest limit, stated plainly rather than oversold:** this does not
+rescue `darkweb` itself. Its own free RAM was measured at 1.6GB at the
+Phase 3 handoff — below even the new 3.35GB lean-script floor, and a script
+with zero further calls beyond Bitburner's fixed 1.6GB base is already
+close to that ceiling, so no further RAM-diet on the loot side can fix that
+specific host. If `darkweb`'s occupant-driven used-RAM is durably stuck
+rather than fluctuating (the Phase 3 checkpoint's own still-open question),
+the fix has to be upstream of this change (killing the occupant, or natural
+churn). What this change *does* do is stop the flat, all-or-nothing skip
+for every other host whose free RAM falls between roughly 3.35GB and
+5.55GB — previously nothing, now at least a RAM-freeing pass with the
+result reported.
+
+**Full detail, RAM-table arithmetic, and the argument for dropping
+`openCache` over `memoryReallocation`:** `docs/darknet-functions.md`'s new
+"Phase 3b" section and `docs/darknet-tactics.md` §7.
+
+**What a live check still needs to confirm (nothing here could execute
+in-game — CLAUDE.md's standing constraint):**
+
+1. Once this lands in the daemon-watched checkout and a fresh
+   `dnet_deploy.js` restarts (Bitburner doesn't hot-reload), watch
+   `dnet_status.json`'s `deployer.*.lootMode.realloc` for movement off
+   zero — the direct signal the fallback is firing on a real host, not
+   just passing in the unit tests.
+2. Confirm `dnet_loot_realloc.js`'s actual RAM cost via the game's own
+   readout (`ns.getScriptRam("dnet_loot_realloc.js", "home")` from a live
+   terminal, or a `dnet_ramcheck.js`-style check) — the ~3.35GB estimate
+   has the exact same "arithmetic, not measurement" risk that made the full
+   script's own comment wrong by 0.6GB.
+3. Watch whether `lootSkipped.ram` keeps climbing for `darkweb` specifically
+   (expected) while slowing for the broader host population (the actual
+   win condition for this change).
+4. **Needs Ken's hand, added to `docs/kensTodo.md`**: pushing this commit
+   and confirming it's live in the daemon-watched checkout at
+   `/Users/Shared/BitBurner` (this session ran directly against that
+   checkout, not an isolated worktree — confirmed via `git worktree list`
+   before starting — so no separate pull step is expected this time, but
+   worth Ken's one-line confirmation given the precedent from the 2026-08-12
+   worktree/sync gap logged just below).
+
+## 2026-08-12: `NUM_SIMULATIONS` 1500 → 6000, algorithm tag `v1` → `v2` — loss-margin diagnosis said search depth, not eye-awareness
 
 Picked up from the rolling-window numbers accumulated since the
 augmentation-install reset: over the last 100 games at 1500 sims/move, win

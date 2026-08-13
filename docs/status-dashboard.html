@@ -504,48 +504,48 @@
 
     <div class="scoreboard">
       <div class="scoreboard-head">
-        <span class="scoreboard-title">vs Netburners &middot; 7&times;7 &middot; MCTS/UCB1 + eye-safety fix</span>
-        <span class="scoreboard-sub">as of 2026&#8209;08&#8209;12 18:00 PDT</span>
+        <span class="scoreboard-title">vs Netburners &middot; 7&times;7 &middot; 90% target hit</span>
+        <span class="scoreboard-sub">as of 2026&#8209;08&#8209;12 18:10 PDT</span>
       </div>
 
       <div class="stat-row">
         <div class="stat-tile win-rate">
-          <span class="stat-value">87%</span>
-          <span class="stat-label">Win rate (47 games)</span>
+          <span class="stat-value">90%</span>
+          <span class="stat-label">Win rate (70 games)</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">41/47</span>
+          <span class="stat-value">63/70</span>
           <span class="stat-label">Record</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">9</span>
+          <span class="stat-value">18</span>
           <span class="stat-label">Current streak</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">12</span>
+          <span class="stat-value">18</span>
           <span class="stat-label">Best streak</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">+39%</span>
+          <span class="stat-value">+40%</span>
           <span class="stat-label">Stat bonus</span>
         </div>
       </div>
 
       <div class="scoreboard-footnote">
-        Last game: <span class="last-result win">&#9679; WIN, 42&ndash;1.5</span> &mdash;
-        <strong>87% over 47 games, up from the old flat&#8209;Monte&#8209;Carlo baseline of
-        ~44&ndash;50%</strong>, and closing in on the 90% target. This is the MCTS/UCB1 rewrite
-        (replacing flat Monte Carlo), opening-move learning, and the root-level eye-safety fix all
-        running together (<code class="cite">"mcts-ucb1-v1"</code>) &mdash; the eye-fix specifically
+        Last game: <span class="last-result win">&#9679; WIN, 24&ndash;18.5</span> &mdash;
+        <strong>Ken's original target, actually hit</strong>: 90% over 70 games (63/70), current
+        streak 18 tying the best streak. Up from the flat&#8209;Monte&#8209;Carlo baseline of
+        ~44&ndash;50%, via three staged pieces running together
+        (<code class="cite">"mcts-ucb1-v1"</code>): the MCTS/UCB1 tree-search rewrite,
+        opening-move learning, and the root-level eye-safety fix &mdash; the eye-fix specifically
         was Ken's own prediction after watching Black fill both of its own eyes and die despite
-        holding the board, traced to a real gap in root move selection, not a game-rules
-        irregularity. Move timing stayed healthy the whole way: 227ms avg / 302ms max, comfortably
-        under the 10&#8209;second tick budget.
+        holding the board. Move timing stayed healthy throughout, comfortably under the
+        10&#8209;second tick budget.
         <br /><br />
-        47 games is a real sample, not a fluke-sized one, but still short of a large one &mdash;
-        worth letting it keep climbing before calling 90% hit or missed. See
-        <code class="cite">docs/claude-todo.md</code>'s 2026&#8209;08&#8209;12 entries for the full
-        writeup.
+        <strong>Next, per the strategy doc's own explicit ordering</strong> ("once 90% is
+        genuinely demonstrated &mdash; not before &mdash; try a larger board"): a bigger board is
+        now on the table. See <code class="cite">docs/claude-todo.md</code>'s 2026&#8209;08&#8209;12
+        entries for the full writeup.
       </div>
     </div>
   </section>

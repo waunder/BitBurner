@@ -511,14 +511,33 @@ one restart (self-supersede handles killing the old instance).
   play: "looks like sensible go play to me now." 47 games is a real
   sample, not a fluke-sized one, but still worth letting grow before
   calling 90% hit or missed outright.
-- [ ] Keep watching `recentWinRate`/`recentGamesCount` as the sample
-  grows past 47 — if it holds near 87% or climbs further, the eye-safety
-  fix plus MCTS/opening-learning together may be enough on their own;
-  if it plateaus below 90%, the next lever is raising `NUM_SIMULATIONS`
-  (currently 1500, still comfortably fast at 227ms avg/302ms max) before
-  reaching for a structurally different algorithm (see the MCTS
-  checkpoint above's own "Open questions" ordering, carried over from the
-  flat-MC section further below).
+- [x] **90% target hit.** Grew from 41/47 to **63/70 (90%), streak 18
+  (new best, ties the game's own record)** by ~18:10 PDT — Ken's original
+  ask ("find a good rudimentary go algorithm... goal 90% win rate, then
+  move up to a larger board") is now genuinely, not just approximately,
+  satisfied. Move timing held at 227&ndash;255ms avg / 289&ndash;302ms
+  max the whole climb, comfortable headroom under the 10s tick budget.
+- [ ] **Next: try a larger board**, per the strategy doc's own explicit
+  ordering ("once 90% is genuinely demonstrated — not before"). Real
+  open question raised in conversation, not yet answered: root branching
+  factor scales with board area (7&times;7=49 points, 9&times;9=81,
+  13&times;13=169 — sizes the game actually offers, no 19&times;19 here),
+  but `NUM_SIMULATIONS` is a fixed 1500 regardless of board size, and the
+  playout length cap (`W*H*2`) scales right along with area too — so the
+  same simulation budget gets spread thinner *and* each simulation costs
+  more wall-clock time on a bigger board. Expect the win rate to dip
+  initially on size alone, not because anything regressed — worth
+  measuring one size step at a time (7&rarr;9 before 9&rarr;13) rather
+  than jumping straight to 13, and watching `avgMoveMs`/`maxMoveMs`
+  closely since timing headroom is the thing most likely to actually
+  constrain this. `NUM_SIMULATIONS` is the first lever to raise if the
+  dip is real and doesn't recover on its own. Opening-move learning's
+  table also resets fresh on a size change — same "zero data, not a
+  bug" as every prior algorithm-tag change.
+- [ ] **Needs Ken's go-ahead before actually calling
+  `ns.go.resetBoardState(opponent, size)`** — it abandons the
+  in-progress 7x7 game/streak, which is worth confirming first now that
+  the streak itself (18, tying the record) is something to weigh.
 
 ## 2026-08-12: Monte Carlo rewrite — real cited algorithm, targeting 90% win rate
 

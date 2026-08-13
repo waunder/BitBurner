@@ -504,11 +504,21 @@ one restart (self-supersede handles killing the old instance).
 - [x] Restarted by Ken 2026-08-12 ~17:39 PDT. All three rounds
   (MCTS/UCB1, opening-move learning, this eye-safety fix) now active
   together under `"mcts-ucb1-v1"`.
-- [ ] **Watching whether the eye-fix moves the win rate** — 6/7 (streak 5)
-  in the first few minutes, far too small to read yet. Don't compare to
-  the old 44%/50% flat-MC numbers until a real sample accumulates
-  (standing discipline, see checkpoint above). Ken's own live read while
-  watching it play: "looks like sensible go play to me now."
+- [x] **The eye-fix moved the win rate, confirmed with a real sample.**
+  6/7 minutes after restart grew to **41/47 (87%), streak 9 (best 12)** by
+  ~18:00 PDT — a genuine jump from the old flat-MC 44&ndash;50% baseline,
+  closing in on the 90% target. Ken's own live read while watching it
+  play: "looks like sensible go play to me now." 47 games is a real
+  sample, not a fluke-sized one, but still worth letting grow before
+  calling 90% hit or missed outright.
+- [ ] Keep watching `recentWinRate`/`recentGamesCount` as the sample
+  grows past 47 — if it holds near 87% or climbs further, the eye-safety
+  fix plus MCTS/opening-learning together may be enough on their own;
+  if it plateaus below 90%, the next lever is raising `NUM_SIMULATIONS`
+  (currently 1500, still comfortably fast at 227ms avg/302ms max) before
+  reaching for a structurally different algorithm (see the MCTS
+  checkpoint above's own "Open questions" ordering, carried over from the
+  flat-MC section further below).
 
 ## 2026-08-12: Monte Carlo rewrite — real cited algorithm, targeting 90% win rate
 

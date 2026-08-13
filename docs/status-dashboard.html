@@ -484,7 +484,7 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">rebuilt 2026&#8209;08&#8209;12 17:45 PDT</div>
+    <div class="updated mono">rebuilt 2026&#8209;08&#8209;12 18:00 PDT</div>
   </div>
 
   <div class="glance">
@@ -505,46 +505,45 @@
     <div class="scoreboard">
       <div class="scoreboard-head">
         <span class="scoreboard-title">vs Netburners &middot; 7&times;7 &middot; MCTS/UCB1 + eye-safety fix</span>
-        <span class="scoreboard-sub">as of 2026&#8209;08&#8209;12 17:39 PDT</span>
+        <span class="scoreboard-sub">as of 2026&#8209;08&#8209;12 18:00 PDT</span>
       </div>
 
       <div class="stat-row">
         <div class="stat-tile win-rate">
-          <span class="stat-value">6/7</span>
-          <span class="stat-label">Win rate (too early)</span>
+          <span class="stat-value">87%</span>
+          <span class="stat-label">Win rate (47 games)</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">7</span>
-          <span class="stat-label">Games played</span>
+          <span class="stat-value">41/47</span>
+          <span class="stat-label">Record</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">5</span>
+          <span class="stat-value">9</span>
           <span class="stat-label">Current streak</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">7</span>
-          <span class="stat-label">Best streak (lifetime)</span>
+          <span class="stat-value">12</span>
+          <span class="stat-label">Best streak</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">+37%</span>
+          <span class="stat-value">+39%</span>
           <span class="stat-label">Stat bonus</span>
         </div>
       </div>
 
       <div class="scoreboard-footnote">
-        Last game: <span class="last-result win">&#9679; WIN, 26&ndash;18.5</span> &mdash;
-        Ken ran <code class="cite">run ipvgo_player.js</code> live 2026&#8209;08&#8209;12 ~17:39 PDT,
-        activating three staged rounds at once: the MCTS/UCB1 tree-search rewrite (replacing flat
-        Monte Carlo), opening-move learning, and a root-level eye-safety fix (the bot no longer ever
-        voluntarily fills its own true eye &mdash; found after Ken watched Black do exactly that and
-        die despite holding the board; traced to a real gap in root move selection, not a game-rules
-        irregularity). Move timing is healthy: 341ms avg / 674ms max, comfortably under the 10&#8209;second
-        tick budget.
+        Last game: <span class="last-result win">&#9679; WIN, 42&ndash;1.5</span> &mdash;
+        <strong>87% over 47 games, up from the old flat&#8209;Monte&#8209;Carlo baseline of
+        ~44&ndash;50%</strong>, and closing in on the 90% target. This is the MCTS/UCB1 rewrite
+        (replacing flat Monte Carlo), opening-move learning, and the root-level eye-safety fix all
+        running together (<code class="cite">"mcts-ucb1-v1"</code>) &mdash; the eye-fix specifically
+        was Ken's own prediction after watching Black fill both of its own eyes and die despite
+        holding the board, traced to a real gap in root move selection, not a game-rules
+        irregularity. Move timing stayed healthy the whole way: 227ms avg / 302ms max, comfortably
+        under the 10&#8209;second tick budget.
         <br /><br />
-        <strong>6/7 is nowhere near a real sample</strong> &mdash; algorithm tag reset to
-        <code class="cite">"mcts-ucb1-v1"</code>, so this isn't comparable to the old flat&#8209;MC
-        50% yet, standing discipline is to wait for a real sample before reading anything into it.
-        Ken's own live read watching it play: "looks like sensible go play to me now." See
+        47 games is a real sample, not a fluke-sized one, but still short of a large one &mdash;
+        worth letting it keep climbing before calling 90% hit or missed. See
         <code class="cite">docs/claude-todo.md</code>'s 2026&#8209;08&#8209;12 entries for the full
         writeup.
       </div>

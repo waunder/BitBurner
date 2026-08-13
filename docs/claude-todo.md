@@ -55,15 +55,27 @@ code.
 - [x] `node --check ipvgo_player.js` clean; `node --test *.test.js` still
   65/65 (this change only touches two constants and their comments in
   `ipvgo_player.js`, nothing in the tested `ipvgo_logic.js` surface).
-- [ ] Pushed to the game's filesystem via the daemon's file watcher (no
-  `ctl-push` round-trip needed while it's connected — see CLAUDE.md's sync
-  note), but **pushing a file does not change what a currently-running
-  script executes — Bitburner doesn't hot-reload.** The live process is
-  still running the 1500-sim `"mcts-ucb1-v1"` version, still accumulating
-  its own record under that tag. **Needs `run ipvgo_player.js` in the live
-  terminal** to actually take effect — needs Ken's hand, same pattern as
-  every prior algorithm change logged in this file. Nothing needs to be
-  rolled back in the meantime.
+- [x] Committed (`c33c13f`) and pushed to `origin/main`. `node --check`
+  clean, `node --test *.test.js` 65/65 at that commit.
+- [ ] **Not yet on the daemon's watched filesystem — a real gap found this
+  session, not yet closed.** This work ran in an isolated agent worktree
+  (a separate directory from `/Users/Shared/BitBurner` on disk, same repo
+  history). `tools/bb_remote.py`'s daemon watches
+  `/Users/Shared/BitBurner`'s files directly, not git refs — confirmed via
+  `ctl-get /ipvgo_player.js` after pushing that it's still serving the old
+  `NUM_SIMULATIONS = 1500`/`"mcts-ucb1-v1"` content, because that checkout
+  hasn't pulled `c33c13f` yet. A worktree-isolated agent has no way to run
+  `git` against that shared checkout to fix it (attempted, structurally
+  refused) — **logged as a pending item in `docs/kensTodo.md`**: pull
+  `origin/main` into `/Users/Shared/BitBurner`, then the daemon's own
+  watcher should auto-push the file the normal way.
+- [ ] Once that lands, **pushing a file still does not change what a
+  currently-running script executes — Bitburner doesn't hot-reload.** The
+  live process will still be running the 1500-sim `"mcts-ucb1-v1"`
+  version, still accumulating its own record under that tag, until someone
+  runs `run ipvgo_player.js` in the live terminal — needs Ken's hand, same
+  pattern as every prior algorithm change logged in this file. Nothing
+  needs to be rolled back in the meantime.
 - [ ] Once it's running, watch `recentWinRate`/`recentGamesCount` under the
   new `"mcts-ucb1-v2"` tag build up before comparing it to the 81-82%
   figure above — don't call it off a handful of games, same standing

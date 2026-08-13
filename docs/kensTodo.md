@@ -10,6 +10,25 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
+- [ ] **Pull `origin/main` into the actual synced checkout at
+  `/Users/Shared/BitBurner`** (a plain `git pull`, or `git checkout .` if
+  it's clean but behind) to bring in commit `c33c13f` (`NUM_SIMULATIONS`
+  1500→6000, algorithm tag v1→v2 — full reasoning in this session's
+  `docs/claude-todo.md` "(latest)" entry and in the dashboard footnote).
+  Found this session: this work was done in an isolated agent worktree
+  (`.claude/worktrees/agent-a141ec9395f55e1c3`), which is a **separate
+  directory on disk** from `/Users/Shared/BitBurner` — the same repo
+  history, but the two have independent working-tree files. The commit is
+  pushed to `origin/main`, but `tools/bb_remote.py`'s daemon watches
+  `/Users/Shared/BitBurner`'s files directly (per `CLAUDE.md`'s own sync
+  notes), and confirmed via `ctl-get /ipvgo_player.js` after this push that
+  it's still serving the **old** `NUM_SIMULATIONS = 1500` /
+  `"mcts-ucb1-v1"` content — a worktree agent has no way to run `git` in
+  that shared checkout to fix it directly (attempted, structurally
+  blocked). Once the pull lands, the daemon's own filesystem watcher should
+  pick up the change and auto-push it into the game the normal way (per
+  `CLAUDE.md`) — then the standing `run ipvgo_player.js` step below still
+  applies, since Bitburner doesn't hot-reload either way.
 - [ ] **Restart the `tools/bb_remote.py daemon` process — it's stuck
   crash-looping.** Found and root-caused 2026-08-11 (later session):
   `mcp_status_log.txt` grew past 1MB, which trips the websocket library's

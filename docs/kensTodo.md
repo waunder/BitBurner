@@ -10,22 +10,18 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
-- [ ] **Pull `origin/main` into the actual synced checkout at
-  `/Users/Shared/BitBurner`** to bring in the darknet status-file
-  clobbering fix (this session's `docs/claude-todo.md` "(latest)" entry —
-  sharded `dnet_deploy.js`'s deployer heartbeat the same way credentials
-  and loot already are, plus a new `dnet_status_merge.js`). Same gap as the
-  precedent flagged in commit `d2e3ae3` ("ipvgo: flag a real
-  worktree/checkout sync gap found verifying c33c13f"): this session's work
-  happened in an isolated agent worktree
-  (`.claude/worktrees/agent-ab5a9825c28bdc76a`), a separate directory on
-  disk from `/Users/Shared/BitBurner` — same repo history, independent
-  working-tree files. `tools/bb_remote.py`'s daemon watches
-  `/Users/Shared/BitBurner`'s files directly, not `origin/main`, so a push
-  alone does not make the fix live; a plain `git pull` (or `git checkout .`
-  if clean but behind) in that specific directory is needed before any of
-  the restart/verification steps below can do anything. A worktree agent
-  cannot run `git` against that checkout directly.
+- [x] **Pull `origin/main` into the actual synced checkout at
+  `/Users/Shared/BitBurner`.** Done — fast-forwarded `bd527fb..09062a6`,
+  bringing in the darknet status-file clobbering fix. `node --test
+  *.test.js` (85/85) and `python3 tools/bb_remote.py selftest` both clean
+  in that checkout afterward.
+- [ ] **`dnet_status_merge.js` is a brand-new file, and the running daemon
+  hasn't picked it up** — `WATCHED_FILES` is a static Python list read once
+  at daemon startup, same story as `ipvgo_hud.js` earlier tonight.
+  Confirmed via `ctl-get`: the file genuinely isn't on the game's
+  filesystem yet ("File does not exist"). Needs the daemon process
+  restarted (asked Ken first, per his own earlier instruction not to
+  restart it without being asked).
 - [ ] **After the pull above: restart the darknet swarm and confirm the
   status-file clobbering bug is actually fixed.** This is the concrete
   regression test for the bug Ken hit directly (`dnet_creds_merge.js`/

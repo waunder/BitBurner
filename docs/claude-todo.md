@@ -1,5 +1,32 @@
 # Claude's working list
 
+## 2026-08-12 (latest): `ipvgo_hud.js` — in-game panel instead of a scheduled dashboard refresh
+
+Ken asked whether the status dashboard could refresh on a regular interval.
+Walking through it: a cloud-scheduled routine can't reach `ipvgo_status.json`
+at all (it's local-only, pulled by the daemon, gitignored — never on
+GitHub), and even a local-bridge routine's 1-hour cron minimum isn't
+"regular" for a game playing several games a minute. Ken's own
+counter-suggestion, and the right one: an in-game scoreboard instead — no
+refresh problem if it's just reading the file live.
+
+- [x] Built `ipvgo_hud.js`, same shape as `mcp_hud.js` (reads
+  `ipvgo_status.json`, self-supersedes, stacks at `y=850` below
+  `mcp_hud.js`/`mcp_money.js`/`mcp_stocks.js`). `node --check` clean.
+- [x] Added to `tools/bb_remote.py`'s `WATCHED_FILES` (30 → 31).
+  `python3 tools/bb_remote.py selftest` passes (20 checks).
+- [x] Documented in `docs/processes.md` alongside the other HUD panels.
+- [ ] **Needs the daemon process restarted** to pick up the new
+  `WATCHED_FILES` entry — it's a static Python list read once at daemon
+  startup, same "doesn't hot-reload" story as the game side. The live
+  connection also happens to be down right now (dropped again at 17:41:26,
+  `close_code=1006`, same intermittent class of drop as before, unrelated
+  to this work) — asked Ken before restarting, since a prior instruction
+  this session was explicit: don't restart the daemon without being asked.
+- [ ] Once the daemon's back up and synced, `run ipvgo_hud.js` once in the
+  live terminal to open the panel (self-supersede makes future re-runs, if
+  ever needed for repositioning, safe).
+
 ## 2026-08-12: Darknet Phase 3 (loot) — inline fix live, swarm restarted, darkweb currently RAM-blocked (handoff, session ending)
 
 **Checkpointed mid-flight — Ken shutting the session down.** Read this

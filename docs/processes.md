@@ -599,6 +599,38 @@ is bought — what looks worth buying.
 +----------------------------------+
 ```
 
+### `ipvgo_hud.js`
+
+Terse status panel for `ipvgo_player.js`, same shape as `mcp_hud.js` — reads
+`ipvgo_status.json` rather than measuring anything itself. Stacks below
+`mcp_stocks.js` at `y=850`.
+
+Built 2026-08-12 after Ken asked for the dashboard artifact to refresh on a
+schedule, which turned out to be the wrong tool for the job: the dashboard
+is redeployed by Claude from outside the game, but the live IPvGO numbers
+only exist locally (pulled by the daemon into `ipvgo_status.json`,
+gitignored, never reaches GitHub) — no cloud-scheduled routine can reach
+them, and even a local-bridge routine's 1-hour cron minimum doesn't read as
+"regular interval" for a game playing several 7x7 games a minute. A panel
+reading the same status file in-game has no refresh problem at all — it's
+live for as long as it's open.
+
+```
++----------------------------+
+|OK                Netburners|   verdict + opponent
+|algo             mcts-ucb1-v1|
+|win 86%                  n=7|   recentWinRate / recentGamesCount
+|record                    6/7|
+|streak 5                best 7|
+|last              WIN 26-18.5|
+|move ms              341/674|
+|bonus                    37%|
+|vs opp                219-268|   opponent's lifetime record vs. us
+|age 12s                     |
+|x=1050                   y=850|
++----------------------------+
+```
+
 ### `get_stats.js`
 
 The wide view: one line per rooted server with money, security, RAM and what

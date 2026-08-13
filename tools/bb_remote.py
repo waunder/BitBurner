@@ -771,6 +771,7 @@ WATCHED_FILES = [
     "purchaseServer-8GB.js",
     "ipvgo_player.js",
     "ipvgo_logic.js",
+    "ipvgo_hud.js",
     "hacking/crawler.js",
     "hacking/worm.js",
     "scripts/copyScripts.js",

@@ -534,10 +534,16 @@ one restart (self-supersede handles killing the old instance).
   dip is real and doesn't recover on its own. Opening-move learning's
   table also resets fresh on a size change — same "zero data, not a
   bug" as every prior algorithm-tag change.
-- [ ] **Needs Ken's go-ahead before actually calling
-  `ns.go.resetBoardState(opponent, size)`** — it abandons the
-  in-progress 7x7 game/streak, which is worth confirming first now that
-  the streak itself (18, tying the record) is something to weigh.
+- [x] Asked Ken; decided to hold at 7x7 for now rather than switch
+  boards — he's about to install 9 augmentations, which resets the game
+  session on its own, and doing both at once would muddy any before/after
+  comparison. Revisit the board-size question after the reset settles.
+- [ ] **Expect after the aug install**: same Remote API reconnect click
+  as every other disconnect tonight (the reset reloads the game), then
+  `run ipvgo_player.js` again — its in-memory `gamesPlayed`/`wins`
+  counters reset on any script restart, same as `mcp.js`'s, so the panel
+  will read `0/0` briefly. The 90%/70-game result is already recorded
+  here and on the dashboard, not lost by this.
 
 ## 2026-08-12: Monte Carlo rewrite — real cited algorithm, targeting 90% win rate
 

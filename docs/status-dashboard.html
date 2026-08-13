@@ -484,7 +484,7 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">rebuilt 2026&#8209;08&#8209;12 18:00 PDT</div>
+    <div class="updated mono">rebuilt 2026&#8209;08&#8209;12 22:50 PDT</div>
   </div>
 
   <div class="glance">
@@ -504,66 +504,54 @@
 
     <div class="scoreboard">
       <div class="scoreboard-head">
-        <span class="scoreboard-title">vs Netburners &middot; 7&times;7 &middot; 90% target hit</span>
-        <span class="scoreboard-sub">as of 2026&#8209;08&#8209;12 20:14 PDT</span>
+        <span class="scoreboard-title">vs Slum Snakes &middot; 7&times;7 &middot; mcts-ucb1-v2</span>
+        <span class="scoreboard-sub">as of 2026&#8209;08&#8209;12 22:50 PDT</span>
       </div>
 
       <div class="stat-row">
         <div class="stat-tile win-rate">
-          <span class="stat-value">90%</span>
-          <span class="stat-label">Win rate (70 games)</span>
+          <span class="stat-value">82%</span>
+          <span class="stat-label">Win rate (96 games)</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">63/70</span>
+          <span class="stat-value">79/96</span>
           <span class="stat-label">Record</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">18</span>
+          <span class="stat-value">4</span>
           <span class="stat-label">Current streak</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">18</span>
+          <span class="stat-value">10</span>
           <span class="stat-label">Best streak</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">+40%</span>
+          <span class="stat-value">+24%</span>
           <span class="stat-label">Stat bonus</span>
         </div>
       </div>
 
       <div class="scoreboard-footnote">
-        Last game: <span class="last-result win">&#9679; WIN, 24&ndash;18.5</span> &mdash;
-        <strong>Ken's original target, actually hit</strong>: 90% over 70 games (63/70), current
-        streak 18 tying the best streak. Up from the flat&#8209;Monte&#8209;Carlo baseline of
-        ~44&ndash;50%, via three staged pieces running together
-        (<code class="cite">"mcts-ucb1-v1"</code>): the MCTS/UCB1 tree-search rewrite,
-        opening-move learning, and the root-level eye-safety fix &mdash; the eye-fix specifically
-        was Ken's own prediction after watching Black fill both of its own eyes and die despite
-        holding the board. Move timing stayed healthy throughout, comfortably under the
-        10&#8209;second tick budget.
+        Last game: <span class="last-result win">&#9679; WIN, 42&ndash;3.5</span> &mdash;
+        <strong>tonight's arc, short version:</strong> hit Ken's original 90% target against
+        Netburners (63/70), then deliberately raised the difficulty twice to keep testing the
+        algorithm rather than resting on an easy win. First, <code class="cite">NUM_SIMULATIONS</code>
+        1500&nbsp;&rarr;&nbsp;6000 (<code class="cite">"mcts-ucb1-v2"</code>) after the loss-margin
+        data showed search depth, not missing eye-shape awareness, was the bottleneck (15/16 losses
+        were close games, only 1 was a whole-group collapse). Then switched opponents entirely, to
+        <strong>Slum Snakes</strong> &mdash; genuinely untested ground, since this project had only
+        ever measured against Netburners before. 82% over 96 real games against a different
+        opponent is strong evidence the algorithm generalizes rather than being overfit to one AI,
+        even if it's a step down from the Netburners number.
         <br /><br />
-        <strong>Next, per the strategy doc's own explicit ordering</strong> ("once 90% is
-        genuinely demonstrated &mdash; not before &mdash; try a larger board"): a bigger board is
-        now on the table, but currently on hold &mdash; Ken's about to install 9 augmentations,
-        which resets the game session on its own, and changing board size at the same time would
-        muddy any before/after comparison.
-        <br /><br />
-        <strong>Staged, tested, pushed, not yet live:</strong> over the last 100 games since that
-        reset, the rolling win rate settled to ~81&ndash;82% at the 1500-simulation budget above
-        &mdash; still short of 90%, but the loss margins say why: of 16 losses, only 1 was a
-        whole-group collapse (the already-fixed eye-safety shutout signature), the other 15 were
-        close losses of 0.5&ndash;12.5 points on a 49&#8209;point board. That's the signature of a
-        search that isn't deep enough, not a missing eye-shape blind spot, so per the strategy
-        doc's own stated criterion for when eye-awareness code is actually worth building,
-        <code class="cite">NUM_SIMULATIONS</code> is raised 1500&nbsp;&rarr;&nbsp;6000 (4&times;)
-        instead &mdash; measured live headroom at 1500 (avg 261ms / max 307ms/move against the
-        10&#8209;second tick budget) leaves comfortable room. 65/65 tests still passing, pushed to
-        the game's filesystem, but Bitburner doesn't hot-reload &mdash; needs one
-        <code class="cite">run ipvgo_player.js</code> in the live terminal to actually take effect.
-        The numbers above will reset fresh once that happens (new algorithm tag,
-        <code class="cite">"mcts-ucb1-v2"</code>), by design &mdash; see
-        <code class="cite">docs/claude-todo.md</code>'s 2026&#8209;08&#8209;12 (latest) entry for
-        the full writeup.
+        The eye-safety fix that started tonight's run is holding throughout &mdash; the bot has not
+        self-destructed by filling its own eyes once since it shipped. Move timing stayed healthy
+        the whole way (comfortably under the 10&#8209;second shared tick budget even at 6000
+        simulations/move). Next natural step, whenever picked back up: try a bigger board
+        (5/7/9/13 are the only sizes the game offers), per the strategy doc's own explicit
+        ordering that this only makes sense once win rate is genuinely demonstrated first &mdash;
+        which it now has been, twice. See <code class="cite">docs/claude-todo.md</code>'s
+        2026&#8209;08&#8209;12 entries for the full night's writeup.
       </div>
     </div>
   </section>
@@ -576,45 +564,55 @@
 
     <div class="scoreboard">
       <div class="scoreboard-head">
-        <span class="scoreboard-title">Cracked servers, network&#8209;wide</span>
-        <span class="scoreboard-sub">as of 2026&#8209;08&#8209;12 13:15 PDT</span>
+        <span class="scoreboard-title">Cracked &amp; looted, network&#8209;wide</span>
+        <span class="scoreboard-sub">as of 2026&#8209;08&#8209;12 22:50 PDT</span>
       </div>
 
       <div class="stat-row">
         <div class="stat-tile win-rate">
-          <span class="stat-value">103</span>
+          <span class="stat-value">586</span>
           <span class="stat-label">Total cracked</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">28</span>
-          <span class="stat-label">FreshInstall_1.0</span>
+          <span class="stat-value">71</span>
+          <span class="stat-label">Hosts looted</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">24</span>
-          <span class="stat-label">DeskMemo_3.1</span>
+          <span class="stat-value">$362m</span>
+          <span class="stat-label">Darknet income*</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">24</span>
-          <span class="stat-label">ZeroLogon</span>
+          <span class="stat-value">4GB</span>
+          <span class="stat-label">RAM freed</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">21</span>
-          <span class="stat-label">CloudBlare(tm)</span>
+          <span class="stat-value">2</span>
+          <span class="stat-label">Caches opened</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">5</span>
-          <span class="stat-label">Laika4</span>
+          <span class="stat-value">&minus;4</span>
+          <span class="stat-label">Karma spent</span>
         </div>
       </div>
 
       <div class="scoreboard-footnote">
-        Nearly doubled since the last check (55 &rarr; 103) &mdash; the crawler is left running on its
-        own and this should keep climbing by itself. <strong>Actually collecting the reward from a
-        cracked server (money, freed capacity) is a separate step that just got built</strong> and
-        hasn't paid out yet (0 so far) &mdash; the first attempt found most cracked servers go offline
-        again before you come back for them, so looting is being taught to happen the instant a server
-        is confirmed online instead of on a separate later pass. Nothing here has been backdoored or
-        pinned in place &mdash; that has a real, one&#8209;way cost and hasn't been worth spending yet.
+        <strong>Looting is finally real, not just cracked-and-abandoned</strong>: 586 cracked
+        (up from 103), and for the first time an actual aggregate loot total that isn't zero &mdash;
+        71 hosts looted, karma and RAM tracked. Getting an honest read on this took real
+        debugging tonight: `mcp_money`'s own money-by-source breakdown was the first real evidence
+        (*$362m in the <code class="cite">darknet</code> category since the last aug install &mdash;
+        by design a side-effect of the RAM/charisma play here, not the main point, so modest
+        relative to hacking's billions is expected, not a shortfall). Chasing the real number down
+        found and fixed two separate live bugs: a corrupted credential entry that crashed
+        <code class="cite">dnet_killswarm.js</code> outright (a stray numeric value where a hostname
+        should've been &mdash; now degrades gracefully instead), and a more fundamental one &mdash;
+        every roaming <code class="cite">dnet_deploy.js</code> instance was <code class="cite">scp</code>-ing
+        its own status file straight over <code class="cite">home</code>'s, silently erasing the
+        merged totals within seconds of them landing. Fixed by sharding the deployer heartbeat the
+        same way credentials and loot already were, live-verified by checking twice 8 seconds apart
+        that nothing vanished. Also shipped: a leaner ~3.35GB loot fallback for RAM-constrained
+        hosts (<code class="cite">darkweb</code> and friends) instead of a flat skip &mdash; built
+        and tested, not yet confirmed firing live.
       </div>
     </div>
   </section>
@@ -628,15 +626,17 @@
 
       <div class="progress-card">
         <div class="progress-top">
-          <span class="pulse"></span>
-          <span class="row-title">Teaching the darknet crawler to loot as it goes</span>
+          <span class="pulse idle"></span>
+          <span class="row-title">Darknet looting &mdash; now confirmed working, real numbers in</span>
         </div>
-        <p>The batch "loot everything already cracked" approach found nothing to loot &mdash; servers
-          go offline again before a later pass comes back for them. The fix in progress: loot a server
-          the instant the crawler confirms it's online, not afterward. Will report real numbers (money,
-          capacity freed) once it's live and has actually run.</p>
-        <div class="stale-note">started 2026&#8209;08&#8209;12 13:05 &mdash; the crawler itself is
-          untouched and still running normally in the meantime.</div>
+        <p>Resolved tonight: inline looting (loot the instant a server's confirmed online, not on a
+          separate later pass) shipped and is producing real results &mdash; 71 hosts looted, karma
+          and RAM tracked, no longer zero. Getting an honest reading on it surfaced two more real
+          bugs along the way (a crash on a corrupted credential, and a status-file clobbering race),
+          both found and fixed the same night. Full numbers now live in the Dark Net Scoreboard
+          above.</p>
+        <div class="stale-note">started 2026&#8209;08&#8209;12 13:05, confirmed resolved
+          ~22:45 &mdash; leaving this here until you've had a look, not clearing it myself.</div>
       </div>
 
     </div>

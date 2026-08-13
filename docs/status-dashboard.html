@@ -504,42 +504,51 @@
 
     <div class="scoreboard">
       <div class="scoreboard-head">
-        <span class="scoreboard-title">vs Netburners &middot; 7&times;7 &middot; new algorithm</span>
-        <span class="scoreboard-sub">as of 2026&#8209;08&#8209;12 13:15 PDT</span>
+        <span class="scoreboard-title">vs Netburners &middot; 7&times;7 &middot; flat Monte Carlo (still live)</span>
+        <span class="scoreboard-sub">as of 2026&#8209;08&#8209;12 17:28 PDT</span>
       </div>
 
       <div class="stat-row">
         <div class="stat-tile win-rate">
-          <span class="stat-value">41%</span>
-          <span class="stat-label">Win rate (last 32)</span>
+          <span class="stat-value">50%</span>
+          <span class="stat-label">Win rate (last 100)</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">32</span>
+          <span class="stat-value">397</span>
           <span class="stat-label">Games played</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">1</span>
+          <span class="stat-value">2</span>
           <span class="stat-label">Current streak</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">4</span>
+          <span class="stat-value">7</span>
           <span class="stat-label">Best streak</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">+18%</span>
+          <span class="stat-value">+36%</span>
           <span class="stat-label">Stat bonus</span>
         </div>
       </div>
 
       <div class="scoreboard-footnote">
-        Last game: <span class="last-result win">&#9679; WIN, 48&ndash;1.5</span> &mdash;
-        this is the <strong>real algorithm rewrite</strong> talked about earlier (a proper published
-        approach, not hand-tuned rules), and this number is scoped to just its own games, not diluted
-        by the old version's losses. 41% over 32 games is a real, meaningful jump from where it
-        started (roughly 0%), but still well short of the 90% goal &mdash; worth watching as the sample
-        grows rather than reading too much into it yet. The <strong>+18% stat bonus</strong> ("increased
-        hacknet production") comes from territory held regardless of win/loss &mdash; that's a reward
-        landing right now, every game, win or not.
+        Last game: <span class="last-result win">&#9679; WIN, 47&ndash;1.5</span> &mdash;
+        50% over the last 100 games is still the <strong>flat Monte Carlo</strong> version (180/397
+        lifetime), climbing on its own as its sample grows, still well short of the 90% goal. The
+        <strong>+36% stat bonus</strong> ("increased hacknet production") comes from territory held
+        regardless of win/loss.
+        <br /><br />
+        <strong>Staged, tested, pushed, not yet live:</strong> an MCTS/UCB1 rewrite (real tree search
+        + opening-move learning, replacing flat Monte Carlo) plus a root-level eye-safety fix &mdash;
+        found after Ken watched Black fill both of its own eyes and die despite holding the board.
+        Traced to a real gap in root move selection (not a game-rules irregularity: the game's own Go
+        rules check out against the official docs). 65/65 tests passing, committed
+        (<code class="cite">43c7344</code>), pushed to the game's filesystem, but Bitburner doesn't
+        hot-reload &mdash; needs one <code class="cite">run ipvgo_player.js</code> in the live terminal
+        to actually take effect. The numbers above will reset fresh once that happens (new algorithm
+        tag, <code class="cite">"mcts-ucb1-v1"</code>), by design &mdash; see
+        <code class="cite">docs/claude-todo.md</code>'s 2026&#8209;08&#8209;12 entries for the full
+        writeup.
       </div>
     </div>
   </section>

@@ -319,7 +319,25 @@ export function shipStatus(ns, destination = "home", file = STATUS_FILE) {
 export async function acquireSession(ns, host, known, opts = {}) {
   const retries = opts.timeoutRetries ?? 2
   const bruteForceLimit = opts.bruteForceLimit ?? 0
-  const details = ns.dnet.getServerDetails(host)
+
+  // getServerDetails throws (not a return-value error) on a host string
+  // that isn't a real darknet server -- confirmed live 2026-08-12: a
+  // corrupted dnet_creds.txt entry with host "6969" (a plausible numeric
+  // *password* value, per numericCandidates' doc comment above -- exact
+  // corruption mechanism not fully root-caused, a concurrent-write race
+  // across many roaming dnet_deploy.js instances appending to the same
+  // file is the leading theory, not confirmed) crashed dnet_killswarm.js
+  // with an uncaught RUNTIME ERROR. Every caller of acquireSession reads
+  // its host list from dnet_creds.txt (plus ns.dnet.probe(), which only
+  // ever returns real hosts) -- a single bad line should never be able to
+  // take the whole script down, so this is caught here once rather than
+  // trusted to every call site.
+  let details
+  try {
+    details = ns.dnet.getServerDetails(host)
+  } catch (err) {
+    return { ok: false, why: "invalid host", code: CODE.NotFound, tried: 0, timeouts: 0, error: String(err) }
+  }
 
   if (!details.isOnline) return { ok: false, why: "offline", code: CODE.ServiceUnavailable, tried: 0, timeouts: 0 }
   if (details.hasSession) return { ok: true, password: known?.password, why: "already had a session", tried: 0, timeouts: 0 }

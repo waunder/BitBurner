@@ -14,7 +14,7 @@
  */
 import { test, describe } from "node:test"
 import assert from "node:assert/strict"
-import { chooseLootMode, freeBlockedRam } from "./dnet_lib.js"
+import { chooseLootMode, freeBlockedRam, acquireSession } from "./dnet_lib.js"
 
 describe("chooseLootMode — Phase 3b RAM-fit fallback policy", () => {
   test("picks full when free RAM covers the full script", () => {
@@ -105,5 +105,39 @@ describe("freeBlockedRam — shared reallocation loop (mock ns)", () => {
     assert.equal(res.calls, 5)
     assert.equal(res.after, 95)
     assert.equal(res.why, "hit call cap")
+  })
+})
+
+describe("acquireSession — invalid host resilience (mock ns)", () => {
+  // Regression test for a live crash 2026-08-12: dnet_killswarm.js hit an
+  // uncaught RUNTIME ERROR ("dnet.getServerDetails: Invalid host: '6969'")
+  // because getServerDetails throws, not returns an error, on a host string
+  // that isn't a real darknet server -- and every caller's host list comes
+  // from dnet_creds.txt, which a single corrupted line can poison. This
+  // must degrade to a normal {ok: false} result, not take the whole script
+  // down.
+  test("a throwing getServerDetails degrades to ok:false rather than propagating", async () => {
+    const ns = {
+      dnet: {
+        getServerDetails: () => {
+          throw new Error("dnet.getServerDetails: Invalid host: '6969'")
+        },
+      },
+    }
+    const res = await acquireSession(ns, "6969", null)
+    assert.equal(res.ok, false)
+    assert.equal(res.why, "invalid host")
+    assert.equal(res.code, 404)
+  })
+
+  test("a valid, online host with an existing session still works normally", async () => {
+    const ns = {
+      dnet: {
+        getServerDetails: () => ({ isOnline: true, hasSession: true }),
+      },
+    }
+    const res = await acquireSession(ns, "real-host", { password: "abc" })
+    assert.equal(res.ok, true)
+    assert.equal(res.why, "already had a session")
   })
 })

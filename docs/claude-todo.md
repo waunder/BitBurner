@@ -388,15 +388,20 @@ detailed record in the meantime if that doc section lags behind.
   `ipvgo_logic.test.js`.
 - [x] Pushed to the game's filesystem via `ctl-push` (inert until run —
   live game unaffected, still running flat-MC).
-- [ ] **Needs a human/CDP-capable hand**: `run ipvgo_player.js` in the live
-  terminal to actually start this version.
-- [ ] **Then, measure a real sample** the same way as every prior round —
-  `recentWinRate`/`recentGamesCount` in `ipvgo_status.json`, under the new
-  `"mcts-ucb1-v1"` algorithm tag, not compared to the old 41% until this
-  version has its own real sample.
-- [ ] **Check `avgMoveMs`/`maxMoveMs` early** to confirm the raised
-  `NUM_SIMULATIONS` (1500) is still comfortably fast live, not just in
-  local synthetic-board profiling.
+- [x] **Ken ran `run ipvgo_player.js` in the live terminal 2026-08-12
+  ~17:39 PDT.** Confirmed via `ctl-get /ipvgo_status.json`:
+  `algorithm: "mcts-ucb1-v1"`, so MCTS/UCB1, opening-move learning, and the
+  root-level eye-safety fix are all active together — this was one restart
+  picking up three rounds of uncommitted-then-committed work at once.
+- [ ] **Measure a real sample** — early read only, not a verdict: 6/7 wins
+  (streak of 5) moments after restart. Nowhere near enough games to call a
+  rate; watch `recentWinRate`/`recentGamesCount` under `"mcts-ucb1-v1"` as
+  it grows, same standing discipline as every prior round. Ken's own
+  visual read watching it play, separately: "looks like sensible go play
+  to me now."
+- [x] **Checked `avgMoveMs`/`maxMoveMs` live**: 340.8ms avg / 674ms max on
+  the first recorded game — comfortably under `mcp.js`'s 10-second tick
+  budget, no need to lower `NUM_SIMULATIONS` (1500) yet.
 - [ ] Update `docs/ipvgo-strategy.md` with a full MCTS/opening-learning
   section (citations, design, limitations) mirroring the flat-MC section's
   own treatment — this claude-todo.md entry has the real content already,
@@ -469,14 +474,14 @@ one restart (self-supersede handles killing the old instance).
   move) — `ipvgo_logic.js`.
 - [x] 2 new regression tests added, full 65-test suite passing.
 - [x] Pushed live, round-trip confirmed via `ctl-get`.
-- [ ] **Still needs the same live restart as the MCTS checkpoint above** —
-  `run ipvgo_player.js`. One restart now activates MCTS/UCB1,
-  opening-move learning, *and* this eye-safety fix together.
-- [ ] After restart: watch `ipvgo_status.json` under the new
-  `"mcts-ucb1-v1"` tag for whether the eye-fix actually moves the win rate,
-  per Ken's own prediction that fixing this alone should help "more than a
-  little." Don't compare to the old 44% until a real sample accumulates
-  (standing discipline, see checkpoint above).
+- [x] Restarted by Ken 2026-08-12 ~17:39 PDT. All three rounds
+  (MCTS/UCB1, opening-move learning, this eye-safety fix) now active
+  together under `"mcts-ucb1-v1"`.
+- [ ] **Watching whether the eye-fix moves the win rate** — 6/7 (streak 5)
+  in the first few minutes, far too small to read yet. Don't compare to
+  the old 44%/50% flat-MC numbers until a real sample accumulates
+  (standing discipline, see checkpoint above). Ken's own live read while
+  watching it play: "looks like sensible go play to me now."
 
 ## 2026-08-12: Monte Carlo rewrite — real cited algorithm, targeting 90% win rate
 

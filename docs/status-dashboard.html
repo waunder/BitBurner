@@ -484,7 +484,7 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">rebuilt 2026&#8209;08&#8209;12 13:15 PDT</div>
+    <div class="updated mono">rebuilt 2026&#8209;08&#8209;12 17:45 PDT</div>
   </div>
 
   <div class="glance">
@@ -504,49 +504,47 @@
 
     <div class="scoreboard">
       <div class="scoreboard-head">
-        <span class="scoreboard-title">vs Netburners &middot; 7&times;7 &middot; flat Monte Carlo (still live)</span>
-        <span class="scoreboard-sub">as of 2026&#8209;08&#8209;12 17:28 PDT</span>
+        <span class="scoreboard-title">vs Netburners &middot; 7&times;7 &middot; MCTS/UCB1 + eye-safety fix</span>
+        <span class="scoreboard-sub">as of 2026&#8209;08&#8209;12 17:39 PDT</span>
       </div>
 
       <div class="stat-row">
         <div class="stat-tile win-rate">
-          <span class="stat-value">50%</span>
-          <span class="stat-label">Win rate (last 100)</span>
+          <span class="stat-value">6/7</span>
+          <span class="stat-label">Win rate (too early)</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">397</span>
+          <span class="stat-value">7</span>
           <span class="stat-label">Games played</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">2</span>
+          <span class="stat-value">5</span>
           <span class="stat-label">Current streak</span>
         </div>
         <div class="stat-tile">
           <span class="stat-value">7</span>
-          <span class="stat-label">Best streak</span>
+          <span class="stat-label">Best streak (lifetime)</span>
         </div>
         <div class="stat-tile">
-          <span class="stat-value">+36%</span>
+          <span class="stat-value">+37%</span>
           <span class="stat-label">Stat bonus</span>
         </div>
       </div>
 
       <div class="scoreboard-footnote">
-        Last game: <span class="last-result win">&#9679; WIN, 47&ndash;1.5</span> &mdash;
-        50% over the last 100 games is still the <strong>flat Monte Carlo</strong> version (180/397
-        lifetime), climbing on its own as its sample grows, still well short of the 90% goal. The
-        <strong>+36% stat bonus</strong> ("increased hacknet production") comes from territory held
-        regardless of win/loss.
+        Last game: <span class="last-result win">&#9679; WIN, 26&ndash;18.5</span> &mdash;
+        Ken ran <code class="cite">run ipvgo_player.js</code> live 2026&#8209;08&#8209;12 ~17:39 PDT,
+        activating three staged rounds at once: the MCTS/UCB1 tree-search rewrite (replacing flat
+        Monte Carlo), opening-move learning, and a root-level eye-safety fix (the bot no longer ever
+        voluntarily fills its own true eye &mdash; found after Ken watched Black do exactly that and
+        die despite holding the board; traced to a real gap in root move selection, not a game-rules
+        irregularity). Move timing is healthy: 341ms avg / 674ms max, comfortably under the 10&#8209;second
+        tick budget.
         <br /><br />
-        <strong>Staged, tested, pushed, not yet live:</strong> an MCTS/UCB1 rewrite (real tree search
-        + opening-move learning, replacing flat Monte Carlo) plus a root-level eye-safety fix &mdash;
-        found after Ken watched Black fill both of its own eyes and die despite holding the board.
-        Traced to a real gap in root move selection (not a game-rules irregularity: the game's own Go
-        rules check out against the official docs). 65/65 tests passing, committed
-        (<code class="cite">43c7344</code>), pushed to the game's filesystem, but Bitburner doesn't
-        hot-reload &mdash; needs one <code class="cite">run ipvgo_player.js</code> in the live terminal
-        to actually take effect. The numbers above will reset fresh once that happens (new algorithm
-        tag, <code class="cite">"mcts-ucb1-v1"</code>), by design &mdash; see
+        <strong>6/7 is nowhere near a real sample</strong> &mdash; algorithm tag reset to
+        <code class="cite">"mcts-ucb1-v1"</code>, so this isn't comparable to the old flat&#8209;MC
+        50% yet, standing discipline is to wait for a real sample before reading anything into it.
+        Ken's own live read watching it play: "looks like sensible go play to me now." See
         <code class="cite">docs/claude-todo.md</code>'s 2026&#8209;08&#8209;12 entries for the full
         writeup.
       </div>

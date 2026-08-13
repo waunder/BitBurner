@@ -10,47 +10,25 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
-- [ ] **Pull `origin/main` into the actual synced checkout at
-  `/Users/Shared/BitBurner`** (a plain `git pull`, or `git checkout .` if
-  it's clean but behind) to bring in commit `c33c13f` (`NUM_SIMULATIONS`
-  1500→6000, algorithm tag v1→v2 — full reasoning in this session's
-  `docs/claude-todo.md` "(latest)" entry and in the dashboard footnote).
-  Found this session: this work was done in an isolated agent worktree
-  (`.claude/worktrees/agent-a141ec9395f55e1c3`), which is a **separate
-  directory on disk** from `/Users/Shared/BitBurner` — the same repo
-  history, but the two have independent working-tree files. The commit is
-  pushed to `origin/main`, but `tools/bb_remote.py`'s daemon watches
-  `/Users/Shared/BitBurner`'s files directly (per `CLAUDE.md`'s own sync
-  notes), and confirmed via `ctl-get /ipvgo_player.js` after this push that
-  it's still serving the **old** `NUM_SIMULATIONS = 1500` /
-  `"mcts-ucb1-v1"` content — a worktree agent has no way to run `git` in
-  that shared checkout to fix it directly (attempted, structurally
-  blocked). Once the pull lands, the daemon's own filesystem watcher should
-  pick up the change and auto-push it into the game the normal way (per
-  `CLAUDE.md`) — then the standing `run ipvgo_player.js` step below still
-  applies, since Bitburner doesn't hot-reload either way.
-- [ ] **Restart the `tools/bb_remote.py daemon` process — it's stuck
-  crash-looping.** Found and root-caused 2026-08-11 (later session):
-  `mcp_status_log.txt` grew past 1MB, which trips the websocket library's
-  default message-size limit and kills the **entire** connection (not just
-  that one file read) every time the daemon tries to pull it — so every
-  reconnect now goes reconnect → partial push → crash on that one file →
-  reconnect again, forever. The fix is already committed
-  (`tools/bb_remote.py` now allows 20MB messages), but a running Python
-  process doesn't pick up a code change without being restarted, and this
-  session's sandbox blocked the `kill` command needed to do that. **What's
-  needed: kill the existing daemon process and run this again from the repo
-  root:** `python3 tools/bb_remote.py daemon --port 12526 --control-port
-  12527`. (The game's own Options → Remote API → Connect button doesn't
-  need to be touched separately — the daemon does that handshake on its
-  own once it's listening and the game reconnects, or one Connect click
-  will do it if the game doesn't auto-retry.) Once it's up, confirm with
-  `python3 tools/bb_remote.py ctl-status --control-port 12527` showing
-  `"connected": true` and no repeated `DISCONNECTED` lines appearing in
-  `tools/bb_remote_events.log` afterward. This blocks getting the
-  already-tested `ipvgo_player.js` self-atari fix running live (see
-  `docs/claude-todo.md`'s IPvGO diagnosis entry) and any other routine sync
-  until it's done.
+- [x] **Pull `origin/main` into the actual synced checkout at
+  `/Users/Shared/BitBurner`.** Done — plain `git pull`, fast-forwarded
+  `001e504..d2e3ae3` (brought in `c33c13f`'s `NUM_SIMULATIONS` 1500→6000
+  and algorithm tag v1→v2, plus the follow-up commit documenting the
+  worktree/checkout sync gap itself). Confirmed live via `ctl-get
+  /ipvgo_player.js`: the game's own copy now contains
+  `NUM_SIMULATIONS = 6000` and `"mcts-ucb1-v2"`. Still needs one
+  `run ipvgo_player.js` in the live terminal to actually take effect
+  (Bitburner doesn't hot-reload) — same standing step as every prior
+  algorithm change today.
+- [x] **Restart the `tools/bb_remote.py daemon` process.** Done earlier
+  this session — old process (PID 44858, pre-dating this session's
+  `WATCHED_FILES` additions) killed and replaced with a fresh one,
+  confirmed reparented to `launchd`/PID 1 so it survives independent of
+  any one session. `ctl-status` has shown `"connected": true` with no
+  repeated `DISCONNECTED` lines for hours since. The underlying
+  `mcp_status_log.txt`-size crash-loop this item was originally about is
+  resolved as a side effect (new process runs the current code, which
+  already has the 20MB message-size fix).
 
 ## Done (kept for reference)
 

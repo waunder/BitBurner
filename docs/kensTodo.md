@@ -15,38 +15,17 @@ Ken's hand, and check it off once it's confirmed done — same rule as
   bringing in the darknet status-file clobbering fix. `node --test
   *.test.js` (85/85) and `python3 tools/bb_remote.py selftest` both clean
   in that checkout afterward.
-- [ ] **`dnet_status_merge.js` is a brand-new file, and the running daemon
-  hasn't picked it up** — `WATCHED_FILES` is a static Python list read once
-  at daemon startup, same story as `ipvgo_hud.js` earlier tonight.
-  Confirmed via `ctl-get`: the file genuinely isn't on the game's
-  filesystem yet ("File does not exist"). Needs the daemon process
-  restarted (asked Ken first, per his own earlier instruction not to
-  restart it without being asked).
-- [ ] **After the pull above: restart the darknet swarm and confirm the
-  status-file clobbering bug is actually fixed.** This is the concrete
-  regression test for the bug Ken hit directly (`dnet_creds_merge.js`/
-  `dnet_loot_merge.js` output vanishing from `dnet_status.json` within
-  seconds). Steps:
-  1. Run `dnet_killswarm.js` then start a fresh `dnet_deploy.js` from
-     `home` — Bitburner doesn't hot-reload, so every currently-running
-     instance is still executing the old code that raw-`scp`s the whole
-     status file and will keep clobbering it until replaced.
-  2. Let it run a few passes, then confirm `dnet_deployer_<host>.json`
-     shard files exist on `home` (they're the new per-instance heartbeat
-     shards, one per host that's checked in).
-  3. Run `dnet_status_merge.js` (new script — needs to be run once, and
-     periodically thereafter, same manual cadence as the other two merge
-     scripts) and confirm `dnet_status.json`'s `"deployer"` section is
-     populated.
-  4. Run `dnet_creds_merge.js` and `dnet_loot_merge.js` (the two Ken ran
-     originally when he hit this bug), then **check `dnet_status.json`
-     again a few seconds later** — `"credsMerge"` and `"loot"` should
-     *still* have values, not have reverted to just `"deployer"`. That
-     "still there after a few seconds" check is the actual bug that
-     prompted this fix, not just "the section exists once."
-  5. While at it, the Phase 3b loot-fallback check below is still open —
-     worth confirming both in the same pass since both need the same
-     restart.
+- [x] **`dnet_status_merge.js` synced after a daemon restart.** Confirmed
+  via `ctl-get`, daemon reparented to `launchd` (PID 81582), `watched_files`
+  36/36 synced.
+- [x] **Darknet swarm restarted and the status-file clobbering bug
+  confirmed fixed, live.** Ken ran `dnet_killswarm.js` →
+  `dnet_deploy.js` → `dnet_status_merge.js` → `dnet_creds_merge.js` →
+  `dnet_loot_merge.js`. Pulled `dnet_status.json` twice, 8 seconds apart:
+  `deployer`/`credsMerge` (586 cracked)/`loot` (71 hosts) all present both
+  times, `deployer.pass` climbed 200→201 in between — the swarm kept
+  heartbeating through the window without erasing anything. That's the
+  actual regression test, not a one-off snapshot. **Bug confirmed fixed.**
 - [ ] **Confirm the Darknet Phase 3b loot fix is live and check
   `dnet_status.json`'s `deployer.*.lootMode` for `realloc` count movement.**
   Built 2026-08-12: `dnet_loot_realloc.js` (a leaner RAM-only loot variant)

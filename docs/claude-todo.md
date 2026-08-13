@@ -1,5 +1,17 @@
 # Claude's working list
 
+## 2026-08-12 (latest, confirmed): Darknet status-file clobbering fix — live-verified fixed
+
+Ken ran the full sequence (`dnet_killswarm.js`, `dnet_deploy.js`,
+`dnet_status_merge.js`, `dnet_creds_merge.js`, `dnet_loot_merge.js`).
+Pulled `dnet_status.json` twice, 8 seconds apart: `deployer`, `credsMerge`
+(586 cracked), and `loot` (71 hosts, karma spent, caches opened) were all
+present both times, with `deployer.pass` climbing 200→201 in between —
+proof the swarm kept heartbeating through the window without erasing
+anything. That's the actual regression test for the bug Ken hit
+(`credsMerge`/`loot` vanishing within seconds of being merged), not just a
+one-off snapshot. **Confirmed fixed.**
+
 ## 2026-08-12 (latest): Darknet status-file clobbering fix — deployer heartbeat sharded like credentials/loot, not yet run live
 
 Ken ran `dnet_creds_merge.js` and `dnet_loot_merge.js` on `home` to

@@ -286,3 +286,48 @@ further RAM-diet on the loot script's side can rescue a host that tight; a
 script with the 1.6GB Bitburner base cost and zero further calls is already
 close to that ceiling. The fallback narrows the population that gets a flat
 skip; it does not eliminate the possibility of one.
+
+## 8. Deployer heartbeat: freshest shard wins, not a network-wide aggregate
+
+Added 2026-08-12, fixing the status-file clobbering bug (full mechanism:
+`darknet-functions.md`'s 2026-08-12 "status-file clobbering" section).
+`dnet_deploy.js` now ships its per-pass heartbeat as a uniquely-named
+`dnet_deployer_<host>.json` shard instead of raw-`scp`-ing the whole
+`dnet_status.json`; a new `dnet_status_merge.js`, run on home, has to
+decide what to do with however many shards have piled up there. The
+question this section answers: when multiple roaming instances' shards are
+sitting on home at once, which one should win?
+
+**Freshest shard wins.** `dnet_status_merge.js` reads every
+`dnet_deployer_<host>.json` shard, picks the one with the largest `ts`
+(pure policy: `dnet_lib.js`'s `pickFreshestShard`, unit-tested), and folds
+only that one into `dnet_status.json`'s `"deployer"` section.
+
+**Why not sum across shards into a real network-wide total, the way
+`dnet_creds_merge.js` does for credentials?** Because the underlying data
+isn't additive the same way. Every roaming instance already reports a
+partial, overlapping view of the net — its own `probe()` neighbours, its
+own `lifetime` counters since *that* process started — and two instances
+can easily have both cracked or looted the same host if their paths
+crossed. Summing `thisPass`/`sinceProcessStart` counts across shards would
+double- or triple-count that overlap with no way to detect it after the
+fact, producing a number that looks precise but isn't meaningful.
+Credential shards don't have this problem: `dnet_creds_merge.js` merges by
+*host key*, so overlap collapses naturally (two shards claiming the same
+host just agree, or the newer `at` wins) rather than accumulating. The
+deployer heartbeat has no such natural dedup key across instances — it's
+one instance's whole-process narrative, not a per-host record.
+
+**What freshest-wins keeps, and what it costs.** It keeps the dashboard's
+`"deployer"` section showing exactly what it always showed before this
+fix: one live instance's view, not a total. That's a smaller, more
+conservative change than building real cross-instance aggregation, and it
+matches the section's own `scopeNote` field, which has said
+"this-instance-only view, not a network-wide total" since before this fix
+existed. The cost is that seeing genuinely global progress still requires
+reading `dnet_creds_merge.js`'s `"credsMerge.totalCracked"`/`byModel` (the
+one properly network-wide number, because it merges by host key) rather
+than anything in `"deployer"`. If a real aggregate view of the deployer
+swarm becomes worth building later, it's a small addition to
+`dnet_status_merge.js` — this section documents why it wasn't the default
+choice here, not that it's ruled out.

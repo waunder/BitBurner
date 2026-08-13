@@ -14,7 +14,17 @@
  */
 import { test, describe } from "node:test"
 import assert from "node:assert/strict"
-import { chooseLootMode, freeBlockedRam, acquireSession } from "./dnet_lib.js"
+import {
+  chooseLootMode,
+  freeBlockedRam,
+  acquireSession,
+  shardName,
+  pickFreshestShard,
+  SHARD_PREFIX,
+  SHARD_SUFFIX,
+  DEPLOYER_SHARD_PREFIX,
+  DEPLOYER_SHARD_SUFFIX,
+} from "./dnet_lib.js"
 
 describe("chooseLootMode — Phase 3b RAM-fit fallback policy", () => {
   test("picks full when free RAM covers the full script", () => {
@@ -139,5 +149,57 @@ describe("acquireSession — invalid host resilience (mock ns)", () => {
     const res = await acquireSession(ns, "real-host", { password: "abc" })
     assert.equal(res.ok, true)
     assert.equal(res.why, "already had a session")
+  })
+})
+
+describe("shardName — generalized prefix/suffix (2026-08-12, deployer sharding fix)", () => {
+  test("defaults match the original credential-shard naming", () => {
+    assert.equal(shardName("meg4c0rp"), `${SHARD_PREFIX}meg4c0rp${SHARD_SUFFIX}`)
+  })
+
+  test("an explicit prefix/suffix produces the deployer shard family", () => {
+    assert.equal(
+      shardName("meg4c0rp", DEPLOYER_SHARD_PREFIX, DEPLOYER_SHARD_SUFFIX),
+      "dnet_deployer_meg4c0rp.json"
+    )
+  })
+
+  test("escapes unsafe characters identically regardless of family", () => {
+    // Darknet hostnames can contain :, %, @, emoji -- both shard families
+    // must escape the same way since they share this one function now.
+    const host = "we:ird@host%1🙂"
+    const creds = shardName(host)
+    const deployer = shardName(host, DEPLOYER_SHARD_PREFIX, DEPLOYER_SHARD_SUFFIX)
+    assert.ok(!/[:@%🙂]/.test(creds))
+    assert.ok(!/[:@%🙂]/.test(deployer))
+    assert.equal(creds.slice(SHARD_PREFIX.length, -SHARD_SUFFIX.length), deployer.slice(DEPLOYER_SHARD_PREFIX.length, -DEPLOYER_SHARD_SUFFIX.length))
+  })
+})
+
+describe("pickFreshestShard — deployer heartbeat assembly policy (dnet_status_merge.js)", () => {
+  test("picks the shard with the largest ts", () => {
+    const shards = [
+      { file: "dnet_deployer_a.json", rec: { host: "a", ts: 100 } },
+      { file: "dnet_deployer_b.json", rec: { host: "b", ts: 300 } },
+      { file: "dnet_deployer_c.json", rec: { host: "c", ts: 200 } },
+    ]
+    assert.equal(pickFreshestShard(shards).rec.host, "b")
+  })
+
+  test("a single shard is trivially freshest", () => {
+    const shards = [{ file: "dnet_deployer_a.json", rec: { host: "a", ts: 42 } }]
+    assert.equal(pickFreshestShard(shards).rec.host, "a")
+  })
+
+  test("empty input returns null rather than throwing", () => {
+    assert.equal(pickFreshestShard([]), null)
+  })
+
+  test("ties break to the first input in order (documented, not load-bearing)", () => {
+    const shards = [
+      { file: "dnet_deployer_a.json", rec: { host: "a", ts: 100 } },
+      { file: "dnet_deployer_b.json", rec: { host: "b", ts: 100 } },
+    ]
+    assert.equal(pickFreshestShard(shards).rec.host, "a")
   })
 })

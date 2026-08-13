@@ -1,6 +1,97 @@
 # Claude's working list
 
-## 2026-08-12 (latest): Darknet Phase 3b — quantified the RAM-fit skip, built a lean loot fallback, not yet run live
+## 2026-08-12 (latest): Darknet status-file clobbering fix — deployer heartbeat sharded like credentials/loot, not yet run live
+
+Ken ran `dnet_creds_merge.js` and `dnet_loot_merge.js` on `home` to
+populate `dnet_status.json`'s `"credsMerge"`/`"loot"` sections. They ran
+clean, but moments later `home`'s `dnet_status.json` only had a
+`"deployer"` key again — the merge output was gone. Root-caused by reading
+the actual code and `NetscriptDefinitions.d.ts` directly, not guessed:
+
+- `ns.write`/`ns.read` only ever operate on the calling script's *current*
+  host — no remote-host parameter exists.
+- Every roaming `dnet_deploy.js` instance's `mergeStatus()` call was safe
+  (a real read-merge-write) but only against its own **local**
+  `dnet_status.json`, which only ever has a `"deployer"` key. It then
+  called `shipStatus()`, which did `ns.scp(STATUS_FILE, "home")` — a raw
+  whole-file copy, not a merge. Whichever instance's `scp` landed on home
+  last silently overwrote home's entire file, erasing `credsMerge`/`loot`.
+  With many concurrent instances heartbeating every pass, this window is
+  seconds.
+
+**Fix — the same shard-then-merge pattern this repo already uses for
+credentials and loot, applied to the deployer heartbeat:**
+
+- `dnet_lib.js`: generalized `shardName()` to take an explicit
+  prefix/suffix (default unchanged, so every existing caller is
+  unaffected); added `DEPLOYER_SHARD_PREFIX`/`DEPLOYER_SHARD_SUFFIX`
+  (`dnet_deployer_`/`.json`), `writeDeployerShard()` (writes the heartbeat
+  to a uniquely-named local shard), `shipShard()` (generic scp-to-home
+  primitive; `shipCred` is now a thin wrapper over it), and
+  `pickFreshestShard()` (pure "which heartbeat wins" policy, unit-tested).
+  Removed `shipStatus()` — it was the unsafe raw-whole-file-copy primitive
+  this fix eliminates; keeping it around would just invite the same bug
+  again later.
+- `dnet_deploy.js`: `writeDeployerStatus()` now calls
+  `writeDeployerShard()` + `shipShard()` instead of `mergeStatus()` +
+  `shipStatus()`. Safe by construction — unique filename per host means
+  concurrent `scp`s from different roaming instances can never collide.
+  Same RAM cost as before (`ns.write`/`ns.read` are 0GB either way, and
+  `scp` was already paid for via `shipCred`), not cheaper, just correct.
+- **Deliberately did NOT** add shard-assembly logic (e.g. `ns.ls`) inside
+  `dnet_deploy.js` itself — Bitburner's RAM cost is static per script
+  (whatever functions the code *references*, not which branch runs), so
+  that would raise `dnet_deploy.js`'s RAM footprint on every host it runs
+  on, including the RAM-constrained ones the Phase 3b fallback (below) was
+  just built to help. Would have been a regression on the exact axis Phase
+  3b improved, in the same session.
+- New script `dnet_status_merge.js` (home-only, run by hand like
+  `dnet_creds_merge.js`/`dnet_loot_merge.js` already are): reads every
+  `dnet_deployer_<host>.json` shard, picks the freshest by `ts`
+  (`pickFreshestShard`), and folds it into `dnet_status.json`'s
+  `"deployer"` section via the now-always-home-only `mergeStatus()`.
+  `--prune`/`--quiet` flags, same convention as the other two merge
+  scripts.
+- **Design decision — freshest shard wins, not a network-wide aggregate.**
+  Many roaming instances each report a genuinely partial, overlapping
+  view (already labelled as such before this fix); summing their counts
+  across shards would double-count overlap with no way to detect it.
+  Freshest-wins keeps `"deployer"` showing exactly what it always showed
+  before — one instance's live heartbeat — just without the risk of
+  vanishing seconds later. Smaller, more conservative change than building
+  real aggregation. Full reasoning: `docs/darknet-tactics.md` §8.
+  `dnet_creds_merge.js`'s `"credsMerge.totalCracked"` remains the one
+  genuinely network-wide number (merges by host key, so overlap collapses
+  naturally rather than accumulating).
+
+**Full mechanism write-up:** `docs/darknet-functions.md`'s 2026-08-12
+"status-file clobbering fix" section.
+
+**Verification done this session:** `node --check` on every touched file.
+`node --test *.test.js`: **85/85 passing** (up from 78) — 7 new tests
+(`shardName`'s generalized prefix/suffix + escaping, `pickFreshestShard`'s
+selection policy including the empty/tie/single-shard edges).
+
+**What a live check needs to confirm, since nothing here could run in the
+game this session:**
+
+1. `dnet_killswarm.js` then a fresh `dnet_deploy.js` restart — Bitburner
+   doesn't hot-reload, so every currently-running instance is still
+   executing the old unsharded code and will keep clobbering
+   `dnet_status.json` until replaced.
+2. After the restart, confirm `dnet_deployer_<host>.json` shards actually
+   land on home (`ls dnet_deployer_`).
+3. Run `dnet_status_merge.js` once, confirm `dnet_status.json`'s
+   `"deployer"` section is populated again, then re-run
+   `dnet_creds_merge.js`/`dnet_loot_merge.js` and confirm `"credsMerge"`/
+   `"loot"` **still have values afterward** — the actual regression test
+   for the original bug report.
+4. This session worked in an isolated agent worktree (see
+   `docs/kensTodo.md` for the sync-gap flag) — the pushed commit needs a
+   plain `git pull` into the daemon-watched checkout at
+   `/Users/Shared/BitBurner` before any of the above can happen live.
+
+## 2026-08-12: Darknet Phase 3b — quantified the RAM-fit skip, built a lean loot fallback, not yet run live
 
 Picked up the Phase 3 handoff checkpoint (below, "Darknet Phase 3 (loot)").
 Two things confirmed real before touching code, per this repo's own

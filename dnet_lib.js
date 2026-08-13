@@ -21,6 +21,8 @@ export const CREDS_FILE = "dnet_creds.txt"
 export const SHARD_PREFIX = "dnet_cred_"
 export const SHARD_SUFFIX = ".txt"
 export const STATUS_FILE = "dnet_status.json"
+export const DEPLOYER_SHARD_PREFIX = "dnet_deployer_"
+export const DEPLOYER_SHARD_SUFFIX = ".json"
 
 /** Response codes, copied from the game's DarknetResponseCodeType. */
 export const CODE = {
@@ -196,13 +198,23 @@ export function numericCandidates(d, limit) {
   return out
 }
 
-/** Filename-safe shard name for a host. Darknet hostnames contain :, %, @, emoji. */
-export function shardName(host) {
+/**
+ * Filename-safe shard name for a host, under an arbitrary prefix/suffix.
+ * Darknet hostnames contain :, %, @, emoji — every shard family (credential,
+ * loot, and 2026-08-12's deployer heartbeat) needs the same escaping, so it
+ * lives here once rather than each caller inventing its own. Defaults match
+ * the original credential-shard naming so every existing caller is
+ * unaffected. `dnet_loot.js`/`dnet_loot_realloc.js` still build their own
+ * shard name with raw `dnet_loot_${host}.json` string interpolation instead
+ * of this — a latent bug on a host with `:`/`%`/`@`/emoji in its name, flagged
+ * but out of scope to fix here.
+ */
+export function shardName(host, prefix = SHARD_PREFIX, suffix = SHARD_SUFFIX) {
   let safe = ""
   for (const ch of String(host)) {
     safe += /[A-Za-z0-9_-]/.test(ch) ? ch : "x" + ch.codePointAt(0).toString(16)
   }
-  return `${SHARD_PREFIX}${safe.slice(0, 80)}${SHARD_SUFFIX}`
+  return `${prefix}${safe.slice(0, 80)}${suffix}`
 }
 
 /** Parse the credential store. Tolerates a missing or truncated file. */
@@ -242,32 +254,103 @@ export function recordCred(ns, host, password, model) {
   return shard
 }
 
-export function shipCred(ns, shard, destination = "home") {
+/**
+ * Best-effort scp of any locally-written shard file to a destination
+ * (default home). No session needed — home is a normal server. This is the
+ * one primitive credential shards, loot shards, and (2026-08-12) deployer
+ * heartbeat shards all share: each family only differs in how its filename
+ * is generated (shardName above), never in how the file gets to home. Safe
+ * by construction as long as the filename is unique per host — many
+ * concurrent scp's landing on home never collide with each other because
+ * they're different files, unlike a raw `ns.scp(STATUS_FILE, "home")` of a
+ * single shared filename would be (see mergeStatus's doc comment for why
+ * that exact mistake used to erase this file's other sections).
+ */
+export function shipShard(ns, shard, destination = "home") {
   try {
     return ns.scp(shard, destination)
   } catch (err) {
-    ns.print(`WARN shipCred ${shard} -> ${destination}: ${err}`)
+    ns.print(`WARN shipShard ${shard} -> ${destination}: ${err}`)
     return false
   }
 }
 
+export function shipCred(ns, shard, destination = "home") {
+  return shipShard(ns, shard, destination)
+}
+
+/**
+ * Write this instance's deployer heartbeat to a uniquely-named local shard
+ * and return the shard name — does NOT ship it anywhere (caller decides,
+ * same read/write split as recordCred/shipCred for credentials).
+ *
+ * Added 2026-08-12 to fix a real bug: dnet_deploy.js used to call
+ * mergeStatus(ns, "deployer", ...) locally (safe — single host, single
+ * file) and then shipStatus(ns), which did a raw `ns.scp(STATUS_FILE,
+ * "home")` of the *entire* status file. Every roaming instance's own local
+ * dnet_status.json only ever has a "deployer" key (only home ever runs
+ * dnet_creds_merge.js/dnet_loot_merge.js), so whichever instance's scp
+ * landed on home last overwrote home's whole file, silently erasing the
+ * "credsMerge"/"loot" sections other scripts had written there. `ns.write`/
+ * `ns.read` only ever operate on the calling script's *current* host —
+ * there is no remote-host write — so there was never a way to merge into
+ * home's copy directly from a remote instance; `scp` was always a raw file
+ * copy, never a merge. Full mechanism: docs/darknet-functions.md's
+ * 2026-08-12 "status-file clobbering" section.
+ *
+ * The fix is the same shape credentials and loot already use: give every
+ * instance's heartbeat a unique filename (shardName with the
+ * DEPLOYER_SHARD_PREFIX/SUFFIX family) so concurrent scp's to home can
+ * never collide, then fold shards into dnet_status.json's "deployer"
+ * section from a script that only ever runs on home (dnet_status_merge.js)
+ * — see that file for the freshest-shard-wins design decision.
+ */
+export function writeDeployerShard(ns, host, patch) {
+  const shard = shardName(host, DEPLOYER_SHARD_PREFIX, DEPLOYER_SHARD_SUFFIX)
+  ns.write(shard, JSON.stringify({ ts: Date.now(), ...patch }, null, 2), "w")
+  return shard
+}
+
+/**
+ * Pick the freshest of a set of deployer shards by their own `ts` field.
+ * Pure: no ns calls, so the "which heartbeat wins" policy is unit-testable
+ * without the game, same as chooseLootMode. Ties broken by input order
+ * (first wins) — collisions are extremely unlikely (independent instances'
+ * wall-clock heartbeats) and harmless either way since this picks a display
+ * heartbeat, not something durability-critical.
+ *
+ * @param {{file: string, rec: {ts: number}}[]} shards
+ * @returns {{file: string, rec: {ts: number}} | null}
+ */
+export function pickFreshestShard(shards) {
+  if (!shards.length) return null
+  return shards.reduce((best, cur) => (cur.rec.ts > best.rec.ts ? cur : best))
+}
+
 /**
  * Update one top-level section of the shared status file without clobbering
- * sections another script (or another roaming instance) wrote.
+ * sections another script wrote.
  *
- * Two different scripts write into STATUS_FILE (dnet_deploy.js's own
- * heartbeat, dnet_creds_merge.js's merged totals), and many concurrent
- * dnet_deploy.js instances may each hold a session on this file's target
- * host. A blind `ns.write(file, ..., "w")` would let whichever writer runs
- * last erase every other section. Read-merge-write at the JSON-object level
- * keeps each writer's own key intact; last-writer-wins only within a single
- * section, which is the correct behavior for a liveness heartbeat.
+ * As of 2026-08-12, every caller of this function runs on `home` only:
+ * dnet_creds_merge.js ("credsMerge"), dnet_loot_merge.js ("loot"), and
+ * dnet_status_merge.js ("deployer"). `ns.write`/`ns.read` only ever operate
+ * on the calling script's *current* host — there is no remote-host write —
+ * so mergeStatus was never actually usable for a roaming instance to update
+ * home's copy directly; it only ever did the right thing when called on
+ * home about home's own file. (dnet_deploy.js used to call this on the
+ * *remote* host and then `scp` the whole file to home — a raw copy, not a
+ * merge, which is what clobbered the other sections; see
+ * writeDeployerShard's doc comment and docs/darknet-functions.md's
+ * 2026-08-12 "status-file clobbering" section.) A blind
+ * `ns.write(file, ..., "w")` would let whichever writer runs last erase
+ * every other section; read-merge-write at the JSON-object level keeps each
+ * writer's own key intact, with last-writer-wins only within a single
+ * section.
  *
  * Not safe against two writers racing on the exact same section within the
- * same tick (no lock exists), but that only happens if two dnet_deploy.js
- * instances are both mid-write to the same host's file in the same instant,
- * which the 5s+ mutation floor between passes makes very unlikely. Good
- * enough for a dashboard heartbeat; not a durability guarantee.
+ * same tick (no lock exists), but with every caller now home-only and
+ * merge scripts run by hand, that window is effectively closed. Good enough
+ * for a dashboard heartbeat; not a durability guarantee.
  *
  * @param {NS} ns
  * @param {string} section - top-level key to set, e.g. "deployer" or "credsMerge"
@@ -285,20 +368,6 @@ export function mergeStatus(ns, section, patch, file = STATUS_FILE) {
   current[section] = { ts: Date.now(), ...patch }
   ns.write(file, JSON.stringify(current, null, 2), "w")
   return current
-}
-
-/**
- * Best-effort mirror of the status file to home, same pattern as shipCred.
- * A no-op (and harmless) when already running on home.
- */
-export function shipStatus(ns, destination = "home", file = STATUS_FILE) {
-  if (ns.getHostname() === destination) return true
-  try {
-    return ns.scp(file, destination)
-  } catch (err) {
-    ns.print(`WARN shipStatus ${file} -> ${destination}: ${err}`)
-    return false
-  }
 }
 
 /**

@@ -10,6 +10,47 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
+- [ ] **Pull `origin/main` into the actual synced checkout at
+  `/Users/Shared/BitBurner`** to bring in the darknet status-file
+  clobbering fix (this session's `docs/claude-todo.md` "(latest)" entry —
+  sharded `dnet_deploy.js`'s deployer heartbeat the same way credentials
+  and loot already are, plus a new `dnet_status_merge.js`). Same gap as the
+  precedent flagged in commit `d2e3ae3` ("ipvgo: flag a real
+  worktree/checkout sync gap found verifying c33c13f"): this session's work
+  happened in an isolated agent worktree
+  (`.claude/worktrees/agent-ab5a9825c28bdc76a`), a separate directory on
+  disk from `/Users/Shared/BitBurner` — same repo history, independent
+  working-tree files. `tools/bb_remote.py`'s daemon watches
+  `/Users/Shared/BitBurner`'s files directly, not `origin/main`, so a push
+  alone does not make the fix live; a plain `git pull` (or `git checkout .`
+  if clean but behind) in that specific directory is needed before any of
+  the restart/verification steps below can do anything. A worktree agent
+  cannot run `git` against that checkout directly.
+- [ ] **After the pull above: restart the darknet swarm and confirm the
+  status-file clobbering bug is actually fixed.** This is the concrete
+  regression test for the bug Ken hit directly (`dnet_creds_merge.js`/
+  `dnet_loot_merge.js` output vanishing from `dnet_status.json` within
+  seconds). Steps:
+  1. Run `dnet_killswarm.js` then start a fresh `dnet_deploy.js` from
+     `home` — Bitburner doesn't hot-reload, so every currently-running
+     instance is still executing the old code that raw-`scp`s the whole
+     status file and will keep clobbering it until replaced.
+  2. Let it run a few passes, then confirm `dnet_deployer_<host>.json`
+     shard files exist on `home` (they're the new per-instance heartbeat
+     shards, one per host that's checked in).
+  3. Run `dnet_status_merge.js` (new script — needs to be run once, and
+     periodically thereafter, same manual cadence as the other two merge
+     scripts) and confirm `dnet_status.json`'s `"deployer"` section is
+     populated.
+  4. Run `dnet_creds_merge.js` and `dnet_loot_merge.js` (the two Ken ran
+     originally when he hit this bug), then **check `dnet_status.json`
+     again a few seconds later** — `"credsMerge"` and `"loot"` should
+     *still* have values, not have reverted to just `"deployer"`. That
+     "still there after a few seconds" check is the actual bug that
+     prompted this fix, not just "the section exists once."
+  5. While at it, the Phase 3b loot-fallback check below is still open —
+     worth confirming both in the same pass since both need the same
+     restart.
 - [ ] **Confirm the Darknet Phase 3b loot fix is live and check
   `dnet_status.json`'s `deployer.*.lootMode` for `realloc` count movement.**
   Built 2026-08-12: `dnet_loot_realloc.js` (a leaner RAM-only loot variant)

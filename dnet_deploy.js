@@ -26,10 +26,14 @@
  *  - Notices a neighbour that restarted (stored password stops working) and
  *    re-cracks it instead of looping on a stale credential.
  *  - Waits on ns.dnet.nextMutation() (0GB) instead of polling a fixed sleep.
- *  - Writes a "deployer" heartbeat to dnet_status.json every pass (this
- *    instance's own view only — see writeDeployerStatus below for why it
- *    isn't a network-wide total) and ships it to home, for
- *    docs/status-dashboard.html's darknet scoreboard.
+ *  - Writes a "deployer" heartbeat every pass (this instance's own view
+ *    only — see writeDeployerStatus below for why it isn't a network-wide
+ *    total) to a per-host shard and ships that shard to home; a home-only
+ *    script (dnet_status_merge.js) folds shards into dnet_status.json's
+ *    "deployer" section for docs/status-dashboard.html's darknet
+ *    scoreboard. Fixed 2026-08-12 from an unsharded version that clobbered
+ *    dnet_status.json's other sections — see writeDeployerStatus's doc
+ *    comment.
  *
  * Added 2026-08-12 (Phase 3, Ken-approved): scp+exec's dnet_loot.js onto
  * every neighbour it just confirmed a live session on, right next to the
@@ -68,18 +72,21 @@
  * Args: --once (single pass, no loop), --brute N (allow numeric enumeration
  * up to N candidates), --quiet (suppress per-neighbour lines).
  *
- * Reads:  dnet_creds.txt (local copy of known passwords), dnet_status.json
- *         (merged into, not overwritten — see mergeStatus in dnet_lib.js)
+ * Reads:  dnet_creds.txt (local copy of known passwords)
  * Writes: dnet_creds.txt, dnet_cred_<host>.txt shards (shipped to home),
- *         dnet_status.json (shipped to home)
+ *         dnet_deployer_<host>.json shard (shipped to home, see
+ *         writeDeployerStatus)
  *
  * RAM estimate ~4.8GB: 1.6 base + probe 0.2 + getServerDetails 0.1 +
  * authenticate 0.4 + connectToSession 0.05 + scp 0.6 + exec 1.3 +
  * getHostname 0.05 + ls 0.2 + getScriptRam 0.1 + getServerMaxRam 0.05 +
  * getServerUsedRam 0.05 (the last three added for lootDeploy's free-RAM
  * check). nextMutation, read, write, toast, and getDarknetInstability are
- * 0GB, so the status heartbeat adds nothing. The game's RAM readout is the
- * authority; imports can pull in more than this. chooseLootMode (added
+ * 0GB, so the status heartbeat adds nothing — true both before and after
+ * the 2026-08-12 sharding fix, since writeDeployerShard/shipShard use the
+ * exact same 0GB write and already-paid-for scp that mergeStatus/shipStatus
+ * did; the fix changes correctness, not RAM cost. The game's RAM readout is
+ * the authority; imports can pull in more than this. chooseLootMode (added
  * Phase 3b, below) is a pure function and costs nothing extra; the second
  * ns.getScriptRam call it feeds doesn't add RAM either, since the function
  * itself is already paid for once regardless of call count.
@@ -101,11 +108,11 @@ import {
   acquireSession,
   chooseLootMode,
   describe,
-  mergeStatus,
   readCreds,
   recordCred,
   shipCred,
-  shipStatus,
+  shipShard,
+  writeDeployerShard,
 } from "dnet_lib.js"
 
 const MUTATION_FLOOR_MS = 5000
@@ -227,9 +234,31 @@ export async function main(ns) {
 }
 
 /**
- * Persist a liveness heartbeat for the dashboard, one "deployer" section per
- * write (see mergeStatus in dnet_lib.js for why this doesn't stomp
- * dnet_creds_merge.js's "credsMerge" section in the same file).
+ * Persist a liveness heartbeat for the dashboard: write it to a uniquely-
+ * named local shard (dnet_deployer_<host>.json) and ship that shard to
+ * home, the same shard-then-ship pattern credentials (recordCred/shipCred)
+ * and loot (dnet_loot.js) already use.
+ *
+ * Fixed 2026-08-12: this used to call mergeStatus(ns, "deployer", ...)
+ * locally (safe by itself) and then shipStatus(ns), which did a raw
+ * `ns.scp(dnet_status.json, "home")` -- a whole-file copy, not a merge.
+ * Every roaming instance's own local dnet_status.json only ever has a
+ * "deployer" key (only home ever runs dnet_creds_merge.js/
+ * dnet_loot_merge.js), so whichever instance's scp landed on home last
+ * silently erased the "credsMerge"/"loot" sections other scripts had
+ * written there -- `ns.write`/`ns.read` have no remote-host form, so there
+ * was never a way to merge into home's copy remotely, and `scp` was always
+ * a raw copy. Sharding fixes it the same way it already fixed credentials
+ * and loot: a unique filename per host means concurrent scp's to home can
+ * never collide with each other, so nothing gets clobbered. Folding shards
+ * into dnet_status.json's "deployer" section now happens on home only, via
+ * dnet_status_merge.js (run by hand, like dnet_creds_merge.js/
+ * dnet_loot_merge.js already are) -- deliberately NOT done inline here, so
+ * that dnet_deploy.js's RAM footprint (paid on every host it runs on,
+ * including RAM-constrained ones) never grows for a home-only concern. Full
+ * mechanism and design decisions: docs/darknet-functions.md's 2026-08-12
+ * "status-file clobbering" section and writeDeployerShard's own doc comment
+ * in dnet_lib.js.
  *
  * Deliberately scoped to what THIS instance actually knows, and labelled as
  * such -- it is not a network-wide total. Many independent copies of this
@@ -245,10 +274,10 @@ export async function main(ns) {
 function writeDeployerStatus(ns, { pass, host, summary, lifetime, localKnownCreds }) {
   try {
     const instability = ns.dnet.getDarknetInstability()
-    mergeStatus(ns, "deployer", {
+    const shard = writeDeployerShard(ns, host, {
       host,
       pass,
-      scopeNote: "this-instance-only view, not a network-wide total -- see dnet_lib.js mergeStatus doc",
+      scopeNote: "this-instance-only view, not a network-wide total -- see dnet_lib.js writeDeployerShard doc",
       visibleFromHost: summary.seen,
       thisPass: {
         sessions: summary.sessions,
@@ -263,7 +292,7 @@ function writeDeployerStatus(ns, { pass, host, summary, lifetime, localKnownCred
       localKnownCreds,
       instability,
     })
-    shipStatus(ns)
+    shipShard(ns, shard)
   } catch (err) {
     ns.print(`WARN writeDeployerStatus: ${err}`)
   }

@@ -734,6 +734,115 @@ game:**
    checked," not "no caches present," when reading the merged
    `dnet_status.json` "loot" section by hand.
 
+### Status-file clobbering fix (2026-08-12): the deployer heartbeat was overwriting `credsMerge`/`loot` on home, sharded like credentials/loot to fix it
+
+Found this session: Ken ran `dnet_creds_merge.js` and `dnet_loot_merge.js`
+on `home` to populate `dnet_status.json`'s `"credsMerge"`/`"loot"`
+sections. They ran with no error, but moments later `home`'s
+`dnet_status.json` only had a `"deployer"` key again — the merge output was
+gone.
+
+**Root cause, confirmed by reading the actual code and
+`NetscriptDefinitions.d.ts` directly, not guessed:**
+
+- `ns.write`/`ns.read` only ever operate on the *current* host —
+  `write(filename, data?, mode?)`/`read(filename)` have no remote-host
+  parameter. There is no way for a script running on a darknet server to
+  merge data into a JSON object living on `home`'s disk; the only channel
+  from a remote host to home is `scp`, which copies a whole file verbatim.
+- Every roaming `dnet_deploy.js` instance kept its own **local**
+  `dnet_status.json` on whichever darknet server it was running on, and
+  updated it via `mergeStatus()` (`dnet_lib.js`) — that part was safe, a
+  real JSON read-merge-write, but only ever against that instance's own
+  local file.
+- It then called `shipStatus()`, which did `ns.scp(STATUS_FILE, "home")` —
+  a **raw file copy, not a merge**. Every instance's own local
+  `dnet_status.json` only ever had a `"deployer"` key (no roaming instance
+  ever independently runs the merge scripts — those only run on home), so
+  whichever instance's `scp` landed on home last **overwrote home's entire
+  file**, silently erasing whatever `credsMerge`/`loot` sections were
+  already there. With many concurrent roaming instances heartbeating every
+  pass (5s+ mutation floor between passes per instance, but many
+  instances running at once), this window is seconds, not minutes —
+  exactly what Ken observed.
+
+**Why sharding is the fix — this repo already solved the identical
+problem, twice:** credentials shard to `dnet_cred_<host>.txt`
+(`dnet_lib.js`'s `recordCred`/`shipCred`), loot shards to
+`dnet_loot_<host>.json` (`dnet_loot.js`), each uniquely named per host so
+concurrent `scp`s from different roaming instances can never collide, then
+a merge script on home folds them together
+(`dnet_creds_merge.js`/`dnet_loot_merge.js`). The deployer heartbeat had
+been the one place still doing a raw whole-file `scp`. Applying the same
+shard-then-merge shape closes the exact same class of bug the same way:
+
+- `dnet_deploy.js` now calls `writeDeployerShard(ns, host, {...})`
+  (`dnet_lib.js`, new) to write its heartbeat to a uniquely-named local
+  shard, `dnet_deployer_<host>.json`, then `shipShard(ns, shard)` (also
+  new — `shipCred` is now a thin wrapper around it) to `scp` just that
+  shard to home. Unique filename per host means concurrent `scp`s can
+  never collide, so nothing gets clobbered, by construction.
+- `dnet_lib.js`'s `shardName()` (previously hardcoded to the credential
+  shard's `SHARD_PREFIX`/`SHARD_SUFFIX`) was generalized to take an
+  explicit prefix/suffix, defaulting to the original credential naming so
+  every existing caller is unaffected. A new `DEPLOYER_SHARD_PREFIX`/
+  `DEPLOYER_SHARD_SUFFIX` pair (`dnet_deployer_`/`.json`) reuses the exact
+  same character-escaping logic (darknet hostnames contain `:`, `%`, `@`,
+  emoji) rather than the raw `dnet_loot_${host}.json` string-interpolation
+  pattern `dnet_loot.js`/`dnet_loot_realloc.js` still use — that one is a
+  latent bug on a host with an unsafe character in its name, flagged but
+  out of scope to fix in those two files today.
+- A new script, `dnet_status_merge.js`, runs on home only and folds every
+  `dnet_deployer_<host>.json` shard it finds into `dnet_status.json`'s
+  `"deployer"` section via the existing `mergeStatus()` — now genuinely
+  safe, since every caller of `mergeStatus()` is home-only as of this fix
+  (`dnet_creds_merge.js`, `dnet_loot_merge.js`, `dnet_status_merge.js`),
+  never a roaming remote instance.
+
+**Deliberately NOT done: assembling shards inside `dnet_deploy.js`
+itself.** Bitburner's RAM cost is static per script — whatever functions
+the code *references* anywhere, not which branch actually runs at runtime
+— so adding `ns.ls` to scan shards, even behind an
+`if (ns.getHostname() === "home")` guard, would raise `dnet_deploy.js`'s
+RAM footprint on *every* host it runs on, including the RAM-constrained
+ones the Phase 3b lean-loot fallback (above) was specifically built to
+help. That would be a straight regression on the same axis Phase 3b just
+improved, in the same session. The assembly step lives in its own script
+instead, run by hand on home, the same way `dnet_creds_merge.js`/
+`dnet_loot_merge.js` already are.
+
+**Design decision — freshest shard wins, not a network-wide aggregate:**
+`dnet_status_merge.js` picks the single freshest deployer shard by `ts`
+(pure logic in `dnet_lib.js`'s new `pickFreshestShard`, unit-tested) rather
+than summing across shards. Many independent `dnet_deploy.js` instances
+each report a genuinely partial, overlapping view of the net (already
+labelled as such — `scopeNote`, `localKnownCreds` — before this fix), so
+summing their `thisPass`/`sinceProcessStart` counts would double-count
+neighbours more than one instance happened to probe, which isn't a
+meaningful number. Freshest-wins keeps the "deployer" section showing
+exactly what it always showed before this fix — one instance's live
+heartbeat — just without the risk of it vanishing seconds later. This was
+chosen as the smaller, closer-to-existing-behavior change over building a
+real aggregate; a genuine network-wide total already exists for the one
+thing that *is* meaningfully additive across shards —
+`dnet_creds_merge.js`'s `"credsMerge.totalCracked"`, which reads every
+credential shard ever shipped, not just the newest.
+
+**What this needs to take effect, since nothing here could run in the
+game this session:** `dnet_killswarm.js` then a fresh `dnet_deploy.js`
+restart (Bitburner doesn't hot-reload — every currently-running instance
+is still executing the old unsharded code and will keep clobbering
+`dnet_status.json` until replaced), and `dnet_status_merge.js` needs to be
+run once (and periodically thereafter, same manual cadence as the other
+two merge scripts) to actually populate the `"deployer"` section again.
+See `docs/kensTodo.md` for the concrete steps.
+
+**Verification done this session:** `node --check` on every touched file;
+`node --test *.test.js` — 85/85 passing (up from 78), 7 new tests covering
+`shardName`'s generalized prefix/suffix behavior and `pickFreshestShard`'s
+selection policy. No live game access from this session — nothing here has
+actually run in Bitburner yet.
+
 ## `unleashStormSeed` — do not automate
 
 0.1GB, synchronous, executes `STORM_SEED.exe` if present on the current

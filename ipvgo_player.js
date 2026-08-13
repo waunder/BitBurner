@@ -127,7 +127,31 @@ import { chooseBestMove, computeOpeningMoveStats } from "ipvgo_logic.js"
 // 164ms/move at ~980 total playouts/move); needs live confirmation this
 // stays comfortably fast now that the budget has grown -- watch the
 // moveMs figures in ipvgo_status.json and turn this down if they climb.
-const NUM_SIMULATIONS = 1500
+//
+// Raised 1500 -> 6000 (4x) on 2026-08-12 (still later), per the
+// coordinator's own diagnosis of the last-100-games rolling window at
+// 1500 sims: 16 losses total, and only 1 of those 16 is a whole-group
+// collapse (blackScore=0, whiteScore=42.5 -- the shutout signature from
+// the already-fixed 2026-08-11 eye-safety bug). The other 15 are close,
+// competitive losses, margins 0.5 to 12.5 points on a 49-point board --
+// the shape of a search that's evaluating correctly but not deeply
+// enough, not the shape of a structural blind spot like missing
+// eye-shape awareness. `docs/ipvgo-strategy.md`'s own "Open questions"
+// section (item 7) says the expensive getChains()/getControlledEmptyNodes()
+// route is only worth building "if live results show the bot still
+// losing to whole-group captures despite Monte Carlo evaluation" -- 1/16
+// does not clear that bar, so this bump reaches for the lever the doc
+// names first instead: more simulations before a structurally different
+// algorithm. And there's room to pull it -- live data at 1500 sims
+// measured avg 261ms / max 307ms per move against mcp.js's shared
+// 10-second tick budget, only ~3% of it used. Since MCTS's simulation
+// loop is the dominant cost and the rest of chooseBestMove's per-move
+// work is fixed overhead, timing should scale roughly linearly with this
+// constant, putting 6000 sims around 1000-1200ms/move -- still
+// comfortable headroom, not a number pulled from nowhere. Confirm against
+// the real moveMs figures once this is live and turn it back down if
+// they come in meaningfully higher than that estimate.
+const NUM_SIMULATIONS = 6000
 
 // Tag written into every ipvgo_status.json this script produces, and
 // checked on startup (see loadPersistedStatus below) before resuming any
@@ -139,7 +163,18 @@ const NUM_SIMULATIONS = 1500
 // window in the first place. Bumped from "monte-carlo-flat-v1" for the
 // 2026-08-12 (later) MCTS/UCB1 rewrite -- flat MC's 61-game/41%-win-rate
 // record should not blend into this version's own rolling window.
-const ALGORITHM = "mcts-ucb1-v1"
+//
+// Bumped again, "mcts-ucb1-v1" -> "mcts-ucb1-v2", alongside the
+// NUM_SIMULATIONS 1500 -> 6000 raise above (2026-08-12, still later) --
+// same reasoning as the prior bump, applied a second time: v1's rolling
+// window (the 81-82% last-100-games figure the sim-count diagnosis above
+// was measured against) was produced entirely at a 1500-sim budget, and
+// blending 4x-deeper search into that same window would make the next
+// win-rate read meaningless -- no way to tell whether a change came from
+// the deeper search or was just diluted by the old budget's games still
+// sitting in the sample. This is now the third algorithm-tag bump in this
+// file's history for exactly this reason, not a one-off judgment call.
+const ALGORITHM = "mcts-ucb1-v2"
 
 // How many recent game outcomes to keep for the rolling win rate.
 const RECENT_GAMES_WINDOW = 100

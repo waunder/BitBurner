@@ -1,6 +1,75 @@
 # Claude's working list
 
-## 2026-08-12 (latest): `ipvgo_hud.js` — in-game panel instead of a scheduled dashboard refresh
+## 2026-08-12 (latest): `NUM_SIMULATIONS` 1500 → 6000, algorithm tag `v1` → `v2` — loss-margin diagnosis said search depth, not eye-awareness
+
+Picked up from the rolling-window numbers accumulated since the
+augmentation-install reset: over the last 100 games at 1500 sims/move, win
+rate settled to ~81-82% (down from the 90%/70-game milestone logged above,
+consistent with a fresh, smaller post-reset sample rather than a
+regression). Pulled `ipvgo_status.json`'s `recentGames` and looked at the
+loss margins specifically, not just the win/loss tally, before deciding
+what to build: **16 losses total, only 1 is a whole-group collapse**
+(blackScore=0, whiteScore=42.5 — the exact shutout signature from the
+already-fixed 2026-08-11 eye-safety bug, so a stale one-off, not a new
+pattern). **The other 15 are close, competitive losses**, margins 0.5 to
+12.5 points on a 49-point board — the shape of a search that's evaluating
+positions correctly but not deeply enough, not the shape of a structural
+blind spot.
+
+`docs/ipvgo-strategy.md`'s own "Open questions" section (item 7) already
+states the criterion for when the expensive `getChains()`/
+`getControlledEmptyNodes()` eye-awareness route is worth building: only "if
+live results show the bot still losing to whole-group captures despite
+Monte Carlo evaluation." 1/16 does not clear that bar. The doc's own
+explicit next lever before reaching for a structurally different algorithm
+is more simulations — so that's what this entry does, not new eye-shape
+code.
+
+- [x] Raised `NUM_SIMULATIONS` 1500 → 6000 (4×) in `ipvgo_player.js`.
+  Justified by real headroom, not guesswork: live data at 1500 sims
+  measured avg 261ms / max 307ms per move against `mcp.js`'s shared
+  10-second tick budget — only ~3% of it used. MCTS's simulation loop is
+  the dominant per-move cost, so timing should scale roughly linearly;
+  6000 sims should land around 1000-1200ms/move, still comfortable.
+  **Not yet confirmed live** — watch `avgMoveMs`/`maxMoveMs` in
+  `ipvgo_status.json` once this runs and turn it back down if the real
+  number comes in meaningfully above that estimate, same standing
+  discipline as every prior `NUM_SIMULATIONS` change.
+- [x] Bumped `ALGORITHM` `"mcts-ucb1-v1"` → `"mcts-ucb1-v2"` in the same
+  file, for the same reason the `v1` bump itself was made: the 81-82%/
+  100-game figure this diagnosis was measured against was produced
+  entirely at the 1500-sim budget, so it needs to stay in its own rolling
+  window rather than blend with the 6000-sim version's games —
+  `loadPersistedStatus` resets `gamesPlayed`/`wins`/`recentGames` fresh the
+  moment the tag doesn't match. Third algorithm-tag bump in this file's
+  history for this exact reason.
+- [x] Updated the reasoning comments above both constants in
+  `ipvgo_player.js` in place (this repo's own verbose-comment style, citing
+  the actual diagnosis numbers rather than asserting the change).
+- [x] Did **not** touch board size (`ns.go.resetBoardState`) — that's the
+  separate, explicitly-deferred decision from the "holding at 7x7" note
+  above, out of scope here.
+- [x] Did **not** build `getChains()`/`getControlledEmptyNodes()`
+  eye-awareness — per the 1/16 diagnosis above, that's not the lever this
+  data points at right now.
+- [x] `node --check ipvgo_player.js` clean; `node --test *.test.js` still
+  65/65 (this change only touches two constants and their comments in
+  `ipvgo_player.js`, nothing in the tested `ipvgo_logic.js` surface).
+- [ ] Pushed to the game's filesystem via the daemon's file watcher (no
+  `ctl-push` round-trip needed while it's connected — see CLAUDE.md's sync
+  note), but **pushing a file does not change what a currently-running
+  script executes — Bitburner doesn't hot-reload.** The live process is
+  still running the 1500-sim `"mcts-ucb1-v1"` version, still accumulating
+  its own record under that tag. **Needs `run ipvgo_player.js` in the live
+  terminal** to actually take effect — needs Ken's hand, same pattern as
+  every prior algorithm change logged in this file. Nothing needs to be
+  rolled back in the meantime.
+- [ ] Once it's running, watch `recentWinRate`/`recentGamesCount` under the
+  new `"mcts-ucb1-v2"` tag build up before comparing it to the 81-82%
+  figure above — don't call it off a handful of games, same standing
+  discipline as always.
+
+## 2026-08-12: `ipvgo_hud.js` — in-game panel instead of a scheduled dashboard refresh
 
 Ken asked whether the status dashboard could refresh on a regular interval.
 Walking through it: a cloud-scheduled routine can't reach `ipvgo_status.json`

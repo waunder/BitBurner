@@ -505,7 +505,7 @@
     <div class="scoreboard">
       <div class="scoreboard-head">
         <span class="scoreboard-title">vs Netburners &middot; 7&times;7 &middot; 90% target hit</span>
-        <span class="scoreboard-sub">as of 2026&#8209;08&#8209;12 18:10 PDT</span>
+        <span class="scoreboard-sub">as of 2026&#8209;08&#8209;12 20:14 PDT</span>
       </div>
 
       <div class="stat-row">
@@ -544,8 +544,26 @@
         <br /><br />
         <strong>Next, per the strategy doc's own explicit ordering</strong> ("once 90% is
         genuinely demonstrated &mdash; not before &mdash; try a larger board"): a bigger board is
-        now on the table. See <code class="cite">docs/claude-todo.md</code>'s 2026&#8209;08&#8209;12
-        entries for the full writeup.
+        now on the table, but currently on hold &mdash; Ken's about to install 9 augmentations,
+        which resets the game session on its own, and changing board size at the same time would
+        muddy any before/after comparison.
+        <br /><br />
+        <strong>Staged, tested, pushed, not yet live:</strong> over the last 100 games since that
+        reset, the rolling win rate settled to ~81&ndash;82% at the 1500-simulation budget above
+        &mdash; still short of 90%, but the loss margins say why: of 16 losses, only 1 was a
+        whole-group collapse (the already-fixed eye-safety shutout signature), the other 15 were
+        close losses of 0.5&ndash;12.5 points on a 49&#8209;point board. That's the signature of a
+        search that isn't deep enough, not a missing eye-shape blind spot, so per the strategy
+        doc's own stated criterion for when eye-awareness code is actually worth building,
+        <code class="cite">NUM_SIMULATIONS</code> is raised 1500&nbsp;&rarr;&nbsp;6000 (4&times;)
+        instead &mdash; measured live headroom at 1500 (avg 261ms / max 307ms/move against the
+        10&#8209;second tick budget) leaves comfortable room. 65/65 tests still passing, pushed to
+        the game's filesystem, but Bitburner doesn't hot-reload &mdash; needs one
+        <code class="cite">run ipvgo_player.js</code> in the live terminal to actually take effect.
+        The numbers above will reset fresh once that happens (new algorithm tag,
+        <code class="cite">"mcts-ucb1-v2"</code>), by design &mdash; see
+        <code class="cite">docs/claude-todo.md</code>'s 2026&#8209;08&#8209;12 (latest) entry for
+        the full writeup.
       </div>
     </div>
   </section>

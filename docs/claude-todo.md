@@ -239,6 +239,245 @@ someone with permission to kill it restarts it with the same command.
   same problem (evaluating whether a group survives) more generally, via
   actual simulated outcomes, without the extra 16GB+16GB RAM. See below.
 
+## 2026-08-12 (later): MCTS/UCB1 + opening-move learning — CHECKPOINT, session ending
+
+**Read this section first if picking this up cold — it's a mid-session
+checkpoint, not a finished/verified state.** Ken is shutting this session
+down shortly; the coordinator asked for an explicit checkpoint rather than
+waiting for a natural stopping point. Everything below is committed,
+locally tested, and pushed to the game's filesystem, but **has not been
+started with `run ipvgo_player.js`**, so the live game is completely
+unaffected so far — see "Live game state right now" below.
+
+**Why this round happened**: after the flat Monte Carlo rewrite (see the
+section right below this one) ran live, the coordinator relayed real
+numbers: 61 games, 41% rolling win rate (real progress from ~0% under the
+old heuristic, but well short of 90%), and — the key finding — huge unused
+timing headroom (avg 52ms, max 164ms per move). Two upgrades were
+requested, in priority order: (1) upgrade flat Monte Carlo to real tree
+search (MCTS with UCB1), the bigger lever; (2) add simple cross-game
+learning on top (track which opening moves have actually correlated with
+wins, bias toward those). Both are built.
+
+**What's built and tested (33 new tests since the flat-MC state, 63 total
+passing, `node --test *.test.js`; `node --check` clean on all three
+files)**:
+
+1. **MCTS with UCB1** (`ipvgo_logic.js`, `chooseBestMove` rewritten in
+   place — its old flat-MC implementation and `evaluateMove` are gone,
+   superseded, not kept alongside). Cites Kocsis & Szepesvári, "Bandit
+   Based Monte-Carlo Planning" (ECML 2006,
+   https://link.springer.com/chapter/10.1007/11871842_29) — the original
+   UCT paper. Spends a shared simulation budget (`NUM_SIMULATIONS = 1500`
+   in `ipvgo_player.js`) across a real search tree instead of splitting it
+   evenly across every candidate move the way flat MC did. Backpropagates
+   a win/loss indicator (not the old raw score margin) specifically so
+   UCB1's textbook `C = sqrt(2)` constant is actually well-founded (margins
+   aren't bounded to [0,1], win/loss is). **Komi is now threaded through
+   explicitly** (`ns.go.getGameState().komi`, read fresh each move) for
+   deciding win/loss during backpropagation — the flat-MC version silently
+   never applied komi at all, which would have overrated Black in close
+   games; this is a real correctness fix, not just an MCTS feature.
+2. **Opening-move learning** (`computeOpeningMoveStats` in
+   `ipvgo_logic.js`): builds a win-rate-per-first-move table from
+   `ipvgo_status.json`'s `recentGames` (which now also records each game's
+   `openingMove`). Only applied when a move has at least
+   `DEFAULT_MIN_OPENING_SAMPLE` (5) recorded games — below that, no bias is
+   applied, and this is genuinely enforced in code, not just a comment.
+   Implemented as a "virtual visits" prior seeded into the relevant root
+   tree node at the moment it's created (only ever at the true opening move
+   of a fresh game, detected via `ns.go.getMoveHistory().length === 0`) —
+   modeled on (a much simpler version of) Gelly & Silver, "Combining Online
+   and Offline Knowledge in UCT" (ICML 2007,
+   https://ai.dmi.unibas.ch/research/reading_group/gelly-silver-icml2007.pdf).
+   **Will show zero effect for a long while after this deploys** —
+   `recentGames`' rolling window resets fresh for this algorithm tag (see
+   below), so `gamesWithOpeningData` starts at 0 and only grows from games
+   played *after* this version actually starts running. This is the
+   correct, honest behavior, not a bug — surfaced directly in
+   `ipvgo_status.json`'s new `openingStats` field so nobody mistakes "not
+   enough data yet" for "feature broken."
+3. **`ALGORITHM` bumped to `"mcts-ucb1-v1"`** (from `"monte-carlo-flat-v1"`)
+   in `ipvgo_player.js` — per the same "don't blend algorithm generations
+   into one rolling-window number" logic already established for the prior
+   rewrite. This means `recentGames`/`gamesPlayed`/`wins` all start fresh
+   again the moment this version actually runs; the flat-MC 61-game/41%
+   record stays in `ipvgo_status.json`'s history conceptually but won't mix
+   into this version's own numbers.
+
+**Two real bugs found and fixed during this session's own review, before
+anything was pushed** (both would have been silent/subtle if missed —
+exactly the class of bug this repo's own diagnosis discipline warns
+about):
+- A missing ko-bar check: `nonRootCandidateMoves` (used when the tree
+  expands into a *simulated* future position, not the real root move) was
+  calling `analyzeMoves` without passing that position's `koIndex`,
+  meaning the simplified ko rule was silently not enforced anywhere except
+  at the very root. Fixed by threading `koIndex` through properly.
+- A stale `NUM_PLAYOUTS` reference left in `ipvgo_player.js`'s startup
+  `ns.tprint` line after the constant was renamed to `NUM_SIMULATIONS` —
+  would have thrown `ReferenceError: NUM_PLAYOUTS is not defined` as an
+  **uncaught exception at startup**, outside the main loop's try/catch,
+  the moment the script was run. `node --check` does not catch this class
+  of bug (undefined-variable references are a runtime concern, not a
+  syntax one) — only caught by manually grepping for stale symbol names
+  after the rename, which is now worth doing as a standard step after any
+  rename in this codebase, not just this once.
+- Also caught (via `node -e` integration testing, not unit tests): a
+  variable-aliasing bug where `chooseBestMove`'s returned `evaluated` count
+  always came back as `0` regardless of how many moves were actually
+  considered, because `root.untriedMoves` and the candidate-count array
+  were the *same object*, and the search mutates it via `.pop()` as it
+  runs — reading its `.length` *after* the search reports "how many are
+  left unexpanded" (usually 0), not "how many there were." Fixed by
+  capturing the count before the search loop runs; **covered by a new
+  regression test** (`ipvgo_logic.test.js`, "reports the real candidate
+  count in `evaluated`...") specifically because this is exactly the kind
+  of bug that "looks fine" (the chosen move was still correct throughout —
+  only the metadata was wrong) and would otherwise have silently corrupted
+  the `evaluated` field in every live log line and could have looked like
+  a real signal to a future session trying to diagnose something else.
+
+**Live game state right now**: unaffected. `ipvgo_player.js`/
+`ipvgo_logic.js` have been pushed to the game's filesystem via `ctl-push`
+(confirmed via round-trip `ctl-get`), but **pushing a file does not change
+what a currently-running script executes** — Bitburner doesn't hot-reload
+(CLAUDE.md's own standing note). The live process is still running the
+flat-MC version from earlier this session, still accumulating its own
+61+-game record under `"monte-carlo-flat-v1"`. Nothing needs to be rolled
+back.
+
+**The exact next step, when someone's ready to actually try this version**:
+`run ipvgo_player.js` in the live terminal (self-supersede kills the old
+running copy automatically — no other action needed). Needs a human or a
+CDP-capable session; this session had no browser/CDP connection to the
+actual running game to do it directly. After that:
+- Watch `ipvgo_status.json` (`cat` or `python3 tools/bb_remote.py ctl-get
+  /ipvgo_status.json --control-port 12527`) for `recentWinRate`/
+  `recentGamesCount` under the new `"mcts-ucb1-v1"` tag — don't compare it
+  to the old 41% until a real sample accumulates, same standing discipline
+  as always.
+- Specifically check `moveMs`-related fields (`lastResult.avgMoveMs`/
+  `maxMoveMs`) early — 1500 simulations/move is a real increase over the
+  flat-MC version's budget, profiled locally at ~250ms worst-case but
+  **not yet confirmed live**. If it's climbing uncomfortably close to
+  mcp.js's own 10-second tick cadence, turn `NUM_SIMULATIONS` down in
+  `ipvgo_player.js` (currently 1500).
+- Once enough games accumulate, `openingStats.gamesWithOpeningData` in
+  `ipvgo_status.json` shows whether the opening-move learning layer has
+  enough data yet to mean anything — expect it to read as "not enough
+  data" for a good while, that's the correct, honest state, not a failure.
+- If the sample says still short of 90%, the next lever discussion should
+  start from real MCTS-era numbers, not the flat-MC 41% — a fair
+  comparison needs the new algorithm's own real sample.
+
+**Not done, explicitly deferred, not started**: no further algorithm work
+beyond what's described above. `docs/ipvgo-strategy.md`'s "2026-08-12
+(later): flat Monte Carlo -> MCTS" section (to be written/expanded next,
+after this checkpoint) should get the same citation-and-rationale treatment
+the flat-MC section got — this claude-todo.md entry is the accurate,
+detailed record in the meantime if that doc section lags behind.
+
+- [x] Researched and cited MCTS/UCB1 (Kocsis & Szepesvári 2006) and the
+  opening-prior technique (Gelly & Silver 2007).
+- [x] Implemented, with 33 new tests (63 total passing) and two real bugs
+  caught and fixed during review (ko-bar omission, stale-symbol
+  `ReferenceError`) plus one caught via manual integration testing and
+  covered with a new regression test (evaluated-count aliasing bug).
+- [x] `node --check` clean on `ipvgo_player.js`, `ipvgo_logic.js`,
+  `ipvgo_logic.test.js`.
+- [x] Pushed to the game's filesystem via `ctl-push` (inert until run —
+  live game unaffected, still running flat-MC).
+- [ ] **Needs a human/CDP-capable hand**: `run ipvgo_player.js` in the live
+  terminal to actually start this version.
+- [ ] **Then, measure a real sample** the same way as every prior round —
+  `recentWinRate`/`recentGamesCount` in `ipvgo_status.json`, under the new
+  `"mcts-ucb1-v1"` algorithm tag, not compared to the old 41% until this
+  version has its own real sample.
+- [ ] **Check `avgMoveMs`/`maxMoveMs` early** to confirm the raised
+  `NUM_SIMULATIONS` (1500) is still comfortably fast live, not just in
+  local synthetic-board profiling.
+- [ ] Update `docs/ipvgo-strategy.md` with a full MCTS/opening-learning
+  section (citations, design, limitations) mirroring the flat-MC section's
+  own treatment — this claude-todo.md entry has the real content already,
+  that doc just needs the equivalent writeup for its own audience/format.
+
+## 2026-08-12 (later still): root-level eye-safety fix — a real bug, not a game irregularity
+
+Picked back up from the checkpoint directly above (which stayed uncommitted
+until this entry — committed together). Before resuming, Ken flagged
+something he'd watched happen live: Black held the majority of the board in
+a recent game, then filled both of its own eyes and died. Asked whether
+this could mean the game itself doesn't implement real Go rules (in which
+case algorithm work would be pointless).
+
+**Traced it in the code — it's not a host irregularity, it's a real bug in
+`chooseBestMove`'s root move selection**, and it predates this session
+(present in the flat-MC version too, just newly relevant now that a bigger
+sample exists). `nonRootCandidateMoves` in `ipvgo_logic.js` already
+excludes self-eye-filling points via `isSimpleEye` at every node in the
+MCTS tree *except the root* — the root's candidate set was always exactly
+`ns.go.analysis.getValidMoves()`'s raw grid, on the reasoning that this
+guarantees the submitted move is always accepted by the live game. That
+reasoning has a gap: if a group degenerates into one shared-liberty blob
+with no true separate eyes (the exact 2026-08-11 collapse mechanism,
+`docs/ipvgo-strategy.md`'s "What was actually wrong" section), the only
+legal points left can be the group's own eye-shaped liberties, and with no
+filter, MCTS has no signal telling it not to play there.
+
+A second, related finding: `pass` (`ns.go.passTurn()`, confirmed legal and
+already wired up) is only ever used when the board has *zero* legal moves
+anywhere — never offered to MCTS as a real candidate to weigh against
+filling your own last liberties. So even when passing would clearly be
+better than shrinking your own group, the bot never considers it unless
+literally cornered.
+
+**Fix applied to `chooseBestMove`** (`ipvgo_logic.js`): filter the root
+candidate set through the same `isSimpleEye` check `nonRootCandidateMoves`
+already applies everywhere else. If that leaves at least one candidate,
+MCTS runs over the filtered set only — self-eye-fills are never chosen
+while any other legal move exists. If filtering empties the candidate set
+entirely (every remaining legal move is a self-eye-fill), `chooseBestMove`
+now returns `move: null`, the same signal used for "no valid moves at all"
+— the caller (`ipvgo_player.js`) already passes in that case, no change
+needed there. This can never cause an illegal move to be submitted (the
+fallback is pass, not a forced bad move), and never narrows the candidate
+set below one option unless every option was a self-eye-fill anyway.
+
+Covered by 2 new tests in `ipvgo_logic.test.js` ("never fills its own true
+eye at the root when a safe alternative exists", "passes rather than fill
+its own eye when that's the only legal move left"), both against the same
+hand-built true-eye board the existing `isSimpleEye` tests use. Full suite:
+**65/65 passing** (`node --test *.test.js`), `node --check` clean.
+
+**Pushed live** — confirmed via `ctl-get` round-trip that the game's own
+copy of `ipvgo_logic.js` now contains this fix. **Not yet active**, same
+reason as the MCTS checkpoint above: the running script instance is still
+executing whatever it started with (still tagged `"monte-carlo-flat-v1"`
+in `ipvgo_status.json`, 366 games / 161 wins ≈ 44% as of this session).
+`run ipvgo_player.js` in the live terminal picks up both this fix and the
+still-unstarted MCTS/opening-learning rewrite from the checkpoint above in
+one restart (self-supersede handles killing the old instance).
+
+- [x] Confirmed via code tracing this is a real algorithm bug, not a game
+  rules irregularity — the game's own `getValidMoves()`/suicide-prevention
+  match documented area-scoring Go rules; the bot just wasn't filtering its
+  own root candidates for eye safety the way it already did everywhere else
+  in the search tree.
+- [x] Fixed `chooseBestMove`'s root candidate generation to exclude
+  self-eye-fills (falling back to pass, never to an illegal or forced-worse
+  move) — `ipvgo_logic.js`.
+- [x] 2 new regression tests added, full 65-test suite passing.
+- [x] Pushed live, round-trip confirmed via `ctl-get`.
+- [ ] **Still needs the same live restart as the MCTS checkpoint above** —
+  `run ipvgo_player.js`. One restart now activates MCTS/UCB1,
+  opening-move learning, *and* this eye-safety fix together.
+- [ ] After restart: watch `ipvgo_status.json` under the new
+  `"mcts-ucb1-v1"` tag for whether the eye-fix actually moves the win rate,
+  per Ken's own prediction that fixing this alone should help "more than a
+  little." Don't compare to the old 44% until a real sample accumulates
+  (standing discipline, see checkpoint above).
+
 ## 2026-08-12: Monte Carlo rewrite — real cited algorithm, targeting 90% win rate
 
 Ken's own ask, verbatim: **"find on the internet a good rudimentary go

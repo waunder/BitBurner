@@ -28,8 +28,9 @@ import {
   isSimpleEye,
   scoreAreaFlat,
   runPlayout,
-  evaluateMove,
   chooseBestMove,
+  ucb1Score,
+  computeOpeningMoveStats,
   makeRng,
 } from "./ipvgo_logic.js"
 
@@ -348,7 +349,32 @@ describe("runPlayout", () => {
   })
 })
 
-describe("evaluateMove / chooseBestMove — Monte Carlo actually distinguishes good from bad moves", () => {
+describe("ucb1Score — the UCT selection formula", () => {
+  test("an unvisited child always scores Infinity (always try untried moves first)", () => {
+    assert.equal(ucb1Score(0, 0, 100, Math.SQRT2), Infinity)
+  })
+
+  test("matches a hand-computed value for visited children", () => {
+    // Q = wins/visits = 3/4 = 0.75; exploration = sqrt(2) * sqrt(ln(10)/4)
+    const score = ucb1Score(4, 3, 10, Math.SQRT2)
+    const expected = 0.75 + Math.SQRT2 * Math.sqrt(Math.log(10) / 4)
+    assert.ok(Math.abs(score - expected) < 1e-9, `expected ${expected}, got ${score}`)
+  })
+
+  test("higher win rate scores higher at equal visit counts", () => {
+    const lowWinRate = ucb1Score(10, 2, 50, Math.SQRT2)
+    const highWinRate = ucb1Score(10, 8, 50, Math.SQRT2)
+    assert.ok(highWinRate > lowWinRate)
+  })
+
+  test("fewer visits scores higher at equal win rate (exploration term)", () => {
+    const fewVisits = ucb1Score(2, 1, 50, Math.SQRT2) // 50% winrate, barely explored
+    const manyVisits = ucb1Score(40, 20, 50, Math.SQRT2) // same 50%, well explored
+    assert.ok(fewVisits > manyVisits)
+  })
+})
+
+describe("chooseBestMove — MCTS actually distinguishes good from bad moves", () => {
   // Built directly as a flat array (rather than the row-oriented board5()
   // helper) to avoid transcription mistakes about which axis is which:
   // white 3-stone chain at (1,3)-(2,3)-(3,3), boxed in by black above,
@@ -378,35 +404,34 @@ describe("evaluateMove / chooseBestMove — Monte Carlo actually distinguishes g
     return { board: flatToBoard(flat, W, H), W, H }
   }
 
-  test("evaluateMove favors a real capture over a self-atari move", () => {
-    // Same fixture and playout budget as the chooseBestMove test below
-    // (tuned empirically -- see that test's comment -- for a reliable
-    // result rather than a coin flip at very low playout counts, a real
-    // property of flat Monte Carlo, not a bug).
-    const { board } = captureScenarioBoard()
-    const captureMargin = evaluateMove(board, 4, 3, "X", { numPlayouts: 20, rng: makeRng(99) })
-    const selfAtariMargin = evaluateMove(board, 0, 0, "X", { numPlayouts: 20, rng: makeRng(99) })
-    assert.ok(
-      captureMargin > selfAtariMargin,
-      `expected capture move margin (${captureMargin}) > self-atari move margin (${selfAtariMargin})`
-    )
-  })
-
-  test("chooseBestMove picks a real capture over a self-atari move", () => {
+  test("picks a real capture over a self-atari move", () => {
     // Restricting the candidate set to exactly two points -- the capture
     // at (4,3) and the self-atari corner at (0,0) -- keeps the comparison
-    // sharp: on a wide-open board, flat Monte Carlo's move-to-move
-    // variance can make many roughly-equal "neutral" points score close
-    // enough to the objectively-correct move to occasionally beat it by
-    // chance at low playout counts (a real, documented property of flat
-    // MC, not a bug -- see this file's header). Verified empirically this
-    // fixture hits 100% across 40 different seeds at numPlayouts=20.
+    // sharp, same reasoning as the equivalent flat-MC-era test this
+    // replaces: on a wide-open board with many roughly-equal candidates,
+    // a fixed small simulation budget can occasionally favor a "fine but
+    // not best" move by chance. With only two candidates and 200
+    // simulations, MCTS should reliably find the capture.
     const { board, W, H } = captureScenarioBoard()
     const validMoves = Array.from({ length: W }, () => Array(H).fill(false))
     validMoves[4][3] = true
     validMoves[0][0] = true
-    const { move } = chooseBestMove(board, validMoves, "X", { numPlayouts: 20, rng: makeRng(99) })
+    const { move } = chooseBestMove(board, validMoves, "X", { numSimulations: 200, rng: makeRng(99) })
     assert.deepEqual(move, [4, 3])
+  })
+
+  test("reports the real candidate count in `evaluated`, not however many are left unexpanded", () => {
+    // Regression test: root.untriedMoves and the root candidate list used
+    // to be the *same array object*, and expandNode drains it via .pop()
+    // as the search runs -- so reading its .length after the simulation
+    // loop reported how many candidates were never tried, not how many
+    // there actually were (0 whenever the search covers everything, which
+    // it usually does). On a wide-open board with many simulations, the
+    // real candidate count should be reported correctly regardless.
+    const board = ["...", "...", "..."] // 3x3, 9 empty points
+    const validMoves = Array.from({ length: 3 }, () => Array(3).fill(true))
+    const { evaluated } = chooseBestMove(board, validMoves, "X", { numSimulations: 200, rng: makeRng(3) })
+    assert.equal(evaluated, 9)
   })
 
   test("returns move: null when there are no valid moves", () => {
@@ -417,5 +442,125 @@ describe("evaluateMove / chooseBestMove — Monte Carlo actually distinguishes g
     const { move, evaluated } = chooseBestMove(board, validMoves, "X", {})
     assert.equal(move, null)
     assert.equal(evaluated, 0)
+  })
+
+  // Regression test for the 2026-08-12 root-level eye-safety fix: Ken
+  // watched a live game where Black held the majority of the board, then
+  // filled both of its own eyes and died -- the root candidate set used to
+  // be the raw ns.go.analysis.getValidMoves() grid with no eye filter,
+  // unlike every other tree node. See chooseBestMove's own comment.
+  test("never fills its own true eye at the root when a safe alternative exists", () => {
+    // Same true-eye shape as the isSimpleEye tests above: X ring around
+    // (2,2). Candidate set is exactly the eye and one untouched corner --
+    // the eye must never be chosen while the corner is available.
+    const board = board5([".....", ".XXX.", ".X.X.", ".XXX.", "....."])
+    const W = 5,
+      H = 5
+    const validMoves = Array.from({ length: W }, () => Array(H).fill(false))
+    validMoves[2][2] = true // the true eye
+    validMoves[0][0] = true // a safe, unrelated corner
+    const { move, evaluated } = chooseBestMove(board, validMoves, "X", { numSimulations: 200, rng: makeRng(7) })
+    assert.deepEqual(move, [0, 0])
+    assert.equal(evaluated, 1) // the eye was filtered out before MCTS ever ran
+  })
+
+  test("passes rather than fill its own eye when that's the only legal move left", () => {
+    const board = board5([".....", ".XXX.", ".X.X.", ".XXX.", "....."])
+    const W = 5,
+      H = 5
+    const validMoves = Array.from({ length: W }, () => Array(H).fill(false))
+    validMoves[2][2] = true // the true eye -- the only "legal" point offered
+    const { move, evaluated } = chooseBestMove(board, validMoves, "X", {})
+    assert.equal(move, null)
+    assert.equal(evaluated, 0)
+  })
+
+  test("applies komi when deciding win/loss for backpropagation", () => {
+    // A huge komi should be able to flip which move looks best: if White's
+    // effective score (area score + komi) always beats Black's regardless
+    // of the move chosen, no move should look like a reliable "win" for
+    // Black, which is a reachable, checkable property even without
+    // asserting a specific move choice.
+    const { board, W, H } = captureScenarioBoard()
+    const validMoves = Array.from({ length: W }, () => Array(H).fill(false))
+    validMoves[4][3] = true
+    const withoutKomi = chooseBestMove(board, validMoves, "X", { numSimulations: 100, komi: 0, rng: makeRng(1) })
+    const withHugeKomi = chooseBestMove(board, validMoves, "X", { numSimulations: 100, komi: 1000, rng: makeRng(1) })
+    assert.ok((withoutKomi.winRate ?? 0) > (withHugeKomi.winRate ?? 0))
+  })
+})
+
+describe("computeOpeningMoveStats", () => {
+  test("ignores games without an openingMove field", () => {
+    const stats = computeOpeningMoveStats([{ won: true }, { won: false, openingMove: null }])
+    assert.equal(stats.gamesWithOpeningData, 0)
+    assert.equal(stats.overallWinRate, null)
+  })
+
+  test("aggregates wins/games per distinct opening move", () => {
+    const recentGames = [
+      { won: true, openingMove: [2, 2] },
+      { won: true, openingMove: [2, 2] },
+      { won: false, openingMove: [2, 2] },
+      { won: false, openingMove: [0, 0] },
+    ]
+    const stats = computeOpeningMoveStats(recentGames)
+    assert.equal(stats.gamesWithOpeningData, 4)
+    assert.equal(stats.overallWinRate, 0.5)
+    assert.deepEqual(stats.byMove["2,2"], { games: 3, wins: 2, winRate: 2 / 3 })
+    assert.deepEqual(stats.byMove["0,0"], { games: 1, wins: 0, winRate: 0 })
+  })
+
+  test("handles an empty/undefined recentGames without throwing", () => {
+    assert.doesNotThrow(() => computeOpeningMoveStats([]))
+    assert.doesNotThrow(() => computeOpeningMoveStats(undefined))
+  })
+})
+
+describe("chooseBestMove — opening-move prior from computeOpeningMoveStats", () => {
+  test("a move with enough historical wins gets a head start via virtual visits", () => {
+    // On a wide-open empty board every move looks roughly equal to a
+    // small-budget random rollout; a strong historical prior (well above
+    // MIN_SAMPLE) for one specific move should be enough to tip the
+    // "most-visited" final selection toward it even at a modest budget,
+    // since it starts with virtual wins/visits before real simulation
+    // begins (see ipvgo_logic.js's own header, Gelly & Silver citation).
+    const board = ["...", "...", "..."] // 3x3 empty board
+    const validMoves = Array.from({ length: 3 }, () => Array(3).fill(true))
+    const openingStats = computeOpeningMoveStats(
+      Array.from({ length: 8 }, () => ({ won: true, openingMove: [1, 1] }))
+    )
+    const { move } = chooseBestMove(board, validMoves, "X", {
+      numSimulations: 60,
+      rng: makeRng(5),
+      isOpeningMove: true,
+      openingStats,
+      minOpeningSample: 5,
+      openingPriorWeight: 30,
+    })
+    assert.deepEqual(move, [1, 1])
+  })
+
+  test("does not bias when the historical sample is below minOpeningSample", () => {
+    // Only 2 recorded games for (1,1) -- below the default minimum of 5 --
+    // so no prior should be applied; this just checks it runs without
+    // throwing and without forcing that specific move (can't assert a
+    // *different* move deterministically without over-fitting to the rng
+    // seed, so this only checks the "no crash, still returns a valid
+    // candidate" contract holds with an under-sample opening stats object).
+    const board = ["...", "...", "..."]
+    const validMoves = Array.from({ length: 3 }, () => Array(3).fill(true))
+    const openingStats = computeOpeningMoveStats([
+      { won: true, openingMove: [1, 1] },
+      { won: true, openingMove: [1, 1] },
+    ])
+    const { move } = chooseBestMove(board, validMoves, "X", {
+      numSimulations: 30,
+      rng: makeRng(2),
+      isOpeningMove: true,
+      openingStats,
+      minOpeningSample: 5,
+    })
+    assert.ok(Array.isArray(move) && move.length === 2)
   })
 })

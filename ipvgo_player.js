@@ -9,20 +9,35 @@
  * "find on the internet a good rudimentary go algorithm to implement."
  * All pure board logic (a from-scratch local Go rules engine: flood-fill
  * chains/liberties, capture, suicide prevention, a simplified ko rule, area
- * scoring, simple-eye detection) plus the Monte Carlo move-selection
- * algorithm itself now live in ipvgo_logic.js -- see that file's own header
- * for the full citation list (Bruegmann's GOBBLE, 1993; Bouzy &
- * Helmstetter's Olga/Oleg; moderndescartes.com's rules-implementation
- * guide; Wikipedia's "Two eyes") and a detailed explanation of what the
- * algorithm is, why it should be stronger than the old heuristic, and its
- * known limitations. `node --test ipvgo_logic.test.js` covers the rules
- * engine (capture, suicide, ko) and the Monte Carlo move selection itself
- * against small hand-built boards.
+ * scoring, simple-eye detection) plus the move-selection algorithm itself
+ * now live in ipvgo_logic.js.
+ *
+ * ## 2026-08-12 (later): flat Monte Carlo -> MCTS/UCB1, plus opening-move learning
+ *
+ * After the flat-MC version ran live (61 games, 41% rolling win rate --
+ * real progress from ~0% under the old heuristic, but short of the 90%
+ * target -- with large unused timing headroom, avg 52ms/max 164ms per
+ * move), upgraded to real tree search: Monte Carlo Tree Search with UCB1
+ * (Kocsis & Szepesvári, 2006), which spends more of the simulation budget
+ * on moves that are looking good rather than splitting it evenly across
+ * every candidate. Also added a simple cross-game learning layer: track
+ * which opening moves (the very first move of a fresh game) have actually
+ * correlated with wins in `ipvgo_status.json`'s `recentGames` history, and
+ * give a qualifying move (only once it has enough recorded games -- see
+ * `DEFAULT_MIN_OPENING_SAMPLE`) a modest head start in the search via
+ * virtual visits (Gelly & Silver, 2007). Full citations, algorithm design,
+ * and known limitations (including why the reward signal is win/loss
+ * rather than score margin, and why komi is now explicitly threaded
+ * through) are in ipvgo_logic.js's own header. `node --test
+ * ipvgo_logic.test.js` covers the rules engine, the UCB1 formula itself,
+ * MCTS move selection, and the opening-stats aggregation, all against
+ * small hand-built boards/fixtures.
  *
  * This file is now just the ns.go event loop: fetch the real board and
  * real valid-move grid from the game each turn, ask ipvgo_logic.js's
- * chooseBestMove() for the best move by simulated playouts, submit it, and
- * track/persist results.
+ * chooseBestMove() for the best move via MCTS, submit it, and track/
+ * persist results (including which move opened each game, for the
+ * learning layer above).
  *
  * ## Status file (ipvgo_status.json)
  *
@@ -86,26 +101,33 @@
  * Move selection runs entirely synchronously (no `await` inside
  * chooseBestMove), which means it blocks the browser's single JS thread --
  * shared with the rest of the game and with mcp.js's own 10-second tick --
- * for however long it takes. Profiled locally on an empty 7x7 board:
- * ~100-300ms for NUM_PLAYOUTS in the 10-40 range (see ipvgo_logic.js's own
- * header for the story of why an earlier, slower design took *seconds* per
- * move and had to be rewritten). Logs its own elapsed-ms per move (ns.print)
- * and tracks avg/max per game in ipvgo_status.json (see below) specifically
- * so this can be checked against real play without guessing, per this
- * repo's own "measure live, don't estimate" discipline -- turn NUM_PLAYOUTS
- * down here if that data shows it's too slow.
+ * for however long it takes. Live data on the flat-MC predecessor (~980
+ * total playouts/move): avg 52ms, max 164ms -- comfortable headroom, which
+ * is why NUM_SIMULATIONS was raised for the MCTS rewrite. Local profiling
+ * of *this* MCTS version on a synthetic empty 7x7 board (worst case): 1500
+ * sims ~ 250ms (see ipvgo_logic.js's DEFAULT_NUM_SIMULATIONS comment for
+ * the full table and reasoning). **Not yet confirmed against real live
+ * play** -- logs its own elapsed-ms per move (ns.print) and tracks avg/max
+ * per game in ipvgo_status.json specifically so this can be checked
+ * without guessing, per this repo's own "measure live, don't estimate"
+ * discipline -- turn NUM_SIMULATIONS down here if that data shows it's too
+ * slow.
  *
  * @param {NS} ns
  */
 
-import { chooseBestMove } from "ipvgo_logic.js"
+import { chooseBestMove, computeOpeningMoveStats } from "ipvgo_logic.js"
 
-// How many random playouts chooseBestMove runs per candidate move. Higher
-// is stronger (less variance in the average score) but slower -- see the
-// "Timing" note above. 20 was the value profiled at ~150-300ms/move on an
-// empty 7x7 board; adjust based on the moveMs figures in ipvgo_status.json
-// once this has run live.
-const NUM_PLAYOUTS = 20
+// Total MCTS simulation budget per move (shared across the whole search
+// tree, not per candidate the way the old flat-MC NUM_PLAYOUTS was -- see
+// ipvgo_logic.js's own header for why that's the entire point of the
+// 2026-08-12 (later) MCTS upgrade). 1500 was chosen from local profiling
+// (see ipvgo_logic.js's DEFAULT_NUM_SIMULATIONS comment) after live data
+// on the flat-MC version showed huge unused timing headroom (avg 52ms, max
+// 164ms/move at ~980 total playouts/move); needs live confirmation this
+// stays comfortably fast now that the budget has grown -- watch the
+// moveMs figures in ipvgo_status.json and turn this down if they climb.
+const NUM_SIMULATIONS = 1500
 
 // Tag written into every ipvgo_status.json this script produces, and
 // checked on startup (see loadPersistedStatus below) before resuming any
@@ -114,11 +136,21 @@ const NUM_PLAYOUTS = 20
 // and cumulative counters start fresh instead of blending across
 // algorithm generations -- see loadPersistedStatus's own comment for why
 // that matters, straight from Ken's own reasoning for asking for a rolling
-// window in the first place.
-const ALGORITHM = "monte-carlo-flat-v1"
+// window in the first place. Bumped from "monte-carlo-flat-v1" for the
+// 2026-08-12 (later) MCTS/UCB1 rewrite -- flat MC's 61-game/41%-win-rate
+// record should not blend into this version's own rolling window.
+const ALGORITHM = "mcts-ucb1-v1"
 
 // How many recent game outcomes to keep for the rolling win rate.
 const RECENT_GAMES_WINDOW = 100
+
+// Opening-move learning (added 2026-08-12 (later), at the coordinator's
+// request): below this many recorded games for a specific first move,
+// computeOpeningMoveStats' data isn't trusted enough to bias anything --
+// see ipvgo_logic.js's own DEFAULT_MIN_OPENING_SAMPLE/DEFAULT_OPENING_PRIOR_WEIGHT
+// comments for the full reasoning. Left as ipvgo_logic.js's own defaults
+// (not overridden here) since there's no live evidence yet either way to
+// tune them against.
 
 function killDuplicates(ns) {
   const self = ns.getScriptName()
@@ -249,6 +281,12 @@ function loadPersistedStatus(ns, algorithm) {
 // wrong source for "is this algorithm good."
 function writeStatus(ns, { gamesPlayed, wins, recentGames, opponent, size, lastResult, opponentLifetime }) {
 	const recentWins = recentGames.filter((g) => g.won).length
+	// Surfaced for the dashboard/coordinator per the 2026-08-12 (later)
+	// "keep this simple... say so plainly if the sample size is too small"
+	// instruction -- shows exactly what data (if any) the opening-move
+	// prior is working from, not just that the feature exists. See
+	// computeOpeningMoveStats in ipvgo_logic.js.
+	const openingStats = computeOpeningMoveStats(recentGames)
 	ns.write(
 		"ipvgo_status.json",
 		JSON.stringify(
@@ -263,10 +301,15 @@ function writeStatus(ns, { gamesPlayed, wins, recentGames, opponent, size, lastR
 				// Rolling window, added 2026-08-12: last RECENT_GAMES_WINDOW game
 				// outcomes for *this* algorithm generation (see loadPersistedStatus
 				// above for why it's scoped that way), each { won, blackScore,
-				// whiteScore, ts }.
+				// whiteScore, ts, openingMove }.
 				recentGames,
 				recentGamesCount: recentGames.length,
 				recentWinRate: recentGames.length ? recentWins / recentGames.length : null,
+				// Opening-move learning visibility, added 2026-08-12 (later):
+				// gamesWithOpeningData will be 0 for a long while after this
+				// deploys (recentGames only gets openingMove going forward, not
+				// backfilled) -- that's the honest, expected state, not a bug.
+				openingStats,
 				// Reward/streak fields, also added 2026-08-12, from
 				// ns.go.analysis.getStats() -- see readOpponentStats() above for
 				// exactly what each one is, where it comes from, and the one
@@ -297,7 +340,7 @@ export async function main(ns) {
 
   ns.tprint(
     `ipvgo_player: starting (RAM ${ns.getScriptRam(ns.getScriptName()).toFixed(2)}GB, ` +
-      `flat Monte Carlo, ${NUM_PLAYOUTS} playouts/move). ` +
+      `MCTS/UCB1, ${NUM_SIMULATIONS} simulations/move, algorithm=${ALGORITHM}). ` +
       `Fresh-subnet default: ${opponent} ${size}x${size} -- an in-progress game is always continued as-is first.`
   )
 
@@ -315,6 +358,11 @@ export async function main(ns) {
   // and record a bogus 0-0 loss. observedActiveGame is only set once this
   // run has actually seen the board in a non-"None" state.
   let observedActiveGame = false
+  // The first move *this specific game* actually played (once known),
+  // recorded into that game's recentGames entry at game-end -- the raw
+  // data computeOpeningMoveStats builds its win-rate-per-opening-move
+  // table from. null until the first successful makeMove of a fresh game.
+  let openingMove = null
   ns.tprint(
     `ipvgo_player: resuming this algorithm's own record: ${wins}/${gamesPlayed} lifetime, ` +
       `${recentGames.length} game(s) in the rolling window.`
@@ -330,7 +378,7 @@ export async function main(ns) {
           const won = state.blackScore > state.whiteScore
           wins += won ? 1 : 0
           gamesPlayed++
-          recentGames.push({ won, blackScore: state.blackScore, whiteScore: state.whiteScore, ts: Date.now() })
+          recentGames.push({ won, blackScore: state.blackScore, whiteScore: state.whiteScore, ts: Date.now(), openingMove })
           if (recentGames.length > RECENT_GAMES_WINDOW) recentGames = recentGames.slice(-RECENT_GAMES_WINDOW)
           const recentWinRate = recentGames.filter((g) => g.won).length / recentGames.length
           const avgMoveMs = moveMsCount > 0 ? moveMsSum / moveMsCount : null
@@ -360,6 +408,7 @@ export async function main(ns) {
         moveMsCount = 0
         moveMsMax = 0
         observedActiveGame = false
+        openingMove = null
         ns.go.resetBoardState(opponent, size)
         ns.tprint(`ipvgo_player: new subnet vs ${opponent}, ${size}x${size}.`)
         await ns.sleep(200)
@@ -380,9 +429,24 @@ export async function main(ns) {
 
       const board = ns.go.getBoardState()
       const validMoves = ns.go.analysis.getValidMoves()
+      // Both 0GB. komi: the real game's actual value for *this* game (not
+      // assumed to be the 5.5 default -- see NetscriptDefinitions.d.ts'
+      // setTestingBoardState doc comment, which only documents 5.5 as a
+      // *parameter default*, not a guarantee for every opponent/game).
+      // isOpeningMove: getMoveHistory() is empty iff nobody has played a
+      // move yet this game -- the one point where the opening-move prior
+      // (see ipvgo_logic.js) is even considered.
+      const komi = ns.go.getGameState().komi ?? 0
+      const isOpeningMove = ns.go.getMoveHistory().length === 0
+      const openingStats = isOpeningMove ? computeOpeningMoveStats(recentGames) : null
 
       const t0 = Date.now()
-      const { move, margin, evaluated } = chooseBestMove(board, validMoves, "X", { numPlayouts: NUM_PLAYOUTS })
+      const { move, visits, winRate, simulations, evaluated } = chooseBestMove(board, validMoves, "X", {
+        numSimulations: NUM_SIMULATIONS,
+        komi,
+        isOpeningMove,
+        openingStats,
+      })
       const elapsedMs = Date.now() - t0
       moveMsSum += elapsedMs
       moveMsCount++
@@ -390,9 +454,18 @@ export async function main(ns) {
 
       if (move) {
         await ns.go.makeMove(move[0], move[1])
+        if (openingMove === null) openingMove = move
+        let openingNote = ""
+        if (isOpeningMove) {
+          const key = move[0] + "," + move[1]
+          const moveStats = openingStats?.byMove?.[key]
+          openingNote = moveStats
+            ? ` [opening prior: ${moveStats.games} game(s), ${(moveStats.winRate * 100).toFixed(0)}% win rate]`
+            : " [opening: not enough data yet for this move]"
+        }
         ns.print(
-          `played [${move[0]},${move[1]}] -- avg simulated margin ${margin?.toFixed(2)} ` +
-            `over ${evaluated} candidates, ${elapsedMs}ms`
+          `played [${move[0]},${move[1]}] -- ${visits}/${simulations} visits, ` +
+            `${(winRate * 100).toFixed(1)}% sim win rate, ${evaluated} candidates, ${elapsedMs}ms${openingNote}`
         )
       } else {
         await ns.go.passTurn()

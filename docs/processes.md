@@ -1450,6 +1450,8 @@ does what the UI does). Design reasoning lives in `docs/darknet-functions.md`
 - `dnet_deploy.js` — `--once` (single pass, no loop), `--brute N` (allow up to
   N numeric candidates per host; default 0 = off), `--quiet`.
 - `dnet_realloc.js` — `--max-realloc N` (default 25).
+- `dnet_killswarm.js` — `--quiet`, `--restart` (launch a fresh crawler after
+  cleanup; remotely reachable through `restart_mcp.js --darknet`).
 - `dnet_loot.js` — `--no-cache`, `--no-ram`, `--max-realloc N` (default 25).
 - `dnet_loot_all.js` — `--limit N` (stop after N hosts, default: all),
   `--wait-ms N` (per-host completion timeout, default 15000).

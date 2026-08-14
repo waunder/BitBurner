@@ -15,12 +15,10 @@ Ken's hand, and check it off once it's confirmed done — same rule as
   it is healthy and waiting, but the game must reconnect before the new Dark
   Net files can sync and live validation can begin.
 
-- [ ] **Restart the Dark Net swarm once Codex says the optimization branch is
-  ready for live validation.** The game is connected and the 2026-08-14 files
-  are synced, but direct heartbeat reads show the `home` deployer stopped at
-  pass 982 and the other sampled shard is older still. Bitburner does not
-  hot-reload, and the Remote API cannot launch an arbitrary in-game script;
-  the eventual validation will need one terminal run of the updated swarm.
+- [x] **Provide a way to restart the Dark Net swarm without another in-game
+  command.** Done 2026-08-14: `restart_mcp.js --darknet` delegates cleanup and
+  relaunch to `dnet_killswarm.js --restart`. Once Remote API reconnects Codex
+  can push that trigger through the already-running supervisor.
 
 - [x] **Reconnect Bitburner to the Remote API daemon on port 12526.**
   Confirmed 2026-08-14 via `tools/bb_remote.py ctl-status`: connected with

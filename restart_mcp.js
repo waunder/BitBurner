@@ -1,5 +1,8 @@
 /** @param {NS} ns */
 export async function main(ns) {
+  const restartDarknet = ns.args.some((arg) => String(arg) === "--darknet")
+  const mcpArgs = ns.args.filter((arg) => String(arg) !== "--darknet")
+
   if (ns.scriptKill("mcp.js", "home")) {
     // A killed script can still finish its in-flight tick, including writing
     // mcp_status.json and mcp_target_state.json. Starting the replacement on
@@ -16,10 +19,16 @@ export async function main(ns) {
     ns.tprint("restart_mcp: killed existing mcp.js instance(s)")
   }
 
-  const pid = ns.run("mcp.js", 1, ...ns.args)
+  const pid = ns.run("mcp.js", 1, ...mcpArgs)
   if (pid === 0) {
     ns.tprint("restart_mcp: failed to start mcp.js (not enough RAM on home?)")
     return
   }
-  ns.tprint(`restart_mcp: started mcp.js (pid ${pid})${ns.args.length ? " args=" + JSON.stringify(ns.args) : ""}`)
+  ns.tprint(`restart_mcp: started mcp.js (pid ${pid})${mcpArgs.length ? " args=" + JSON.stringify(mcpArgs) : ""}`)
+
+  if (restartDarknet) {
+    const dnetPid = ns.run("dnet_killswarm.js", 1, "--restart")
+    if (dnetPid === 0) ns.tprint("restart_mcp: failed to start dnet_killswarm.js --restart")
+    else ns.tprint(`restart_mcp: Dark Net cleanup/restart delegated to dnet_killswarm.js (pid ${dnetPid})`)
+  }
 }

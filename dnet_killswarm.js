@@ -25,7 +25,9 @@
  * would be running there to kill) and because it's the cheapest available
  * signal that a hostname is real and reachable before spending a ps call.
  *
- * Args: --quiet (suppress per-host SKIP lines).
+ * Args: --quiet (suppress per-host SKIP lines), --restart (launch a fresh
+ * dnet_deploy.js after cleanup finishes). The latter makes a full Dark Net
+ * hot-reload remotely triggerable through restart_mcp.js --darknet.
  *
  * Reads:  dnet_creds.txt
  * Writes: nothing
@@ -48,7 +50,10 @@ const TARGET_SCRIPTS = new Set([
 
 export async function main(ns) {
   ns.disableLog("ALL")
-  const flags = ns.flags([["quiet", false]])
+  const flags = ns.flags([
+    ["quiet", false],
+    ["restart", false],
+  ])
 
   const creds = readCreds(ns)
   const hosts = new Set(Object.keys(creds))
@@ -102,13 +107,18 @@ export async function main(ns) {
 
   ns.tprint(
     `dnet_killswarm: touched ${hostsTouched}/${hosts.size} known host(s) (${sessionFailed} no session), ` +
-      `killed ${killed} old dnet_deploy.js/dnet_loot.js process(es). ` +
+      `killed ${killed} Dark Net process(es). ` +
       `Per-host: ${JSON.stringify(killedByHost)}. ` +
-      `Now run: run dnet_deploy.js  (from home, no --once -- see darknet-functions.md on why --once ` +
-      `only bounds the first hop anyway).`
+      (flags.restart ? `Restart requested.` : `Now run: run dnet_deploy.js from home.`)
   )
+
+  if (flags.restart) {
+    const pid = ns.run("dnet_deploy.js", 1)
+    if (pid === 0) ns.tprint("dnet_killswarm: cleanup complete, but fresh dnet_deploy.js failed to start")
+    else ns.tprint(`dnet_killswarm: cleanup complete; started fresh dnet_deploy.js pid=${pid}`)
+  }
 }
 
 export function autocomplete() {
-  return ["--quiet"]
+  return ["--quiet", "--restart"]
 }

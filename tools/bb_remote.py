@@ -769,6 +769,7 @@ WATCHED_FILES = [
     "dnet_scorecard.js",
     "dnet_crawl.js",
     "dnet_manager.js",
+    "dnet_root.js",
     "dnet_loot_all.js",
     "dnet_loot_merge.js",
     "dnet_creds_merge.js",

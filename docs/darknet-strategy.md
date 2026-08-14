@@ -5,7 +5,27 @@ model solvers, `darknet-tactics.md` for the per-decision reasoning. This doc
 answers: what are we actually trying to get out of the darknet, in what order,
 and what has to be true before each step is worth taking.
 
-**Update 2026-08-12: Phases 0-2 are now live and working.** `dnet_probe.js`
+### Current architecture and status (2026-08-14)
+
+The supported entry point is `dnet_root.js` on `home` (normally reached by
+`dnet_killswarm.js --restart`, including `restart_mcp.js --darknet`). It owns
+the stable `home` -> `darkweb` gateway and quarantines surviving legacy
+`dnet_deploy.js` copies there. Each Dark Net node runs a finite
+`dnet_crawl.js` pass, which authenticates and prepares direct neighbours,
+propagates the crawler, writes credential and heartbeat shards, starts the
+local `dnet_manager.js`, and exits. The resident manager owns loot, maximum-fit
+phishing, cache follow-up, and a clean recrawl every 90 seconds.
+
+The legacy deployer and its authentication/model logic have extensive live
+evidence: 586 historical credentials across seven models, 15GB measured
+deployer RAM, and pristine instability. The root/crawl/manager replacement is
+source-complete but remains pending a clean live restart and heartbeat/RAM
+confirmation. Do not infer that the replacement is live merely from the
+legacy swarm's results.
+
+### Historical checkpoint: legacy deployer (2026-08-12)
+
+`dnet_probe.js`
 confirmed the entry-point model exactly as predicted (`["darkweb"]`, nothing
 more — see the "Reconciled" note in `darknet-functions.md` for why the
 "Dark Net" UI tab showing far more than that is expected, not a
@@ -14,18 +34,16 @@ due to a found-but-low-risk bug in `spread()` (child copies don't inherit
 `--once` — see `darknet-functions.md`'s deployer section), has already
 cascaded into exactly the autonomous Phase-2 crawl this roadmap describes:
 12+ servers cracked across all four solved password models, zero failures,
-credentials shipped to `home` as shards. **Recommended next concrete step:
-run `dnet_creds_merge.js` on `home` now** to fold those shards into
-`dnet_creds.txt` — they exist only as loose per-host shards right now, and
-merging is what makes the "recovery after mass script death" design
-actually pay off if anything kills the running copies. Do **not** run
+credentials shipped to `home` as shards. Do **not** run
 anything that backdoors or `setStasisLink`s a server yet — nothing has hit a
 point in this net that clearly justifies spending 1 of the ~2-4 backdoor
 budget (tactics §2/§3), and the crawl itself costs zero instability. The
 paragraphs below are the original pre-live-run plan, kept as-is; where they
 predicted a number, it held.
 
-**Update 2026-08-14 (Codex branch, awaiting live restart): turn the shallow
+### Superseded implementation checkpoint (do not use as run instructions)
+
+**Update 2026-08-14: turn the shallow
 net into a charisma engine.** Live state has reached 586 historical
 credentials across seven models with pristine instability (1× duration,
 0% timeout), but the merged scoreboard is stale and sampled crawler shards
@@ -35,14 +53,14 @@ their stasis-limit augmentations are not a reachable optimization target in
 the current state. The highest-value reachable loop is therefore:
 
 1. authenticate a directly-connected neighbour;
-2. launch a temporary, multi-thread `dnet_realloc.js` on the crawler, aimed at
-   that neighbour, before resident scripts consume capacity;
-3. preserve the self-replicating crawl and one-shot cache loot;
-4. fill remaining RAM with a lean multi-thread `phishingAttack()` loop.
+2. reclaim its blocked RAM from the authenticated source side;
+3. preserve the self-replicating crawl;
+4. hand the local node to loot and a lean multi-thread phishing loop.
 
-That loop is implemented on the Codex branch as temporary multi-thread
-`dnet_realloc.js`, new `dnet_phish.js`, once-per-process neighbour
-preparation, cache-success handoff markers, and immutable cumulative
+The first implementation used the 15GB resident deployer. It is retained only
+as legacy/fallback code. The replacement uses a temporary multi-thread
+`dnet_realloc.js` on the transient crawler's host to target the authenticated
+neighbour, then lets the manager own phishing, cache follow-up, and immutable cumulative
 loot-event telemetry. It does not use
 backdoors, stasis, migration, stock promotion, or Storm Seed. Phishing is the
 correct idle load because it builds charisma on every attempt (even failures),
@@ -50,7 +68,7 @@ and charisma shortens later phishing/reallocation/authentication work while
 also improving phishing success and payout. Live validation requires a clean
 swarm restart because Bitburner does not hot-reload.
 
-**Live correction after the first restart:** the game's own
+**Live correction after that first restart:** the game's own
 `getScriptRam()` reports the full crawler at 15GB, not the hand-estimated
 ~4.9GB. On a 16GB node it left exactly 1GB, explaining the scorecard's RAM
 skips and preventing every intended co-located worker. The replacement

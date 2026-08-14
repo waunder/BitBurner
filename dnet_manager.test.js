@@ -13,4 +13,19 @@ describe("threadsForFreeRam — resident Dark Net farm sizing", () => {
     assert.equal(threadsForFreeRam(10, 0), 0)
     assert.equal(threadsForFreeRam(-1, 3.6), 0)
   })
+
+  test("uses all RAM at an exact thread boundary", () => {
+    assert.equal(threadsForFreeRam(3.6, 3.6), 1)
+    assert.equal(threadsForFreeRam(7.2, 3.6), 2)
+    assert.equal(threadsForFreeRam(36, 3.6), 10)
+  })
+
+  test("never rounds a nearly-complete thread up", () => {
+    assert.equal(threadsForFreeRam(3.599999, 3.6), 0)
+    assert.equal(threadsForFreeRam(7.199999, 3.6), 1)
+  })
+
+  test("zero free RAM launches nothing", () => {
+    assert.equal(threadsForFreeRam(0, 3.6), 0)
+  })
 })

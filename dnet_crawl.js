@@ -9,7 +9,6 @@
 import {
   CREDS_FILE,
   acquireSession,
-  freeBlockedRam,
   readCreds,
   recordCred,
   shipCred,
@@ -19,7 +18,21 @@ import {
 
 const SELF = "dnet_crawl.js"
 const MANAGER = "dnet_manager.js"
-const FILES = [SELF, MANAGER, "dnet_lib.js", "dnet_loot.js", "dnet_loot_realloc.js", "dnet_phish.js"]
+const REALLOC = "dnet_realloc.js"
+const FILES = [SELF, MANAGER, REALLOC, "dnet_lib.js", "dnet_loot.js", "dnet_loot_realloc.js", "dnet_phish.js"]
+
+async function prepareTarget(ns, target) {
+  const source = ns.getHostname()
+  const workerRam = ns.getScriptRam(REALLOC, source)
+  const freeRam = ns.getServerMaxRam(source) - ns.getServerUsedRam(source)
+  const threads = workerRam > 0 ? Math.floor(freeRam / workerRam) : 0
+  if (threads < 1) return { ok: false, before: ns.dnet.getBlockedRam(target), after: ns.dnet.getBlockedRam(target), threads: 0 }
+  const before = ns.dnet.getBlockedRam(target)
+  const pid = ns.exec(REALLOC, source, { threads, preventDuplicates: true }, target)
+  while (pid && ns.isRunning(pid)) await ns.sleep(250)
+  const after = ns.dnet.getBlockedRam(target)
+  return { ok: after <= 0, before, after, threads }
+}
 
 export async function main(ns) {
   ns.disableLog("ALL")
@@ -42,16 +55,23 @@ export async function main(ns) {
     }
     summary.sessions++
 
-    const details = ns.dnet.getServerDetails(target)
+    let details
+    try {
+      details = ns.dnet.getServerDetails(target)
+    } catch (err) {
+      summary.failed++
+      if (!flags.quiet) ns.print(`DETAILS-FAIL ${target}: ${err}`)
+      continue
+    }
     if (typeof result.password === "string" && known?.password !== result.password) {
       summary.cracked++
       creds[target] = { host: target, password: result.password, model: details.modelId, at: Date.now() }
       const shard = recordCred(ns, target, result.password, details.modelId)
-      shipCred(ns, shard)
+      await shipCred(ns, shard)
     }
 
     if (details.blockedRam > 0) {
-      const prep = await freeBlockedRam(ns, target, 25)
+      const prep = await prepareTarget(ns, target)
       if (prep.after < prep.before) summary.prepared++
       if (prep.after > 0) {
         if (!flags.quiet) ns.print(`PREP-WAIT ${target} before=${prep.before} after=${prep.after} why=${prep.why}`)
@@ -62,10 +82,15 @@ export async function main(ns) {
     const files = [...FILES]
     if (ns.fileExists(CREDS_FILE)) files.push(CREDS_FILE)
     try {
-      if (!ns.scp(files, target)) continue
+      if (!(await ns.scp(files, target))) {
+        summary.failed++
+        continue
+      }
       const pid = ns.exec(SELF, target, { preventDuplicates: true })
       if (pid !== 0) summary.deployed++
+      else summary.failed++
     } catch (err) {
+      summary.failed++
       if (!flags.quiet) ns.print(`SPREAD-FAIL ${target}: ${err}`)
     }
   }
@@ -89,10 +114,11 @@ export async function main(ns) {
     ramCosts: { crawlRam, managerRam, phishRam, maxRam, blockedRam },
     farmCapacityThreads,
   })
-  shipShard(ns, shard)
+  await shipShard(ns, shard)
 
-  const managerPid = ns.run(MANAGER, { preventDuplicates: true })
-  if (managerPid === 0) ns.print(`HANDOFF-SKIP ${host}: ${MANAGER} already running or did not fit`)
+  // spawn replaces this process after releasing its RAM, so the manager is
+  // never forced to coexist with the transient crawler during handoff.
+  ns.spawn(MANAGER, { threads: 1, preventDuplicates: true, spawnDelay: 100 })
 }
 
 export function autocomplete() {

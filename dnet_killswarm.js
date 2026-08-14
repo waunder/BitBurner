@@ -45,6 +45,7 @@ const TARGET_SCRIPTS = new Set([
   "dnet_phish.js",
   "dnet_crawl.js",
   "dnet_manager.js",
+  "dnet_root.js",
 ])
 
 export async function main(ns) {
@@ -142,9 +143,9 @@ export async function main(ns) {
   )
 
   if (flags.restart) {
-    const pid = ns.run("dnet_deploy.js", 1)
-    if (pid === 0) ns.tprint("dnet_killswarm: cleanup complete, but fresh dnet_deploy.js failed to start")
-    else ns.tprint(`dnet_killswarm: cleanup complete; started fresh dnet_deploy.js pid=${pid}`)
+    const pid = ns.run("dnet_root.js", 1)
+    if (pid === 0) ns.tprint("dnet_killswarm: cleanup complete, but fresh dnet_root.js failed to start")
+    else ns.tprint(`dnet_killswarm: cleanup complete; started fresh dnet_root.js pid=${pid}`)
   }
 }
 

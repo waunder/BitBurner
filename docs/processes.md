@@ -1475,7 +1475,8 @@ does what the UI does). Design reasoning lives in `docs/darknet-functions.md`
 | --- | --- | --- | --- |
 | `dnet_probe.js` | `home` | ~2.3GB | First contact. Probes, reports each neighbour's details, attempts `authenticate("darkweb","")`. Mutates almost nothing. |
 | `dnet_lib.js` | — | 0GB alone | Shared module. Model-aware password candidates, credential store, session acquisition, filename-safe credential/deployer/loot-event shards, targeted `freeBlockedRam`, cumulative loot-event aggregation, and `dnet_status.json` merge helpers. Not runnable. |
-| `dnet_deploy.js` | `home` | 15GB, measured live | Root controller and compatibility fallback. **2026-08-14 measured correction:** the prior ~4.9GB hand estimate was wrong; the game reports exactly 15GB. It now delegates a prepared neighbour to `dnet_crawl.js` and stops competing for that target's RAM once the lean crawler/manager pair owns it. The old inline loot/phish path remains only as a fallback when delegation cannot start. |
+| `dnet_root.js` | `home` | confirm live | Stable gateway for the transient architecture. Its unique filename cannot be overwritten by surviving legacy crawlers. It authenticates `darkweb`, kills any reappearing `dnet_deploy.js` process there, prepares the gateway, and launches `dnet_crawl.js`; then it waits for mutations and repeats. |
+| `dnet_deploy.js` | legacy compatibility only | 15GB, measured live | Former roaming controller. Retained for history/fallback but no longer launched by the restart path. Surviving old in-memory copies can temporarily repopulate nodes, so `dnet_root.js` actively quarantines this filename at the gateway. |
 | `dnet_crawl.js` | transient on darknet nodes | measured in each shard's `ramCosts.crawlRam` | Lean one-pass crawler: authenticate, persist new credentials, reclaim a blocked direct neighbour using the source-side API, propagate itself, write a heartbeat, start the local manager, and exit. This keeps discovery and authentication costs out of the permanent farm. Each heartbeat records measured crawler/manager/phisher RAM and the node's resulting phishing-thread capacity. |
 | `dnet_manager.js` | resident on darknet nodes | measured in crawler heartbeat | Local lifecycle manager. After the transient crawler releases RAM, it runs one-shot loot, fills all remaining capacity with `dnet_phish.js`, immediately opens a generated cache after the phisher exits, and every 90 seconds lets the phisher stop cleanly before running a brief recrawl. No kill call or durable in-memory state is required. |
 | `dnet_realloc.js` | the crawler adjacent to a blocked neighbour | ~2.6GB/thread | Temporary remote preparation worker. Accepts the authenticated neighbour as argv[0], uses a deliberately inline minimal reallocation loop, and exits. Running on the source side can unlock a deep host even when 100% of the target's RAM is blocked. `memoryReallocation` scales with threads, so the controller uses every source-side thread that fits. Safe to lose and retry after a mutation. It ships no telemetry—the controller observes `blockedRam` between passes. |
@@ -1605,16 +1606,16 @@ Self-contained, not touched by `mcp.js`, not auto-started by anything.
 | `scripts/share.js` | any host, spread by `share_deploy.js` | 2.4GB/thread | Three-line loop, same shape as `scripts/weaken.js`: `while(true) await ns.share()`. All the logic lives in the deployer, same division of labor as the weaken/grow/hack workers. |
 | `share_deploy.js` | run once from `home` | ~2.6GB to run itself (exits after launching) | Launches `scripts/share.js` threads. Default (`run share_deploy.js`, no args) only claims `home`'s free RAM above a 16GB reserve. **Since 2026-08-14 (R7), this does compete with the money farm**: `mcp.js` now uses `home` as a worker host too (behind its own, separate `HOME_RAM_RESERVE`, default 32GB — see "Worker hosts" above), so `share.js` threads eating into `home`'s free RAM leave correspondingly less for `mcp.js`'s own weaken/grow/hack there on its next tick, same as the `network` mode below always did for other hosts. Before R7 this mode genuinely had zero effect on the farm (`home` was categorically excluded); that is no longer true. `run share_deploy.js network` additionally claims free RAM on every rooted worker host; `mcp.js` reads each host's actual free RAM fresh every tick, so it will deploy fewer weaken/grow/hack threads there on its own next tick — a real, deliberate trade of hacking income for rep-gain rate, not a bug. `run share_deploy.js stop` kills every running `share.js` instance network-wide. Args: `[mode] [reserveHomeGb] [maxThreads]`. |
 
-**Caveat that matters more than the RAM math:** per `NetscriptDefinitions.d.ts`,
-share power only affects reputation gain *while actively doing faction work
-or a company job* (manually in the UI, or via `workForFaction`/`workForCompany`).
+**Caveat that matters more than the RAM math:** share power only affects
+reputation gain while actively doing faction work (manually in the UI or via
+`workForFaction`); the current company-work formula does not apply it.
 This repo has no scripted faction-work automation — running this while
-nobody is doing rep-earning work burns RAM for nothing. Diminishing returns
-per thread are documented in-engine ("sharply decreasing rate") but the
-exact curve wasn't found in the game's bundled (minified, unmappable)
-source, so thread counts here are sized by available RAM, not by a modeled
-optimum — check `ns.getSharePower()` (printed by `share_deploy.js` on
-launch) to see the actual effect rather than trusting a guessed curve.
+nobody is doing faction work burns RAM for nothing. The exact global curve is
+`sharePower = 1 + ln(effectiveThreads) / 25`; effective threads include the
+calling host's core bonus and aggregate across all hosts. `home` is therefore
+usually the most share-efficient RAM, but returns remain logarithmic. Check
+`ns.getSharePower()` (printed by `share_deploy.js` on launch) for the live
+result.
 
 **Not yet run live** — built and `node --check`ed this session, needs Ken to
 `run share_deploy.js` in the live terminal. See `docs/kensTodo.md`.

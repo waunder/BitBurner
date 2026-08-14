@@ -1,10 +1,12 @@
 /**
  * Launches scripts/share.js threads to boost faction/company reputation
- * gain rate (ns.share() — 2.4GB/thread, diminishing returns per thread,
+ * faction reputation gain rate (ns.share() — 2.4GB/thread, diminishing
+ * returns per thread,
  * see NetscriptDefinitions.d.ts).
  *
  * IMPORTANT CAVEAT: share power only does anything while you are actively
- * doing faction work or a company job (in the UI, or via workForFaction).
+ * doing faction work (in the UI, or via workForFaction). Current company
+ * work formulas do not apply share power.
  * This repo has no scripted faction-work automation — running this with
  * nobody doing rep-earning work is a no-op that just burns RAM.
  *
@@ -91,7 +93,7 @@ export async function main(ns) {
   ns.tprint(
     `share_deploy: launched ${launched} share thread(s) across ${hostsUsed} host(s). ` +
       `Current share power: ${ns.getSharePower().toFixed(4)} ` +
-      `(only affects rep gain while actively doing faction/company work). ` +
+      `(only affects rep gain while actively doing faction work). ` +
       `Run "share_deploy.js stop" to undo.`
   )
 }

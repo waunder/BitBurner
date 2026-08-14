@@ -10,22 +10,23 @@ The current source signature is explicit: `memoryReallocation(host?)` can
 target an authenticated, directly-connected neighbour. The earlier helper
 comment claiming it could only act on the calling server was wrong, and
 `freeBlockedRam(ns, host, maxCalls)` now correctly supports either form.
-The deployed architecture therefore uses temporary source-side
-`dnet_realloc.js`: the already-running crawler passes its authenticated direct
-neighbour as an argument and uses every spare source-side thread. This can
-unlock a deeper target even when 100% of the target's own RAM is blocked, and
-keeps the 1GB API cost out of every permanent crawler. On a common 16GB server,
-carrying that cost forever would reduce the eventual phishing allocation from
-three threads to two.
+The current transient architecture has `dnet_root.js` call
+`freeBlockedRam()` directly for the gateway, while each `dnet_crawl.js`
+launches temporary multi-thread `dnet_realloc.js` on its own already-running
+host and targets the authenticated direct neighbour. This can unlock a deeper
+target even when 100% of the target's own RAM is blocked, scales the finite
+operation across all source RAM that is currently free, and keeps the 1GB API
+cost out of every resident manager and phisher.
 
-After preparation, the crawler runs the one-shot loot worker once per
-neighbour/process lifetime, then deploys new `dnet_phish.js` at the largest
-thread count that fits. The worker is deliberately only
+After preparation and propagation, the crawler starts the local
+`dnet_manager.js` and exits. The manager runs loot, deploys `dnet_phish.js` at
+the largest thread count that fits, opens caches after phishing produces one,
+and schedules recrawls. The phishing worker is deliberately only
 `phishingAttack()` + logging (~3.6GB/thread): aggregate charisma and darknet
 income already exist outside it, so per-worker telemetry would reduce the
 productive thread count for little diagnostic value. A cache-producing
-phishing success writes a zero-RAM marker and exits; the crawler sees that
-marker, runs loot to open the volatile cache, then restores phishing.
+phishing success writes a zero-RAM marker and exits; the manager sees the
+cache, runs loot to open it, then restores phishing.
 
 Loot reports are no longer mutable per-host snapshots. Meaningful outcomes
 use filename-safe immutable `dnet_loot_<host>_<timestamp>.json` event shards;
@@ -509,7 +510,7 @@ a real chance of a 408) into a `connectToSession` (0.05GB, synchronous, no
 roll). Persisted credentials are the single largest efficiency lever in the
 whole system. **derived**
 
-## (c) Roaming deployer
+## (c) Legacy roaming deployer (historical; not the current entry point)
 
 `dnet_deploy.js`. Over the tutorial's example, it adds:
 
@@ -528,10 +529,11 @@ outcome — `FAIL <host> model=… why=… code=… tried=… timeouts=… exhau
 Estimated RAM ~4.6GB. `darkweb` has 16GB, so the entry point is comfortable;
 deeper servers may not be, which is what `memoryReallocation` is for.
 
-**Recovery after mass script death** is the deliberate design centre: kill
-everything, run `dnet_creds_merge.js` on home, re-run `dnet_deploy.js` from
-home, and every previously-cracked server is re-entered via
-`connectToSession` at 0.05GB with no authentication delay at all.
+**Current recovery after mass script death:** run `dnet_killswarm.js
+--restart` (or the remote `restart_mcp.js --darknet` path). Cleanup removes
+recent root/crawler/manager/phisher processes and then launches `dnet_root.js`
+on `home`; persisted credentials still make re-entry cheap. Directly launching
+`dnet_deploy.js` is legacy fallback behavior, not the supported recovery path.
 
 **Bug found live 2026-08-12, not yet fixed:** `spread()`'s
 `ns.exec(self, target, { preventDuplicates: true })` passes no `...args`, so
@@ -870,14 +872,12 @@ thing that *is* meaningfully additive across shards —
 `dnet_creds_merge.js`'s `"credsMerge.totalCracked"`, which reads every
 credential shard ever shipped, not just the newest.
 
-**What this needs to take effect, since nothing here could run in the
-game this session:** `dnet_killswarm.js` then a fresh `dnet_deploy.js`
-restart (Bitburner doesn't hot-reload — every currently-running instance
-is still executing the old unsharded code and will keep clobbering
-`dnet_status.json` until replaced), and `dnet_status_merge.js` needs to be
-run once (and periodically thereafter, same manual cadence as the other
-two merge scripts) to actually populate the `"deployer"` section again.
-See `docs/kensTodo.md` for the concrete steps.
+**Historical rollout note:** this shard fix originally required killing the
+old swarm and relaunching `dnet_deploy.js`. The current equivalent is
+`dnet_killswarm.js --restart`, which launches `dnet_root.js`; root and
+transient crawler heartbeat shards use the same merge path. Bitburner still
+does not hot-reload, so a clean restart remains required for new architecture
+code to take effect.
 
 **Verification done this session:** `node --check` on every touched file;
 `node --test *.test.js` — 85/85 passing (up from 78), 7 new tests covering

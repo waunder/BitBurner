@@ -16,15 +16,16 @@ password models have now cracked a real server live, zero misses. Sections
 below are otherwise unchanged from the pre-live-run analysis; where a
 number below was a prediction, it has held up.
 
-**2026-08-14 operational rule:** prepare, propagate, loot once, then phish.
-The crawler now launches a temporary multi-thread reallocator on its own host,
-aimed at a freshly-authenticated direct neighbour before placing resident scripts on it;
-preserves one crawler copy;
-attempts the cache/loot pass once per neighbour and crawler lifetime; then
-fills the released capacity with the lean phishing worker. This ordering
+**2026-08-14 operational rule:** prepare, propagate, hand off, then farm.
+The transient crawler authenticates a direct neighbour and launches a
+temporary multi-thread `dnet_realloc.js` from the source side before
+propagating itself. It then
+starts the local resident manager and exits. The manager, not the crawler,
+owns one-shot loot, cache follow-up, maximum-fit phishing, and the 90-second
+recrawl cycle. This ordering
 keeps discovery alive and can unlock a target even when all of that target's
 RAM is blocked.
-Phishing workers are expendable by design and are restored after mutations.
+Phishing workers are expendable by design and are restored by the manager.
 
 **Measured RAM correction (2026-08-14):** the original resident crawler is
 15GB in game and therefore belongs on `home`, not on every 16GB Dark Net

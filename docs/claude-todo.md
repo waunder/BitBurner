@@ -1,6 +1,6 @@
 # Claude's working list
 
-## 2026-08-14 (latest): R1, R5, R7 all confirmed live; set_objective.js and lsf.js shipped; R4 merged, not yet restarted
+## 2026-08-14 (latest): R1 through R7 all confirmed live — R4 delivered a ~60x income jump; set_objective.js and lsf.js shipped
 
 Full arc, in order:
 
@@ -47,35 +47,57 @@ script does, since Claude has no in-game terminal access to actually run
 flipped to `xp`, cleared back to `money` afterward since Ken didn't ask to
 actually switch modes, just wanted the lever available.
 
-**R4 (target scoring) built in a separate worktree, reviewed, and merged**
-(not yet restarted live). Motivated directly by the R1 finding above: a
-target can sit at 100% money with R1 correctly deploying zero hack threads,
-because the old score had no way to know why. `node --test *.test.js`
-122/122 (up from 110 — 13 new tests for `computeTargetScore`/
-`computeTargetEffectiveScore`), `node --check` clean. Shipped, all three
-together per the doc's own instruction not to split them: `getTargetScore`
-rewritten to the achievable-rate formula, `getTargetEffectiveScore`
-rewritten to a ramp-cost discount (new `SCORE_HORIZON_SECONDS` tunable,
-3600) replacing the old dimensionally-arbitrary `READINESS_FLOOR`, and
-`OPPORTUNITY_SWITCH_FACTOR` 3 → 1.3. Judgment calls worth knowing about:
-`poolThreads`/`growThreadsIfAllGrow` both reuse `getTotalWeakenCapacity`'s
-already-computed `maxWeaken`, justified by `scripts/grow.js`/
-`scripts/weaken.js` costing the identical 1.75GB/thread (checked against
-both scripts' source); the doc's optional current-security-vs-floor scaling
-correction was **not** implemented, base formula only. **Next concrete
-step**: restart, then read `mcp_status.json`'s `candidate`/`candidateScore`/
-`switchEval` — the live test is whether the bot now picks
-`rho-construction`-tier targets over `foodnstuff`-tier ones, and whether the
-R1 zero-income case from §5 item 3 resolves.
+**R4 (target scoring) built in a separate worktree, reviewed, merged, and
+restarted live (~13:33 PDT) — this is the one that actually delivered.**
+Motivated directly by the R1 finding above: a target can sit at 100% money
+with R1 correctly deploying zero hack threads, because the old score had no
+way to know why. `node --test *.test.js` 122/122 (up from 110), `node
+--check` clean. Shipped, all three together per the doc's own instruction
+not to split them: `getTargetScore` rewritten to the achievable-rate
+formula, `getTargetEffectiveScore` rewritten to a ramp-cost discount (new
+`SCORE_HORIZON_SECONDS` tunable, 3600) replacing the old
+dimensionally-arbitrary `READINESS_FLOOR`, and `OPPORTUNITY_SWITCH_FACTOR`
+3 → 1.3. Judgment calls: `poolThreads`/`growThreadsIfAllGrow` both reuse
+`getTotalWeakenCapacity`'s already-computed `maxWeaken`, justified by
+`scripts/grow.js`/`scripts/weaken.js` costing the identical 1.75GB/thread
+(checked against both scripts' source); the doc's optional
+current-security-vs-floor scaling correction was **not** implemented, base
+formula only. **Confirmed live**: the bot immediately dropped `foodnstuff`
+for `phantasy` (`growPerHack≈14` vs. `foodnstuff`'s ≈117 — 8× better ratio).
+`incomePerSec` went from R5/R7's ~$170-190K/s to **$11-17M/s** once settled
+— zero `invariantViolations` throughout. This is the real order-of-magnitude
+payoff the whole R1-R4 chain was built for, confirmed rather than modelled.
+**R1 through R7 are all shipped, live, and confirmed working now** — only
+R6 (XP mode) remains, deliberately parked until `OBJECTIVE` ever leaves
+`"money"`.
 
 **`lsf.js` shipped** — a small unrelated request mid-session: real glob
 filters (`*`, `?`) for `ls`, since the built-in `-g/--grep` only does plain
 substring matching (checked against the game's own source,
 `Terminal/commands/ls.tsx`, rather than assumed). `run lsf.js *.msg [host]`.
+Confirmed (also from source) that clickable/linkable output like the
+built-in `ls`'s is not reachable from any Netscript function — it's
+privileged `Terminal.printRaw` + React + internal router code, no `ns`
+equivalent exists — so `lsf.js` can't be extended to do that.
 
-Dashboard (`docs/status-dashboard.html`) kept current throughout — redeployed
-six times this session as state actually changed, "needs your call" back to
-0 now that all go-aheads landed.
+**Home-cores question, answered from live data rather than guessed**: `home`
+is at 2/8 cores, carrying ~35% of the pool's grow/weaken threads (only
+`home` can have cores added at all — every other host is fixed at 1).
+Added a `homeCores` status field and worked the actual number from the
+live thread split and the balance-point formulas already in
+`mcp_logic.js`: maxing to 8 cores is worth roughly **+7-8% income**
+(~+$800-900K/s on top of ~$11M/s), not a second multiplier-scale lever like
+R1-R4. Also found in passing: `ns.growthAnalyze(target, 2)` (mcp.js's call,
+no `cores` arg) defaults to assuming 1 core everywhere, confirmed from the
+`NetscriptFunctions.ts` signature — so the model is already mildly
+under-provisioning hack relative to what `home`'s real cores can sustain,
+independent of whether more get bought. Small effect, not worth chasing
+given the size, noted for whoever picks it up later.
+
+Dashboard (`docs/status-dashboard.html`) kept current throughout —
+redeployed eight times this session as state actually changed, cleared
+per Ken's request once everything in it had been reviewed, "needs your
+call" at 0.
 
 ## 2026-08-14: R5 + R7 / R4 shipped in isolated worktrees, merge details
 

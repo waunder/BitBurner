@@ -1451,7 +1451,9 @@ does what the UI does). Design reasoning lives in `docs/darknet-functions.md`
   N numeric candidates per host; default 0 = off), `--quiet`.
 - `dnet_realloc.js` — `--max-realloc N` (default 25).
 - `dnet_killswarm.js` — `--quiet`, `--restart` (launch a fresh crawler after
-  cleanup; remotely reachable through `restart_mcp.js --darknet`).
+  cleanup; remotely reachable through `restart_mcp.js --darknet`). Cleanup
+  reads process tables directly—no Dark Net session or serial re-authentication
+  is required for `ps`/`kill`.
 - `dnet_loot.js` — `--no-cache`, `--no-ram`, `--max-realloc N` (default 25).
 - `dnet_loot_all.js` — `--limit N` (stop after N hosts, default: all),
   `--wait-ms N` (per-host completion timeout, default 15000).

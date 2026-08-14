@@ -484,67 +484,17 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">rebuilt 2026&#8209;08&#8209;13 18:19 PDT</div>
+    <div class="updated mono">rebuilt 2026&#8209;08&#8209;13 20:46 PDT</div>
   </div>
 
   <div class="glance">
-    <span class="chip"><span class="dot dot-accent"></span>needs your call <span class="n mono">2</span></span>
-    <span class="chip"><span class="dot dot-neutral"></span>in progress <span class="n mono">2</span></span>
+    <span class="chip"><span class="dot dot-neutral"></span>in progress <span class="n mono">3</span></span>
     <span class="chip"><span class="dot dot-warn"></span>flagged <span class="n mono">1</span></span>
   </div>
 
   <p class="lede">Every row below is dated; nothing on this page is presented as current unless it was
     confirmed current at that date. History lives in <code class="cite">git log</code> and the docs it
     points to, not here.</p>
-
-  <section aria-labelledby="decision-title">
-    <div class="block-head">
-      <h2 class="block-title" id="decision-title">Needs your call</h2>
-      <span class="block-count mono">2</span>
-    </div>
-    <div class="rows">
-
-      <div class="row decision">
-        <div class="row-stripe"></div>
-        <div class="row-body">
-          <div class="row-top">
-            <span class="tag">decision</span>
-            <span class="row-date mono">2026&#8209;08&#8209;13 17:41 PDT</span>
-          </div>
-          <div class="row-title">Remote API needs one more reconnect &mdash; <code class="cite">Options &rarr; Remote API &rarr; Connect</code></div>
-          <p>Dropped at 17:41:33 (<code class="cite">close_code=1006</code>, the same silent-drop failure
-            mode <code class="cite">CLAUDE.md</code> already documents), you reconnected it &mdash; then
-            <code class="cite">share_deploy.js</code>/<code class="cite">scripts/share.js</code> turned out
-            to be missing from the daemon's <code class="cite">WATCHED_FILES</code> push list (built but
-            never actually registered to sync, a real gap, now fixed), which needed a daemon restart to
-            pick up, which drops the connection the same as any restart does. Sorry for the extra
-            round-trip &mdash; one more <strong>Connect</strong> click and both items below should be
-            current.</p>
-        </div>
-      </div>
-
-      <div class="row decision">
-        <div class="row-stripe"></div>
-        <div class="row-body">
-          <div class="row-top">
-            <span class="tag">decision</span>
-            <span class="row-date mono">2026&#8209;08&#8209;13 18:10 PDT</span>
-          </div>
-          <div class="row-title">Reputation booster built (<code class="cite">ns.share()</code>) &mdash; run it once reconnected</div>
-          <p>You asked for a rep-growth boost. Built <code class="cite">share_deploy.js</code> +
-            <code class="cite">scripts/share.js</code> &mdash; <code class="cite">node --check</code> clean,
-            not yet run live (blocked on the reconnect above). <code class="cite">run share_deploy.js</code>
-            claims only <code class="cite">home</code>'s spare RAM &mdash; zero effect on the money farm.
-            <code class="cite">run share_deploy.js network</code> also claims free RAM on worker hosts,
-            trading some hacking income for rep-gain rate on purpose. <code class="cite">run
-            share_deploy.js stop</code> undoes either. <strong>One real caveat:</strong> this only affects
-            rep gain while you're actively doing faction or company work &mdash; it's a no-op otherwise.
-            Full detail: <code class="cite">docs/processes.md</code>'s new "Reputation" section.</p>
-        </div>
-      </div>
-
-    </div>
-  </section>
 
   <section aria-labelledby="scoreboard-title">
     <div class="block-head">
@@ -670,9 +620,29 @@
   <section aria-labelledby="progress-title">
     <div class="block-head">
       <h2 class="block-title" id="progress-title">In progress</h2>
-      <span class="block-count mono">2</span>
+      <span class="block-count mono">3</span>
     </div>
     <div class="rows">
+
+      <div class="progress-card">
+        <div class="progress-top">
+          <span class="pulse idle"></span>
+          <span class="row-title">Reputation booster running &mdash; you report 15% improved rep-growth rate</span>
+        </div>
+        <p>Built <code class="cite">share_deploy.js</code> + <code class="cite">scripts/share.js</code>
+          (<code class="cite">ns.share()</code>) after you asked for a rep-growth boost. Hit two
+          live-infrastructure snags getting it in front of you &mdash; a Remote API drop, then a gap where
+          the new files weren't in the daemon's push list &mdash; both found and fixed the same session.
+          You confirmed it's running and reports <strong>15% improved rate of growth</strong>. That figure
+          is <strong>your observation, not something this repo currently measures</strong> &mdash; no
+          script here logs faction/company rep-per-second to a file, so there's no independent telemetry
+          confirming or breaking down that number (e.g. which mode you ran, home-only or network). Say
+          the word if you want that built &mdash; a small status file mirroring
+          <code class="cite">mcp_status.json</code>'s pattern would make it checkable here going forward
+          instead of eyeballed in-game.</p>
+        <div class="stale-note">built 2026&#8209;08&#8209;13 18:10, you confirmed it running and reporting
+          +15% ~20:46 &mdash; leaving this here until you've had a look, not clearing it myself.</div>
+      </div>
 
       <div class="progress-card">
         <div class="progress-top">

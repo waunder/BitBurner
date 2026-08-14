@@ -1,5 +1,30 @@
 # Claude's working list
 
+## 2026-08-13 (latest): Reputation booster confirmed running, Ken reports +15% — but that figure is his observation, not this repo's telemetry
+
+Follow-up to the entry directly below. Ken reconnected the Remote API a
+second time (after the `WATCHED_FILES` gap fix required a daemon restart)
+and ran `share_deploy.js`. He reports it's running and showing a 15%
+improved rate of reputation growth.
+
+**Important distinction, stated plainly rather than silently accepted:**
+that 15% is Ken's own in-game observation (presumably the Factions/company
+work UI, which shows a rep-gain bonus derived from share power) — nothing
+in this repo currently measures or logs faction/company reputation gain
+anywhere. `mcp_status.json` has no reputation field, and `share_deploy.js`
+only ever printed `ns.getSharePower()` via `ns.tprint()` on launch, which
+per `CLAUDE.md`'s own documented constraint never reaches a file this
+session can read. So: **the booster is confirmed running (per Ken), the
+15% figure is not independently verified or attributable to a specific
+mode** (home-only vs. `network` — don't know which he ran). Recorded on the
+dashboard as his reported number, not a measured one.
+
+**Not built, offered but not yet requested:** a small status file (same
+shape as `mcp_status.json`) logging `ns.getSharePower()` and, if scripted
+faction/company work ever gets automated, the actual rep-per-second — would
+make this checkable here instead of eyeballed in-game. Only worth building
+if Ken wants it; asked, not assumed.
+
 ## 2026-08-13 (later, confirmed): IPvGO fix confirmed live; ns.share() reputation booster built, blocked twice on the Remote API, both resolved
 
 Follow-up to the entry directly below. Ken restarted `ipvgo_player.js`; next

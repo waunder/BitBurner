@@ -172,14 +172,17 @@ export async function main(ns) {
       looted: 0,
       lootMode: { full: 0, realloc: 0 },
       lootSkipped: { ram: 0, scp: 0, exec: 0 },
+      lootLastSkip: null,
       ramFreedObserved: 0,
       prepareStarted: 0,
       prepareThreadsStarted: 0,
       prepareWaiting: 0,
       prepareSkipped: { ram: 0, scp: 0, exec: 0 },
+      prepareLastSkip: null,
       phishStarted: 0,
       phishThreadsStarted: 0,
       phishSkipped: { ram: 0, scp: 0, exec: 0 },
+      phishLastSkip: null,
     }
 
     for (const target of neighbours) {
@@ -227,6 +230,7 @@ export async function main(ns) {
             summary.prepareThreadsStarted += prep.threads
           } else {
             summary.prepareSkipped[prep.why] = (summary.prepareSkipped[prep.why] ?? 0) + 1
+            summary.prepareLastSkip = { target, ...prep }
             const detail = prep.why === "ram" ? ` freeRam=${prep.freeRam} reallocRam=${prep.reallocRam}` : ""
             ns.print(`PREP-SKIP ${target} why=${prep.why}${detail}`)
           }
@@ -252,6 +256,7 @@ export async function main(ns) {
         // tail window open, so `ok:false` gave no way to tell "RAM too
         // small" from "scp failed" from "exec failed" apart after the fact).
         summary.lootSkipped[loot.why] = (summary.lootSkipped[loot.why] ?? 0) + 1
+        summary.lootLastSkip = { target, ...loot }
         // Phase 3b: on a "ram" skip, log the exact numbers the decision was
         // made from -- freeRam vs both scripts' costs -- per this repo's own
         // diagnosis-discipline rule (CLAUDE.md: "an event should record
@@ -278,6 +283,7 @@ export async function main(ns) {
             summary.lootMode[loot.mode] = (summary.lootMode[loot.mode] ?? 0) + 1
           } else {
             summary.lootSkipped[loot.why] = (summary.lootSkipped[loot.why] ?? 0) + 1
+            summary.lootLastSkip = { target, marker, caches: caches.length, ...loot }
             ns.print(`CACHE-LOOT-SKIP ${target} marker=${marker} caches=${caches.length} why=${loot.why}`)
           }
           continue
@@ -292,6 +298,7 @@ export async function main(ns) {
         }
       } else {
         summary.phishSkipped[phish.why] = (summary.phishSkipped[phish.why] ?? 0) + 1
+        summary.phishLastSkip = { target, ...phish }
         const detail = phish.why === "ram" ? ` freeRam=${phish.freeRam} phishRam=${phish.phishRam}` : ""
         ns.print(`PHISH-SKIP ${target} why=${phish.why}${detail}`)
       }
@@ -375,14 +382,17 @@ function writeDeployerStatus(ns, { pass, host, summary, lifetime, localKnownCred
         looted: summary.looted,
         lootMode: { ...summary.lootMode },
         lootSkipped: { ...summary.lootSkipped },
+        lootLastSkip: summary.lootLastSkip,
         ramFreedObserved: summary.ramFreedObserved,
         prepareStarted: summary.prepareStarted,
         prepareThreadsStarted: summary.prepareThreadsStarted,
         prepareWaiting: summary.prepareWaiting,
         prepareSkipped: { ...summary.prepareSkipped },
+        prepareLastSkip: summary.prepareLastSkip,
         phishStarted: summary.phishStarted,
         phishThreadsStarted: summary.phishThreadsStarted,
         phishSkipped: { ...summary.phishSkipped },
+        phishLastSkip: summary.phishLastSkip,
       },
       sinceProcessStart: { ...lifetime },
       localKnownCreds,

@@ -10,10 +10,9 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
-- [ ] **Reconnect Bitburner to the Remote API on port 12526.** Codex restarted
-  the daemon on 2026-08-14 so it would load the expanded 43-file watch list;
-  it is healthy and waiting, but the game must reconnect before the new Dark
-  Net files can sync and live validation can begin.
+- [x] **Reconnect Bitburner to the Remote API on port 12526.** Confirmed
+  2026-08-14: all 43 watched files synced, the remotely-triggered clean swarm
+  restart succeeded, and the new crawler/phishing behavior is live.
 
 - [x] **Provide a way to restart the Dark Net swarm without another in-game
   command.** Done 2026-08-14: `restart_mcp.js --darknet` delegates cleanup and

@@ -766,11 +766,12 @@ function buildPlan(ns, target, wasWorking) {
     moneyPct,
     weightBucket,
     weights,
-    // Temporary diagnostic (2026-08-14): incomePerSec sat at 0 with 0 hack
+    // Added 2026-08-14 chasing why incomePerSec sat at 0 with 0 hack
     // threads network-wide despite moneyPct=1 shortly after R1 shipped —
-    // surfacing the actual balance-point inputs live is faster than
-    // guessing which of p/k/balancedHackShare is off. Remove once R1's
-    // live behavior is understood.
+    // turned out correct, not a bug (foodnstuff's growPerHack ~117 means a
+    // ~0.8% balanced hack share, which floors to 0 threads on every host).
+    // Kept as a standing field rather than reverted — cheap, and worth
+    // watching per-target once R4 stops the bot parking on poor-fit ones.
     debugWorkWeights: { hackPercentPerThread, growLogPerThread, balancedHackShare, growPerHack },
   }
 }

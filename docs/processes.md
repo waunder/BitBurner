@@ -193,12 +193,15 @@ plan, and allocates worker threads across every rooted host.
 **2026-08-14: read `docs/hacking-mechanics.md` and `docs/hacking-strategy.md`
 before changing anything below.** The mechanics doc has the actual game
 formulas (extracted from the real game source, not guessed); the strategy
-doc analyzes this file and `mcp_logic.js` against them. Its three ranked
-fixes (R2 the stuck-target detector, R3 `hostNeedsRedeploy` allocation-
-quantity diffing, R1 sizing hack/grow from the target's actual balance point
-instead of a fixed RAM-fraction bucket table) are now all implemented in
-this codebase — see that doc's §5 for which have been confirmed live and
-which (R1, as of this writing) are shipped but not yet restarted in-game.
+doc analyzes this file and `mcp_logic.js` against them. Five of its ranked
+fixes are now implemented in this codebase: R2 (the stuck-target detector),
+R3 (`hostNeedsRedeploy` allocation-quantity diffing), R1 (sizing hack/grow
+from the target's actual balance point instead of a fixed RAM-fraction
+bucket table), R5 (per-script rather than per-host redeploy), and R7 (a
+handful of cheap items — `home` joining the worker pool, a clamped
+grow-security reserve, `SECURITY_CAP` tidied to 1). See that doc's §5 for
+which have been confirmed live and which are shipped but not yet restarted
+in-game.
 
 - **Start:** `run mcp.js` — optionally `run mcp.js target=<hostname>`
 - **Reads:** `mcp_config.json` every tick (see Tunables)
@@ -219,7 +222,13 @@ floor), `computeWorkWeights` (sizes hack/grow from the target's actual
 balance point — see "The work-weight calculation" below and
 `docs/hacking-strategy.md` R1; replaced the old fixed RAM-fraction bucket
 table entirely on 2026-08-14), `computeDesiredAllocation`/`hostNeedsRedeploy`
-(the two-pass allocation-diff redeploy — R3), and `computeTickInvariantChecks`
+(the two-pass allocation-diff redeploy — R3; `computeDesiredAllocation` also
+takes an optional `growSecurityIncreaseForThreads` injected function as of
+R7, so its weaken-phase leftover-grow branch can use the game's own clamped
+`ns.growthAnalyzeSecurity` without this file ever calling `ns` directly),
+`countRunningByScript` (the running-threads-per-script tally shared between
+`hostNeedsRedeploy`'s mismatch check and `allocateThreads`'s per-script
+redeploy decision — R5), and `computeTickInvariantChecks`
 (the invariant predicates). No `ns` calls,
 no side effects — `mcp.js` imports it the same way `dnet_deploy.js` imports
 `dnet_lib.js`, and does all the `ns` calls and mutation itself, calling into
@@ -253,9 +262,28 @@ rejected at startup rather than silently ignored.
 6. Build a **plan**: `weaken` if security exceeds the cap, otherwise `work`
    with a hack/grow weighting sized from the target's actual balance point
    (`computeWorkWeights`, R1) and scaled by how full the target is.
-7. Allocate threads per host, redeploying only hosts whose running actions no
-   longer match the plan.
+7. Allocate threads per host, redeploying only the script(s) on a host whose
+   running thread count no longer matches the plan (R5 — see "Redeploy is
+   conditional" below).
 8. Write status.
+
+**Worker hosts (`getWorkerHosts`) — `home` included since 2026-08-14 (R7,
+shipped, not yet confirmed live).** Previously excluded outright
+(`getHostFreeRam` special-cased it to a flat 0). Now included like any other
+rooted host, but `getHostFreeRam` subtracts `HOME_RAM_RESERVE` (default
+32GB) off `home`'s free RAM before anything else can claim it — `mcp.js`
+itself, `mcp_hud.js`, and `mcp_supervisor.js` all run there, so
+under-reserving is a farm-stopping failure (starves the orchestrator itself),
+not just a throughput loss. The reserve is a continuous subtraction, clamped
+at 0 via the existing `Math.max(0, freeRam)`, not a binary "skip home
+entirely below the reserve" gate — so `home` degrades gracefully toward zero
+allocated threads as its own footprint grows, rather than cutting out sharply
+at some other threshold. `allocateThreads` no longer special-cases `home` to
+skip deployment (that early-return only made sense while `home` was
+categorically excluded); it does still skip the `copyActionScripts` scp step
+for `home` specifically, since the action scripts already live there (`mcp.js`
+itself runs from `home`) — same guard `share_deploy.js` already uses for the
+same reason.
 
 **Target exclusions are preferences, not bans.** If nothing qualifies,
 selection reruns ignoring exclusions. Without that fallback the bot livelocked
@@ -264,7 +292,22 @@ then sat idle killing scripts every 60 seconds.
 
 **Redeploy is conditional.** Hack, grow and weaken take 60–240 seconds; the
 tick is 10. Killing and re-execing every tick meant no action ever completed.
-`hostNeedsRedeploy` is what stops that.
+`hostNeedsRedeploy` is what stops that. **2026-08-14 (R5, shipped, not yet
+confirmed live):** when a redeploy *does* fire, `allocateThreads` now kills
+and re-execs only the script(s) whose desired thread count actually changed
+(`weaken`/`grow`/`hack`, in that order — weaken first since it has the
+longest cycle and should start earliest), instead of killing and
+re-execing all three unconditionally. The old all-three teardown reopened a
+full weaken-cycle window (the longest of the three) on every redeploy, during
+which hack/grow kept landing and fortifying security with nothing
+counteracting it — consistent with the observed security ratchet. The
+have-side counting (`countRunningByScript`, `mcp_logic.js`) is now shared
+between `hostNeedsRedeploy`'s mismatch check and `allocateThreads`'s
+per-script decision, rather than two independent tallies. `killActionScripts`
+(kills all three unconditionally) is unchanged and still used for its other
+two purposes — sweeping orphaned scripts from a previous `mcp.js` run at
+startup, and releasing the whole network when no target is found — both of
+which genuinely want a full teardown, not a diff.
 
 #### The work-weight calculation
 
@@ -334,16 +377,23 @@ The ones that actually get retuned:
 
 | Key | Default | What it governs |
 | --- | --- | --- |
-| `SECURITY_CAP` | 6 | Above this, the plan is pure weaken |
+| `SECURITY_CAP` | 1 | Above this, the plan is pure weaken |
 | `WORK_SECURITY_MARGIN` | 1.5 | Absolute headroom kept during `work` |
 | `TARGET_MONEY_GOAL` | 0.95 | Money fraction `readiness` (see the work-weight calculation above) treats as "full" |
 | `DEGRADED_MONEY_PCT` | 0.05 | Drain threshold — **must** stay below the idle-regime cutoff of 0.1, and an invariant enforces it |
 | `OPPORTUNITY_SWITCH_FACTOR` | 3 | Margin required to abandon a working target |
 | `LOOP_SLEEP_MS` | 10000 | Tick length |
 | `HACK_BALANCE_SAFETY` | 0.5 | Fraction of the balanced hack share actually deployed — see the work-weight calculation above |
+| `HOME_RAM_RESERVE` | 32 | GB kept off-limits on `home` before any of it counts as free for worker threads — see "Worker hosts" below |
 
-Thirteen more numeric keys are configurable; the file in the repo lists all
-twenty-one (twenty numeric + the `OBJECTIVE` string enum) with their
+**2026-08-14 (R7, shipped, not yet confirmed live):** `SECURITY_CAP` default
+dropped 6 → 1 — it was a no-op for every target actually worth farming
+(their security floors run 7-28), only binding on low-tier servers, where 1
+buys ~13-16% on hack time and steal percentage. Cosmetic at current scale,
+tidied while touching config for the same change.
+
+Fourteen more numeric keys are configurable; the file in the repo lists all
+twenty-two (twenty-one numeric + the `OBJECTIVE` string enum) with their
 defaults. Rules for the numeric ones: only numbers are
 accepted, unknown keys are rejected and reported, and **corrupt JSON keeps
 the current values** rather than reverting to defaults — a half-saved file
@@ -1398,7 +1448,7 @@ Self-contained, not touched by `mcp.js`, not auto-started by anything.
 | File | Runs on | RAM | What it does |
 | --- | --- | --- | --- |
 | `scripts/share.js` | any host, spread by `share_deploy.js` | 2.4GB/thread | Three-line loop, same shape as `scripts/weaken.js`: `while(true) await ns.share()`. All the logic lives in the deployer, same division of labor as the weaken/grow/hack workers. |
-| `share_deploy.js` | run once from `home` | ~2.6GB to run itself (exits after launching) | Launches `scripts/share.js` threads. Default (`run share_deploy.js`, no args) only claims `home`'s free RAM above a 16GB reserve — `mcp.js` never uses `home` for worker threads (`getHostFreeRam` special-cases it to 0), so this mode has **zero effect on the money farm**. `run share_deploy.js network` additionally claims free RAM on every rooted worker host; `mcp.js` reads each host's actual free RAM fresh every tick, so it will deploy fewer weaken/grow/hack threads there on its own next tick — a real, deliberate trade of hacking income for rep-gain rate, not a bug. `run share_deploy.js stop` kills every running `share.js` instance network-wide. Args: `[mode] [reserveHomeGb] [maxThreads]`. |
+| `share_deploy.js` | run once from `home` | ~2.6GB to run itself (exits after launching) | Launches `scripts/share.js` threads. Default (`run share_deploy.js`, no args) only claims `home`'s free RAM above a 16GB reserve. **Since 2026-08-14 (R7), this does compete with the money farm**: `mcp.js` now uses `home` as a worker host too (behind its own, separate `HOME_RAM_RESERVE`, default 32GB — see "Worker hosts" above), so `share.js` threads eating into `home`'s free RAM leave correspondingly less for `mcp.js`'s own weaken/grow/hack there on its next tick, same as the `network` mode below always did for other hosts. Before R7 this mode genuinely had zero effect on the farm (`home` was categorically excluded); that is no longer true. `run share_deploy.js network` additionally claims free RAM on every rooted worker host; `mcp.js` reads each host's actual free RAM fresh every tick, so it will deploy fewer weaken/grow/hack threads there on its own next tick — a real, deliberate trade of hacking income for rep-gain rate, not a bug. `run share_deploy.js stop` kills every running `share.js` instance network-wide. Args: `[mode] [reserveHomeGb] [maxThreads]`. |
 
 **Caveat that matters more than the RAM math:** per `NetscriptDefinitions.d.ts`,
 share power only affects reputation gain *while actively doing faction work

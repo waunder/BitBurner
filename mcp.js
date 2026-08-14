@@ -14,6 +14,7 @@ import {
   computeTickInvariantChecks,
   computeDesiredAllocation,
   hostNeedsRedeploy,
+  countRunningByScript,
 } from "mcp_logic.js"
 
 // Tunables are declared with `let`, not `const`, so loadConfig can reassign
@@ -26,7 +27,11 @@ import {
 // and lastSwitchTime. Automating restarts made the evidence-destruction cycle
 // faster, not smaller. Retuning through this file is the only way to change a
 // constant and still have the history that says whether it helped.
-let SECURITY_CAP = 6
+// hacking-strategy.md R7: was 6, a no-op for every target worth farming
+// (their security floors run 7-28) — only binds on low-tier servers, where
+// 1 buys ~13-16% on hack time and steal percentage. Cosmetic at current
+// scale; tidied while touching config anyway.
+let SECURITY_CAP = 1
 let TARGET_MONEY_GOAL = 0.95
 let MIN_TARGET_HOLD_MS = 60000
 // Absolute security margin (not a fraction) tolerated before a working target
@@ -86,6 +91,13 @@ let HACK_BALANCE_SAFETY = 0.5
 // drift this replaced.
 let REDEPLOY_TOLERANCE_ABSOLUTE = 2
 let REDEPLOY_TOLERANCE_RELATIVE = 0.2
+// GB kept off-limits on `home` before any of it counts as free for worker
+// threads (hacking-strategy.md R7). home is ~128GB and, unlike every other
+// worker host, is also where mcp.js/the HUD/the supervisor themselves run —
+// under-reserving starves those and is a farm-stopping failure, not a
+// throughput loss, so this gates getHostFreeRam's home case rather than
+// being a soft preference.
+let HOME_RAM_RESERVE = 32
 
 // What the bot is farming for. "money" sizes hack/grow from the target's
 // actual balance point (computeWorkWeights, mcp_logic.js — see
@@ -165,6 +177,7 @@ const CONFIG_DEFAULTS = {
   XP_WEIGHT_GROW,
   REDEPLOY_TOLERANCE_ABSOLUTE,
   REDEPLOY_TOLERANCE_RELATIVE,
+  HOME_RAM_RESERVE,
 }
 
 // OBJECTIVE is handled separately from CONFIG_DEFAULTS: it's a string enum,
@@ -247,6 +260,7 @@ function loadConfig(ns, state) {
     XP_WEIGHT_GROW,
     REDEPLOY_TOLERANCE_ABSOLUTE,
     REDEPLOY_TOLERANCE_RELATIVE,
+    HOME_RAM_RESERVE,
   }
   for (const key of Object.keys(CONFIG_DEFAULTS)) {
     if (current[key] !== resolved[key]) changes[key] = { from: current[key], to: resolved[key] }
@@ -273,6 +287,7 @@ function loadConfig(ns, state) {
   XP_WEIGHT_GROW = resolved.XP_WEIGHT_GROW
   REDEPLOY_TOLERANCE_ABSOLUTE = resolved.REDEPLOY_TOLERANCE_ABSOLUTE
   REDEPLOY_TOLERANCE_RELATIVE = resolved.REDEPLOY_TOLERANCE_RELATIVE
+  HOME_RAM_RESERVE = resolved.HOME_RAM_RESERVE
   OBJECTIVE = resolvedObjective
 
   if (Object.keys(changes).length === 0 && rejected.length === 0) return null
@@ -674,12 +689,15 @@ function chooseTarget(ns, servers, maxWeaken, skippedTargets, drainedTargets) {
   return ranked.length > 0 ? ranked[0].server : null
 }
 
+// home (hacking-strategy.md R7, 2026-08-14): included as a worker like any
+// other rooted host, but with HOME_RAM_RESERVE (default 32GB) kept off the
+// top — mcp.js/the HUD/the supervisor all run there, and under-reserving
+// starves them, which is a farm-stopping failure rather than a throughput
+// loss. Every other host keeps its old unreserved behavior.
 function getHostFreeRam(ns, host) {
-  if (host === "home") {
-    return 0
-  }
   const usedRam = ns.getServerUsedRam(host)
   let freeRam = ns.getServerMaxRam(host) - usedRam
+  if (host === "home") freeRam -= HOME_RAM_RESERVE
   return Math.max(0, freeRam)
 }
 
@@ -687,7 +705,6 @@ function getWorkerHosts(ns, servers = null) {
   const hosts = servers || scanNetwork(ns)
   const workers = []
   for (const server of hosts) {
-    if (server === "home") continue
     if (!ns.hasRootAccess(server)) continue
     // Needs room for at least a couple of action threads to be worth the
     // scp/exec overhead; the largest action script is ~1.75GB.
@@ -797,16 +814,26 @@ function describeRunningActions(ns, running) {
   })
 }
 
-// allocateThreads (2026-08-13, R3): the per-host math that used to live
-// here inline now lives in mcp_logic.js's computeDesiredAllocation, run
-// network-wide as "pass 1" before this function is ever called (see the
-// main loop) — desired is this host's already-computed row from that pass.
-// This function is "pass 2": decide whether the host's running threads
-// actually match desired closely enough (hostNeedsRedeploy, now an
-// allocation-quantity diff rather than an action-type check — see that
-// function's own comment for why the old version under- and over-fired),
-// and if not, kill and re-exec to the desired counts. weakenThreadsToOffset
+// allocateThreads (2026-08-13, R3; per-script redeploy 2026-08-14, R5): the
+// per-host math that used to live here inline now lives in mcp_logic.js's
+// computeDesiredAllocation, run network-wide as "pass 1" before this
+// function is ever called (see the main loop) — desired is this host's
+// already-computed row from that pass. This function is "pass 2": decide
+// whether the host's running threads actually match desired closely enough
+// (hostNeedsRedeploy, now an allocation-quantity diff rather than an
+// action-type check — see that function's own comment for why the old
+// version under- and over-fired), and if not, kill and re-exec only the
+// script(s) whose desired count actually changed. weakenThreadsToOffset
 // moved with pass 1 since its only callers did.
+//
+// R5's fix: a mismatch used to kill and re-exec all three action scripts,
+// even when e.g. only `hack`'s count had drifted. Weaken has by far the
+// longest cycle (4x hackTime), so every such redeploy opened a full
+// weaken-cycle window during which hack/grow kept landing and fortifying
+// security with nothing counteracting it — consistent with the observed
+// security ratchet (see hacking-strategy.md R5). Now only scripts whose
+// desired count actually differs from what's running get killed/re-exec'd,
+// in the order weaken/grow/hack so weaken's long cycle starts earliest.
 function allocateThreads(ns, host, target, plan, desired, tolerance, actionDurationsS) {
   /** @type {{script: string, threads: number}[]} */
   const actions = []
@@ -818,16 +845,12 @@ function allocateThreads(ns, host, target, plan, desired, tolerance, actionDurat
     actions,
   }
 
-  if (host === "home") {
-    allocation.usedRam = ns.getServerUsedRam(host)
-    return allocation
-  }
-
   const running = getRunningActions(ns, host)
+  const describedRunning = describeRunningActions(ns, running)
   const needsRedeploy = hostNeedsRedeploy({
     target,
     plan,
-    running: describeRunningActions(ns, running),
+    running: describedRunning,
     desired,
     tolerance,
     actionDurationsS,
@@ -842,17 +865,29 @@ function allocateThreads(ns, host, target, plan, desired, tolerance, actionDurat
     return allocation
   }
 
-  killActionScripts(ns, host)
-  copyActionScripts(ns, host)
+  // The scripts already live on every worker host except home (R7: home is
+  // now a worker too, but it's where mcp.js itself runs, so scripts/ is
+  // already there — scp-ing home to itself is pure overhead). Matches the
+  // same guard share_deploy.js uses for the same reason.
+  if (host !== "home") copyActionScripts(ns, host)
 
-  if (desired.weaken > 0 && ns.exec("/scripts/weaken.js", host, desired.weaken, target) !== 0) {
-    allocation.actions.push({ script: "weaken", threads: desired.weaken })
+  const have = countRunningByScript(describedRunning)
+  const runningByScript = {}
+  for (const { proc, normalized } of running) {
+    const script = normalized.replace("/scripts/", "").replace(".js", "")
+    runningByScript[script] = proc
   }
-  if (desired.grow > 0 && ns.exec("/scripts/grow.js", host, desired.grow, target) !== 0) {
-    allocation.actions.push({ script: "grow", threads: desired.grow })
-  }
-  if (desired.hack > 0 && ns.exec("/scripts/hack.js", host, desired.hack, target) !== 0) {
-    allocation.actions.push({ script: "hack", threads: desired.hack })
+  for (const script of ["weaken", "grow", "hack"]) {
+    const want = desired[script] || 0
+    if (want === have[script]) {
+      if (want > 0) allocation.actions.push({ script, threads: want })
+      continue
+    }
+    const proc = runningByScript[script]
+    if (proc) ns.kill(proc.pid, host)
+    if (want > 0 && ns.exec(`/scripts/${script}.js`, host, want, target) !== 0) {
+      allocation.actions.push({ script, threads: want })
+    }
   }
 
   // Read RAM back *after* exec so maxRam/usedRam/freeRam describe one
@@ -1412,6 +1447,14 @@ export async function main(ns) {
       weakenBudget: plan.type === "weaken" ? requiredWeaken : 0,
       ramInfo,
       securityConstants: SECURITY_CONSTANTS,
+      // hacking-strategy.md R7: the weaken-phase leftover-grow branch's
+      // security reserve, sized from the game's own clamped formula
+      // (min(threads, maxThreadsNeeded), source NetscriptFunctions.ts)
+      // instead of the linear growThreads*growSecIncrease estimate, so the
+      // reserve stops growing once extra grow threads can't add more growth
+      // (and therefore no more security) near moneyMax. cores=1 matches the
+      // doc's exact call — mcp.js doesn't currently track per-host cores.
+      growSecurityIncreaseForThreads: (growThreads) => ns.growthAnalyzeSecurity(growThreads, currentTarget, 1),
     })
 
     // Pass 2: per host, diff desired against what's actually running and
@@ -1550,6 +1593,7 @@ export async function main(ns) {
         XP_WEIGHT_GROW,
         REDEPLOY_TOLERANCE_ABSOLUTE,
         REDEPLOY_TOLERANCE_RELATIVE,
+        HOME_RAM_RESERVE,
       },
       invariantViolations: invariants.counts,
       // Last few transitions inline, so one file read gives both "now" and

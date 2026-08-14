@@ -24,6 +24,7 @@ import {
   computeDesiredAllocation,
   weakenThreadsToOffset,
   hostNeedsRedeploy,
+  countRunningByScript,
 } from "./mcp_logic.js"
 
 // Real values from mcp.js's own constants/RAM readouts (see
@@ -171,6 +172,81 @@ describe("computeDesiredAllocation — R3's pass 1 (2026-08-13)", () => {
       securityConstants: SECURITY_CONSTANTS,
     })
     assert.ok(allocations[0].hack > 0, "a nonzero hack weight must produce a nonzero desired hack allocation")
+  })
+
+  describe("growSecurityIncreaseForThreads (hacking-strategy.md R7, 2026-08-14)", () => {
+    test("omitted: weaken-phase leftover-grow reserve matches the old linear growSecIncrease estimate exactly", () => {
+      // Same numbers as the "weaken plan" tests above with reclaimableRam=20,
+      // weakenBudget=0 (all leftover, none of the shared budget): confirms
+      // every pre-R7 caller/test that doesn't pass the new option keeps its
+      // current behavior unchanged.
+      const hosts = [{ host: "a", reclaimableRam: 20 }]
+      const { allocations } = computeDesiredAllocation({
+        hosts,
+        plan: { type: "weaken" },
+        weakenBudget: 0,
+        ramInfo: RAM_INFO,
+        securityConstants: SECURITY_CONSTANTS,
+      })
+      assert.deepEqual(allocations, [{ host: "a", hack: 0, grow: 9, weaken: 1 }])
+    })
+
+    test("a function returning the same linear estimate reproduces the omitted-option result exactly", () => {
+      const hosts = [{ host: "a", reclaimableRam: 20 }]
+      const calls = []
+      const { allocations } = computeDesiredAllocation({
+        hosts,
+        plan: { type: "weaken" },
+        weakenBudget: 0,
+        ramInfo: RAM_INFO,
+        securityConstants: SECURITY_CONSTANTS,
+        growSecurityIncreaseForThreads: (growThreads) => {
+          calls.push(growThreads)
+          return growThreads * SECURITY_CONSTANTS.growSecIncrease
+        },
+      })
+      assert.deepEqual(allocations, [{ host: "a", hack: 0, grow: 9, weaken: 1 }])
+      // Called once for the initial leftover-RAM grow count (11), and again
+      // after the reserve carve-out shrinks it (9) — the second call is what
+      // lets a saturating ns.growthAnalyzeSecurity clamp shrink the reserve
+      // itself, not just the grow count it's sized from.
+      assert.deepEqual(calls, [11, 9])
+    })
+
+    test("a clamped function (e.g. ns.growthAnalyzeSecurity near moneyMax) can zero out the reserve entirely", () => {
+      // Stands in for the game's own min(threads, maxThreadsNeeded) clamp
+      // (source, NetscriptFunctions.ts) reporting that extra grow threads
+      // add no further security once the target is close enough to
+      // moneyMax — the whole point of R7's switch away from the unclamped
+      // linear estimate above, which would keep reserving weaken forever.
+      const hosts = [{ host: "a", reclaimableRam: 20 }]
+      const { allocations } = computeDesiredAllocation({
+        hosts,
+        plan: { type: "weaken" },
+        weakenBudget: 0,
+        ramInfo: RAM_INFO,
+        securityConstants: SECURITY_CONSTANTS,
+        growSecurityIncreaseForThreads: () => 0,
+      })
+      // vs. grow:9/weaken:1 above — none of the leftover RAM needs to be
+      // reserved for weaken, so it all goes to grow instead.
+      assert.deepEqual(allocations, [{ host: "a", hack: 0, grow: 11, weaken: 0 }])
+    })
+  })
+})
+
+describe("countRunningByScript (hacking-strategy.md R5, 2026-08-14)", () => {
+  test("sums threads per script, defaulting scripts with nothing running to zero", () => {
+    const running = [
+      { script: "grow", threads: 10 },
+      { script: "weaken", threads: 5 },
+      { script: "grow", threads: 3 },
+    ]
+    assert.deepEqual(countRunningByScript(running), { hack: 0, grow: 13, weaken: 5 })
+  })
+
+  test("no running actions gives all zeros", () => {
+    assert.deepEqual(countRunningByScript([]), { hack: 0, grow: 0, weaken: 0 })
   })
 })
 

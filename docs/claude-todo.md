@@ -1,5 +1,36 @@
 # Claude's working list
 
+## 2026-08-14 (latest): R5 + R7 shipped in an isolated worktree, NOT yet live — needs merge + restart + observation
+
+Built per `hacking-strategy.md` §2's R5/R7 sections and §5's own instruction
+that both have no dependency on R1/R4 and are safe to pick up independently.
+Done entirely in a separate worktree with no game connection, same
+verification ceiling as R1 was: `node --test *.test.js` (110/110, up from
+105 — 5 new tests: 2 for `countRunningByScript`, 3 for
+`computeDesiredAllocation`'s new `growSecurityIncreaseForThreads` option) and
+`node --check mcp.js mcp_logic.js` both clean. **Not restarted, not watched
+live** — that's this worktree's explicit scope boundary, not an oversight.
+
+**R5**: `allocateThreads` now kills/re-execs only the script(s) whose
+desired thread count changed, not all three unconditionally — see
+`hacking-strategy.md` §5 item 5 for the full breakdown.
+
+**R7**: all four bullets done — `home` joins the worker pool behind a new
+`HOME_RAM_RESERVE` (32GB) reserve; the weaken-phase grow-security reserve
+uses `ns.growthAnalyzeSecurity` via an injected function into
+`computeDesiredAllocation` (a judgment call, since R3 had already moved that
+branch into a pure `mcp_logic.js` function by the time this shipped — see
+§5 item 6 for the full reasoning); `SECURITY_CAP` 6 → 1;
+`tickWithinBounds` untouched (informational only, per the doc).
+
+**Next concrete step, once this merges into the daemon-watched checkout**:
+restart via `tools/bb_remote.py ctl-restart`, then watch two things —
+`plan_flip` events/hour before vs. after (R5's own measurement plan) and
+whether `home` actually starts carrying allocated threads in
+`mcp_status.json`'s `workers` array without `mcp.js`/the HUD/the supervisor
+themselves ever showing signs of RAM starvation (R7's risk note). Neither
+was checked here — this worktree has no live game access at all.
+
 ## 2026-08-13 (latest): R3 shipped live; hacking-strategy.md §5 now the maintained "what's left" tracker
 
 R3 confirmed live: restarted, first post-restart tick showed

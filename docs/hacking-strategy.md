@@ -6,13 +6,14 @@ one is the knowledge base (formulas extracted from the game's own
 TypeScript), this one is the argument built on top of it. Read that first;
 every formula cited here comes from there unless marked otherwise.
 
-**Status as of 2026-08-14: R2 and R3 are implemented, live, and confirmed
-working. R1 (the actual order-of-magnitude payload) is now implemented and
-unit-tested — built in an isolated worktree with no game connection, so it
-is NOT YET CONFIRMED LIVE. See §5 for the current, maintained status of
-every item, including the judgment calls made while shipping R1.** The rest
-of this document is the original analysis; read §5 first if you just want
-to know what's left.
+**Status as of 2026-08-14: R1, R2, and R3 are all implemented, live, and
+confirmed working correctly. R1's live confirmation run also surfaced why
+it isn't paying off on the bot's current target yet — see §5 item 3 — which
+makes R4 (target scoring) the next concrete step. R5 and R7 are implemented
+and unit-tested, built in an isolated worktree, NOT YET CONFIRMED LIVE. See
+§5 for the current, maintained status of every item.** The rest of this
+document is the original analysis; read §5 first if you just want to know
+what's left.
 
 ## Status vocabulary
 
@@ -832,13 +833,31 @@ truth for "what's left," not just the original ranking.
    budget-conservation guarantee is holding. Two new config tunables
    (`REDEPLOY_TOLERANCE_ABSOLUTE`/`RELATIVE`, defaults 2/0.2) are live and
    hot-reloadable if redeploy churn ever shows up in `mcp_events.txt`.
-3. **R1 (balance-point weights) — code shipped 2026-08-14, NOT YET CONFIRMED
-   LIVE.** Built and unit-tested in an isolated worktree with no game
-   connection, so everything below is verified only as far as `node --test`
-   and `node --check` can reach — the actual in-game restart/observation
-   step (watching `avgMoneyPct` hold near max, comparing `incomePerSec`
-   against §1.3's modelled numbers) is still outstanding and explicitly out
-   of scope for the change that shipped this. Shipped: `computeWorkWeights`
+3. **R1 (balance-point weights) — shipped and confirmed live 2026-08-14,
+   working correctly, but exposed the exact reason R4 is needed next.**
+   Restarted live ~11:42 PDT; watched `foodnstuff` for ~15 minutes as it
+   ramped 4%→100% moneyPct exactly as the `readiness²` curve predicts. At
+   100% money, `incomePerSec` sat at **exactly 0** with **zero hack threads
+   deployed anywhere in the pool**, including on a 256GB host — looked like
+   a bug, wasn't. Added a `debugWorkWeights` field to `mcp_status.json`
+   (`hackPercentPerThread`/`growLogPerThread`/`balancedHackShare`/
+   `growPerHack`, kept as a standing diagnostic, not reverted) and read the
+   real numbers: `p=0.0087`, `k=0.000238`, `growPerHack≈117` — nearly 5×
+   worse than this doc's own `silver-helix` worked example (`growPerHack≈24`,
+   ~3.7% hack share) — giving `balancedHackShare≈0.77%`, which times
+   `safety=0.5` floors to 0 threads on every single host no matter how
+   large. **The formula is correct**: `1/(1+0.16+117.07×1.1) = 0.0077`
+   matches the live reading exactly. `foodnstuff` is simply a target whose
+   grow-per-thread rate is so poor relative to its hack rate that the
+   balance-point strategy correctly declines to hack it at all — the old
+   bucket table would have hacked it anyway (fixed 75% at "goal"), which is
+   the collapse case §1 predicted, not a sign the old code was doing
+   anything useful there. **R1 itself is done.** What's exposed is that
+   target *selection* (`getTargetScore`, unchanged, still the pre-R4
+   $/thread metric with no `growPerHack` awareness) can park the bot on a
+   target where R1 has nothing to work with, producing correct-but-useless
+   0 income. R4 is what fixes that, and is now motivated by live evidence,
+   not just the modelled ranking table in §1.3. Shipped: `computeWorkWeights`
    in `mcp_logic.js` replacing `selectWorkWeights` (8 new tests, including a
    worked-example regression matching this doc's own silver-helix ~3.7%
    hack-share number and a `hack + grow === 1` sweep across the input
@@ -870,20 +889,33 @@ truth for "what's left," not just the original ranking.
    false-positive it closes. R3 being live is what makes R1 safe to ship
    now — the weight change means nothing if the redeploy layer can't
    actually get the new ratio onto the network.
-4. **R4 (scoring + ramp discount + switch factor) — not started.** Ship
-   only after R1 has run long enough to demonstrably hold a target near
-   `moneyMax` (§4 item 3: compare `incomePerSec` against the modelled
-   number) — R4's `OPPORTUNITY_SWITCH_FACTOR` change is unsafe before that,
-   per §2's own note.
-5. **R5, R7 — not started, opportunistic.** No dependency on R1/R4; safe to
-   pick up independently whenever convenient. R7's `home`-RAM item is the
-   only one worth flagging as slightly more involved (needs a reserve
-   gate, per its own risk note).
+4. **R4 (scoring + ramp discount + switch factor) — now the next concrete
+   step, unblocked.** R1 held a target through a full ramp to 100% money
+   with zero invariant violations, so the "R1 demonstrably holds near
+   `moneyMax`" precondition (§4 item 3) is met — but the live evidence above
+   shows the deeper reason to ship this now: without `growPerHack` in the
+   score, target selection can strand the bot on a target R1 can't do
+   anything with. `OPPORTUNITY_SWITCH_FACTOR` still shouldn't drop from 3
+   until the ramp discount ships alongside the new score, per §2's own note
+   — ship both together.
+5. **R5, R7 — code shipped 2026-08-14, NOT YET CONFIRMED LIVE.** Built and
+   unit-tested in an isolated worktree, same as R1 was (110/110 tests,
+   `node --check` clean) — not yet merged or restarted live. R5 rewrote
+   `allocateThreads` to kill/re-exec only the script(s) whose thread count
+   actually changed instead of all three every redeploy. R7: `home` (128GB)
+   joined the worker pool behind a new `HOME_RAM_RESERVE` (32GB) tunable;
+   `computeDesiredAllocation`'s weaken-phase leftover-grow branch takes an
+   optional `growSecurityIncreaseForThreads` callback so `mcp.js` can supply
+   `ns.growthAnalyzeSecurity` without giving the pure function `ns` access
+   (omitting it reproduces the old estimate exactly); `SECURITY_CAP` 6→1.
+   Both independent of R1/R4, no known interaction with the R1 finding
+   above — safe to merge and restart whenever convenient.
 6. **R6 (XP mode) — not started, low priority.** `OBJECTIVE` is `"money"`
    and income is the binding constraint; revisit when that changes.
 
 Steps 1–3 are the ones with an order-of-magnitude behind them; all three are
-now shipped in code, but only R2 and R3 are confirmed live — R1 (the actual
-order-of-magnitude payload) still needs an in-game restart and a live
-observation window before it can be called done. Everything after step 3 is
-single-digit multipliers on top of whatever it achieves.
+shipped, live, and confirmed working correctly — R1's confirmation run is
+also what surfaced *why* it isn't paying off yet on the current target,
+which is exactly what makes R4 (step 4) the next thing worth doing rather
+than a nice-to-have. Everything after step 3 is single-digit multipliers on
+top of whatever it achieves.

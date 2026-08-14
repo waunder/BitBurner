@@ -190,6 +190,16 @@ The orchestrator, and where nearly all the complexity lives. Each tick
 (`LOOP_SLEEP_MS`, 10s) it scans the network, decides on a target, decides on a
 plan, and allocates worker threads across every rooted host.
 
+**2026-08-13: read `docs/hacking-mechanics.md` and `docs/hacking-strategy.md`
+before changing anything below.** The mechanics doc has the actual game
+formulas (extracted from the real game source, not guessed); the strategy
+doc analyzes this file and `mcp_logic.js` against them and found the
+hack/grow weight table's entire non-zero range sits on the wrong side of
+the only stable money level the real formulas allow — plus two live-
+reproducing bugs (the stuck-target detector, and `hostNeedsRedeploy` never
+checking allocation *quantity*) that mask most of what's below from working
+as described. Ranked, concrete fixes are in that doc; none are applied yet.
+
 - **Start:** `run mcp.js` — optionally `run mcp.js target=<hostname>`
 - **Reads:** `mcp_config.json` every tick (see Tunables)
 - **Writes:** `mcp_status.json` (every tick, overwritten),

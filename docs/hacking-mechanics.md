@@ -282,27 +282,76 @@ invariant this project has flagged (unexplained) since 2026-08-10 — see
 `hacking-strategy.md` for what to do about it; this doc only records what
 was found.
 
+## Additional source facts — confirmed 2026-08-13, while writing `hacking-strategy.md`
+
+Extracted the same way (source map `sourcesContent`), filling in several of
+the open questions below:
+
+- **`hack()`'s exact implementation** — `src/Netscript/NetscriptHelpers.tsx`'s
+  `hack()` function, not just the `calculatePercentMoneyHacked` formula above:
+  `moneyDrained = server.moneyAvailable * percentHacked * threads` (confirms
+  money stolen is linear in threads, clamped to `moneyAvailable` — not
+  exponential). Security fortify on a successful hack is
+  `ServerFortifyAmount * Math.min(threads, Math.ceil(1/percentHacked))` — so
+  hack threads deployed past the 100%-drain point cost RAM but add **no
+  extra security**, confirmed by the same cap appearing independently in
+  `hackAnalyzeSecurity`'s implementation. **A failed hack fortifies nothing.**
+  And: `if (moneyDrained === 0) expGainedOnSuccess = expGainedOnFailure` —
+  hacking a server sitting at exactly $0 yields the same reduced XP as a
+  failed hack (`expGainedOnFailure = expGainedOnSuccess / 4`, i.e. **25%**).
+  This means hack XP is independent of *how much* money is stolen, but
+  **not** independent of whether the server balance is exactly zero —
+  narrower than "XP is money-independent," which is the premise `mcp.js`'s
+  own OBJECTIVE comment and this project's XP-mode design were built on.
+- **`grow()`/`weaken()` XP** — `src/NetscriptFunctions.ts`: both grant
+  `calculateHackingExpGain(server, Player) * threads`, the **same
+  per-thread XP formula as a successful hack**. XP is not a hack-only
+  reward.
+- **`growthAnalyze(host, mult, cores)` = `numCycleForGrowth(server, mult,
+  cores)` = `Math.log(mult) / calculateServerGrowthLog(server, 1, Player,
+  cores)`** (`src/NetscriptFunctions.ts` → `src/Server/ServerHelpers.ts`) —
+  confirmed exact, using the real live `Player` object (every multiplier
+  included), not a mock. Consequence: `k` (this doc's per-thread growth log
+  constant) is recoverable **exactly**, live, in-game, for 1 GB and without
+  Formulas.exe, as `Math.LN2 / ns.growthAnalyze(target, 2)`. This is the
+  fact that makes several of `hacking-strategy.md`'s recommendations not
+  need Formulas.exe at all.
+- **Every `ns.formulas.*` function costs 0 GB** (`src/Netscript/
+  RamCostGenerator.ts` — the entire `formulas` tree, `hacking`/
+  `reputation`/`skills`/`hacknetNodes`/`hacknetServers`/`gang`/`work`
+  subtrees, is all-zero). Formulas.exe is a **program** prerequisite only,
+  never a RAM cost — the "RAM cost" framing in this doc's first draft was
+  wrong to even ask the question that way.
+- **`share()` = 2.4 GB, `getSharePower()` = 0.2 GB** — cross-checked
+  directly against `RamCostGenerator.ts` (`share: 2.4, getSharePower: 0.2`
+  in the `ns` cost map). Confirms the `.d.ts` remark this doc originally
+  relied on; no longer just "unverified against the RAM-cost file directly."
+- **`Server.ts`'s `moneyMax`/`minDifficulty` formulas cross-checked against
+  real data**: `src/Server/data/servers.ts`'s static per-host table plus
+  live readings confirm `silver-helix` (`baseDifficulty` 30 → `minDifficulty`
+  10) and `max-hardware` (base 15 → min 5) both match `round(base/3)`
+  exactly. The static table is therefore usable for offline whole-network
+  modelling without a live `ns.getServer` call per host.
+
 ## Open questions
 
 - **BitNode multipliers** (`currentNodeMults.*` — `ScriptHackMoney`,
   `HackingSpeedMultiplier`, `ServerGrowthRate`, `ServerWeakenRate`,
-  `HackExpGain`, etc.) scale nearly every formula above but weren't looked
-  up per-BitNode this session — `src/BitNode/BitNodeMultipliers.ts` has the
-  real per-node table if this ever needs pinning down exactly. In BN1
-  (the default, and likely what this save is in — not confirmed) these are
-  all 1.0, so the formulas above should already be exact as written; flag
-  this if numbers ever stop matching.
-- **`share()`'s exact diminishing-returns curve** (`calculateShareBonus` or
-  equivalent) — not found this session; `RamCostConstants.Share` wasn't
-  cross-checked either (used the `.d.ts` remark's 2.4GB figure, unverified
-  against `RamCostGenerator.ts` directly). Same extraction technique above
-  would find it if this becomes a priority (see `share_deploy.js`'s own
-  open caveat in `docs/processes.md`).
+  `HackExpGain`, `hacking_grow`, etc.) scale nearly every formula above but
+  still weren't looked up per-BitNode — `src/BitNode/BitNodeMultipliers.ts`
+  has the real per-node table if this ever needs pinning down exactly.
+  `hacking-strategy.md` backed several of these out of live telemetry
+  instead (e.g. `mults.hacking_money ≈ 2.15`, `mults.hacking_grow` still
+  fully open and assumed 1.0) — see that doc's §1.2 for the calibration and
+  how much of the dollar-figure modelling depends on it.
 - **`formulas.hacking.growThreads`** (the exact Newton-Raphson solver) is a
-  real in-game function (`ns.formulas`, requires the Formulas.exe program)
-  that `mcp.js` doesn't currently call — whether that program is owned on
-  this save wasn't checked. `hacking-strategy.md` should confirm ownership
-  before recommending anything that depends on it.
+  real in-game function, confirmed 0 GB (see above) but still gated on
+  owning Formulas.exe — ownership on this save is still **not checked**
+  (`ns.fileExists("Formulas.exe", "home")` would settle it in one read).
+  `hacking-strategy.md` §3.1 argues it isn't actually needed for the
+  continuous-loop farming this repo does, precisely because of the
+  `growthAnalyze` fact above — worth reading before assuming Formulas.exe
+  ownership matters here.
 - **Passive server growth**: confirmed no passive security decay exists;
   did *not* separately verify whether `moneyAvailable` has any passive
   regeneration outside of `grow()` calls (nothing found in `Server.ts`

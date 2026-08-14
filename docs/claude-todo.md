@@ -1,6 +1,62 @@
 # Claude's working list
 
-## 2026-08-13 (latest): Reputation booster confirmed running, Ken reports +15% — but that figure is his observation, not this repo's telemetry
+## 2026-08-13 (latest): hacking-strategy.md — mcp.js is running at ~3% of its own grow-throughput ceiling, root cause found, fixes not yet applied
+
+Ken asked for a close analysis of `mcp.js` against real game mechanics,
+since hacking is "the runaway money maker." Two docs now exist:
+`docs/hacking-mechanics.md` (formulas from the actual game source) and
+`docs/hacking-strategy.md` (the analysis, built with an Opus subagent
+briefed on the mechanics doc + full `mcp.js`/`mcp_logic.js`, run in a
+worktree so nothing live got touched).
+
+**Verified, not just accepted.** Before trusting the doc's numbers I
+independently re-derived the five most load-bearing/surprising claims
+straight from the game's own TypeScript source (same source-map
+extraction technique) rather than taking the subagent's word: the
+`hack()` money-drain formula, the `if (moneyDrained===0) → 25% XP` clause,
+the security-fortify thread cap, `growthAnalyze`'s exact correspondence to
+the internal growth-log constant, and the "`ns.formulas.*` costs 0 GB"
+claim. **All five checked out exactly against source.** Folded the new
+facts into `hacking-mechanics.md` itself (dated section) so the knowledge
+base actually grew from this, per Ken's original ask, not just the
+strategy doc.
+
+**The finding, in one line:** because hack removes a fraction of current
+money (multiplicative) while grow multiplies money by a fixed factor per
+cycle, log-money drift is *independent of the money level* — there is no
+stable in-between money level, only "pins near max" or "collapses toward
+zero." `WORK_WEIGHTS_BY_BUCKET`'s entire non-zero hack range (30-75%) is
+4-8x past the collapse threshold for every target the bot actually farms.
+This is the exact mechanism behind the already-known `empty↔low` bucket
+thrashing (350/1373 log lines in one earlier session) — the theory
+predicts a bug this project already independently observed and fought
+with hysteresis, which is strong corroborating evidence it's right.
+Modelled achievable rate on the bot's current target: ~$13M/s. Live
+`incomePerSec`: $436K/s. **~30x gap.**
+
+Two more live-reproducing bugs found beyond the `weakenBudgetNonNegative`
+one from this morning's mechanics doc: the stuck-target detector evicts
+healthy targets (latches at the security floor, which is unbeatable, so
+the stall clock runs through every productive minute), and
+`hostNeedsRedeploy` never checks allocation *quantity* — only 0 of the
+network's threads were running `hack` at the live snapshot taken for this
+doc (846 grow, 145 weaken, 0 hack).
+
+**Nothing has been changed in `mcp.js`/`mcp_logic.js`/`mcp_config.json`
+yet.** The doc's own ranked order: stuck-detector fix (R2, 4 lines, no
+risk) → allocation-diff redeploy (R3, structural prerequisite) →
+balance-point hack/grow weights (R1, the actual payload, ships with a
+config-tunable safety margin starting conservative) → corrected target
+scoring (R4). Multi-target farming and HWGW-style batching were both
+evaluated and explicitly rejected — modelled ceilings of +22% and +15-25%
+respectively, not worth the complexity/risk against R1's order-of-
+magnitude. Full reasoning, code, and risk assessment per item in
+`hacking-strategy.md`.
+
+**Decision needed from Ken before anything ships**, since this is live
+code farming real money — see the dashboard.
+
+## 2026-08-13: Reputation booster confirmed running, Ken reports +15% — but that figure is his observation, not this repo's telemetry
 
 Follow-up to the entry directly below. Ken reconnected the Remote API a
 second time (after the `WATCHED_FILES` gap fix required a daemon restart)

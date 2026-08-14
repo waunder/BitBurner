@@ -10,6 +10,11 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
+- [ ] **Reconnect Bitburner to the Remote API on port 12526.** Codex restarted
+  the daemon on 2026-08-14 so it would load the expanded 43-file watch list;
+  it is healthy and waiting, but the game must reconnect before the new Dark
+  Net files can sync and live validation can begin.
+
 - [ ] **Restart the Dark Net swarm once Codex says the optimization branch is
   ready for live validation.** The game is connected and the 2026-08-14 files
   are synced, but direct heartbeat reads show the `home` deployer stopped at

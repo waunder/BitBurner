@@ -1650,6 +1650,14 @@ export async function main(ns) {
         // can finally be read off a live status file instead of assumed.
         hackingGrowMult: player.mults.hacking_grow,
       },
+      // Added 2026-08-14, answering Ken's "what's the benefit of buying more
+      // home cores" question: getCoreBonus (1 + (cores-1)/16, source
+      // ServerHelpers.ts) applies to grow()/weaken()/share() on whichever
+      // host actually runs the call, not the target — so this only matters
+      // for the fraction of the pool's grow/weaken threads that land on
+      // home specifically. Surfaced here rather than assumed, same as
+      // hackingGrowMult above.
+      homeCores: ns.getServer("home").cpuCores,
       target: currentTarget,
       plan: plan.type,
       debugWorkWeights: plan.debugWorkWeights || null,

@@ -1604,7 +1604,7 @@ Self-contained, not touched by `mcp.js`, not auto-started by anything.
 | File | Runs on | RAM | What it does |
 | --- | --- | --- | --- |
 | `scripts/share.js` | any host, spread by `share_deploy.js` | 2.4GB/thread | Three-line loop, same shape as `scripts/weaken.js`: `while(true) await ns.share()`. All the logic lives in the deployer, same division of labor as the weaken/grow/hack workers. |
-| `share_deploy.js` | run once from `home` | ~2.6GB to run itself (exits after launching) | Launches `scripts/share.js` threads. Default (`run share_deploy.js`, no args) only claims `home`'s free RAM above a 16GB reserve. **Since 2026-08-14 (R7), this does compete with the money farm**: `mcp.js` now uses `home` as a worker host too (behind its own, separate `HOME_RAM_RESERVE`, default 32GB — see "Worker hosts" above), so `share.js` threads eating into `home`'s free RAM leave correspondingly less for `mcp.js`'s own weaken/grow/hack there on its next tick, same as the `network` mode below always did for other hosts. Before R7 this mode genuinely had zero effect on the farm (`home` was categorically excluded); that is no longer true. `run share_deploy.js network` additionally claims free RAM on every rooted worker host; `mcp.js` reads each host's actual free RAM fresh every tick, so it will deploy fewer weaken/grow/hack threads there on its own next tick — a real, deliberate trade of hacking income for rep-gain rate, not a bug. `run share_deploy.js stop` kills every running `share.js` instance network-wide. Args: `[mode] [reserveHomeGb] [maxThreads]`. |
+| `share_deploy.js` | run once from `home` | ~2.6GB to run itself (exits after launching) | Launches `scripts/share.js` threads idempotently (every start first removes the previous share allocation). Default balanced mode kills only home's MCP action workers, reserves 256GB for 106 share threads at the measured 2.4GB/thread, then exits; MCP sees the occupied RAM and refills the rest of home on its next tick. `home` aliases balanced, `spare` uses only currently free home RAM, and `network` additionally fills currently free rooted ordinary-network RAM. `run share_deploy.js stop` kills all ordinary-network/home share workers, after which MCP automatically reclaims the RAM next tick. Args: `[mode] [shareHomeGb=256] [reserveHomeGb=32] [maxThreads]`. |
 
 **Caveat that matters more than the RAM math:** share power only affects
 reputation gain while actively doing faction work (manually in the UI or via
@@ -1617,8 +1617,10 @@ usually the most share-efficient RAM, but returns remain logarithmic. Check
 `ns.getSharePower()` (printed by `share_deploy.js` on launch) for the live
 result.
 
-**Not yet run live** — built and `node --check`ed this session, needs Ken to
-`run share_deploy.js` in the live terminal. See `docs/kensTodo.md`.
+The original free-RAM mode has run live. The bounded balanced allocation was
+added 2026-08-14 and is locally tested; its first in-game run still needs the
+terminal command recorded in `docs/kensTodo.md` because Codex cannot execute
+terminal commands through the file bridge.
 
 ---
 

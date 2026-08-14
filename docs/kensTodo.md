@@ -10,6 +10,8 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
+- [ ] **Start the new balanced faction-sharing allocation when actively doing faction work:** `run share_deploy.js`. It replaces home's current MCP action workers with about 256GB / 106 share threads; MCP refills the rest automatically. Run `share_deploy.js stop` when faction work ends so MCP reclaims the RAM. Added 2026-08-14; Codex can push the script but cannot execute the in-game terminal command.
+
 - [x] **Reconnect Bitburner to the Remote API on port 12526.** Confirmed
   2026-08-14: all 43 then-current watched files synced, the remotely-triggered clean swarm
   restart succeeded, and the new crawler/phishing behavior is live.

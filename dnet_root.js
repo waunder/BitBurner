@@ -20,7 +20,7 @@ const MANAGER = "dnet_manager.js"
 const REALLOC = "dnet_realloc.js"
 const LEGACY = "dnet_deploy.js"
 const FILES = [CRAWLER, MANAGER, REALLOC, "dnet_lib.js", "dnet_loot.js", "dnet_loot_realloc.js", "dnet_phish.js"]
-const MUTATION_FLOOR_MS = 5000
+const RETRY_MS = 5000
 
 export async function main(ns) {
   ns.disableLog("ALL")
@@ -91,8 +91,11 @@ export async function main(ns) {
     })
     await shipShard(ns, shard)
 
-    await ns.dnet.nextMutation()
     const elapsed = Date.now() - started
-    if (elapsed < MUTATION_FLOOR_MS) await ns.sleep(MUTATION_FLOOR_MS - elapsed)
+    // Poll instead of waiting only for the next mutation. A surviving legacy
+    // crawler can repopulate darkweb between our kill and exec without a new
+    // mutation; the stable gateway must keep quarantining that race until the
+    // unique transient crawler wins the slot.
+    if (elapsed < RETRY_MS) await ns.sleep(RETRY_MS - elapsed)
   }
 }

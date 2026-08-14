@@ -7,8 +7,7 @@
 // header for why. Imported the same way dnet_deploy.js imports dnet_lib.js.
 import {
   SECURITY_EPSILON,
-  selectWorkWeights,
-  getWorkWeightBucket,
+  computeWorkWeights,
   evaluateMoneyDegradation,
   evaluateOpportunitySwitch,
   evaluateStuckTarget,
@@ -68,11 +67,14 @@ let MIN_TARGET_COMMIT_MS = 600000
 // How long a drained target is deprioritized before it's eligible again —
 // long enough to make real progress on other (harder) targets first.
 let DEGRADED_SKIP_MS = 900000
-// Dead band around each work-weight bucket boundary — see
-// getWorkWeightBucket for why. 0.02 was picked to comfortably exceed one
-// grow/hack cycle's swing without being so wide that a target legitimately
-// crossing a tier takes noticeably longer to be recognized.
-let BUCKET_HYSTERESIS = 0.02
+// Fraction of the balance-point hack share (computeWorkWeights,
+// mcp_logic.js) actually deployed at full readiness — see hacking-strategy.md
+// R1. At the exact balance point log-money is a driftless random walk with
+// no restoring force either way; running below it gives a positive drift
+// that pins money at max, at a linear income cost. 0.5 is the doc's safe
+// starting value (0.7 is explicitly speculative there) — raise it while
+// watching avgMoneyPct in the status file hold near max over ~15 minutes.
+let HACK_BALANCE_SAFETY = 0.5
 // hostNeedsRedeploy's slack, per action type, before a desired-vs-running
 // thread-count difference counts as a real mismatch worth killing and
 // redeploying for: max(REDEPLOY_TOLERANCE_ABSOLUTE, want * REDEPLOY_TOLERANCE_RELATIVE).
@@ -85,11 +87,12 @@ let BUCKET_HYSTERESIS = 0.02
 let REDEPLOY_TOLERANCE_ABSOLUTE = 2
 let REDEPLOY_TOLERANCE_RELATIVE = 0.2
 
-// What the bot is farming for. "money" is the original, bucket-based
-// behaviour (see WORK_WEIGHTS_BY_BUCKET) — grow-heavy when a target is
-// drained, hack-heavy once it's full, because hack's take scales with
-// *available* money and stealing from a near-empty target is close to free
-// security cost for near-zero reward.
+// What the bot is farming for. "money" sizes hack/grow from the target's
+// actual balance point (computeWorkWeights, mcp_logic.js — see
+// hacking-strategy.md R1) — near-zero hack share on a drained target,
+// ramping up toward the balanced share as it fills, because hack's take
+// scales with *available* money and stealing from a near-empty target is
+// close to free security cost for near-zero reward.
 //
 // "xp" exists because that reasoning doesn't apply to experience: the
 // game's own hackExp(server, player) formula takes no money/percent
@@ -97,7 +100,7 @@ let REDEPLOY_TOLERANCE_RELATIVE = 0.2
 // actually stolen. So unlike money mode, there is no reason to avoid
 // hacking a drained target for XP purposes, and no reason for the weighting
 // to depend on moneyPct at all. XP mode uses a single flat split
-// (XP_WEIGHT_HACK / XP_WEIGHT_GROW below) instead of the bucket table.
+// (XP_WEIGHT_HACK / XP_WEIGHT_GROW below) instead of the balance-point calc.
 //
 // Target SELECTION is unchanged in both modes — still scored by $/s. Making
 // selection itself XP-aware is a larger, riskier change than reweighting
@@ -157,7 +160,7 @@ const CONFIG_DEFAULTS = {
   OPPORTUNITY_SWITCH_FACTOR,
   MIN_TARGET_COMMIT_MS,
   DEGRADED_SKIP_MS,
-  BUCKET_HYSTERESIS,
+  HACK_BALANCE_SAFETY,
   XP_WEIGHT_HACK,
   XP_WEIGHT_GROW,
   REDEPLOY_TOLERANCE_ABSOLUTE,
@@ -239,7 +242,7 @@ function loadConfig(ns, state) {
     OPPORTUNITY_SWITCH_FACTOR,
     MIN_TARGET_COMMIT_MS,
     DEGRADED_SKIP_MS,
-    BUCKET_HYSTERESIS,
+    HACK_BALANCE_SAFETY,
     XP_WEIGHT_HACK,
     XP_WEIGHT_GROW,
     REDEPLOY_TOLERANCE_ABSOLUTE,
@@ -265,7 +268,7 @@ function loadConfig(ns, state) {
   OPPORTUNITY_SWITCH_FACTOR = resolved.OPPORTUNITY_SWITCH_FACTOR
   MIN_TARGET_COMMIT_MS = resolved.MIN_TARGET_COMMIT_MS
   DEGRADED_SKIP_MS = resolved.DEGRADED_SKIP_MS
-  BUCKET_HYSTERESIS = resolved.BUCKET_HYSTERESIS
+  HACK_BALANCE_SAFETY = resolved.HACK_BALANCE_SAFETY
   XP_WEIGHT_HACK = resolved.XP_WEIGHT_HACK
   XP_WEIGHT_GROW = resolved.XP_WEIGHT_GROW
   REDEPLOY_TOLERANCE_ABSOLUTE = resolved.REDEPLOY_TOLERANCE_ABSOLUTE
@@ -718,41 +721,44 @@ function formatMoney(value) {
   return value.toFixed(0)
 }
 
-// WORK_WEIGHTS_BY_BUCKET, bucketForMoneyPct, and getWorkWeightBucket (the
-// hysteresis logic for the empty/low boundary oscillation — 350 of 1373
-// work-plan log lines in one session were this single flip) now live in
-// mcp_logic.js as selectWorkWeights/getWorkWeightBucket, parameterized on
-// TARGET_MONEY_GOAL/BUCKET_HYSTERESIS instead of reading the module-level
-// `let`s directly, so they're testable with `node --test` outside the game.
-
-function buildPlan(ns, target, wasWorking, previousWeightBucket) {
+// computeWorkWeights (hacking-strategy.md R1, 2026-08-14) replaced
+// WORK_WEIGHTS_BY_BUCKET/bucketForMoneyPct/getWorkWeightBucket entirely —
+// see mcp_logic.js's own comment on the function for why the bucket ladder
+// was structurally wrong rather than mistuned, and the doc's §1/§2.1 for the
+// balance-point derivation this sizes hack/grow from instead. `p`
+// (hackPercentPerThread) and `k` (growLogPerThread) are read live here, 1GB
+// each, no Formulas.exe needed (§3.1) — they carry every player/BitNode
+// multiplier the game itself applies, so the weights track reality without
+// hardcoding any of them.
+function buildPlan(ns, target, wasWorking) {
   const currentSecurity = ns.getServerSecurityLevel(target)
   const moneyPct = ns.getServerMoneyAvailable(target) / ns.getServerMaxMoney(target)
-  // Only apply hysteresis when coming FROM a work phase, so a target that's
-  // actually stuck above the cap still switches to weaken right away — this
-  // just stops security drifting slightly over goal from instantly killing
-  // grow/hack threads every loop.
+  // Only apply the extra margin when coming FROM a work phase, so a target
+  // that's actually stuck above the cap still switches to weaken right away
+  // — this just stops security drifting slightly over goal from instantly
+  // killing grow/hack threads every loop.
   const requiredWeaken = getTargetWeakenThreads(ns, target, wasWorking ? WORK_SECURITY_MARGIN : 0)
 
   if (requiredWeaken > 0) {
     return { type: "weaken", currentSecurity, moneyPct }
   }
 
-  // XP mode ignores moneyPct entirely — see OBJECTIVE's comment for why —
-  // so it gets a single fixed pseudo-bucket rather than running the
-  // money-tier logic. Still goes through the same bucket-change machinery
-  // (a weightBucket change shows up as a desired-allocation mismatch in
-  // hostNeedsRedeploy — see mcp_logic.js) so switching OBJECTIVE live via
-  // config correctly redeploys with the new weights, same as crossing a
-  // money tier does today.
-  const { weightBucket, weights } = selectWorkWeights({
+  // ns.growthAnalyze(target, 2) is numCycleForGrowth = log(2)/growthLog
+  // (source, NetscriptFunctions.ts), so Math.LN2 divided by it recovers
+  // growthLog exactly — see hacking-strategy.md §1 for the derivation this
+  // formula (and computeWorkWeights's balance-point math) rests on.
+  const hackPercentPerThread = ns.hackAnalyze(target)
+  const growLogPerThread = Math.LN2 / ns.growthAnalyze(target, 2)
+  const { weightBucket, weights } = computeWorkWeights({
     objective: OBJECTIVE,
+    hackPercentPerThread,
+    growLogPerThread,
     moneyPct,
-    previousWeightBucket,
     targetMoneyGoal: TARGET_MONEY_GOAL,
-    bucketHysteresis: BUCKET_HYSTERESIS,
+    safety: HACK_BALANCE_SAFETY,
     xpWeightHack: XP_WEIGHT_HACK,
     xpWeightGrow: XP_WEIGHT_GROW,
+    ...SECURITY_CONSTANTS,
   })
   return { type: "work", currentSecurity, moneyPct, weightBucket, weights }
 }
@@ -1202,8 +1208,12 @@ export async function main(ns) {
       // network indefinitely while far richer ones sit untouched.
       //
       // Two regimes, because the fair comparison differs:
-      //   - current target producing nothing ("empty"): compare readiness-
-      //     discounted scores, and move quickly. Escaping a dud is urgent.
+      //   - current target producing nothing (moneyPct below the same 0.1
+      //     floor drainBelowEmptyTier enforces DEGRADED_MONEY_PCT stays under
+      //     — formerly the "empty" bucket boundary, now just an inline
+      //     threshold since the bucket ladder itself is gone (R1)): compare
+      //     readiness-discounted scores, and move quickly. Escaping a dud is
+      //     urgent.
       //   - current target productive: both it and the candidate would sit at
       //     their own equilibrium, so compare raw potential instead — current
       //     money says nothing about which is the better long-run farm. Held
@@ -1212,7 +1222,7 @@ export async function main(ns) {
       if (currentTarget) {
         const heldMs = Date.now() - lastSwitchTime
         const currentMoneyPct = ns.getServerMoneyAvailable(currentTarget) / ns.getServerMaxMoney(currentTarget)
-        const idle = getWorkWeightBucket(currentMoneyPct, undefined, TARGET_MONEY_GOAL, BUCKET_HYSTERESIS) === "empty"
+        const idle = currentMoneyPct < 0.1
         const holdMs = idle ? MIN_TARGET_HOLD_MS : MIN_TARGET_COMMIT_MS
 
         // Evaluate every tick, act only when committed. Previously the whole
@@ -1322,7 +1332,7 @@ export async function main(ns) {
 
     const previousPlanType = lastPlanType
     const previousWeightBucket = lastWeightBucket
-    const plan = buildPlan(ns, currentTarget, lastPlanType === "work", previousWeightBucket)
+    const plan = buildPlan(ns, currentTarget, lastPlanType === "work")
     lastPlanType = plan.type
     if (plan.type === "work") lastWeightBucket = plan.weightBucket
 
@@ -1341,8 +1351,14 @@ export async function main(ns) {
         moneyPct: plan.moneyPct,
       })
     }
+    // Replaces the old 5-value bucket_change event (R1, 2026-08-14) — same
+    // "did the regime change" purpose, now over computeWorkWeights's 3-value
+    // weightBucket ("xp"/"ramp"/"harvest") instead of the deleted bucket
+    // ladder's 5 tiers. Renamed rather than reused so a reader scanning
+    // mcp_events.txt for old-style bucket_change lines from before this
+    // shipped doesn't mistake them for the new shape.
     if (plan.type === "work" && previousWeightBucket !== null && previousWeightBucket !== plan.weightBucket) {
-      events.emit("bucket_change", {
+      events.emit("weight_regime_change", {
         target: currentTarget,
         from: previousWeightBucket,
         to: plan.weightBucket,
@@ -1476,6 +1492,11 @@ export async function main(ns) {
         money: player.money,
         hp: player.hp,
         skills: player.skills,
+        // R1's one real open unknown (hacking-strategy.md §1.2/§4 item 1):
+        // every $/s figure in that doc's modelled network table assumes this
+        // is 1.0, and scales roughly linearly with it. Surfaced here so it
+        // can finally be read off a live status file instead of assumed.
+        hackingGrowMult: player.mults.hacking_grow,
       },
       target: currentTarget,
       plan: plan.type,
@@ -1523,7 +1544,7 @@ export async function main(ns) {
         OPPORTUNITY_SWITCH_FACTOR,
         MIN_TARGET_COMMIT_MS,
         DEGRADED_SKIP_MS,
-        BUCKET_HYSTERESIS,
+        HACK_BALANCE_SAFETY,
         OBJECTIVE,
         XP_WEIGHT_HACK,
         XP_WEIGHT_GROW,

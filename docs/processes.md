@@ -190,20 +190,20 @@ The orchestrator, and where nearly all the complexity lives. Each tick
 (`LOOP_SLEEP_MS`, 10s) it scans the network, decides on a target, decides on a
 plan, and allocates worker threads across every rooted host.
 
-**2026-08-13: read `docs/hacking-mechanics.md` and `docs/hacking-strategy.md`
+**2026-08-14: read `docs/hacking-mechanics.md` and `docs/hacking-strategy.md`
 before changing anything below.** The mechanics doc has the actual game
 formulas (extracted from the real game source, not guessed); the strategy
-doc analyzes this file and `mcp_logic.js` against them and found the
-hack/grow weight table's entire non-zero range sits on the wrong side of
-the only stable money level the real formulas allow — plus two live-
-reproducing bugs (the stuck-target detector, and `hostNeedsRedeploy` never
-checking allocation *quantity*) that mask most of what's below from working
-as described. Ranked, concrete fixes are in that doc; none are applied yet.
+doc analyzes this file and `mcp_logic.js` against them. Its three ranked
+fixes (R2 the stuck-target detector, R3 `hostNeedsRedeploy` allocation-
+quantity diffing, R1 sizing hack/grow from the target's actual balance point
+instead of a fixed RAM-fraction bucket table) are now all implemented in
+this codebase — see that doc's §5 for which have been confirmed live and
+which (R1, as of this writing) are shipped but not yet restarted in-game.
 
 - **Start:** `run mcp.js` — optionally `run mcp.js target=<hostname>`
 - **Reads:** `mcp_config.json` every tick (see Tunables)
 - **Writes:** `mcp_status.json` (every tick, overwritten),
-  `mcp_status_log.txt` (appended only when target/plan/bucket changes),
+  `mcp_status_log.txt` (appended only when target/plan/weightBucket changes),
   `mcp_events.txt` (one line per transition),
   `mcp_target_state.json` (exclusions, so they survive a restart)
 - **Deploys:** `/scripts/weaken.js`, `/scripts/grow.js`, `/scripts/hack.js`
@@ -215,9 +215,12 @@ fixed in `81814d6`), `evaluateOpportunitySwitch` (the switch comparison),
 fixed a live bug where a target sitting at its security floor, the normal
 outcome of a weaken phase, got evicted as "stuck" once security next rose,
 because the old inline version never reset its window on reaching the
-floor), `selectWorkWeights`/`getWorkWeightBucket` (the bucket table +
-hysteresis), and `computeTickInvariantChecks` (the invariant predicates). No
-`ns` calls,
+floor), `computeWorkWeights` (sizes hack/grow from the target's actual
+balance point — see "The work-weight calculation" below and
+`docs/hacking-strategy.md` R1; replaced the old fixed RAM-fraction bucket
+table entirely on 2026-08-14), `computeDesiredAllocation`/`hostNeedsRedeploy`
+(the two-pass allocation-diff redeploy — R3), and `computeTickInvariantChecks`
+(the invariant predicates). No `ns` calls,
 no side effects — `mcp.js` imports it the same way `dnet_deploy.js` imports
 `dnet_lib.js`, and does all the `ns` calls and mutation itself, calling into
 this module only for "given these inputs, what's the decision."
@@ -248,7 +251,8 @@ rejected at startup rather than silently ignored.
 4. Evaluate the **opportunity switch** — see below.
 5. If no target, pick one: highest potential income discounted by readiness.
 6. Build a **plan**: `weaken` if security exceeds the cap, otherwise `work`
-   with a hack/grow/weaken weighting chosen by how full the target is.
+   with a hack/grow weighting sized from the target's actual balance point
+   (`computeWorkWeights`, R1) and scaled by how full the target is.
 7. Allocate threads per host, redeploying only hosts whose running actions no
    longer match the plan.
 8. Write status.
@@ -262,6 +266,38 @@ then sat idle killing scripts every 60 seconds.
 tick is 10. Killing and re-execing every tick meant no action ever completed.
 `hostNeedsRedeploy` is what stops that.
 
+#### The work-weight calculation
+
+**2026-08-14 (R1):** `buildPlan` no longer picks a hack/grow split off a
+fixed RAM-fraction table keyed by which `moneyPct` tier the target sits in.
+It reads the target's actual balance point live (1GB each, no Formulas.exe
+needed) — `hackPercentPerThread = ns.hackAnalyze(target)`,
+`growLogPerThread = Math.LN2 / ns.growthAnalyze(target, 2)` — and passes
+them into `computeWorkWeights` (`mcp_logic.js`) along with
+`HACK_BALANCE_SAFETY` and the same `SECURITY_CONSTANTS` bundle
+`computeDesiredAllocation` uses. See `docs/hacking-strategy.md` §1/§2.1 for
+the full derivation: the real game formulas make the system bistable (money
+either pins near max or collapses toward the floor, nothing stable in
+between), and the old bucket table's entire non-zero hack range sat 4-8x past
+the collapse threshold for every target actually being farmed.
+
+The hack share returned is `balancedHackShare * HACK_BALANCE_SAFETY *
+readiness²`, where `readiness = min(1, moneyPct / TARGET_MONEY_GOAL)` — a
+continuous ramp instead of discrete tiers, so there is no bucket boundary
+left to oscillate across. `plan.weightBucket` is now a 3-value regime tag
+(`"xp"` / `"ramp"` / `"harvest"`, the last two only from money mode) kept
+purely so a regime change can still be told apart from ordinary weight
+drift — it fires a `weight_regime_change` event (the R1 replacement for the
+old `bucket_change` event) and is folded into the same-tick redeploy
+decision the same way a plain quantity mismatch is, since `hostNeedsRedeploy`
+diffs desired-vs-running thread counts (R3) rather than caring about the
+bucket identity itself.
+
+`HACK_BALANCE_SAFETY` (default 0.5, see Tunables below) is the fraction of
+the balanced share actually deployed — running exactly at balance is a
+driftless random walk with no restoring force, so shipping below 1.0 buys a
+positive drift that pins money near max at a linear income cost.
+
 #### The opportunity switch
 
 Adoption only happens when there is no current target, and both abandonment
@@ -274,7 +310,7 @@ Two regimes, because the fair comparison differs:
 
 | Current target | Compared on | Minimum hold |
 | --- | --- | --- |
-| producing nothing (`empty` bucket) | readiness-discounted score | `MIN_TARGET_HOLD_MS` (60s) |
+| producing nothing (`moneyPct < 0.1`) | readiness-discounted score | `MIN_TARGET_HOLD_MS` (60s) |
 | productive | raw potential | `MIN_TARGET_COMMIT_MS` (600s) |
 
 It switches when the best alternative beats the current one by more than
@@ -300,14 +336,15 @@ The ones that actually get retuned:
 | --- | --- | --- |
 | `SECURITY_CAP` | 6 | Above this, the plan is pure weaken |
 | `WORK_SECURITY_MARGIN` | 1.5 | Absolute headroom kept during `work` |
-| `TARGET_MONEY_GOAL` | 0.95 | Money fraction the `goal` bucket aims at |
-| `DEGRADED_MONEY_PCT` | 0.05 | Drain threshold — **must** stay below the `empty` bucket's 0.1, and an invariant enforces it |
+| `TARGET_MONEY_GOAL` | 0.95 | Money fraction `readiness` (see the work-weight calculation above) treats as "full" |
+| `DEGRADED_MONEY_PCT` | 0.05 | Drain threshold — **must** stay below the idle-regime cutoff of 0.1, and an invariant enforces it |
 | `OPPORTUNITY_SWITCH_FACTOR` | 3 | Margin required to abandon a working target |
 | `LOOP_SLEEP_MS` | 10000 | Tick length |
+| `HACK_BALANCE_SAFETY` | 0.5 | Fraction of the balanced hack share actually deployed — see the work-weight calculation above |
 
-Fourteen more numeric keys are configurable; the file in the repo lists all
-seventeen (fourteen numeric + `OBJECTIVE`/`XP_WEIGHT_HACK`/`XP_WEIGHT_GROW`,
-see below) with their defaults. Rules for the numeric ones: only numbers are
+Thirteen more numeric keys are configurable; the file in the repo lists all
+twenty-one (twenty numeric + the `OBJECTIVE` string enum) with their
+defaults. Rules for the numeric ones: only numbers are
 accepted, unknown keys are rejected and reported, and **corrupt JSON keeps
 the current values** rather than reverting to defaults — a half-saved file
 should not silently undo a deliberate tune. Every change emits a
@@ -321,17 +358,17 @@ as a string enum separately from the numeric tunables — an invalid value is
 rejected and reported the same way a bad number is, keeping the current
 setting rather than falling back to the default mid-run.
 
-Money mode is the bucket system described above. XP mode does **not** reuse
-it — deliberately. `hackExp(server, player)`'s own signature takes no money
-or percent argument, confirming hacking XP per completed action is
-independent of how much was actually stolen. The entire reason money mode
-avoids hacking a
-drained target (`empty`: `grow:1, hack:0`) is that a near-zero steal isn't
-worth the security cost — a reason that simply doesn't exist for XP. So XP
-mode uses one fixed split regardless of `moneyPct`: `XP_WEIGHT_HACK` (default
-0.8) and `XP_WEIGHT_GROW` (default 0.2), rendered as a single pseudo-bucket
-named `xp` that flows through the same bucket-change machinery money mode
-uses (`forceRebalance` still fires correctly when switching objective live).
+Money mode is the balance-point calculation described above
+("The work-weight calculation"). XP mode does **not** reuse it — deliberately.
+`hackExp(server, player)`'s own signature takes no money or percent
+argument, confirming hacking XP per completed action is independent of how
+much was actually stolen. The entire reason money mode ramps hack down to
+near-zero on a drained target is that a near-zero steal isn't worth the
+security cost — a reason that simply doesn't exist for XP. So XP mode uses
+one fixed split regardless of `moneyPct`: `XP_WEIGHT_HACK` (default 0.8) and
+`XP_WEIGHT_GROW` (default 0.2), tagged with the `"xp"` regime so switching
+`OBJECTIVE` live is still recognized as a regime change (`weight_regime_change`
+event) the same way a money-mode ramp/harvest transition is.
 
 **That 0.8/0.2 split is reasoned, not measured** — hack has the shortest
 cycle time of the three actions, so more threads complete per second, all
@@ -406,8 +443,11 @@ here trips the `eventLogWrites` invariant, so a future extension mistake
 toasts instead of vanishing silently.
 
 One line per transition — `startup`, `target_adopt`, `target_drop`,
-`degraded_held`, `plan_flip`, `bucket_change`, `stall`, `config_change`,
-`invariant_violation`. Never per tick.
+`degraded_held`, `plan_flip`, `weight_regime_change` (renamed from
+`bucket_change` on 2026-08-14 when R1 replaced the bucket table — same "did
+the hack/grow regime change" purpose, now over `computeWorkWeights`'s
+3-value tag), `stall`, `config_change`, `invariant_violation`. Never per
+tick.
 
 The rule that makes it worth having:
 

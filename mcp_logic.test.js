@@ -19,14 +19,11 @@ import {
   evaluateMoneyDegradation,
   evaluateOpportunitySwitch,
   evaluateStuckTarget,
-  selectWorkWeights,
-  getWorkWeightBucket,
-  bucketForMoneyPct,
+  computeWorkWeights,
   computeTickInvariantChecks,
   computeDesiredAllocation,
   weakenThreadsToOffset,
   hostNeedsRedeploy,
-  WORK_WEIGHTS_BY_BUCKET,
 } from "./mcp_logic.js"
 
 // Real values from mcp.js's own constants/RAM readouts (see
@@ -493,6 +490,39 @@ describe("evaluateMoneyDegradation — the moneyDegraded/OBJECTIVE bug", () => {
     assert.ok(result.avgMoneyPct >= 0.05)
     assert.equal(result.moneyDegraded, false)
   })
+
+  test("R1 (2026-08-14): a single sawtooth-trough sample at the window's tail no longer reads as declining", () => {
+    // Steadily rising trend (0.5 -> 0.85 across 8 samples) — the target is
+    // genuinely recovering — but the 9th and final sample happens to land
+    // right as a harvest-mode hack call drains money, crashing it to 0.3.
+    // The OLD endpoint-only check (last < first) would read 0.3 < 0.5 as
+    // "declining" — a false positive purely from sawtooth phase, exactly
+    // the noise hacking-strategy.md R1 warns about. The half-window-average
+    // check must not be fooled by one unlucky endpoint.
+    const risingWithTrailingDip = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.3]
+    const result = evaluateMoneyDegradation({
+      objective: "money",
+      moneyPctSamples: risingWithTrailingDip,
+      sampleTarget: risingWithTrailingDip.length,
+      degradedThreshold: 0.05,
+    })
+    assert.equal(result.declining, false, "one low trailing sample on an otherwise rising trend must not read as declining")
+    assert.equal(result.moneyDegraded, false)
+  })
+
+  test("a genuine sustained decline across both halves of the window still reads as declining", () => {
+    // Same shape of noise (one dip doesn't matter) but this time the second
+    // half is actually lower on average than the first — the detector must
+    // still catch a real decline, not just become permanently deaf to it.
+    const trulyDeclining = [0.9, 0.85, 0.8, 0.75, 0.4, 0.35, 0.3, 0.25, 0.6]
+    const result = evaluateMoneyDegradation({
+      objective: "money",
+      moneyPctSamples: trulyDeclining,
+      sampleTarget: trulyDeclining.length,
+      degradedThreshold: 0.9, // high threshold so this test isolates `declining`
+    })
+    assert.equal(result.declining, true)
+  })
 })
 
 describe("evaluateOpportunitySwitch — opportunity-switch comparison", () => {
@@ -588,89 +618,188 @@ describe("evaluateOpportunitySwitch — opportunity-switch comparison", () => {
   })
 })
 
-describe("selectWorkWeights / getWorkWeightBucket — bucket-based work-weight selection", () => {
+describe("computeWorkWeights — balance-point sizing (hacking-strategy.md R1, 2026-08-14)", () => {
   const targetMoneyGoal = 0.95
-  const bucketHysteresis = 0.02
 
-  test("money mode at the goal tier picks the goal weights", () => {
-    const { weightBucket, weights } = selectWorkWeights({
-      objective: "money",
-      moneyPct: 0.97,
-      previousWeightBucket: null,
-      targetMoneyGoal,
-      bucketHysteresis,
-      xpWeightHack: 0.8,
-      xpWeightGrow: 0.2,
-    })
-    assert.equal(weightBucket, "goal")
-    assert.deepEqual(weights, WORK_WEIGHTS_BY_BUCKET.goal)
-  })
+  // p=0.0075, k=0.001 -> growPerHack (r = G/H = 3.2p/k) = 24, matching the
+  // doc's own worked example for silver-helix at its floor (§1.1: "r ≈ 24,
+  // i.e. a hack share of 3.7%").
+  const BALANCED = {
+    hackPercentPerThread: 0.0075,
+    growLogPerThread: 0.001,
+    ...SECURITY_CONSTANTS,
+  }
 
-  test("money mode mid-tier (50%) picks the low bucket, grow-heavy", () => {
-    const { weightBucket, weights } = selectWorkWeights({
-      objective: "money",
-      moneyPct: 0.5,
-      previousWeightBucket: null,
-      targetMoneyGoal,
-      bucketHysteresis,
-      xpWeightHack: 0.8,
-      xpWeightGrow: 0.2,
-    })
-    assert.equal(weightBucket, "low")
-    assert.deepEqual(weights, WORK_WEIGHTS_BY_BUCKET.low)
-  })
-
-  test("money mode near-empty (2%) picks the empty bucket: all grow, no hack", () => {
-    const { weightBucket, weights } = selectWorkWeights({
-      objective: "money",
-      moneyPct: 0.02,
-      previousWeightBucket: null,
-      targetMoneyGoal,
-      bucketHysteresis,
-      xpWeightHack: 0.8,
-      xpWeightGrow: 0.2,
-    })
-    assert.equal(weightBucket, "empty")
-    assert.deepEqual(weights, { grow: 1, hack: 0 })
-  })
-
-  test("xp mode ignores moneyPct entirely and always uses the fixed split", () => {
+  test("xp mode ignores p/k/moneyPct entirely and always uses the fixed split", () => {
     for (const moneyPct of [0.01, 0.5, 0.99]) {
-      const { weightBucket, weights } = selectWorkWeights({
+      const { weightBucket, weights } = computeWorkWeights({
         objective: "xp",
+        // Deliberately invalid p/k — xp mode must short-circuit before ever
+        // touching them, so this would blow up the balance-point math if it
+        // didn't.
+        hackPercentPerThread: 0,
+        growLogPerThread: 0,
         moneyPct,
-        previousWeightBucket: null,
         targetMoneyGoal,
-        bucketHysteresis,
+        safety: 0.5,
         xpWeightHack: 0.8,
         xpWeightGrow: 0.2,
+        ...SECURITY_CONSTANTS,
       })
       assert.equal(weightBucket, "xp")
       assert.deepEqual(weights, { hack: 0.8, grow: 0.2 })
     }
   })
 
-  test("hysteresis resists a single-step boundary flip (the empty/low thrash fix)", () => {
-    // bucketForMoneyPct(0.09) is "empty" outright, but with previousBucket
-    // "low" the resisted check (0.09 + 0.02 = 0.11) is still "low", so the
-    // bucket should hold rather than flip every tick near the 0.1 line.
-    const held = getWorkWeightBucket(0.09, "low", targetMoneyGoal, bucketHysteresis)
-    assert.equal(held, "low")
-
-    // But a genuine, larger drop is accepted immediately.
-    const dropped = getWorkWeightBucket(0.03, "low", targetMoneyGoal, bucketHysteresis)
-    assert.equal(dropped, "empty")
+  test("ramp-fallback: unreadable p or k goes all-grow rather than dividing by zero", () => {
+    const base = {
+      objective: "money",
+      moneyPct: 0.5,
+      targetMoneyGoal,
+      safety: 0.5,
+      xpWeightHack: 0.8,
+      xpWeightGrow: 0.2,
+      ...SECURITY_CONSTANTS,
+    }
+    for (const bad of [
+      { hackPercentPerThread: 0, growLogPerThread: 0.001 },
+      { hackPercentPerThread: 0.0075, growLogPerThread: 0 },
+      { hackPercentPerThread: -0.01, growLogPerThread: 0.001 },
+      { hackPercentPerThread: 0.0075, growLogPerThread: NaN },
+    ]) {
+      const { weightBucket, weights } = computeWorkWeights({ ...base, ...bad })
+      assert.equal(weightBucket, "ramp")
+      assert.deepEqual(weights, { hack: 0, grow: 1 })
+    }
   })
 
-  test("bucketForMoneyPct boundaries", () => {
-    assert.equal(bucketForMoneyPct(0.95, 0.95), "goal")
-    assert.equal(bucketForMoneyPct(0.94, 0.95), "high")
-    assert.equal(bucketForMoneyPct(0.92, 0.95), "high")
-    assert.equal(bucketForMoneyPct(0.91, 0.95), "mid")
-    assert.equal(bucketForMoneyPct(0.85, 0.95), "mid")
-    assert.equal(bucketForMoneyPct(0.84, 0.95), "low")
-    assert.equal(bucketForMoneyPct(0.1, 0.95), "low")
-    assert.equal(bucketForMoneyPct(0.099, 0.95), "empty")
+  test("balanced-point worked example: full readiness, safety=1 matches the doc's ~3.7% hack share", () => {
+    const { weightBucket, weights, balancedHackShare, growPerHack } = computeWorkWeights({
+      objective: "money",
+      ...BALANCED,
+      moneyPct: targetMoneyGoal, // readiness = 1
+      targetMoneyGoal,
+      safety: 1,
+      xpWeightHack: 0.8,
+      xpWeightGrow: 0.2,
+    })
+    assert.equal(growPerHack, 24) // r = 3.2 * 0.0075 / 0.001
+    // 1 / (1.16 + 1.1*24) = 1/27.56 = 0.036284...
+    assert.ok(Math.abs(balancedHackShare - 0.036284) < 1e-5)
+    assert.ok(Math.abs(weights.hack - 0.036284) < 1e-5, "safety=1, readiness=1 -> hack share equals the raw balanced share")
+    assert.equal(weightBucket, "harvest")
+  })
+
+  test("safety scales the hack share linearly at full readiness", () => {
+    const withSafety = (safety) =>
+      computeWorkWeights({
+        objective: "money",
+        ...BALANCED,
+        moneyPct: targetMoneyGoal,
+        targetMoneyGoal,
+        safety,
+        xpWeightHack: 0.8,
+        xpWeightGrow: 0.2,
+      }).weights.hack
+    const half = withSafety(0.5)
+    const full = withSafety(1)
+    assert.ok(Math.abs(half - full / 2) < 1e-9, "safety=0.5 must halve the safety=1 hack share exactly")
+  })
+
+  test("readiness² ramp: half money gives a quarter of the full-readiness hack share, not half", () => {
+    const atReadiness = (readinessFraction) =>
+      computeWorkWeights({
+        objective: "money",
+        ...BALANCED,
+        moneyPct: targetMoneyGoal * readinessFraction,
+        targetMoneyGoal,
+        safety: 1,
+        xpWeightHack: 0.8,
+        xpWeightGrow: 0.2,
+      }).weights.hack
+    const full = atReadiness(1)
+    const half = atReadiness(0.5)
+    assert.ok(Math.abs(half - full * 0.25) < 1e-9, "readiness=0.5 -> readiness²=0.25, quartering the hack share")
+  })
+
+  test("moneyPct at exactly zero is the only case that still lands in ramp (hack==0)", () => {
+    const result = computeWorkWeights({
+      objective: "money",
+      ...BALANCED,
+      moneyPct: 0,
+      targetMoneyGoal,
+      safety: 1,
+      xpWeightHack: 0.8,
+      xpWeightGrow: 0.2,
+    })
+    assert.equal(result.weights.hack, 0)
+    assert.equal(result.weightBucket, "ramp")
+
+    // Any nonzero money at all already yields harvest (a tiny nonzero hack
+    // share), unlike the old bucket ladder's hard 0.1 "empty" cutoff.
+    const barelyAbove = computeWorkWeights({
+      objective: "money",
+      ...BALANCED,
+      moneyPct: 1e-6,
+      targetMoneyGoal,
+      safety: 1,
+      xpWeightHack: 0.8,
+      xpWeightGrow: 0.2,
+    })
+    assert.ok(barelyAbove.weights.hack > 0)
+    assert.equal(barelyAbove.weightBucket, "harvest")
+  })
+
+  test("readiness is capped at 1 — money above the goal doesn't push the hack share past the balanced share", () => {
+    const atGoal = computeWorkWeights({
+      objective: "money",
+      ...BALANCED,
+      moneyPct: targetMoneyGoal,
+      targetMoneyGoal,
+      safety: 1,
+      xpWeightHack: 0.8,
+      xpWeightGrow: 0.2,
+    }).weights.hack
+    const aboveGoal = computeWorkWeights({
+      objective: "money",
+      ...BALANCED,
+      moneyPct: 1, // 100% money > targetMoneyGoal (0.95)
+      targetMoneyGoal,
+      safety: 1,
+      xpWeightHack: 0.8,
+      xpWeightGrow: 0.2,
+    }).weights.hack
+    assert.ok(Math.abs(atGoal - aboveGoal) < 1e-12)
+  })
+
+  test("weights.hack + weights.grow sums to 1 (or effectively 1) across the input space", () => {
+    const moneyPcts = [0, 0.001, 0.05, 0.3, 0.5, 0.7, 0.95, 1]
+    const safeties = [0, 0.5, 0.7, 1]
+    const pkPairs = [
+      { hackPercentPerThread: 0.0075, growLogPerThread: 0.001 }, // r = 24
+      { hackPercentPerThread: 0.5, growLogPerThread: 0.01 }, // r small
+      { hackPercentPerThread: 0.001, growLogPerThread: 0.5 }, // r tiny
+    ]
+    for (const moneyPct of moneyPcts) {
+      for (const safety of safeties) {
+        for (const pk of pkPairs) {
+          const { weights } = computeWorkWeights({
+            objective: "money",
+            ...pk,
+            ...SECURITY_CONSTANTS,
+            moneyPct,
+            targetMoneyGoal,
+            safety,
+            xpWeightHack: 0.8,
+            xpWeightGrow: 0.2,
+          })
+          assert.ok(
+            Math.abs(weights.hack + weights.grow - 1) < 1e-9,
+            `hack+grow must sum to 1 (got ${weights.hack + weights.grow} for moneyPct=${moneyPct} safety=${safety})`
+          )
+        }
+      }
+    }
   })
 })
 

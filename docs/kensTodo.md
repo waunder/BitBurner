@@ -65,6 +65,19 @@ Ken's hand, and check it off once it's confirmed done — same rule as
   resolved as a side effect (new process runs the current code, which
   already has the 20MB message-size fix).
 
+- [ ] **Review and merge the R1 (balance-point hack/grow weights) branch,
+  then restart `mcp.js` and watch it live.** Built 2026-08-14 in an isolated
+  worktree (`.claude/worktrees/agent-ab8c404e5979b7984`, branch
+  `worktree-agent-ab8c404e5979b7984`) per `docs/hacking-strategy.md` R1 —
+  committed locally in that worktree only, not merged or pushed (out of
+  scope for that session by design). Once merged and synced into the game:
+  restart `mcp.js` (doesn't hot-reload), then watch `mcp_status.json`'s
+  `avgMoneyPct` hold near max over ~15 minutes on one target before raising
+  `HACK_BALANCE_SAFETY` above its shipped 0.5, and compare `incomePerSec`
+  against `docs/hacking-strategy.md` §1.3's modelled numbers for whichever
+  target gets held. This is the step that actually confirms R1 — see
+  `docs/hacking-strategy.md` §5 item 3, still marked NOT YET CONFIRMED LIVE.
+
 ## Done (kept for reference)
 
 - [x] **Ran `dnet_deploy.js --once` from `home`** — confirmed by Ken

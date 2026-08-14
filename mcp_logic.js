@@ -1,7 +1,8 @@
 /**
  * Pure decision logic extracted from mcp.js: target-eviction predicates,
- * opportunity-switch comparison, work-weight bucket selection, and the
- * tick-invariant checks. Nothing here calls `ns.*` or has a side effect —
+ * opportunity-switch comparison, work-weight sizing (computeWorkWeights —
+ * see hacking-strategy.md R1), and the tick-invariant checks. Nothing here
+ * calls `ns.*` or has a side effect —
  * every export takes plain data in and returns plain data out, which is what
  * makes it testable with `node --test mcp_logic.test.js` in milliseconds,
  * with no game round trip.
@@ -29,84 +30,105 @@
 // drift apart.
 export const SECURITY_EPSILON = 1e-6
 
-// Named tiers instead of raw weight objects so a redeploy can be triggered
-// specifically when moneyPct crosses into a different tier, rather than on
-// every loop tick (which would defeat the whole point of not re-execing
-// long-running hack/grow threads constantly).
-export const WORK_WEIGHTS_BY_BUCKET = {
-  goal: { grow: 0.25, hack: 0.75 },
-  high: { grow: 0.4, hack: 0.6 },
-  mid: { grow: 0.55, hack: 0.45 },
-  low: { grow: 0.7, hack: 0.3 },
-  // Hacking a near-empty server steals close to nothing (hack take scales
-  // with *available* money) while still adding security load that has to be
-  // weakened back off — pure waste. Go all-in on recovery instead.
-  empty: { grow: 1, hack: 0 },
-}
-
-export const BUCKET_ORDER = ["empty", "low", "mid", "high", "goal"]
-
-export function bucketForMoneyPct(moneyPct, targetMoneyGoal) {
-  if (moneyPct >= targetMoneyGoal) return "goal"
-  if (moneyPct >= 0.92) return "high"
-  if (moneyPct >= 0.85) return "mid"
-  if (moneyPct >= 0.1) return "low"
-  return "empty"
-}
-
 /**
- * The empty/low boundary (0.1) was observed live oscillating every 2-3
- * minutes for the entire time a target sat near it: "empty" is grow:1/hack:0,
- * which recovers money fast and crosses the boundary upward into "low";
- * "low" immediately reintroduces hack, which drains it straight back down.
- * 350 of 1373 work-plan log lines in one session (25%) were this single
- * flip. It isn't cosmetic — a bucket change forces forceRebalance, which
- * kills and redeploys every host's action scripts.
+ * Replaces the old `WORK_WEIGHTS_BY_BUCKET`/`bucketForMoneyPct`/
+ * `getWorkWeightBucket`/`BUCKET_HYSTERESIS` machinery entirely (2026-08-14,
+ * hacking-strategy.md R1 — see that doc's §1 for the full derivation, §2.1
+ * for this exact function).
  *
- * Require moneyPct to clear the boundary by `bucketHysteresis`, not merely
- * touch it, before the bucket actually changes. Only resists single-step
- * transitions — a jump of more than one tier (e.g. a huge one-tick swing, or
- * a freshly adopted target where previousBucket is null) is accepted
- * immediately rather than fought.
- */
-export function getWorkWeightBucket(moneyPct, previousBucket, targetMoneyGoal, bucketHysteresis) {
-  const raw = bucketForMoneyPct(moneyPct, targetMoneyGoal)
-  if (!previousBucket || previousBucket === raw) return raw
-
-  const prevIdx = BUCKET_ORDER.indexOf(previousBucket)
-  const rawIdx = BUCKET_ORDER.indexOf(raw)
-  if (prevIdx < 0 || Math.abs(rawIdx - prevIdx) !== 1) return raw
-
-  const movingUp = rawIdx > prevIdx
-  const resisted = bucketForMoneyPct(
-    movingUp ? moneyPct - bucketHysteresis : moneyPct + bucketHysteresis,
-    targetMoneyGoal
-  )
-  return resisted === previousBucket ? previousBucket : raw
-}
-
-/**
- * The work-weight selection half of buildPlan (everything after "does this
- * target need a weaken phase" has already been decided). XP mode ignores
- * moneyPct entirely and uses a single fixed split — see OBJECTIVE's comment
- * in mcp.js for why — money mode runs the bucket table above.
+ * The bucket table allocated hack as a fixed fraction of free RAM (30-75%),
+ * independent of the target's actual balance point. §1 of the strategy doc
+ * shows the real system is bistable — money either pins at max or collapses
+ * toward the floor, with no stable point in between — and the balance ratio
+ * `G/H = 3.2·p/k` (grow threads per hack thread that exactly offsets it) sat
+ * at 24-ish (a ~3.7% hack share) for the live target measured, meaning
+ * *every* non-zero bucket (lowest was 30%) was 4-8x past the collapse
+ * threshold. The bucket table wasn't mistuned, it was structurally on the
+ * wrong side of the only stable point — hence a full replacement rather
+ * than a retune.
  *
- * @returns {{weightBucket: string, weights: {hack: number, grow: number}}}
+ * `p` (hackPercentPerThread = `ns.hackAnalyze(target)`) and `k`
+ * (growLogPerThread = `Math.LN2 / ns.growthAnalyze(target, 2)`, the exact
+ * per-thread growth-log constant including every player/BitNode multiplier)
+ * are both read live in `buildPlan`, 1GB each, no Formulas.exe needed — see
+ * hacking-strategy.md §3.1 for why `growthAnalyze` alone is sufficient for a
+ * continuous-loop farm (it needs the marginal rate, not a batch thread
+ * count).
+ *
+ * `readiness = min(1, moneyPct/targetMoneyGoal)`, squared, replaces the
+ * bucket ladder with continuous proportional control: near-empty targets get
+ * almost no hack (fast ramp back to full), full targets get the full
+ * balanced share scaled by `safety`. The squaring is speculative shaping
+ * (hacking-strategy.md §2.1) — makes the ramp faster than linear, untested
+ * live at time of writing.
+ *
+ * `safety` (< 1) is deliberate: at the exact balance point, log-money is a
+ * driftless random walk — no restoring force either way. Running below
+ * balance gives a positive drift that pins money at max, at a linear income
+ * cost. Ship at 0.5 (the doc's safe starting value; 0.7 is explicitly
+ * speculative there) and raise while watching `avgMoneyPct` live.
+ *
+ * @param {object} args
+ * @param {string} args.objective - "money" or "xp"; XP mode ignores
+ *   moneyPct/p/k entirely and uses the fixed split, same as before.
+ * @param {number} args.hackPercentPerThread - `ns.hackAnalyze(target)`.
+ * @param {number} args.growLogPerThread - `Math.LN2 / ns.growthAnalyze(target, 2)`.
+ * @param {number} args.moneyPct
+ * @param {number} args.targetMoneyGoal
+ * @param {number} args.safety - HACK_BALANCE_SAFETY, fraction of the
+ *   balanced hack share actually deployed at full readiness.
+ * @param {number} args.xpWeightHack
+ * @param {number} args.xpWeightGrow
+ * @param {number} args.hackSecIncrease
+ * @param {number} args.growSecIncrease
+ * @param {number} args.weakenSecDecrease
+ * @param {number} args.weakenPerHackRatio
+ * @param {number} args.weakenPerGrowRatio
+ * @returns {{weightBucket: string, weights: {hack: number, grow: number}, balancedHackShare?: number, growPerHack?: number}}
+ *   `weightBucket` is now a 3-value regime tag ("xp"/"ramp"/"harvest"),
+ *   kept only so the redeploy/bucket_change plumbing that used to key off
+ *   the 5-value bucket string still has something to key a "did the regime
+ *   change" event off of — it is no longer used to look up the weights
+ *   themselves, which are computed continuously below.
  */
-export function selectWorkWeights({
+export function computeWorkWeights({
   objective,
+  hackPercentPerThread,
+  growLogPerThread,
   moneyPct,
-  previousWeightBucket,
   targetMoneyGoal,
-  bucketHysteresis,
+  safety,
   xpWeightHack,
   xpWeightGrow,
+  hackSecIncrease,
+  growSecIncrease,
+  weakenSecDecrease,
+  weakenPerHackRatio,
+  weakenPerGrowRatio,
 }) {
   if (objective === "xp") {
     return { weightBucket: "xp", weights: { hack: xpWeightHack, grow: xpWeightGrow } }
   }
-  const weightBucket = getWorkWeightBucket(moneyPct, previousWeightBucket, targetMoneyGoal, bucketHysteresis)
-  return { weightBucket, weights: WORK_WEIGHTS_BY_BUCKET[weightBucket] }
+  // p/k unreadable (e.g. security so high growthAnalyze/hackAnalyze return
+  // 0 or NaN) — go all-in on recovery rather than divide by zero. Same
+  // fallback intent as the old "empty" bucket, but triggered by the inputs
+  // being unusable rather than by moneyPct.
+  if (!(hackPercentPerThread > 0) || !(growLogPerThread > 0)) {
+    return { weightBucket: "ramp", weights: { hack: 0, grow: 1 } }
+  }
+  const growTimeRatio = weakenPerHackRatio / weakenPerGrowRatio // 3.2, growTime/hackTime
+  const growPerHack = (growTimeRatio * hackPercentPerThread) / growLogPerThread
+  const weakenPerHackThread = (hackSecIncrease * weakenPerHackRatio) / weakenSecDecrease
+  const weakenPerGrowThread = (growSecIncrease * weakenPerGrowRatio) / weakenSecDecrease
+  const balancedHackShare = 1 / (1 + weakenPerHackThread + growPerHack * (1 + weakenPerGrowThread))
+  const readiness = Math.min(1, moneyPct / targetMoneyGoal)
+  const hack = balancedHackShare * safety * readiness * readiness
+  return {
+    weightBucket: hack <= 0 ? "ramp" : "harvest",
+    weights: { hack, grow: 1 - hack },
+    balancedHackShare,
+    growPerHack,
+  }
 }
 
 /**
@@ -118,6 +140,22 @@ export function selectWorkWeights({
  * under a minute) — exactly defeating XP mode's point of sitting still and
  * grinding hack XP.
  *
+ * `declining` compares the average of the older half of the window against
+ * the average of the newer half, not raw endpoint samples — changed
+ * 2026-08-14 (hacking-strategy.md R1) because harvest-mode money now
+ * legitimately sawtooths between ~45% and 100% of max within a single grow
+ * cycle (hack fires every `hackTime`, grow only lands every `3.2×hackTime`),
+ * and `MONEY_PCT_SAMPLE_COUNT`'s ~90s window can span less than two full
+ * sawtooth cycles on a fast target. A raw first-sample/last-sample
+ * comparison could read "declining" purely because the window happened to
+ * open near a peak and close near a trough of the *same* sawtooth, with no
+ * actual degradation underneath. Averaging each half cancels a single
+ * unlucky endpoint sample while still catching a genuine multi-tick decline
+ * (verified against the existing regression cases below — same
+ * `declining`/`moneyDegraded` verdict on every one of them, since a true
+ * decline or a true recovery moves both half-averages together, not just
+ * the endpoints).
+ *
  * @returns {{avgMoneyPct: number, windowFull: boolean, declining: boolean, moneyDegraded: boolean}}
  */
 export function evaluateMoneyDegradation({ objective, moneyPctSamples, sampleTarget, degradedThreshold }) {
@@ -127,7 +165,10 @@ export function evaluateMoneyDegradation({ objective, moneyPctSamples, sampleTar
   // Requires an actual *decline*, not merely absence of improvement — a
   // target mid-recovery is legitimately low but climbing, and abandoning it
   // there strands it at ~0 with no grow threads for the whole skip window.
-  const declining = windowFull && moneyPctSamples[moneyPctSamples.length - 1] < moneyPctSamples[0]
+  const half = Math.max(1, Math.floor(moneyPctSamples.length / 2))
+  const mean = (values) => values.reduce((sum, value) => sum + value, 0) / values.length
+  const declining =
+    windowFull && mean(moneyPctSamples.slice(-half)) < mean(moneyPctSamples.slice(0, half))
   const moneyDegraded = objective !== "xp" && windowFull && avgMoneyPct < degradedThreshold && declining
   return { avgMoneyPct, windowFull, declining, moneyDegraded }
 }
@@ -140,8 +181,8 @@ export function evaluateMoneyDegradation({ objective, moneyPctSamples, sampleTar
  * mcp.js — this only compares numbers that have already been measured.
  *
  * @param {object} args
- * @param {boolean} args.idle - true when the current target is in the
- *   "empty" bucket (compare readiness-discounted scores); false when
+ * @param {boolean} args.idle - true when the current target is producing
+ *   essentially nothing (compare readiness-discounted scores); false when
  *   productive (compare raw potential).
  * @param {{server: string, score: number}[]} args.candidates - every ranked
  *   target's score, already measured with the same basis as currentScore.

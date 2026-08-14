@@ -6,11 +6,13 @@ one is the knowledge base (formulas extracted from the game's own
 TypeScript), this one is the argument built on top of it. Read that first;
 every formula cited here comes from there unless marked otherwise.
 
-**Status as of 2026-08-13, 22:20: R2 and R3 are implemented, live, and
-confirmed working — see §5 for the current, maintained status of every
-item. R1 (the actual order-of-magnitude payload) is next and not yet
-started.** The rest of this document is the original analysis; read §5
-first if you just want to know what's left.
+**Status as of 2026-08-14: R2 and R3 are implemented, live, and confirmed
+working. R1 (the actual order-of-magnitude payload) is now implemented and
+unit-tested — built in an isolated worktree with no game connection, so it
+is NOT YET CONFIRMED LIVE. See §5 for the current, maintained status of
+every item, including the judgment calls made while shipping R1.** The rest
+of this document is the original analysis; read §5 first if you just want
+to know what's left.
 
 ## Status vocabulary
 
@@ -830,21 +832,44 @@ truth for "what's left," not just the original ranking.
    budget-conservation guarantee is holding. Two new config tunables
    (`REDEPLOY_TOLERANCE_ABSOLUTE`/`RELATIVE`, defaults 2/0.2) are live and
    hot-reloadable if redeploy churn ever shows up in `mcp_events.txt`.
-3. **R1 (balance-point weights) — not started. This is the actual payload
-   (10–30×) and the next concrete step.** Requires: a new
-   `computeWorkWeights` in `mcp_logic.js` replacing `selectWorkWeights`
-   (code already in §2.1 above), reading `ns.hackAnalyze`/
-   `ns.growthAnalyze(target, 2)` live in `buildPlan` (mcp.js:699-728) to
-   get real `p`/`k` per tick, a new `HACK_BALANCE_SAFETY` config tunable
-   (ship at 0.5, not the doc's speculative 0.7), and deleting
-   `WORK_WEIGHTS_BY_BUCKET`/`bucketForMoneyPct`/`getWorkWeightBucket`/
-   `BUCKET_HYSTERESIS` once nothing references them. **Before writing
-   code**, confirm `mults.hacking_grow` (§1.2's one real open unknown —
-   everything here is a lower bound until it's read) via one
-   `ns.getPlayer().mults.hacking_grow` call, and add it to
-   `mcp_status.json`'s `player` block while there. R3 being live is what
-   makes R1 safe to ship now — the weight change means nothing if the
-   redeploy layer can't actually get the new ratio onto the network.
+3. **R1 (balance-point weights) — code shipped 2026-08-14, NOT YET CONFIRMED
+   LIVE.** Built and unit-tested in an isolated worktree with no game
+   connection, so everything below is verified only as far as `node --test`
+   and `node --check` can reach — the actual in-game restart/observation
+   step (watching `avgMoneyPct` hold near max, comparing `incomePerSec`
+   against §1.3's modelled numbers) is still outstanding and explicitly out
+   of scope for the change that shipped this. Shipped: `computeWorkWeights`
+   in `mcp_logic.js` replacing `selectWorkWeights` (8 new tests, including a
+   worked-example regression matching this doc's own silver-helix ~3.7%
+   hack-share number and a `hack + grow === 1` sweep across the input
+   space), reading `ns.hackAnalyze`/`ns.growthAnalyze(target, 2)` live in
+   `buildPlan` to get real `p`/`k` per tick, a new `HACK_BALANCE_SAFETY`
+   config tunable shipped at **0.5** (not the doc's speculative 0.7, per
+   this doc's own instruction), and `WORK_WEIGHTS_BY_BUCKET`/
+   `bucketForMoneyPct`/`getWorkWeightBucket`/`BUCKET_HYSTERESIS` deleted
+   from both `mcp_logic.js` and `mcp.js` now that nothing references them
+   (`docs/processes.md` updated to match; the `bucket_change` event is
+   renamed `weight_regime_change`, carrying the new 3-value
+   `"xp"`/`"ramp"`/`"harvest"` tag instead of the old 5-value bucket, for
+   the same "did the regime change" purpose). `ns.getPlayer().mults.hacking_grow`
+   (§1.2's one real open unknown — everything in §1.3's table is a lower
+   bound until it's read) is now surfaced as `player.hackingGrowMult` in
+   `mcp_status.json`, but its live value is still unread — nobody has looked
+   at the status file since this shipped. **Judgment call, flagged for
+   review:** `evaluateMoneyDegradation`'s `declining` check (mcp_logic.js)
+   now compares the average of each half of the sample window rather than
+   raw first/last samples, so a single sample landing on a harvest-mode
+   sawtooth trough at the window's edge can't flip it — this doc's own §2.1
+   raised the sawtooth-noise concern but pointed at feeding `avgMoneyPct`
+   into the *readiness* term specifically, which was deliberately **not**
+   done (`buildPlan` still passes the raw instantaneous `moneyPct`, per this
+   doc's own "carries over unchanged" framing for that parameter); the
+   half-window smoothing is a narrower, separately-justified fix applied to
+   the eviction predicate only, reproduces every existing regression test's
+   verdict unchanged, and has two new tests demonstrating the specific
+   false-positive it closes. R3 being live is what makes R1 safe to ship
+   now — the weight change means nothing if the redeploy layer can't
+   actually get the new ratio onto the network.
 4. **R4 (scoring + ramp discount + switch factor) — not started.** Ship
    only after R1 has run long enough to demonstrably hold a target near
    `moneyMax` (§4 item 3: compare `incomePerSec` against the modelled
@@ -857,6 +882,8 @@ truth for "what's left," not just the original ranking.
 6. **R6 (XP mode) — not started, low priority.** `OBJECTIVE` is `"money"`
    and income is the binding constraint; revisit when that changes.
 
-Steps 1–3 are the ones with an order-of-magnitude behind them; two of three
-are now live. Everything after step 3 is single-digit multipliers on top of
-whatever it achieves.
+Steps 1–3 are the ones with an order-of-magnitude behind them; all three are
+now shipped in code, but only R2 and R3 are confirmed live — R1 (the actual
+order-of-magnitude payload) still needs an in-game restart and a live
+observation window before it can be called done. Everything after step 3 is
+single-digit multipliers on top of whatever it achieves.

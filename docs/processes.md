@@ -729,6 +729,43 @@ orchestrator-disagreement risk to design around).
 +------------------------------+
 ```
 
+### `dnet_scorecard.js`
+
+A compact Dark Net panel in the same visual family as `mcp_money.js`. It
+reads the durable home-side crawler and loot shards directly, rather than
+depending on manually refreshed `dnet_status.json`, and combines them with
+the credential ledger, current player charisma, and the game's since-install
+Dark Net money category.
+
+- **Start:** `run dnet_scorecard.js`; optional `x= y= w= h=` use the same
+  positioning convention and echo row as the other panels. A remote start is
+  available through `restart_mcp.js --dnet-scorecard`.
+- **Refresh:** every 2 seconds. A crawler shard is considered fresh for 120
+  seconds, making churn visible without declaring a healthy mutation pause
+  dead immediately.
+- **Shows:** live/stale state; charisma and gain/rate since the panel opened;
+  Dark Net money since the last augmentation install; fresh/known crawler
+  count; current-pass sessions, failures, preparation, loot, phishing-thread
+  starts and RAM-decision skips; unique credentials/models; cumulative RAM
+  reclaimed, caches opened/found and karma; global instability; heartbeat age.
+- **Durability:** cumulative loot is recomputed from immutable event shards,
+  and credentials from the newest record per hostname, so the display does
+  not inherit the stale merged-scoreboard problem found on 2026-08-14.
+- Opt-in, like `mcp_money.js`; it is not added to `startup.js`.
+
+```
++----------------------------------+
+|DARK NET                      LIVE|
+|charisma                  189  +12|
+|charisma / min                26.4|
+|darknet $ / install          8.20m|
+|crawlers fresh / known      31 / 94|
+|credentials / models        592 / 7|
+|caches opened / found         2 / 2|
+|instability              1.00x / 0%|
++----------------------------------+
+```
+
 ### `mcp_stocks.js`
 
 Read-only stock market panel — groundwork for trading, not trading itself.

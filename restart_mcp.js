@@ -1,7 +1,8 @@
 /** @param {NS} ns */
 export async function main(ns) {
   const restartDarknet = ns.args.some((arg) => String(arg) === "--darknet")
-  const mcpArgs = ns.args.filter((arg) => String(arg) !== "--darknet")
+  const startScorecard = ns.args.some((arg) => String(arg) === "--dnet-scorecard")
+  const mcpArgs = ns.args.filter((arg) => !["--darknet", "--dnet-scorecard"].includes(String(arg)))
 
   if (ns.scriptKill("mcp.js", "home")) {
     // A killed script can still finish its in-flight tick, including writing
@@ -30,5 +31,11 @@ export async function main(ns) {
     const dnetPid = ns.run("dnet_killswarm.js", 1, "--restart")
     if (dnetPid === 0) ns.tprint("restart_mcp: failed to start dnet_killswarm.js --restart")
     else ns.tprint(`restart_mcp: Dark Net cleanup/restart delegated to dnet_killswarm.js (pid ${dnetPid})`)
+  }
+
+  if (startScorecard) {
+    const scorePid = ns.run("dnet_scorecard.js", 1)
+    if (scorePid === 0) ns.tprint("restart_mcp: failed to start dnet_scorecard.js")
+    else ns.tprint(`restart_mcp: started dnet_scorecard.js (pid ${scorePid})`)
   }
 }

@@ -2,7 +2,8 @@
  * Stable home-side gateway for the transient Dark Net architecture. Its
  * unique filename cannot be overwritten by surviving legacy dnet_deploy.js
  * processes. It keeps darkweb authenticated, removes any legacy controller
- * that reappears there, and delegates the gateway to dnet_crawl/manager.
+ * that reappears there, merges returned credential shards, and repeatedly
+ * delegates the gateway to dnet_crawl/manager.
  *
  * @param {NS} ns
  */
@@ -22,6 +23,29 @@ const LEGACY = "dnet_deploy.js"
 const FILES = [CRAWLER, MANAGER, REALLOC, "dnet_lib.js", "dnet_loot.js", "dnet_loot_realloc.js", "dnet_phish.js"]
 const RETRY_MS = 5000
 
+function mergeCredentialShards(ns, creds) {
+  let changed = false
+  for (const file of ns.ls("home", "dnet_cred_")) {
+    if (!file.endsWith(".txt")) continue
+    for (const line of String(ns.read(file) || "").split("\n")) {
+      try {
+        const rec = JSON.parse(line)
+        if (typeof rec?.host !== "string" || typeof rec?.password !== "string") continue
+        const prior = creds[rec.host]
+        if (!prior || (rec.at ?? 0) > (prior.at ?? 0)) {
+          creds[rec.host] = rec
+          changed = true
+        }
+      } catch { /* tolerate partial shards from killed writers */ }
+    }
+  }
+  if (changed) {
+    const text = Object.values(creds).map((rec) => JSON.stringify(rec)).join("\n") + "\n"
+    ns.write(CREDS_FILE, text, "w")
+  }
+  return changed
+}
+
 export async function main(ns) {
   ns.disableLog("ALL")
   const creds = readCreds(ns)
@@ -32,6 +56,7 @@ export async function main(ns) {
   while (true) {
     pass++
     const started = Date.now()
+    mergeCredentialShards(ns, creds)
     const summary = { seen: 0, sessions: 0, legacyKilled: 0, prepared: 0, delegated: 0, failed: 0 }
 
     for (const target of ns.dnet.probe()) {

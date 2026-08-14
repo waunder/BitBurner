@@ -57,14 +57,17 @@ function json(ns, file) {
 function credentials(ns) {
   const newest = new Map()
   const models = new Set()
-  for (const line of ns.read("dnet_creds.txt").split("\n")) {
-    if (!line.trim()) continue
-    try {
-      const rec = JSON.parse(line)
-      if (!rec || typeof rec.host !== "string") continue
-      const prior = newest.get(rec.host)
-      if (!prior || (rec.at ?? 0) >= (prior.at ?? 0)) newest.set(rec.host, rec)
-    } catch {}
+  const files = ["dnet_creds.txt", ...ns.ls("home", "dnet_cred_").filter((file) => file.endsWith(".txt"))]
+  for (const file of files) {
+    for (const line of ns.read(file).split("\n")) {
+      if (!line.trim()) continue
+      try {
+        const rec = JSON.parse(line)
+        if (!rec || typeof rec.host !== "string") continue
+        const prior = newest.get(rec.host)
+        if (!prior || (rec.at ?? 0) >= (prior.at ?? 0)) newest.set(rec.host, rec)
+      } catch {}
+    }
   }
   for (const rec of newest.values()) if (rec.model) models.add(rec.model)
   return { hosts: newest.size, models: models.size }

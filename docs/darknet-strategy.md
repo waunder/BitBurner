@@ -16,12 +16,14 @@ propagates the crawler, writes credential and heartbeat shards, starts the
 local `dnet_manager.js`, and exits. The resident manager owns loot, maximum-fit
 phishing, cache follow-up, and a clean recrawl every 90 seconds.
 
-The legacy deployer and its authentication/model logic have extensive live
-evidence: 586 historical credentials across seven models, 15GB measured
-deployer RAM, and pristine instability. The root/crawl/manager replacement is
-source-complete but remains pending a clean live restart and heartbeat/RAM
-confirmation. Do not infer that the replacement is live merely from the
-legacy swarm's results.
+The replacement is live-confirmed: `dnet_root.js` delegated the 16GB gateway
+with zero launch failures; the transient crawler measures 6.7GB, the resident
+manager 3.15GB, and the phisher 3.6GB/thread; `darkweb` reports capacity for
+three phishing threads. A fresh heartbeat after the first scheduled
+90-second recrawl proves the manager/crawler handoff repeats. Instability
+remained pristine at 1x duration and 0% timeout. The legacy deployer remains
+useful historical evidence (15GB measured) but is no longer the live entry
+point.
 
 ### Historical checkpoint: legacy deployer (2026-08-12)
 

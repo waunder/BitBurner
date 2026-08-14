@@ -749,7 +749,7 @@ function buildPlan(ns, target, wasWorking) {
   // formula (and computeWorkWeights's balance-point math) rests on.
   const hackPercentPerThread = ns.hackAnalyze(target)
   const growLogPerThread = Math.LN2 / ns.growthAnalyze(target, 2)
-  const { weightBucket, weights } = computeWorkWeights({
+  const { weightBucket, weights, balancedHackShare, growPerHack } = computeWorkWeights({
     objective: OBJECTIVE,
     hackPercentPerThread,
     growLogPerThread,
@@ -760,7 +760,19 @@ function buildPlan(ns, target, wasWorking) {
     xpWeightGrow: XP_WEIGHT_GROW,
     ...SECURITY_CONSTANTS,
   })
-  return { type: "work", currentSecurity, moneyPct, weightBucket, weights }
+  return {
+    type: "work",
+    currentSecurity,
+    moneyPct,
+    weightBucket,
+    weights,
+    // Temporary diagnostic (2026-08-14): incomePerSec sat at 0 with 0 hack
+    // threads network-wide despite moneyPct=1 shortly after R1 shipped —
+    // surfacing the actual balance-point inputs live is faster than
+    // guessing which of p/k/balancedHackShare is off. Remove once R1's
+    // live behavior is understood.
+    debugWorkWeights: { hackPercentPerThread, growLogPerThread, balancedHackShare, growPerHack },
+  }
 }
 
 function getRunningActions(ns, host) {
@@ -1500,6 +1512,7 @@ export async function main(ns) {
       },
       target: currentTarget,
       plan: plan.type,
+      debugWorkWeights: plan.debugWorkWeights || null,
       weightBucket: plan.weightBucket || null,
       currentSecurity: plan.currentSecurity,
       moneyPct: plan.moneyPct,

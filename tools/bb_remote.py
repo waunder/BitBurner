@@ -776,6 +776,7 @@ WATCHED_FILES = [
     "hacking/crawler.js",
     "hacking/worm.js",
     "share_deploy.js",
+    "set_objective.js",
     "scripts/copyScripts.js",
     "scripts/copy_scripts.js",
     "scripts/execute.js",
@@ -801,6 +802,7 @@ PULL_FILES = [
     "mcp_events.txt",
     "ipvgo_status.json",
     "dnet_status.json",
+    "mcp_objective_override.txt",
 ]
 
 PULL_POLL_S = 2.0  # mirrors SYNC_POLL_S / mcp_supervisor.js's POLL_MS

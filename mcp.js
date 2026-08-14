@@ -185,6 +185,17 @@ const CONFIG_DEFAULTS = {
 // typeof check every other tunable goes through.
 const OBJECTIVE_VALUES = ["money", "xp"]
 
+// A manual live lever (set_objective.js), separate from mcp_config.json on
+// purpose. mcp_config.json is the git-tracked, disk-authoritative source
+// pushed one-way disk->game (CLAUDE.md's own sync model) — an in-game edit
+// straight to it would work until the next disk resync, then silently
+// revert with no signal, which is exactly the footgun a self-serve script
+// shouldn't have. This file is never written from disk, only read here and
+// written in-game by set_objective.js, so it survives resyncs of everything
+// else. Empty/absent means "no override, use mcp_config.json's OBJECTIVE".
+const OBJECTIVE_OVERRIDE_FILE = "mcp_objective_override.txt"
+let objectiveOverrideActive = false
+
 /**
  * Re-read tunables from mcp_config.json. Called at the top of every tick.
  *
@@ -199,8 +210,10 @@ const OBJECTIVE_VALUES = ["money", "xp"]
  */
 function loadConfig(ns, state) {
   const raw = ns.read(CONFIG_FILE)
-  if (raw === state.lastRaw) return null
+  const overrideRaw = ns.read(OBJECTIVE_OVERRIDE_FILE)
+  if (raw === state.lastRaw && overrideRaw === state.lastOverrideRaw) return null
   state.lastRaw = raw
+  state.lastOverrideRaw = overrideRaw
 
   let parsed = {}
   if (raw.trim()) {
@@ -232,6 +245,21 @@ function loadConfig(ns, state) {
     resolvedObjective = parsed.OBJECTIVE
   } else {
     rejected.push("OBJECTIVE")
+  }
+
+  // set_objective.js's override, applied last so it wins over
+  // mcp_config.json's OBJECTIVE whenever it's set — see
+  // OBJECTIVE_OVERRIDE_FILE's own comment for why this lives in a separate
+  // file rather than being folded into mcp_config.json itself.
+  const overrideTrimmed = overrideRaw.trim().toLowerCase()
+  let resolvedObjectiveOverrideActive = false
+  if (overrideTrimmed !== "") {
+    if (OBJECTIVE_VALUES.includes(overrideTrimmed)) {
+      resolvedObjective = overrideTrimmed
+      resolvedObjectiveOverrideActive = true
+    } else {
+      rejected.push("OBJECTIVE_OVERRIDE")
+    }
   }
 
   for (const key of Object.keys(parsed)) {
@@ -266,6 +294,9 @@ function loadConfig(ns, state) {
     if (current[key] !== resolved[key]) changes[key] = { from: current[key], to: resolved[key] }
   }
   if (OBJECTIVE !== resolvedObjective) changes.OBJECTIVE = { from: OBJECTIVE, to: resolvedObjective }
+  if (objectiveOverrideActive !== resolvedObjectiveOverrideActive) {
+    changes.OBJECTIVE_OVERRIDE_ACTIVE = { from: objectiveOverrideActive, to: resolvedObjectiveOverrideActive }
+  }
 
   SECURITY_CAP = resolved.SECURITY_CAP
   TARGET_MONEY_GOAL = resolved.TARGET_MONEY_GOAL
@@ -289,6 +320,7 @@ function loadConfig(ns, state) {
   REDEPLOY_TOLERANCE_RELATIVE = resolved.REDEPLOY_TOLERANCE_RELATIVE
   HOME_RAM_RESERVE = resolved.HOME_RAM_RESERVE
   OBJECTIVE = resolvedObjective
+  objectiveOverrideActive = resolvedObjectiveOverrideActive
 
   if (Object.keys(changes).length === 0 && rejected.length === 0) return null
   return { changes, rejected }
@@ -480,7 +512,7 @@ function formatStatus(status) {
     `hackLvl=${status.player.skills.hacking}`,
     `run=${status.runId}`,
     `ver=${status.scriptVersion}`,
-    `objective=${status.config ? status.config.OBJECTIVE : "?"}`,
+    `objective=${status.config ? status.config.OBJECTIVE : "?"}${status.objectiveOverrideActive ? "(override)" : ""}`,
   ]
   if (status.switchEval) {
     parts.push(
@@ -1583,6 +1615,10 @@ export async function main(ns) {
       weakenTimeS: weakenTimeS,
       hackChance: hackChance,
       switchEval: switchEval,
+      // set_objective.js's live override — see OBJECTIVE_OVERRIDE_FILE's own
+      // comment. True means OBJECTIVE (below) came from
+      // mcp_objective_override.txt, not mcp_config.json.
+      objectiveOverrideActive: objectiveOverrideActive,
       // The tunables actually in force, so a reader can confirm a config edit
       // took effect rather than assuming it did.
       config: {

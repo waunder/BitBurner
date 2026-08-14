@@ -204,7 +204,9 @@ which have been confirmed live and which are shipped but not yet restarted
 in-game.
 
 - **Start:** `run mcp.js` — optionally `run mcp.js target=<hostname>`
-- **Reads:** `mcp_config.json` every tick (see Tunables)
+- **Reads:** `mcp_config.json` every tick (see Tunables), plus
+  `mcp_objective_override.txt` every tick (see `OBJECTIVE` below —
+  `set_objective.js`'s self-serve lever)
 - **Writes:** `mcp_status.json` (every tick, overwritten),
   `mcp_status_log.txt` (appended only when target/plan/weightBucket changes),
   `mcp_events.txt` (one line per transition),
@@ -407,6 +409,24 @@ should not silently undo a deliberate tune. Every change emits a
 as a string enum separately from the numeric tunables — an invalid value is
 rejected and reported the same way a bad number is, keeping the current
 setting rather than falling back to the default mid-run.
+
+**Self-serve lever: `set_objective.js`** (added 2026-08-14). `run
+set_objective.js money|xp|clear` from the in-game terminal, no Claude session
+needed. Writes `mcp_objective_override.txt` — a separate file from
+`mcp_config.json` on purpose. `mcp_config.json` is the git-tracked,
+disk-authoritative source pushed one-way disk→game (see "File sync" above);
+an in-game script writing straight to it would work until the next disk
+resync, then silently revert with no signal — a footgun for a lever meant to
+be pulled without Claude watching. The override file is never written from
+disk, only read by `mcp.js` (every tick, alongside `mcp_config.json`) and
+written in-game by `set_objective.js`, so it survives resyncs of everything
+else. When set, it **wins over `mcp_config.json`'s `OBJECTIVE`** — surfaced
+as `objectiveOverrideActive` in `mcp_status.json` and an `(override)` suffix
+on the tail window's `objective=` line, so it's visible either way. `clear`
+empties the file, falling back to `mcp_config.json`'s value. Gitignored (like
+`mcp_restart.txt`) — it's a generated in-game trigger, not authored content;
+included in `PULL_FILES` purely so its current value is visible on disk
+without a special dump.
 
 Money mode is the balance-point calculation described above
 ("The work-weight calculation"). XP mode does **not** reuse it — deliberately.

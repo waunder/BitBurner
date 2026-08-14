@@ -31,6 +31,7 @@ node_modules/
 # Out-of-game triggers (generated)
 mcp_restart.txt
 mcp_dump_request.txt
+mcp_objective_override.txt
 
 # tools/bb_remote.py's connection-event diagnostic log (generated, local),
 # and the nohup stdout redirect used to run `daemon` detached — same

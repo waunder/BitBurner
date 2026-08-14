@@ -1,6 +1,46 @@
 # Claude's working list
 
-## 2026-08-14 (latest): R5 + R7 shipped in an isolated worktree, NOT yet live — needs merge + restart + observation
+## 2026-08-14 (latest): R4 shipped in an isolated worktree, NOT yet live — needs merge + restart + observation
+
+Built per `hacking-strategy.md` §2 R4 (motivated by the R1 live-confirmation
+finding logged in §5 item 3: a target can sit at 100% money with R1 correctly
+deploying zero hack threads, because the old score had no way to know that).
+Same verification ceiling as every prior worktree change here: no game
+connection, `node --test *.test.js` (122/122, up from 110 — 13 new tests for
+`computeTargetScore`/`computeTargetEffectiveScore`) and
+`node --check mcp.js mcp_logic.js` both clean.
+
+**Shipped, all three together per the doc's own instruction not to split
+them:** `getTargetScore` rewritten to the achievable-rate formula
+(`computeTargetScore`, new pure function in `mcp_logic.js`);
+`getTargetEffectiveScore` rewritten to the ramp-cost discount
+(`computeTargetEffectiveScore`, same file), replacing `READINESS_FLOOR`; new
+`SCORE_HORIZON_SECONDS` config tunable at 3600 (full plumbing); and
+`OPPORTUNITY_SWITCH_FACTOR` 3 → 1.3.
+
+**Judgment calls, flagged for review, not buried in the diff:**
+- `poolThreads`/`growThreadsIfAllGrow` both reuse `getTotalWeakenCapacity`'s
+  already-computed `maxWeaken` as-is (zero extra cost despite running once
+  per candidate/tick), justified by `scripts/grow.js`/`scripts/weaken.js`
+  costing the identical 1.75GB/thread — checked against both scripts'
+  source, not assumed.
+- The doc's optional current-security-vs-floor scaling correction was **not**
+  implemented — base formula only, as the doc itself said was acceptable to
+  ship first.
+- Extracted the pure math to `mcp_logic.js` (matching how R1's
+  `computeWorkWeights` was extracted) since the two functions are non-trivial
+  and directly regression-testable against the doc's own worked numbers.
+
+**Next concrete step, once this merges into the daemon-watched checkout**:
+restart, then read `mcp_status.json`'s `candidate`/`candidateScore`/
+`switchEval` against §1.3's modelled ranking table — the live test case is
+whether the bot now picks `rho-construction`-tier targets over
+`foodnstuff`-tier ones, and whether the R1 zero-income case from §5 item 3
+resolves (a target R4 now correctly scores low should no longer get adopted
+in the first place). Not checked here — this worktree has no live game
+access at all.
+
+## 2026-08-14: R5 + R7 shipped in an isolated worktree, NOT yet live — needs merge + restart + observation
 
 Built per `hacking-strategy.md` §2's R5/R7 sections and §5's own instruction
 that both have no dependency on R1/R4 and are safe to pick up independently.

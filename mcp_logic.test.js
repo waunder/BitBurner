@@ -20,6 +20,8 @@ import {
   evaluateOpportunitySwitch,
   evaluateStuckTarget,
   computeWorkWeights,
+  computeTargetScore,
+  computeTargetEffectiveScore,
   computeTickInvariantChecks,
   computeDesiredAllocation,
   weakenThreadsToOffset,
@@ -876,6 +878,150 @@ describe("computeWorkWeights — balance-point sizing (hacking-strategy.md R1, 2
         }
       }
     }
+  })
+})
+
+describe("computeTargetScore — achievable-rate target score (hacking-strategy.md R4, 2026-08-14)", () => {
+  // Same p=0.0075/k=0.001 pair (r=24) computeWorkWeights's own R1 tests use,
+  // traceable to the doc's silver-helix-at-its-floor worked example
+  // (§1.1: "r ≈ 24, i.e. a hack share of 3.7%"). poolThreads=1008 approximates
+  // the live baseline's 1764GB pool at ~1.75GB/thread (1764/1.75≈1008). The
+  // doc's own §1.3 table entry for silver-helix ($13.3M/s, H*=38) isn't
+  // independently reproducible from what's written there — it bakes in
+  // specific p/T/chance/mults values the doc never states together as a
+  // single row — so this is a hand-derived regression value (computed and
+  // asserted the same way the R1 tests assert `1/(1.16+1.1*24)`), not a
+  // literal transcription of the table. It does land close to the table's
+  // $13.3M/s ($14.07M/s here), which is a reasonable sanity cross-check.
+  const WORKED = {
+    hackTime: 14.6,
+    hackPercentPerThread: 0.0075,
+    growLogPerThread: 0.001,
+    maxMoney: 1.125e9,
+    hackChance: 1,
+    poolThreads: 1008,
+    growTimeRatio: 3.2,
+    ...SECURITY_CONSTANTS,
+  }
+
+  test("growPerHack/balancedHackShare match computeWorkWeights's identical p/k inputs (shared balance-point math)", () => {
+    const workWeights = computeWorkWeights({
+      objective: "money",
+      hackPercentPerThread: 0.0075,
+      growLogPerThread: 0.001,
+      moneyPct: 0.95,
+      targetMoneyGoal: 0.95,
+      safety: 1,
+      xpWeightHack: 0.8,
+      xpWeightGrow: 0.2,
+      ...SECURITY_CONSTANTS,
+    })
+    const { growPerHack, balancedHackShare } = computeTargetScore(WORKED)
+    assert.equal(growPerHack, workWeights.growPerHack)
+    assert.ok(Math.abs(balancedHackShare - workWeights.balancedHackShare) < 1e-12)
+  })
+
+  test("worked example: balance-point rate for a silver-helix-like target", () => {
+    const { score, growPerHack, balancedHackShare, hackThreads } = computeTargetScore(WORKED)
+    assert.equal(growPerHack, 24) // r = 3.2 * 0.0075 / 0.001
+    assert.ok(Math.abs(balancedHackShare - 0.036284470246734396) < 1e-9)
+    assert.ok(Math.abs(hackThreads - 36.574746008708274) < 1e-6)
+    assert.ok(Math.abs(score - 14069748.62627649) < 1)
+  })
+
+  test("zero score when hackTime/p/k are unreadable, instead of dividing by zero", () => {
+    for (const bad of [
+      { hackTime: 0 },
+      { hackTime: -1 },
+      { hackPercentPerThread: 0 },
+      { hackPercentPerThread: -0.01 },
+      { growLogPerThread: 0 },
+      { growLogPerThread: NaN },
+    ]) {
+      const { score } = computeTargetScore({ ...WORKED, ...bad })
+      assert.equal(score, 0, `expected 0 for ${JSON.stringify(bad)}`)
+    }
+  })
+
+  test("score is zero when poolThreads is zero — no threads, nothing drained", () => {
+    const { score } = computeTargetScore({ ...WORKED, poolThreads: 0 })
+    assert.equal(score, 0)
+  })
+
+  test("score rises with poolThreads but saturates at the grow-throughput ceiling", () => {
+    const s1 = computeTargetScore({ ...WORKED, poolThreads: 100 }).score
+    const s2 = computeTargetScore({ ...WORKED, poolThreads: 1000 }).score
+    const s3 = computeTargetScore({ ...WORKED, poolThreads: 5000 }).score
+    const s4 = computeTargetScore({ ...WORKED, poolThreads: 100000 }).score
+    assert.ok(s1 < s2 && s2 < s3 && s3 < s4, "more pool capacity should never lower the score")
+    const ceiling = (WORKED.maxMoney * WORKED.hackChance) / (WORKED.growTimeRatio * WORKED.hackTime)
+    // <= rather than strictly <: at a large enough poolThreads, `drained`'s
+    // exp(-huge) term underflows to exactly 0 in double precision, so the
+    // score reaches the ceiling exactly rather than approaching it forever.
+    assert.ok(s4 <= ceiling, "score can never exceed the fully-drained ceiling")
+    assert.ok(ceiling - s3 < ceiling * 0.02, "a large pool should nearly saturate the ceiling")
+  })
+
+  test("a better grow-per-hack ratio (r) scores higher even with identical maxMoney/hackTime/p — the whole point of R4", () => {
+    const base = { hackTime: 20, maxMoney: 1e9, hackChance: 1, poolThreads: 1000, growTimeRatio: 3.2, ...SECURITY_CONSTANTS }
+    const goodGrowth = computeTargetScore({ ...base, hackPercentPerThread: 0.01, growLogPerThread: 0.01 }).score // r = 3.2
+    const poorGrowth = computeTargetScore({ ...base, hackPercentPerThread: 0.01, growLogPerThread: 0.0005 }).score // r = 64
+    assert.ok(
+      goodGrowth > poorGrowth,
+      "the old maxMoney*p*chance/hackTime score can't tell these apart at all (identical maxMoney/hackTime/p) — R4's score must, since it's exactly the case the doc's misranking table demonstrates"
+    )
+  })
+})
+
+describe("computeTargetEffectiveScore — ramp-cost discount (hacking-strategy.md R4, 2026-08-14)", () => {
+  const BASE = {
+    score: 14069748.62627649,
+    hackTime: 14.6,
+    growLogPerThread: 0.001,
+    maxMoney: 1.125e9,
+    growThreadsIfAllGrow: 1008,
+    growTimeRatio: 3.2,
+    horizonSeconds: 3600,
+    targetMoneyGoal: 0.95,
+  }
+
+  test("zero raw score stays zero regardless of ramp inputs", () => {
+    const { effective } = computeTargetEffectiveScore({ ...BASE, score: 0, money: 1e6 })
+    assert.equal(effective, 0)
+  })
+
+  test("no pool to grow with (growThreadsIfAllGrow<=0) collapses effective to zero even with a positive raw score", () => {
+    const { effective } = computeTargetEffectiveScore({ ...BASE, growThreadsIfAllGrow: 0, money: 1e6 })
+    assert.equal(effective, 0)
+  })
+
+  test("unreadable growLogPerThread/hackTime collapse effective to zero", () => {
+    for (const bad of [{ growLogPerThread: 0 }, { growLogPerThread: NaN }, { hackTime: 0 }]) {
+      const { effective } = computeTargetEffectiveScore({ ...BASE, ...bad, money: 1e6 })
+      assert.equal(effective, 0, `expected 0 for ${JSON.stringify(bad)}`)
+    }
+  })
+
+  test("already at or above the goal money: zero ramp, effective equals the raw score exactly", () => {
+    const { effective, rampSeconds } = computeTargetEffectiveScore({ ...BASE, money: BASE.maxMoney })
+    assert.equal(rampSeconds, 0)
+    assert.equal(effective, BASE.score)
+  })
+
+  test("worked example: a drained silver-helix-like target discounted by its modelled ramp time", () => {
+    const { effective, rampSeconds } = computeTargetEffectiveScore({ ...BASE, money: BASE.maxMoney * 0.05 })
+    assert.ok(Math.abs(rampSeconds - 136.47240982803183) < 0.01)
+    assert.ok(Math.abs(effective - 13555859.51106395) < 1)
+    assert.ok(effective < BASE.score, "a drained target must be discounted below its raw potential")
+  })
+
+  test("a longer horizon discounts less; effective approaches the raw score as horizon -> infinity", () => {
+    const args = { ...BASE, score: 1e6, growThreadsIfAllGrow: 500, money: 1e6 }
+    const short = computeTargetEffectiveScore({ ...args, horizonSeconds: 60 }).effective
+    const mid = computeTargetEffectiveScore({ ...args, horizonSeconds: 3600 }).effective
+    const veryLong = computeTargetEffectiveScore({ ...args, horizonSeconds: 1e9 }).effective
+    assert.ok(short < mid && mid < veryLong, "a longer horizon must never discount more than a shorter one")
+    assert.ok(veryLong / args.score > 0.999, "an enormous horizon should nearly erase the ramp discount")
   })
 })
 

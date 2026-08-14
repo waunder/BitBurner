@@ -888,15 +888,50 @@ truth for "what's left," not just the original ranking.
    false-positive it closes. R3 being live is what makes R1 safe to ship
    now — the weight change means nothing if the redeploy layer can't
    actually get the new ratio onto the network.
-4. **R4 (scoring + ramp discount + switch factor) — now the next concrete
-   step, unblocked.** R1 held a target through a full ramp to 100% money
-   with zero invariant violations, so the "R1 demonstrably holds near
-   `moneyMax`" precondition (§4 item 3) is met — but the live evidence above
-   shows the deeper reason to ship this now: without `growPerHack` in the
-   score, target selection can strand the bot on a target R1 can't do
-   anything with. `OPPORTUNITY_SWITCH_FACTOR` still shouldn't drop from 3
-   until the ramp discount ships alongside the new score, per §2's own note
-   — ship both together.
+4. **R4 (scoring + ramp discount + switch factor) — shipped 2026-08-14, not
+   yet confirmed live.** All three pieces shipped together in one change, per
+   §2's own instruction not to drop `OPPORTUNITY_SWITCH_FACTOR` ahead of the
+   new score. `getTargetScore` (mcp.js) now calls a new pure
+   `computeTargetScore` (mcp_logic.js) implementing this section's exact
+   achievable-rate formula; `getTargetEffectiveScore` calls a new
+   `computeTargetEffectiveScore` implementing the ramp-discount formula
+   above, with a new `SCORE_HORIZON_SECONDS` config tunable shipped at the
+   doc's suggested **3600** (full `mcp_config.json`/`CONFIG_DEFAULTS`/status
+   plumbing, same pattern as every other tunable). `OPPORTUNITY_SWITCH_FACTOR`
+   dropped **3 → 1.3** (the safer end of the suggested 1.25–1.3 range) in
+   both `mcp.js`'s default and `mcp_config.json`; `MIN_TARGET_COMMIT_MS`
+   untouched at 600000, per this doc's explicit instruction to keep it as the
+   anti-thrash guard.
+
+   **`poolThreads`/`growThreadsIfAllGrow` judgment call:** both reuse
+   `getTotalWeakenCapacity`'s already-computed per-tick result (`maxWeaken`)
+   as-is, rather than a fresh RAM-basis calculation — it costs nothing extra
+   despite `getTargetScore` running once per candidate every tick, and
+   `scripts/grow.js`/`scripts/weaken.js` were checked and cost the identical
+   1.75GB/thread (1.6GB base + 0.15GB action each), so a weaken-RAM-basis
+   thread count is exactly, not approximately, a grow-RAM-basis one too.
+
+   **The current-security-vs-floor caveat this section flags is *not*
+   implemented** — the base formula only, as this section's own text said was
+   acceptable to ship first. Flagged here explicitly rather than silently
+   omitted, per the task that shipped this.
+
+   **Testing:** the pure math was extracted to `mcp_logic.js`
+   (`computeTargetScore`/`computeTargetEffectiveScore`), matching how R1's
+   `computeWorkWeights` was extracted, with 13 new `node --test` cases —
+   including a worked example using the same p=0.0075/k=0.001 (r=24) pair
+   R1's own tests use (traceable to this doc's silver-helix-at-its-floor
+   example), which lands at a modelled $14.07M/s, close to but not identical
+   to §1.3's table entry for silver-helix ($13.3M/s) — the table's exact
+   figure isn't independently reproducible from what this doc states (it
+   bakes in specific p/T/chance/mults values never written together as one
+   row), so the test's expected numbers are hand-derived from the formula
+   itself rather than transcribed from the table; the closeness is a
+   sanity check, not an exact match. 122/122 tests pass
+   (`node --test *.test.js`), `node --check mcp.js mcp_logic.js` clean.
+   Not yet restarted live — the next restart's status file should be read
+   for `candidateScore`/`switchEval` against the modelled rankings in §1.3
+   before this item is marked confirmed.
 5. **R5 (per-script redeploy) — done, live, confirmed 2026-08-14.**
    Restarted alongside R7 below ~13:08 PDT; new `runId`/`scriptVersion`
    confirmed, `invariantViolations` empty on the first post-restart pull,
@@ -980,7 +1015,8 @@ truth for "what's left," not just the original ranking.
 Steps 1–3 are the ones with an order-of-magnitude behind them; all three are
 shipped, live, and confirmed working correctly — R1's confirmation run is
 also what surfaced *why* it isn't paying off yet on the current target,
-which is exactly what makes R4 (step 4) the next thing worth doing rather
-than a nice-to-have. R5 and R7 (steps 5-6) are also shipped and live now.
-Everything after step 3 is single-digit multipliers on top of whatever it
-achieves.
+which is exactly what made R4 (step 4) the next thing worth doing rather
+than a nice-to-have. R4, R5 and R7 (steps 4-6) are all shipped now; R4 is
+the one still awaiting a live restart and confirmation (see step 4's own
+entry for what to check on that restart). Everything after step 3 is
+single-digit multipliers on top of whatever it achieves.

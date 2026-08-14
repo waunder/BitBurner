@@ -132,6 +132,152 @@ export function computeWorkWeights({
 }
 
 /**
+ * Achievable-rate target score (hacking-strategy.md R4, 2026-08-14) —
+ * replaces the old "yield of one hack thread at full money"
+ * (`maxMoney * hackAnalyze * hackAnalyzeChance / hackTime`) with an estimate
+ * of the $/s the target would actually produce if handed the whole
+ * network's thread pool and run at R1's balance point (strategy doc §1). The
+ * old score never read `serverGrowth`/`k` at all, so it systematically
+ * favoured low-`requiredHackingSkill`, low-growth targets over ones with a
+ * far higher grow-limited ceiling — see the doc's §1.3 misranking table
+ * (`rho-construction` modelled #1 at $23.3M/s, ranked 5th under the old
+ * score; `global-pharm` #7 modelled, ranked 28th).
+ *
+ * `balancedHackShare`/`growPerHack` (r) are the same balance-point
+ * quantities `computeWorkWeights` derives for weight-sizing, deliberately
+ * re-derived here rather than imported from there: `computeWorkWeights` also
+ * folds in `safety`/`readiness²`, which are *deployment* throttles that have
+ * no place in a target-potential estimate (a candidate's score should
+ * reflect what it could produce at the balance point, not what today's
+ * safety margin or this target's current readiness happens to allow) —
+ * calling it with fabricated safety=1/readiness=1 inputs just to borrow four
+ * lines of arithmetic would be more confusing than the small duplication.
+ *
+ * `poolThreads` is a network-wide "how many thread-slots exist" estimate.
+ * mcp.js passes its already-computed `getTotalWeakenCapacity` result
+ * (`maxWeaken`) as-is, rather than a fresh RAM-basis calculation, for two
+ * reasons: (1) it's computed once per tick already, so reusing it costs
+ * nothing extra even though this function runs once per *candidate* server
+ * every tick (`rankTargets`); (2) `scripts/grow.js` and `scripts/weaken.js`
+ * cost the identical 1.75GB per thread (1.6GB base + 0.15GB action each —
+ * verified against both scripts' source), so a weaken-RAM-basis thread count
+ * is exactly, not just approximately, a grow-RAM-basis one too. That's also
+ * why the same value doubles as `growThreadsIfAllGrow` in
+ * `computeTargetEffectiveScore` below, rather than needing a second pool
+ * estimate sized off `growRam`.
+ *
+ * One known gap, carried over from the strategy doc's own caveat rather than
+ * fixed here: `hackTime`/`hackPercentPerThread`/`growLogPerThread` are all
+ * read at the candidate's *current* security, not the floor it would be
+ * weakened to, which systematically under-rates a target sitting well above
+ * its floor. The doc marks its arithmetic workaround for this as optional/
+ * secondary and it is not implemented — see hacking-strategy.md §2 R4.
+ *
+ * @param {object} args
+ * @param {number} args.hackTime - T, seconds (`ns.getHackTime(server)/1000`).
+ * @param {number} args.hackPercentPerThread - p, `ns.hackAnalyze(server)`.
+ * @param {number} args.growLogPerThread - k, `Math.LN2/ns.growthAnalyze(server,2)`.
+ * @param {number} args.maxMoney - `ns.getServerMaxMoney(server)`.
+ * @param {number} args.hackChance - `ns.hackAnalyzeChance(server)`.
+ * @param {number} args.poolThreads - network-wide thread-slot estimate.
+ * @param {number} args.growTimeRatio - weakenPerHackRatio/weakenPerGrowRatio (3.2).
+ * @param {number} args.hackSecIncrease
+ * @param {number} args.growSecIncrease
+ * @param {number} args.weakenSecDecrease
+ * @param {number} args.weakenPerHackRatio
+ * @param {number} args.weakenPerGrowRatio
+ * @returns {{score: number, growPerHack: number, balancedHackShare: number, hackThreads: number}}
+ */
+export function computeTargetScore({
+  hackTime,
+  hackPercentPerThread,
+  growLogPerThread,
+  maxMoney,
+  hackChance,
+  poolThreads,
+  growTimeRatio,
+  hackSecIncrease,
+  growSecIncrease,
+  weakenSecDecrease,
+  weakenPerHackRatio,
+  weakenPerGrowRatio,
+}) {
+  if (!(hackTime > 0) || !(hackPercentPerThread > 0) || !(growLogPerThread > 0)) {
+    return { score: 0, growPerHack: 0, balancedHackShare: 0, hackThreads: 0 }
+  }
+  const growPerHack = (growTimeRatio * hackPercentPerThread) / growLogPerThread
+  const weakenPerHackThread = (hackSecIncrease * weakenPerHackRatio) / weakenSecDecrease
+  const weakenPerGrowThread = (growSecIncrease * weakenPerGrowRatio) / weakenSecDecrease
+  const balancedHackShare = 1 / (1 + weakenPerHackThread + growPerHack * (1 + weakenPerGrowThread))
+  const hackThreads = Math.max(0, poolThreads) * balancedHackShare
+  const drained = 1 - Math.exp(-growTimeRatio * hackThreads * hackPercentPerThread)
+  const score = (maxMoney * hackChance * drained) / (growTimeRatio * hackTime)
+  return { score, growPerHack, balancedHackShare, hackThreads }
+}
+
+/**
+ * Ramp-cost discount (hacking-strategy.md R4, 2026-08-14) — replaces
+ * `READINESS_FLOOR`'s dimensionally-arbitrary `max(moneyPct, 0.05)`
+ * multiplier with an explicit cost: the wall-clock time to grow a drained
+ * target up to `targetMoneyGoal` of its max, if the whole pool ran grow
+ * against it. A candidate that would take 20 minutes to ramp is worth less
+ * over the next hour than one already sitting near its goal, even with a
+ * higher raw balance-point score — but by less and less as the horizon
+ * lengthens, which is what `horizonSeconds` (new config, `SCORE_HORIZON_SECONDS`,
+ * shipped at 3600 per the doc — the bot runs for hours) is for. Before this,
+ * `MIN_TARGET_COMMIT_MS`'s 600s commit window was implicitly standing in as
+ * the horizon, which the doc's own worked example shows is too short to let
+ * a target with a longer but more valuable ramp win.
+ *
+ * `rampSeconds` uses the same log-growth model `computeWorkWeights`/
+ * `computeTargetScore` are built on: growing from `money` to `goalMoney`
+ * takes `ln(goalMoney/money) / k` grow-cycles-worth of log-growth, each
+ * cycle taking `growTimeRatio * hackTime` seconds.
+ *
+ * A negative raw ramp (money already above goal — possible since
+ * `targetMoneyGoal` is typically < 1) is clamped to 0 rather than left
+ * negative, which would otherwise *boost* the effective score above the raw
+ * potential instead of just leaving an already-ready target undiscounted.
+ *
+ * @param {object} args
+ * @param {number} args.score - `computeTargetScore`'s raw potential for this
+ *   server (same `poolThreads` basis as `growThreadsIfAllGrow` below).
+ * @param {number} args.hackTime - T, seconds.
+ * @param {number} args.growLogPerThread - k.
+ * @param {number} args.maxMoney
+ * @param {number} args.money - current `ns.getServerMoneyAvailable(server)`.
+ * @param {number} args.targetMoneyGoal - TARGET_MONEY_GOAL.
+ * @param {number} args.growThreadsIfAllGrow - see `computeTargetScore`'s
+ *   `poolThreads` doc; mcp.js passes the same value for both.
+ * @param {number} args.growTimeRatio
+ * @param {number} args.horizonSeconds - SCORE_HORIZON_SECONDS.
+ * @returns {{effective: number, rampSeconds: number}}
+ */
+export function computeTargetEffectiveScore({
+  score,
+  hackTime,
+  growLogPerThread,
+  maxMoney,
+  money,
+  targetMoneyGoal,
+  growThreadsIfAllGrow,
+  growTimeRatio,
+  horizonSeconds,
+}) {
+  if (!(score > 0)) return { effective: 0, rampSeconds: Infinity }
+  if (!(growThreadsIfAllGrow > 0) || !(growLogPerThread > 0) || !(hackTime > 0)) {
+    return { effective: 0, rampSeconds: Infinity }
+  }
+  const goalMoney = maxMoney * targetMoneyGoal
+  const currentMoney = Math.max(money, 1)
+  const rawRampSeconds =
+    (growTimeRatio * hackTime * Math.log(goalMoney / currentMoney)) / (growThreadsIfAllGrow * growLogPerThread)
+  const rampSeconds = Math.max(0, rawRampSeconds)
+  const effective = (score * horizonSeconds) / (horizonSeconds + rampSeconds)
+  return { effective, rampSeconds }
+}
+
+/**
  * The eviction predicate at the center of commit 81814d6. `moneyDegraded`
  * must be unconditionally false in XP mode: XP mode's fixed hack-heavy split
  * drains every target's money toward zero by design and never lets it

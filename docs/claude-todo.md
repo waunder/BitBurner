@@ -1,5 +1,63 @@
 # Claude's working list
 
+## 2026-08-13: IPvGO stuck in a fake-game loop since sometime after the 22:50 dashboard snapshot — root-caused, not yet fixed live
+
+Routine review session (no code changes queued going in) pulled
+`ipvgo_status.json` live and found it wildly out of step with the
+dashboard: board `size` reads **9** (dashboard says 7×7), `gamesPlayed`
+**11,700+** (dashboard says 96), win rate **~98%**, and `opponent` reads
+lowercase `"slum snakes"`. Polled twice more, 2–3 seconds apart:
+`gamesPlayed` climbed by exactly 1 each poll, roughly 1 second apart, and
+every single one of the last 100 `recentGames` entries has the **identical**
+score (black 24, white 23.5, always a win). Real MCTS play at
+`NUM_SIMULATIONS=6000` on a 9×9 board cannot possibly finish a game once a
+second — that cadence, plus the frozen identical score, means no real games
+are being played.
+
+**Root cause, read directly from `ipvgo_player.js` (lines ~407-450, 509-512),
+no live test needed:** `GoOpponent` per `NetscriptDefinitions.d.ts` is a
+closed enum and `"Slum Snakes"` (title case) is the only valid spelling —
+`"slum snakes"` is not a member. The main loop, on detecting a finished game
+(`getCurrentPlayer() === "None"`), logs the result, writes status, then
+calls `ns.go.resetBoardState(opponent, size)` — if that throws (which it
+will for an invalid `GoOpponent` string), the exception is swallowed by the
+outer `catch` at line 509 (`ns.tprint` + `sleep(1000)`, no distinct
+handling), the board never actually resets, `blackScore`/`whiteScore` stay
+frozen at their final values, and the next loop iteration sees the *same*
+finished game again — logs it as a new win, tries the same failing reset,
+repeats forever. The ~1000ms observed cadence matches the catch block's
+`sleep(1000)` almost exactly. So: **something restarted `ipvgo_player.js`
+with a lowercase `"slum snakes"` argument** (not this session — `ipvgo_player.js`
+hasn't changed on disk since commit `c33c13f`, Aug 12 20:17 — so this was a
+live in-game relaunch, not a code change), and every "game" logged since
+then is fabricated.
+
+**Damage done, concretely:** `recentGames` (capped at 100) is now 100%
+fake entries — `recentWinRate` and the opening-move stats derived from it
+are meaningless until 100 real games flush the window. The lifetime
+`gamesPlayed`/`wins` counters (persisted, survive restarts) are now
+inflated by however many fake iterations ran before this was caught —
+tens of thousands by the time anyone looks, since it's accumulating ~1/sec.
+
+**Fix, not yet applied — needs a live restart, which this session can't do
+unsupervised:** relaunch `ipvgo_player.js` with the correctly-cased
+`"Slum Snakes"` argument (and confirm 9×9 is actually the intended/unlocked
+size — nothing on record shows anyone deciding to move off 7×7). Whoever
+restarts it should also decide whether to hand-correct the polluted
+`gamesPlayed`/`wins` lifetime counters in `ipvgo_status.json` before the
+next launch, or accept the inflated lifetime number as a known blemish.
+**Separately worth fixing in code** (not done this session — root cause was
+enough to explain the symptom, didn't want to touch a live-tunable script
+without sign-off): `resetBoardState`'s error shouldn't be indistinguishable
+from every other caught exception in that loop — a failed reset is a stuck
+game, not a transient hiccup, and deserves its own loud signal (event/
+invariant, not just a swallowed `tprint`) instead of retrying silently
+once a second forever.
+
+**Not touched this session:** `docs/status-dashboard.html` — it still shows
+the last genuine numbers (82%, 7×7, 96 games) and was deliberately left
+alone rather than overwritten with the fake 98%/9×9/11,700-games figures.
+
 ## 2026-08-12 (latest, confirmed): Darknet status-file clobbering fix — live-verified fixed
 
 Ken ran the full sequence (`dnet_killswarm.js`, `dnet_deploy.js`,

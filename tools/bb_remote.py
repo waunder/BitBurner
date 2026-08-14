@@ -777,6 +777,7 @@ WATCHED_FILES = [
     "hacking/worm.js",
     "share_deploy.js",
     "set_objective.js",
+    "lsf.js",
     "scripts/copyScripts.js",
     "scripts/copy_scripts.js",
     "scripts/execute.js",

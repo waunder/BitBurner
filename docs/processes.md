@@ -773,6 +773,21 @@ default.
 - Carries the same `x=`/`y=` echo row as `mcp_hud.js`, for the same reason —
   no way to read a window's position back after a manual drag.
 
+### `lsf.js`
+
+`ls` with real glob filters (`*`, `?`), added 2026-08-14 because the
+built-in terminal `ls -g/--grep` only does plain substring matching
+(confirmed against the game's own source, `Terminal/commands/ls.tsx`:
+`parsedPath.includes(filter)`) — `ls *.msg` matches nothing there, since
+`*` isn't special to it at all. `lsf.js` translates the pattern to an
+anchored regex (`*` → `.*`, `?` → `.`, every other regex-special character
+escaped) and filters `ns.ls(host)` client-side.
+
+- **Start:** `run lsf.js <pattern> [host]` — e.g. `run lsf.js *.msg`,
+  `run lsf.js *.cct n00dles`. `host` defaults to the server the script runs
+  on. `run lsf.js *` lists everything, same as plain `ls`.
+- **Reads:** the live game (`ns.ls`), nothing on disk.
+
 ### `mcp_status.js`
 
 Mirrors `mcp.js`'s tail output into its own window, so the orchestrator's

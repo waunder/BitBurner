@@ -748,6 +748,9 @@ Dark Net money category.
   count; current-pass sessions, failures, preparation, loot, phishing-thread
   starts and RAM-decision skips; unique credentials/models; cumulative RAM
   reclaimed, caches opened/found and karma; global instability; heartbeat age.
+- **Verification:** every render writes `dnet_scorecard_status.json` with the
+  exact displayed lines and an `ok` flag, making a successful live panel
+  distinguishable from a process that merely launched and then crashed.
 - **Durability:** cumulative loot is recomputed from immutable event shards,
   and credentials from the newest record per hostname, so the display does
   not inherit the stale merged-scoreboard problem found on 2026-08-14.

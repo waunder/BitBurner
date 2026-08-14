@@ -17,6 +17,7 @@ const RESET = "\u001b[0m"
 const DEFAULT_Y = 700
 const RIGHT_MARGIN = 8
 const WIDTH_CHARS = 34
+const STATUS_FILE = "dnet_scorecard_status.json"
 
 function parseArgs(ns) {
   const out = {}
@@ -194,6 +195,7 @@ export async function main(ns) {
     }
     ns.clearLog()
     for (const line of lines) ns.print(WHITE + line + RESET)
+    ns.write(STATUS_FILE, JSON.stringify({ ts: Date.now(), ok: lines[0]?.includes("ERROR") !== true, lines }, null, 2), "w")
     if (!placed) {
       placeTail(ns, args, lines, pos)
       placed = true

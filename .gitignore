@@ -7,6 +7,7 @@ mcp_target_state.json
 mcp_events.txt
 ipvgo_status.json
 dnet_status.json
+dnet_scorecard_status.json
 
 # Darknet credential store — game output, and it holds cracked passwords.
 dnet_creds.txt

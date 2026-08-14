@@ -469,7 +469,10 @@ setting rather than falling back to the default mid-run.
 
 **Self-serve lever: `set_objective.js`** (added 2026-08-14). `run
 set_objective.js money|xp|clear` from the in-game terminal, no Claude session
-needed. Writes `mcp_objective_override.txt` — a separate file from
+needed — or `run set_objective.js` with no argument to print what's actually
+in effect right now (read straight from `mcp_status.json`'s `config.OBJECTIVE`/
+`objectiveOverrideActive`, not re-derived, so it can't drift out of sync with
+what `mcp.js` itself resolved). Writes `mcp_objective_override.txt` — a separate file from
 `mcp_config.json` on purpose. `mcp_config.json` is the git-tracked,
 disk-authoritative source pushed one-way disk→game (see "File sync" above);
 an in-game script writing straight to it would work until the next disk

@@ -27,6 +27,7 @@ export async function main(ns) {
   const creds = readCreds(ns)
   let pass = 0
   const lifetime = { seen: 0, sessions: 0, legacyKilled: 0, prepared: 0, delegated: 0, failed: 0 }
+  let lastFailure = null
 
   while (true) {
     pass++
@@ -38,6 +39,7 @@ export async function main(ns) {
       const session = await acquireSession(ns, target, creds[target])
       if (!session.ok) {
         summary.failed++
+        lastFailure = { at: Date.now(), target, stage: "session", why: session.why, code: session.code }
         continue
       }
       summary.sessions++
@@ -54,12 +56,16 @@ export async function main(ns) {
         details = ns.dnet.getServerDetails(target)
       } catch {
         summary.failed++
+        lastFailure = { at: Date.now(), target, stage: "details" }
         continue
       }
       if (details.blockedRam > 0) {
         const prep = await freeBlockedRam(ns, target, 25)
         if (prep.after < prep.before) summary.prepared++
-        if (prep.after > 0) continue
+        if (prep.after > 0) {
+          lastFailure = { at: Date.now(), target, stage: "prepare", prep }
+          continue
+        }
       }
 
       if (!delegated) {
@@ -69,10 +75,20 @@ export async function main(ns) {
           if (await ns.scp(files, target)) {
             const pid = ns.exec(CRAWLER, target, { preventDuplicates: true })
             if (pid !== 0) summary.delegated++
-            else summary.failed++
-          } else summary.failed++
-        } catch {
+            else {
+              summary.failed++
+              lastFailure = {
+                at: Date.now(), target, stage: "exec", crawlRam: ns.getScriptRam(CRAWLER, target),
+                maxRam: ns.getServerMaxRam(target), usedRam: ns.getServerUsedRam(target), processes: ns.ps(target),
+              }
+            }
+          } else {
+            summary.failed++
+            lastFailure = { at: Date.now(), target, stage: "scp", files }
+          }
+        } catch (err) {
           summary.failed++
+          lastFailure = { at: Date.now(), target, stage: "exception", error: String(err) }
         }
       }
     }
@@ -87,6 +103,8 @@ export async function main(ns) {
       thisPass: summary,
       sinceProcessStart: { ...lifetime },
       localKnownCreds: Object.keys(creds).length,
+      lastFailure,
+      crawlRam: ns.getScriptRam(CRAWLER, "home"),
       instability: ns.dnet.getDarknetInstability(),
     })
     await shipShard(ns, shard)

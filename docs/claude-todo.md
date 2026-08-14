@@ -1,6 +1,33 @@
 # Claude's working list
 
-## 2026-08-13 (latest): hacking-strategy.md — mcp.js is running at ~3% of its own grow-throughput ceiling, root cause found, fixes not yet applied
+## 2026-08-13 (latest, confirmed): R2 shipped and live-confirmed; also caught R1's predicted bug happening live, unprompted
+
+Ken said go ahead on R2 (the stuck-target detector fix, see the entry
+directly below). Implemented as `evaluateStuckTarget` in `mcp_logic.js`
+(5 new tests, 90/90 passing, `node --check` clean), committed, pushed,
+restarted live via `ctl-restart`.
+
+**Confirmed working over a ~5-minute live watch, not just deployed:**
+`max-hardware` sat at its security floor (5, exactly `minSecurity`) through
+a full `weaken→work` cycle and repeated bucket flips with **zero**
+spurious "stuck" evictions — the exact scenario that used to fire. The one
+`weakenBudgetNonNegative` violation seen is the separate, already-known,
+not-yet-shipped R3 bug — not a regression from this change.
+
+**Unprompted bonus confirmation of R1's core diagnosis, live, during the
+same watch window**: `max-hardware`'s `moneyPct` swung 0.71 → 0.0057 → 0.19
+→ 0.0015 across four `bucket_change` events in under two minutes — the
+exact `empty↔low` limit cycle `hacking-strategy.md` §1.1 predicted from the
+formulas, not an artifact of this session's changes. It ended in a
+legitimate `target_drop reason:"drained"` (avgMoneyPct 0.047, declining) —
+correct behavior, since the money genuinely never stabilized. This is real,
+live, unsolicited evidence for R1's diagnosis, gathered incidentally while
+verifying an unrelated fix.
+
+**Asked Ken whether to proceed to R3 next or hold; no answer yet — do not
+start R3 without one.**
+
+## 2026-08-13: hacking-strategy.md — mcp.js is running at ~3% of its own grow-throughput ceiling, root cause found, fixes not yet applied
 
 Ken asked for a close analysis of `mcp.js` against real game mechanics,
 since hacking is "the runaway money maker." Two docs now exist:

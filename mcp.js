@@ -13,6 +13,7 @@ import {
   evaluateOpportunitySwitch,
   evaluateStuckTarget,
   computeTickInvariantChecks,
+  computeDesiredAllocation,
   hostNeedsRedeploy,
 } from "mcp_logic.js"
 
@@ -72,6 +73,17 @@ let DEGRADED_SKIP_MS = 900000
 // grow/hack cycle's swing without being so wide that a target legitimately
 // crossing a tier takes noticeably longer to be recognized.
 let BUCKET_HYSTERESIS = 0.02
+// hostNeedsRedeploy's slack, per action type, before a desired-vs-running
+// thread-count difference counts as a real mismatch worth killing and
+// redeploying for: max(REDEPLOY_TOLERANCE_ABSOLUTE, want * REDEPLOY_TOLERANCE_RELATIVE).
+// Absorbs the per-host Math.floor/Math.ceil rounding that
+// computeDesiredAllocation's arithmetic already does, not a policy choice —
+// see hacking-strategy.md R3. Speculative starting values; the failure mode
+// of too-tight is redeploy churn (visible as plan_flip-adjacent noise in
+// mcp_events.txt), of too-loose is the exact weakenBudgetNonNegative-style
+// drift this replaced.
+let REDEPLOY_TOLERANCE_ABSOLUTE = 2
+let REDEPLOY_TOLERANCE_RELATIVE = 0.2
 
 // What the bot is farming for. "money" is the original, bucket-based
 // behaviour (see WORK_WEIGHTS_BY_BUCKET) — grow-heavy when a target is
@@ -114,6 +126,16 @@ const WEAKEN_SEC_DECREASE = 0.05
 // a naive one-shot comparison suggests.
 const WEAKEN_PER_HACK_RATIO = 4
 const WEAKEN_PER_GROW_RATIO = 1.25
+// Bundled for computeDesiredAllocation/weakenThreadsToOffset (mcp_logic.js),
+// which take these as data rather than reading mcp.js's module scope
+// directly, so they stay pure and node --test-able.
+const SECURITY_CONSTANTS = {
+  hackSecIncrease: HACK_SEC_INCREASE,
+  growSecIncrease: GROW_SEC_INCREASE,
+  weakenSecDecrease: WEAKEN_SEC_DECREASE,
+  weakenPerHackRatio: WEAKEN_PER_HACK_RATIO,
+  weakenPerGrowRatio: WEAKEN_PER_GROW_RATIO,
+}
 
 const CONFIG_FILE = "mcp_config.json"
 
@@ -138,6 +160,8 @@ const CONFIG_DEFAULTS = {
   BUCKET_HYSTERESIS,
   XP_WEIGHT_HACK,
   XP_WEIGHT_GROW,
+  REDEPLOY_TOLERANCE_ABSOLUTE,
+  REDEPLOY_TOLERANCE_RELATIVE,
 }
 
 // OBJECTIVE is handled separately from CONFIG_DEFAULTS: it's a string enum,
@@ -218,6 +242,8 @@ function loadConfig(ns, state) {
     BUCKET_HYSTERESIS,
     XP_WEIGHT_HACK,
     XP_WEIGHT_GROW,
+    REDEPLOY_TOLERANCE_ABSOLUTE,
+    REDEPLOY_TOLERANCE_RELATIVE,
   }
   for (const key of Object.keys(CONFIG_DEFAULTS)) {
     if (current[key] !== resolved[key]) changes[key] = { from: current[key], to: resolved[key] }
@@ -242,6 +268,8 @@ function loadConfig(ns, state) {
   BUCKET_HYSTERESIS = resolved.BUCKET_HYSTERESIS
   XP_WEIGHT_HACK = resolved.XP_WEIGHT_HACK
   XP_WEIGHT_GROW = resolved.XP_WEIGHT_GROW
+  REDEPLOY_TOLERANCE_ABSOLUTE = resolved.REDEPLOY_TOLERANCE_ABSOLUTE
+  REDEPLOY_TOLERANCE_RELATIVE = resolved.REDEPLOY_TOLERANCE_RELATIVE
   OBJECTIVE = resolvedObjective
 
   if (Object.keys(changes).length === 0 && rejected.length === 0) return null
@@ -381,7 +409,7 @@ function checkTickInvariants(invariants, ctx) {
   const checks = computeTickInvariantChecks(
     {
       eventLogLastWriteError: ctx.events.lastWriteError,
-      weakenBudgetRemaining: ctx.weakenBudget.remaining,
+      weakenBudgetRemaining: ctx.weakenBudgetRemaining,
       requiredWeaken: ctx.requiredWeaken,
       interval: ctx.interval,
       firstTick: ctx.firstTick,
@@ -713,9 +741,10 @@ function buildPlan(ns, target, wasWorking, previousWeightBucket) {
   // XP mode ignores moneyPct entirely — see OBJECTIVE's comment for why —
   // so it gets a single fixed pseudo-bucket rather than running the
   // money-tier logic. Still goes through the same bucket-change machinery
-  // (forceRebalance triggers on weightBucket changing) so switching
-  // OBJECTIVE live via config correctly redeploys with the new weights,
-  // same as crossing a money tier does today.
+  // (a weightBucket change shows up as a desired-allocation mismatch in
+  // hostNeedsRedeploy — see mcp_logic.js) so switching OBJECTIVE live via
+  // config correctly redeploys with the new weights, same as crossing a
+  // money tier does today.
   const { weightBucket, weights } = selectWorkWeights({
     objective: OBJECTIVE,
     moneyPct,
@@ -740,13 +769,14 @@ function getRunningActions(ns, host) {
 }
 
 // hostNeedsRedeploy itself now lives in mcp_logic.js (imported above) so the
-// forceRebalance/action-duration fix from 2026-08-11 is node --test-able —
-// see that file's comment on the function for the full story. This helper
-// translates mcp.js's `ns`-shaped running-process info into the plain data
-// the pure function takes: which script, which target, and how long (in
+// action-duration fix from 2026-08-11 and the allocation-diff rewrite from
+// R3 (2026-08-13) are both node --test-able — see that file's comment on
+// the function for the full story. This helper translates mcp.js's
+// `ns`-shaped running-process info into the plain data the pure function
+// takes: which script, which target, how many threads, and how long (in
 // seconds) the process has actually been running — the last of which is
-// what lets a forceRebalance-only redeploy wait for an in-flight call to
-// finish instead of cutting it short.
+// what lets a mismatch-only redeploy wait for an in-flight call to finish
+// instead of cutting it short.
 function describeRunningActions(ns, running) {
   return running.map(({ proc, normalized }) => {
     let elapsedS = Infinity
@@ -755,23 +785,23 @@ function describeRunningActions(ns, running) {
     return {
       script: normalized.replace("/scripts/", "").replace(".js", ""),
       target: proc.args[0],
+      threads: proc.threads,
       elapsedS,
     }
   })
 }
 
-// Security added per action thread, expressed in weaken-threads needed to
-// cancel it. See WEAKEN_PER_*_RATIO: worker scripts loop, so the relevant
-// comparison is security-per-unit-time, not security-per-call.
-function weakenThreadsToOffset(hackThreads, growThreads) {
-  return Math.ceil(
-    (hackThreads * HACK_SEC_INCREASE * WEAKEN_PER_HACK_RATIO +
-      growThreads * GROW_SEC_INCREASE * WEAKEN_PER_GROW_RATIO) /
-      WEAKEN_SEC_DECREASE
-  )
-}
-
-function allocateThreads(ns, host, target, plan, ramInfo, forceRebalance, weakenBudget, actionDurationsS) {
+// allocateThreads (2026-08-13, R3): the per-host math that used to live
+// here inline now lives in mcp_logic.js's computeDesiredAllocation, run
+// network-wide as "pass 1" before this function is ever called (see the
+// main loop) — desired is this host's already-computed row from that pass.
+// This function is "pass 2": decide whether the host's running threads
+// actually match desired closely enough (hostNeedsRedeploy, now an
+// allocation-quantity diff rather than an action-type check — see that
+// function's own comment for why the old version under- and over-fired),
+// and if not, kill and re-exec to the desired counts. weakenThreadsToOffset
+// moved with pass 1 since its only callers did.
+function allocateThreads(ns, host, target, plan, desired, tolerance, actionDurationsS) {
   /** @type {{script: string, threads: number}[]} */
   const actions = []
   const allocation = {
@@ -792,7 +822,8 @@ function allocateThreads(ns, host, target, plan, ramInfo, forceRebalance, weaken
     target,
     plan,
     running: describeRunningActions(ns, running),
-    forceRebalance,
+    desired,
+    tolerance,
     actionDurationsS,
   })
   if (!needsRedeploy) {
@@ -801,18 +832,6 @@ function allocateThreads(ns, host, target, plan, ramInfo, forceRebalance, weaken
     for (const { proc, normalized } of running) {
       const script = normalized.replace("/scripts/", "").replace(".js", "")
       allocation.actions.push({ script, threads: proc.threads })
-      // Threads left running still count against the shared budget — not
-      // charging for them re-spent the whole budget on every host each tick,
-      // deploying several times the weaken actually needed. Only meaningful
-      // during a "weaken" plan, which is the only place anything is actually
-      // drawn from this budget (maintenance weaken during "work" is computed
-      // independently via weakenThreadsToOffset). Charging it unconditionally
-      // drove it negative on every tick a host kept its maintenance weaken
-      // threads running — a real accounting bug the weakenBudgetNonNegative
-      // invariant caught on the first live run, harmless only because nothing
-      // had read `remaining` outside a weaken plan before that invariant
-      // existed.
-      if (script === "weaken" && plan.type === "weaken") weakenBudget.remaining -= proc.threads
     }
     return allocation
   }
@@ -820,65 +839,14 @@ function allocateThreads(ns, host, target, plan, ramInfo, forceRebalance, weaken
   killActionScripts(ns, host)
   copyActionScripts(ns, host)
 
-  const freeRam = getHostFreeRam(ns, host)
-  if (freeRam < ramInfo.minRam) {
-    allocation.usedRam = ns.getServerUsedRam(host)
-    allocation.freeRam = freeRam
-    return allocation
+  if (desired.weaken > 0 && ns.exec("/scripts/weaken.js", host, desired.weaken, target) !== 0) {
+    allocation.actions.push({ script: "weaken", threads: desired.weaken })
   }
-
-  let weakenThreads = 0
-  let growThreads = 0
-  let hackThreads = 0
-
-  if (plan.type === "weaken") {
-    const maxWeaken = Math.floor(freeRam / ramInfo.weakenRam)
-    weakenThreads = Math.max(0, Math.min(maxWeaken, weakenBudget.remaining))
-    weakenBudget.remaining -= weakenThreads
-    // Whatever this host isn't contributing to the (network-wide, capped)
-    // weaken need would otherwise sit idle for the whole weaken phase —
-    // often the large majority of the network. Grow is always useful and
-    // doesn't require the target to be at its security floor first.
-    const leftoverRam = freeRam - weakenThreads * ramInfo.weakenRam
-    growThreads = Math.floor(leftoverRam / ramInfo.growRam)
-    // Growing adds security too, so it has to pay for its own offset out of
-    // the same leftover rather than undermining the weaken it runs beside.
-    const growOffset = weakenThreadsToOffset(0, growThreads)
-    if (growOffset > 0) {
-      const reserveRam = growOffset * ramInfo.weakenRam
-      growThreads = Math.max(0, Math.floor((leftoverRam - reserveRam) / ramInfo.growRam))
-      weakenThreads += weakenThreadsToOffset(0, growThreads)
-    }
-  } else {
-    const workWeights = plan.weights
-    const maxWeakenThreads = Math.floor(freeRam / ramInfo.weakenRam)
-
-    const provisionalHack = Math.floor((freeRam * workWeights.hack) / ramInfo.hackRam)
-    const provisionalGrow = Math.floor(
-      (freeRam - provisionalHack * ramInfo.hackRam) / ramInfo.growRam
-    )
-    const maintenanceThreads = weakenThreadsToOffset(provisionalHack, provisionalGrow)
-
-    if (maintenanceThreads >= maxWeakenThreads) {
-      weakenThreads = maxWeakenThreads
-    } else {
-      weakenThreads = maintenanceThreads
-      const actionRam = freeRam - weakenThreads * ramInfo.weakenRam
-      if (actionRam >= ramInfo.minRam) {
-        hackThreads = Math.floor((actionRam * workWeights.hack) / ramInfo.hackRam)
-        growThreads = Math.floor((actionRam - hackThreads * ramInfo.hackRam) / ramInfo.growRam)
-      }
-    }
+  if (desired.grow > 0 && ns.exec("/scripts/grow.js", host, desired.grow, target) !== 0) {
+    allocation.actions.push({ script: "grow", threads: desired.grow })
   }
-
-  if (weakenThreads > 0 && ns.exec("/scripts/weaken.js", host, weakenThreads, target) !== 0) {
-    allocation.actions.push({ script: "weaken", threads: weakenThreads })
-  }
-  if (growThreads > 0 && ns.exec("/scripts/grow.js", host, growThreads, target) !== 0) {
-    allocation.actions.push({ script: "grow", threads: growThreads })
-  }
-  if (hackThreads > 0 && ns.exec("/scripts/hack.js", host, hackThreads, target) !== 0) {
-    allocation.actions.push({ script: "hack", threads: hackThreads })
+  if (desired.hack > 0 && ns.exec("/scripts/hack.js", host, desired.hack, target) !== 0) {
+    allocation.actions.push({ script: "hack", threads: desired.hack })
   }
 
   // Read RAM back *after* exec so maxRam/usedRam/freeRam describe one
@@ -1356,10 +1324,6 @@ export async function main(ns) {
     const previousWeightBucket = lastWeightBucket
     const plan = buildPlan(ns, currentTarget, lastPlanType === "work", previousWeightBucket)
     lastPlanType = plan.type
-    // Redeploy when moneyPct crosses into a different hack/grow weight tier,
-    // so the ratio actually adapts as money drains or recovers — otherwise
-    // whatever split was deployed first just runs forever unchanged.
-    const forceRebalance = plan.type === "work" && plan.weightBucket !== lastWeightBucket
     if (plan.type === "work") lastWeightBucket = plan.weightBucket
 
     // Plan oscillation was previously noticed by eyeballing a wall of
@@ -1394,24 +1358,53 @@ export async function main(ns) {
 
     // Computed here (rather than down with the rest of the status fields)
     // because allocateThreads/hostNeedsRedeploy need them this tick, to
-    // decide whether a forceRebalance-only redeploy should wait for an
-    // in-flight call to finish — see hostNeedsRedeploy's comment in
-    // mcp_logic.js.
+    // decide whether a mismatch-only redeploy should wait for an in-flight
+    // call to finish — see hostNeedsRedeploy's comment in mcp_logic.js.
     const hackTimeS = ns.getHackTime(currentTarget) / 1000
     const growTimeS = ns.getGrowTime(currentTarget) / 1000
     const weakenTimeS = ns.getWeakenTime(currentTarget) / 1000
     const actionDurationsS = { hack: hackTimeS, grow: growTimeS, weaken: weakenTimeS }
 
-    // Shared across hosts so a weaken-phase target only ever gets exactly as
-    // many threads as it actually needs, rather than every host independently
-    // maxing out. Hosts that keep already-running weaken threads charge the
-    // budget too (see allocateThreads), so the cap holds across ticks.
-    const weakenBudget = { remaining: plan.type === "weaken" ? getTargetWeakenThreads(ns, currentTarget) : 0 }
+    // Pass 1 (R3, 2026-08-13): compute every host's desired allocation
+    // network-wide, up front, from reclaimable RAM — see
+    // computeDesiredAllocation's own comment in mcp_logic.js for why this
+    // has to run for every host rather than only ones already flagged for
+    // redeploy. requiredWeaken is read fresh here (no margin) and reused
+    // below for status/invariants rather than recomputed.
+    const requiredWeaken = getTargetWeakenThreads(ns, currentTarget)
+    const ramInfoByScript = {
+      "/scripts/weaken.js": weakenRam,
+      "/scripts/grow.js": growRam,
+      "/scripts/hack.js": hackRam,
+    }
+    const hostReclaimable = workers.map((host) => ({
+      host,
+      reclaimableRam: getHostReclaimableRam(ns, host, ramInfoByScript),
+    }))
+    // weakenBudgetRemaining is what weakenBudgetNonNegative now asserts on:
+    // pass 1's own primary-draw arithmetic never hands out more than the
+    // budget it was drawn from (see computeDesiredAllocation's own comment
+    // for why the grow-security-offset addition is deliberately excluded).
+    // Under the old per-host-consumption design this could go negative from
+    // already-running threads sized for a stale, higher security reading —
+    // structurally impossible now, so this is a regression guard on pass
+    // 1's own math, not a runtime accounting bug. Kept per
+    // hacking-strategy.md R3's own instruction not to delete the invariant.
+    const { allocations: desiredByHost, weakenBudgetRemaining } = computeDesiredAllocation({
+      hosts: hostReclaimable,
+      plan,
+      weakenBudget: plan.type === "weaken" ? requiredWeaken : 0,
+      ramInfo,
+      securityConstants: SECURITY_CONSTANTS,
+    })
 
+    // Pass 2: per host, diff desired against what's actually running and
+    // redeploy only if they disagree beyond tolerance.
+    const redeployTolerance = { absolute: REDEPLOY_TOLERANCE_ABSOLUTE, relative: REDEPLOY_TOLERANCE_RELATIVE }
     const allocations = []
-    for (const host of workers) {
+    for (const { host, hack, grow, weaken } of desiredByHost) {
       allocations.push(
-        allocateThreads(ns, host, currentTarget, plan, ramInfo, forceRebalance, weakenBudget, actionDurationsS)
+        allocateThreads(ns, host, currentTarget, plan, { hack, grow, weaken }, redeployTolerance, actionDurationsS)
       )
     }
 
@@ -1435,9 +1428,9 @@ export async function main(ns) {
       moneyPctSamples.length > 0
         ? moneyPctSamples.reduce((sum, value) => sum + value, 0) / moneyPctSamples.length
         : plan.moneyPct
-    const requiredWeaken = getTargetWeakenThreads(ns, currentTarget)
-    // hackTimeS/growTimeS/weakenTimeS were already computed earlier this
-    // tick (actionDurationsS, used by allocateThreads/hostNeedsRedeploy) —
+    // hackTimeS/growTimeS/weakenTimeS/requiredWeaken were already computed
+    // earlier this tick (actionDurationsS, used by allocateThreads/
+    // hostNeedsRedeploy; requiredWeaken by computeDesiredAllocation) —
     // reused here rather than re-read, since currentTarget hasn't changed.
     const hackChance = ns.hackAnalyzeChance(currentTarget)
 
@@ -1465,7 +1458,7 @@ export async function main(ns) {
       events,
       interval,
       ramUtilization,
-      weakenBudget,
+      weakenBudgetRemaining,
       requiredWeaken,
       allocations,
       ramInfo,
@@ -1534,6 +1527,8 @@ export async function main(ns) {
         OBJECTIVE,
         XP_WEIGHT_HACK,
         XP_WEIGHT_GROW,
+        REDEPLOY_TOLERANCE_ABSOLUTE,
+        REDEPLOY_TOLERANCE_RELATIVE,
       },
       invariantViolations: invariants.counts,
       // Last few transitions inline, so one file read gives both "now" and

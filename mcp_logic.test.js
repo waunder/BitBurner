@@ -23,117 +23,303 @@ import {
   getWorkWeightBucket,
   bucketForMoneyPct,
   computeTickInvariantChecks,
+  computeDesiredAllocation,
+  weakenThreadsToOffset,
   hostNeedsRedeploy,
   WORK_WEIGHTS_BY_BUCKET,
 } from "./mcp_logic.js"
 
-describe("hostNeedsRedeploy — the 2026-08-11 forceRebalance/redeploy-timing bug", () => {
-  // The exact scenario found live: a target's work-weight bucket flips every
-  // tick (moneyPct swinging faster than BUCKET_HYSTERESIS can resist), and
-  // growTimeS/weakenTimeS (13-16s) are longer than the 10s tick. Before the
-  // fix, forceRebalance short-circuited to `true` unconditionally, so this
-  // host was killed and redeployed every single tick and no grow/weaken call
-  // ever survived long enough to finish.
-  const actionDurationsS = { hack: 5, grow: 15, weaken: 16 }
+// Real values from mcp.js's own constants/RAM readouts (see
+// hacking-mechanics.md — cross-checked against the game's own source).
+const SECURITY_CONSTANTS = {
+  hackSecIncrease: 0.002,
+  growSecIncrease: 0.004,
+  weakenSecDecrease: 0.05,
+  weakenPerHackRatio: 4,
+  weakenPerGrowRatio: 1.25,
+}
+const RAM_INFO = { hackRam: 1.7, growRam: 1.75, weakenRam: 1.75, minRam: 1.7 }
 
-  test("regression: forceRebalance alone does not kill a grow call that hasn't had time to finish", () => {
-    const running = [{ script: "grow", target: "foodnstuff", elapsedS: 4 }] // 4s into a 15s call
-    const needsRedeploy = hostNeedsRedeploy({
-      target: "foodnstuff",
-      plan: { type: "work" },
-      running,
-      forceRebalance: true,
-      actionDurationsS,
-    })
-    assert.equal(needsRedeploy, false, "a bucket flip must not cut off an in-flight grow call")
+describe("weakenThreadsToOffset", () => {
+  test("hack threads only", () => {
+    // 100 * 0.002 * 4 = 0.8; 0.8 / 0.05 = 16 exactly.
+    assert.equal(weakenThreadsToOffset(100, 0, SECURITY_CONSTANTS), 16)
   })
 
-  test("forceRebalance redeploys once every running action has had a full call's worth of time", () => {
-    const running = [{ script: "grow", target: "foodnstuff", elapsedS: 15 }] // >= growTimeS
+  test("grow threads only", () => {
+    // 100 * 0.004 * 1.25 = 0.5; 0.5 / 0.05 = 10 exactly.
+    assert.equal(weakenThreadsToOffset(0, 100, SECURITY_CONSTANTS), 10)
+  })
+
+  test("combines both and rounds up", () => {
+    // (1*0.002*4 + 1*0.004*1.25) / 0.05 = 0.013/0.05 = 0.26 -> ceil 1.
+    assert.equal(weakenThreadsToOffset(1, 1, SECURITY_CONSTANTS), 1)
+  })
+
+  test("zero threads need zero offset", () => {
+    assert.equal(weakenThreadsToOffset(0, 0, SECURITY_CONSTANTS), 0)
+  })
+})
+
+describe("computeDesiredAllocation — R3's pass 1 (2026-08-13)", () => {
+  test("weaken plan: shared budget is drawn down in host order, never exceeded", () => {
+    const hosts = [
+      { host: "a", reclaimableRam: 20 },
+      { host: "b", reclaimableRam: 20 },
+      { host: "c", reclaimableRam: 20 },
+    ]
+    const { allocations, weakenBudgetRemaining } = computeDesiredAllocation({
+      hosts,
+      plan: { type: "weaken" },
+      weakenBudget: 15, // less than any single host's own capacity (11) x3
+      ramInfo: RAM_INFO,
+      securityConstants: SECURITY_CONSTANTS,
+    })
+    // Host a takes its full share (11, capped by its own RAM, not the
+    // budget), leaving 4; host b takes the remaining 4 (+1 more from its own
+    // grow-security offset); host c gets none of the primary budget and
+    // puts its whole leftover RAM into grow, plus 1 offset weaken thread.
+    assert.deepEqual(allocations, [
+      { host: "a", hack: 0, grow: 0, weaken: 11 },
+      { host: "b", hack: 0, grow: 6, weaken: 5 },
+      { host: "c", hack: 0, grow: 9, weaken: 1 },
+    ])
+    assert.ok(allocations[2].grow > 0, "leftover RAM on a host past the budget still goes to grow")
+    // The primary-draw budget itself: 11 (a) + 4 (b) + 0 (c) = 15, exactly
+    // exhausted — this is the number weakenBudgetNonNegative now asserts on,
+    // deliberately excluding the grow-offset additions (see the function's
+    // own doc comment for why conflating the two would be a false alarm).
+    assert.equal(weakenBudgetRemaining, 0)
+  })
+
+  test("weaken plan: budget larger than total network capacity leaves a positive remainder", () => {
+    const hosts = [
+      { host: "a", reclaimableRam: 20 },
+      { host: "b", reclaimableRam: 20 },
+      { host: "c", reclaimableRam: 20 },
+    ]
+    const { allocations, weakenBudgetRemaining } = computeDesiredAllocation({
+      hosts,
+      plan: { type: "weaken" },
+      weakenBudget: 50, // total capacity is only 3*11=33
+      ramInfo: RAM_INFO,
+      securityConstants: SECURITY_CONSTANTS,
+    })
+    for (const a of allocations) assert.equal(a.weaken, 11, `${a.host} should max out its own capacity`)
+    assert.equal(weakenBudgetRemaining, 50 - 33)
+  })
+
+  test("weaken plan: regression, sum of primary draws never exceeds the budget across many hosts", () => {
+    // The exact class of bug this replaced: with 37 hosts and a budget of
+    // 75 (hacking-strategy.md's live numbers), no combination of per-host
+    // rounding should ever let the total primary draw exceed 75.
+    const hosts = Array.from({ length: 37 }, (_, i) => ({ host: `h${i}`, reclaimableRam: 16 }))
+    const { allocations, weakenBudgetRemaining } = computeDesiredAllocation({
+      hosts,
+      plan: { type: "weaken" },
+      weakenBudget: 75,
+      ramInfo: RAM_INFO,
+      securityConstants: SECURITY_CONSTANTS,
+    })
+    assert.ok(weakenBudgetRemaining >= 0, "the shared budget must never go negative by construction")
+    const totalPrimaryDraw = 75 - weakenBudgetRemaining
+    assert.ok(totalPrimaryDraw <= 75)
+    assert.ok(allocations.some((a) => a.grow > 0), "hosts past the budget still get grow, not left idle")
+  })
+
+  test("work plan: hack/grow/weaken split by weight, maintenance weaken sized off the actual provisional threads", () => {
+    const hosts = [{ host: "a", reclaimableRam: 100 }]
+    const { allocations } = computeDesiredAllocation({
+      hosts,
+      plan: { type: "work", weights: { hack: 0.3, grow: 0.7 } },
+      weakenBudget: 0,
+      ramInfo: RAM_INFO,
+      securityConstants: SECURITY_CONSTANTS,
+    })
+    // provisionalHack=floor(30/1.7)=17, provisionalGrow=floor((100-28.9)/1.75)=40,
+    // maintenanceThreads=ceil((17*0.002*4+40*0.004*1.25)/0.05)=ceil(0.336/0.05)=7,
+    // actionRam=100-7*1.75=87.75, hack=floor(87.75*0.3/1.7)=15,
+    // grow=floor((87.75-15*1.7)/1.75)=35.
+    assert.deepEqual(allocations, [{ host: "a", hack: 15, grow: 35, weaken: 7 }])
+  })
+
+  test("work plan: maintenance weaken saturating the whole host deploys no hack or grow", () => {
+    const hosts = [{ host: "a", reclaimableRam: 100 }]
+    const { allocations } = computeDesiredAllocation({
+      hosts,
+      plan: { type: "work", weights: { hack: 1, grow: 0 } },
+      weakenBudget: 0,
+      ramInfo: RAM_INFO,
+      // Exaggerated hackSecIncrease forces maintenanceThreads past
+      // maxWeakenThreads regardless of realistic constants, to exercise
+      // the saturation branch deterministically.
+      securityConstants: { ...SECURITY_CONSTANTS, hackSecIncrease: 10 },
+    })
+    assert.deepEqual(allocations, [{ host: "a", hack: 0, grow: 0, weaken: 57 }]) // floor(100/1.75)
+  })
+
+  test("regression: R3's fix — hack is desired once weights want it, even coming off a weaken phase", () => {
+    // The live bug: WORK_WEIGHTS_BY_BUCKET's non-zero hack share used to
+    // never actually get deployed once a host was already running grow from
+    // a prior weaken phase (see hostNeedsRedeploy below). computeDesiredAllocation
+    // itself is not where that bug lived, but this confirms desired.hack is
+    // genuinely nonzero whenever weights.hack is, which is the number
+    // hostNeedsRedeploy now diffs against.
+    const hosts = [{ host: "a", reclaimableRam: 50 }]
+    const { allocations } = computeDesiredAllocation({
+      hosts,
+      plan: { type: "work", weights: { hack: 0.3, grow: 0.7 } },
+      weakenBudget: 0,
+      ramInfo: RAM_INFO,
+      securityConstants: SECURITY_CONSTANTS,
+    })
+    assert.ok(allocations[0].hack > 0, "a nonzero hack weight must produce a nonzero desired hack allocation")
+  })
+})
+
+describe("hostNeedsRedeploy — 2026-08-13 rewrite: allocation-quantity diff, not action-type match (R3)", () => {
+  // Replaces the pre-R3 forceRebalance/action-type version (see git history
+  // for that comment) — a work-weight bucket change now shows up as a
+  // desired-vs-running mismatch automatically, so it no longer needs its
+  // own flag; see mcp_logic.js's own comment on the function for the two
+  // live bugs this fixed.
+  const actionDurationsS = { hack: 5, grow: 15, weaken: 16 }
+  const tolerance = { absolute: 2, relative: 0.2 }
+
+  test("regression: a quantity mismatch does not kill a grow call that hasn't had time to finish", () => {
+    const running = [{ script: "grow", target: "foodnstuff", threads: 10, elapsedS: 4 }] // 4s into a 15s call
     const needsRedeploy = hostNeedsRedeploy({
       target: "foodnstuff",
       plan: { type: "work" },
       running,
-      forceRebalance: true,
+      desired: { hack: 0, grow: 50, weaken: 0 },
+      tolerance,
+      actionDurationsS,
+    })
+    assert.equal(needsRedeploy, false, "a quantity mismatch must not cut off an in-flight grow call")
+  })
+
+  test("a quantity mismatch redeploys once every running action has had a full call's worth of time", () => {
+    const running = [{ script: "grow", target: "foodnstuff", threads: 10, elapsedS: 15 }] // >= growTimeS
+    const needsRedeploy = hostNeedsRedeploy({
+      target: "foodnstuff",
+      plan: { type: "work" },
+      running,
+      desired: { hack: 0, grow: 50, weaken: 0 },
+      tolerance,
       actionDurationsS,
     })
     assert.equal(needsRedeploy, true)
   })
 
-  test("forceRebalance waits for the slowest running action type, not just any of them", () => {
+  test("waits for the slowest running action type, not just any of them", () => {
     // grow has had enough time (15 >= 15) but weaken hasn't (10 < 16) — must
     // not redeploy and cut the weaken call short just because grow is ready.
     const running = [
-      { script: "grow", target: "foodnstuff", elapsedS: 15 },
-      { script: "weaken", target: "foodnstuff", elapsedS: 10 },
+      { script: "grow", target: "foodnstuff", threads: 10, elapsedS: 15 },
+      { script: "weaken", target: "foodnstuff", threads: 5, elapsedS: 10 },
     ]
     const needsRedeploy = hostNeedsRedeploy({
       target: "foodnstuff",
       plan: { type: "weaken" },
       running,
-      forceRebalance: true,
+      desired: { hack: 0, grow: 50, weaken: 20 },
+      tolerance,
       actionDurationsS,
     })
     assert.equal(needsRedeploy, false)
   })
 
-  test("without forceRebalance, matching running actions never redeploy regardless of elapsed time", () => {
-    const running = [{ script: "grow", target: "foodnstuff", elapsedS: 0.1 }]
+  test("running actions within tolerance of desired never redeploy regardless of elapsed time", () => {
+    const running = [{ script: "grow", target: "foodnstuff", threads: 10, elapsedS: 0.1 }]
     const needsRedeploy = hostNeedsRedeploy({
       target: "foodnstuff",
       plan: { type: "work" },
       running,
-      forceRebalance: false,
+      desired: { hack: 0, grow: 11, weaken: 0 }, // within the absolute-2 slack
+      tolerance,
       actionDurationsS,
     })
     assert.equal(needsRedeploy, false)
   })
 
-  test("structural mismatch — no running actions at all — redeploys immediately even without forceRebalance", () => {
+  test("structural mismatch — no running actions at all — redeploys immediately", () => {
     const needsRedeploy = hostNeedsRedeploy({
       target: "foodnstuff",
       plan: { type: "work" },
       running: [],
-      forceRebalance: false,
+      desired: { hack: 5, grow: 5, weaken: 0 },
+      tolerance,
       actionDurationsS,
     })
     assert.equal(needsRedeploy, true)
   })
 
   test("structural mismatch — running against the wrong target — redeploys immediately, ignoring elapsed time", () => {
-    const running = [{ script: "grow", target: "some-other-server", elapsedS: 0 }]
+    const running = [{ script: "grow", target: "some-other-server", threads: 10, elapsedS: 0 }]
     const needsRedeploy = hostNeedsRedeploy({
       target: "foodnstuff",
       plan: { type: "work" },
       running,
-      forceRebalance: false,
+      desired: { hack: 0, grow: 10, weaken: 0 },
+      tolerance,
       actionDurationsS,
     })
     assert.equal(needsRedeploy, true, "stale target's actions are never worth waiting out")
   })
 
-  test("structural mismatch — weaken plan with a hack thread running — redeploys immediately", () => {
-    const running = [{ script: "hack", target: "foodnstuff", elapsedS: 0 }]
+  test("structural mismatch — weaken plan with a hack thread running — redeploys immediately even if quantities match", () => {
+    const running = [{ script: "hack", target: "foodnstuff", threads: 3, elapsedS: 0 }]
     const needsRedeploy = hostNeedsRedeploy({
       target: "foodnstuff",
       plan: { type: "weaken" },
       running,
-      forceRebalance: false,
+      desired: { hack: 3, grow: 0, weaken: 0 }, // a "matching" desired still can't save it
+      tolerance,
       actionDurationsS,
     })
-    assert.equal(needsRedeploy, true, "hack fights an active weaken phase and must go regardless of forceRebalance")
+    assert.equal(needsRedeploy, true, "hack fights an active weaken phase and must go regardless of quantity match")
   })
 
-  test("structural mismatch — work plan with only weaken running (no grow/hack yet) — redeploys immediately", () => {
-    const running = [{ script: "weaken", target: "foodnstuff", elapsedS: 0 }]
+  test("regression: hack is deployed once desired, even though grow already running 'satisfied' the old type-only check", () => {
+    // The 2026-08-13 live bug: a host running grow+weaken from a prior
+    // weaken phase was judged "fine" by the old hasGrow-only check once the
+    // plan flipped to "work", so hack never got deployed even when the
+    // weights wanted it — confirmed live at 846 grow / 145 weaken / 0 hack
+    // threads network-wide. desired.hack > 0 while have.hack === 0 must now
+    // register as a mismatch on its own.
+    const running = [
+      { script: "grow", target: "foodnstuff", threads: 20, elapsedS: 30 },
+      { script: "weaken", target: "foodnstuff", threads: 5, elapsedS: 30 },
+    ]
     const needsRedeploy = hostNeedsRedeploy({
       target: "foodnstuff",
       plan: { type: "work" },
       running,
-      forceRebalance: false,
+      desired: { hack: 15, grow: 10, weaken: 2 },
+      tolerance,
       actionDurationsS,
     })
-    assert.equal(needsRedeploy, true)
+    assert.equal(
+      needsRedeploy,
+      true,
+      "wanting hack while none is running must count as a mismatch, not 'fine because grow is present'"
+    )
+  })
+
+  test("regression: an over-provisioned weaken allocation (the weakenBudgetNonNegative bug) gets scaled back down", () => {
+    // The exact live shape from hacking-strategy.md R3: 172 weaken threads
+    // running, 75 actually desired.
+    const running = [{ script: "weaken", target: "silver-helix", threads: 172, elapsedS: 90 }]
+    const needsRedeploy = hostNeedsRedeploy({
+      target: "silver-helix",
+      plan: { type: "weaken" },
+      running,
+      desired: { hack: 0, grow: 0, weaken: 75 },
+      tolerance,
+      actionDurationsS,
+    })
+    assert.equal(needsRedeploy, true, "an over-provisioned weaken allocation must be scaled back down, not left running")
   })
 })
 

@@ -177,66 +177,197 @@ export function evaluateOpportunitySwitch({ idle, candidates, currentTarget, cur
   }
 }
 
+// Security added per action thread, expressed in weaken-threads needed to
+// cancel it. See weakenPerHackRatio/weakenPerGrowRatio: worker scripts loop,
+// so the relevant comparison is security-per-unit-time, not
+// security-per-call — moved here from mcp.js 2026-08-13 (R3, see
+// computeDesiredAllocation below) alongside its only callers, parameterized
+// on the constants that used to be read off mcp.js's module-level `const`s
+// directly.
+export function weakenThreadsToOffset(
+  hackThreads,
+  growThreads,
+  { hackSecIncrease, growSecIncrease, weakenSecDecrease, weakenPerHackRatio, weakenPerGrowRatio }
+) {
+  return Math.ceil(
+    (hackThreads * hackSecIncrease * weakenPerHackRatio + growThreads * growSecIncrease * weakenPerGrowRatio) /
+      weakenSecDecrease
+  )
+}
+
 /**
- * hostNeedsRedeploy — moved here from mcp.js verbatim (see that file's own
- * comment, preserved below) plus one fix for the bug found live 2026-08-11:
- * "farm may be stuck" traced back to `foodnstuff`'s moneyPct swinging ~0.08
- * every 10s tick, well past `BUCKET_HYSTERESIS` (0.02 at the time), which
- * flipped its work-weight bucket every single tick. Every bucket flip sets
- * `forceRebalance = true`, which this function used to treat as an
- * unconditional "kill and redeploy" — but grow/weaken calls on that target
- * were taking 13-16s, longer than the 10s tick, so every single one was cut
- * off before it could ever finish. Not a policy bug (the hack/grow weights
- * were correct for each bucket) — a redeploy-cadence bug that made the
- * correct policy meaningless: nothing ever ran long enough to matter.
+ * Pass 1 of the two-pass allocation R3 replaced `allocateThreads`'s old
+ * single-pass, per-host-only logic with (2026-08-13, hacking-strategy.md
+ * R3). Computes every host's *desired* thread allocation from its
+ * reclaimable RAM (free RAM plus whatever our own scripts already hold
+ * there — mcp.js's `getHostReclaimableRam`), independent of what is
+ * actually currently running, so "desired" is a stable function of current
+ * security/RAM state rather than ratcheting based on a prior tick's
+ * allocation decision.
  *
- * Raising BUCKET_HYSTERESIS to 0.08 mitigated this by making flips rarer,
- * but it's a per-target tuning knob, not a fix — a different target with a
- * bigger natural swing could thrash the exact same way. The structural fix:
- * a forceRebalance that isn't backed by anything actually wrong with what's
- * running (see the structural checks below — those still redeploy
- * immediately, unconditionally) now waits until every currently running
+ * The per-host formulas are copied verbatim from the old inline
+ * `allocateThreads` (same weaken/grow math for a "weaken" plan, same
+ * hack/grow/weaken-for-maintenance math for a "work" plan) — the only
+ * change is that this now runs for *every* host up front, in the fixed
+ * order `hosts` is given, rather than only for whichever host
+ * `hostNeedsRedeploy` happened to already be redeploying that tick. That
+ * ordering is what fixes `weakenBudgetNonNegative`: the shared weaken
+ * budget is drawn down against the network's *freshly computed* desired
+ * total every tick, not inflated by already-running threads that were
+ * sized for a stale, higher security reading from an earlier tick — see
+ * hacking-strategy.md's R3 for the live numbers (172 weaken threads running
+ * against a `needWeaken` of 75).
+ *
+ * @param {object} args
+ * @param {{host: string, reclaimableRam: number}[]} args.hosts - in the
+ *   fixed order the shared weaken budget (for a "weaken" plan) is drawn
+ *   down against.
+ * @param {{type: string, weights?: {hack: number, grow: number}}} args.plan
+ * @param {number} args.weakenBudget - total weaken threads needed
+ *   network-wide this tick. Only meaningful when `plan.type === "weaken"`;
+ *   ignored for "work" plans, where each host's own maintenance weaken only
+ *   offsets that same host's own hack/grow security contribution and needs
+ *   no cross-host sharing.
+ * @param {{hackRam: number, growRam: number, weakenRam: number, minRam: number}} args.ramInfo
+ * @param {{hackSecIncrease: number, growSecIncrease: number, weakenSecDecrease: number, weakenPerHackRatio: number, weakenPerGrowRatio: number}} args.securityConstants
+ * @returns {{allocations: {host: string, hack: number, grow: number, weaken: number}[], weakenBudgetRemaining: number}}
+ *   `allocations` is in the same order as `args.hosts`. `weakenBudgetRemaining`
+ *   is what's left of `args.weakenBudget` after only the *primary* per-host
+ *   draw (`Math.min(hostMaxWeaken, remaining)`) — deliberately **not**
+ *   reduced by the grow-security-offset addition below, matching exactly
+ *   what the pre-R3 code tracked (see the old `weakenBudget.remaining -=
+ *   weakenThreads` line, which ran before that addition existed). The
+ *   offset addition is a separate, self-justifying expense — RAM a host
+ *   already isn't contributing to the shared need, spent cancelling its own
+ *   grow threads' security cost — not a second draw against the same
+ *   budget. Conflating the two would make this assertion fire on every
+ *   tick a grow offset is nonzero, which is normal and not a bug.
+ */
+export function computeDesiredAllocation({ hosts, plan, weakenBudget, ramInfo, securityConstants }) {
+  const allocations = []
+  let remaining = weakenBudget
+
+  for (const { host, reclaimableRam } of hosts) {
+    if (plan.type === "weaken") {
+      const hostMaxWeaken = Math.floor(reclaimableRam / ramInfo.weakenRam)
+      let weaken = Math.max(0, Math.min(hostMaxWeaken, remaining))
+      remaining -= weaken
+      // Whatever this host isn't contributing to the (network-wide, capped)
+      // weaken need would otherwise sit idle for the whole weaken phase —
+      // often the large majority of the network. Grow is always useful and
+      // doesn't require the target to be at its security floor first.
+      const leftoverRam = reclaimableRam - weaken * ramInfo.weakenRam
+      let grow = Math.floor(leftoverRam / ramInfo.growRam)
+      // Growing adds security too, so it has to pay for its own offset out
+      // of the same leftover rather than undermining the weaken it runs
+      // beside.
+      const growOffset = weakenThreadsToOffset(0, grow, securityConstants)
+      if (growOffset > 0) {
+        const reserveRam = growOffset * ramInfo.weakenRam
+        grow = Math.max(0, Math.floor((leftoverRam - reserveRam) / ramInfo.growRam))
+        weaken += weakenThreadsToOffset(0, grow, securityConstants)
+      }
+      allocations.push({ host, hack: 0, grow, weaken })
+      continue
+    }
+
+    const weights = plan.weights
+    const maxWeakenThreads = Math.floor(reclaimableRam / ramInfo.weakenRam)
+    const provisionalHack = Math.floor((reclaimableRam * weights.hack) / ramInfo.hackRam)
+    const provisionalGrow = Math.floor((reclaimableRam - provisionalHack * ramInfo.hackRam) / ramInfo.growRam)
+    const maintenanceThreads = weakenThreadsToOffset(provisionalHack, provisionalGrow, securityConstants)
+
+    let weaken, hack, grow
+    if (maintenanceThreads >= maxWeakenThreads) {
+      weaken = maxWeakenThreads
+      hack = 0
+      grow = 0
+    } else {
+      weaken = maintenanceThreads
+      const actionRam = reclaimableRam - weaken * ramInfo.weakenRam
+      if (actionRam >= ramInfo.minRam) {
+        hack = Math.floor((actionRam * weights.hack) / ramInfo.hackRam)
+        grow = Math.floor((actionRam - hack * ramInfo.hackRam) / ramInfo.growRam)
+      } else {
+        hack = 0
+        grow = 0
+      }
+    }
+    allocations.push({ host, hack, grow, weaken })
+  }
+
+  return { allocations, weakenBudgetRemaining: remaining }
+}
+
+/**
+ * hostNeedsRedeploy — rewritten 2026-08-13 (hacking-strategy.md R3) from an
+ * action-*type* comparison to an allocation-*quantity* comparison. The old
+ * version (see git history) only checked which action types were running
+ * against the plan, never how many threads — which meant two live bugs:
+ * (1) weaken threads sized for an earlier tick's higher security were never
+ * scaled back down as the target's security dropped, so the no-redeploy
+ * branch kept charging a shrinking `weakenBudget` for a stale, oversized
+ * allocation and drove it negative every tick
+ * (`weakenBudgetNonNegative`, confirmed live: 172 threads running against a
+ * `needWeaken` of 75); (2) once a host ran `weaken + grow` (any weaken
+ * phase's leftover-capacity branch), a plan flip to "work" judged it
+ * already fine as long as `grow` was present, so hack was only ever
+ * introduced by a work-weight bucket change — confirmed live at 0 hack
+ * threads network-wide despite `plan.weights.hack` being nonzero.
+ *
+ * Both are the same root cause (comparing *kind* instead of *amount*), so
+ * one general fix closes both: compare `desired` (this tick's freshly
+ * computed allocation from `computeDesiredAllocation`, pass 1) against what
+ * is actually running, per action type, with a tolerance band to avoid
+ * churn from rounding noise. `forceRebalance` as a separate signal is gone
+ * — a work-weight bucket change already changes `desired.hack`/`desired.grow`,
+ * so it is caught by the same general diff instead of needing its own flag.
+ *
+ * Preserved from the 2026-08-11 redeploy-cadence fix (see git history for
+ * the original comment): a mismatch is a real reason to redeploy but never
+ * an urgent one on its own, so it still waits until every currently running
  * action type has had at least one full call's worth of time
- * (elapsedS >= its own current *TimeS) to complete before it's allowed to
- * kill and redeploy. A bucket flip that lands mid-call just sets the new
- * weights for the *next* redeploy instead of retroactively invalidating the
- * call already in flight.
- *
- * mcp.js's original comment, preserved: "hack/grow/weaken calls routinely
- * take 1-4+ minutes (see hackTime/growTime/weakenTime in the status line),
- * far longer than one mcp loop tick. Killing and re-execing every tick
- * regardless of state means threads never survive long enough to complete,
- * so a host is only redeployed when its currently running actions no
- * longer match what's actually needed."
+ * (`elapsedS >= its own actionDurationsS`) before killing and redeploying —
+ * a quantity mismatch that lands mid-call just gets picked up on the next
+ * tick that's still mismatched, instead of cutting the in-flight call
+ * short. The two structural checks (wrong target; hack running during an
+ * active weaken phase, which actively fights it) still redeploy
+ * immediately, unconditionally, same as before.
  *
  * @param {object} args
  * @param {string} args.target
  * @param {{type: string}} args.plan
- * @param {{script: string, target: string, elapsedS: number}[]} args.running
+ * @param {{script: string, target: string, elapsedS: number, threads: number}[]} args.running
  *   - one entry per currently-running action process on the host.
- * @param {boolean} args.forceRebalance
+ * @param {{hack: number, grow: number, weaken: number}} args.desired - this
+ *   host's row from `computeDesiredAllocation`.
+ * @param {{absolute: number, relative: number}} args.tolerance - slack
+ *   before a quantity difference counts as a real mismatch, as
+ *   `max(absolute, want * relative)` per action type.
  * @param {{hack: number, grow: number, weaken: number}} args.actionDurationsS
  *   - current ns.get*Time()-derived duration for each action type, seconds.
  */
-export function hostNeedsRedeploy({ target, plan, running, forceRebalance, actionDurationsS }) {
+export function hostNeedsRedeploy({ target, plan, running, desired, tolerance, actionDurationsS }) {
   if (running.length === 0) return true
   if (running.some((r) => r.target !== target)) return true
+  // Hack fights an active weaken phase (adds security while stealing from a
+  // server we're trying to stabilize) — urgent regardless of quantity.
+  if (plan.type === "weaken" && running.some((r) => r.script === "hack")) return true
 
-  const hasGrow = running.some((r) => r.script === "grow")
-  const hasHack = running.some((r) => r.script === "hack")
-  // Grow is welcome during a weaken phase (leftover capacity goes to it, and
-  // refilling money is always useful); hack is not — it fights the weaken by
-  // adding security while stealing from a server we're trying to stabilize.
-  if (plan.type === "work" && !hasGrow && !hasHack) return true
-  if (plan.type === "weaken" && hasHack) return true
+  const have = { hack: 0, grow: 0, weaken: 0 }
+  for (const r of running) have[r.script] = (have[r.script] || 0) + r.threads
 
-  if (!forceRebalance) return false
+  let mismatched = false
+  for (const script of ["hack", "grow", "weaken"]) {
+    const want = desired[script] || 0
+    const slack = Math.max(tolerance.absolute, want * tolerance.relative)
+    if (Math.abs(want - have[script]) > slack) {
+      mismatched = true
+      break
+    }
+  }
+  if (!mismatched) return false
 
-  // The only reason left to redeploy is forceRebalance itself (e.g. a
-  // work-weight bucket change) — nothing structurally wrong with what's
-  // running. Hold off until every action type currently running has had at
-  // least one full call's worth of time to complete, so the redeploy lands
-  // between calls instead of inside one.
   return running.every((r) => r.elapsedS >= (actionDurationsS[r.script] ?? 0))
 }
 

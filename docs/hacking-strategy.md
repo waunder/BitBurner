@@ -6,13 +6,14 @@ one is the knowledge base (formulas extracted from the game's own
 TypeScript), this one is the argument built on top of it. Read that first;
 every formula cited here comes from there unless marked otherwise.
 
-**Status as of 2026-08-14: R1, R2, R3, R5, and R7 are all implemented,
-live, and confirmed working correctly. R1's live confirmation run also
-surfaced why it isn't paying off fully on the bot's current target yet —
-see §5 item 3 — which makes R4 (target scoring) the next concrete step. See
-§5 for the current, maintained status of every item.** The rest of this
-document is the original analysis; read §5 first if you just want to know
-what's left.
+**Status as of 2026-08-14: R1–R5 and R7 are all implemented, live, and
+confirmed working correctly — R4 landed last and delivered the
+order-of-magnitude payoff for real: `incomePerSec` went from ~$170–190K/s
+to $11.4M/s (~60×) the moment it picked a genuinely well-suited target
+instead of the poor-fit one R1's live confirmation run had exposed. See §5
+for the current, maintained status of every item — only R6 (XP mode) is
+left, and it's deliberately parked.** The rest of this document is the
+original analysis; read §5 first if you just want to know what's left.
 
 ## Status vocabulary
 
@@ -888,8 +889,17 @@ truth for "what's left," not just the original ranking.
    false-positive it closes. R3 being live is what makes R1 safe to ship
    now — the weight change means nothing if the redeploy layer can't
    actually get the new ratio onto the network.
-4. **R4 (scoring + ramp discount + switch factor) — shipped 2026-08-14, not
-   yet confirmed live.** All three pieces shipped together in one change, per
+4. **R4 (scoring + ramp discount + switch factor) — done, live, confirmed
+   2026-08-14, and it delivered.** Restarted ~13:33 PDT; the bot immediately
+   dropped `foodnstuff` and adopted `phantasy` instead
+   (`growPerHack≈14` vs. `foodnstuff`'s ≈117 — an 8× better balance-point
+   ratio). Once it reached harvest mode: **`incomePerSec` = $11.4M/s**,
+   up from R5/R7's ~$170–190K/s on the old target — a **~60×** jump, in the
+   modelled 10–30× range for R1 alone times R4's additional target-quality
+   multiplier, achieved together. Zero `invariantViolations`. This is the
+   order-of-magnitude payoff the whole R1–R4 chain was built for, not just a
+   modelled projection anymore. All three pieces shipped together in one
+   change, per
    §2's own instruction not to drop `OPPORTUNITY_SWITCH_FACTOR` ahead of the
    new score. `getTargetScore` (mcp.js) now calls a new pure
    `computeTargetScore` (mcp_logic.js) implementing this section's exact
@@ -1012,11 +1022,14 @@ truth for "what's left," not just the original ranking.
 7. **R6 (XP mode) — not started, low priority.** `OBJECTIVE` is `"money"`
    and income is the binding constraint; revisit when that changes.
 
-Steps 1–3 are the ones with an order-of-magnitude behind them; all three are
-shipped, live, and confirmed working correctly — R1's confirmation run is
-also what surfaced *why* it isn't paying off yet on the current target,
-which is exactly what made R4 (step 4) the next thing worth doing rather
-than a nice-to-have. R4, R5 and R7 (steps 4-6) are all shipped now; R4 is
-the one still awaiting a live restart and confirmation (see step 4's own
-entry for what to check on that restart). Everything after step 3 is
-single-digit multipliers on top of whatever it achieves.
+**All of steps 1–6 are now shipped, live, and confirmed working — only R6
+(step 7) remains, deliberately parked until `OBJECTIVE` ever leaves
+`"money"`.** R1 alone (step 3) was the order-of-magnitude payload
+*in theory*; R4 (step 4) is what actually cashed it in — R1 correctly
+computes near-zero hack on a poor-fit target, which is mathematically
+right but produces nothing, and R4 is the piece that stops the bot landing
+on such targets in the first place. Confirmed live together:
+$170–190K/s → $11.4M/s, ~60× in one restart. This document's own original
+estimate (§1's "Modelled achievable rate on the bot's current target:
+~$13M/s" against a live $436K/s, a ~30× gap) undersold it once R4 also
+fixed *which* target gets that treatment.

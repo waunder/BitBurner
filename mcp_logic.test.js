@@ -18,6 +18,7 @@ import assert from "node:assert/strict"
 import {
   evaluateMoneyDegradation,
   evaluateOpportunitySwitch,
+  evaluateStuckTarget,
   selectWorkWeights,
   getWorkWeightBucket,
   bucketForMoneyPct,
@@ -133,6 +134,107 @@ describe("hostNeedsRedeploy — the 2026-08-11 forceRebalance/redeploy-timing bu
       actionDurationsS,
     })
     assert.equal(needsRedeploy, true)
+  })
+})
+
+describe("evaluateStuckTarget — the 2026-08-13 floor-eviction bug", () => {
+  test("regression: a target sitting at its security floor is never stuck, no matter how long it's been there", () => {
+    // The exact live shape: bestSecuritySeen frozen at the floor from a long
+    // time ago, stalledMs already far past the window — the case that used
+    // to fire the instant requiredWeaken next went nonzero. requiredWeaken
+    // is 0 here (at/under goal security), which is what must reset it.
+    const result = evaluateStuckTarget({
+      currentSecurity: 10,
+      bestSecuritySeen: 10,
+      securityProgressTime: 1_000,
+      requiredWeaken: 0,
+      now: 1_000_000,
+      stuckWindowMs: 60_000,
+      progressThreshold: 0.05,
+    })
+    assert.equal(result.stuck, false, "a target needing no weaken right now has nothing to be stuck on")
+    assert.equal(result.securityProgressTime, 0, "the window must reset, not just be skipped this tick")
+    assert.equal(result.bestSecuritySeen, Infinity)
+  })
+
+  test("regression: the floor-reset means the very next tick that needs weaken again starts a fresh window", () => {
+    // Two consecutive ticks: first at the floor (resets), then security has
+    // risen (e.g. a hack thread landed) so requiredWeaken is nonzero again.
+    // Before the fix this tick would have inherited the stale, already-
+    // expired window and evicted immediately.
+    const atFloor = evaluateStuckTarget({
+      currentSecurity: 10,
+      bestSecuritySeen: 10,
+      securityProgressTime: 1_000,
+      requiredWeaken: 0,
+      now: 500_000,
+      stuckWindowMs: 60_000,
+      progressThreshold: 0.05,
+    })
+    const nextTick = evaluateStuckTarget({
+      currentSecurity: 12,
+      bestSecuritySeen: atFloor.bestSecuritySeen,
+      securityProgressTime: atFloor.securityProgressTime,
+      requiredWeaken: 40,
+      now: 500_100,
+      stuckWindowMs: 60_000,
+      progressThreshold: 0.05,
+    })
+    assert.equal(nextTick.stuck, false)
+    assert.equal(nextTick.securityProgressTime, 500_100, "a fresh window opens rather than inheriting the stale one")
+  })
+
+  test("genuine stall still evicts: security not improving while weaken is actually needed", () => {
+    const result = evaluateStuckTarget({
+      currentSecurity: 40,
+      bestSecuritySeen: 40,
+      securityProgressTime: 0,
+      requiredWeaken: 300,
+      now: 70_000,
+      stuckWindowMs: 60_000,
+      progressThreshold: 0.05,
+    })
+    // First call with securityProgressTime 0 only opens the window —
+    // eviction requires a second tick past the window with no improvement.
+    assert.equal(result.stuck, false)
+    const secondTick = evaluateStuckTarget({
+      currentSecurity: 40,
+      bestSecuritySeen: result.bestSecuritySeen,
+      securityProgressTime: result.securityProgressTime,
+      requiredWeaken: 300,
+      now: result.securityProgressTime + 70_000,
+      stuckWindowMs: 60_000,
+      progressThreshold: 0.05,
+    })
+    assert.equal(secondTick.stuck, true, "a target that genuinely never improves must still be evicted")
+  })
+
+  test("real improvement resets the window, not stuck", () => {
+    const result = evaluateStuckTarget({
+      currentSecurity: 30,
+      bestSecuritySeen: 40,
+      securityProgressTime: 1_000,
+      requiredWeaken: 100,
+      now: 61_500,
+      stuckWindowMs: 60_000,
+      progressThreshold: 0.05,
+    })
+    assert.equal(result.stuck, false)
+    assert.equal(result.bestSecuritySeen, 30)
+    assert.equal(result.securityProgressTime, 61_500)
+  })
+
+  test("within the window with no improvement yet is not stuck", () => {
+    const result = evaluateStuckTarget({
+      currentSecurity: 40,
+      bestSecuritySeen: 40,
+      securityProgressTime: 1_000,
+      requiredWeaken: 100,
+      now: 30_000,
+      stuckWindowMs: 60_000,
+      progressThreshold: 0.05,
+    })
+    assert.equal(result.stuck, false)
   })
 })
 

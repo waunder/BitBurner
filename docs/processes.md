@@ -211,8 +211,13 @@ as described. Ranked, concrete fixes are in that doc; none are applied yet.
 **`mcp_logic.js` holds the pure decision logic** — `evaluateMoneyDegradation`
 (the eviction predicate at the center of the `moneyDegraded`/XP-mode bug
 fixed in `81814d6`), `evaluateOpportunitySwitch` (the switch comparison),
-`selectWorkWeights`/`getWorkWeightBucket` (the bucket table + hysteresis),
-and `computeTickInvariantChecks` (the invariant predicates). No `ns` calls,
+`evaluateStuckTarget` (the stuck-detector decision — see 2026-08-13 below;
+fixed a live bug where a target sitting at its security floor, the normal
+outcome of a weaken phase, got evicted as "stuck" once security next rose,
+because the old inline version never reset its window on reaching the
+floor), `selectWorkWeights`/`getWorkWeightBucket` (the bucket table +
+hysteresis), and `computeTickInvariantChecks` (the invariant predicates). No
+`ns` calls,
 no side effects — `mcp.js` imports it the same way `dnet_deploy.js` imports
 `dnet_lib.js`, and does all the `ns` calls and mutation itself, calling into
 this module only for "given these inputs, what's the decision."

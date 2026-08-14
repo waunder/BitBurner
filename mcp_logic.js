@@ -241,6 +241,64 @@ export function hostNeedsRedeploy({ target, plan, running, forceRebalance, actio
 }
 
 /**
+ * The stuck-target detector's decision, extracted from mcp.js 2026-08-13
+ * after finding it live-evicting healthy targets. `bestSecuritySeen` tracks
+ * the lowest security observed since the window opened; once a target
+ * reaches its security *floor* — the normal, desired outcome of a weaken
+ * phase — `currentSecurity` can never again read below
+ * `bestSecuritySeen - progressThreshold`, because the game's own
+ * `capDifficulty()` hard-clamps security at the floor. Before this fix,
+ * `securityProgressTime` therefore froze at the moment the floor was first
+ * touched and the stall clock kept running through every subsequent
+ * productive minute, only to fire the instant security next rose above the
+ * cap — by which point `stalledMs` was already far past the window.
+ * **confirmed live**: all three `reason:"stuck"` evictions in one session's
+ * event log had `bestSecuritySeen` exactly equal to the target's floor and
+ * `stalledMs` 1.2-2.7x past `stuckWindowMs`; none of them were actually
+ * failing to weaken (`weakenTimeMs` well under the window in every case).
+ *
+ * `requiredWeaken === 0` means the target is already at or under its goal
+ * security right now — nothing to be stuck on — so that case resets the
+ * window outright rather than merely being excluded from the eviction
+ * check, so a target that later needs weaken again starts a fresh window
+ * instead of inheriting a stale one.
+ *
+ * @param {object} args
+ * @param {number} args.currentSecurity
+ * @param {number} args.bestSecuritySeen - Infinity means no window is open.
+ * @param {number} args.securityProgressTime - 0 means no window is open yet.
+ * @param {number} args.requiredWeaken - this tick's weaken-thread need; 0
+ *   means the target needs no weaken right now.
+ * @param {number} args.now
+ * @param {number} args.stuckWindowMs
+ * @param {number} args.progressThreshold - WEAKEN_STUCK_SECURITY_THRESHOLD.
+ * @returns {{securityProgressTime: number, bestSecuritySeen: number, stuck: boolean, stalledMs: number}}
+ */
+export function evaluateStuckTarget({
+  currentSecurity,
+  bestSecuritySeen,
+  securityProgressTime,
+  requiredWeaken,
+  now,
+  stuckWindowMs,
+  progressThreshold,
+}) {
+  if (requiredWeaken === 0) {
+    return { securityProgressTime: 0, bestSecuritySeen: Infinity, stuck: false, stalledMs: 0 }
+  }
+  if (securityProgressTime === 0 || currentSecurity < bestSecuritySeen - progressThreshold) {
+    return { securityProgressTime: now, bestSecuritySeen: currentSecurity, stuck: false, stalledMs: 0 }
+  }
+  const stalledMs = now - securityProgressTime
+  return {
+    securityProgressTime,
+    bestSecuritySeen,
+    stuck: stalledMs > stuckWindowMs,
+    stalledMs,
+  }
+}
+
+/**
  * The per-tick invariant sweep's predicates, decoupled from the toast/count/
  * event-emit side effects that live in mcp.js's `invariants.check`. Returns
  * checks in the same order they used to run inline, including the

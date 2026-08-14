@@ -11,6 +11,7 @@ import {
   getWorkWeightBucket,
   evaluateMoneyDegradation,
   evaluateOpportunitySwitch,
+  evaluateStuckTarget,
   computeTickInvariantChecks,
   hostNeedsRedeploy,
 } from "mcp_logic.js"
@@ -1096,10 +1097,18 @@ export async function main(ns) {
         // against tick-boundary timing, rather than exactly one cycle with
         // no margin.
         const stuckWindowMs = Math.max(WEAKEN_STUCK_MS, ns.getWeakenTime(currentTarget) * 2)
-        if (securityProgressTime === 0 || currentSecurity < bestSecuritySeen - WEAKEN_STUCK_SECURITY_THRESHOLD) {
-          securityProgressTime = Date.now()
-          bestSecuritySeen = currentSecurity
-        } else if (currentRequiredWeaken > 0 && Date.now() - securityProgressTime > stuckWindowMs) {
+        const stuckEval = evaluateStuckTarget({
+          currentSecurity,
+          bestSecuritySeen,
+          securityProgressTime,
+          requiredWeaken: currentRequiredWeaken,
+          now: Date.now(),
+          stuckWindowMs,
+          progressThreshold: WEAKEN_STUCK_SECURITY_THRESHOLD,
+        })
+        securityProgressTime = stuckEval.securityProgressTime
+        bestSecuritySeen = stuckEval.bestSecuritySeen
+        if (stuckEval.stuck) {
           ns.tprint(
             `mcp: target ${currentTarget} not weakening (sec=${currentSecurity.toFixed(2)} best=${bestSecuritySeen.toFixed(2)} need=${currentRequiredWeaken} window=${(stuckWindowMs / 1000).toFixed(0)}s); switching target`
           )
@@ -1109,7 +1118,7 @@ export async function main(ns) {
             currentSecurity,
             bestSecuritySeen,
             progressThreshold: WEAKEN_STUCK_SECURITY_THRESHOLD,
-            stalledMs: Date.now() - securityProgressTime,
+            stalledMs: stuckEval.stalledMs,
             stuckAfterMs: stuckWindowMs,
             weakenTimeMs: ns.getWeakenTime(currentTarget),
             requiredWeaken: currentRequiredWeaken,

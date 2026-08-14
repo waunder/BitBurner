@@ -4,6 +4,36 @@ Reference for `ns.dnet.*` and the helpers this repo now carries for it.
 Companion docs: `darknet-tactics.md` (per-decision reasoning),
 `darknet-strategy.md` (sequencing and what we're optimising for).
 
+## 2026-08-14 optimization update (Codex branch, not live-confirmed yet)
+
+The current source signature is explicit: `memoryReallocation(host?)` can
+target an authenticated, directly-connected neighbour. The earlier helper
+comment claiming it could only act on the calling server was wrong, and
+`freeBlockedRam(ns, host, maxCalls)` now correctly supports either form.
+The deployed architecture therefore uses temporary source-side
+`dnet_realloc.js`: the already-running crawler passes its authenticated direct
+neighbour as an argument and uses every spare source-side thread. This can
+unlock a deeper target even when 100% of the target's own RAM is blocked, and
+keeps the 1GB API cost out of every permanent crawler. On a common 16GB server,
+carrying that cost forever would reduce the eventual phishing allocation from
+three threads to two.
+
+After preparation, the crawler runs the one-shot loot worker once per
+neighbour/process lifetime, then deploys new `dnet_phish.js` at the largest
+thread count that fits. The worker is deliberately only
+`phishingAttack()` + logging (~3.6GB/thread): aggregate charisma and darknet
+income already exist outside it, so per-worker telemetry would reduce the
+productive thread count for little diagnostic value. A cache-producing
+phishing success writes a zero-RAM marker and exits; the crawler sees that
+marker, runs loot to open the volatile cache, then restores phishing.
+
+Loot reports are no longer mutable per-host snapshots. Meaningful outcomes
+use filename-safe immutable `dnet_loot_<host>_<timestamp>.json` event shards;
+no-op passes write nothing, and `dnet_loot_merge.js` recomputes cumulative
+totals from the retained ledger. This fixes two old observability failures at
+once: hostile hostnames no longer leak raw punctuation into loot filenames,
+and a later zero-result pass can no longer erase an earlier cache/RAM gain.
+
 ## Status vocabulary
 
 Used on every claim below, because the difference matters here more than
@@ -212,14 +242,14 @@ object literal in the bundle, and **its keys are the mechanic names**.
 | DefaultPassword | `FreshInstall_1.0` | yes |
 | EchoVuln | `DeskMemo_3.1` | yes |
 | Captcha | `CloudBlare(tm)` | yes |
-| SortedEchoVuln | `PHP 5.4` | |
+| SortedEchoVuln | `PHP 5.4` | yes |
 | BufferOverflow | `Pr0verFl0` | |
 | MastermindHint | `DeepGreen` | |
 | TimingAttack | `2G_cellular` | |
 | LargestPrimeFactor | `PrimeTime 2` | |
 | RomanNumeral | `BellaCuore` | |
 | DogNames | `Laika4` | |
-| GuessNumber | `AccountsManager_4.2` | |
+| GuessNumber | `AccountsManager_4.2` | yes |
 | CommonPasswordDictionary | `TopPass` | |
 | EUCountryDictionary | `EuroZone Free` | |
 | Yesn_t | `NIL` | |

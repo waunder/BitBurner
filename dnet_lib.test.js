@@ -20,11 +20,36 @@ import {
   acquireSession,
   shardName,
   pickFreshestShard,
+  lootEventShardName,
+  aggregateLootRecords,
   SHARD_PREFIX,
   SHARD_SUFFIX,
   DEPLOYER_SHARD_PREFIX,
   DEPLOYER_SHARD_SUFFIX,
+  candidatesFor,
+  MODEL,
 } from "./dnet_lib.js"
+
+describe("bounded shallow-model solvers", () => {
+  test("PHP 5.4 tries every unique permutation through length three", () => {
+    const res = candidatesFor({ modelId: MODEL.SortedEchoVuln, data: "112" })
+    assert.equal(res.exhaustive, true)
+    assert.deepEqual(res.candidates.map((c) => c.password).sort(), ["112", "121", "211"])
+  })
+
+  test("AccountsManager_4.2 covers its exact difficulty-four range", () => {
+    const res = candidatesFor({ modelId: MODEL.GuessNumber, difficulty: 4 })
+    assert.equal(res.exhaustive, true)
+    assert.equal(res.candidates.length, 24)
+    assert.equal(res.candidates.at(-1).password, "23")
+  })
+
+  test("Pr0verFl0 emits the exact overflow payload", () => {
+    const res = candidatesFor({ modelId: MODEL.BufferOverflow, passwordLength: 4 })
+    assert.equal(res.exhaustive, true)
+    assert.equal(res.candidates[0].password, "AAAAAAAA")
+  })
+})
 
 describe("chooseLootMode — Phase 3b RAM-fit fallback policy", () => {
   test("picks full when free RAM covers the full script", () => {
@@ -84,6 +109,29 @@ describe("freeBlockedRam — shared reallocation loop (mock ns)", () => {
     const ns = makeNs({ blocked: 0 })
     const res = await freeBlockedRam(ns, "host1", 25)
     assert.deepEqual(res, { before: 0, after: 0, calls: 0, why: "nothing blocked" })
+  })
+
+  test("forwards the authenticated neighbour target to every dnet call", async () => {
+    const seen = []
+    let blocked = 1
+    const ns = {
+      print: () => {},
+      dnet: {
+        getBlockedRam: (host) => {
+          seen.push(["get", host])
+          return blocked
+        },
+        memoryReallocation: async (host) => {
+          seen.push(["realloc", host])
+          blocked = 0
+          return { success: true, code: 200, message: "ok" }
+        },
+      },
+    }
+    const res = await freeBlockedRam(ns, "direct-neighbour", 25)
+    assert.equal(res.after, 0)
+    assert.ok(seen.length >= 3)
+    assert.ok(seen.every(([, host]) => host === "direct-neighbour"))
   })
 
   test("fully reclaims across several calls, then stops on NoBlockRAM (454)", async () => {
@@ -173,6 +221,43 @@ describe("shardName — generalized prefix/suffix (2026-08-12, deployer sharding
     assert.ok(!/[:@%🙂]/.test(creds))
     assert.ok(!/[:@%🙂]/.test(deployer))
     assert.equal(creds.slice(SHARD_PREFIX.length, -SHARD_SUFFIX.length), deployer.slice(DEPLOYER_SHARD_PREFIX.length, -DEPLOYER_SHARD_SUFFIX.length))
+  })
+})
+
+describe("lootEventShardName — durable event shards", () => {
+  test("keeps hostile hostnames filename-safe and preserves the event timestamp", () => {
+    const file = lootEventShardName("we:ird@host%🙂", 123456789)
+    assert.match(file, /^dnet_loot_[A-Za-z0-9_-]+_123456789\.json$/)
+    assert.ok(!/[:@%🙂]/.test(file))
+  })
+
+  test("long hostnames cannot truncate the timestamp that makes an event unique", () => {
+    const file = lootEventShardName("x".repeat(200), 987654321)
+    assert.ok(file.endsWith("_987654321.json"))
+  })
+})
+
+describe("aggregateLootRecords — cumulative/idempotent loot telemetry", () => {
+  const records = [
+    { host: "a", model: "old", difficulty: 1, mode: "realloc-only", at: 10, ram: { before: 4, after: 1 } },
+    { host: "a", model: "new", difficulty: 2, mode: "full", at: 20, ram: { before: 2, after: 1 }, caches: { karma: -3, opened: 1, found: 1 } },
+    { host: "b", model: "b", difficulty: 0, mode: "full", at: 15, caches: { karma: -1, opened: 1, found: 2 } },
+  ]
+
+  test("sums every immutable event while retaining the newest host metadata", () => {
+    const result = aggregateLootRecords(records)
+    assert.equal(result.totalRamFreed, 4)
+    assert.equal(result.totalKarma, -4)
+    assert.equal(result.totalCachesOpened, 2)
+    assert.equal(result.totalCachesFound, 3)
+    assert.deepEqual(result.perHost.a, {
+      model: "new", difficulty: 2, mode: "full", ramFreed: 4, karma: -3,
+      opened: 1, found: 1, events: 2, at: 20,
+    })
+  })
+
+  test("is idempotent when the same shard set is merged again", () => {
+    assert.deepEqual(aggregateLootRecords(records), aggregateLootRecords(records))
   })
 })
 

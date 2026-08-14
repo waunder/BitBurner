@@ -10,6 +10,19 @@ Ken's hand, and check it off once it's confirmed done — same rule as
 
 ## Pending
 
+- [ ] **Restart the Dark Net swarm once Codex says the optimization branch is
+  ready for live validation.** The game is connected and the 2026-08-14 files
+  are synced, but direct heartbeat reads show the `home` deployer stopped at
+  pass 982 and the other sampled shard is older still. Bitburner does not
+  hot-reload, and the Remote API cannot launch an arbitrary in-game script;
+  the eventual validation will need one terminal run of the updated swarm.
+
+- [x] **Reconnect Bitburner to the Remote API daemon on port 12526.**
+  Confirmed 2026-08-14 via `tools/bb_remote.py ctl-status`: connected with
+  no sync or pull alarms. A forced resync pushed all 40 watched files and a
+  forced pull fetched all 7 telemetry files, with zero failures or missing
+  files in either direction.
+
 - [x] **Pull `origin/main` into the actual synced checkout at
   `/Users/Shared/BitBurner`.** Done — fast-forwarded `bd527fb..09062a6`,
   bringing in the darknet status-file clobbering fix. `node --test

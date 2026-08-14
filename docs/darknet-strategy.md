@@ -25,6 +25,38 @@ budget (tactics §2/§3), and the crawl itself costs zero instability. The
 paragraphs below are the original pre-live-run plan, kept as-is; where they
 predicted a number, it held.
 
+**Update 2026-08-14 (Codex branch, awaiting live restart): turn the shallow
+net into a charisma engine.** Live state has reached 586 historical
+credentials across seven models with pristine instability (1× duration,
+0% timeout), but the merged scoreboard is stale and sampled crawler shards
+have stopped advancing. Source inspection also shows this save is confined
+to the shallow/basic darknet (observed maximum difficulty 4); deep labs and
+their stasis-limit augmentations are not a reachable optimization target in
+the current state. The highest-value reachable loop is therefore:
+
+1. authenticate a directly-connected neighbour;
+2. launch a temporary, multi-thread `dnet_realloc.js` on the crawler, aimed at
+   that neighbour, before resident scripts consume capacity;
+3. preserve the self-replicating crawl and one-shot cache loot;
+4. fill remaining RAM with a lean multi-thread `phishingAttack()` loop.
+
+That loop is implemented on the Codex branch as temporary multi-thread
+`dnet_realloc.js`, new `dnet_phish.js`, once-per-process neighbour
+preparation, cache-success handoff markers, and immutable cumulative
+loot-event telemetry. It does not use
+backdoors, stasis, migration, stock promotion, or Storm Seed. Phishing is the
+correct idle load because it builds charisma on every attempt (even failures),
+and charisma shortens later phishing/reallocation/authentication work while
+also improving phishing success and payout. Live validation requires a clean
+swarm restart because Bitburner does not hot-reload.
+
+The same pass also closes three bounded authentication gaps already relevant
+to this shallow save: all unique PHP 5.4 permutations through length three,
+the exact AccountsManager difficulty range, and Pr0verFl0's one-shot overflow
+payload. Feedback-dependent models remain deliberately outside the roaming
+crawler until a separate charisma-gated heartbleed solver can correlate logs
+and retry 408 timeouts safely.
+
 ---
 
 ## What we're optimising for

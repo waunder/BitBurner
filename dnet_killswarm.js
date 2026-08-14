@@ -1,5 +1,6 @@
 /**
- * One-off cleanup: kill every dnet_deploy.js / dnet_loot.js process
+ * One-off cleanup: kill every Dark Net crawler, loot, reallocation, and
+ * phishing process
  * currently running anywhere on the darknet, so a fresh dnet_deploy.js run
  * from home can spread the loot fix (2026-08-12, see
  * docs/darknet-functions.md's Phase 3 section) past hosts an old-code copy
@@ -37,7 +38,13 @@
  */
 import { acquireSession, readCreds } from "dnet_lib.js"
 
-const TARGET_SCRIPTS = new Set(["dnet_deploy.js", "dnet_loot.js"])
+const TARGET_SCRIPTS = new Set([
+  "dnet_deploy.js",
+  "dnet_loot.js",
+  "dnet_loot_realloc.js",
+  "dnet_realloc.js",
+  "dnet_phish.js",
+])
 
 export async function main(ns) {
   ns.disableLog("ALL")

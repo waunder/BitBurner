@@ -16,6 +16,16 @@ password models have now cracked a real server live, zero misses. Sections
 below are otherwise unchanged from the pre-live-run analysis; where a
 number below was a prediction, it has held up.
 
+**2026-08-14 operational rule:** prepare, propagate, loot once, then phish.
+The crawler now launches a temporary multi-thread reallocator on its own host,
+aimed at a freshly-authenticated direct neighbour before placing resident scripts on it;
+preserves one crawler copy;
+attempts the cache/loot pass once per neighbour and crawler lifetime; then
+fills the released capacity with the lean phishing worker. This ordering
+keeps discovery alive and can unlock a target even when all of that target's
+RAM is blocked.
+Phishing workers are expendable by design and are restored after mutations.
+
 ---
 
 ## 1. Cracking the four models we will actually meet

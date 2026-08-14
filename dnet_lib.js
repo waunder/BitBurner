@@ -23,6 +23,8 @@ export const SHARD_SUFFIX = ".txt"
 export const STATUS_FILE = "dnet_status.json"
 export const DEPLOYER_SHARD_PREFIX = "dnet_deployer_"
 export const DEPLOYER_SHARD_SUFFIX = ".json"
+export const LOOT_SHARD_PREFIX = "dnet_loot_"
+export const LOOT_SHARD_SUFFIX = ".json"
 
 /** Response codes, copied from the game's DarknetResponseCodeType. */
 export const CODE = {
@@ -142,8 +144,20 @@ export function candidatesFor(d, bruteForceLimit = 0) {
     }
 
     case MODEL.SortedEchoVuln:
-      add(data, "PHP 5.4: sorted form, correct only if password was already sorted")
-      break
+      for (const p of uniquePermutations(data, 3)) add(p, "PHP 5.4: permutation of the sorted digits")
+      return { model: d.modelId, exhaustive: data.length > 0 && data.length <= 3, candidates: out }
+
+    case MODEL.BufferOverflow:
+      if (Number.isInteger(d.passwordLength) && d.passwordLength > 0) {
+        add("A".repeat(2 * d.passwordLength), "Pr0verFl0: overflow payload is twice the password length")
+      }
+      return { model: d.modelId, exhaustive: out.length > 0, candidates: out }
+
+    case MODEL.GuessNumber: {
+      const upper = Math.ceil((10 * ((d.difficulty ?? 0) + 3)) / 3)
+      for (let i = 0; i < upper; i++) add(String(i), "AccountsManager_4.2: exact generated-number range")
+      return { model: d.modelId, exhaustive: upper > 0, candidates: out }
+    }
 
     case MODEL.DogNames:
       for (const p of DOG_NAMES) add(p, "Laika4: dog-name list")
@@ -171,6 +185,29 @@ export function candidatesFor(d, bruteForceLimit = 0) {
   }
 
   return { model: d.modelId, exhaustive: false, candidates: out }
+}
+
+/** Unique permutations, bounded so the roaming crawler never explodes into
+ * an unbounded factorial search. Current shallow PHP 5.4 passwords are at
+ * most three digits; longer variants belong in the feedback solver. */
+export function uniquePermutations(value, maxLength = 3) {
+  const text = String(value)
+  if (!text || text.length > maxLength) return text ? [text] : []
+  const out = []
+  const visit = (prefix, remaining) => {
+    if (!remaining.length) {
+      out.push(prefix)
+      return
+    }
+    const used = new Set()
+    for (let i = 0; i < remaining.length; i++) {
+      if (used.has(remaining[i])) continue
+      used.add(remaining[i])
+      visit(prefix + remaining[i], remaining.slice(0, i) + remaining.slice(i + 1))
+    }
+  }
+  visit("", text)
+  return out
 }
 
 /** Bare words and quoted spans in a hint, longest first — cheap generic guesses. */
@@ -204,10 +241,8 @@ export function numericCandidates(d, limit) {
  * loot, and 2026-08-12's deployer heartbeat) needs the same escaping, so it
  * lives here once rather than each caller inventing its own. Defaults match
  * the original credential-shard naming so every existing caller is
- * unaffected. `dnet_loot.js`/`dnet_loot_realloc.js` still build their own
- * shard name with raw `dnet_loot_${host}.json` string interpolation instead
- * of this — a latent bug on a host with `:`/`%`/`@`/emoji in its name, flagged
- * but out of scope to fix here.
+ * unaffected. Loot event names use this same escaping through
+ * lootEventShardName below.
  */
 export function shardName(host, prefix = SHARD_PREFIX, suffix = SHARD_SUFFIX) {
   let safe = ""
@@ -215,6 +250,59 @@ export function shardName(host, prefix = SHARD_PREFIX, suffix = SHARD_SUFFIX) {
     safe += /[A-Za-z0-9_-]/.test(ch) ? ch : "x" + ch.codePointAt(0).toString(16)
   }
   return `${prefix}${safe.slice(0, 80)}${suffix}`
+}
+
+/** Unique, filename-safe loot event shard. The timestamp is appended after
+ * shardName's host truncation so long/hostile names cannot truncate it and
+ * collapse several events back onto one snapshot filename. */
+export function lootEventShardName(host, at) {
+  const base = shardName(host, LOOT_SHARD_PREFIX, "")
+  return `${base}_${at}${LOOT_SHARD_SUFFIX}`
+}
+
+/** Fold immutable loot-event records into an idempotent cumulative summary. */
+export function aggregateLootRecords(records) {
+  const perHost = {}
+  let totalKarma = 0
+  let totalRamFreed = 0
+  let totalCachesOpened = 0
+  let totalCachesFound = 0
+
+  for (const rec of records) {
+    if (!rec || typeof rec.host !== "string") continue
+    const ramFreed = Math.max(0, (rec.ram?.before ?? 0) - (rec.ram?.after ?? 0))
+    const karma = rec.caches?.karma ?? 0
+    const opened = rec.caches?.opened ?? 0
+    const found = rec.caches?.found ?? 0
+    const prev = perHost[rec.host] ?? {
+      model: rec.model,
+      difficulty: rec.difficulty,
+      mode: rec.mode ?? "full",
+      ramFreed: 0,
+      karma: 0,
+      opened: 0,
+      found: 0,
+      events: 0,
+      at: 0,
+    }
+    prev.ramFreed += ramFreed
+    prev.karma += karma
+    prev.opened += opened
+    prev.found += found
+    prev.events++
+    if ((rec.at ?? 0) >= prev.at) {
+      prev.model = rec.model
+      prev.difficulty = rec.difficulty
+      prev.mode = rec.mode ?? "full"
+      prev.at = rec.at ?? prev.at
+    }
+    perHost[rec.host] = prev
+    totalRamFreed += ramFreed
+    totalKarma += karma
+    totalCachesOpened += opened
+    totalCachesFound += found
+  }
+  return { perHost, totalKarma, totalRamFreed, totalCachesOpened, totalCachesFound }
 }
 
 /** Parse the credential store. Tolerates a missing or truncated file. */
@@ -451,7 +539,8 @@ export async function acquireSession(ns, host, known, opts = {}) {
 }
 
 /**
- * Reclaim blocked RAM on the calling script's current server, checking
+ * Reclaim blocked RAM on an authenticated, directly-connected server,
+ * defaulting to the calling script's current server. Checking
  * getBlockedRam (0GB) before and after each 1GB memoryReallocation call so a
  * call that had nothing to reclaim, or that frees nothing, terminates the
  * loop instead of spinning or paying for calls with nothing to gain.
@@ -463,25 +552,29 @@ export async function acquireSession(ns, host, known, opts = {}) {
  * sync on the actual reallocation loop.
  *
  * @param {NS} ns
- * @param {string} host - for the log line only; the call always targets the
- *   current server (memoryReallocation has no target argument)
+ * @param {string} host - target server; pass the current hostname for the
+ *   original local-loot behavior, or a freshly-authenticated neighbour to
+ *   reclaim its RAM before deploying anything onto it.
  * @param {number} maxCalls
  * @returns {Promise<{before: number, after: number, calls: number, why: string}>}
  */
 export async function freeBlockedRam(ns, host, maxCalls) {
-  const before = ns.dnet.getBlockedRam()
+  const getBlocked = () => (host === undefined ? ns.dnet.getBlockedRam() : ns.dnet.getBlockedRam(host))
+  const reallocate = () =>
+    host === undefined ? ns.dnet.memoryReallocation() : ns.dnet.memoryReallocation(host)
+  const before = getBlocked()
   if (before <= 0) return { before, after: before, calls: 0, why: "nothing blocked" }
 
   let calls = 0
   let why = "hit call cap"
   while (calls < maxCalls) {
-    const remaining = ns.dnet.getBlockedRam()
+    const remaining = getBlocked()
     if (remaining <= 0) {
       why = "fully reclaimed"
       break
     }
 
-    const res = await ns.dnet.memoryReallocation()
+    const res = await reallocate()
     calls++
 
     if (!res.success) {
@@ -489,13 +582,13 @@ export async function freeBlockedRam(ns, host, maxCalls) {
       break
     }
 
-    if (ns.dnet.getBlockedRam() >= remaining) {
+    if (getBlocked() >= remaining) {
       why = "call freed nothing; stopping rather than spinning"
       break
     }
   }
 
-  const after = ns.dnet.getBlockedRam()
+  const after = getBlocked()
   ns.print(`REALLOC ${host} before=${before} after=${after} calls=${calls} why=${why}`)
   return { before, after, calls, why }
 }

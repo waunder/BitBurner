@@ -24,14 +24,13 @@
  * for the full script (missed one reachable ns call), so confirm this
  * number live too before trusting it for the next RAM-fit decision.
  *
- * Writes its own report as the same per-host shard dnet_loot.js uses
- * (dnet_loot_<host>.json) -- shard content is a snapshot of the most
- * recent loot pass over that host, same semantics either script writes it
- * with, distinguished by `mode: "realloc-only"` vs `mode: "full"`.
+ * A meaningful result becomes an immutable timestamped event shard, using
+ * the same cumulative ledger as dnet_loot.js and distinguished by
+ * `mode: "realloc-only"`.
  *
  * @param {NS} ns
  */
-import { freeBlockedRam } from "dnet_lib.js"
+import { freeBlockedRam, lootEventShardName } from "dnet_lib.js"
 
 export async function main(ns) {
   ns.disableLog("ALL")
@@ -49,8 +48,12 @@ export async function main(ns) {
 
   ns.tprint(`dnet_loot_realloc: ${JSON.stringify(report)}`)
 
-  const shard = `dnet_loot_${host}.json`
-  ns.write(shard, JSON.stringify({ ...report, at: Date.now() }), "w")
+  const ramFreed = Math.max(0, (report.ram?.before ?? 0) - (report.ram?.after ?? 0))
+  if (ramFreed <= 0) return
+
+  const at = Date.now()
+  const shard = lootEventShardName(host, at)
+  ns.write(shard, JSON.stringify({ ...report, at }), "w")
   if (host !== "home") {
     try {
       ns.scp(shard, "home")

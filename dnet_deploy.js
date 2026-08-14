@@ -369,6 +369,9 @@ export async function main(ns) {
 function writeDeployerStatus(ns, { pass, host, summary, lifetime, localKnownCreds }) {
   try {
     const instability = ns.dnet.getDarknetInstability()
+    const maxRam = ns.getServerMaxRam(host)
+    const usedRam = ns.getServerUsedRam(host)
+    const processes = ns.ps(host).map((p) => ({ filename: p.filename, pid: p.pid, threads: p.threads, args: p.args }))
     const shard = writeDeployerShard(ns, host, {
       host,
       pass,
@@ -397,6 +400,14 @@ function writeDeployerStatus(ns, { pass, host, summary, lifetime, localKnownCred
       sinceProcessStart: { ...lifetime },
       localKnownCreds,
       instability,
+      controllerRam: {
+        scriptRam: ns.getScriptRam(ns.getScriptName(), host),
+        maxRam,
+        usedRam,
+        freeRam: maxRam - usedRam,
+        blockedRam: ns.dnet.getBlockedRam(host),
+        processes,
+      },
     })
     shipShard(ns, shard)
   } catch (err) {

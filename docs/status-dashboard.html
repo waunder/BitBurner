@@ -484,7 +484,7 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">rebuilt 2026&#8209;08&#8209;13 18:10 PDT</div>
+    <div class="updated mono">rebuilt 2026&#8209;08&#8209;13 18:19 PDT</div>
   </div>
 
   <div class="glance">
@@ -511,13 +511,15 @@
             <span class="tag">decision</span>
             <span class="row-date mono">2026&#8209;08&#8209;13 17:41 PDT</span>
           </div>
-          <div class="row-title">Remote API dropped and hasn't reconnected &mdash; reconnect to pick everything back up</div>
-          <p>The daemon's connection to the game closed at 17:41:33 (<code class="cite">close_code=1006</code>,
-            no close frame &mdash; the same silent-drop failure mode <code class="cite">CLAUDE.md</code>
-            already documents) and, as always, did not auto-reconnect. Everything downstream is stalled
-            until you click <strong>Options &rarr; Remote API &rarr; Connect</strong> in-game: new files
-            (the reputation booster below) can't push, and status pulls (including confirming your IPvGO
-            restart actually fixed the loop below) are stuck on whatever was last seen before the drop.</p>
+          <div class="row-title">Remote API needs one more reconnect &mdash; <code class="cite">Options &rarr; Remote API &rarr; Connect</code></div>
+          <p>Dropped at 17:41:33 (<code class="cite">close_code=1006</code>, the same silent-drop failure
+            mode <code class="cite">CLAUDE.md</code> already documents), you reconnected it &mdash; then
+            <code class="cite">share_deploy.js</code>/<code class="cite">scripts/share.js</code> turned out
+            to be missing from the daemon's <code class="cite">WATCHED_FILES</code> push list (built but
+            never actually registered to sync, a real gap, now fixed), which needed a daemon restart to
+            pick up, which drops the connection the same as any restart does. Sorry for the extra
+            round-trip &mdash; one more <strong>Connect</strong> click and both items below should be
+            current.</p>
         </div>
       </div>
 
@@ -674,24 +676,24 @@
 
       <div class="progress-card">
         <div class="progress-top">
-          <span class="pulse"></span>
-          <span class="row-title">IPvGO was stuck faking games since sometime after last night &mdash; root-caused, restart status unconfirmed</span>
+          <span class="pulse idle"></span>
+          <span class="row-title">IPvGO was stuck faking games overnight &mdash; root-caused, your restart confirmed it fixed</span>
         </div>
-        <p>Routine status pull today found <code class="cite">ipvgo_status.json</code> wildly out of step
-          with the scoreboard above: board size 9 (not 7), 11,800+ games (not 96), ~98% win rate, and
-          every one of the last 100 games logging the <em>identical</em> score once a second &mdash; not
-          physically possible for real play. Root cause, read straight from <code class="cite">ipvgo_player.js</code>:
+        <p>Routine status pull found <code class="cite">ipvgo_status.json</code> wildly out of step with
+          the scoreboard above: board size 9 (not 7), 11,800+ games (not 96), ~98% win rate, and every one
+          of the last 100 games logging the <em>identical</em> score once a second &mdash; not physically
+          possible for real play. Root cause, read straight from <code class="cite">ipvgo_player.js</code>:
           something relaunched it with opponent <code class="cite">"slum snakes"</code> (lowercase) instead
           of the required <code class="cite">"Slum Snakes"</code>; <code class="cite">ns.go.resetBoardState()</code>
           throws on the bad string, the exception gets silently swallowed by the main loop's catch-all, the
-          board never resets, and the same finished game re-logs as a fresh win forever. You restarted the
-          player &mdash; but the Remote API dropped at 17:41 (see "Needs your call" above) before that could
-          be confirmed live, so this is <strong>root-caused and (per you) restarted, not yet verified fixed</strong>.
-          Once reconnected, a fresh <code class="cite">ipvgo_status.json</code> pull with a sane,
-          per-game-varying score will confirm it. Full writeup: <code class="cite">docs/claude-todo.md</code>'s
-          2026&#8209;08&#8209;13 entry.</p>
-        <div class="stale-note">found 2026&#8209;08&#8209;13 17:39, you restarted it shortly after &mdash;
-          leaving this here until it's confirmed live, not clearing it myself.</div>
+          board never resets, and the same finished game re-logs as a fresh win forever.
+          <strong>Confirmed fixed</strong> after your restart: the next live pull showed opponent correctly
+          as <code class="cite">"Slum Snakes"</code>, a real varying score (58&ndash;21.5, not the frozen
+          24&ndash;23.5), and genuine move timing (avg 2.9s/move, matching real MCTS at 6000
+          simulations on a 9&times;9 board) &mdash; real games again, not a fabricated streak. Full
+          writeup: <code class="cite">docs/claude-todo.md</code>'s 2026&#8209;08&#8209;13 entry.</p>
+        <div class="stale-note">found 2026&#8209;08&#8209;13 17:39, you restarted it shortly after,
+          confirmed fixed ~18:09 &mdash; leaving this here until you've had a look, not clearing it myself.</div>
       </div>
 
       <div class="progress-card">

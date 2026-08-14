@@ -1,5 +1,57 @@
 # Claude's working list
 
+## 2026-08-13 (later, confirmed): IPvGO fix confirmed live; ns.share() reputation booster built, blocked twice on the Remote API, both resolved
+
+Follow-up to the entry directly below. Ken restarted `ipvgo_player.js`; next
+live pull confirmed the fix: `opponent` reads `"Slum Snakes"` (correct
+casing) instead of `"slum snakes"`, `lastResult` shows a real varying score
+(58&ndash;21.5, not the frozen 24&ndash;23.5) with genuine move timing
+(avg 2.9s/move, `maxMoveMs` 3821 — matches real MCTS at 6000
+simulations/move on a 9x9 board). **Confirmed fixed, not just restarted.**
+
+Ken also asked for an `ns.share()` reputation-growth booster (see repo's own
+diminishing-returns doc comment on `share()`/`getSharePower()` in
+`NetscriptDefinitions.d.ts`, cited exactly since the actual in-game curve
+isn't extractable from the bundled/minified client source). Built:
+
+- `scripts/share.js` — three-line loop, same shape as `scripts/weaken.js`.
+- `share_deploy.js` — launches it. Default mode only claims `home`'s spare
+  RAM (`mcp.js` never uses `home` for worker threads, so zero effect on the
+  money farm); `network` mode also claims free RAM on rooted worker hosts,
+  which `mcp.js` will react to on its own next tick (fewer weaken/grow/hack
+  threads there) — a deliberate, not accidental, trade of hacking income for
+  rep-gain rate. `stop` mode undoes either. Real caveat surfaced up front:
+  share power only affects rep gain while actively doing faction/company
+  work — a no-op otherwise, since this repo has no scripted work-for-faction
+  automation.
+- `node --check` clean on both, `node --test *.test.js` still 85/85 (neither
+  file touches anything under test).
+
+**Hit two live-infrastructure snags getting it in front of Ken, both found
+and fixed the same session, not left as follow-up:**
+
+1. The Remote API connection dropped at 17:41:33 (`close_code=1006`, no
+   close frame) — the same silent-drop failure mode `CLAUDE.md` already
+   documents, unrelated to anything this session touched. Ken reconnected.
+2. Reconnecting still didn't surface `share_deploy.js` in-game — traced to
+   a real gap: `tools/bb_remote.py`'s `WATCHED_FILES` list is a *separate*
+   hardcoded push list from what's committed to the repo, and the new files
+   were never added to it, so the daemon never pushed them despite being
+   connected. Fixed (`WATCHED_FILES` now includes `share_deploy.js` and
+   `scripts/share.js`), but picking up a code change to a running daemon
+   process requires restarting it, which itself drops the live connection
+   the same as any restart — so this needs **one more** manual reconnect
+   before `share_deploy.js` actually shows up in the in-game terminal.
+   Worth remembering: any future file added to the repo that needs to reach
+   the game must be added to `WATCHED_FILES` explicitly — being committed
+   and `git`-tracked is not sufficient by itself, a gap that cost a full
+   extra round-trip this session.
+
+**Not yet run live:** `share_deploy.js` itself — blocked on the reconnect
+above, same as everything else in this paragraph. First real signal once
+run: `ns.getSharePower()` printed on launch, and whether `mcp_status.json`'s
+`ramUtilization` visibly drops if `network` mode is ever used.
+
 ## 2026-08-13: IPvGO stuck in a fake-game loop since sometime after the 22:50 dashboard snapshot — root-caused, not yet fixed live
 
 Routine review session (no code changes queued going in) pulled

@@ -898,24 +898,82 @@ truth for "what's left," not just the original ranking.
    anything with. `OPPORTUNITY_SWITCH_FACTOR` still shouldn't drop from 3
    until the ramp discount ships alongside the new score, per §2's own note
    — ship both together.
-5. **R5, R7 — code shipped 2026-08-14, NOT YET CONFIRMED LIVE.** Built and
-   unit-tested in an isolated worktree, same as R1 was (110/110 tests,
-   `node --check` clean) — not yet merged or restarted live. R5 rewrote
-   `allocateThreads` to kill/re-exec only the script(s) whose thread count
-   actually changed instead of all three every redeploy. R7: `home` (128GB)
-   joined the worker pool behind a new `HOME_RAM_RESERVE` (32GB) tunable;
-   `computeDesiredAllocation`'s weaken-phase leftover-grow branch takes an
-   optional `growSecurityIncreaseForThreads` callback so `mcp.js` can supply
-   `ns.growthAnalyzeSecurity` without giving the pure function `ns` access
-   (omitting it reproduces the old estimate exactly); `SECURITY_CAP` 6→1.
-   Both independent of R1/R4, no known interaction with the R1 finding
-   above — safe to merge and restart whenever convenient.
-6. **R6 (XP mode) — not started, low priority.** `OBJECTIVE` is `"money"`
+5. **R5 (per-script redeploy) — code shipped 2026-08-14, about to be
+   confirmed live.** Built and unit-tested in an isolated worktree with no
+   game connection (same verification limits as R1/R3 above — `node --test`/
+   `node --check` only; the actual in-game signal, fewer `plan_flip` events
+   per hour per the doc's own §2 measurement plan, is still outstanding).
+   Shipped: `allocateThreads` (mcp.js) now diffs `desired` against `have`
+   per script (`weaken`/`grow`/`hack`, in that order) and only kills +
+   re-execs the ones that actually changed, instead of tearing down and
+   rebuilding all three on every redeploy. The have-side counting is now
+   `countRunningByScript`, a new named export in `mcp_logic.js` (2 new
+   tests), reused by both `hostNeedsRedeploy`'s existing mismatch check and
+   `allocateThreads`'s new per-script decision — the doc's own instruction
+   not to duplicate the have-counting logic. `killActionScripts` (kills all
+   three unconditionally) is no longer called from `allocateThreads`, but is
+   unchanged and kept for its other two call sites (orphan cleanup at
+   startup, full teardown when no target is found), both of which genuinely
+   want an unconditional sweep rather than a diff.
+6. **R7 (cheap items) — code shipped 2026-08-14, about to be confirmed
+   live.** Same verification limits as above. All four bullets from §2's R7
+   section addressed:
+   - **`home` joins the worker pool**, gated by a new `HOME_RAM_RESERVE`
+     config tunable (default 32, full plumbing through `CONFIG_DEFAULTS`/
+     `loadConfig`/`mcp_status.json`'s `config` block, same pattern as
+     `REDEPLOY_TOLERANCE_ABSOLUTE`). `getHostFreeRam` now subtracts the
+     reserve off `home`'s free RAM instead of returning a flat 0;
+     `getWorkerHosts` no longer excludes `home`; `allocateThreads`'s old
+     home-only early-return (which only made sense while `home` was
+     categorically excluded) is removed. **Judgment call:** the reserve is a
+     continuous subtraction clamped at 0 (`Math.max(0, freeRam)`, already
+     the function's existing pattern), not a binary "skip home entirely
+     below the threshold" gate the doc's risk note could be read as asking
+     for — this degrades `home`'s allocation gracefully toward zero as its
+     own footprint grows, rather than an all-or-nothing cutoff, while still
+     satisfying the doc's actual requirement (mcp.js/HUD/supervisor never
+     starved, since the reserve is enforced before any of it counts as free).
+     `allocateThreads` also skips the `copyActionScripts` scp step
+     specifically for `home` (the scripts already live there, since `mcp.js`
+     itself runs from `home`) — same guard `share_deploy.js` already used
+     for the identical reason, not a new pattern.
+   - **`ns.growthAnalyzeSecurity(threads, target, 1)` replaces
+     `weakenThreadsToOffset(0, growThreads)`** in the weaken-phase
+     leftover-grow branch — but that branch no longer lives in mcp.js by the
+     time this shipped; R3 (2026-08-13) already moved it into
+     `computeDesiredAllocation` in `mcp_logic.js`, a pure function with no
+     `ns` access. **Judgment call, deviating from the literal spec:**
+     rather than leaving the pure-function architecture or reintroducing an
+     `ns` call into `mcp_logic.js`, `computeDesiredAllocation` now takes an
+     optional injected function, `growSecurityIncreaseForThreads(growThreads)`
+     — mcp.js passes `(t) => ns.growthAnalyzeSecurity(t, currentTarget, 1)`,
+     matching the doc's exact call; `mcp_logic.js` never references `ns`
+     directly, so the "pure, no side effects" property this file's whole
+     header comment is built on still holds. Omitting the argument
+     reproduces the exact old linear-estimate numbers (verified: existing
+     tests pass unmodified), so every other caller is unaffected; only
+     mcp.js's real call site gets the clamped behavior. 3 new tests cover
+     the omitted-default parity, the injected-function call sequence, and
+     the actual saturation case (a function returning 0 regardless of
+     thread count zeros out the reserve entirely, vs. a nonzero reserve
+     under the old linear estimate). The other `weakenThreadsToOffset` call
+     site (the "work" plan's combined hack+grow maintenance calc) is
+     unchanged, since `growthAnalyzeSecurity` only covers grow, not hack.
+   - **`SECURITY_CAP` default 6 → 1**, both `mcp.js`'s own `let` default and
+     `mcp_config.json`'s committed value. Config-only change, no structural
+     code touched. Kept the diff minimal around `HACK_BALANCE_SAFETY`'s
+     entry in `mcp_config.json` per this task's own instruction, since that
+     key is live and separately monitored.
+   - **`tickWithinBounds` firing** — no code change, per the doc's own
+     "informational only" note.
+7. **R6 (XP mode) — not started, low priority.** `OBJECTIVE` is `"money"`
    and income is the binding constraint; revisit when that changes.
 
 Steps 1–3 are the ones with an order-of-magnitude behind them; all three are
 shipped, live, and confirmed working correctly — R1's confirmation run is
 also what surfaced *why* it isn't paying off yet on the current target,
 which is exactly what makes R4 (step 4) the next thing worth doing rather
-than a nice-to-have. Everything after step 3 is single-digit multipliers on
-top of whatever it achieves.
+than a nice-to-have. R5 and R7 (steps 5-6) are single-digit-percent items
+layered on top, shipped in code and about to be restarted live alongside
+this merge. Everything after step 3 is single-digit multipliers on top of
+whatever it achieves.

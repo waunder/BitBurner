@@ -237,6 +237,37 @@ export function weakenThreadsToOffset(
 }
 
 /**
+ * Grow-only weaken offset for computeDesiredAllocation's weaken-phase
+ * leftover-grow branch (hacking-strategy.md R7, 2026-08-14). Same
+ * weakenPerGrowRatio/weakenSecDecrease rate-correction math
+ * `weakenThreadsToOffset(0, growThreads, ...)` always did (grow threads loop
+ * every `growTime`, weaken every `weakenTime` = 1.25x less often, so a
+ * one-shot per-call comparison understates what maintenance actually costs)
+ * — the only thing that changes is *where the raw per-call security number
+ * comes from*.
+ *
+ * Without `growSecurityIncreaseForThreads`, the raw number is
+ * `growThreads * growSecIncrease` (linear, uncapped) — reproduces the exact
+ * old `weakenThreadsToOffset(0, growThreads, ...)` result, so every existing
+ * caller/test that doesn't pass the function keeps its current numbers.
+ *
+ * With it, the raw number is whatever the function returns —
+ * `ns.growthAnalyzeSecurity(growThreads, target, 1)` in mcp.js, which
+ * applies the game's own `min(threads, maxThreadsNeeded)` clamp (source,
+ * NetscriptFunctions.ts) so the reserve stops growing once the target is
+ * close enough to `moneyMax` that extra grow threads can't add more growth
+ * (and therefore can't add more security) than the clamp allows. This is an
+ * `ns` call, so it has to be injected from mcp.js rather than called
+ * directly here — this file stays free of any literal `ns.*` reference.
+ */
+function growWeakenOffsetThreads(growThreads, securityConstants, growSecurityIncreaseForThreads) {
+  const rawIncrease = growSecurityIncreaseForThreads
+    ? growSecurityIncreaseForThreads(growThreads)
+    : growThreads * securityConstants.growSecIncrease
+  return Math.ceil((rawIncrease * securityConstants.weakenPerGrowRatio) / securityConstants.weakenSecDecrease)
+}
+
+/**
  * Pass 1 of the two-pass allocation R3 replaced `allocateThreads`'s old
  * single-pass, per-host-only logic with (2026-08-13, hacking-strategy.md
  * R3). Computes every host's *desired* thread allocation from its
@@ -271,6 +302,13 @@ export function weakenThreadsToOffset(
  *   no cross-host sharing.
  * @param {{hackRam: number, growRam: number, weakenRam: number, minRam: number}} args.ramInfo
  * @param {{hackSecIncrease: number, growSecIncrease: number, weakenSecDecrease: number, weakenPerHackRatio: number, weakenPerGrowRatio: number}} args.securityConstants
+ * @param {(growThreads: number) => number} [args.growSecurityIncreaseForThreads] - optional,
+ *   hacking-strategy.md R7: `ns.growthAnalyzeSecurity(growThreads, target, 1)`
+ *   from mcp.js, used only in the weaken-phase leftover-grow branch below.
+ *   Omit to keep the old linear `growThreads * growSecIncrease` estimate
+ *   (what every pre-R7 caller/test still gets) — see
+ *   `growWeakenOffsetThreads`'s own comment for why the clamped version is
+ *   worth having and why it has to be injected rather than called directly.
  * @returns {{allocations: {host: string, hack: number, grow: number, weaken: number}[], weakenBudgetRemaining: number}}
  *   `allocations` is in the same order as `args.hosts`. `weakenBudgetRemaining`
  *   is what's left of `args.weakenBudget` after only the *primary* per-host
@@ -284,7 +322,14 @@ export function weakenThreadsToOffset(
  *   budget. Conflating the two would make this assertion fire on every
  *   tick a grow offset is nonzero, which is normal and not a bug.
  */
-export function computeDesiredAllocation({ hosts, plan, weakenBudget, ramInfo, securityConstants }) {
+export function computeDesiredAllocation({
+  hosts,
+  plan,
+  weakenBudget,
+  ramInfo,
+  securityConstants,
+  growSecurityIncreaseForThreads,
+}) {
   const allocations = []
   let remaining = weakenBudget
 
@@ -301,12 +346,15 @@ export function computeDesiredAllocation({ hosts, plan, weakenBudget, ramInfo, s
       let grow = Math.floor(leftoverRam / ramInfo.growRam)
       // Growing adds security too, so it has to pay for its own offset out
       // of the same leftover rather than undermining the weaken it runs
-      // beside.
-      const growOffset = weakenThreadsToOffset(0, grow, securityConstants)
+      // beside. hacking-strategy.md R7: sized from ns.growthAnalyzeSecurity
+      // (via growSecurityIncreaseForThreads) when available, so the reserve
+      // saturates the same way the game's own grow() call does as the
+      // target nears moneyMax, instead of growing linearly forever.
+      let growOffset = growWeakenOffsetThreads(grow, securityConstants, growSecurityIncreaseForThreads)
       if (growOffset > 0) {
         const reserveRam = growOffset * ramInfo.weakenRam
         grow = Math.max(0, Math.floor((leftoverRam - reserveRam) / ramInfo.growRam))
-        weaken += weakenThreadsToOffset(0, grow, securityConstants)
+        weaken += growWeakenOffsetThreads(grow, securityConstants, growSecurityIncreaseForThreads)
       }
       allocations.push({ host, hack: 0, grow, weaken })
       continue
@@ -338,6 +386,26 @@ export function computeDesiredAllocation({ hosts, plan, weakenBudget, ramInfo, s
   }
 
   return { allocations, weakenBudgetRemaining: remaining }
+}
+
+/**
+ * Sums running per-script thread counts into `{hack, grow, weaken}` — the
+ * "have" side of the desired-vs-running diff `hostNeedsRedeploy` (below)
+ * uses to decide *whether* a host needs a redeploy. Extracted as its own
+ * export 2026-08-14 (hacking-strategy.md R5) so `allocateThreads` (mcp.js)
+ * can reuse the exact same counting for its own per-script kill/re-exec
+ * decision, instead of recomputing an equivalent tally a second way that
+ * could drift out of sync with this one.
+ *
+ * @param {{script: string, threads: number}[]} running - one entry per
+ *   currently-running action process (only `script`/`threads` are read, so
+ *   `hostNeedsRedeploy`'s richer per-entry shape works here unchanged).
+ * @returns {{hack: number, grow: number, weaken: number}}
+ */
+export function countRunningByScript(running) {
+  const have = { hack: 0, grow: 0, weaken: 0 }
+  for (const r of running) have[r.script] = (have[r.script] || 0) + r.threads
+  return have
 }
 
 /**
@@ -395,8 +463,7 @@ export function hostNeedsRedeploy({ target, plan, running, desired, tolerance, a
   // server we're trying to stabilize) — urgent regardless of quantity.
   if (plan.type === "weaken" && running.some((r) => r.script === "hack")) return true
 
-  const have = { hack: 0, grow: 0, weaken: 0 }
-  for (const r of running) have[r.script] = (have[r.script] || 0) + r.threads
+  const have = countRunningByScript(running)
 
   let mismatched = false
   for (const script of ["hack", "grow", "weaken"]) {

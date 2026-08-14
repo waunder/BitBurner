@@ -484,13 +484,13 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">rebuilt 2026&#8209;08&#8209;14 13:15 PDT</div>
+    <div class="updated mono">rebuilt 2026&#8209;08&#8209;14 13:35 PDT</div>
   </div>
 
   <div class="glance">
     <span class="chip"><span class="dot dot-good"></span>needs your call <span class="n mono">0</span></span>
-    <span class="chip"><span class="dot dot-neutral"></span>in progress <span class="n mono">5</span></span>
-    <span class="chip"><span class="dot dot-warn"></span>flagged <span class="n mono">1</span></span>
+    <span class="chip"><span class="dot dot-neutral"></span>in progress <span class="n mono">1</span></span>
+    <span class="chip"><span class="dot dot-good"></span>flagged <span class="n mono">0</span></span>
   </div>
 
   <p class="lede">Every row below is dated; nothing on this page is presented as current unless it was
@@ -621,143 +621,23 @@
   <section aria-labelledby="progress-title">
     <div class="block-head">
       <h2 class="block-title" id="progress-title">In progress</h2>
-      <span class="block-count mono">5</span>
-    </div>
-    <div class="rows">
-
-      <div class="progress-card">
-        <div class="progress-top">
-          <span class="pulse idle"></span>
-          <span class="row-title">R1 confirmed live and working correctly &mdash; but exposed exactly why it isn't paying off yet</span>
-        </div>
-        <p>You said go. Restarted ~11:42 PDT, watched <code class="cite">foodnstuff</code> ramp
-          4%&nbsp;&rarr;&nbsp;100% moneyPct over ~15 minutes exactly as the balance-point math predicts,
-          zero invariant violations. <strong>Then a surprise:</strong> at 100% money,
-          <code class="cite">incomePerSec</code> sat at <strong>exactly 0</strong> with
-          <strong>zero hack threads anywhere in the pool</strong>, including on a 256GB host. Looked like a
-          bug. Added a small diagnostic field (<code class="cite">debugWorkWeights</code> in
-          <code class="cite">mcp_status.json</code>, kept permanently, cheap) and read the real numbers
-          instead of guessing: <code class="cite">growPerHack&nbsp;&asymp;&nbsp;117</code> on this target
-          &mdash; <strong>5&times; worse</strong> than the doc's own worked example &mdash; giving a
-          balanced hack share of <strong>0.77%</strong>, which floors to 0 threads on every host no matter
-          how large. The formula checks out exactly against the live reading. <strong>Not a bug</strong>:
-          <code class="cite">foodnstuff</code> is just a target the balance-point strategy correctly
-          declines to hack at all &mdash; the old bucket table would've hacked it anyway (that's the
-          collapse case §1 predicted). This is now the live-confirmed reason R4 (target scoring, doesn't
-          currently know about <code class="cite">growPerHack</code>) is the next thing worth building, not
-          just a modelled recommendation. Also confirmed <code class="cite">mults.hacking_grow&nbsp;=&nbsp;1.36</code>
-          &mdash; comfortably above the 1.0 the doc's $/s table assumed, so the real ceiling is higher than
-          modelled once R4 lands.</p>
-        <div class="stale-note">restarted 2026&#8209;08&#8209;14 11:42 PDT, live&#8209;watch completed and
-          understood ~13:00 &mdash; leaving this here until you've had a look, not clearing it myself.</div>
-      </div>
-
-      <div class="progress-card">
-        <div class="progress-top">
-          <span class="pulse idle"></span>
-          <span class="row-title">R5 + R7 confirmed live &mdash; and a side effect worth knowing about</span>
-        </div>
-        <p>You said go. Merged, synced, restarted ~13:08 PDT &mdash; new
-          <code class="cite">runId</code>/<code class="cite">scriptVersion</code> confirmed, zero
-          <code class="cite">invariantViolations</code> on the first post-restart pull, 97.7% RAM
-          utilization. R5 stops <code class="cite">allocateThreads</code> killing and re-execing all three
-          action scripts on every redeploy (kills only the script whose thread count actually changed,
-          weaken first). R7: <code class="cite">home</code> &mdash; 1024GB, bigger than the 128GB this
-          project's own notes assumed &mdash; joined the worker pool behind a 32GB reserve, confirmed
-          running 56 weaken/494 grow/1 hack threads on its own at first read; also a more accurate grow
-          security-reserve calc and <code class="cite">SECURITY_CAP</code> 6&rarr;1.
-          <strong>Side effect:</strong> home's huge extra pool means R1's tiny ~0.77% hack share on the
-          current (poor-fit) target now rounds up to a real thread somewhere, so
-          <code class="cite">incomePerSec</code> went from a flat $0 to <strong>~$170&ndash;180K/s</strong>
-          &mdash; genuinely more money, but this is R7 partially papering over the R4 gap, not R1 actually
-          paying off. The real jump is still waiting on R4 picking a target where the balance-point math
-          has something to work with.</p>
-        <div class="stale-note">built 2026&#8209;08&#8209;14 ~11:47&ndash;12:15 PDT, merged &amp; restarted
-          ~13:08, confirmed healthy ~13:13 &mdash; leaving this here until you've had a look, not clearing
-          it myself.</div>
-      </div>
-
-      <div class="progress-card">
-        <div class="progress-top">
-          <span class="pulse idle"></span>
-          <span class="row-title">Reputation booster running &mdash; you report 15% improved rep-growth rate</span>
-        </div>
-        <p>Built <code class="cite">share_deploy.js</code> + <code class="cite">scripts/share.js</code>
-          (<code class="cite">ns.share()</code>) after you asked for a rep-growth boost. Hit two
-          live-infrastructure snags getting it in front of you &mdash; a Remote API drop, then a gap where
-          the new files weren't in the daemon's push list &mdash; both found and fixed the same session.
-          You confirmed it's running and reports <strong>15% improved rate of growth</strong>. That figure
-          is <strong>your observation, not something this repo currently measures</strong> &mdash; no
-          script here logs faction/company rep-per-second to a file, so there's no independent telemetry
-          confirming or breaking down that number (e.g. which mode you ran, home-only or network). Say
-          the word if you want that built &mdash; a small status file mirroring
-          <code class="cite">mcp_status.json</code>'s pattern would make it checkable here going forward
-          instead of eyeballed in-game.</p>
-        <div class="stale-note">built 2026&#8209;08&#8209;13 18:10, you confirmed it running and reporting
-          +15% ~20:46 &mdash; leaving this here until you've had a look, not clearing it myself.</div>
-      </div>
-
-      <div class="progress-card">
-        <div class="progress-top">
-          <span class="pulse idle"></span>
-          <span class="row-title">IPvGO was stuck faking games overnight &mdash; root-caused, your restart confirmed it fixed</span>
-        </div>
-        <p>Routine status pull found <code class="cite">ipvgo_status.json</code> wildly out of step with
-          the scoreboard above: board size 9 (not 7), 11,800+ games (not 96), ~98% win rate, and every one
-          of the last 100 games logging the <em>identical</em> score once a second &mdash; not physically
-          possible for real play. Root cause, read straight from <code class="cite">ipvgo_player.js</code>:
-          something relaunched it with opponent <code class="cite">"slum snakes"</code> (lowercase) instead
-          of the required <code class="cite">"Slum Snakes"</code>; <code class="cite">ns.go.resetBoardState()</code>
-          throws on the bad string, the exception gets silently swallowed by the main loop's catch-all, the
-          board never resets, and the same finished game re-logs as a fresh win forever.
-          <strong>Confirmed fixed</strong> after your restart: the next live pull showed opponent correctly
-          as <code class="cite">"Slum Snakes"</code>, a real varying score (58&ndash;21.5, not the frozen
-          24&ndash;23.5), and genuine move timing (avg 2.9s/move, matching real MCTS at 6000
-          simulations on a 9&times;9 board) &mdash; real games again, not a fabricated streak. Full
-          writeup: <code class="cite">docs/claude-todo.md</code>'s 2026&#8209;08&#8209;13 entry.</p>
-        <div class="stale-note">found 2026&#8209;08&#8209;13 17:39, you restarted it shortly after,
-          confirmed fixed ~18:09 &mdash; leaving this here until you've had a look, not clearing it myself.</div>
-      </div>
-
-      <div class="progress-card">
-        <div class="progress-top">
-          <span class="pulse idle"></span>
-          <span class="row-title">Darknet looting &mdash; now confirmed working, real numbers in</span>
-        </div>
-        <p>Resolved tonight: inline looting (loot the instant a server's confirmed online, not on a
-          separate later pass) shipped and is producing real results &mdash; 71 hosts looted, karma
-          and RAM tracked, no longer zero. Getting an honest reading on it surfaced two more real
-          bugs along the way (a crash on a corrupted credential, and a status-file clobbering race),
-          both found and fixed the same night. Full numbers now live in the Dark Net Scoreboard
-          above.</p>
-        <div class="stale-note">started 2026&#8209;08&#8209;12 13:05, confirmed resolved
-          ~22:45 &mdash; leaving this here until you've had a look, not clearing it myself.</div>
-      </div>
-
-    </div>
-  </section>
-
-  <section aria-labelledby="flag-title">
-    <div class="block-head">
-      <h2 class="block-title" id="flag-title">Flagged &mdash; not yet chased down</h2>
       <span class="block-count mono">1</span>
     </div>
     <div class="rows">
 
-      <div class="row flag">
-        <div class="row-stripe"></div>
-        <div class="row-body">
-          <div class="row-top">
-            <span class="tag">seen live</span>
-            <span class="row-date mono">2026&#8209;08&#8209;11 16:40</span>
-          </div>
-          <div class="row-title">Some ticks are taking up to 4 minutes instead of 10 seconds</div>
-          <p>Found while diagnosing the item above &mdash; 27 ticks in the same snapshot ran 30&ndash;238
-            seconds instead of the normal 10. Not yet root&#8209;caused, and not urgent on its own, but worth
-            understanding since a slow tick makes the redeploy&#8209;timing problem above worse, not better.
-            (The earlier "506 invariant hits" figure from 2026&#8209;08&#8209;10 turned out to be from a
-            different, unrelated counter that's since reset &mdash; not the same issue as either of these.)</p>
+      <div class="progress-card">
+        <div class="progress-top">
+          <span class="pulse"></span>
+          <span class="row-title">R4 (target scoring) merged, deploying now</span>
         </div>
+        <p>You said go. Reviewed the full diff against the strategy doc before merging &mdash; formulas
+          check out, 122/122 tests passing. Replaces the old score (never read the target's growth rate,
+          systematically favoured easy-but-poor targets) with an achievable-rate estimate at R1's balance
+          point, plus a ramp-cost discount replacing the old arbitrary readiness floor, plus
+          <code class="cite">OPPORTUNITY_SWITCH_FACTOR</code> 3&rarr;1.3 (safe now that the ramp discount
+          prices in switching cost). Waiting on the game reconnecting to push/restart &mdash; will report
+          what it actually picks once live.</p>
+        <div class="stale-note">merged 2026&#8209;08&#8209;14 ~13:32 PDT, deploy in progress.</div>
       </div>
 
     </div>

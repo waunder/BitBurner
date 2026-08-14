@@ -484,50 +484,18 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">rebuilt 2026&#8209;08&#8209;13 21:40 PDT</div>
+    <div class="updated mono">rebuilt 2026&#8209;08&#8209;14 11:50 PDT</div>
   </div>
 
   <div class="glance">
-    <span class="chip"><span class="dot dot-accent"></span>needs your call <span class="n mono">1</span></span>
-    <span class="chip"><span class="dot dot-neutral"></span>in progress <span class="n mono">3</span></span>
+    <span class="chip"><span class="dot dot-good"></span>needs your call <span class="n mono">0</span></span>
+    <span class="chip"><span class="dot dot-neutral"></span>in progress <span class="n mono">5</span></span>
     <span class="chip"><span class="dot dot-warn"></span>flagged <span class="n mono">1</span></span>
   </div>
 
   <p class="lede">Every row below is dated; nothing on this page is presented as current unless it was
     confirmed current at that date. History lives in <code class="cite">git log</code> and the docs it
     points to, not here.</p>
-
-  <section aria-labelledby="decision-title">
-    <div class="block-head">
-      <h2 class="block-title" id="decision-title">Needs your call</h2>
-      <span class="block-count mono">1</span>
-    </div>
-    <div class="rows">
-
-      <div class="row decision">
-        <div class="row-stripe"></div>
-        <div class="row-body">
-          <div class="row-top">
-            <span class="tag">decision</span>
-            <span class="row-date mono">2026&#8209;08&#8209;13 21:40 PDT</span>
-          </div>
-          <div class="row-title">mcp.js is running at ~3% of its own grow-throughput ceiling &mdash; fix ready, needs your go-ahead to implement</div>
-          <p><code class="cite">docs/hacking-strategy.md</code>: the hack/grow weight table has no stable
-            money level to sit at under the real formulas &mdash; it either pins near max or collapses,
-            and every non-zero bucket is 4&ndash;8&times; past the collapse threshold. Modelled ceiling on
-            the current target is ~$13M/s against a live $436K/s. Independently re-verified the five
-            riskiest claims against the actual game source myself before trusting them &mdash; all
-            checked out exactly. Ranked fix, smallest/safest first: stuck-detector bug (trivial, no risk)
-            &rarr; allocation-quantity redeploy fix (structural, moderate risk &mdash; touches the code
-            path that broke throughput once before) &rarr; balance-point hack/grow weights (the actual
-            payload, ships with a conservative safety margin, watched live before raising it). Nothing in
-            <code class="cite">mcp.js</code> has been touched. This is live code farming real money &mdash;
-            won't implement without you saying go.</p>
-        </div>
-      </div>
-
-    </div>
-  </section>
 
   <section aria-labelledby="scoreboard-title">
     <div class="block-head">
@@ -653,9 +621,49 @@
   <section aria-labelledby="progress-title">
     <div class="block-head">
       <h2 class="block-title" id="progress-title">In progress</h2>
-      <span class="block-count mono">3</span>
+      <span class="block-count mono">5</span>
     </div>
     <div class="rows">
+
+      <div class="progress-card">
+        <div class="progress-top">
+          <span class="pulse"></span>
+          <span class="row-title">R1 (balance-point hack/grow weights) shipped &amp; live &mdash; watching it now</span>
+        </div>
+        <p>You said go. Merged, synced, restarted <code class="cite">mcp.js</code> ~11:42 PDT &mdash;
+          new <code class="cite">runId</code>/<code class="cite">scriptVersion</code> confirmed live.
+          Replaces the fixed-fraction bucket table with hack/grow weights sized from the target's real
+          balance point (<code class="cite">ns.hackAnalyze</code>/<code class="cite">ns.growthAnalyze</code>,
+          read live, no <code class="cite">Formulas.exe</code> needed), shipped at a conservative
+          <code class="cite">HACK_BALANCE_SAFETY&nbsp;=&nbsp;0.5</code>. Modelled ~10&ndash;30&times; on
+          $/s once it holds a target near max money. <strong>First live number in:</strong>
+          <code class="cite">mults.hacking_grow&nbsp;=&nbsp;1.36</code> &mdash; the one input the whole
+          model couldn't previously read, now confirmed comfortably above the 1.0 the doc's $/s table
+          assumed, so the real ceiling is higher than modelled, not lower. Currently in recovery mode on
+          <code class="cite">foodnstuff</code> (near&#8209;zero hack share while money climbs from a
+          post&#8209;restart low), exactly as designed &mdash; watching for ~15 minutes to confirm it
+          holds near max before considering raising the safety margin. Will update this row once that
+          watch is done.</p>
+        <div class="stale-note">shipped &amp; restarted 2026&#8209;08&#8209;14 11:42 PDT, live&#8209;watch
+          in progress &mdash; not yet confirmed holding.</div>
+      </div>
+
+      <div class="progress-card">
+        <div class="progress-top">
+          <span class="pulse"></span>
+          <span class="row-title">R5 + R7 (per-script redeploy, home RAM, cheap tidy-ups) building now</span>
+        </div>
+        <p>Next two items off <code class="cite">docs/hacking-strategy.md</code>'s ranked list, both
+          independent of R1 so safe to build in parallel with the watch above: R5 stops
+          <code class="cite">allocateThreads</code> killing and re-execing all three action scripts on
+          every redeploy (kills only the script whose thread count actually changed, weaken first) &mdash;
+          should cut the security-ratchet pattern from redeploys interrupting long weaken cycles. R7 is a
+          bundle of cheap wins: brings <code class="cite">home</code>'s 128GB into the worker pool (behind
+          a reserve so <code class="cite">mcp.js</code> itself never gets starved), a more accurate
+          security-reserve calc for grow threads, and dropping <code class="cite">SECURITY_CAP</code> to 1.
+          Building and testing in an isolated worktree, same as R1 was &mdash; nothing live touched yet.</p>
+        <div class="stale-note">started 2026&#8209;08&#8209;14 ~11:47 PDT, in progress.</div>
+      </div>
 
       <div class="progress-card">
         <div class="progress-top">

@@ -6,11 +6,10 @@ one is the knowledge base (formulas extracted from the game's own
 TypeScript), this one is the argument built on top of it. Read that first;
 every formula cited here comes from there unless marked otherwise.
 
-**Status as of 2026-08-14: R1, R2, and R3 are all implemented, live, and
-confirmed working correctly. R1's live confirmation run also surfaced why
-it isn't paying off on the bot's current target yet — see §5 item 3 — which
-makes R4 (target scoring) the next concrete step. R5 and R7 are implemented
-and unit-tested, built in an isolated worktree, NOT YET CONFIRMED LIVE. See
+**Status as of 2026-08-14: R1, R2, R3, R5, and R7 are all implemented,
+live, and confirmed working correctly. R1's live confirmation run also
+surfaced why it isn't paying off fully on the bot's current target yet —
+see §5 item 3 — which makes R4 (target scoring) the next concrete step. See
 §5 for the current, maintained status of every item.** The rest of this
 document is the original analysis; read §5 first if you just want to know
 what's left.
@@ -898,12 +897,14 @@ truth for "what's left," not just the original ranking.
    anything with. `OPPORTUNITY_SWITCH_FACTOR` still shouldn't drop from 3
    until the ramp discount ships alongside the new score, per §2's own note
    — ship both together.
-5. **R5 (per-script redeploy) — code shipped 2026-08-14, about to be
-   confirmed live.** Built and unit-tested in an isolated worktree with no
-   game connection (same verification limits as R1/R3 above — `node --test`/
-   `node --check` only; the actual in-game signal, fewer `plan_flip` events
-   per hour per the doc's own §2 measurement plan, is still outstanding).
-   Shipped: `allocateThreads` (mcp.js) now diffs `desired` against `have`
+5. **R5 (per-script redeploy) — done, live, confirmed 2026-08-14.**
+   Restarted alongside R7 below ~13:08 PDT; new `runId`/`scriptVersion`
+   confirmed, `invariantViolations` empty on the first post-restart pull,
+   `ramUtilization` 97.7%. The in-game signal the doc's §2 measurement plan
+   calls for (fewer `plan_flip` events per hour) needs a longer observation
+   window than this session's restart check covers — worth a look later,
+   not blocking. Shipped: `allocateThreads` (mcp.js) now diffs `desired`
+   against `have`
    per script (`weaken`/`grow`/`hack`, in that order) and only kills +
    re-execs the ones that actually changed, instead of tearing down and
    rebuilding all three on every redeploy. The have-side counting is now
@@ -915,9 +916,16 @@ truth for "what's left," not just the original ranking.
    unchanged and kept for its other two call sites (orphan cleanup at
    startup, full teardown when no target is found), both of which genuinely
    want an unconditional sweep rather than a diff.
-6. **R7 (cheap items) — code shipped 2026-08-14, about to be confirmed
-   live.** Same verification limits as above. All four bullets from §2's R7
-   section addressed:
+6. **R7 (cheap items) — done, live, confirmed 2026-08-14.** Same restart as
+   R5, ~13:08 PDT. `home` (1024GB) confirmed in the worker pool post-restart
+   — 56 weaken/494 grow/1 hack threads on it alone at first read, 97.7% of
+   its capacity used, `HOME_RAM_RESERVE` holding at 32GB. Side effect worth
+   noting: home's huge extra pool means R1's tiny ~0.77% hack share (see
+   item 3 above) now rounds up to a nonzero thread count somewhere, so
+   `incomePerSec` went from a flat $0 to ~$170–180K/s on the same
+   poorly-suited target — R7 partially masks the R4 gap rather than closing
+   it, worth keeping in mind when judging R4's eventual impact. All four
+   bullets from §2's R7 section addressed:
    - **`home` joins the worker pool**, gated by a new `HOME_RAM_RESERVE`
      config tunable (default 32, full plumbing through `CONFIG_DEFAULTS`/
      `loadConfig`/`mcp_status.json`'s `config` block, same pattern as
@@ -973,7 +981,6 @@ Steps 1–3 are the ones with an order-of-magnitude behind them; all three are
 shipped, live, and confirmed working correctly — R1's confirmation run is
 also what surfaced *why* it isn't paying off yet on the current target,
 which is exactly what makes R4 (step 4) the next thing worth doing rather
-than a nice-to-have. R5 and R7 (steps 5-6) are single-digit-percent items
-layered on top, shipped in code and about to be restarted live alongside
-this merge. Everything after step 3 is single-digit multipliers on top of
-whatever it achieves.
+than a nice-to-have. R5 and R7 (steps 5-6) are also shipped and live now.
+Everything after step 3 is single-digit multipliers on top of whatever it
+achieves.

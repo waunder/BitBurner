@@ -193,15 +193,15 @@ plan, and allocates worker threads across every rooted host.
 **2026-08-14: read `docs/hacking-mechanics.md` and `docs/hacking-strategy.md`
 before changing anything below.** The mechanics doc has the actual game
 formulas (extracted from the real game source, not guessed); the strategy
-doc analyzes this file and `mcp_logic.js` against them. Five of its ranked
+doc analyzes this file and `mcp_logic.js` against them. Six of its ranked
 fixes are now implemented in this codebase: R2 (the stuck-target detector),
 R3 (`hostNeedsRedeploy` allocation-quantity diffing), R1 (sizing hack/grow
 from the target's actual balance point instead of a fixed RAM-fraction
-bucket table), R5 (per-script rather than per-host redeploy), and R7 (a
+bucket table), R5 (per-script rather than per-host redeploy), R7 (a
 handful of cheap items — `home` joining the worker pool, a clamped
-grow-security reserve, `SECURITY_CAP` tidied to 1). See that doc's §5 for
-which have been confirmed live and which are shipped but not yet restarted
-in-game.
+grow-security reserve, `SECURITY_CAP` tidied to 1), and R4 (target
+scoring — see "Target scoring" below). See that doc's §5 for which have
+been confirmed live and which are shipped but not yet restarted in-game.
 
 - **Start:** `run mcp.js` — optionally `run mcp.js target=<hostname>`
 - **Reads:** `mcp_config.json` every tick (see Tunables), plus
@@ -223,7 +223,11 @@ because the old inline version never reset its window on reaching the
 floor), `computeWorkWeights` (sizes hack/grow from the target's actual
 balance point — see "The work-weight calculation" below and
 `docs/hacking-strategy.md` R1; replaced the old fixed RAM-fraction bucket
-table entirely on 2026-08-14), `computeDesiredAllocation`/`hostNeedsRedeploy`
+table entirely on 2026-08-14), `computeTargetScore`/`computeTargetEffectiveScore`
+(the achievable-rate target score and its ramp-cost discount — see "Target
+scoring" below and `docs/hacking-strategy.md` R4, 2026-08-14; replaced the
+old one-hack-thread-at-full-money score and the `READINESS_FLOOR`
+multiplier), `computeDesiredAllocation`/`hostNeedsRedeploy`
 (the two-pass allocation-diff redeploy — R3; `computeDesiredAllocation` also
 takes an optional `growSecurityIncreaseForThreads` injected function as of
 R7, so its weaken-phase leftover-grow branch can use the game's own clamped
@@ -260,7 +264,8 @@ rejected at startup rather than silently ignored.
    Either marks it excluded and clears the target. The money-degraded half of
    this is disabled entirely in XP mode — see `OBJECTIVE` below.
 4. Evaluate the **opportunity switch** — see below.
-5. If no target, pick one: highest potential income discounted by readiness.
+5. If no target, pick one: highest achievable-rate score discounted by ramp
+   cost — see "Target scoring" below.
 6. Build a **plan**: `weaken` if security exceeds the cap, otherwise `work`
    with a hack/grow weighting sized from the target's actual balance point
    (`computeWorkWeights`, R1) and scaled by how full the target is.
@@ -343,6 +348,45 @@ the balanced share actually deployed — running exactly at balance is a
 driftless random walk with no restoring force, so shipping below 1.0 buys a
 positive drift that pins money near max at a linear income cost.
 
+#### Target scoring
+
+**2026-08-14 (R4, shipped, not yet confirmed live).** `getTargetScore`
+(`mcp.js`) is the "raw potential" of a candidate — an estimate of the $/s it
+would actually produce if handed the network's *entire* thread pool and run
+at R1's balance point, computed by `computeTargetScore` (`mcp_logic.js`) from
+`hackTime`/`hackAnalyze`/`growthAnalyze(target, 2)`/`maxMoney`/
+`hackAnalyzeChance` (all 0-1GB, no Formulas.exe) plus a `poolThreads`
+estimate. It replaced the old `maxMoney * hackAnalyze * hackAnalyzeChance /
+hackTime` score, which never read `serverGrowth` at all and so
+systematically favoured low-`requiredHackingSkill`, low-growth targets over
+ones with a far higher grow-limited ceiling — see `docs/hacking-strategy.md`
+§1.3's misranking table and §2 R4.
+
+`poolThreads` is `maxWeaken` (step 2 of the tick above), reused as-is rather
+than a second RAM-basis calculation: it's already computed once per tick, so
+passing it through costs nothing even though `getTargetScore` runs once per
+*candidate* server in `rankTargets`; and `scripts/grow.js`/`scripts/weaken.js`
+cost the identical 1.75GB/thread, so a weaken-RAM-basis thread count is
+exactly a grow-RAM-basis one too, not just a convenient stand-in — which is
+also why the same value is reused for `growThreadsIfAllGrow` below. One gap
+carried over from the doc rather than fixed: the inputs are read at the
+candidate's *current* security, not the floor it would be weakened to, which
+under-rates a target sitting well above its floor — the doc's optional
+arithmetic workaround for this was not implemented.
+
+`getTargetEffectiveScore` discounts that raw potential by an explicit ramp
+cost — `computeTargetEffectiveScore`'s `effective = score * horizon /
+(horizon + rampSeconds)`, where `rampSeconds` is the modelled wall-clock time
+to grow the target up to `TARGET_MONEY_GOAL` if the whole pool ran grow
+against it, and `horizon` is the new `SCORE_HORIZON_SECONDS` tunable (default
+3600 — the bot runs for hours). This replaced the old `READINESS_FLOOR`/
+`max(moneyPct, 0.05)` multiplier, which was dimensionally arbitrary. A
+target that would take 20 minutes to ramp is worth less over the next hour
+than one already near its goal, but by less and less as the horizon
+lengthens — before R4, `MIN_TARGET_COMMIT_MS`'s 600s commit window was
+implicitly standing in as that horizon, too short for a target with a longer
+but more valuable ramp to ever win.
+
 #### The opportunity switch
 
 Adoption only happens when there is no current target, and both abandonment
@@ -355,17 +399,29 @@ Two regimes, because the fair comparison differs:
 
 | Current target | Compared on | Minimum hold |
 | --- | --- | --- |
-| producing nothing (`moneyPct < 0.1`) | readiness-discounted score | `MIN_TARGET_HOLD_MS` (60s) |
-| productive | raw potential | `MIN_TARGET_COMMIT_MS` (600s) |
+| producing nothing (`moneyPct < 0.1`) | `getTargetEffectiveScore` (ramp-discounted) | `MIN_TARGET_HOLD_MS` (60s) |
+| productive | `getTargetScore` (raw potential) | `MIN_TARGET_COMMIT_MS` (600s) |
 
 It switches when the best alternative beats the current one by more than
-`OPPORTUNITY_SWITCH_FACTOR` (3×) *and* the hold timer has elapsed.
+`OPPORTUNITY_SWITCH_FACTOR` (1.3×, dropped from 3× on 2026-08-14 alongside
+R4's new score and ramp discount — see below) *and* the hold timer has
+elapsed.
 
 The predicate is evaluated **every tick** and recorded as `switchEval` in the
 status file, even when the hold timer forbids acting on it. That is deliberate:
-the two blockers demand different responses. Losing on score means the 3×
+the two blockers demand different responses. Losing on score means the
 factor is what stands between the bot and a richer server. Losing on the hold
 timer just means waiting. `blockedBy` names which.
+
+**2026-08-14 (R4):** `OPPORTUNITY_SWITCH_FACTOR` dropped from 3 to 1.3 (the
+doc's suggested 1.25-1.3 range, safer end) — but *only* together with the
+`getTargetScore`/`getTargetEffectiveScore` rewrite above, never before, per
+the doc's explicit instruction: a 3× bar was calibrated against a score that
+barely varied target-to-target (the old score never read `serverGrowth`), so
+it forbade real, large improvements the new score can actually see. The ramp
+discount already prices in the cost of switching, so 1.3 only needs to cover
+model error, not switching cost too. `MIN_TARGET_COMMIT_MS` is unchanged at
+600000 — the doc is explicit this stays as the anti-thrash guard regardless.
 
 #### Tunables — `mcp_config.json`
 
@@ -383,10 +439,11 @@ The ones that actually get retuned:
 | `WORK_SECURITY_MARGIN` | 1.5 | Absolute headroom kept during `work` |
 | `TARGET_MONEY_GOAL` | 0.95 | Money fraction `readiness` (see the work-weight calculation above) treats as "full" |
 | `DEGRADED_MONEY_PCT` | 0.05 | Drain threshold — **must** stay below the idle-regime cutoff of 0.1, and an invariant enforces it |
-| `OPPORTUNITY_SWITCH_FACTOR` | 3 | Margin required to abandon a working target |
+| `OPPORTUNITY_SWITCH_FACTOR` | 1.3 | Margin required to abandon a working target |
 | `LOOP_SLEEP_MS` | 10000 | Tick length |
 | `HACK_BALANCE_SAFETY` | 0.5 | Fraction of the balanced hack share actually deployed — see the work-weight calculation above |
 | `HOME_RAM_RESERVE` | 32 | GB kept off-limits on `home` before any of it counts as free for worker threads — see "Worker hosts" below |
+| `SCORE_HORIZON_SECONDS` | 3600 | Horizon `getTargetEffectiveScore`'s ramp-cost discount is amortised over — see "Target scoring" above |
 
 **2026-08-14 (R7, shipped, not yet confirmed live):** `SECURITY_CAP` default
 dropped 6 → 1 — it was a no-op for every target actually worth farming
@@ -395,7 +452,7 @@ buys ~13-16% on hack time and steal percentage. Cosmetic at current scale,
 tidied while touching config for the same change.
 
 Fourteen more numeric keys are configurable; the file in the repo lists all
-twenty-two (twenty-one numeric + the `OBJECTIVE` string enum) with their
+twenty-three (twenty-two numeric + the `OBJECTIVE` string enum) with their
 defaults. Rules for the numeric ones: only numbers are
 accepted, unknown keys are rejected and reported, and **corrupt JSON keeps
 the current values** rather than reverting to defaults — a half-saved file

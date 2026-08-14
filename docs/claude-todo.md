@@ -1,6 +1,6 @@
 # Claude's working list
 
-## 2026-08-14 (latest): R1, R5, R7 all confirmed live; set_objective.js shipped; R4 in progress
+## 2026-08-14 (latest): R1, R5, R7 all confirmed live; set_objective.js and lsf.js shipped; R4 merged, not yet restarted
 
 Full arc, in order:
 
@@ -47,20 +47,42 @@ script does, since Claude has no in-game terminal access to actually run
 flipped to `xp`, cleared back to `money` afterward since Ken didn't ask to
 actually switch modes, just wanted the lever available.
 
-**R4 (target scoring) build in progress** in a separate worktree —
-dispatched with full context on the poolThreads/growThreadsIfAllGrow
-judgment calls the doc leaves open. Not reviewed yet.
+**R4 (target scoring) built in a separate worktree, reviewed, and merged**
+(not yet restarted live). Motivated directly by the R1 finding above: a
+target can sit at 100% money with R1 correctly deploying zero hack threads,
+because the old score had no way to know why. `node --test *.test.js`
+122/122 (up from 110 — 13 new tests for `computeTargetScore`/
+`computeTargetEffectiveScore`), `node --check` clean. Shipped, all three
+together per the doc's own instruction not to split them: `getTargetScore`
+rewritten to the achievable-rate formula, `getTargetEffectiveScore`
+rewritten to a ramp-cost discount (new `SCORE_HORIZON_SECONDS` tunable,
+3600) replacing the old dimensionally-arbitrary `READINESS_FLOOR`, and
+`OPPORTUNITY_SWITCH_FACTOR` 3 → 1.3. Judgment calls worth knowing about:
+`poolThreads`/`growThreadsIfAllGrow` both reuse `getTotalWeakenCapacity`'s
+already-computed `maxWeaken`, justified by `scripts/grow.js`/
+`scripts/weaken.js` costing the identical 1.75GB/thread (checked against
+both scripts' source); the doc's optional current-security-vs-floor scaling
+correction was **not** implemented, base formula only. **Next concrete
+step**: restart, then read `mcp_status.json`'s `candidate`/`candidateScore`/
+`switchEval` — the live test is whether the bot now picks
+`rho-construction`-tier targets over `foodnstuff`-tier ones, and whether the
+R1 zero-income case from §5 item 3 resolves.
+
+**`lsf.js` shipped** — a small unrelated request mid-session: real glob
+filters (`*`, `?`) for `ls`, since the built-in `-g/--grep` only does plain
+substring matching (checked against the game's own source,
+`Terminal/commands/ls.tsx`, rather than assumed). `run lsf.js *.msg [host]`.
 
 Dashboard (`docs/status-dashboard.html`) kept current throughout — redeployed
-five times this session as state actually changed, "needs your call" back
-to 0 now that both go-aheads landed.
+six times this session as state actually changed, "needs your call" back to
+0 now that all go-aheads landed.
 
-## 2026-08-14: R5 + R7 shipped in an isolated worktree, NOT yet live — needs merge + restart + observation
+## 2026-08-14: R5 + R7 / R4 shipped in isolated worktrees, merge details
 
-**Superseded by the entry above — R5/R7 merged, restarted, and confirmed
-live later the same session.** Left here for the build-time detail (exact
-test counts, judgment calls made while building) that the summary above
-doesn't repeat.
+**Superseded by the entry above** — both merged (R5/R7 restarted and
+confirmed live; R4 merged, restart pending). Left here for the build-time
+detail (exact test counts, per-item judgment calls) the summary above
+doesn't repeat in full.
 
 Built per `hacking-strategy.md` §2's R5/R7 sections and §5's own instruction
 that both have no dependency on R1/R4 and are safe to pick up independently.

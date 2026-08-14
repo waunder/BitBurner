@@ -8,6 +8,8 @@
 import {
   SECURITY_EPSILON,
   computeWorkWeights,
+  computeTargetScore,
+  computeTargetEffectiveScore,
   evaluateMoneyDegradation,
   evaluateOpportunitySwitch,
   evaluateStuckTarget,
@@ -62,7 +64,14 @@ let MONEY_PCT_SAMPLE_COUNT = 9
 // alternative scores this many times higher. Deliberately steep: switching
 // throws away accumulated grow progress, so it must clear a wide bar rather
 // than chase small differences and thrash.
-let OPPORTUNITY_SWITCH_FACTOR = 3
+// hacking-strategy.md R4 (2026-08-14): dropped 3 -> 1.3 (the doc's
+// 1.25-1.3 range, safer end) *together* with the getTargetScore rewrite and
+// the ramp-cost discount below, never before — a 3x bar was calibrated
+// against a score that barely varied target-to-target (the old score never
+// read serverGrowth), so it forbade real, large improvements the new score
+// can actually see. The ramp discount already prices in the cost of
+// switching, so 1.3 only needs to cover model error, not switching cost too.
+let OPPORTUNITY_SWITCH_FACTOR = 1.3
 // How long a *productive* target is committed to before better options are
 // even considered. Much longer than MIN_TARGET_HOLD_MS because leaving one
 // throws away its accumulated grow progress and the replacement must be
@@ -98,6 +107,15 @@ let REDEPLOY_TOLERANCE_RELATIVE = 0.2
 // throughput loss, so this gates getHostFreeRam's home case rather than
 // being a soft preference.
 let HOME_RAM_RESERVE = 32
+// The horizon getTargetEffectiveScore's ramp-cost discount amortises a
+// drained candidate's grow-up time against (hacking-strategy.md R4,
+// 2026-08-14): effective = score * horizon/(horizon + rampSeconds). Shipped
+// at 3600 per the doc — the bot runs for hours, so a target that takes 15-20
+// minutes to ramp up should still win against a cheaper-but-worse one over
+// that horizon, which a short horizon (e.g. MIN_TARGET_COMMIT_MS's 600s,
+// which is what implicitly stood in for this before R4) would refuse to let
+// it do.
+let SCORE_HORIZON_SECONDS = 3600
 
 // What the bot is farming for. "money" sizes hack/grow from the target's
 // actual balance point (computeWorkWeights, mcp_logic.js — see
@@ -178,6 +196,7 @@ const CONFIG_DEFAULTS = {
   REDEPLOY_TOLERANCE_ABSOLUTE,
   REDEPLOY_TOLERANCE_RELATIVE,
   HOME_RAM_RESERVE,
+  SCORE_HORIZON_SECONDS,
 }
 
 // OBJECTIVE is handled separately from CONFIG_DEFAULTS: it's a string enum,
@@ -289,6 +308,7 @@ function loadConfig(ns, state) {
     REDEPLOY_TOLERANCE_ABSOLUTE,
     REDEPLOY_TOLERANCE_RELATIVE,
     HOME_RAM_RESERVE,
+    SCORE_HORIZON_SECONDS,
   }
   for (const key of Object.keys(CONFIG_DEFAULTS)) {
     if (current[key] !== resolved[key]) changes[key] = { from: current[key], to: resolved[key] }
@@ -319,6 +339,7 @@ function loadConfig(ns, state) {
   REDEPLOY_TOLERANCE_ABSOLUTE = resolved.REDEPLOY_TOLERANCE_ABSOLUTE
   REDEPLOY_TOLERANCE_RELATIVE = resolved.REDEPLOY_TOLERANCE_RELATIVE
   HOME_RAM_RESERVE = resolved.HOME_RAM_RESERVE
+  SCORE_HORIZON_SECONDS = resolved.SCORE_HORIZON_SECONDS
   OBJECTIVE = resolvedObjective
   objectiveOverrideActive = resolvedObjectiveOverrideActive
 
@@ -579,40 +600,79 @@ function getTargetExpectedIncome(ns, server) {
   return hackTime > 0 ? availMoney * hackAnalyze * hackChance / hackTime : 0
 }
 
-// Income rate the server would yield at *full* money, so drained-but-rich and
-// full-but-poor servers compare on the same footing. The previous form added
-// raw maxMoney to an income-per-second term seven orders of magnitude smaller,
-// which meant the income half contributed nothing at all.
-function getTargetScore(ns, server) {
-  if (!isHackableTarget(ns, server)) return 0
-  const maxMoney = ns.getServerMaxMoney(server)
+// Shared read-from-ns step for both getTargetScore and
+// getTargetEffectiveScore below (hacking-strategy.md R4, 2026-08-14) — pulls
+// the handful of 0-1GB ns.* calls the achievable-rate formula needs once, so
+// getTargetEffectiveScore (which needs hackTime/growLogPerThread/maxMoney for
+// its own ramp-seconds calc on top of the score) doesn't read them a second
+// time. Returns null for anything computeTargetScore couldn't use anyway
+// (unhackable, or p/growCycles unreadable at the current security), so both
+// callers can short-circuit to a score of 0 the same way.
+function readTargetScoreInputs(ns, server) {
+  if (!isHackableTarget(ns, server)) return null
   const hackTime = ns.getHackTime(server) / 1000
-  if (hackTime <= 0) return 0
-  return (maxMoney * ns.hackAnalyze(server) * ns.hackAnalyzeChance(server)) / hackTime
+  const hackPercentPerThread = ns.hackAnalyze(server)
+  const growCycles = ns.growthAnalyze(server, 2)
+  if (hackTime <= 0 || !(hackPercentPerThread > 0) || !Number.isFinite(growCycles) || growCycles <= 0) return null
+  return {
+    hackTime,
+    hackPercentPerThread,
+    growLogPerThread: Math.LN2 / growCycles,
+    maxMoney: ns.getServerMaxMoney(server),
+    hackChance: ns.hackAnalyzeChance(server),
+  }
 }
 
-// An empty server is still worth adopting if its ceiling is high enough to
-// justify the (long) grow-up, so readiness is floored rather than zeroed —
-// otherwise a rich-but-drained server could never be chosen at all.
-const READINESS_FLOOR = 0.05
+// Achievable-rate score (hacking-strategy.md R4, 2026-08-14) — see
+// computeTargetScore's own doc comment in mcp_logic.js for the full
+// derivation and for why poolThreads reuses getTotalWeakenCapacity's result
+// as-is. Replaces the old "yield of one hack thread at full money" score,
+// which never read serverGrowth and systematically misranked grow-limited
+// targets (strategy doc §1.3/§2 R4).
+function getTargetScore(ns, server, poolThreads) {
+  const inputs = readTargetScoreInputs(ns, server)
+  if (!inputs) return 0
+  const { score } = computeTargetScore({
+    ...inputs,
+    poolThreads,
+    growTimeRatio: WEAKEN_PER_HACK_RATIO / WEAKEN_PER_GROW_RATIO,
+    ...SECURITY_CONSTANTS,
+  })
+  return score
+}
 
-// Potential income rate discounted by how ready the server actually is right
-// now. Selection previously ranked purely on required hacking level, which
-// ignored current money entirely: on restart it abandoned a target sitting at
-// 65% money earning ~$4.6M/s to grind one at 0.6% earning nothing, and then
-// (correctly, per the recovery rules) refused to reconsider while that one
-// slowly climbed.
+// Potential income rate discounted by an explicit ramp cost (hacking-strategy.md
+// R4, 2026-08-14) — replaces the old READINESS_FLOOR/max(moneyPct, 0.05)
+// multiplier, which was dimensionally arbitrary, with the modelled wall-clock
+// time to grow this target up to TARGET_MONEY_GOAL if the whole pool ran grow
+// against it, amortised over SCORE_HORIZON_SECONDS. See
+// computeTargetEffectiveScore's own doc comment in mcp_logic.js.
 //
-// Hacking level is deliberately no longer a sort key. isHackableTarget already
-// excludes anything above the player's level, and getTargetScore divides by
+// Hacking level is deliberately not a sort key. isHackableTarget already
+// excludes anything above the player's level, and the score divides by
 // hackTime — so "easier servers cycle faster" is already priced in, and having
 // it as a *primary* key let it override the money signal completely.
-function getTargetEffectiveScore(ns, server) {
-  const potential = getTargetScore(ns, server)
-  if (potential <= 0) return 0
-  const maxMoney = ns.getServerMaxMoney(server)
-  const readiness = Math.max(ns.getServerMoneyAvailable(server) / maxMoney, READINESS_FLOOR)
-  return potential * readiness
+function getTargetEffectiveScore(ns, server, poolThreads) {
+  const inputs = readTargetScoreInputs(ns, server)
+  if (!inputs) return 0
+  const growTimeRatio = WEAKEN_PER_HACK_RATIO / WEAKEN_PER_GROW_RATIO
+  const { score } = computeTargetScore({ ...inputs, poolThreads, growTimeRatio, ...SECURITY_CONSTANTS })
+  if (score <= 0) return 0
+  const { effective } = computeTargetEffectiveScore({
+    score,
+    hackTime: inputs.hackTime,
+    growLogPerThread: inputs.growLogPerThread,
+    maxMoney: inputs.maxMoney,
+    money: ns.getServerMoneyAvailable(server),
+    targetMoneyGoal: TARGET_MONEY_GOAL,
+    // Same pool-size value as poolThreads above — see computeTargetScore's
+    // doc comment for why growRam===weakenRam makes this exact, not just a
+    // convenient stand-in.
+    growThreadsIfAllGrow: poolThreads,
+    growTimeRatio,
+    horizonSeconds: SCORE_HORIZON_SECONDS,
+  })
+  return effective
 }
 
 // SECURITY_EPSILON is imported from mcp_logic.js (used there by
@@ -696,7 +756,7 @@ function rankTargets(ns, servers, maxWeaken, skippedTargets, drainedTargets, ign
     const requiredWeaken = getTargetWeakenThreads(ns, server)
     if (requiredWeaken > maxWeaken) continue
 
-    candidates.push({ server, score: getTargetEffectiveScore(ns, server) })
+    candidates.push({ server, score: getTargetEffectiveScore(ns, server, maxWeaken) })
   }
 
   candidates.sort((a, b) => b.score - a.score)
@@ -1313,9 +1373,13 @@ export async function main(ns) {
         // rule from the process audit; the extra ranking pass is cheap next to
         // the one chooseTarget already does each tick.
         const ranked = rankTargets(ns, servers, maxWeaken, skippedTargets, drainedTargets)
+        // maxWeaken (this tick's already-computed network-wide capacity) is
+        // captured by closure as poolThreads — see getTargetScore/
+        // getTargetEffectiveScore's own comments for why reusing it costs
+        // nothing extra.
         const measure = idle
-          ? (server) => getTargetEffectiveScore(ns, server)
-          : (server) => getTargetScore(ns, server)
+          ? (server) => getTargetEffectiveScore(ns, server, maxWeaken)
+          : (server) => getTargetScore(ns, server, maxWeaken)
         const candidates = ranked.map(({ server }) => ({ server, score: measure(server) }))
         const currentScore = measure(currentTarget)
 
@@ -1348,7 +1412,7 @@ export async function main(ns) {
 
     const candidateTarget = chooseTarget(ns, servers, maxWeaken, skippedTargets, drainedTargets)
     const candidateExpectedIncome = candidateTarget ? getTargetExpectedIncome(ns, candidateTarget) : 0
-    const candidateScore = candidateTarget ? getTargetEffectiveScore(ns, candidateTarget) : 0
+    const candidateScore = candidateTarget ? getTargetEffectiveScore(ns, candidateTarget, maxWeaken) : 0
 
     if (!targetOverride && !currentTarget && candidateTarget) {
       const requiredWeaken = getTargetWeakenThreads(ns, candidateTarget)
@@ -1644,6 +1708,7 @@ export async function main(ns) {
         REDEPLOY_TOLERANCE_ABSOLUTE,
         REDEPLOY_TOLERANCE_RELATIVE,
         HOME_RAM_RESERVE,
+        SCORE_HORIZON_SECONDS,
       },
       invariantViolations: invariants.counts,
       // Last few transitions inline, so one file read gives both "now" and

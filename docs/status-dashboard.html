@@ -627,17 +627,22 @@
 
       <div class="progress-card">
         <div class="progress-top">
-          <span class="pulse"></span>
-          <span class="row-title">R4 (target scoring) merged, deploying now</span>
+          <span class="pulse idle"></span>
+          <span class="row-title">R4 confirmed live &mdash; income jumped ~60&times; in one restart</span>
         </div>
-        <p>You said go. Reviewed the full diff against the strategy doc before merging &mdash; formulas
-          check out, 122/122 tests passing. Replaces the old score (never read the target's growth rate,
-          systematically favoured easy-but-poor targets) with an achievable-rate estimate at R1's balance
-          point, plus a ramp-cost discount replacing the old arbitrary readiness floor, plus
-          <code class="cite">OPPORTUNITY_SWITCH_FACTOR</code> 3&rarr;1.3 (safe now that the ramp discount
-          prices in switching cost). Waiting on the game reconnecting to push/restart &mdash; will report
-          what it actually picks once live.</p>
-        <div class="stale-note">merged 2026&#8209;08&#8209;14 ~13:32 PDT, deploy in progress.</div>
+        <p>You said go. Restarted ~13:33 PDT: the bot immediately dropped <code class="cite">foodnstuff</code>
+          (the poor-fit target from R1's finding, <code class="cite">growPerHack&nbsp;&asymp;&nbsp;117</code>)
+          for <code class="cite">phantasy</code> instead (<code class="cite">growPerHack&nbsp;&asymp;&nbsp;14</code>
+          &mdash; 8&times; better balance-point ratio). Once it reached harvest mode:
+          <code class="cite">incomePerSec</code> went from R5/R7's ~$170&ndash;190K/s to
+          <strong>$11.4M/s</strong> &mdash; zero <code class="cite">invariantViolations</code> throughout.
+          This is the real payoff the whole R1&ndash;R4 chain was built for, not a projection anymore.
+          <strong>R1 through R7 are now all shipped, live, and confirmed working</strong> &mdash; only R6
+          (XP mode) remains on the ranked list, and it's deliberately parked until <code class="cite">OBJECTIVE</code>
+          ever leaves <code class="cite">"money"</code>. Full writeup: <code class="cite">hacking-strategy.md</code>
+          §5.</p>
+        <div class="stale-note">merged 2026&#8209;08&#8209;14 ~13:32 PDT, restarted &amp; confirmed
+          ~13:40 &mdash; leaving this here until you've had a look, not clearing it myself.</div>
       </div>
 
     </div>

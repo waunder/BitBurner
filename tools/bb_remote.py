@@ -775,11 +775,13 @@ WATCHED_FILES = [
     "ipvgo_hud.js",
     "hacking/crawler.js",
     "hacking/worm.js",
+    "share_deploy.js",
     "scripts/copyScripts.js",
     "scripts/copy_scripts.js",
     "scripts/execute.js",
     "scripts/grow.js",
     "scripts/hack.js",
+    "scripts/share.js",
     "scripts/weaken.js",
     "scripts/weakenGrowHack.js",
 ]

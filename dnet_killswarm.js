@@ -35,6 +35,7 @@
 import { acquireSession, readCreds } from "dnet_lib.js"
 
 const ACTIVE_MS = 10 * 60 * 1000
+const STATUS_FILE = "dnet_killswarm_status.json"
 
 const TARGET_SCRIPTS = new Set([
   "dnet_deploy.js",
@@ -76,6 +77,7 @@ export async function main(ns) {
   // recordCred never fires for it specifically). It's still the first hop
   // every fresh run has to get through.
   hosts.add("darkweb")
+  ns.write(STATUS_FILE, JSON.stringify({ ts: Date.now(), phase: "started", hostsTargeted: hosts.size }), "w")
 
   let hostsInspected = 0
   let hostsUnavailable = 0
@@ -124,6 +126,19 @@ export async function main(ns) {
       `killed ${killed} Dark Net process(es). ` +
       `Per-host: ${JSON.stringify(killedByHost)}. ` +
       (flags.restart ? `Restart requested.` : `Now run: run dnet_deploy.js from home.`)
+  )
+  ns.write(
+    STATUS_FILE,
+    JSON.stringify({
+      ts: Date.now(),
+      phase: "complete",
+      hostsTargeted: hosts.size,
+      hostsInspected,
+      hostsUnavailable,
+      killed,
+      killedByHost,
+    }),
+    "w"
   )
 
   if (flags.restart) {

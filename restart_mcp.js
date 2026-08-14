@@ -20,18 +20,21 @@ export async function main(ns) {
     ns.tprint("restart_mcp: killed existing mcp.js instance(s)")
   }
 
+  // Start Dark Net cleanup while MCP's large worker allocation is still
+  // absent. Starting MCP first can consume all but its reserve before this
+  // finite controller gets a chance to launch.
+  if (restartDarknet) {
+    const dnetPid = ns.run("dnet_killswarm.js", 1, "--restart")
+    if (dnetPid === 0) ns.tprint("restart_mcp: failed to start dnet_killswarm.js --restart")
+    else ns.tprint(`restart_mcp: Dark Net cleanup/restart delegated to dnet_killswarm.js (pid ${dnetPid})`)
+  }
+
   const pid = ns.run("mcp.js", 1, ...mcpArgs)
   if (pid === 0) {
     ns.tprint("restart_mcp: failed to start mcp.js (not enough RAM on home?)")
     return
   }
   ns.tprint(`restart_mcp: started mcp.js (pid ${pid})${mcpArgs.length ? " args=" + JSON.stringify(mcpArgs) : ""}`)
-
-  if (restartDarknet) {
-    const dnetPid = ns.run("dnet_killswarm.js", 1, "--restart")
-    if (dnetPid === 0) ns.tprint("restart_mcp: failed to start dnet_killswarm.js --restart")
-    else ns.tprint(`restart_mcp: Dark Net cleanup/restart delegated to dnet_killswarm.js (pid ${dnetPid})`)
-  }
 
   if (startScorecard) {
     const scorePid = ns.run("dnet_scorecard.js", 1)

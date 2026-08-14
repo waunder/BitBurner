@@ -1499,6 +1499,9 @@ does what the UI does). Design reasoning lives in `docs/darknet-functions.md`
   authenticates only hosts with a heartbeat from the last ten minutes, then
   runs remote `ps`/`kill`; this is both effective and bounded, unlike either
   unauthenticated cleanup (live failure) or visiting all 586 historical hosts.
+  `dnet_killswarm_status.json` records `started`/`complete`, targets, inspected,
+  unavailable, and killed counts. The remote restart path launches cleanup
+  after stopping MCP but before restarting it, guaranteeing launch RAM.
 - `dnet_loot.js` — `--no-cache`, `--no-ram`, `--max-realloc N` (default 25).
 - `dnet_loot_all.js` — `--limit N` (stop after N hosts, default: all),
   `--wait-ms N` (per-host completion timeout, default 15000).

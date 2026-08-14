@@ -9,29 +9,32 @@
  * place -- the only way new code reaches an already-occupied host is to
  * kill the occupant first.
  *
- * Safe by construction: touches only already-known hosts (dnet_creds.txt)
- * plus darkweb, costs no karma (only openCache does that), and loses no
+ * Safe by construction: touches only hosts with a recent deployer heartbeat
+ * plus home/darkweb, costs no karma (only openCache does that), and loses no
  * progress -- every cracked credential is already
  * persisted to dnet_creds.txt/shards independent of what's currently
  * running. Not run in a loop; run once by hand when a restart is wanted.
  *
- * ns.ps/ns.kill are not gated behind a darknet session. Cleanup therefore
- * probes the process table directly and catches invalid/offline hosts; it
- * must not turn a 586-host cleanup into a serial re-authentication campaign.
+ * Live correction 2026-08-14: remote ps/kill without a Dark Net session did
+ * not remove the old process. Cleanup now acquires a session first, but only
+ * for fresh heartbeat hosts rather than serially visiting the 586-host
+ * historical credential ledger.
  *
  * Args: --quiet (suppress per-host SKIP lines), --restart (launch a fresh
  * dnet_deploy.js after cleanup finishes). The latter makes a full Dark Net
  * hot-reload remotely triggerable through restart_mcp.js --darknet.
  *
- * Reads:  dnet_creds.txt
+ * Reads:  dnet_creds.txt, dnet_deployer_*.json
  * Writes: nothing
  *
- * RAM estimate ~3.3GB: 1.6 base + ps 0.2 + kill(pid) 0.5 + run 1.0.
- * read is 0GB.
+ * RAM estimate: confirm in game; ps/kill/run/ls plus acquireSession's
+ * details/connect/authenticate calls. read is 0GB.
  *
  * @param {NS} ns
  */
-import { readCreds } from "dnet_lib.js"
+import { acquireSession, readCreds } from "dnet_lib.js"
+
+const ACTIVE_MS = 10 * 60 * 1000
 
 const TARGET_SCRIPTS = new Set([
   "dnet_deploy.js",
@@ -57,7 +60,15 @@ export async function main(ns) {
   }
 
   const creds = readCreds(ns)
-  const hosts = new Set(Object.keys(creds))
+  const hosts = new Set(["home"])
+  const now = Date.now()
+  for (const file of ns.ls("home", "dnet_deployer_")) {
+    if (!file.endsWith(".json")) continue
+    try {
+      const rec = JSON.parse(ns.read(file))
+      if (typeof rec.host === "string" && now - (rec.ts ?? 0) <= ACTIVE_MS) hosts.add(rec.host)
+    } catch {}
+  }
   // Always include darkweb even though it has no persisted credential --
   // dnet_deploy.js never records one for it (see darknet-functions.md's
   // reconciliation note on why: darkweb reports hasSession without ever
@@ -72,6 +83,14 @@ export async function main(ns) {
   const killedByHost = {}
 
   for (const host of hosts) {
+    if (host !== "home") {
+      const session = await acquireSession(ns, host, creds[host])
+      if (!session.ok) {
+        hostsUnavailable++
+        if (!flags.quiet) ns.print(`SKIP ${host}: no session (${session.why})`)
+        continue
+      }
+    }
     let procs
     try {
       procs = ns.ps(host)
@@ -101,7 +120,7 @@ export async function main(ns) {
   }
 
   ns.tprint(
-    `dnet_killswarm: inspected ${hostsInspected}/${hosts.size} known host(s) (${hostsUnavailable} unavailable), ` +
+    `dnet_killswarm: inspected ${hostsInspected}/${hosts.size} active host(s) (${hostsUnavailable} unavailable), ` +
       `killed ${killed} Dark Net process(es). ` +
       `Per-host: ${JSON.stringify(killedByHost)}. ` +
       (flags.restart ? `Restart requested.` : `Now run: run dnet_deploy.js from home.`)

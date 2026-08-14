@@ -1496,8 +1496,9 @@ does what the UI does). Design reasoning lives in `docs/darknet-functions.md`
 - `dnet_phish.js` — `--until <epoch-ms>` (manager-owned clean recrawl deadline).
 - `dnet_killswarm.js` — `--quiet`, `--restart` (launch a fresh crawler after
   cleanup; remotely reachable through `restart_mcp.js --darknet`). Cleanup
-  reads process tables directly—no Dark Net session or serial re-authentication
-  is required for `ps`/`kill`.
+  authenticates only hosts with a heartbeat from the last ten minutes, then
+  runs remote `ps`/`kill`; this is both effective and bounded, unlike either
+  unauthenticated cleanup (live failure) or visiting all 586 historical hosts.
 - `dnet_loot.js` — `--no-cache`, `--no-ram`, `--max-realloc N` (default 25).
 - `dnet_loot_all.js` — `--limit N` (stop after N hosts, default: all),
   `--wait-ms N` (per-host completion timeout, default 15000).

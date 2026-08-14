@@ -484,10 +484,11 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">rebuilt 2026&#8209;08&#8209;13 20:46 PDT</div>
+    <div class="updated mono">rebuilt 2026&#8209;08&#8209;13 21:40 PDT</div>
   </div>
 
   <div class="glance">
+    <span class="chip"><span class="dot dot-accent"></span>needs your call <span class="n mono">1</span></span>
     <span class="chip"><span class="dot dot-neutral"></span>in progress <span class="n mono">3</span></span>
     <span class="chip"><span class="dot dot-warn"></span>flagged <span class="n mono">1</span></span>
   </div>
@@ -495,6 +496,38 @@
   <p class="lede">Every row below is dated; nothing on this page is presented as current unless it was
     confirmed current at that date. History lives in <code class="cite">git log</code> and the docs it
     points to, not here.</p>
+
+  <section aria-labelledby="decision-title">
+    <div class="block-head">
+      <h2 class="block-title" id="decision-title">Needs your call</h2>
+      <span class="block-count mono">1</span>
+    </div>
+    <div class="rows">
+
+      <div class="row decision">
+        <div class="row-stripe"></div>
+        <div class="row-body">
+          <div class="row-top">
+            <span class="tag">decision</span>
+            <span class="row-date mono">2026&#8209;08&#8209;13 21:40 PDT</span>
+          </div>
+          <div class="row-title">mcp.js is running at ~3% of its own grow-throughput ceiling &mdash; fix ready, needs your go-ahead to implement</div>
+          <p><code class="cite">docs/hacking-strategy.md</code>: the hack/grow weight table has no stable
+            money level to sit at under the real formulas &mdash; it either pins near max or collapses,
+            and every non-zero bucket is 4&ndash;8&times; past the collapse threshold. Modelled ceiling on
+            the current target is ~$13M/s against a live $436K/s. Independently re-verified the five
+            riskiest claims against the actual game source myself before trusting them &mdash; all
+            checked out exactly. Ranked fix, smallest/safest first: stuck-detector bug (trivial, no risk)
+            &rarr; allocation-quantity redeploy fix (structural, moderate risk &mdash; touches the code
+            path that broke throughput once before) &rarr; balance-point hack/grow weights (the actual
+            payload, ships with a conservative safety margin, watched live before raising it). Nothing in
+            <code class="cite">mcp.js</code> has been touched. This is live code farming real money &mdash;
+            won't implement without you saying go.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
 
   <section aria-labelledby="scoreboard-title">
     <div class="block-head">

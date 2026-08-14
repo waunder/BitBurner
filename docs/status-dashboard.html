@@ -484,11 +484,11 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">rebuilt 2026&#8209;08&#8209;14 11:50 PDT</div>
+    <div class="updated mono">rebuilt 2026&#8209;08&#8209;14 13:05 PDT</div>
   </div>
 
   <div class="glance">
-    <span class="chip"><span class="dot dot-good"></span>needs your call <span class="n mono">0</span></span>
+    <span class="chip"><span class="dot dot-accent"></span>needs your call <span class="n mono">1</span></span>
     <span class="chip"><span class="dot dot-neutral"></span>in progress <span class="n mono">5</span></span>
     <span class="chip"><span class="dot dot-warn"></span>flagged <span class="n mono">1</span></span>
   </div>
@@ -496,6 +496,33 @@
   <p class="lede">Every row below is dated; nothing on this page is presented as current unless it was
     confirmed current at that date. History lives in <code class="cite">git log</code> and the docs it
     points to, not here.</p>
+
+  <section aria-labelledby="decision-title">
+    <div class="block-head">
+      <h2 class="block-title" id="decision-title">Needs your call</h2>
+      <span class="block-count mono">1</span>
+    </div>
+    <div class="rows">
+
+      <div class="row decision">
+        <div class="row-stripe"></div>
+        <div class="row-body">
+          <div class="row-top">
+            <span class="tag">decision</span>
+            <span class="row-date mono">2026&#8209;08&#8209;14 13:05 PDT</span>
+          </div>
+          <div class="row-title">R5 + R7 built &amp; tested, ready to merge and restart live &mdash; go ahead?</div>
+          <p>Per-script redeploy (no longer kills/re-execs all three action scripts on every mismatch) +
+            three cheap tidy-ups (<code class="cite">home</code>'s 128GB joins the worker pool behind a
+            32GB reserve, a more accurate grow security-reserve calc, <code class="cite">SECURITY_CAP</code>
+            6&rarr;1). Both independent of R1/R4, doc's own risk rating is low on both, 110/110 tests
+            passing. My recommendation: go ahead &mdash; nothing here interacts with the R1 finding below.
+            Not merged or touched live yet, waiting on you.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
 
   <section aria-labelledby="scoreboard-title">
     <div class="block-head">
@@ -627,31 +654,35 @@
 
       <div class="progress-card">
         <div class="progress-top">
-          <span class="pulse"></span>
-          <span class="row-title">R1 (balance-point hack/grow weights) shipped &amp; live &mdash; watching it now</span>
+          <span class="pulse idle"></span>
+          <span class="row-title">R1 confirmed live and working correctly &mdash; but exposed exactly why it isn't paying off yet</span>
         </div>
-        <p>You said go. Merged, synced, restarted <code class="cite">mcp.js</code> ~11:42 PDT &mdash;
-          new <code class="cite">runId</code>/<code class="cite">scriptVersion</code> confirmed live.
-          Replaces the fixed-fraction bucket table with hack/grow weights sized from the target's real
-          balance point (<code class="cite">ns.hackAnalyze</code>/<code class="cite">ns.growthAnalyze</code>,
-          read live, no <code class="cite">Formulas.exe</code> needed), shipped at a conservative
-          <code class="cite">HACK_BALANCE_SAFETY&nbsp;=&nbsp;0.5</code>. Modelled ~10&ndash;30&times; on
-          $/s once it holds a target near max money. <strong>First live number in:</strong>
-          <code class="cite">mults.hacking_grow&nbsp;=&nbsp;1.36</code> &mdash; the one input the whole
-          model couldn't previously read, now confirmed comfortably above the 1.0 the doc's $/s table
-          assumed, so the real ceiling is higher than modelled, not lower. Currently in recovery mode on
-          <code class="cite">foodnstuff</code> (near&#8209;zero hack share while money climbs from a
-          post&#8209;restart low), exactly as designed &mdash; watching for ~15 minutes to confirm it
-          holds near max before considering raising the safety margin. Will update this row once that
-          watch is done.</p>
-        <div class="stale-note">shipped &amp; restarted 2026&#8209;08&#8209;14 11:42 PDT, live&#8209;watch
-          in progress &mdash; not yet confirmed holding.</div>
+        <p>You said go. Restarted ~11:42 PDT, watched <code class="cite">foodnstuff</code> ramp
+          4%&nbsp;&rarr;&nbsp;100% moneyPct over ~15 minutes exactly as the balance-point math predicts,
+          zero invariant violations. <strong>Then a surprise:</strong> at 100% money,
+          <code class="cite">incomePerSec</code> sat at <strong>exactly 0</strong> with
+          <strong>zero hack threads anywhere in the pool</strong>, including on a 256GB host. Looked like a
+          bug. Added a small diagnostic field (<code class="cite">debugWorkWeights</code> in
+          <code class="cite">mcp_status.json</code>, kept permanently, cheap) and read the real numbers
+          instead of guessing: <code class="cite">growPerHack&nbsp;&asymp;&nbsp;117</code> on this target
+          &mdash; <strong>5&times; worse</strong> than the doc's own worked example &mdash; giving a
+          balanced hack share of <strong>0.77%</strong>, which floors to 0 threads on every host no matter
+          how large. The formula checks out exactly against the live reading. <strong>Not a bug</strong>:
+          <code class="cite">foodnstuff</code> is just a target the balance-point strategy correctly
+          declines to hack at all &mdash; the old bucket table would've hacked it anyway (that's the
+          collapse case §1 predicted). This is now the live-confirmed reason R4 (target scoring, doesn't
+          currently know about <code class="cite">growPerHack</code>) is the next thing worth building, not
+          just a modelled recommendation. Also confirmed <code class="cite">mults.hacking_grow&nbsp;=&nbsp;1.36</code>
+          &mdash; comfortably above the 1.0 the doc's $/s table assumed, so the real ceiling is higher than
+          modelled once R4 lands.</p>
+        <div class="stale-note">restarted 2026&#8209;08&#8209;14 11:42 PDT, live&#8209;watch completed and
+          understood ~13:00 &mdash; leaving this here until you've had a look, not clearing it myself.</div>
       </div>
 
       <div class="progress-card">
         <div class="progress-top">
-          <span class="pulse"></span>
-          <span class="row-title">R5 + R7 (per-script redeploy, home RAM, cheap tidy-ups) building now</span>
+          <span class="pulse idle"></span>
+          <span class="row-title">R5 + R7 (per-script redeploy, home RAM, cheap tidy-ups) built &amp; tested &mdash; waiting on your call above</span>
         </div>
         <p>Next two items off <code class="cite">docs/hacking-strategy.md</code>'s ranked list, both
           independent of R1 so safe to build in parallel with the watch above: R5 stops
@@ -661,8 +692,11 @@
           bundle of cheap wins: brings <code class="cite">home</code>'s 128GB into the worker pool (behind
           a reserve so <code class="cite">mcp.js</code> itself never gets starved), a more accurate
           security-reserve calc for grow threads, and dropping <code class="cite">SECURITY_CAP</code> to 1.
-          Building and testing in an isolated worktree, same as R1 was &mdash; nothing live touched yet.</p>
-        <div class="stale-note">started 2026&#8209;08&#8209;14 ~11:47 PDT, in progress.</div>
+          Built and tested in an isolated worktree, same as R1 was &mdash; 110/110 tests passing,
+          <code class="cite">node --check</code> clean. Not merged or touched live &mdash; see "needs your
+          call" above.</p>
+        <div class="stale-note">started 2026&#8209;08&#8209;14 ~11:47 PDT, build finished ~12:15, waiting
+          on your go&#8209;ahead to merge and restart.</div>
       </div>
 
       <div class="progress-card">

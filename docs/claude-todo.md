@@ -1,6 +1,66 @@
 # Claude's working list
 
-## 2026-08-14 (latest): R5 + R7 shipped in an isolated worktree, NOT yet live — needs merge + restart + observation
+## 2026-08-14 (latest): R1, R5, R7 all confirmed live; set_objective.js shipped; R4 in progress
+
+Full arc, in order:
+
+**R1 merged and restarted** (~11:42 PDT) after Ken's go-ahead. Live-watched
+~15 minutes: `foodnstuff` ramped 4%→100% moneyPct exactly as the
+`readiness²` curve predicts, zero invariant violations. Then a real surprise
+— `incomePerSec` sat at exactly 0 with zero hack threads deployed anywhere,
+including on the 256GB host. Diagnosed with a new `debugWorkWeights` status
+field (kept permanently) rather than guessed: `growPerHack≈117` on this
+target (5× worse than the doc's own `silver-helix` example) gives a
+balanced hack share of 0.77%, which floors to 0 threads everywhere. **Not a
+bug** — the formula's exactly correct, `foodnstuff` is just a genuinely
+poor fit for the balance-point strategy. This is now live evidence for R4
+(target scoring doesn't know about `growPerHack`), not just the modelled
+ranking table. Full writeup: `hacking-strategy.md` §5 item 3.
+
+**R5+R7 merged and restarted** (~13:08 PDT) after a second go-ahead.
+Resolved one real merge conflict in `hacking-strategy.md` §5 (both branches
+had edited it independently) by hand. Confirmed live: zero
+`invariantViolations`, 97.7% RAM utilization, `home` (1024GB — bigger than
+this project's own notes assumed) carrying 56/494/1 weaken/grow/hack
+threads on its own. Side effect worth remembering: home's extra pool means
+R1's tiny hack share on this same poor-fit target now rounds up to a
+nonzero thread count somewhere, so `incomePerSec` went from $0 to
+~$170-190K/s — real money, but R7 partially masking the R4 gap rather than
+R1 actually paying off. Full writeup: `hacking-strategy.md` §5 items 5-6.
+
+**`set_objective.js` shipped and live-tested**, unprompted feature request
+mid-session: Ken wants to flip `OBJECTIVE` between money/xp without
+spending a Claude session each time. Built a separate override file
+(`mcp_objective_override.txt`, gitignored) rather than having the script
+write `mcp_config.json` directly — that file is disk-authoritative and
+pushed one-way disk→game, so an in-game edit to it would silently revert on
+the next resync, a footgun for something meant to work without Claude
+watching. `mcp.js` reads the override every tick and it wins over
+`mcp_config.json`'s `OBJECTIVE` when set; surfaced in `mcp_status.json`
+(`objectiveOverrideActive`) and the tail window. Required one more `mcp.js`
+restart (~13:29 PDT) to pick up the reading code, plus a daemon restart
+(new `WATCHED_FILES`/`PULL_FILES` entries need the Python process itself
+restarted, not just a resync — daemon doesn't hot-reload either). Tested
+end-to-end by pushing the override file directly (simulating what the
+script does, since Claude has no in-game terminal access to actually run
+`run set_objective.js xp`): `config_change` event fired correctly, status
+flipped to `xp`, cleared back to `money` afterward since Ken didn't ask to
+actually switch modes, just wanted the lever available.
+
+**R4 (target scoring) build in progress** in a separate worktree —
+dispatched with full context on the poolThreads/growThreadsIfAllGrow
+judgment calls the doc leaves open. Not reviewed yet.
+
+Dashboard (`docs/status-dashboard.html`) kept current throughout — redeployed
+five times this session as state actually changed, "needs your call" back
+to 0 now that both go-aheads landed.
+
+## 2026-08-14: R5 + R7 shipped in an isolated worktree, NOT yet live — needs merge + restart + observation
+
+**Superseded by the entry above — R5/R7 merged, restarted, and confirmed
+live later the same session.** Left here for the build-time detail (exact
+test counts, judgment calls made while building) that the summary above
+doesn't repeat.
 
 Built per `hacking-strategy.md` §2's R5/R7 sections and §5's own instruction
 that both have no dependency on R1/R4 and are safe to pick up independently.

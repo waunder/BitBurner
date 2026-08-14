@@ -39,6 +39,8 @@ const TARGET_SCRIPTS = new Set([
   "dnet_loot_realloc.js",
   "dnet_realloc.js",
   "dnet_phish.js",
+  "dnet_crawl.js",
+  "dnet_manager.js",
 ])
 
 export async function main(ns) {

@@ -16,7 +16,9 @@
  */
 export async function main(ns) {
   ns.disableLog("ALL")
+  const flags = ns.flags([["until", 0]])
   while (true) {
+    if (flags.until > 0 && Date.now() >= flags.until) return
     const result = await ns.dnet.phishingAttack()
     ns.print(`PHISH success=${result.success} code=${result.code} message=${JSON.stringify(result.message)}`)
     if (result.success && /cache file/i.test(String(result.message))) {
@@ -24,4 +26,8 @@ export async function main(ns) {
       return
     }
   }
+}
+
+export function autocomplete() {
+  return ["--until"]
 }

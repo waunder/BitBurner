@@ -79,13 +79,14 @@ function deployers(ns, now) {
   }
   const newest = records.reduce((best, rec) => (!best || rec.ts > best.ts ? rec : best), null)
   const fresh = records.filter((rec) => now - rec.ts <= FRESH_MS)
-  const sums = { sessions: 0, failed: 0, prepare: 0, phishThreads: 0, loot: 0, ramSkips: 0 }
+  const sums = { sessions: 0, failed: 0, prepare: 0, phishThreads: 0, farmCapacity: 0, loot: 0, ramSkips: 0 }
   for (const rec of fresh) {
     const pass = rec.thisPass ?? {}
     sums.sessions += pass.sessions ?? 0
     sums.failed += pass.failed ?? 0
     sums.prepare += pass.prepareStarted ?? 0
     sums.phishThreads += pass.phishThreadsStarted ?? 0
+    sums.farmCapacity += rec.farmCapacityThreads ?? 0
     sums.loot += pass.looted ?? 0
     sums.ramSkips += (pass.lootSkipped?.ram ?? 0) + (pass.prepareSkipped?.ram ?? 0) + (pass.phishSkipped?.ram ?? 0)
   }
@@ -133,7 +134,7 @@ function buildLines(ns, state, pos) {
     row("darknet $ / install", compact(dnetMoney, 2)),
     row("crawlers fresh / known", `${d.fresh} / ${d.total}`),
     row("sessions / failures", `${d.sums.sessions} / ${d.sums.failed}`),
-    row("phish threads started", compact(d.sums.phishThreads, 0)),
+    row("phish thread capacity", compact(d.sums.farmCapacity || d.sums.phishThreads, 0)),
     row("prep / loot this pass", `${d.sums.prepare} / ${d.sums.loot}`),
     row("RAM decision skips", compact(d.sums.ramSkips, 0)),
     row("credentials / models", `${c.hosts} / ${c.models}`),

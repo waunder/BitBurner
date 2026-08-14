@@ -50,6 +50,16 @@ and charisma shortens later phishing/reallocation/authentication work while
 also improving phishing success and payout. Live validation requires a clean
 swarm restart because Bitburner does not hot-reload.
 
+**Live correction after the first restart:** the game's own
+`getScriptRam()` reports the full crawler at 15GB, not the hand-estimated
+~4.9GB. On a 16GB node it left exactly 1GB, explaining the scorecard's RAM
+skips and preventing every intended co-located worker. The replacement
+architecture keeps that controller on `home`: remote nodes use a transient
+lean `dnet_crawl.js`, then hand their released RAM to `dnet_manager.js` for
+loot/phishing and a clean 90-second recrawl cycle. The measured RAM costs and
+resulting phish capacity are emitted in each transient crawler heartbeat; do
+not treat this redesign as confirmed until those live fields appear.
+
 The same pass also closes three bounded authentication gaps already relevant
 to this shallow save: all unique PHP 5.4 permutations through length three,
 the exact AccountsManager difficulty range, and Pr0verFl0's one-shot overflow

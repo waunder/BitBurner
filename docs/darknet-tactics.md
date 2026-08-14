@@ -26,6 +26,13 @@ keeps discovery alive and can unlock a target even when all of that target's
 RAM is blocked.
 Phishing workers are expendable by design and are restored after mutations.
 
+**Measured RAM correction (2026-08-14):** the original resident crawler is
+15GB in game and therefore belongs on `home`, not on every 16GB Dark Net
+node. The node tactic is now transient crawl → resident manager → loot/phish,
+with the manager briefly recrawling every 90 seconds. This preserves mutation
+coverage without permanently sacrificing almost the entire node to control
+plane RAM.
+
 ---
 
 ## 1. Cracking the four models we will actually meet

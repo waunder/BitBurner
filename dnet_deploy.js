@@ -118,6 +118,8 @@ const LOOT_REALLOC_SCRIPT = "dnet_loot_realloc.js"
 const REALLOC_SCRIPT = "dnet_realloc.js"
 const PHISH_SCRIPT = "dnet_phish.js"
 const PHISH_CACHE_PREFIX = "dnet_phish_cache_"
+const LEAN_CRAWLER = "dnet_crawl.js"
+const MANAGER_SCRIPT = "dnet_manager.js"
 
 export async function main(ns) {
   ns.disableLog("ALL")
@@ -221,6 +223,17 @@ export async function main(ns) {
         ns.print(`CRACK ${target} model=${details.modelId} why=${result.why} tried=${result.tried}`)
       }
 
+      // Once a target has the lean crawler or resident manager, that pair
+      // owns preparation, loot, phishing, and mutation recrawls locally.
+      // The 15GB home controller must not compete with it for target RAM.
+      try {
+        const delegated = ns.ps(target).some((p) => {
+          const name = p.filename.startsWith("/") ? p.filename.slice(1) : p.filename
+          return name === LEAN_CRAWLER || name === MANAGER_SCRIPT
+        })
+        if (delegated) continue
+      } catch {}
+
       if (!preparedTargets.has(target)) {
         const prep = prepareTarget(ns, target, details.blockedRam)
         if (!prep.ready) {
@@ -238,7 +251,11 @@ export async function main(ns) {
         }
       }
 
-      if (spread(ns, self, target, flags.once)) summary.deployed++
+      if (spread(ns, self, target, flags.once)) {
+        summary.deployed++
+        preparedTargets.add(target)
+        continue
+      }
 
       if (!preparedTargets.has(target)) {
         // Loot at the same fresh-session handoff. Once it starts successfully,
@@ -425,7 +442,7 @@ function writeDeployerStatus(ns, { pass, host, summary, lifetime, localKnownCred
  * along for `self` to even run.
  */
 function spread(ns, self, target, once = false) {
-  const files = [self, "dnet_lib.js", LOOT_SCRIPT, LOOT_REALLOC_SCRIPT, REALLOC_SCRIPT, PHISH_SCRIPT]
+  const files = [LEAN_CRAWLER, MANAGER_SCRIPT, "dnet_lib.js", LOOT_SCRIPT, LOOT_REALLOC_SCRIPT, PHISH_SCRIPT]
   if (ns.fileExists(CREDS_FILE)) files.push(CREDS_FILE)
   try {
     if (!ns.scp(files, target)) {
@@ -438,7 +455,7 @@ function spread(ns, self, target, once = false) {
   }
 
   try {
-    const pid = ns.exec(self, target, { preventDuplicates: true }, ...(once ? ["--once"] : []))
+    const pid = ns.exec(LEAN_CRAWLER, target, { preventDuplicates: true })
     if (pid === 0) return false
     ns.print(`SPREAD ${target} pid=${pid}`)
     return true

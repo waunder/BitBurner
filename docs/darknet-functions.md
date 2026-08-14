@@ -34,6 +34,18 @@ totals from the retained ledger. This fixes two old observability failures at
 once: hostile hostnames no longer leak raw punctuation into loot filenames,
 and a later zero-result pass can no longer erase an earlier cache/RAM gain.
 
+### Transient crawl/farm split (2026-08-14, awaiting live confirmation)
+
+The live `controllerRam.scriptRam` field falsified the ~4.9GB estimate: the
+full deployer is exactly 15GB. `dnet_crawl.js` now carries only the finite
+discovery/authentication/propagation work and exits after handing the host to
+`dnet_manager.js`. The manager runs loot, fills remaining RAM with phishing,
+and schedules a clean recrawl every 90 seconds. Phishing accepts `--until`
+so its threads stop after their current API call rather than requiring the
+manager to pay permanently for `ns.kill`. Transient crawler shards report all
+three measured script costs and computed farm capacity so the next live run
+tests the architecture directly.
+
 ## Status vocabulary
 
 Used on every claim below, because the difference matters here more than

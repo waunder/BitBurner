@@ -1335,6 +1335,32 @@ for `ns.singularity` without SF4 — done up front here instead.
 
 ---
 
+## Reputation (`ns.share`)
+
+Added 2026-08-13, Ken-requested ("boost our rate of reputation growth").
+Self-contained, not touched by `mcp.js`, not auto-started by anything.
+
+| File | Runs on | RAM | What it does |
+| --- | --- | --- | --- |
+| `scripts/share.js` | any host, spread by `share_deploy.js` | 2.4GB/thread | Three-line loop, same shape as `scripts/weaken.js`: `while(true) await ns.share()`. All the logic lives in the deployer, same division of labor as the weaken/grow/hack workers. |
+| `share_deploy.js` | run once from `home` | ~2.6GB to run itself (exits after launching) | Launches `scripts/share.js` threads. Default (`run share_deploy.js`, no args) only claims `home`'s free RAM above a 16GB reserve — `mcp.js` never uses `home` for worker threads (`getHostFreeRam` special-cases it to 0), so this mode has **zero effect on the money farm**. `run share_deploy.js network` additionally claims free RAM on every rooted worker host; `mcp.js` reads each host's actual free RAM fresh every tick, so it will deploy fewer weaken/grow/hack threads there on its own next tick — a real, deliberate trade of hacking income for rep-gain rate, not a bug. `run share_deploy.js stop` kills every running `share.js` instance network-wide. Args: `[mode] [reserveHomeGb] [maxThreads]`. |
+
+**Caveat that matters more than the RAM math:** per `NetscriptDefinitions.d.ts`,
+share power only affects reputation gain *while actively doing faction work
+or a company job* (manually in the UI, or via `workForFaction`/`workForCompany`).
+This repo has no scripted faction-work automation — running this while
+nobody is doing rep-earning work burns RAM for nothing. Diminishing returns
+per thread are documented in-engine ("sharply decreasing rate") but the
+exact curve wasn't found in the game's bundled (minified, unmappable)
+source, so thread counts here are sized by available RAM, not by a modeled
+optimum — check `ns.getSharePower()` (printed by `share_deploy.js` on
+launch) to see the actual effect rather than trusting a guessed curve.
+
+**Not yet run live** — built and `node --check`ed this session, needs Ken to
+`run share_deploy.js` in the live terminal. See `docs/kensTodo.md`.
+
+---
+
 ## Legacy and unused
 
 Kept because they cost nothing and occasionally get read, but not part of any

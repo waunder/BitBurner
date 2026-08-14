@@ -6,20 +6,108 @@
  *
  * @param {NS} ns
  */
-import {
-  CREDS_FILE,
-  acquireSession,
-  readCreds,
-  recordCred,
-  shipCred,
-  shipShard,
-  writeDeployerShard,
-} from "dnet_lib.js"
-
+const CREDS_FILE = "dnet_creds.txt"
+const CRED_PREFIX = "dnet_cred_"
+const DEPLOYER_PREFIX = "dnet_deployer_"
 const SELF = "dnet_crawl.js"
 const MANAGER = "dnet_manager.js"
 const REALLOC = "dnet_realloc.js"
 const FILES = [SELF, MANAGER, REALLOC, "dnet_lib.js", "dnet_loot.js", "dnet_loot_realloc.js", "dnet_phish.js"]
+
+function safeHost(host) {
+  let safe = ""
+  for (const ch of String(host)) safe += /[A-Za-z0-9_-]/.test(ch) ? ch : "x" + ch.codePointAt(0).toString(16)
+  return safe.slice(0, 80)
+}
+
+function readCreds(ns) {
+  const creds = {}
+  for (const line of String(ns.read(CREDS_FILE) || "").split("\n")) {
+    try {
+      const rec = JSON.parse(line)
+      if (typeof rec?.host === "string" && typeof rec?.password === "string") creds[rec.host] = rec
+    } catch { /* tolerate a killed writer's partial line */ }
+  }
+  return creds
+}
+
+function candidates(details) {
+  const hint = typeof details.passwordHint === "string" ? details.passwordHint : ""
+  const data = typeof details.data === "string" ? details.data : ""
+  switch (details.modelId) {
+    case "ZeroLogon": return [""]
+    case "FreshInstall_1.0": return ["admin", "password", "0000", "12345"]
+    case "DeskMemo_3.1": return [hint.trim().split(/\s+/).pop()].filter(Boolean)
+    case "CloudBlare(tm)": return [data.replace(/\D/g, "")].filter(Boolean)
+    case "Laika4": return ["fido", "spot", "rover", "max"]
+    case "AccountsManager_4.2": {
+      const upper = Math.ceil((10 * ((details.difficulty ?? 0) + 3)) / 3)
+      return Array.from({ length: upper }, (_, i) => String(i))
+    }
+    case "Pr0verFl0": return Number.isInteger(details.passwordLength) ? ["A".repeat(2 * details.passwordLength)] : []
+    case "PHP 5.4": return uniquePermutations(data)
+    default: return []
+  }
+}
+
+function uniquePermutations(text) {
+  text = String(text)
+  if (!text || text.length > 3) return text ? [text] : []
+  const out = []
+  const visit = (prefix, rest) => {
+    if (!rest) return void out.push(prefix)
+    const used = new Set()
+    for (let i = 0; i < rest.length; i++) {
+      if (used.has(rest[i])) continue
+      used.add(rest[i])
+      visit(prefix + rest[i], rest.slice(0, i) + rest.slice(i + 1))
+    }
+  }
+  visit("", text)
+  return out
+}
+
+async function acquireSession(ns, host, known, bruteForceLimit) {
+  let details
+  try { details = ns.dnet.getServerDetails(host) } catch (err) {
+    return { ok: false, why: "invalid host", error: String(err), tried: 0 }
+  }
+  if (!details.isOnline) return { ok: false, why: "offline", tried: 0 }
+  if (details.hasSession) return { ok: true, password: known?.password, details, tried: 0 }
+  if (known && typeof known.password === "string") {
+    const reused = ns.dnet.connectToSession(host, known.password)
+    if (reused.success) return { ok: true, password: known.password, details, tried: 0 }
+  }
+  if (!details.isConnectedToCurrentServer) return { ok: false, why: "not directly connected", tried: 0 }
+  const guesses = candidates(details)
+  if (bruteForceLimit > 0 && guesses.length > bruteForceLimit) guesses.length = bruteForceLimit
+  let tried = 0
+  for (const password of guesses) {
+    const result = await ns.dnet.authenticate(host, password)
+    tried++
+    if (result.success) return { ok: true, password, details, tried }
+    if (result.code === 408) {
+      const retry = await ns.dnet.authenticate(host, password)
+      tried++
+      if (retry.success) return { ok: true, password, details, tried }
+    }
+  }
+  return { ok: false, why: guesses.length ? "candidates rejected" : `no shallow solver for ${details.modelId}`, tried }
+}
+
+function recordCred(ns, host, password, model) {
+  const rec = JSON.stringify({ host, password, model: model ?? "", at: Date.now() })
+  ns.write(CREDS_FILE, rec + "\n", "a")
+  const shard = `${CRED_PREFIX}${safeHost(host)}.txt`
+  ns.write(shard, rec + "\n", "w")
+  return shard
+}
+
+function writeHeartbeat(ns, host, patch) {
+  const shard = `${DEPLOYER_PREFIX}${safeHost(host)}.json`
+  ns.write(shard, JSON.stringify({ ts: Date.now(), ...patch }, null, 2), "w")
+  return shard
+}
 
 async function prepareTarget(ns, target) {
   const source = ns.getHostname()
@@ -47,7 +135,7 @@ export async function main(ns) {
 
   for (const target of neighbours) {
     const known = creds[target]
-    const result = await acquireSession(ns, target, known, { bruteForceLimit: flags.brute })
+    const result = await acquireSession(ns, target, known, flags.brute)
     if (!result.ok) {
       summary.failed++
       if (!flags.quiet) ns.print(`FAIL ${target} why=${result.why} code=${result.code}`)
@@ -57,7 +145,7 @@ export async function main(ns) {
 
     let details
     try {
-      details = ns.dnet.getServerDetails(target)
+      details = result.details ?? ns.dnet.getServerDetails(target)
     } catch (err) {
       summary.failed++
       if (!flags.quiet) ns.print(`DETAILS-FAIL ${target}: ${err}`)
@@ -67,7 +155,7 @@ export async function main(ns) {
       summary.cracked++
       creds[target] = { host: target, password: result.password, model: details.modelId, at: Date.now() }
       const shard = recordCred(ns, target, result.password, details.modelId)
-      await shipCred(ns, shard)
+      await ns.scp(shard, "home")
     }
 
     if (details.blockedRam > 0) {
@@ -101,7 +189,7 @@ export async function main(ns) {
   const maxRam = ns.getServerMaxRam(host)
   const blockedRam = ns.dnet.getBlockedRam(host)
   const farmCapacityThreads = phishRam > 0 ? Math.max(0, Math.floor((maxRam - blockedRam - managerRam) / phishRam)) : 0
-  const shard = writeDeployerShard(ns, host, {
+  const shard = writeHeartbeat(ns, host, {
     host,
     pass: 1,
     scopeNote: "lean transient crawl; manager periodically refreshes this host",
@@ -114,7 +202,7 @@ export async function main(ns) {
     ramCosts: { crawlRam, managerRam, phishRam, maxRam, blockedRam },
     farmCapacityThreads,
   })
-  await shipShard(ns, shard)
+  await ns.scp(shard, "home")
 
   // spawn replaces this process after releasing its RAM, so the manager is
   // never forced to coexist with the transient crawler during handoff.

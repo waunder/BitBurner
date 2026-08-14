@@ -1,6 +1,27 @@
 # Claude's working list
 
-## 2026-08-13 (latest, confirmed): R2 shipped and live-confirmed; also caught R1's predicted bug happening live, unprompted
+## 2026-08-13 (latest): R3 shipped live; hacking-strategy.md §5 now the maintained "what's left" tracker
+
+R3 confirmed live: restarted, first post-restart tick showed
+`needWeaken: 26` with **zero** `weakenBudgetNonNegative` violations — the
+budget-conservation guarantee holds under real conditions (878 grow threads
+each needing their own security-offset weaken, on top of the 26-thread
+primary budget).
+
+Ken asked for a written-up next-steps list. Rather than a separate doc,
+turned `hacking-strategy.md`'s own §5 into the maintained status tracker
+(dated top-of-file pointer added too) — R2/R3 marked done+confirmed with
+what was verified, R1 marked as the next concrete step with its exact
+prerequisites (confirm `mults.hacking_grow` live first, add
+`computeWorkWeights` to `mcp_logic.js`, wire `ns.hackAnalyze`/
+`ns.growthAnalyze` into `buildPlan`, new `HACK_BALANCE_SAFETY` tunable
+starting at 0.5). R4/R5/R6/R7 unchanged from the original ranking, marked
+not-started with their real dependencies (R4 needs R1 proven first; R5/R7
+have none; R6 waits on `OBJECTIVE` going to `"xp"`).
+
+**Not started, no further live changes made this session.**
+
+## 2026-08-13: R2 shipped and live-confirmed; also caught R1's predicted bug happening live, unprompted
 
 Ken said go ahead on R2 (the stuck-target detector fix, see the entry
 directly below). Implemented as `evaluateStuckTarget` in `mcp_logic.js`

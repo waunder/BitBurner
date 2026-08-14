@@ -6,6 +6,12 @@ one is the knowledge base (formulas extracted from the game's own
 TypeScript), this one is the argument built on top of it. Read that first;
 every formula cited here comes from there unless marked otherwise.
 
+**Status as of 2026-08-13, 22:20: R2 and R3 are implemented, live, and
+confirmed working — see §5 for the current, maintained status of every
+item. R1 (the actual order-of-magnitude payload) is next and not yet
+started.** The rest of this document is the original analysis; read §5
+first if you just want to know what's left.
+
 ## Status vocabulary
 
 Same as `hacking-mechanics.md`:
@@ -806,18 +812,51 @@ matters and `econ_probe.js` exists for exactly this:
    XP mode on a deliberately drained target and watching `expPerSec` step by
    4× when grow is reintroduced.
 
-## 5. Suggested order of work
+## 5. Implementation status and next steps
 
-1. **R2** (stuck detector) — four lines, no risk, stops the every-two-minute
-   eviction that would otherwise mask everything else.
-2. **R3** (allocation-diff redeploy) — the structural prerequisite; ship with
-   `node --test` coverage for pass 1 and for "zero diff ⇒ zero redeploys".
-3. **R1** (balance-point weights) — the payload. Ship with
-   `HACK_BALANCE_SAFETY = 0.5` and raise it from the config once observed.
-4. **R4** (scoring + ramp discount + switch factor) — after the farm is
-   demonstrably holding money on one target.
-5. **R5, R7** — opportunistic.
-6. **R6** — when `OBJECTIVE` next goes to `"xp"`.
+Updated as each step actually ships — this section is the current source of
+truth for "what's left," not just the original ranking.
 
-Steps 1–3 are the ones with an order-of-magnitude behind them. Everything
-after is single-digit multipliers on whatever they achieve.
+1. **R2 (stuck detector) — done, live, confirmed 2026-08-13.** Shipped as
+   `evaluateStuckTarget` in `mcp_logic.js` (5 tests). Restarted live;
+   watched a full weaken→work cycle with the target sitting at its security
+   floor and zero spurious "stuck" evictions — the exact case that used to
+   misfire.
+2. **R3 (allocation-diff redeploy) — done, live, confirmed 2026-08-13.**
+   Shipped as `computeDesiredAllocation` + a rewritten `hostNeedsRedeploy`
+   in `mcp_logic.js` (16 tests, including direct regressions for both live
+   bugs this closed). Restarted live; first post-restart tick showed
+   `needWeaken: 26`, **zero `weakenBudgetNonNegative` violations** — the
+   budget-conservation guarantee is holding. Two new config tunables
+   (`REDEPLOY_TOLERANCE_ABSOLUTE`/`RELATIVE`, defaults 2/0.2) are live and
+   hot-reloadable if redeploy churn ever shows up in `mcp_events.txt`.
+3. **R1 (balance-point weights) — not started. This is the actual payload
+   (10–30×) and the next concrete step.** Requires: a new
+   `computeWorkWeights` in `mcp_logic.js` replacing `selectWorkWeights`
+   (code already in §2.1 above), reading `ns.hackAnalyze`/
+   `ns.growthAnalyze(target, 2)` live in `buildPlan` (mcp.js:699-728) to
+   get real `p`/`k` per tick, a new `HACK_BALANCE_SAFETY` config tunable
+   (ship at 0.5, not the doc's speculative 0.7), and deleting
+   `WORK_WEIGHTS_BY_BUCKET`/`bucketForMoneyPct`/`getWorkWeightBucket`/
+   `BUCKET_HYSTERESIS` once nothing references them. **Before writing
+   code**, confirm `mults.hacking_grow` (§1.2's one real open unknown —
+   everything here is a lower bound until it's read) via one
+   `ns.getPlayer().mults.hacking_grow` call, and add it to
+   `mcp_status.json`'s `player` block while there. R3 being live is what
+   makes R1 safe to ship now — the weight change means nothing if the
+   redeploy layer can't actually get the new ratio onto the network.
+4. **R4 (scoring + ramp discount + switch factor) — not started.** Ship
+   only after R1 has run long enough to demonstrably hold a target near
+   `moneyMax` (§4 item 3: compare `incomePerSec` against the modelled
+   number) — R4's `OPPORTUNITY_SWITCH_FACTOR` change is unsafe before that,
+   per §2's own note.
+5. **R5, R7 — not started, opportunistic.** No dependency on R1/R4; safe to
+   pick up independently whenever convenient. R7's `home`-RAM item is the
+   only one worth flagging as slightly more involved (needs a reserve
+   gate, per its own risk note).
+6. **R6 (XP mode) — not started, low priority.** `OBJECTIVE` is `"money"`
+   and income is the binding constraint; revisit when that changes.
+
+Steps 1–3 are the ones with an order-of-magnitude behind them; two of three
+are now live. Everything after step 3 is single-digit multipliers on top of
+whatever it achieves.

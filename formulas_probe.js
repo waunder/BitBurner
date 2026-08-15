@@ -34,6 +34,7 @@ function snapshot(ns, target, state) {
     hackTimeMs: f.hackTime(server, player),
     growTimeMs: f.growTime(server, player),
     weakenTimeMs: f.weakenTime(server, player),
+    growPercentOneThread: f.growPercent(server, 1, player, 1),
     growThreadsToMax: f.growThreads(server, player, server.moneyMax),
   }
   const invalid = Object.entries(values)

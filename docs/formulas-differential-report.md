@@ -1,6 +1,7 @@
 # R4 formulas audit differential report
 
-**Status:** local synthetic fixture report; senior review required.  
+**Status:** local synthetic report plus live API evidence; production adoption
+still requires shadow validation.  
 **Date:** 2026-08-14  
 **Production impact:** none.
 
@@ -23,6 +24,35 @@ The report does not yet classify these differences as corrections, API
 effects, or production defects because the hypothetical values have no live
 formulas provenance.
 
+## Live probe: `silver-helix`
+
+The read-only `formulas_probe.js` was run in Bitburner v3.0.1 with the same
+observed `$45m` target money in both states. Only `hackDifficulty` changed
+from 30 to the minimum 10. The formulas API accepted the hypothetical state
+and returned finite values.
+
+| Metric | Current security | Minimum security |
+|---|---:|---:|
+| Hack time | 38.34s | 13.87s |
+| Hack percent/thread | 0.5282% | 0.6792% |
+| Grow percent/thread | 1.0004124× | 1.0012365× |
+| Grow log/thread | 0.0004123 | 0.0012357 |
+| Grow threads to max | 7,807 | 2,605 |
+
+Feeding those observed metrics into the pure audit calculator with a fixed
+100-thread comparison pool produced:
+
+| Score | Current security | Minimum security | Change |
+|---|---:|---:|---:|
+| Raw achievable rate | $335.7k/s | $2.606m/s | +676% |
+| Ramp-adjusted rate | $92.8k/s | $1.980m/s | +2,034% |
+
+This is strong evidence that scoring a target only at its current security can
+materially under-rate it. It is not yet proof of realized farm income: the
+calculation uses a fixed comparison pool and does not replace the live
+allocator. The next test must be shadow-only and must compare actual income,
+security, ramp duration, and redeploy behavior.
+
 ## Gate result
 
 The pure comparison milestone passes its local gate:
@@ -32,7 +62,6 @@ The pure comparison milestone passes its local gate:
 - the report refuses to claim adoption;
 - production code and live decisions are untouched.
 
-The next work package is a senior-approved live API probe for
-`ns.formulas.mockServer()` / `mockPlayer()` and the relevant hacking formula
-signatures. That probe must be separate from production target selection and
-must record actual argument shapes, units, RAM cost, and failure behavior.
+The next work package is a senior-approved formulas adapter in shadow mode.
+It must remain separate from production target selection and record actual
+argument shapes, units, RAM/latency cost, and failure behavior.

@@ -15,7 +15,6 @@ function snapshot(ns, target, state) {
   const player = ns.getPlayer()
   if (state === "minimum-security") {
     server.hackDifficulty = server.minDifficulty
-    server.moneyAvailable = server.moneyMax
   }
   const f = ns.formulas.hacking
   const values = {

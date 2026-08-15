@@ -352,6 +352,26 @@ namespace, and stock decisions already use the stock API/4S data path.
 This plan is deliberately not yet a work order. Before a junior coder starts,
 the senior developer should approve the following decisions in writing.
 
+### Review gate 0 — Verify capability lifecycle across augmentations
+
+The team must verify whether Formulas.exe remains owned and callable after an
+augmentation, or must be purchased again. The current live probe confirms
+access in this save only; it does not establish persistence across resets.
+
+The review must separate reusable value from temporary runtime access:
+
+- **Reusable knowledge:** validated formulas, measurements, invariants,
+  fixtures, and code improvements that remain useful without the executable.
+- **Runtime capability:** `ns.formulas` calls that require current ownership and
+  may need to be reacquired after an augmentation.
+
+Before production adoption, record post-augmentation behavior, repurchase cost
+and timing if applicable, and the fallback when Formulas.exe is unavailable.
+Production code must degrade safely to a non-formulas path or read-only mode;
+it must not silently assume permanent ownership. The economic question is
+therefore whether formulas improve outcomes enough to justify recurring access
+cost across augmentation cycles.
+
 ### Review gate 1 — Confirm the real API surface
 
 Do not infer availability from an interface name or from a remembered version

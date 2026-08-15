@@ -852,7 +852,9 @@ manager's current target, income, pool capacity, and invariant counters; then
 calculates a minimum-security target ranking with Formulas.exe. It never
 changes target selection, worker allocation, or configuration.
 
-- **Start:** `run mcp_formulas_shadow.js [intervalMs]` (default 30 seconds).
+- **Start:** `run mcp_formulas_shadow.js [intervalMs] [samples]` (default 120
+  seconds; minimum 60 seconds). Set `samples` to a positive count for a
+  bounded run; omit it for continuous monitoring.
 - **Stop:** `kill mcp_formulas_shadow.js`.
 - **Output:** tail panel plus the latest bounded snapshot in
   `mcp_formulas_shadow.txt`; the snapshot is overwritten each poll so it does

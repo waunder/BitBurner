@@ -1,7 +1,7 @@
 /**
  * Read-only long-running R4 formulas shadow monitor.
  *
- * Usage: run mcp_formulas_shadow.js [intervalMs]
+ * Usage: run mcp_formulas_shadow.js [intervalMs] [samples]
  * Reads mcp_status.json for the manager's observed target/income/pool and
  * compares it with a formulas-backed minimum-security ranking. It never
  * changes target selection or worker allocation.
@@ -83,12 +83,14 @@ function rankMinimumSecurity(ns, poolThreads) {
 
 export async function main(ns) {
   ns.disableLog("ALL")
-  const intervalMs = Math.max(10000, Number(ns.args[0] || 30000))
+  const intervalMs = Math.max(60000, Number(ns.args[0] || 120000))
+  const sampleLimit = Math.max(0, Math.floor(Number(ns.args[1] || 0)))
   if (!ns.fileExists("Formulas.exe", "home")) {
     ns.tprint("mcp_formulas_shadow: Formulas.exe is required")
     return
   }
-  while (true) {
+  let samples = 0
+  while (sampleLimit === 0 || samples < sampleLimit) {
     try {
       const status = managerStatus(ns)
       const poolThreads = Number(status && status.maxWeaken)
@@ -120,6 +122,8 @@ export async function main(ns) {
       ns.clearLog()
       ns.print(`mcp_formulas_shadow error: ${String(error && error.message ? error.message : error)}`)
     }
+    samples++
+    if (sampleLimit > 0 && samples >= sampleLimit) break
     await ns.sleep(intervalMs)
   }
 }

@@ -10,6 +10,32 @@ file is the map.
 Keep it current. If a script gains an argument, a file, or a failure mode,
 it changes here in the same commit.
 
+## Current governance control state — 2026-08-15
+
+For Codex, the approved overlay in `AGENTS.md` supersedes conflicting
+repository-local Claude workflow guidance while preserving `CLAUDE.md` for
+Claude's return. Current authority is recorded in
+`docs/directive-ledger.json`; live permission is fail-closed by subsystem in
+`docs/promotion-state.json`; source/output direction is in
+`docs/artifact-manifest.json`.
+
+- The five-process `startup.js` core MCP baseline is an established Tier 2
+  operation and may run with its normal health/recovery checks.
+- Stock panels/trading, IPvGO, Darknet, and faction sharing are currently off.
+  `mcp_stock_trader.js` is quarantined and has no capital-deployment approval.
+- Formulas R8 remains production-inert, shadow-only, and paused before another
+  live run until source identity, explicit tail visibility, and local retrieval
+  of `mcp_formulas_shadow.txt` are established.
+- Editing a daemon `WATCHED_FILES` source in this connected checkout is
+  deployment-capable; use a non-synced worktree for local source development.
+- Historical “live,” “done,” or launch instructions below describe past
+  capability, not present permission, when they conflict with promotion state.
+
+Run `python3 tools/standing_orders_audit.py --profile session` for the current
+portfolio report, or the scoped `--profile action --subsystem NAME --tier N`
+gate before a live action. The complete runner/enforcer/scheduler contract is
+`docs/governance-control-operations.md`.
+
 ---
 
 ## The map
@@ -32,7 +58,7 @@ flowchart TB
         mcp -->|writes on change| logfile[(mcp_status_log.txt)]
         status --> hud[mcp_hud.js]
         pool -.->|scanned| stats[get_stats.js]
-        status -.->|after a manual download| parser[mcp_status_parser.py]
+        status -.->|after Remote API pull| parser[mcp_status_parser.py]
         player[(player state)] -.->|ns.getMoneySources| moneypanel[mcp_money.js]
         player -.->|ns.stock.*| stockpanel[mcp_stocks.js]
     end
@@ -50,12 +76,12 @@ flowchart TB
         sup -->|renders| dumptail[mcp_dump tail window]
     end
 
-    subgraph direct["Direct Remote API connection (2026-08-10/11) — both directions built; push side is live-confirmed, pull side is mock/subprocess-validated only"]
+    subgraph direct["Direct Remote API connection — both directions live-confirmed by 2026-08-14"]
         daemon["bb_remote.py daemon<br/>(persistent, local control channel,<br/>full resync/pull on every (re)connect)"]
         daemon -->|pushFile, confirmed by getFile readback| flag
-        daemon ==>|getFile, routine pull, full pull on (re)connect + 2s incremental — writes to disk now, not yet live-tested| status
+        daemon ==>|getFile, routine pull, full pull on (re)connect + 2s incremental, live-confirmed| status
         daemon ==>|getFile, routine pull — same as above| logfile
-        daemon ==>|pushFile, routine sync, 28 watched files, live-confirmed 2026-08-11| mcp
+        daemon ==>|pushFile, routine manifest sync, live-confirmed| mcp
         daemon ==>|pushFile, routine sync| actions
     end
 
@@ -826,14 +852,19 @@ is bought — what looks worth buying.
 
 ### `mcp_stock_trader.js`
 
+**Current state: quarantined, not authorized to sync or run.** The untracked
+file contains capital-moving calls, no approval record exists, and a prior
+`trade=1` process crossed the standing stock boundary. The bullets below
+describe the artifact, not permission.
+
 Conservative long-only trader implementing a 10% cash allocation cap and a
 10% net-profit exit target. It requires WSE, TIX API, and 4S Market Data TIX
 API; without 4S, forecast-based entries are not available and commission plus
 spread make guessing a poor starting metric. It is dry-run by default and
 cannot place orders unless started with `trade=1`.
 
-- **Start safely:** `run mcp_stock_trader.js`.
-- **Enable orders explicitly:** `run mcp_stock_trader.js trade=1`.
+- **Do not start or sync:** neither dry-run nor `trade=1` is currently
+  authorized; `docs/promotion-state.json` is fail-closed.
 - **Optional:** `interval=<ms>` (default 4000); the current output is the
   script log.
 - Buys only when `getForecast(symbol) > 0.5`, and sizes each order so the
@@ -841,24 +872,34 @@ cannot place orders unless started with `trade=1`.
   the start of that poll.
 - Sells a long position only when sale proceeds minus purchase cost exceed
   10% of purchase cost. It never shorts.
-- **Unverified in-game:** Node syntax-checks the file, but actual order
-  behavior still requires a Bitburner run; keep the first run dry and inspect
-  its output before enabling `trade=1`.
+- **Incident evidence:** Ken's supplied process list showed a `trade=1`
+  instance before restart. That proves the boundary was crossed, not that an
+  order executed or the trader caused the game failure.
 
 ### `mcp_formulas_shadow.js`
+
+**Current state: shadow-only and paused before another live run.** The latest
+source appends and prints each complete record, but it does not call
+`ns.ui.openTail`, the source is dirty/explicit-push-only, and the reported
+in-game output file has not been pulled locally. The run command below is the
+historical interface, not present permission.
 
 Read-only, opt-in R4 formulas shadow monitor. Reads `mcp_status.json` for the
 manager's current target, income, pool capacity, and invariant counters; then
 calculates a minimum-security target ranking with Formulas.exe. It never
 changes target selection, worker allocation, or configuration.
 
-- **Start:** `run mcp_formulas_shadow.js [intervalMs] [samples]` (default 120
+- **Interface when the Tier 1 gate is cleared:** `run mcp_formulas_shadow.js [intervalMs] [samples]` (default 120
   seconds; minimum 60 seconds). Set `samples` to a positive count for a
   bounded run; omit it for continuous monitoring.
 - **Stop:** `kill mcp_formulas_shadow.js`.
-- **Output:** tail panel plus the latest bounded snapshot in
-  `mcp_formulas_shadow.txt`; the snapshot is overwritten each poll so it does
-  not grow without limit and survives stopping the script.
+- **Output:** cumulative JSON-lines snapshots in
+  `mcp_formulas_shadow.txt`; each poll appends one complete snapshot and also
+  prints that exact snapshot to the script log. Until explicit tail opening is
+  implemented, there is no automatically visible tail panel. The file preserves the
+  evidence from a bounded run, rather than leaving only its final poll. For
+  continuous monitoring, stop and clear/archive the file deliberately if its
+  size becomes material.
 - **Failure mode:** missing/stale manager status or a formulas exception is
   recorded as a failed snapshot and shown in the tail; no production action is
   taken. Requires Formulas.exe.
@@ -1639,12 +1680,17 @@ for `ns.singularity` without SF4 — done up front here instead.
 
 ## Reputation (`ns.share`)
 
+**Current state: disabled after the stability/loop incident.** Do not run
+`share_deploy.js` or `scripts/share.js` until the worker has an explicit
+bounded cooldown, focused tests, a bounded canary, and re-enable approval.
+The table describes the existing artifact only.
+
 Added 2026-08-13, Ken-requested ("boost our rate of reputation growth").
 Self-contained, not touched by `mcp.js`, not auto-started by anything.
 
 | File | Runs on | RAM | What it does |
 | --- | --- | --- | --- |
-| `scripts/share.js` | any host, spread by `share_deploy.js` | 2.4GB/thread | Three-line loop, same shape as `scripts/weaken.js`: `while(true) await ns.share()`. All the logic lives in the deployer, same division of labor as the weaken/grow/hack workers. |
+| `scripts/share.js` | any host, spread by `share_deploy.js` | 2.4GB/thread | Repeatedly calls `ns.share()` and then yields for one second. The explicit yield prevents a large share deployment from monopolising the game event loop. All allocation logic remains in the deployer, same division of labor as the weaken/grow/hack workers. |
 | `share_deploy.js` | run once from `home` | ~2.6GB to run itself (exits after launching) | Launches `scripts/share.js` threads idempotently (every start first removes the previous share allocation). Default balanced mode kills only home's MCP action workers, reserves 256GB for 106 share threads at the measured 2.4GB/thread, then exits; MCP sees the occupied RAM and refills the rest of home on its next tick. `home` aliases balanced, `spare` uses only currently free home RAM, and `network` additionally fills currently free rooted ordinary-network RAM. `run share_deploy.js stop` kills all ordinary-network/home share workers, after which MCP automatically reclaims the RAM next tick. Args: `[mode] [shareHomeGb=256] [reserveHomeGb=32] [maxThreads]`. |
 
 **Caveat that matters more than the RAM math:** share power only affects

@@ -1,5 +1,10 @@
 # Next-session handoff: Formulas.exe
 
+> **Governance status, 2026-08-15:** the bounded command below has already been
+> reported complete and must not simply be run again. R8 is paused until the
+> exact source is attested, explicit tail opening is implemented/tested, and
+> the existing cumulative output is pulled and independently parsed.
+
 ## Current state
 
 - Formulas.exe was validated live in Bitburner v3.0.1.

@@ -1,16 +1,23 @@
 # Ken's to-do
 
-Actions that need a human hand. Claude cannot trigger the VS Code extension's
-download command or click anything in-game — see `CLAUDE.md`. Checked items
-stay here as a record of what's already done, not busywork to repeat.
+Only actions that genuinely need Ken's hand belong here. The Remote API now
+handles routine source sync and telemetry pull; an in-game click, a connector
+reopen, or a Tier 3 scope decision still belongs here when actually needed.
+Checked items stay as history, not busywork to repeat.
 
-Claude should keep this current: add an item the moment something needs
-Ken's hand, and check it off once it's confirmed done — same rule as
-`docs/processes.md`.
+Codex keeps this current: add an item the moment something really needs Ken's
+hand and check it off once confirmed—same rule as `docs/processes.md`.
 
 ## Pending
 
-- [ ] **Start the new balanced faction-sharing allocation when actively doing faction work:** `run share_deploy.js`. It replaces home's current MCP action workers with about 256GB / 106 share threads; MCP refills the rest automatically. Run `share_deploy.js stop` when faction work ends so MCP reclaims the RAM. Added 2026-08-14; Codex can push the script but cannot execute the in-game terminal command.
+- [x] **No governance-audit game action is presently requested.** The core MCP
+  baseline may continue. Stock, IPvGO, Darknet, faction share, and another R8
+  live run remain narrow holds in `docs/promotion-state.json`; a hold is not a
+  task for Ken to remember or execute.
+
+- [x] **Superseded: do not start the balanced faction-sharing allocation.**
+  The earlier `run share_deploy.js` request is cancelled after the stability/
+  loop incident. Re-enable is a separate Tier 3 decision after containment.
 
 - [x] **Reconnect Bitburner to the Remote API on port 12526.** Confirmed
   2026-08-14: all 43 then-current watched files synced, the remotely-triggered clean swarm
@@ -43,25 +50,10 @@ Ken's hand, and check it off once it's confirmed done — same rule as
   times, `deployer.pass` climbed 200→201 in between — the swarm kept
   heartbeating through the window without erasing anything. That's the
   actual regression test, not a one-off snapshot. **Bug confirmed fixed.**
-- [ ] **Confirm the Darknet Phase 3b loot fix is live and check
-  `dnet_status.json`'s `deployer.*.lootMode` for `realloc` count movement.**
-  Built 2026-08-12: `dnet_loot_realloc.js` (a leaner RAM-only loot variant)
-  plus a `dnet_deploy.js` fallback so a host too RAM-constrained for the
-  full 5.55GB loot script now gets the cheaper ~3.35GB one instead of a
-  flat skip. Full reasoning and the $362M/100%-skip-rate findings that
-  motivated it: `docs/claude-todo.md`'s 2026-08-12 "Darknet Phase 3b"
-  entry. This session ran directly against the daemon-watched checkout at
-  `/Users/Shared/BitBurner` (confirmed via `git worktree list` before
-  starting, not one of the isolated `.claude/worktrees/agent-*` copies —
-  see the entry directly below this one for why that distinction mattered
-  last time), so a plain push should be enough this time; a quick
-  `git log -1` in that checkout after pulling/restarting is worth
-  double-checking anyway given the precedent. Once a fresh
-  `dnet_deploy.js` is running the new code (restart required — Bitburner
-  doesn't hot-reload), the useful signal is `dnet_status.json`'s
-  `deployer.thisPass.lootMode`/`sinceProcessStart.lootMode` fields moving
-  `realloc` off zero. Nothing here could be run live this session — no
-  in-game execution access from this context.
+- [x] **Superseded by the current Darknet hold: no Phase 3b live check is
+  requested.** Historical task was to confirm the loot fix and check
+  `dnet_status.json`'s `deployer.*.lootMode`; the implementation history is
+  retained in `docs/claude-todo.md` and the Darknet plans, not as a launch ask.
 - [x] **Pull `origin/main` into the actual synced checkout at
   `/Users/Shared/BitBurner`.** Done — plain `git pull`, fast-forwarded
   `001e504..d2e3ae3` (brought in `c33c13f`'s `NUM_SIMULATIONS` 1500→6000
@@ -168,6 +160,11 @@ Ken's hand, and check it off once it's confirmed done — same rule as
   Restarts no longer need a keystroke; Claude bumps `mcp_restart.txt` directly.
 - [x] `run mcp_hud.js` — confirmed running and healthy (`OK`, `ver ok`,
   `inv 0`, 2026-08-08).
+
+- [x] **No Ken action: stock trader is quarantined pending a future explicit
+  capital-deployment decision.** Do not resync, run, or add
+  `mcp_stock_trader.js` to the daemon's watched files; the control ledger owns
+  this hold so Ken does not have to remember it as a task.
 - [x] **Leftover `get_stats.js` processes.** `ps` confirmed a single instance
   (PID 914) alongside a single `mcp_hud.js` (PID 986) — the three stray
   copies from before the self-supersede fix are gone.

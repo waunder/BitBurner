@@ -1,5 +1,11 @@
 # Moving off the VS Code extension's file sync
 
+> **Historical plan status, 2026-08-15:** the Remote API daemon now provides
+> routine watched-source push and generated-artifact pull, with reconnect
+> resync and local self-tests passing. Prototype-era “not live” language below
+> is chronology; current direction and permission live in
+> `docs/artifact-manifest.json` and `docs/promotion-state.json`.
+
 Research + prototype for the decision made 2026-08-09 (see
 `docs/kensTodo.md` and the session memory it was logged from): stop
 depending on the Bitburner VS Code extension's file-sync for pushing files

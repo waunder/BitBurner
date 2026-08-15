@@ -20,6 +20,46 @@ The team must distinguish clearly between:
 
 No one of these categories may silently stand in for another.
 
+## 2026-08-15 amendment — progress-enabled controls
+
+**Status:** adopted by Ken provisionally, subject to review after it has
+controlled and enabled real work. The detailed operating implementation is in
+`docs/governance-control-operations.md`; the independent basis is
+`docs/independent-governance-audit.md`.
+
+Progress remains the primary mandate. Controls exist to prevent repeated
+failure, preserve evidence, and keep rollback cheap; they must not turn
+ordinary investigation into a permission queue.
+
+Work uses the minimum applicable tier:
+
+| Tier | Work | Rule |
+|---|---|---|
+| 0 | Local/read-only analysis, tests, docs, fixtures, retrieved-telemetry review | Always proceed. |
+| 1 | Bounded, reversible diagnostics | Proceed when source, duration, output, stop condition, rollback, and retrieval path are explicit. |
+| 2 | Established operating baseline | Proceed under its documented health and recovery checks; no repeated approval is needed. |
+| 3 | Capital movement, production promotion, irreversible expenditure, new always-on automation, or re-enabling an incident-held subsystem | Requires a narrow append-only approval, independent review, stop conditions, rollback, and retained evidence. |
+
+Use `PASS`, `WARN`, `REVIEW_REQUIRED`, and `BLOCK` precisely. A `BLOCK` may
+only stop its named action for an objective safety, provenance, authority, or
+rollback failure. Documentation debt normally produces `WARN`. Every block
+must state its smallest correction, owner, clearing evidence, and parallel
+safe work.
+
+For a material live diagnostic, completion requires exact source identity,
+retrieved output, schema/sample validation where applicable, and an outcome
+record. An in-game file existing or a command ending does not by itself prove
+completion. A current `live-confirmed` claim must retain its source identity,
+observed time, run ID, retrievable artifact, proof limit, and reviewer when
+consequential.
+
+The authoritative current state is the combination of the Codex overlay in
+`AGENTS.md`, `docs/directive-ledger.json`, and `docs/promotion-state.json`.
+Historical prose remains evidence but cannot grant present permission. In the
+connector-synced checkout, a watched-source edit is deployment-capable;
+develop live source in a non-synced worktree and promote one attested source
+identity at the proper boundary.
+
 ## Operating principle
 
 Work contract-first:

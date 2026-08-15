@@ -6,6 +6,62 @@ match a solo hobby project. See `README.md` for the workflow, and in `docs/`:
 `kensTodo.md` for actions that need Ken's hand specifically, and the audit
 reports for why the current design is what it is.
 
+## Codex branch overlay — approved 2026-08-15
+
+This section is the controlling repository-local overlay for Codex on this
+branch. `CLAUDE.md` remains untouched so Claude's environment is preserved;
+when its workflow guidance conflicts with this overlay, Codex follows this
+overlay. System/developer instructions and Ken's latest explicit directive
+remain higher authority. Below this overlay, precedence is
+`docs/standing-orders.md` → active `docs/directive-ledger.json` and
+`docs/promotion-state.json` → current process/subsystem contracts → preserved
+historical reports, dashboards, and Claude notes. A conflict fails safe for
+the affected live action and is recorded; it never creates a repository-wide
+pause.
+
+**Primary mandate: progress.** Governance must make safe work easier and
+repeated failure rarer. Tier 0 inspection, documentation, local tests, static
+analysis, and already-retrieved telemetry analysis proceed without human
+approval. Tier 1 bounded diagnostics proceed when source, duration, output,
+stop, rollback, and evidence retrieval are known. Tier 2 includes the
+established `startup.js` core baseline and does not need a fresh approval.
+Tier 3 capital movement, production promotion, irreversible expenditure, new
+always-on automation, or re-enable after a stability incident requires narrow
+approval plus independent review.
+
+At session start, and before a live action or promotion, run the proportional
+gate documented in `docs/governance-control-operations.md`:
+
+```text
+python3 tools/standing_orders_audit.py --profile session
+python3 tools/standing_orders_audit.py --profile action --subsystem NAME --tier N
+```
+
+Portfolio `BLOCK` means a scoped hold exists; the command's `gateStatus`
+controls the requested action. Every blocker must name the exact condition,
+smallest correction, owner, clearing evidence, and parallel safe work.
+
+Current operating state is machine-readable in `docs/promotion-state.json`:
+the core MCP baseline is allowed; stock panels/trading, IPvGO, Darknet, and
+faction share are off; stock capital source is quarantined; R8 is shadow-only
+and paused at source/visible-output/retrieval evidence. Do not infer permission
+from a historical “live,” checkbox, process plan, or stale dashboard.
+
+The checkout at `/Users/Shared/BitBurner` is connector-synced. Editing a path
+in `tools/bb_remote.py::WATCHED_FILES` can therefore deploy source and is not
+Tier 0 even before a restart. Do local production-source development in a
+non-synced worktree, then use the action/promotion gate to attest and promote
+the exact source. Governance-only files created by the independent audit are
+disjoint from `WATCHED_FILES`.
+
+`docs/Codex-todo.md` is Codex's current concise work ledger.
+`docs/claude-todo.md`, historical audits, and the status dashboard remain
+evidence/history unless a current control file explicitly incorporates a
+claim. Clean/scoped state is required at commit, merge, deploy, and promotion
+boundaries—not as a prerequisite for harmless analysis. The broad historical
+permission to push `main` does not override a task-specific protected-branch
+restriction or the scoped boundary gate.
+
 **Keep `docs/processes.md` and `docs/kensTodo.md` current.** If a script
 gains an argument, a file it reads or writes, or a failure mode, update
 `processes.md` in the same commit. The moment something needs Ken's hand —
@@ -57,8 +113,8 @@ reading).
   existed in the game and nothing visible said so. If a new generated file
   needs a "this is structured/line-delimited" hint, put it in the content or
   the filename stem, not the extension.
-- **File sync auto-pushes, but a download reverses and re-affirms it.** The
-  extension watches the filesystem (not just editor saves), so edits written
+- **The legacy VS Code file-sync extension auto-pushes, and its broad download
+  reverses and re-affirms source.** If it is enabled, the extension watches the filesystem (not just editor saves), so edits written
   by tooling *do* auto-push — but only while the server is running and the
   game is connected. **"Download Files from Server" overwrites local source
   with the game's copies, and the watcher then pushes those straight back**,
@@ -78,19 +134,20 @@ reading).
     output.
   - Keep the tree committed regardless, so a bad pull costs a `git checkout`
     (and the restore itself auto-pushes the correct version back).
-- **Codex cannot trigger the download.** No CLI or API for the extension
-  command, and its WebSocket port is occupied by the game. Getting in-game
-  state onto disk requires Ken to click. Design telemetry accordingly:
-  maximise information per click.
-- **A dropped sync session doesn't replay what it missed on reconnect.**
+- **Codex can trigger routine source sync and telemetry pulls through the
+  Remote API daemon.** The extension's UI-only command still cannot be clicked
+  by Codex, but it is now a recovery path, not the normal workflow. The exact
+  watched/pulled sets are enforced by `docs/artifact-manifest.json`.
+- **A dropped legacy extension session doesn't replay what it missed on reconnect.**
   `startup.js` was created and committed while the session had silently
   dropped (a known recurring issue — see the note above); reconnecting alone
   did not push it, even after confirming the connection was back. The
   watcher reacts to *new* filesystem events going forward, it doesn't diff
   local against remote on reconnect. Fix: force a fresh event —
   `touch <file>` from Codex's side (no content change needed) or a manual
-  save in the editor from Ken's — and it pushes normally. Worth checking for
-  after any reconnect if a file that should be new in-game isn't.
+  save in the editor from Ken's — and it pushes normally. The Remote API
+  daemon instead performs a manifest resync/pull on reconnect; verify its
+  result rather than applying this legacy workaround by habit.
 
 ## Diagnosis discipline
 
@@ -149,8 +206,10 @@ doesn't want the mechanics narrated at him. Practical rules:
 
 ## Git
 
-Standing approval: commit and push (non-force) to `origin main` at Codex's
-discretion. Repo is private at github.com/waunder/BitBurner. Ken is
+Standing approval: commit and push non-force changes at Codex's discretion
+after the scoped commit/merge gates pass; task-specific protected-branch or
+no-push instructions override this default. Repo is private at
+github.com/waunder/BitBurner. Ken is
 habit-averse and has explicitly assigned version-control hygiene to Codex —
 do not hand him routines to remember, just keep the tree committed.
 
@@ -162,19 +221,12 @@ stay committed and out of the ignore list, or it can't sync into the game.
 
 ## Open work
 
-`docs/process-backlog.md` holds the current backlog — it re-scores the
-2026-08-07 process audit against the loop as it now exists (CDP connection,
-supervisor, HUD, watcher), which invalidated that audit's "maximize
-information per click" premise. The audit itself stays as the historical
-record. **Top item as of 2026-08-10 is replacing the VS Code extension's
-file sync entirely** — see `docs/Codex-todo.md` priority 1 for the concrete
-next steps. Version stamps, the single field list, hot-reloaded config, the
-event log, and invariants all shipped 2026-08-08 — see the Done table there
-for what shipped and what's still worth watching about each. Below the sync
-replacement, in order: pure-function extraction for `node --test`, `probe=`
-experiment mode, ports as a telemetry ring buffer, `mcp_doctor.js` (no
-longer RAM-gated — home is 128GB as of 2026-08-09, build if independent
-network measurement turns out to be wanted).
+`docs/Codex-todo.md` is the current concise backlog. `docs/process-backlog.md`
+and `docs/claude-todo.md` retain historical work and reasoning but do not
+override the directive ledger or promotion state. The Remote API replacement
+for routine push/pull is built and live-confirmed; the current control priority
+is preserving source identity in a connector-synced checkout, then resuming
+the highest-value work that passes its scoped tier gate.
 
 **Stock trading stays read-only until Ken explicitly approves capital
 deployment.** `mcp_stocks.js` (built 2026-08-09) never references

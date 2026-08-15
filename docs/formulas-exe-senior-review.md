@@ -1,5 +1,11 @@
 # Senior review: Formulas.exe work package
 
+> **Superseding governance status, 2026-08-15:** keep shadow-only, but pause
+> before another live run until exact source identity, explicit tail opening,
+> and retrieval/attestation of the already-produced cumulative output are
+> complete. The bounded-shadow approval below was conditional and did not
+> authorize production integration.
+
 **Date:** 2026-08-14  
 **Decision:** proceed with bounded shadow work; do not integrate into production yet.
 

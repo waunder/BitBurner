@@ -1,5 +1,11 @@
 # Darknet strategy
 
+> **Governance status, 2026-08-15:** disabled by Ken's current operating
+> directive. Local tests, static review, and historical telemetry analysis may
+> continue. Do not start/restart the swarm; Storm Seed, stasis, backdoor, and
+> karma expenditure retain their stricter boundaries. Historical “live”
+> descriptions below document capability, not current permission.
+
 Synthesis and sequencing. Read `darknet-functions.md` for the API and the
 model solvers, `darknet-tactics.md` for the per-decision reasoning. This doc
 answers: what are we actually trying to get out of the darknet, in what order,

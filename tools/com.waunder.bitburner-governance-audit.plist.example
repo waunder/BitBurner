@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.waunder.bitburner-governance-audit</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/python3</string>
+    <string>/Users/Shared/BitBurner/tools/standing_orders_audit.py</string>
+    <string>--profile</string>
+    <string>heartbeat</string>
+    <string>--json</string>
+    <string>--report</string>
+    <string>/Users/Shared/BitBurner/.audit/heartbeat.json</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/Users/Shared/BitBurner</string>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>StartInterval</key>
+  <integer>900</integer>
+  <key>StandardOutPath</key>
+  <string>/Users/Shared/BitBurner/.audit/heartbeat.out</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/Shared/BitBurner/.audit/heartbeat.err</string>
+  <key>ProcessType</key>
+  <string>Background</string>
+</dict>
+</plist>

@@ -1,8 +1,14 @@
 # Stock market strategy
 
+> **Governance status, 2026-08-15:** stock display and trading are off by
+> current directive. `mcp_stock_trader.js` is an untracked quarantined artifact
+> containing capital-moving calls; no dry run, sync, `trade=1`, commit for
+> promotion, or order is authorized. Historical design below is not approval.
+
 Synthesis and sequencing for *this specific situation*: WSE + TIX access
 already bought, no 4S data (either variant), trading held to manual/
-read-only pending Ken's explicit approval to automate. Read
+read-only pending Ken's explicit approval to automate. A trader artifact was
+built without a durable capital-deployment approval and remains quarantined. Read
 `stock-trading-mechanics.md` first for the API and the price-formation
 mechanics this reasons over; style follows `darknet-strategy.md`.
 

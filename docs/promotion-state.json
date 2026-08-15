@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-08-15T00:00:00-07:00",
+  "defaultPolicy": {"tier0": "allow", "liveActionForUnknownSubsystem": "deny", "tier3WithoutActiveApproval": "deny"},
+  "stateDefinitions": {
+    "operational-baseline": "Established Tier 2 operation; no fresh approval, but health and rollback checks apply.",
+    "support-active": "Established reversible support service; action-specific provenance checks apply.",
+    "disabled-by-directive": "No live execution until the named directive owner lifts the hold.",
+    "disabled-after-incident": "No live execution until containment evidence, independent review, and explicit approval exist.",
+    "shadow-paused": "Tier 0 work is open; another live shadow run waits for the named evidence conditions.",
+    "quarantined": "Source may be inspected locally but may not be synced, executed, committed for promotion, or deployed.",
+    "approved-production": "Tier 3 production state backed by active scoped approvals, independent review, rollback, stop conditions, and retained evidence."
+  },
+  "subsystems": [
+    {
+      "id": "core-mcp",
+      "aliases": ["mcp-core"],
+      "riskTier": 2,
+      "state": "operational-baseline",
+      "authority": ["OPS-CORE-MCP-BASELINE"],
+      "owner": "Codex",
+      "sourceFiles": ["startup.js", "mcp.js", "mcp_logic.js", "mcp_config.json", "mcp_supervisor.js", "mcp_hud.js", "get_stats.js", "hacking/crawler.js", "hacking/worm.js"],
+      "allowedActions": ["run startup.js", "routine core health inspection", "documented diagnostic restart"],
+      "deniedActions": ["silently add a held subsystem to startup.js"],
+      "healthEvidence": ["fresh mcp_status.json", "zero or explained invariant violations", "documented recovery path"],
+      "conditionsToAdvance": [],
+      "approvalIds": [],
+      "rollback": ["Stop the affected core process or use the documented clean startup recovery after preserving evidence."],
+      "nextSafeAction": "Continue established core operation and local MCP improvements in a non-synced worktree."
+    },
+    {
+      "id": "remote-api",
+      "riskTier": 1,
+      "state": "support-active",
+      "authority": ["GOV-SYNCED-SOURCE-BOUNDARY"],
+      "owner": "Codex",
+      "sourceFiles": ["tools/bb_remote.py"],
+      "allowedActions": ["read-only status", "telemetry pull", "explicitly gated source push"],
+      "deniedActions": ["treat a watched-source edit as purely local"],
+      "healthEvidence": ["connector status", "sync result", "source identity for any live action"],
+      "conditionsToAdvance": [],
+      "approvalIds": [],
+      "rollback": ["Stop using the connector for promotion; preserve local evidence and use the non-synced worktree."],
+      "nextSafeAction": "Keep governance edits disjoint from WATCHED_FILES."
+    },
+    {
+      "id": "formulas-r8",
+      "riskTier": 1,
+      "state": "shadow-paused",
+      "authority": ["R8-SHADOW-PAUSED"],
+      "owner": "Codex",
+      "sourceFiles": ["mcp_formulas_shadow.js", "formulas_logic.js", "mcp_formulas_shadow.txt"],
+      "allowedActions": ["local tests", "static review", "analyze already-retrieved telemetry"],
+      "deniedActions": ["another live shadow run", "production scorer integration"],
+      "healthEvidence": [],
+      "conditionsToAdvance": [
+        "Exact source intended for the run is committed or hash-attested and verified in-game.",
+        "The shadow script explicitly opens a correctly sized tail or otherwise provides agreed visual evidence.",
+        "mcp_formulas_shadow.txt is pulled locally, parsed, and tied to the run/source identity.",
+        "The bounded command, timeout, output retention, stop condition, and rollback pass the Tier 1 action gate."
+      ],
+      "approvalIds": [],
+      "rollback": ["Kill only mcp_formulas_shadow.js; production MCP selection remains untouched."],
+      "nextSafeAction": "Implement/test explicit tail opening locally, then retrieve and attest the existing output."
+    },
+    {
+      "id": "stock-read-panel",
+      "riskTier": 1,
+      "state": "disabled-by-directive",
+      "authority": ["SAFETY-STOCK-READONLY"],
+      "owner": "Ken",
+      "sourceFiles": ["mcp_stocks.js"],
+      "allowedActions": ["local static analysis"],
+      "deniedActions": ["run the stock panel during the present stability baseline"],
+      "healthEvidence": [],
+      "conditionsToAdvance": ["Ken lifts the current avoid-stock-market hold."],
+      "approvalIds": [],
+      "rollback": ["Kill mcp_stocks.js."],
+      "nextSafeAction": "Leave the read-only source untouched and continue non-stock work."
+    },
+    {
+      "id": "stock-trader",
+      "riskTier": 3,
+      "state": "quarantined",
+      "authority": ["SAFETY-STOCK-READONLY", "SAFETY-TIER3-APPROVAL"],
+      "owner": "Ken",
+      "sourceFiles": ["mcp_stock_trader.js"],
+      "allowedActions": ["local static inspection of the quarantined file"],
+      "deniedActions": ["sync", "run", "trade=1", "commit for promotion", "production promotion"],
+      "healthEvidence": [],
+      "conditionsToAdvance": [
+        "Ken issues a narrow capital-deployment approval with a cash cap, instruments, duration, and stop-loss.",
+        "Independent review returns ADOPT or REVISE with every condition satisfied.",
+        "Dry-run evidence, rollback, and retained order audit trail pass."
+      ],
+      "approvalIds": [],
+      "rollback": ["Do not launch; if found running, stop only mcp_stock_trader.js and retain process/order evidence."],
+      "nextSafeAction": "Continue read-only analysis; seek a separate cleanup decision before deleting or moving the untracked source."
+    },
+    {
+      "id": "ipvgo",
+      "riskTier": 3,
+      "state": "disabled-after-incident",
+      "authority": ["SAFETY-IPVGO-DISABLED", "SAFETY-TIER3-APPROVAL"],
+      "owner": "Ken",
+      "sourceFiles": ["ipvgo_player.js", "ipvgo_logic.js", "ipvgo_hud.js", "ipvgo_status.json"],
+      "allowedActions": ["local tests", "static profiling", "incident analysis in a non-synced worktree"],
+      "deniedActions": ["run ipvgo_player.js", "run ipvgo_hud.js", "re-enable after incident"],
+      "healthEvidence": [],
+      "conditionsToAdvance": [
+        "A bounded CPU/RAM/move-time budget and duplicate-process guard are independently reviewed.",
+        "A short live canary has explicit stop conditions and Ken's approval.",
+        "Source identity is attested because ipvgo_logic.js is currently dirty in the synced checkout."
+      ],
+      "approvalIds": [],
+      "rollback": ["Kill both IPvGO player and HUD; preserve the last status and process list."],
+      "nextSafeAction": "Run only local tests/profiling in a non-synced worktree."
+    },
+    {
+      "id": "darknet",
+      "riskTier": 2,
+      "state": "disabled-by-directive",
+      "authority": ["SAFETY-DARKNET-DISABLED"],
+      "owner": "Ken",
+      "sourceFiles": ["dnet_root.js", "dnet_manager.js", "dnet_scorecard.js", "dnet_status.json"],
+      "allowedActions": ["local tests", "static review", "analyze historical telemetry"],
+      "deniedActions": ["start or restart the Darknet swarm", "Storm Seed automation", "unapproved stasis/backdoor/karma expenditure"],
+      "healthEvidence": [],
+      "conditionsToAdvance": ["Ken explicitly lifts the current hold and the start command/rollback are reconciled to the current architecture."],
+      "approvalIds": [],
+      "rollback": ["Use the documented Darknet-only kill path; do not restart automatically."],
+      "nextSafeAction": "Reconcile stale legacy plans and keep tests current without running the subsystem."
+    },
+    {
+      "id": "faction-share",
+      "riskTier": 3,
+      "state": "disabled-after-incident",
+      "authority": ["SAFETY-SHARE-DISABLED", "SAFETY-TIER3-APPROVAL"],
+      "owner": "Ken",
+      "sourceFiles": ["scripts/share.js", "share_deploy.js"],
+      "allowedActions": ["local tests", "static design of a bounded cooldown"],
+      "deniedActions": ["run share_deploy.js", "run scripts/share.js"],
+      "healthEvidence": [],
+      "conditionsToAdvance": [
+        "The share loop has an explicit bounded sleep/cooldown and passes local tests.",
+        "A bounded live canary, duplicate guard, stop command, and health budget are independently reviewed.",
+        "Ken explicitly approves re-enable after the stability incident."
+      ],
+      "approvalIds": [],
+      "rollback": ["Run the documented share-only stop path; confirm no scripts/share.js process remains."],
+      "nextSafeAction": "Continue the core MCP baseline without faction sharing."
+    }
+  ]
+}

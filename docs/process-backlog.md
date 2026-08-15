@@ -1,5 +1,11 @@
 # Process backlog
 
+> **Historical backlog status, 2026-08-15:** the Remote API push/pull
+> replacement at the former top of this list is complete. The current Codex
+> list is `docs/Codex-todo.md`; authority and live permission are in the
+> directive ledger and promotion state. Items below remain design history and
+> possible future work, not current priority or launch authority.
+
 Live backlog, superseding the recommendations in
 `audit-2026-08-07-process.md`. That audit stays as written — it is the
 historical record, and its diagnosis was right. This file re-scores its

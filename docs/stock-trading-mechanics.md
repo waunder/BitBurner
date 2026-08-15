@@ -1,5 +1,11 @@
 # Stock market mechanics
 
+> **Governance status, 2026-08-15:** this remains the read-only mechanics
+> reference. Contrary to older “no capital calls exist” wording below, an
+> untracked `mcp_stock_trader.js` artifact now contains buy/sell calls and is
+> quarantined; no sync, run, commit for promotion, or capital deployment is
+> authorized.
+
 Reference for `ns.stock.*` and how Bitburner's World Stock Exchange actually
 works underneath the API. Companion doc: `stock-trading-strategy.md`
 (sequencing and what's worth buying, for this player specifically). Style and

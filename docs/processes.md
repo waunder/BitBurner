@@ -824,6 +824,45 @@ is bought — what looks worth buying.
 +----------------------------------+
 ```
 
+### `mcp_stock_trader.js`
+
+Conservative long-only trader implementing a 10% cash allocation cap and a
+10% net-profit exit target. It requires WSE, TIX API, and 4S Market Data TIX
+API; without 4S, forecast-based entries are not available and commission plus
+spread make guessing a poor starting metric. It is dry-run by default and
+cannot place orders unless started with `trade=1`.
+
+- **Start safely:** `run mcp_stock_trader.js`.
+- **Enable orders explicitly:** `run mcp_stock_trader.js trade=1`.
+- **Optional:** `interval=<ms>` (default 4000); the current output is the
+  script log.
+- Buys only when `getForecast(symbol) > 0.5`, and sizes each order so the
+  purchase cost including commission is at most 10% of the cash observed at
+  the start of that poll.
+- Sells a long position only when sale proceeds minus purchase cost exceed
+  10% of purchase cost. It never shorts.
+- **Unverified in-game:** Node syntax-checks the file, but actual order
+  behavior still requires a Bitburner run; keep the first run dry and inspect
+  its output before enabling `trade=1`.
+
+### `mcp_formulas_shadow.js`
+
+Read-only, opt-in R4 formulas shadow monitor. Reads `mcp_status.json` for the
+manager's current target, income, pool capacity, and invariant counters; then
+calculates a minimum-security target ranking with Formulas.exe. It never
+changes target selection, worker allocation, or configuration.
+
+- **Start:** `run mcp_formulas_shadow.js [intervalMs]` (default 30 seconds).
+- **Stop:** `kill mcp_formulas_shadow.js`.
+- **Output:** tail panel plus the latest bounded snapshot in
+  `mcp_formulas_shadow.txt`; the snapshot is overwritten each poll so it does
+  not grow without limit and survives stopping the script.
+- **Failure mode:** missing/stale manager status or a formulas exception is
+  recorded as a failed snapshot and shown in the tail; no production action is
+  taken. Requires Formulas.exe.
+- **Status:** audit/shadow tooling only; not part of `startup.js` and not
+  integrated into `mcp.js`.
+
 ### `ipvgo_hud.js`
 
 Terse status panel for `ipvgo_player.js`, same shape as `mcp_hud.js` — reads

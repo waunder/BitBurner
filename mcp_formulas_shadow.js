@@ -19,6 +19,7 @@ const CONSTANTS = {
   weakenPerHackRatio: 4,
   weakenPerGrowRatio: 1.25,
 }
+const SNAPSHOT_FILE = "mcp_formulas_shadow.txt"
 
 function allServers(ns) {
   const seen = new Set(["home"])
@@ -92,17 +93,30 @@ export async function main(ns) {
       const status = managerStatus(ns)
       const poolThreads = Number(status && status.maxWeaken)
       if (!(poolThreads > 0)) {
+        const snapshot = { ts: Date.now(), ready: false, reason: "waiting for mcp_status.json/maxWeaken" }
+        ns.write(SNAPSHOT_FILE, JSON.stringify(snapshot), "w")
         ns.clearLog()
         ns.print("mcp_formulas_shadow: waiting for mcp_status.json/maxWeaken")
       } else {
         const ranking = rankMinimumSecurity(ns, poolThreads)
         const top = ranking.slice(0, 5).map((row) => `${row.target} ${row.minimum.toFixed(0)}/s`)
+        const snapshot = {
+          ts: Date.now(),
+          ready: true,
+          poolThreads,
+          managerTarget: status.target || null,
+          incomePerSec: Number(status.incomePerSec || 0),
+          invariantViolations: status.invariantViolations || {},
+          minimumSecurityTop: ranking.slice(0, 10),
+        }
+        ns.write(SNAPSHOT_FILE, JSON.stringify(snapshot), "w")
         ns.clearLog()
         ns.print(`formulas shadow pool=${poolThreads} manager=${status.target || "none"} income=${Number(status.incomePerSec || 0).toFixed(0)}/s`)
         ns.print(`minimum-security top: ${top.join(" | ")}`)
         ns.print(`baseline invariants: ${JSON.stringify(status.invariantViolations || {})}`)
       }
     } catch (error) {
+      ns.write(SNAPSHOT_FILE, JSON.stringify({ ts: Date.now(), ready: false, error: String(error && error.message ? error.message : error) }), "w")
       ns.clearLog()
       ns.print(`mcp_formulas_shadow error: ${String(error && error.message ? error.message : error)}`)
     }

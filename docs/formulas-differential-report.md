@@ -65,3 +65,19 @@ The pure comparison milestone passes its local gate:
 The next work package is a senior-approved formulas adapter in shadow mode.
 It must remain separate from production target selection and record actual
 argument shapes, units, RAM/latency cost, and failure behavior.
+
+## Live shadow adapter result
+
+`formulas_r4_shadow.js silver-helix 100` completed successfully in Bitburner
+v3.0.1. It used the actual Formulas.exe API, preserved the observed `$45m`
+money state, and changed only the hypothetical security state:
+
+| Score | Current security | Minimum security | Change |
+|---|---:|---:|---:|
+| Raw achievable rate | $330.1k/s | $2.558m/s | +675% |
+| Ramp-adjusted rate | $91.4k/s | $1.945m/s | +2,028% |
+
+The adapter made no production decision and no game-changing call. This is
+strong evidence that the current-state scorer is a candidate for improvement,
+not evidence that replacing it will produce the same income delta in the live
+allocator. Target-pool ranking and realized income remain the next gates.

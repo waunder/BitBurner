@@ -81,3 +81,26 @@ The adapter made no production decision and no game-changing call. This is
 strong evidence that the current-state scorer is a candidate for improvement,
 not evidence that replacing it will produce the same income delta in the live
 allocator. Target-pool ranking and realized income remain the next gates.
+
+## Live target-pool shadow result
+
+`formulas_r4_pool_shadow.js 100 15` evaluated 47 eligible targets using a
+fixed 100-thread comparison pool. The current-security ranking favored
+`phantasy`; the minimum-security ranking favored `the-hub`, followed by
+`phantasy`, `omega-net`, `johnson-ortho`, and `rho-construction`.
+
+Largest minimum-security deltas in the reported top-15 set were:
+
+| Target | Current effective | Minimum effective | Delta |
+|---|---:|---:|---:|
+| `zb-def` | $7.2k/s | $807.6k/s | +11,107% |
+| `alpha-ent` | $14.9k/s | $1.585m/s | +10,542% |
+| `rho-construction` | $20.0k/s | $2.015m/s | +9,964% |
+| `the-hub` | $62.6k/s | $4.877m/s | +7,684% |
+
+`n00dles` and `foodnstuff` were already at minimum security, so their scores
+did not change. The result is strong evidence that current-security scoring
+systematically hides grow-limited targets, but the fixed 100-thread pool is a
+comparison instrument, not the manager's measured live capacity. The next
+shadow must use the manager's actual pool and selected target before any
+production change is considered.

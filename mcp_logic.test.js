@@ -29,6 +29,7 @@ import {
   hostNeedsRedeploy,
   countRunningByScript,
   missingDesiredScripts,
+  missingActionLaunchPlan,
 } from "./mcp_logic.js"
 
 // Real values from mcp.js's own constants/RAM readouts (see
@@ -263,6 +264,17 @@ describe("missingDesiredScripts — action-specific redeploy escape hatch", () =
   test("does not relaunch an action that already has threads running", () => {
     const running = [{ script: "grow", target: "t", threads: 10, elapsedS: 1 }]
     assert.deepEqual(missingDesiredScripts(running, { hack: 0, grow: 50, weaken: 0 }), [])
+  })
+
+  test("caps a missing grow launch to real free RAM while preserving an oversized weaken", () => {
+    const running = [{ script: "weaken", target: "t", threads: 1800, elapsedS: 30 }]
+    const plan = missingActionLaunchPlan(
+      running,
+      { hack: 0, grow: 9000, weaken: 62 },
+      17.5,
+      { hack: 1.7, grow: 1.75, weaken: 1.75 }
+    )
+    assert.deepEqual(plan, [{ script: "grow", threads: 10 }])
   })
 })
 

@@ -609,6 +609,26 @@ export function missingDesiredScripts(running, desired) {
 }
 
 /**
+ * The immediately launchable portion of missing desired work. `desired` is
+ * based on reclaimable RAM and can include an immature action we deliberately
+ * preserve, so launch size must be capped by the host's real free RAM.
+ */
+export function missingActionLaunchPlan(running, desired, freeRam, ramByScript) {
+  let remainingRam = Math.max(0, freeRam)
+  const launches = []
+  for (const script of ["weaken", "grow", "hack"]) {
+    if (!missingDesiredScripts(running, desired).includes(script)) continue
+    const ram = ramByScript[script]
+    if (!(ram > 0)) continue
+    const threads = Math.min(desired[script], Math.floor(remainingRam / ram))
+    if (threads <= 0) continue
+    launches.push({ script, threads })
+    remainingRam -= threads * ram
+  }
+  return launches
+}
+
+/**
  * hostNeedsRedeploy — rewritten 2026-08-13 (hacking-strategy.md R3) from an
  * action-*type* comparison to an allocation-*quantity* comparison. The old
  * version (see git history) only checked which action types were running

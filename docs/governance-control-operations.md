@@ -95,6 +95,12 @@ mode exists. A missed required status ping or safe-progress path is a control
 failure: record the missed obligation, effect, smallest correction, owner, and
 clearing evidence in the next progress update.
 
+For active non-trivial work, the primary agent maintains a live progress
+controller. A completed/idle controller is itself an immediate correction
+item, not evidence that progress is supervised. The controller is released
+only at the primary work cycle's documented terminal condition; otherwise the
+primary agent re-tasks or replaces it before the next progress update.
+
 The auditor never enforces by killing a process, rewriting source, deploying,
 or moving money. It enforces by denying the specific requested boundary and
 naming the correction. Ken remains the authority for Tier 3 scope; protected

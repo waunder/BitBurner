@@ -72,9 +72,9 @@
         {"checkId": "scoped-findings", "expected": "A hold blocks only its named action while independent safe work continues"},
         {"checkId": "tier0-unblocked", "expected": "An unrelated hold cannot block an allowed support, telemetry, inspection, or local-work path"}
       ],
-      "enforcement": ["session", "heartbeat", "action-gate", "independent-review"],
+      "enforcement": ["session", "heartbeat", "action-gate", "independent-review", "progress-controller"],
       "blockScope": "A named safety hold remains narrow; failure to preserve independent safe progress is itself a control failure requiring immediate correction, not a project-wide pause.",
-      "nextSafeAction": "Continue the highest-value allowed path and emit a timestamped progress update with evidence and any real scoped block.",
+      "nextSafeAction": "Keep a progress controller actively assigned for the whole work cycle; continue the highest-value allowed path and emit a timestamped progress update with evidence and any real scoped block.",
       "supersedes": [],
       "expiresAt": null
     },

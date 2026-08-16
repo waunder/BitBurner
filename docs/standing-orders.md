@@ -68,6 +68,28 @@ test, or review into the next highest-value safe action, identify an idle gap,
 and preserve the scoped correction/owner/evidence/parallel-work record for any
 hold. It does not override an action gate or make live changes itself.
 
+The progress controller is a **persistent role for the whole active work
+cycle**, not a one-shot research task. The primary agent must give it an
+ongoing contract that requires it to remain available, reassess after each
+material result, and issue the next safe task or an explicit terminal finding.
+Do not mark the controller complete merely because it delivered one report.
+
+The primary agent owns controller continuity. It must re-task or replace a
+controller immediately when it becomes completed, idle, interrupted, or
+otherwise unable to monitor active work. A controller may be released only
+when the primary work cycle has a real terminal condition: the requested
+outcome is delivered, all safe paths are exhausted, or a named authority/
+external-state decision is genuinely required. "Waiting for the user" and
+"another subsystem is held" are not terminal conditions when an independent
+safe path remains.
+
+Each controller update must contain: current objective; new evidence; the
+single next highest-value safe action; its owner; and the precise blocker, if
+any. If it cannot dispatch a next action, it must say why no Tier 0 work,
+bounded diagnostic, review, or support path remains. The primary agent must
+either dispatch that action or record a concrete reason it cannot do so before
+the next status ping.
+
 During active work, provide compact timestamped status pings when a material
 state changes and at a reasonable interval for longer-running work. Pings state
 the current objective, evidence gained, next safe action, and any real block;

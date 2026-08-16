@@ -79,6 +79,28 @@
       "expiresAt": null
     },
     {
+      "id": "GOV-STANDING-ORDERS-REENTRY",
+      "title": "Standing Orders restores the operational control loop",
+      "classification": "requirement",
+      "status": "active",
+      "authority": "Ken",
+      "source": "Ken session-reentry directive, 2026-08-16",
+      "issuedAt": "2026-08-16",
+      "owner": "Codex",
+      "scope": ["session-reentry", "progress", "telemetry", "agent-coordination"],
+      "riskTiers": [0, 1, 2, 3],
+      "requirement": "The instruction 'Standing Orders' is an operational re-entry command. Codex restores current control state, a persistent progress controller, observable status through the narrowest allowed path, a timestamped progress ping, and the next highest-value safe action without waiting for further prompting.",
+      "acceptanceTests": [
+        {"checkId": "tier0-unblocked", "expected": "Session re-entry continues independent safe work despite scoped holds"},
+        {"checkId": "scoped-findings", "expected": "Any re-entry block names its scope, correction, owner, evidence, and parallel safe work"}
+      ],
+      "enforcement": ["session", "heartbeat", "progress-controller"],
+      "blockScope": "A dropped session may lose live agents but never suspends repository controls or safe progress; only a named action gate can block its named live boundary.",
+      "nextSafeAction": "Run the session-reentry sequence and establish a persistent progress controller.",
+      "supersedes": [],
+      "expiresAt": null
+    },
+    {
       "id": "GOV-REPO-PRECEDENCE",
       "title": "Codex overlay preserves but overrides Claude workflow rules",
       "classification": "requirement",

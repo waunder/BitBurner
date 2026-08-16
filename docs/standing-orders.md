@@ -122,6 +122,31 @@ dirty watched source can block source push and restart of that subsystem; it
 does not block a pull-only telemetry connector or the established core MCP
 baseline.
 
+### `Standing Orders` session-reentry command
+
+When Ken returns after a dropped or new session with the instruction
+**`Standing Orders`**, treat it as an operational re-entry command, not a
+request to summarize this document. Restore the mandate without waiting for
+additional prompting, in this order:
+
+1. Read the current Codex overlay, this document, the directive ledger,
+   promotion state, and Codex work ledger; run the session gate.
+2. Inspect the live-agent registry. Establish or re-task a persistent
+   independent progress controller before beginning non-trivial work.
+3. Recover observable status using the narrowest safe path: inspect local
+   evidence first, then use the allowed pull-only/read-only connector path if
+   current evidence is stale. Never infer that a source push is required to
+   restore telemetry.
+4. Emit a timestamped status ping stating the objective, current evidence,
+   next highest-value safe action, owner, and any exact scoped block.
+5. Execute that action or dispatch it to a named owner. Continue this loop
+   until a real terminal condition; do not stop at a summary, completed
+   one-shot agent report, or unrelated subsystem hold.
+
+If an earlier session left no live agents, recreate the controller from the
+current repository state. The repository controls and retained evidence—not
+the survival of a chat session—are the authority for resuming work.
+
 ## Operating principle
 
 Work contract-first:

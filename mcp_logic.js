@@ -597,6 +597,18 @@ export function countRunningByScript(running) {
 }
 
 /**
+ * Desired action types that have no running process at all. These may start
+ * immediately even while a different, long-running action is intentionally
+ * left alone to finish its current call. This prevents an immature weaken
+ * loop from holding the entire host idle when the next weaken plan also needs
+ * grow work.
+ */
+export function missingDesiredScripts(running, desired) {
+  const have = countRunningByScript(running)
+  return ["hack", "grow", "weaken"].filter((script) => (desired[script] || 0) > 0 && have[script] === 0)
+}
+
+/**
  * hostNeedsRedeploy — rewritten 2026-08-13 (hacking-strategy.md R3) from an
  * action-*type* comparison to an allocation-*quantity* comparison. The old
  * version (see git history) only checked which action types were running

@@ -28,6 +28,7 @@ import {
   weakenThreadsToOffset,
   hostNeedsRedeploy,
   countRunningByScript,
+  missingDesiredScripts,
 } from "./mcp_logic.js"
 
 // Real values from mcp.js's own constants/RAM readouts (see
@@ -250,6 +251,18 @@ describe("countRunningByScript (hacking-strategy.md R5, 2026-08-14)", () => {
 
   test("no running actions gives all zeros", () => {
     assert.deepEqual(countRunningByScript([]), { hack: 0, grow: 0, weaken: 0 })
+  })
+})
+
+describe("missingDesiredScripts — action-specific redeploy escape hatch", () => {
+  test("starts missing grow without requiring an immature weaken loop to be killed", () => {
+    const running = [{ script: "weaken", target: "t", threads: 1800, elapsedS: 30 }]
+    assert.deepEqual(missingDesiredScripts(running, { hack: 0, grow: 9000, weaken: 62 }), ["grow"])
+  })
+
+  test("does not relaunch an action that already has threads running", () => {
+    const running = [{ script: "grow", target: "t", threads: 10, elapsedS: 1 }]
+    assert.deepEqual(missingDesiredScripts(running, { hack: 0, grow: 50, weaken: 0 }), [])
   })
 })
 

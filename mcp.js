@@ -18,6 +18,7 @@ import {
   computeDesiredAllocation,
   hostNeedsRedeploy,
   countRunningByScript,
+  missingDesiredScripts,
 } from "mcp_logic.js"
 import { auditTargetModels } from "./formulas_logic.js"
 
@@ -1003,7 +1004,27 @@ function allocateThreads(ns, host, target, plan, desired, tolerance, actionDurat
     tolerance,
     actionDurationsS,
   })
+  const missingDesired = missingDesiredScripts(describedRunning, desired)
   if (!needsRedeploy) {
+    // A still-young action must not block launching an entirely missing
+    // complementary action. Keep the in-flight process intact, but use the
+    // otherwise idle RAM for the newly desired script now.
+    if (missingDesired.length > 0) {
+      if (host !== "home") copyActionScripts(ns, host)
+      for (const { proc, normalized } of running) {
+        const script = normalized.replace("/scripts/", "").replace(".js", "")
+        allocation.actions.push({ script, threads: proc.threads })
+      }
+      for (const script of missingDesired) {
+        const want = desired[script]
+        if (ns.exec(`/scripts/${script}.js`, host, want, target) !== 0) {
+          allocation.actions.push({ script, threads: want })
+        }
+      }
+      allocation.usedRam = ns.getServerUsedRam(host)
+      allocation.freeRam = getHostFreeRam(ns, host)
+      return allocation
+    }
     allocation.usedRam = ns.getServerUsedRam(host)
     allocation.freeRam = getHostFreeRam(ns, host)
     for (const { proc, normalized } of running) {

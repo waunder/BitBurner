@@ -329,7 +329,11 @@ which hack/grow kept landing and fortifying security with nothing
 counteracting it — consistent with the observed security ratchet. The
 have-side counting (`countRunningByScript`, `mcp_logic.js`) is now shared
 between `hostNeedsRedeploy`'s mismatch check and `allocateThreads`'s
-per-script decision, rather than two independent tallies. `killActionScripts`
+per-script decision, rather than two independent tallies.
+The missing-action escape hatch starts a newly desired action immediately
+while preserving an immature, unrelated action; without it, a long weaken loop
+can leave the rest of a host idle while the next weaken plan also needs grow
+capacity. `killActionScripts`
 (kills all three unconditionally) is unchanged and still used for its other
 two purposes — sweeping orphaned scripts from a previous `mcp.js` run at
 startup, and releasing the whole network when no target is found — both of

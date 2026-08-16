@@ -76,6 +76,30 @@ while Tier 0 work, a bounded diagnostic, independent review, or another scoped
 safe action remains. Report a stop only after those paths are exhausted or a
 new authority decision is genuinely required.
 
+### Failure discipline — progress is the mandate
+
+Progress is not a preference to balance against safety; safe progress is the
+operating mandate. A scoped safety hold prevents only its named action. It
+never justifies suppressing an independent baseline, telemetry path, local
+test, review, or other explicitly allowed work.
+
+A missed standing-order obligation is a **failure**, even when no external
+harm occurred. Do not relabel it as caution, conservatism, ambiguity, or a
+reasonable interpretation. Record and communicate, in the next status ping:
+
+- the exact obligation missed;
+- the concrete effect (including lost observation/progress, if applicable);
+- the smallest correction already underway;
+- the owner and the evidence that will show the correction holds.
+
+Before pausing a support path because another subsystem is held, explicitly
+reconcile all three questions: (1) is the path itself held, (2) can it run in
+a read-only or pull-only mode, and (3) what independent safe work continues?
+If the answer is not recorded, the pause is not authorized. For example, a
+dirty watched source can block source push and restart of that subsystem; it
+does not block a pull-only telemetry connector or the established core MCP
+baseline.
+
 ## Operating principle
 
 Work contract-first:

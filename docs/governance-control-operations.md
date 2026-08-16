@@ -89,6 +89,12 @@ for unrelated work.
 | Tier 3 action | Codex prepares; independent reviewer decides | Ken's append-only approval | Approval ID, limits, stop conditions, rollback, evidence path |
 | Production promotion | Independent reviewer | Promotion state plus protected CI | `ADOPT/KEEP/REVISE/REJECT`, exact source, retained evidence |
 
+An operator must not use a scoped finding to pause an independent support path
+without recording whether it is itself held and whether a read-only/pull-only
+mode exists. A missed required status ping or safe-progress path is a control
+failure: record the missed obligation, effect, smallest correction, owner, and
+clearing evidence in the next progress update.
+
 The auditor never enforces by killing a process, rewriting source, deploying,
 or moving money. It enforces by denying the specific requested boundary and
 naming the correction. Ken remains the authority for Tier 3 scope; protected

@@ -57,6 +57,28 @@
       "expiresAt": null
     },
     {
+      "id": "GOV-PROGRESS-FAILURE-DISCIPLINE",
+      "title": "Missed safe-progress obligations are failures",
+      "classification": "requirement",
+      "status": "active",
+      "authority": "Ken",
+      "source": "Ken directive: 'Progress is the mandate. Failure is failure.', 2026-08-16",
+      "issuedAt": "2026-08-16",
+      "owner": "Codex",
+      "scope": ["project", "progress", "telemetry", "status-pings"],
+      "riskTiers": [0, 1, 2, 3],
+      "requirement": "A scoped hold must not suppress an independent allowed baseline, telemetry path, local test, review, or pull-only support mode. Missing a standing-order obligation is reported as a failure with its effect, smallest correction, owner, and clearing evidence; it is never relabeled as caution or ambiguity.",
+      "acceptanceTests": [
+        {"checkId": "scoped-findings", "expected": "A hold blocks only its named action while independent safe work continues"},
+        {"checkId": "tier0-unblocked", "expected": "An unrelated hold cannot block an allowed support, telemetry, inspection, or local-work path"}
+      ],
+      "enforcement": ["session", "heartbeat", "action-gate", "independent-review"],
+      "blockScope": "A named safety hold remains narrow; failure to preserve independent safe progress is itself a control failure requiring immediate correction, not a project-wide pause.",
+      "nextSafeAction": "Continue the highest-value allowed path and emit a timestamped progress update with evidence and any real scoped block.",
+      "supersedes": [],
+      "expiresAt": null
+    },
+    {
       "id": "GOV-REPO-PRECEDENCE",
       "title": "Codex overlay preserves but overrides Claude workflow rules",
       "classification": "requirement",

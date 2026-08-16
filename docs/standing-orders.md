@@ -60,6 +60,22 @@ connector-synced checkout, a watched-source edit is deployment-capable;
 develop live source in a non-synced worktree and promote one attested source
 identity at the proper boundary.
 
+### Progress cadence
+
+For work that is more than a trivial inspection, assign a bounded independent
+**progress controller**. Its role is to turn each completed investigation,
+test, or review into the next highest-value safe action, identify an idle gap,
+and preserve the scoped correction/owner/evidence/parallel-work record for any
+hold. It does not override an action gate or make live changes itself.
+
+During active work, provide compact timestamped status pings when a material
+state changes and at a reasonable interval for longer-running work. Pings state
+the current objective, evidence gained, next safe action, and any real block;
+they are not a narration of ordinary tool activity. Do not end a work cycle
+while Tier 0 work, a bounded diagnostic, independent review, or another scoped
+safe action remains. Report a stop only after those paths are exhausted or a
+new authority decision is genuinely required.
+
 ## Operating principle
 
 Work contract-first:

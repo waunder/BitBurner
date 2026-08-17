@@ -18,6 +18,7 @@ import assert from "node:assert/strict"
 import {
   evaluateMoneyDegradation,
   evaluateOpportunitySwitch,
+  evaluateFormulaSwitchVeto,
   evaluateStuckTarget,
   computeWorkWeights,
   computeTargetScore,
@@ -600,6 +601,44 @@ describe("evaluateMoneyDegradation — the moneyDegraded/OBJECTIVE bug", () => {
       degradedThreshold: 0.9, // high threshold so this test isolates `declining`
     })
     assert.equal(result.declining, true)
+  })
+})
+
+describe("evaluateFormulaSwitchVeto — veto-only formulas guard", () => {
+  test("is inert while disabled", () => {
+    const result = evaluateFormulaSwitchVeto({
+      enabled: false, currentTarget: "current", candidateTarget: "candidate", currentScore: 100, candidateScore: 1,
+    })
+    assert.equal(result.veto, false)
+    assert.equal(result.reason, "disabled")
+  })
+
+  test("vetoes only an inferior scheduler candidate", () => {
+    const result = evaluateFormulaSwitchVeto({
+      enabled: true, currentTarget: "current", candidateTarget: "candidate", currentScore: 100, candidateScore: 79,
+    })
+    assert.equal(result.available, true)
+    assert.equal(result.veto, true)
+    assert.equal(result.ratio, 0.79)
+    assert.equal(result.reason, "candidate-below-threshold")
+  })
+
+  test("passes a candidate at the threshold and never substitutes another", () => {
+    const result = evaluateFormulaSwitchVeto({
+      enabled: true, currentTarget: "current", candidateTarget: "candidate", currentScore: 100, candidateScore: 80,
+    })
+    assert.equal(result.veto, false)
+    assert.equal(result.candidateTarget, "candidate")
+    assert.equal(result.reason, "candidate-clears-threshold")
+  })
+
+  test("fails closed to the existing switch when formulas data is unavailable", () => {
+    const result = evaluateFormulaSwitchVeto({
+      enabled: true, currentTarget: "current", candidateTarget: "candidate", currentScore: NaN, candidateScore: 80,
+    })
+    assert.equal(result.available, false)
+    assert.equal(result.veto, false)
+    assert.equal(result.reason, "unavailable-score")
   })
 })
 

@@ -12,12 +12,14 @@ import {
   computeTargetEffectiveScore,
   evaluateMoneyDegradation,
   evaluateOpportunitySwitch,
+  evaluateFormulaSwitchVeto,
   evaluateStuckTarget,
   computeTickInvariantChecks,
   computeDesiredAllocation,
   hostNeedsRedeploy,
   countRunningByScript,
 } from "mcp_logic.js"
+import { auditTargetModels } from "./formulas_logic.js"
 
 // Tunables are declared with `let`, not `const`, so loadConfig can reassign
 // them in place from mcp_config.json at the top of every tick. Threading a
@@ -72,6 +74,9 @@ let MONEY_PCT_SAMPLE_COUNT = 9
 // can actually see. The ramp discount already prices in the cost of
 // switching, so 1.3 only needs to cover model error, not switching cost too.
 let OPPORTUNITY_SWITCH_FACTOR = 1.3
+// R8's production-ready integration is present but inert until its attested
+// canary/production contracts deliberately set this numeric flag to 1.
+let R8_SWITCH_VETO_ENABLED = 0
 // How long a *productive* target is committed to before better options are
 // even considered. Much longer than MIN_TARGET_HOLD_MS because leaving one
 // throws away its accumulated grow progress and the replacement must be
@@ -188,6 +193,7 @@ const CONFIG_DEFAULTS = {
   DEGRADED_MONEY_PCT,
   MONEY_PCT_SAMPLE_COUNT,
   OPPORTUNITY_SWITCH_FACTOR,
+  R8_SWITCH_VETO_ENABLED,
   MIN_TARGET_COMMIT_MS,
   DEGRADED_SKIP_MS,
   HACK_BALANCE_SAFETY,
@@ -300,6 +306,7 @@ function loadConfig(ns, state) {
     DEGRADED_MONEY_PCT,
     MONEY_PCT_SAMPLE_COUNT,
     OPPORTUNITY_SWITCH_FACTOR,
+    R8_SWITCH_VETO_ENABLED,
     MIN_TARGET_COMMIT_MS,
     DEGRADED_SKIP_MS,
     HACK_BALANCE_SAFETY,
@@ -331,6 +338,7 @@ function loadConfig(ns, state) {
   DEGRADED_MONEY_PCT = resolved.DEGRADED_MONEY_PCT
   MONEY_PCT_SAMPLE_COUNT = resolved.MONEY_PCT_SAMPLE_COUNT
   OPPORTUNITY_SWITCH_FACTOR = resolved.OPPORTUNITY_SWITCH_FACTOR
+  R8_SWITCH_VETO_ENABLED = resolved.R8_SWITCH_VETO_ENABLED
   MIN_TARGET_COMMIT_MS = resolved.MIN_TARGET_COMMIT_MS
   DEGRADED_SKIP_MS = resolved.DEGRADED_SKIP_MS
   HACK_BALANCE_SAFETY = resolved.HACK_BALANCE_SAFETY
@@ -673,6 +681,41 @@ function getTargetEffectiveScore(ns, server, poolThreads) {
     horizonSeconds: SCORE_HORIZON_SECONDS,
   })
   return effective
+}
+
+// The optional R8 decision uses the game's formulas against a minimum-security
+// copy of each server. It is called only after the existing scheduler has
+// already selected a switch candidate, so it cannot become a parallel target
+// selector. Any problem returns null and lets the established scheduler act.
+function getFormulaMinimumSecurityScore(ns, target, poolThreads) {
+  if (!target || !ns.fileExists("Formulas.exe", "home") || !ns.formulas || !ns.formulas.hacking) return null
+  try {
+    const server = ns.getServer(target)
+    server.hackDifficulty = server.minDifficulty
+    const player = ns.getPlayer()
+    const formulas = ns.formulas.hacking
+    const model = {
+      targetMoneyGoal: TARGET_MONEY_GOAL,
+      horizonSeconds: SCORE_HORIZON_SECONDS,
+      growTimeRatio: WEAKEN_PER_HACK_RATIO / WEAKEN_PER_GROW_RATIO,
+      hackSecIncrease: HACK_SEC_INCREASE,
+      growSecIncrease: GROW_SEC_INCREASE,
+      weakenSecDecrease: WEAKEN_SEC_DECREASE,
+      weakenPerHackRatio: WEAKEN_PER_HACK_RATIO,
+      weakenPerGrowRatio: WEAKEN_PER_GROW_RATIO,
+      hackTimeSeconds: formulas.hackTime(server, player) / 1000,
+      hackPercentPerThread: formulas.hackPercent(server, player),
+      growLogPerThread: Math.log(formulas.growPercent(server, 1, player, 1)),
+      maxMoney: server.moneyMax,
+      hackChance: formulas.hackChance(server, player),
+      poolThreads,
+      money: server.moneyAvailable,
+    }
+    const audit = auditTargetModels({ target, currentModel: model, hypotheticalModel: model })
+    return audit.eligible ? audit.models.hypothetical.effectiveScore : null
+  } catch (_) {
+    return null
+  }
 }
 
 // SECURITY_EPSILON is imported from mcp_logic.js (used there by
@@ -1159,6 +1202,7 @@ export async function main(ns) {
     // Filled by the opportunity-switch predicate below and surfaced in the
     // status file. Null when there is no current target to compare against.
     let switchEval = null
+    let formulaSwitchVeto = null
 
     if (targetOverride) {
       // Automatic selection/switching disabled — just keep working the
@@ -1396,6 +1440,21 @@ export async function main(ns) {
         })
 
         if (switchEval.committed && switchEval.outbid) {
+          const formulaEnabled = R8_SWITCH_VETO_ENABLED > 0
+          const formulaCurrentScore = formulaEnabled ? getFormulaMinimumSecurityScore(ns, currentTarget, maxWeaken) : NaN
+          const formulaCandidateScore = formulaEnabled ? getFormulaMinimumSecurityScore(ns, switchEval.best, maxWeaken) : NaN
+          formulaSwitchVeto = evaluateFormulaSwitchVeto({
+            enabled: formulaEnabled,
+            currentTarget,
+            candidateTarget: switchEval.best,
+            currentScore: formulaCurrentScore,
+            candidateScore: formulaCandidateScore,
+          })
+          if (formulaSwitchVeto.enabled) events.emit("r8_switch_veto_eval", formulaSwitchVeto)
+          if (formulaSwitchVeto.veto) {
+            events.emit("r8_switch_veto", formulaSwitchVeto)
+            ns.tprint(`mcp: R8 retained ${currentTarget}; ${switchEval.best} formulas ratio ${formulaSwitchVeto.ratio.toFixed(2)} is below ${formulaSwitchVeto.threshold}`)
+          } else {
           ns.tprint(
             `mcp: ${switchEval.best} (${formatMoney(switchEval.bestScore)}/s) outperforms ${idle ? "idle" : "current"} ${currentTarget} (${formatMoney(currentScore)}/s) by ${switchEval.ratio.toFixed(1)}x after ${switchEval.heldSeconds}s; switching`
           )
@@ -1406,6 +1465,7 @@ export async function main(ns) {
           lastPlanType = null
           lastWeightBucket = null
           moneyPctSamples.length = 0
+          }
         }
       }
     }
@@ -1687,6 +1747,7 @@ export async function main(ns) {
       weakenTimeS: weakenTimeS,
       hackChance: hackChance,
       switchEval: switchEval,
+      formulaSwitchVeto: formulaSwitchVeto,
       // set_objective.js's live override — see OBJECTIVE_OVERRIDE_FILE's own
       // comment. True means OBJECTIVE (below) came from
       // mcp_objective_override.txt, not mcp_config.json.
@@ -1707,6 +1768,7 @@ export async function main(ns) {
         DEGRADED_MONEY_PCT,
         MONEY_PCT_SAMPLE_COUNT,
         OPPORTUNITY_SWITCH_FACTOR,
+        R8_SWITCH_VETO_ENABLED,
         MIN_TARGET_COMMIT_MS,
         DEGRADED_SKIP_MS,
         HACK_BALANCE_SAFETY,

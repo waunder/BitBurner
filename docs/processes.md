@@ -432,6 +432,16 @@ the two blockers demand different responses. Losing on score means the
 factor is what stands between the bot and a richer server. Losing on the hold
 timer just means waiting. `blockedBy` names which.
 
+`R8_SWITCH_VETO_ENABLED` defaults to `0`. When an attested canary or approved
+production release sets it to `1`, the existing scheduler still chooses the
+candidate first; R8 can only retain the present target when the candidate's
+Formulas minimum-security score is below 80% of the present target's score.
+`formulaSwitchVeto` in status and `r8_switch_veto_eval`/`r8_switch_veto`
+events retain the candidate, both scores, ratio, availability, verdict, and
+reason. Missing Formulas.exe or invalid formulas data preserves the existing
+switch rather than blocking it. This flag is a deployment boundary: changing
+it in the synced checkout requires the named R8 canary or production gate.
+
 **2026-08-14 (R4):** `OPPORTUNITY_SWITCH_FACTOR` dropped from 3 to 1.3 (the
 doc's suggested 1.25-1.3 range, safer end) — but *only* together with the
 `getTargetScore`/`getTargetEffectiveScore` rewrite above, never before, per
@@ -459,6 +469,7 @@ The ones that actually get retuned:
 | `TARGET_MONEY_GOAL` | 0.95 | Money fraction `readiness` (see the work-weight calculation above) treats as "full" |
 | `DEGRADED_MONEY_PCT` | 0.05 | Drain threshold — **must** stay below the idle-regime cutoff of 0.1, and an invariant enforces it |
 | `OPPORTUNITY_SWITCH_FACTOR` | 1.3 | Margin required to abandon a working target |
+| `R8_SWITCH_VETO_ENABLED` | 0 | Enables the attested formulas veto only after its named canary/production gate; `0` preserves existing switching exactly |
 | `LOOP_SLEEP_MS` | 10000 | Tick length |
 | `HACK_BALANCE_SAFETY` | 0.5 | Fraction of the balanced hack share actually deployed — see the work-weight calculation above |
 | `HOME_RAM_RESERVE` | 32 | GB kept off-limits on `home` before any of it counts as free for worker threads — see "Worker hosts" below |

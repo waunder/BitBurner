@@ -364,6 +364,48 @@ export function evaluateOpportunitySwitch({ idle, candidates, currentTarget, cur
   }
 }
 
+/**
+ * Final guard for the scheduler's already-selected opportunity switch.
+ *
+ * This function is deliberately incapable of selecting a target: it can only
+ * veto the candidate emitted by evaluateOpportunitySwitch. Invalid/missing
+ * formulas data fails closed to the existing scheduler decision so enabling
+ * the feature cannot make the bot stick on a target merely because the
+ * optional comparison is unavailable.
+ */
+export function evaluateFormulaSwitchVeto({ enabled, currentTarget, candidateTarget, currentScore, candidateScore, threshold = 0.8 }) {
+  const base = {
+    enabled: !!enabled,
+    currentTarget: currentTarget || null,
+    candidateTarget: candidateTarget || null,
+    currentScore: Number(currentScore),
+    candidateScore: Number(candidateScore),
+    threshold: Number(threshold),
+    available: false,
+    ratio: null,
+    veto: false,
+    reason: "disabled",
+  }
+  if (!base.enabled) return base
+  if (!base.currentTarget || !base.candidateTarget || base.currentTarget === base.candidateTarget) {
+    return { ...base, reason: "no-distinct-candidate" }
+  }
+  if (!(Number.isFinite(base.currentScore) && base.currentScore > 0 && Number.isFinite(base.candidateScore) && base.candidateScore >= 0)) {
+    return { ...base, reason: "unavailable-score" }
+  }
+  if (!(Number.isFinite(base.threshold) && base.threshold > 0 && base.threshold <= 1)) {
+    return { ...base, reason: "invalid-threshold" }
+  }
+  const ratio = base.candidateScore / base.currentScore
+  return {
+    ...base,
+    available: true,
+    ratio,
+    veto: ratio < base.threshold,
+    reason: ratio < base.threshold ? "candidate-below-threshold" : "candidate-clears-threshold",
+  }
+}
+
 // Security added per action thread, expressed in weaken-threads needed to
 // cancel it. See weakenPerHackRatio/weakenPerGrowRatio: worker scripts loop,
 // so the relevant comparison is security-per-unit-time, not

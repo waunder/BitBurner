@@ -432,15 +432,17 @@ the two blockers demand different responses. Losing on score means the
 factor is what stands between the bot and a richer server. Losing on the hold
 timer just means waiting. `blockedBy` names which.
 
-`R8_SWITCH_VETO_ENABLED` defaults to `0`. When an attested canary or approved
-production release sets it to `1`, the existing scheduler still chooses the
-candidate first; R8 can only retain the present target when the candidate's
-Formulas minimum-security score is below 80% of the present target's score.
+`R8_SWITCH_VETO_ENABLED` defaults to `0`. When set to `1`, the existing
+scheduler still chooses the candidate first; R8 can only retain the present
+target when the candidate's Formulas minimum-security score is below 80% of
+the present target's score.
 `formulaSwitchVeto` in status and `r8_switch_veto_eval`/`r8_switch_veto`
 events retain the candidate, both scores, ratio, availability, verdict, and
 reason. Missing Formulas.exe or invalid formulas data preserves the existing
-switch rather than blocking it. This flag is a deployment boundary: changing
-it in the synced checkout requires the named R8 canary or production gate.
+switch rather than blocking it. A 2026-08-18 bounded live configuration check
+confirmed the manager accepts `0 → 1 → 0`; no qualified switch arose during
+that window, so the veto outcome itself remains locally tested but not yet
+observed live.
 
 **2026-08-14 (R4):** `OPPORTUNITY_SWITCH_FACTOR` dropped from 3 to 1.3 (the
 doc's suggested 1.25-1.3 range, safer end) — but *only* together with the

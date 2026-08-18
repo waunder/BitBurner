@@ -6,9 +6,9 @@ purpose are defined in `docs/agent-working-agreement.md`.
 ## Current objective
 
 Resume real gameplay-progress work now that the governance deadlock
-(retired 2026-08-18, see `AGENTS.md`) is cleared. First concrete step: land
-the R8 formulas-based switch-veto safeguard, which was fully implemented
-and tested but stuck behind a review gate that had no one able to clear it.
+(retired 2026-08-18, see `AGENTS.md`) is cleared. R8 has been landed and
+configuration-validated live; next, assess the pool-allocation worktree that
+addresses the currently observed `poolNotIdle` waste.
 
 ## Done
 
@@ -38,18 +38,16 @@ and tested but stuck behind a review gate that had no one able to clear it.
   unused CI workflow that ran the auditor. Replaced by
   `docs/agent-working-agreement.md` plus this file and the short stop-list
   in `AGENTS.md`.
+- **R8 configuration live-validated**, 2026-08-18: the Remote API reconnected
+  and synced all 47 watched files; a restart produced run `msz5bovs-bokp`
+  with the new R8 source and accepted config. The flag was toggled `0 → 1 →
+  0` for a bounded window, with the live status confirming both transitions
+  and no invariant violations. No scheduler-qualified switch occurred, so
+  this does not live-confirm the veto branch itself.
 
 ## Next
 
-1. Reconnect Bitburner's Remote API to the local daemon on port 12526. The
-   daemon was restarted at 2026-08-18 13:58 PDT and is healthy but currently
-   reports `connected:false`; its normal manifest sync will then push the
-   committed, still-inert R8 source and configuration.
-2. Restart `mcp.js` to pick up the inert change, then flip
-   `R8_SWITCH_VETO_ENABLED` on for a bounded live check, watch the
-   `r8_switch_veto`/`r8_switch_veto_eval` events, and report what happened.
-   Restart with the flag back at `0` is the rollback if anything looks off.
-3. Separately worth a look: two other in-flight worktrees exist —
+1. Assess the two other in-flight worktrees —
    `/private/tmp/bitburner-core.I2zdam` (branch
    `codex/core-missing-action-redeploy`) and
    `/private/tmp/bitburner-pool-invariant` (branch `codex/pool-invariant`).
@@ -59,9 +57,7 @@ and tested but stuck behind a review gate that had no one able to clear it.
 
 ## Blockers
 
-Bitburner must reconnect its Remote API to the running local daemon on port
-12526 before the live R8 validation can begin. The source is committed and
-locally tested; no gameplay claim has been made from the unavailable link.
+None currently open.
 
 ## Changelog
 
@@ -71,6 +67,9 @@ locally tested; no gameplay claim has been made from the unavailable link.
 - **2026-08-18** — Landed R8 switch-veto as `07b216a`; `node --check` for
   both touched scripts and `node --test *.test.js` passed (148/148). Replaced
   a stalled Remote API daemon; the fresh daemon is awaiting a game connection.
+- **2026-08-18** — Bitburner reconnected. R8 source/config were synced and
+  the manager restarted; the bounded `0 → 1 → 0` configuration check was
+  accepted live with no invariant failure. No qualified target switch arose.
 - **2026-08-16** — Incident: a Ken-supplied process list showed
   `mcp_stock_trader.js` running with `trade=1` before a restart — the
   standing read-only-stock-trading rule was crossed operationally at least

@@ -1,5 +1,9 @@
 # Agent working agreement
 
+> Canonical source: [github.com/waunder/agent-working-agreement](https://github.com/waunder/agent-working-agreement).
+> This is a copy, current as of that repo's initial commit (2026-08-18).
+> Edit the canonical copy and re-sync here rather than diverging this one.
+
 A portable working agreement for an AI agent driving a project from a stated
 objective to a finished, tested, documented result — with minimal human
 interruption. Copy this file into any project as-is; nothing in it is

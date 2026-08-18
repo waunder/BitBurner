@@ -19,6 +19,10 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
   2026-08-18; `R8_SWITCH_VETO_ENABLED` is committed as `1` and synced. The
   fresh post-augmentation manager will evaluate it once it has a qualified
   target-switch candidate.
+- [ ] **Observe R8 with Formulas.exe available.** The five pre-purchase
+  evaluations correctly failed open because the reset had removed the
+  program. Formulas.exe is now repurchased and mcp.js restarted; inspect the
+  first new qualified switch for finite scores and `available:true`.
 - [x] **Land the real idle-RAM allocation correction.** The
   `core-missing-action-redeploy` worktree—not `pool-invariant`, which only
   muted the alarm—was integrated as `24c9ba0`/`f5a17e6`; 151 local tests

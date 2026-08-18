@@ -8,9 +8,9 @@ purpose are defined in `docs/agent-working-agreement.md`.
 Resume real gameplay-progress work now that the governance deadlock
 (retired 2026-08-18, see `AGENTS.md`) is cleared. R8 has been landed and
 configuration-validated live and enabled for ordinary use, and the purchased
-augmentation reset completed on 2026-08-18. The normal startup baseline is
-running on the fresh save; next, let the crawler rebuild rooted capacity and
-observe the manager adopt its first post-reset target.
+augmentation reset completed on 2026-08-18. Formulas.exe has now been
+repurchased and the manager restarted so R8 can acquire its formula API;
+next, observe the first post-restart qualified switch evaluation.
 
 ## Done
 
@@ -61,12 +61,18 @@ observe the manager adopt its first post-reset target.
   it. `R8_SWITCH_VETO_ENABLED` is now committed as `1`, pushed, and synced to
   the connected game. It will act only when the scheduler has a qualified
   switch candidate; the fresh post-reset manager has not reached one yet.
+- **R8’s pre-Formulas.exe behavior observed**, 2026-08-18: five enabled
+  evaluations correctly failed open with `reason:"unavailable-score"` and
+  zero scores, allowing the scheduler's switches. After Ken repurchased
+  Formulas.exe, `mcp.js` was restarted as `msz75bg7-bz3o` to acquire the
+  API; no post-restart qualified switch has occurred yet.
 
 ## Next
 
-1. Pull post-reset manager status after the crawler has had time to root its
-   first servers, confirm target adoption and worker deployment, then resume
-   ordinary gameplay improvements from the new evidence.
+1. At the next qualified target switch, inspect the `r8_switch_veto_eval`
+   event from run `msz75bg7-bz3o`: finite scores and `available:true` prove
+   Formulas.exe is active; a veto is only expected when the candidate is
+   below R8's 0.8 threshold.
 
 ## Blockers
 
@@ -92,6 +98,9 @@ None currently open.
   hacking level 2, and `startup.js` launched all five baseline scripts.
 - **2026-08-18** — Ken explicitly approved R8 activation. The flag changed
   from 0 to 1, was committed, pushed, and confirmed in the Remote API sync.
+- **2026-08-18** — Formulas.exe repurchased after augmentation reset. Five
+  prior R8 checks had correctly failed open; restarted mcp.js so the new
+  runtime can expose the Formulas API.
 - **2026-08-16** — Incident: a Ken-supplied process list showed
   `mcp_stock_trader.js` running with `trade=1` before a restart — the
   standing read-only-stock-trading rule was crossed operationally at least

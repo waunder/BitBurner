@@ -1,5 +1,21 @@
 # IPvGO strategy
 
+> **Status, 2026-08-18:** disabled after repeated responsiveness incidents.
+> Neither `ipvgo_player.js` nor `ipvgo_hud.js` may run. Local tests and
+> profiling remain open; re-enabling needs containment evidence plus Ken's
+> explicit approval — see `AGENTS.md`'s stop-list. Historical "live" and
+> next-step wording below is evidence, not current permission.
+
+## 2026-08-14: low-cost tactical rollout upgrade
+
+The existing MCTS remains unchanged. Rollouts now sample a handful of legal
+non-eye moves and prefer a sampled capture, falling back to the first legal
+move. This is deliberately smaller than a full tactical policy: it adds a
+cheap source of tactical awareness without a full legal-move scan at every
+rollout step. `node --test ipvgo_logic.test.js` remains the gate before a live
+push; the win-rate effect still needs live measurement against the existing
+opponents.
+
 A self-contained subsystem, same shape as the darknet set: read the real API
 and the real in-game rules first, write down what's confirmed vs. reasoned,
 then build a first working version. Citation style matches

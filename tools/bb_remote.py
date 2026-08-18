@@ -808,6 +808,7 @@ PULL_FILES = [
     "mcp_status_log.txt",
     "mcp_target_state.json",
     "mcp_events.txt",
+    "mcp_formulas_shadow.txt",
     "ipvgo_status.json",
     "dnet_status.json",
     "mcp_objective_override.txt",

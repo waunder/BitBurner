@@ -1,5 +1,19 @@
 # Claude's working list
 
+## Lesson learned — telemetry must be cumulative and visible where it is read
+
+The first version of `mcp_formulas_shadow.js` overwrote
+`mcp_formulas_shadow.txt` on every sample and only left the latest snapshot.
+Although the script technically wrote a valid `.txt` file, repeated runs could
+not be compared reliably, and the tail did not show the exact persisted
+record. This consumed substantial investigation time because “the file was
+written” was mistaken for “the run produced retrievable evidence.”
+
+For bounded diagnostic runs, write one complete record per sample in append
+mode, print that same record to the tail, and document how the resulting file
+is retrieved. Verify the evidence channel end-to-end before treating a run as
+complete. Continuous monitors need an explicit retention or archive policy.
+
 ## 2026-08-14 (latest): R1 through R7 all confirmed live — R4 delivered a ~60x income jump; set_objective.js and lsf.js shipped
 
 Full arc, in order:

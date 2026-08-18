@@ -21,6 +21,12 @@ const CONSTANTS = {
 }
 const SNAPSHOT_FILE = "mcp_formulas_shadow.txt"
 
+function writeSnapshot(ns, snapshot) {
+  const line = JSON.stringify(snapshot)
+  ns.write(SNAPSHOT_FILE, `${line}\n`, "a")
+  ns.print(`snapshot: ${line}`)
+}
+
 function allServers(ns) {
   const seen = new Set(["home"])
   const queue = ["home"]
@@ -96,8 +102,8 @@ export async function main(ns) {
       const poolThreads = Number(status && status.maxWeaken)
       if (!(poolThreads > 0)) {
         const snapshot = { ts: Date.now(), ready: false, reason: "waiting for mcp_status.json/maxWeaken" }
-        ns.write(SNAPSHOT_FILE, JSON.stringify(snapshot), "w")
         ns.clearLog()
+        writeSnapshot(ns, snapshot)
         ns.print("mcp_formulas_shadow: waiting for mcp_status.json/maxWeaken")
       } else {
         const ranking = rankMinimumSecurity(ns, poolThreads)
@@ -111,15 +117,15 @@ export async function main(ns) {
           invariantViolations: status.invariantViolations || {},
           minimumSecurityTop: ranking.slice(0, 10),
         }
-        ns.write(SNAPSHOT_FILE, JSON.stringify(snapshot), "w")
         ns.clearLog()
+        writeSnapshot(ns, snapshot)
         ns.print(`formulas shadow pool=${poolThreads} manager=${status.target || "none"} income=${Number(status.incomePerSec || 0).toFixed(0)}/s`)
         ns.print(`minimum-security top: ${top.join(" | ")}`)
         ns.print(`baseline invariants: ${JSON.stringify(status.invariantViolations || {})}`)
       }
     } catch (error) {
-      ns.write(SNAPSHOT_FILE, JSON.stringify({ ts: Date.now(), ready: false, error: String(error && error.message ? error.message : error) }), "w")
       ns.clearLog()
+      writeSnapshot(ns, { ts: Date.now(), ready: false, error: String(error && error.message ? error.message : error) })
       ns.print(`mcp_formulas_shadow error: ${String(error && error.message ? error.message : error)}`)
     }
     samples++

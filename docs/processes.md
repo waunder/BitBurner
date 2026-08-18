@@ -862,28 +862,28 @@ is bought — what looks worth buying.
 
 ### `mcp_stock_trader.js`
 
-**Current state: not authorized to sync or run.** The untracked file
-contains capital-moving calls; a prior `trade=1` process crossed the
-standing stock boundary once (see `STATE.md`'s changelog). Running or
-syncing it needs Ken's explicit capital-deployment go-ahead first (see
-`AGENTS.md`'s stop-list). The bullets below describe the artifact, not
-permission.
+**Current state: capital deployment approved 2026-08-18.** A prior `trade=1`
+process crossed the stock boundary once (see `STATE.md`'s changelog), so the
+trader now has explicit, tested controls before its first approved live run.
 
-Conservative long-only trader implementing a 10% cash allocation cap and a
-10% net-profit exit target. It requires WSE, TIX API, and 4S Market Data TIX
+Conservative long-only trader implementing a portfolio-wide adaptive 1%–10%
+allocation cap and a 10% net-profit exit target. It requires WSE, TIX API, and 4S Market Data TIX
 API; without 4S, forecast-based entries are not available and commission plus
 spread make guessing a poor starting metric. It is dry-run by default and
 cannot place orders unless started with `trade=1`.
 
-- **Do not start or sync:** neither dry-run nor `trade=1` is currently
-  authorized; see `AGENTS.md`'s stop-list.
 - **Optional:** `interval=<ms>` (default 4000); the current output is the
   script log.
-- Buys only when `getForecast(symbol) > 0.5`, and sizes each order so the
-  purchase cost including commission is at most 10% of the cash observed at
-  the start of that poll.
-- Sells a long position only when sale proceeds minus purchase cost exceed
-  10% of purchase cost. It never shorts.
+- Buys only when `getForecast(symbol) > 0.5`, and keeps the *combined*
+  liquidation value of all positions within its cap of total portfolio equity.
+  The cap starts at 10%, falls by one percentage point after each realized
+  loss, rises by one after each realized gain, and is clamped to 1%–10%.
+- Records actual entry cost in `mcp_stock_trader_state.json` (including
+  commission) so profit is not recalculated at the current purchase price.
+  Legacy positions fall back to average share price plus one commission.
+- Takes profit above 10% net; a losing position is sold only after its
+  forecast reverses to 0.5 or below, which is the realized-loss path that
+  reduces the cap. It never shorts.
 - **Incident evidence:** Ken's supplied process list showed a `trade=1`
   instance before restart. That proves the boundary was crossed, not that an
   order executed or the trader caused the game failure.

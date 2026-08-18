@@ -1,9 +1,8 @@
 # Stock market strategy
 
-> **Status, 2026-08-18:** stock display and trading are off. `mcp_stock_trader.js`
-> is an untracked artifact containing capital-moving calls; no dry run, sync,
-> `trade=1`, commit, or order is authorized without Ken's explicit go-ahead —
-> see `AGENTS.md`'s stop-list. Historical design below is not approval.
+> **Status, 2026-08-18:** Ken explicitly approved capital deployment. The
+> long-only trader is now committed and may run with `trade=1`, subject to its
+> WSE/TIX/4S capability checks and its 1%–10% portfolio-wide allocation cap.
 
 Synthesis and sequencing for *this specific situation*: WSE + TIX access
 already bought, no 4S data (either variant), trading held to manual/

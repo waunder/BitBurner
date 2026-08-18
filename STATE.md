@@ -109,6 +109,10 @@ None currently open.
   runtime can expose the Formulas API.
 - **2026-08-18** — Switched objective to XP using the in-game override;
   config-change event confirmed money → xp without restart.
+- **2026-08-18** — Ken explicitly approved live stock-capital deployment.
+  The trader's portfolio-wide adaptive cap, correct entry-cost accounting,
+  persisted state, and loss exit passed 155 local tests before its first
+  approved live launch.
 - **2026-08-16** — Incident: a Ken-supplied process list showed
   `mcp_stock_trader.js` running with `trade=1` before a restart — the
   standing read-only-stock-trading rule was crossed operationally at least

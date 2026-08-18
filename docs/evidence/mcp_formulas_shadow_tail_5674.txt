@@ -1,0 +1,11 @@
+R8 UI/CDP observation transcript
+Run ID: 5674
+Observed: 2026-08-16T11:47:00-07:00
+
+Tail heading: mcp_formulas_shadow
+Tail help: mcp_formulas_shadow.js 60000 1
+Printed JSON prefix: {"ts":1786910779619,"ready":true,"poolThreads":20772,"managerTarget":"clarkinc","incomePerSec":433447992.3739561,"invariantViolations":{"poolNotIdle":520}
+Printed summary: formulas shadow pool=20772 manager=clarkinc income=433447992/s
+
+The paired frame is mcp_formulas_shadow_tail_5674.png. The authoritative
+source identified in the canary contract calls ns.ui.resizeTail(1600, 1200).

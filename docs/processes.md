@@ -10,31 +10,24 @@ file is the map.
 Keep it current. If a script gains an argument, a file, or a failure mode,
 it changes here in the same commit.
 
-## Current governance control state — 2026-08-15
+## Current working state — 2026-08-18
 
-For Codex, the approved overlay in `AGENTS.md` supersedes conflicting
-repository-local Claude workflow guidance while preserving `CLAUDE.md` for
-Claude's return. Current authority is recorded in
-`docs/directive-ledger.json`; live permission is fail-closed by subsystem in
-`docs/promotion-state.json`; source/output direction is in
-`docs/artifact-manifest.json`.
+The tiered governance apparatus described in this section through
+2026-08-16 (directive ledger, promotion-state machine, auditor tool, R8
+controller/canary apparatus) is retired — it produced a genuine deadlock,
+not just overhead. See `AGENTS.md`'s "Working method" section for why and
+what replaced it: `docs/agent-working-agreement.md` for the portable
+working method, `STATE.md` for current objective/status, and `AGENTS.md`'s
+short stop-list for the few things that still need Ken directly.
 
-- The five-process `startup.js` core MCP baseline is an established Tier 2
-  operation and may run with its normal health/recovery checks.
-- Stock panels/trading, IPvGO, Darknet, and faction sharing are currently off.
-  `mcp_stock_trader.js` is quarantined and has no capital-deployment approval.
-- Formulas R8 remains production-inert, shadow-only, and paused before another
-  live run until source identity, explicit tail visibility, and local retrieval
-  of `mcp_formulas_shadow.txt` are established.
-- Editing a daemon `WATCHED_FILES` source in this connected checkout is
-  deployment-capable; use a non-synced worktree for local source development.
-- Historical “live,” “done,” or launch instructions below describe past
-  capability, not present permission, when they conflict with promotion state.
-
-Run `python3 tools/standing_orders_audit.py --profile session` for the current
-portfolio report, or the scoped `--profile action --subsystem NAME --tier N`
-gate before a live action. The complete runner/enforcer/scheduler contract is
-`docs/governance-control-operations.md`.
+- The `startup.js` core MCP baseline is established and runs normally.
+- Stock panels/trading, IPvGO, Darknet, and faction sharing are off. See
+  `AGENTS.md`'s stop-list for exactly what re-enabling each needs.
+  `mcp_stock_trader.js` is not quarantined by any file-based mechanism
+  anymore — it's just off-limits to run or sync per that stop-list.
+- Formulas R8: the shadow monitor has been live-validated (see
+  `docs/evidence/`); the switch-veto integration is implemented and tested
+  and is the current active objective — see `STATE.md`.
 
 ---
 
@@ -852,10 +845,12 @@ is bought — what looks worth buying.
 
 ### `mcp_stock_trader.js`
 
-**Current state: quarantined, not authorized to sync or run.** The untracked
-file contains capital-moving calls, no approval record exists, and a prior
-`trade=1` process crossed the standing stock boundary. The bullets below
-describe the artifact, not permission.
+**Current state: not authorized to sync or run.** The untracked file
+contains capital-moving calls; a prior `trade=1` process crossed the
+standing stock boundary once (see `STATE.md`'s changelog). Running or
+syncing it needs Ken's explicit capital-deployment go-ahead first (see
+`AGENTS.md`'s stop-list). The bullets below describe the artifact, not
+permission.
 
 Conservative long-only trader implementing a 10% cash allocation cap and a
 10% net-profit exit target. It requires WSE, TIX API, and 4S Market Data TIX
@@ -864,7 +859,7 @@ spread make guessing a poor starting metric. It is dry-run by default and
 cannot place orders unless started with `trade=1`.
 
 - **Do not start or sync:** neither dry-run nor `trade=1` is currently
-  authorized; `docs/promotion-state.json` is fail-closed.
+  authorized; see `AGENTS.md`'s stop-list.
 - **Optional:** `interval=<ms>` (default 4000); the current output is the
   script log.
 - Buys only when `getForecast(symbol) > 0.5`, and sizes each order so the
@@ -878,18 +873,22 @@ cannot place orders unless started with `trade=1`.
 
 ### `mcp_formulas_shadow.js`
 
-**Current state: shadow-only and paused before another live run.** The latest
-source appends and prints each complete record, but it does not call
-`ns.ui.openTail`, the source is dirty/explicit-push-only, and the reported
-in-game output file has not been pulled locally. The run command below is the
-historical interface, not present permission.
+**Current state: live-validated, shadow-only.** Run 5713 (2026-08-16)
+confirmed the tracked-checkout version of this script opens its evidence
+tail, samples once, and writes a retrievable `ready:true` snapshot — see
+`docs/evidence/`. A further, tested-but-unmerged step exists in an isolated
+worktree: a conservative switch-veto that uses this same formulas-based
+minimum-security score to veto (never choose) a scheduler target switch.
+See `STATE.md` for its status and the next step to land it.
 
-Read-only, opt-in R4 formulas shadow monitor. Reads `mcp_status.json` for the
+Read-only, opt-in formulas shadow monitor. Reads `mcp_status.json` for the
 manager's current target, income, pool capacity, and invariant counters; then
-calculates a minimum-security target ranking with Formulas.exe. It never
-changes target selection, worker allocation, or configuration.
+calculates a minimum-security target ranking with Formulas.exe. The tracked
+version here never changes target selection, worker allocation, or
+configuration — the veto variant in `STATE.md` still never *selects* a
+target, only vetoes an already-chosen switch, and is off by default.
 
-- **Interface when the Tier 1 gate is cleared:** `run mcp_formulas_shadow.js [intervalMs] [samples]` (default 120
+- **Interface:** `run mcp_formulas_shadow.js [intervalMs] [samples]` (default 120
   seconds; minimum 60 seconds). Set `samples` to a positive count for a
   bounded run; omit it for continuous monitoring.
 - **Stop:** `kill mcp_formulas_shadow.js`.

@@ -1,0 +1,12 @@
+R8 UI/CDP observation transcript
+Run ID: 5713
+Observed: 2026-08-16T13:13:00-07:00
+
+Tail heading: mcp_formulas_shadow
+Tail help: mcp_formulas_shadow.js 60000 1
+Printed JSON prefix: {"ts":1786911112572,"ready":true,"poolThreads":20772,"managerTarget":"clarkinc","incomePerSec":422304163.7998722,"invariantViolations":{"poolNotIdle":520}
+Printed summary: formulas shadow pool=20772 manager=clarkinc income=422304164/s
+Printed summary: minimum-security top: clarkinc 968623344/s | b-and-a 712069023/s | nwo 511586422/s | omnitek 422460206/s | blade 357532815/s
+
+The paired frame is mcp_formulas_shadow_tail_5713.png. The exact source
+identified in the canary contract calls ns.ui.resizeTail(1600, 1200).

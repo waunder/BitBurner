@@ -1,10 +1,11 @@
 # Moving off the VS Code extension's file sync
 
-> **Historical plan status, 2026-08-15:** the Remote API daemon now provides
-> routine watched-source push and generated-artifact pull, with reconnect
-> resync and local self-tests passing. Prototype-era “not live” language below
-> is chronology; current direction and permission live in
-> `docs/artifact-manifest.json` and `docs/promotion-state.json`.
+> **Historical plan status, 2026-08-15 (updated 2026-08-18):** the Remote API
+> daemon now provides routine watched-source push and generated-artifact
+> pull, with reconnect resync and local self-tests passing. Prototype-era
+> "not live" language below is chronology; current status lives in
+> `STATE.md`, and the watched/pulled file sets are
+> `tools/bb_remote.py::WATCHED_FILES`/`PULL_FILES` directly.
 
 Research + prototype for the decision made 2026-08-09 (see
 `docs/kensTodo.md` and the session memory it was logged from): stop

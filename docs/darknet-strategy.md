@@ -1,9 +1,9 @@
 # Darknet strategy
 
-> **Governance status, 2026-08-15:** disabled by Ken's current operating
-> directive. Local tests, static review, and historical telemetry analysis may
-> continue. Do not start/restart the swarm; Storm Seed, stasis, backdoor, and
-> karma expenditure retain their stricter boundaries. Historical “live”
+> **Status, 2026-08-18:** disabled after a stability incident. Local tests,
+> static review, and historical telemetry analysis may continue. Do not
+> start/restart the swarm until the root cause is understood and Ken gives
+> an explicit go-ahead — see `AGENTS.md`'s stop-list. Historical "live"
 > descriptions below document capability, not current permission.
 
 Synthesis and sequencing. Read `darknet-functions.md` for the API and the

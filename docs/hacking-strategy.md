@@ -1,10 +1,10 @@
 # Hacking strategy
 
-> **Governance status, 2026-08-15:** the established core MCP path remains an
-> allowed Tier 2 baseline. Formulas R8 is a separate production-inert shadow
-> investigation and is paused before another live run at its source/visible-
-> output/retrieval gate. Historical completion wording below does not promote
-> R8 or authorize a held subsystem.
+> **Status, 2026-08-18:** the established core MCP path runs normally.
+> Formulas R8's shadow monitor is live-validated and its switch-veto
+> integration is implemented/tested but not yet merged — see `STATE.md` for
+> current status. Historical completion wording below is history, not a
+> claim about what's merged today.
 
 Analysis of `mcp.js`/`mcp_logic.js` against the real game formulas, with
 ranked recommendations. Companion doc: `docs/hacking-mechanics.md` — that

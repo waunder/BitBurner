@@ -29,10 +29,11 @@ file inspection become remote-triggerable from then on; see
 [`docs/processes.md`](docs/processes.md#mcp_supervisorjs).
 
 The Remote API daemon now provides routine source sync and generated-file
-pulls. Before any live action, use the scoped governance gate described in
-[`docs/governance-control-operations.md`](docs/governance-control-operations.md);
-editing a watched source in this connected checkout is itself deployment-
-capable.
+pulls. Editing a watched source in this connected checkout is itself
+deployment-capable — see `tools/bb_remote.py::WATCHED_FILES`. The working
+method and the short list of things that need Ken directly are in
+[`docs/agent-working-agreement.md`](docs/agent-working-agreement.md) and
+`AGENTS.md`.
 
 ## Local workflow
 
@@ -50,5 +51,5 @@ That prints a summary of the latest manager status, including per-host allocatio
 - `mcp.js` writes `mcp_status.json` every loop, overwriting the previous status.
 - `mcp_status_log.txt` is appended each loop for historical review.
 - The parser is written in Python for local execution without Node.
-- Current subsystem permission lives in `docs/promotion-state.json`; historical
-  launch instructions do not override it.
+- Current objective/status lives in `STATE.md`; the short list of things
+  that need Ken's explicit go-ahead is in `AGENTS.md`.

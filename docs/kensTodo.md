@@ -2,22 +2,29 @@
 
 Only actions that genuinely need Ken's hand belong here. The Remote API now
 handles routine source sync and telemetry pull; an in-game click, a connector
-reopen, or a Tier 3 scope decision still belongs here when actually needed.
-Checked items stay as history, not busywork to repeat.
+reopen, or one of the stop-list items in `AGENTS.md` still belongs here when
+actually needed. Checked items stay as history, not busywork to repeat.
 
 Codex keeps this current: add an item the moment something really needs Ken's
 hand and check it off once confirmed—same rule as `docs/processes.md`.
 
 ## Pending
 
-- [x] **No governance-audit game action is presently requested.** The core MCP
-  baseline may continue. Stock, IPvGO, Darknet, faction share, and another R8
-  live run remain narrow holds in `docs/promotion-state.json`; a hold is not a
-  task for Ken to remember or execute.
+- [ ] **Reconnect Bitburner to the existing Remote API daemon on port 12526.**
+  The daemon disconnected at 2026-08-16 13:33 PT and no longer answers its
+  local control channel, so Codex cannot pull fresh core telemetry. In
+  Bitburner, open Options → Remote API and click Connect for port `12526`.
+  No source sync, restart, or held-subsystem action is requested.
+
+- [x] **Historical: the promotion-state.json hold apparatus is retired
+  (2026-08-18).** Stock, IPvGO, Darknet, and faction share stay off per
+  `AGENTS.md`'s short stop-list now, not a JSON hold file; nothing here for
+  Ken to remember or execute either way.
 
 - [x] **Superseded: do not start the balanced faction-sharing allocation.**
   The earlier `run share_deploy.js` request is cancelled after the stability/
-  loop incident. Re-enable is a separate Tier 3 decision after containment.
+  loop incident. Re-enable needs Ken's explicit go-ahead per `AGENTS.md`'s
+  stop-list, after the root cause is understood.
 
 - [x] **Reconnect Bitburner to the Remote API on port 12526.** Confirmed
   2026-08-14: all 43 then-current watched files synced, the remotely-triggered clean swarm
@@ -161,10 +168,10 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
 - [x] `run mcp_hud.js` — confirmed running and healthy (`OK`, `ver ok`,
   `inv 0`, 2026-08-08).
 
-- [x] **No Ken action: stock trader is quarantined pending a future explicit
+- [x] **No Ken action: stock trader stays off pending a future explicit
   capital-deployment decision.** Do not resync, run, or add
-  `mcp_stock_trader.js` to the daemon's watched files; the control ledger owns
-  this hold so Ken does not have to remember it as a task.
+  `mcp_stock_trader.js` to the daemon's watched files; `AGENTS.md`'s
+  stop-list owns this hold so Ken does not have to remember it as a task.
 - [x] **Leftover `get_stats.js` processes.** `ps` confirmed a single instance
   (PID 914) alongside a single `mcp_hud.js` (PID 986) — the three stray
   copies from before the self-supersede fix are gone.

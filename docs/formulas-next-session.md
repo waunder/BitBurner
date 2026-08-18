@@ -1,9 +1,9 @@
 # Next-session handoff: Formulas.exe
 
-> **Governance status, 2026-08-15:** the bounded command below has already been
-> reported complete and must not simply be run again. R8 is paused until the
-> exact source is attested, explicit tail opening is implemented/tested, and
-> the existing cumulative output is pulled and independently parsed.
+> **Status, 2026-08-18:** the bounded command below has already been reported
+> complete and must not simply be run again. R8's shadow monitor is now
+> live-validated and its switch-veto integration is implemented/tested but
+> unmerged — see `STATE.md` for current status.
 
 ## Current state
 

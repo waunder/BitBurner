@@ -751,6 +751,8 @@ WATCHED_FILES = [
     "mcp_config.json",
     "mcp_hud.js",
     "mcp_money.js",
+    "mcp_stock_trader.js",
+    "mcp_stock_trader_logic.js",
     "mcp_stocks.js",
     "mcp_status.js",
     "mcp_supervisor.js",

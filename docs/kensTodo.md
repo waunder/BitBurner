@@ -168,10 +168,9 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
 - [x] `run mcp_hud.js` — confirmed running and healthy (`OK`, `ver ok`,
   `inv 0`, 2026-08-08).
 
-- [x] **No Ken action: stock trader stays off pending a future explicit
-  capital-deployment decision.** Do not resync, run, or add
-  `mcp_stock_trader.js` to the daemon's watched files; `AGENTS.md`'s
-  stop-list owns this hold so Ken does not have to remember it as a task.
+- [x] **Stock trader authorization and launch.** Ken explicitly approved
+  capital deployment on 2026-08-18; the adaptive `trade=1` instance is live
+  and its two source files are now daemon-watched for reconnect-safe sync.
 - [x] **Leftover `get_stats.js` processes.** `ps` confirmed a single instance
   (PID 914) alongside a single `mcp_hud.js` (PID 986) — the three stray
   copies from before the self-supersede fix are gone.

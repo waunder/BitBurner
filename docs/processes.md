@@ -21,10 +21,9 @@ working method, `STATE.md` for current objective/status, and `AGENTS.md`'s
 short stop-list for the few things that still need Ken directly.
 
 - The `startup.js` core MCP baseline is established and runs normally.
-- Stock panels/trading, IPvGO, Darknet, and faction sharing are off. See
-  `AGENTS.md`'s stop-list for exactly what re-enabling each needs.
-  `mcp_stock_trader.js` is not quarantined by any file-based mechanism
-  anymore — it's just off-limits to run or sync per that stop-list.
+- The adaptive stock trader is live with Ken's explicit 2026-08-18 capital
+  approval. IPvGO, Darknet, and faction sharing remain off; see `AGENTS.md`'s
+  stop-list for exactly what re-enabling each needs.
 - Formulas R8: the shadow monitor has been live-validated (see
   `docs/evidence/`); the switch-veto integration is implemented and tested
   and is the current active objective — see `STATE.md`.
@@ -862,9 +861,9 @@ is bought — what looks worth buying.
 
 ### `mcp_stock_trader.js`
 
-**Current state: capital deployment approved 2026-08-18.** A prior `trade=1`
-process crossed the stock boundary once (see `STATE.md`'s changelog), so the
-trader now has explicit, tested controls before its first approved live run.
+**Current state: live since 2026-08-18.** The approved instance runs as
+`mcp_stock_trader.js trade=1`; its source and required logic module are in
+the Remote API daemon's watched set so reconnects preserve that deployment.
 
 Conservative long-only trader implementing a portfolio-wide adaptive 1%–10%
 allocation cap and a 10% net-profit exit target. It requires WSE, TIX API, and 4S Market Data TIX

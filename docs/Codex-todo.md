@@ -37,6 +37,9 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
 - [ ] **Establish the post-augmentation baseline.** `startup.js` launched
   the supervisor, crawler, manager, HUD, and stats; after the crawler roots
   the first fresh servers, confirm target adoption and worker deployment.
+- [x] **Launch the approved adaptive stock trader.** Its first live instance
+  started as PID 955 with `trade=1`; the trader and its logic module are now
+  part of the Remote API watched set for durable sync.
 
 ## Standing operating facts
 
@@ -46,5 +49,5 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
 - Ordinary work (edits, tests, docs, landing tested/flag-gated/reversible
   code, restarts) doesn't need Ken's approval. The full stop-list — the only
   things that do — is in `AGENTS.md`.
-- Do not run, sync, or otherwise activate `mcp_stock_trader.js`. See
-  `AGENTS.md`'s stop-list and `STATE.md`'s changelog for why.
+- `mcp_stock_trader.js trade=1` is explicitly authorized and live as of
+  2026-08-18; the remaining stop-list is in `AGENTS.md`.

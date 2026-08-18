@@ -72,6 +72,11 @@ post-restart qualified switch evaluation.
   restart. Status confirmed `OBJECTIVE:"xp"`, `objectiveOverrideActive:true`,
   and roughly 1,377 XP/s during the current weaken phase. The committed
   config remains `money`, so `run set_objective.js clear` returns to it.
+- **Adaptive stock trader launched live**, 2026-08-18: Ken explicitly
+  approved in-game capital deployment and PID 955 started with `trade=1`.
+  The trader begins with a 10% portfolio cap, persists its entry costs and
+  adaptive result state, and its script plus logic module now participate in
+  normal Remote API source sync.
 
 ## Next
 
@@ -113,6 +118,9 @@ None currently open.
   The trader's portfolio-wide adaptive cap, correct entry-cost accounting,
   persisted state, and loss exit passed 155 local tests before its first
   approved live launch.
+- **2026-08-18** — Synced and launched the approved stock trader as PID 955
+  with `trade=1`; added its implementation and imported logic module to the
+  Remote API watched files to make future reconnects durable.
 - **2026-08-16** — Incident: a Ken-supplied process list showed
   `mcp_stock_trader.js` running with `trade=1` before a restart — the
   standing read-only-stock-trading rule was crossed operationally at least

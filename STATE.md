@@ -7,10 +7,10 @@ purpose are defined in `docs/agent-working-agreement.md`.
 
 Resume real gameplay-progress work now that the governance deadlock
 (retired 2026-08-18, see `AGENTS.md`) is cleared. R8 has been landed and
-configuration-validated live, and the purchased augmentation reset completed
-on 2026-08-18. The normal startup baseline is running on the fresh save;
-next, let the crawler rebuild rooted capacity and observe the manager adopt
-its first post-reset target.
+configuration-validated live and enabled for ordinary use, and the purchased
+augmentation reset completed on 2026-08-18. The normal startup baseline is
+running on the fresh save; next, let the crawler rebuild rooted capacity and
+observe the manager adopt its first post-reset target.
 
 ## Done
 
@@ -57,6 +57,10 @@ its first post-reset target.
   supervisor, crawler, manager, HUD, and stats successfully (5 started,
   none failed). The new manager correctly began with no hackable target
   while `hacking/crawler.js` started rooting the fresh network.
+- **R8 switch-veto enabled**, 2026-08-18: Ken explicitly approved enabling
+  it. `R8_SWITCH_VETO_ENABLED` is now committed as `1`, pushed, and synced to
+  the connected game. It will act only when the scheduler has a qualified
+  switch candidate; the fresh post-reset manager has not reached one yet.
 
 ## Next
 
@@ -86,6 +90,8 @@ None currently open.
 - **2026-08-18** — Ken explicitly approved augmentation installation. Eight
   purchased augmentations installed; the reset was confirmed at $1.001m and
   hacking level 2, and `startup.js` launched all five baseline scripts.
+- **2026-08-18** — Ken explicitly approved R8 activation. The flag changed
+  from 0 to 1, was committed, pushed, and confirmed in the Remote API sync.
 - **2026-08-16** — Incident: a Ken-supplied process list showed
   `mcp_stock_trader.js` running with `trade=1` before a restart — the
   standing read-only-stock-trading rule was crossed operationally at least

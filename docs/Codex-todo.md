@@ -15,6 +15,10 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
   accepted a bounded `R8_SWITCH_VETO_ENABLED` `0 → 1 → 0` check without
   invariant failures. No qualified target switch occurred, so the live veto
   branch remains unobserved rather than claimed as validated.
+- [x] **Enable R8 for ordinary operation.** Explicitly approved on
+  2026-08-18; `R8_SWITCH_VETO_ENABLED` is committed as `1` and synced. The
+  fresh post-augmentation manager will evaluate it once it has a qualified
+  target-switch candidate.
 - [x] **Land the real idle-RAM allocation correction.** The
   `core-missing-action-redeploy` worktree—not `pool-invariant`, which only
   muted the alarm—was integrated as `24c9ba0`/`f5a17e6`; 151 local tests

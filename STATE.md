@@ -7,8 +7,9 @@ purpose are defined in `docs/agent-working-agreement.md`.
 
 Resume real gameplay-progress work now that the governance deadlock
 (retired 2026-08-18, see `AGENTS.md`) is cleared. R8 has been landed and
-configuration-validated live; next, assess the pool-allocation worktree that
-addresses the currently observed `poolNotIdle` waste.
+configuration-validated live. The idle-RAM allocation correction is landed,
+locally tested, and live-restarted; next, observe it through a full action
+cycle or a missing-action situation before claiming that edge case live.
 
 ## Done
 
@@ -44,16 +45,18 @@ addresses the currently observed `poolNotIdle` waste.
   0` for a bounded window, with the live status confirming both transitions
   and no invariant violations. No scheduler-qualified switch occurred, so
   this does not live-confirm the veto branch itself.
+- **Idle-RAM allocation correction landed**, 2026-08-18: commits `24c9ba0`
+  and `f5a17e6` start a desired-but-missing action using only actual free RAM
+  while an unrelated in-flight action finishes. The full local suite passed
+  (151/151); the synced game restarted as `msz5gi2y-3g38` and showed 99.8%
+  RAM utilization with no invariant violations in its initial weaken phase.
 
 ## Next
 
-1. Assess the two other in-flight worktrees —
-   `/private/tmp/bitburner-core.I2zdam` (branch
-   `codex/core-missing-action-redeploy`) and
-   `/private/tmp/bitburner-pool-invariant` (branch `codex/pool-invariant`).
-   The second name lines up with the `poolNotIdle` issue mentioned above and
-   hasn't been assessed yet — worth checking before assuming R8 is the only
-   loose end.
+1. On the next ordinary status pull after the manager completes its current
+   long weaken call, inspect RAM utilization and events. The correction is
+   live but its guarded missing-action branch has not yet occurred during the
+   bounded observation window.
 
 ## Blockers
 
@@ -70,6 +73,10 @@ None currently open.
 - **2026-08-18** — Bitburner reconnected. R8 source/config were synced and
   the manager restarted; the bounded `0 → 1 → 0` configuration check was
   accepted live with no invariant failure. No qualified target switch arose.
+- **2026-08-18** — Assessed both open worktrees: `pool-invariant` only muted
+  the alarm, so it was not landed; `core-missing-action-redeploy` repaired
+  the allocation behavior and was landed, tested, pushed, synced, and
+  restarted live (initial utilization 99.8%, no invariant violation).
 - **2026-08-16** — Incident: a Ken-supplied process list showed
   `mcp_stock_trader.js` running with `trade=1` before a restart — the
   standing read-only-stock-trading rule was crossed operationally at least

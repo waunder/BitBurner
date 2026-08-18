@@ -15,6 +15,10 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
   accepted a bounded `R8_SWITCH_VETO_ENABLED` `0 → 1 → 0` check without
   invariant failures. No qualified target switch occurred, so the live veto
   branch remains unobserved rather than claimed as validated.
+- [x] **Land the real idle-RAM allocation correction.** The
+  `core-missing-action-redeploy` worktree—not `pool-invariant`, which only
+  muted the alarm—was integrated as `24c9ba0`/`f5a17e6`; 151 local tests
+  passed and the connected game restarted cleanly at 99.8% utilization.
 - [ ] **Check the two other open worktrees** — `codex/core-missing-action-
   redeploy` and `codex/pool-invariant` — before assuming R8 is the only
   loose end. `pool-invariant` likely bears on the `poolNotIdle` condition

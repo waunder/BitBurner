@@ -23,6 +23,10 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
   evaluations correctly failed open because the reset had removed the
   program. Formulas.exe is now repurchased and mcp.js restarted; inspect the
   first new qualified switch for finite scores and `available:true`.
+- [x] **Switch to XP mode.** Ken requested it on 2026-08-18; the in-game
+  `set_objective.js xp` override is active, hot-reloaded without restart, and
+  reports about 1,377 XP/s in the current recovery phase. Use
+  `set_objective.js clear` to return to the committed money default.
 - [x] **Land the real idle-RAM allocation correction.** The
   `core-missing-action-redeploy` worktree—not `pool-invariant`, which only
   muted the alarm—was integrated as `24c9ba0`/`f5a17e6`; 151 local tests

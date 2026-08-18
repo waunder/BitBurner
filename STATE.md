@@ -8,9 +8,10 @@ purpose are defined in `docs/agent-working-agreement.md`.
 Resume real gameplay-progress work now that the governance deadlock
 (retired 2026-08-18, see `AGENTS.md`) is cleared. R8 has been landed and
 configuration-validated live and enabled for ordinary use, and the purchased
-augmentation reset completed on 2026-08-18. Formulas.exe has now been
-repurchased and the manager restarted so R8 can acquire its formula API;
-next, observe the first post-restart qualified switch evaluation.
+augmentation reset completed on 2026-08-18. The manager is now intentionally
+in XP mode by a live override; Formulas.exe has been repurchased and mcp.js
+restarted so R8 can acquire its formula API. Next, observe the first
+post-restart qualified switch evaluation.
 
 ## Done
 
@@ -66,6 +67,11 @@ next, observe the first post-restart qualified switch evaluation.
   zero scores, allowing the scheduler's switches. After Ken repurchased
   Formulas.exe, `mcp.js` was restarted as `msz75bg7-bz3o` to acquire the
   API; no post-restart qualified switch has occurred yet.
+- **XP objective enabled**, 2026-08-18: Ken requested the shift; the
+  supported `set_objective.js xp` override was accepted live without a
+  restart. Status confirmed `OBJECTIVE:"xp"`, `objectiveOverrideActive:true`,
+  and roughly 1,377 XP/s during the current weaken phase. The committed
+  config remains `money`, so `run set_objective.js clear` returns to it.
 
 ## Next
 
@@ -101,6 +107,8 @@ None currently open.
 - **2026-08-18** — Formulas.exe repurchased after augmentation reset. Five
   prior R8 checks had correctly failed open; restarted mcp.js so the new
   runtime can expose the Formulas API.
+- **2026-08-18** — Switched objective to XP using the in-game override;
+  config-change event confirmed money → xp without restart.
 - **2026-08-16** — Incident: a Ken-supplied process list showed
   `mcp_stock_trader.js` running with `trade=1` before a restart — the
   standing read-only-stock-trading rule was crossed operationally at least

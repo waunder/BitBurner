@@ -19,10 +19,12 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
   `core-missing-action-redeploy` worktree—not `pool-invariant`, which only
   muted the alarm—was integrated as `24c9ba0`/`f5a17e6`; 151 local tests
   passed and the connected game restarted cleanly at 99.8% utilization.
-- [ ] **Check the two other open worktrees** — `codex/core-missing-action-
-  redeploy` and `codex/pool-invariant` — before assuming R8 is the only
-  loose end. `pool-invariant` likely bears on the `poolNotIdle` condition
-  noted in `STATE.md`.
+- [x] **Assess the two former open worktrees.** `core-missing-action-redeploy`
+  was landed as the real correction; `pool-invariant` only suppressed a
+  diagnostic and was intentionally left unlanded.
+- [ ] **Establish the post-augmentation baseline.** `startup.js` launched
+  the supervisor, crawler, manager, HUD, and stats; after the crawler roots
+  the first fresh servers, confirm target adoption and worker deployment.
 
 ## Standing operating facts
 

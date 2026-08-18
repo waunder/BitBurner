@@ -7,9 +7,10 @@ purpose are defined in `docs/agent-working-agreement.md`.
 
 Resume real gameplay-progress work now that the governance deadlock
 (retired 2026-08-18, see `AGENTS.md`) is cleared. R8 has been landed and
-configuration-validated live. The idle-RAM allocation correction is landed,
-locally tested, and live-restarted; next, observe it through a full action
-cycle or a missing-action situation before claiming that edge case live.
+configuration-validated live, and the purchased augmentation reset completed
+on 2026-08-18. The normal startup baseline is running on the fresh save;
+next, let the crawler rebuild rooted capacity and observe the manager adopt
+its first post-reset target.
 
 ## Done
 
@@ -50,13 +51,18 @@ cycle or a missing-action situation before claiming that edge case live.
   while an unrelated in-flight action finishes. The full local suite passed
   (151/151); the synced game restarted as `msz5gi2y-3g38` and showed 99.8%
   RAM utilization with no invariant violations in its initial weaken phase.
+- **Augmentations installed and reset completed**, 2026-08-18: installed the
+  eight purchased augmentations (including NeuroFlux Governor level 38),
+  confirmed the fresh player state, and ran `startup.js`. It started the
+  supervisor, crawler, manager, HUD, and stats successfully (5 started,
+  none failed). The new manager correctly began with no hackable target
+  while `hacking/crawler.js` started rooting the fresh network.
 
 ## Next
 
-1. On the next ordinary status pull after the manager completes its current
-   long weaken call, inspect RAM utilization and events. The correction is
-   live but its guarded missing-action branch has not yet occurred during the
-   bounded observation window.
+1. Pull post-reset manager status after the crawler has had time to root its
+   first servers, confirm target adoption and worker deployment, then resume
+   ordinary gameplay improvements from the new evidence.
 
 ## Blockers
 
@@ -77,6 +83,9 @@ None currently open.
   the alarm, so it was not landed; `core-missing-action-redeploy` repaired
   the allocation behavior and was landed, tested, pushed, synced, and
   restarted live (initial utilization 99.8%, no invariant violation).
+- **2026-08-18** — Ken explicitly approved augmentation installation. Eight
+  purchased augmentations installed; the reset was confirmed at $1.001m and
+  hacking level 2, and `startup.js` launched all five baseline scripts.
 - **2026-08-16** — Incident: a Ken-supplied process list showed
   `mcp_stock_trader.js` running with `trade=1` before a restart — the
   standing read-only-stock-trading rule was crossed operationally at least

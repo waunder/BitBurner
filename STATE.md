@@ -41,17 +41,15 @@ and tested but stuck behind a review gate that had no one able to clear it.
 
 ## Next
 
-1. Merge commit `ff24542`'s `mcp.js`/`mcp_logic.js` changes into this
-   checkout's tracked source (flag stays `0` — this step is a plain,
-   reversible merge, nothing live changes).
-2. Run the full local test suite here to confirm nothing regressed, then
-   commit.
-3. Codex's call, no approval needed (see `AGENTS.md`'s stop-list — this
-   isn't on it): restart `mcp.js` to pick up the inert change, then flip
+1. Reconnect Bitburner's Remote API to the local daemon on port 12526. The
+   daemon was restarted at 2026-08-18 13:58 PDT and is healthy but currently
+   reports `connected:false`; its normal manifest sync will then push the
+   committed, still-inert R8 source and configuration.
+2. Restart `mcp.js` to pick up the inert change, then flip
    `R8_SWITCH_VETO_ENABLED` on for a bounded live check, watch the
    `r8_switch_veto`/`r8_switch_veto_eval` events, and report what happened.
    Restart with the flag back at `0` is the rollback if anything looks off.
-4. Separately worth a look: two other in-flight worktrees exist —
+3. Separately worth a look: two other in-flight worktrees exist —
    `/private/tmp/bitburner-core.I2zdam` (branch
    `codex/core-missing-action-redeploy`) and
    `/private/tmp/bitburner-pool-invariant` (branch `codex/pool-invariant`).
@@ -61,13 +59,18 @@ and tested but stuck behind a review gate that had no one able to clear it.
 
 ## Blockers
 
-None currently open.
+Bitburner must reconnect its Remote API to the running local daemon on port
+12526 before the live R8 validation can begin. The source is committed and
+locally tested; no gameplay claim has been made from the unavailable link.
 
 ## Changelog
 
 - **2026-08-18** — Governance apparatus retired (see Done). Confirmed via
   direct inspection (not just the plan doc) that the R8 veto patch actually
   compiles and its tests actually pass.
+- **2026-08-18** — Landed R8 switch-veto as `07b216a`; `node --check` for
+  both touched scripts and `node --test *.test.js` passed (148/148). Replaced
+  a stalled Remote API daemon; the fresh daemon is awaiting a game connection.
 - **2026-08-16** — Incident: a Ken-supplied process list showed
   `mcp_stock_trader.js` running with `trade=1` before a restart — the
   standing read-only-stock-trading rule was crossed operationally at least

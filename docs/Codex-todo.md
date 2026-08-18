@@ -10,12 +10,12 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
 
 ## Now
 
-- [ ] **Land the R8 switch-veto patch.** Implemented and tested in
-  `/private/tmp/bitburner-r8.fyf9mg` (branch `codex/r8-evidence-tail`,
-  commit `ff24542`) — merge into this checkout's tracked `mcp.js`/
-  `mcp_logic.js`, run the local suite, commit. Flag (`R8_SWITCH_VETO_ENABLED`)
-  stays off for the merge itself; enabling it for a bounded live check is
-  ordinary work under the new rules, not something to ask about first.
+- [ ] **Live-validate the landed R8 switch-veto.** Commit `07b216a` landed
+  the patch, and the local suite passed (148/148). The flag
+  (`R8_SWITCH_VETO_ENABLED`) remains `0`. The restarted Remote API daemon is
+  healthy but awaits a Bitburner connection on port 12526; once connected,
+  its normal manifest sync will deliver the inert source, after which perform
+  the bounded enable/restart/event-observation check.
 - [ ] **Check the two other open worktrees** — `codex/core-missing-action-
   redeploy` and `codex/pool-invariant` — before assuming R8 is the only
   loose end. `pool-invariant` likely bears on the `poolNotIdle` condition

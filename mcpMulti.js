@@ -306,13 +306,6 @@ function readTargetScoreInputs(ns, server) {
   }
 }
 
-function getTargetScore(ns, server, poolThreads) {
-  const inputs = readTargetScoreInputs(ns, server)
-  if (!inputs) return 0
-  const { score } = computeTargetScore({ ...inputs, poolThreads, growTimeRatio: GROW_TIME_RATIO, ...SECURITY_CONSTANTS })
-  return score
-}
-
 function getTargetEffectiveScore(ns, server, poolThreads) {
   const inputs = readTargetScoreInputs(ns, server)
   if (!inputs) return 0
@@ -736,13 +729,25 @@ export async function main(ns) {
         currentSecurity: plan.currentSecurity,
         moneyPct: plan.moneyPct,
         requiredWeaken: requiredWeakenNow,
-        projectedScore: getTargetScore(ns, target, raw.poolThreadsAssigned),
+        // Ramp-discounted (getTargetEffectiveScore), not the raw steady-state
+        // rate — a target still priming (low moneyPct, elevated security)
+        // would otherwise report as if it were already producing at full
+        // achievable rate. See the 2026-08-29 skim_probe.js analysis: priming
+        // alone runs 30min-50hr depending on the target, so an undiscounted
+        // number here would systematically overstate near-term reality the
+        // same way the pre-R4 single-target score used to.
+        projectedScore: getTargetEffectiveScore(ns, target, raw.poolThreadsAssigned),
         hostAllocations,
       })
     }
 
     const topCandidate = [...candidates].sort((a, b) => b.effectiveScore - a.effectiveScore)[0]
-    const singleTargetBaselineScore = topCandidate ? getTargetScore(ns, topCandidate.server, totalPoolThreads) : 0
+    // Reuses the candidate's own ranking-time effectiveScore (same
+    // getTargetEffectiveScore(ns, server, totalPoolThreads) call
+    // buildCandidates already made) rather than recomputing — both for the
+    // free efficiency and to guarantee this is exactly the number that
+    // decided ranking, not a second, possibly-drifted read of live state.
+    const singleTargetBaselineScore = topCandidate ? topCandidate.effectiveScore : 0
     const multiTargetProjectedTotal = assignments.reduce((sum, a) => sum + a.projectedScore, 0)
     const upliftRatio = singleTargetBaselineScore > 0 ? multiTargetProjectedTotal / singleTargetBaselineScore : 0
 

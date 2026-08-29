@@ -701,6 +701,41 @@ consistent with `mcp_logic.js`'s own "copied verbatim, not rewritten"
 extraction, and the alternative (a shared module) would require editing
 `mcp.js`.
 
+**`projectedScore`/`singleTargetBaselineScore` are ramp-discounted
+(2026-08-29), not the raw steady-state rate.** `skim_probe.js`'s live
+analysis (see below) found priming an unweakened, ~2%-money target runs
+30 minutes to 50+ hours depending on the server — so a raw score for a
+still-priming assignment would overstate near-term reality the same way the
+pre-R4 single-target score used to. Both fields now use
+`getTargetEffectiveScore` (same ramp-cost-discount function `mcp.js`'s own
+`candidateScore` uses), so `upliftRatio` is an apples-to-apples comparison.
+Deliberately *not* applied to `computeTargetPoolNeed`/
+`partitionHostsAcrossTargets`'s capacity math — how much RAM a target can
+usefully absorb doesn't depend on whether it's primed yet, and discounting
+it would make the partitioner wrongly reluctant to start priming a good
+second target early with surplus RAM that would otherwise sit idle.
+
+### `skim_probe.js`
+
+One-shot, read-only diagnostic (2026-08-29) — dumps every currently-hackable
+server's money/security/timing to `skim_probe.json`. Built to test a "skim
+the top off each server and move on" hypothesis against `mcp.js`'s steady
+balance-point harvest. **Finding:** untouched servers sit at ~2% money and
+13-62 security points above floor (not full-money/floor-security as a "skim"
+strategy would need), and priming one (weaken-to-floor + grow-to-full) with
+the whole worker pool takes 30 minutes to 50+ hours depending on the server.
+Comparing real per-server numbers against `mcp_logic.js`'s own scoring
+formulas: steady harvest beats a best-case one-shot skim by roughly 3x-75x
+on every server on the network — no dedicated skim mode was built as a
+result. Directly motivated the `projectedScore`/`singleTargetBaselineScore`
+ramp-discount fix in `mcpMulti.js` above, once it was clear priming cost is
+large enough to matter for multi-target's own numbers too.
+
+- **Start:** `run skim_probe.js`
+- **Writes:** `skim_probe.json` (overwritten each run)
+- No `ns.hack`/`ns.grow`/`ns.weaken` calls — unlike `econ_probe.js`, purely
+  read-only.
+
 ### `scripts/weaken.js`, `scripts/grow.js`, `scripts/hack.js`
 
 Three lines each: loop forever calling the one NS function on `ns.args[0]`.

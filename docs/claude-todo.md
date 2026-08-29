@@ -14,7 +14,50 @@ mode, print that same record to the tail, and document how the resulting file
 is retrieved. Verify the evidence channel end-to-end before treating a run as
 complete. Continuous monitors need an explicit retention or archive policy.
 
-## 2026-08-29 (latest): mcpMulti.js — dry-run-first multi-target farmer
+## 2026-08-29 (latest): skim-vs-harvest tested and falsified; fixed a real gap it exposed in mcpMulti's own numbers
+
+Ken's follow-up question: given augmentation installs reset everything
+periodically anyway, might "skim the easy money off each server, then move
+on" beat sitting on one target forever? Built `skim_probe.js` (read-only,
+dumps every hackable server's live economics) to test it for real rather
+than reason about it in the abstract — see `docs/processes.md`'s new
+`skim_probe.js` section for the script itself.
+
+**Result: falsified, by 3x-75x.** Two things killed it: untouched servers
+sit at ~2% money / 13-62 security points above floor (no free lunch — same
+weaken+grow priming investment either strategy pays), and priming one with
+the whole 278-thread pool takes 30min-50hr depending on the server;
+`hackAnalyze`'s steal-fraction-per-thread is also small enough that even a
+primed target only yields 3-20% of its money in one burst with the current
+pool size, so there's no big one-shot grab available either. Ran the actual
+$/hour math (priming cost + capped burst, amortized) against
+`mcp_logic.js`'s own `computeTargetScore` for every server on the network —
+steady harvest won every single comparison. No skim mode built.
+
+**Second-order finding, more important long-term:** this exposed a real gap
+in `mcpMulti.js`'s own numbers. Its per-assignment `projectedScore` and
+`singleTargetBaselineScore` were both the *raw* steady-state rate
+(`getTargetScore`), with no ramp-cost discount — meaning once mcpMulti
+actually spreads to a second (necessarily still-priming) target,
+`upliftRatio` would have overstated near-term reality the same way the
+pre-R4 single-target score used to for a drained target. Fixed same day:
+both now use `getTargetEffectiveScore` (the ramp-discounted function
+`mcp.js`'s own `candidateScore` already uses), and `singleTargetBaselineScore`
+reuses the candidate's already-computed ranking score instead of a redundant
+second read. Deliberately did *not* touch `computeTargetPoolNeed`/
+`partitionHostsAcrossTargets` — capacity (how much RAM a target can
+usefully absorb) and value (what it's worth) are different axes, and
+discounting capacity by ramp cost would wrongly make the partitioner
+reluctant to start priming a good second target with surplus RAM that would
+otherwise sit idle. `docs/processes.md`'s `mcpMulti.js` section has the
+full reasoning.
+
+Also explains the `upliftRatio=1.0` degenerate case watched live all
+afternoon: 15 of 16 servers on the network are unprimed right now, so there
+currently isn't a second target cheap enough to be worth diverting hosts to
+— not a bug, just an accurate reflection of the network's current state.
+
+## 2026-08-29 (earlier, same day): mcpMulti.js — dry-run-first multi-target farmer
 
 Built after a conversation about `mcp.js`'s single-target design: whether it
 was a game constraint or a policy choice, and if the latter, where on the

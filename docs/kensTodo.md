@@ -10,6 +10,17 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
 
 ## Pending
 
+- [ ] **Run `mcpMulti.js` (dry-run, no arg) once it's synced into the game**
+  to generate real projected numbers. Built 2026-08-29 to test whether
+  spreading the worker pool across several targets beats `mcp.js`'s
+  single-target approach — see `docs/claude-todo.md`'s 2026-08-29 entry.
+  Dry-run only: it never calls `ns.exec`/`ns.scp`/`ns.kill`, so it's safe to
+  run right alongside the live `mcp.js`. Check `mcp_multi_status.json`'s
+  `multiTargetProjectedTotal` vs. `singleTargetBaselineScore` after it's had
+  a few ticks. Needs the Remote API daemon reconnected first (next item) —
+  its `WATCHED_FILES`/`PULL_FILES` were updated for the new files, but that
+  needs the daemon process restarted, not just a resync, to take effect.
+
 - [ ] **Reconnect Bitburner to the existing Remote API daemon on port 12526.**
   The daemon disconnected at 2026-08-16 13:33 PT and no longer answers its
   local control channel, so Codex cannot pull fresh core telemetry. In

@@ -631,6 +631,76 @@ file while still surviving the restarts that wipe every in-memory sample. The
 most recent 20 also ride inline in `mcp_status.json`, so one read gives both
 "now" and "how we got here".
 
+### `mcpMulti.js` / `mcpMulti_logic.js`
+
+Experimental multi-target farmer, built 2026-08-29 to test the single- vs.
+multi-target question from that session's discussion: `mcp.js`'s
+`computeDesiredAllocation` (mcp_logic.js) hands the *entire* worker pool's
+RAM to one target's plan every tick, and its scoring assumes `poolThreads`
+is the whole network's capacity — a policy choice, not a game constraint.
+`mcpMulti.js` is a completely separate script so `mcp.js` stays untouched
+and keeps farming live while this is tried out.
+
+**Dry-run by default** — same shape as `mcp_stock_trader.js`'s `trade=1`
+gate. Default mode computes a full multi-target plan every tick (which
+targets, which hosts, projected $/s per target, and a
+`singleTargetBaselineScore` — what `mcp.js`'s own approach would project if
+it gave the whole pool to just the best target) and writes it to
+`mcp_multi_status.json`, but never calls `ns.exec`/`ns.scp`/`ns.kill`. Only
+`run mcpMulti.js live=1` deploys real threads.
+
+- **Start:** `run mcpMulti.js` (dry-run) or `run mcpMulti.js live=1` (deploys
+  real threads)
+- **Reads:** `mcp_multi_config.json` every tick
+- **Writes:** `mcp_multi_status.json` (every tick), `mcp_multi_status_log.txt`
+  (on change), `mcp_multi_events.txt`, `mcp_multi_target_state.json`
+- **Deploys** (`live=1` only): the same `/scripts/weaken.js`, `/scripts/grow.js`,
+  `/scripts/hack.js` `mcp.js` uses
+- **Mutual exclusion:** `live=1` refuses to start while `mcp.js` is running on
+  `home` — the two would fight over the same rooted hosts' RAM (both
+  `ns.exec` the same action scripts, both `ns.kill` mismatched threads). Kill
+  `mcp.js` first, or stay in dry-run to run it alongside the live bot.
+
+**The scheduler (`mcpMulti_logic.js`, `node --test mcpMulti_logic.test.js`):**
+everything about what a good plan looks like *for one target* — work-weight
+sizing, target scoring, stuck detection — is imported unchanged from
+`mcp_logic.js`; multi-target only changes how many targets run at once and
+how hosts split across them. Two new pure functions:
+
+- `computeTargetPoolNeed` — `computeTargetScore`'s own model has a target's
+  money-drained fraction saturate as
+  `1 - exp(-growTimeRatio * hackThreads * hackPercentPerThread)`; this solves
+  that same formula for "how many pool-thread-slots until this target is
+  `SATURATION_FRACTION` (default 0.9) saturated," instead of leaving
+  unbounded RAM parked on one target indefinitely.
+- `partitionHostsAcrossTargets` — greedily assigns whole hosts (largest
+  first, so `home` lands on the best target) to the top-ranked candidate
+  until its need is met, then the next, up to `MAX_CONCURRENT_TARGETS`
+  (default 3). Leftover RAM once every target's need is met goes back to the
+  single best target, never left idle. Whole-host granularity — a host isn't
+  split across two targets' plans — so each target's own allocation still
+  goes through `computeDesiredAllocation` unmodified, just once per assigned
+  host subset.
+
+**v1 scope, narrower than `mcp.js` on purpose:** money objective only (no
+XP mode — spreading across targets doesn't share XP mode's "sit still and
+grind one target" rationale); no R8/Formulas.exe switch veto; no
+money-degradation eviction timer (`mcp.js` needs one because it *commits* to
+one target and must decide when to stop re-litigating that commitment;
+`mcpMulti.js` recomputes the whole partition from live scores every tick, so
+a draining target's declining `moneyPct` already lowers its own next-tick
+need/rank — nothing is "committed" for a timer to protect). Stuck-target
+detection (`evaluateStuckTarget`) is kept: a target whose security never
+converges would otherwise permanently occupy an assignment slot for zero
+income.
+
+**Known duplication:** `mcp.js` only exports `main`, so the small `ns`-glue
+infrastructure it doesn't share (network scan, RAM accounting, event log,
+thread exec, ...) is copied into `mcpMulti.js` rather than imported —
+consistent with `mcp_logic.js`'s own "copied verbatim, not rewritten"
+extraction, and the alternative (a shared module) would require editing
+`mcp.js`.
+
 ### `scripts/weaken.js`, `scripts/grow.js`, `scripts/hack.js`
 
 Three lines each: loop forever calling the one NS function on `ns.args[0]`.

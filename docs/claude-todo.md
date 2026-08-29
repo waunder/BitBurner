@@ -14,7 +14,59 @@ mode, print that same record to the tail, and document how the resulting file
 is retrieved. Verify the evidence channel end-to-end before treating a run as
 complete. Continuous monitors need an explicit retention or archive policy.
 
-## 2026-08-14 (latest): R1 through R7 all confirmed live — R4 delivered a ~60x income jump; set_objective.js and lsf.js shipped
+## 2026-08-29 (latest): mcpMulti.js — dry-run-first multi-target farmer
+
+Built after a conversation about `mcp.js`'s single-target design: whether it
+was a game constraint or a policy choice, and if the latter, where on the
+single-vs-multi-target spectrum to sit. Conclusion — it's a policy choice
+baked into `computeDesiredAllocation`/scoring (`poolThreads` assumes one
+target owns the whole network), and the reasoned answer was "stay
+single-target until `ramUtilization` during work phases shows sustained
+slack, then move to 2-3 concurrent targets, not full breadth."
+
+Ken asked for that built out for real rather than staying theoretical, as a
+script separate from `mcp.js` (untouched, keeps farming live) with a way to
+experiment safely first. Shipped:
+
+- `mcpMulti_logic.js` + `mcpMulti_logic.test.js` (11 new tests, all passing)
+  — the actual "test logic to experiment" deliverable, no game required.
+  `computeTargetPoolNeed` derives a saturation-based pool-thread need per
+  target from `computeTargetScore`'s own drained-fraction model;
+  `partitionHostsAcrossTargets` greedily splits the worker pool across
+  ranked targets by that need.
+- `mcpMulti.js` — the orchestrator, dry-run by default (mirrors
+  `mcp_stock_trader.js`'s `trade=1` gate exactly): computes and logs a full
+  multi-target plan plus a `singleTargetBaselineScore` for direct comparison
+  against what `mcp.js`'s own approach would project, but calls no
+  `ns.exec`/`ns.scp`/`ns.kill` unless started with `live=1`. `live=1` refuses
+  to start while `mcp.js` is running on `home` (mutual-exclusion guard —
+  they'd fight over the same worker RAM otherwise).
+- Own files throughout (`mcp_multi_config.json`, `mcp_multi_status.json`,
+  `mcp_multi_status_log.txt`, `mcp_multi_events.txt`,
+  `mcp_multi_target_state.json`) so none of this touches `mcp.js`'s state.
+  `mcp_multi_config.json` added as the hand-authored exception to
+  `.gitignore`, same as `mcp_config.json`.
+- `tools/bb_remote.py`'s `WATCHED_FILES`/`PULL_FILES` updated so the daemon
+  syncs the new script/config/telemetry files once it's reconnected —
+  **the daemon process itself needs restarting (not just a resync) to pick
+  these up**, same caveat as `set_objective.js`'s launch below. It's
+  currently disconnected already (see the pending Remote API item in
+  `docs/kensTodo.md`), so this rides along with that reconnect rather than
+  needing a separate one.
+- `docs/processes.md` gained a `### mcpMulti.js / mcpMulti_logic.js` section
+  under Farming at the same depth as `mcp.js`'s own.
+
+**Not yet verified live** — per `CLAUDE.md`, every behavioural claim here is
+unverified until it actually runs in Bitburner. `node --test *.test.js`
+(166/166) and `node --check mcpMulti.js mcpMulti_logic.js` are clean, which
+is everything checkable from outside the game. What to watch once Ken runs
+it (dry-run, no arg needed): does `multiTargetProjectedTotal` actually beat
+`singleTargetBaselineScore` by a meaningful margin, or does the network's
+current pool size not yet justify spreading past one target — either answer
+is useful, that's the point of building this dry-run-first instead of just
+flipping `mcp.js` over.
+
+## 2026-08-14: R1 through R7 all confirmed live — R4 delivered a ~60x income jump; set_objective.js and lsf.js shipped
 
 Full arc, in order:
 

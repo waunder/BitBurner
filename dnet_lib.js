@@ -26,6 +26,27 @@ export const DEPLOYER_SHARD_SUFFIX = ".json"
 export const LOOT_SHARD_PREFIX = "dnet_loot_"
 export const LOOT_SHARD_SUFFIX = ".json"
 
+// Concurrency cap (2026-08-30), added after a confirmed live incident:
+// dnet_crawl.js spread to every reachable, crackable neighbor with no
+// limit, and every host it landed on got a permanent resident
+// dnet_manager.js (ns.spawn at the end of dnet_crawl.js's main()). Each
+// resident manager runs forever, polling at minimum every 1s — with 586+
+// credentials already cracked historically, an unbounded restart let the
+// resident count grow large enough to peg the renderer's single JS thread
+// at 165-169% CPU (confirmed via `ps`) and freeze the game. Conservative
+// starting point, same "ship low, raise after observing" instinct as
+// mcp.js's HACK_BALANCE_SAFETY — retune after watching a live run hold up.
+export const MAX_ACTIVE_MANAGERS = 15
+export const MANAGER_REGISTRY_FILE = "dnet_manager_registry.json"
+export const MANAGER_SHARD_PREFIX = "dnet_manager_active_"
+export const MANAGER_SHARD_SUFFIX = ".json"
+// A resident manager refreshes its heartbeat once per main-loop iteration
+// (writeManagerActiveShard, called from dnet_manager.js) — this just needs
+// to comfortably outlast the longest normal gap between iterations
+// (RECRAWL_MS's 90s, or one phishingAttack cycle) so a genuinely-alive
+// manager is never mistaken for dead.
+export const MANAGER_STALE_MS = 5 * 60 * 1000
+
 /** Response codes, copied from the game's DarknetResponseCodeType. */
 export const CODE = {
   Success: 200,
@@ -413,6 +434,69 @@ export function writeDeployerShard(ns, host, patch) {
 export function pickFreshestShard(shards) {
   if (!shards.length) return null
   return shards.reduce((best, cur) => (cur.rec.ts > best.rec.ts ? cur : best))
+}
+
+/**
+ * Write this host's "I have a resident manager" heartbeat to a uniquely-named
+ * local shard and return the shard name — does NOT ship it anywhere (same
+ * read/write split as writeDeployerShard/recordCred). Called both by
+ * dnet_crawl.js (once, right before it spawns dnet_manager.js, to reserve
+ * the slot before the manager itself is even running) and by
+ * dnet_manager.js (repeatedly, once per main-loop iteration, to keep the
+ * slot from going stale while it's genuinely still alive).
+ */
+export function writeManagerActiveShard(ns, host) {
+  const shard = shardName(host, MANAGER_SHARD_PREFIX, MANAGER_SHARD_SUFFIX)
+  ns.write(shard, JSON.stringify({ ts: Date.now(), host }), "w")
+  return shard
+}
+
+/**
+ * Fold fresh manager-heartbeat shards into the existing registry, dropping
+ * anything older than `staleMs`. Pure — no ns calls — so the "is this
+ * manager still really alive" policy is unit-testable without the game,
+ * same shape as pickFreshestShard/expireTargetExclusions (mcp_logic.js).
+ * Self-healing by construction: a killed/orphaned manager was never
+ * explicitly deregistered (there's no durable in-memory state to notice its
+ * own death), so staleness is the only mechanism that ever frees its slot.
+ *
+ * @param {Record<string, number>} existing - current {host: ts} registry.
+ * @param {{host: string, ts: number}[]} shardRecords - freshly-read shards.
+ * @param {number} now
+ * @param {number} staleMs
+ * @returns {Record<string, number>} updated registry.
+ */
+export function mergeManagerRegistry(existing, shardRecords, now, staleMs) {
+  const merged = { ...existing }
+  for (const rec of shardRecords) {
+    if (!rec || typeof rec.host !== "string" || typeof rec.ts !== "number") continue
+    if (!(merged[rec.host] >= rec.ts)) merged[rec.host] = rec.ts
+  }
+  const fresh = {}
+  for (const [host, ts] of Object.entries(merged)) {
+    if (now - ts < staleMs) fresh[host] = ts
+  }
+  return fresh
+}
+
+/**
+ * The cap decision itself, pulled out as its own named/testable function
+ * rather than inlined at dnet_crawl.js's call site — counts only non-stale
+ * entries, so an over-cap-looking registry that's actually full of dead
+ * managers doesn't wrongly block a real host from becoming resident.
+ *
+ * @param {Record<string, number>} registry
+ * @param {number} now
+ * @param {number} staleMs
+ * @param {number} [cap]
+ * @returns {boolean}
+ */
+export function canSpawnManager(registry, now, staleMs, cap = MAX_ACTIVE_MANAGERS) {
+  let active = 0
+  for (const ts of Object.values(registry || {})) {
+    if (now - ts < staleMs) active++
+  }
+  return active < cap
 }
 
 /**

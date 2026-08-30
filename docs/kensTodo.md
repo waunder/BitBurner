@@ -10,6 +10,15 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
 
 ## Pending
 
+- [ ] **Restart darknet (`dnet_killswarm.js --restart`) once the
+  concurrency-cap fix is synced in, and watch it for real this time.** Root
+  cause of today's freeze found and fixed same day — see
+  `docs/claude-todo.md`'s 2026-08-30 entry and `docs/darknet-strategy.md`'s
+  status banner for the full writeup. Watch `dnet_manager_registry.json`
+  directly (I can also check it once connected): it should plateau at 15
+  entries instead of growing unbounded. Watch your own tab responsiveness
+  too, same as before — that's still the one signal I can't see remotely.
+
 - [ ] **Run `mcpMulti.js` (dry-run, no arg) once it's synced into the game**
   to generate real projected numbers. Built 2026-08-29 to test whether
   spreading the worker pool across several targets beats `mcp.js`'s

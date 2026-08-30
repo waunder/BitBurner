@@ -77,6 +77,23 @@ post-restart qualified switch evaluation.
   The trader begins with a 10% portfolio cap, persists its entry costs and
   adaptive result state, and its script plus logic module now participate in
   normal Remote API source sync.
+- **Darknet stability incident: root cause found and fixed**, 2026-08-30
+  (Claude Code session). The prior "disabled after a stability incident"
+  status (`AGENTS.md` stop-list) had no postmortem behind it — this file's
+  own incident record only ever named IPvGO/faction-share. Ken restarted
+  darknet with Claude's caution flagged but unconfirmed; it froze Bitburner
+  completely shortly after. Confirmed via OS-level `ps`: the renderer
+  process pegged at 165-169% CPU, Remote API connection dropped at the same
+  instant. Root cause: `dnet_crawl.js` spreads to every reachable neighbor
+  with no cap, and every host it lands on gets a permanent resident
+  `dnet_manager.js` polling at minimum every 1s forever — unbounded
+  steady-state load on the single-threaded renderer. Fixed same day:
+  `MAX_ACTIVE_MANAGERS` cap (15) enforced in `dnet_crawl.js` before it
+  spawns a manager, backed by a shard-and-merge registry
+  (`dnet_manager_registry.json`) following the existing credential/loot/
+  deployer shard pattern in `dnet_lib.js` exactly. 11 new `node --test`
+  cases, 177/177 full suite clean. **Not yet live-confirmed** — the actual
+  restart that proves the cap holds hasn't happened yet.
 
 ## Next
 
@@ -130,3 +147,10 @@ None currently open.
 - **Earlier** — IPvGO and faction-share (`share_deploy.js`) both had
   stability incidents (game unresponsiveness); both stay off pending a
   root-cause understanding, per the stop-list.
+- **2026-08-30** — Darknet restarted per Ken's request, froze Bitburner
+  completely within the session (renderer pegged at 165-169% CPU per `ps`,
+  Remote API connection dropped simultaneously). Diagnosed the mechanism
+  (unbounded resident `dnet_manager.js` accumulation — see Done) and shipped
+  a `MAX_ACTIVE_MANAGERS` cap the same day. Ken force-recovered via
+  Bitburner's "reload and kill all scripts"; `startup.js` relaunched cleanly
+  afterward. Fix not yet live-tested.

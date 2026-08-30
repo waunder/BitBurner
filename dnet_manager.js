@@ -15,6 +15,28 @@ const POLL_MS = 1000
 const RETRY_MS = 5000
 const STATUS_FILE = "dnet_manager_status.json"
 
+// Concurrency-cap heartbeat (2026-08-30) — dnet_crawl.js reserves this
+// host's slot once, right before spawning this process; this file's job is
+// only to keep that slot from going stale (MANAGER_STALE_MS, 5min in
+// dnet_lib.js) for as long as it's genuinely still running. Constants/naming
+// duplicated rather than imported from dnet_lib.js, same lean-script reason
+// as dnet_crawl.js (see that file's own comment) — see dnet_lib.js's
+// MAX_ACTIVE_MANAGERS comment for the incident this fixes.
+const MANAGER_SHARD_PREFIX = "dnet_manager_active_"
+
+function safeHost(host) {
+  let safe = ""
+  for (const ch of String(host)) safe += /[A-Za-z0-9_-]/.test(ch) ? ch : "x" + ch.codePointAt(0).toString(16)
+  return safe.slice(0, 80)
+}
+
+async function refreshManagerActiveShard(ns) {
+  const host = ns.getHostname()
+  const shard = `${MANAGER_SHARD_PREFIX}${safeHost(host)}.json`
+  ns.write(shard, JSON.stringify({ ts: Date.now(), host }), "w")
+  await ns.scp(shard, "home")
+}
+
 async function waitPid(ns, pid) {
   while (pid && ns.isRunning(pid)) await ns.sleep(POLL_MS)
 }
@@ -53,6 +75,7 @@ export async function main(ns) {
 
   while (true) {
     try {
+      await refreshManagerActiveShard(ns)
       if (needsLoot) {
         await writeStatus(ns, "looting", failures, nextCrawl)
         await loot(ns)

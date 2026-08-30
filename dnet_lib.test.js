@@ -28,6 +28,8 @@ import {
   DEPLOYER_SHARD_SUFFIX,
   candidatesFor,
   MODEL,
+  mergeManagerRegistry,
+  canSpawnManager,
 } from "./dnet_lib.js"
 
 describe("bounded shallow-model solvers", () => {
@@ -286,5 +288,80 @@ describe("pickFreshestShard — deployer heartbeat assembly policy (dnet_status_
       { file: "dnet_deployer_b.json", rec: { host: "b", ts: 100 } },
     ]
     assert.equal(pickFreshestShard(shards).rec.host, "a")
+  })
+})
+
+describe("mergeManagerRegistry — concurrency-cap registry assembly (2026-08-30 incident fix)", () => {
+  const STALE_MS = 5 * 60 * 1000
+
+  test("folds fresh shards into an empty registry", () => {
+    const now = 1_000_000
+    const merged = mergeManagerRegistry({}, [{ host: "a", ts: now }, { host: "b", ts: now }], now, STALE_MS)
+    assert.deepEqual(merged, { a: now, b: now })
+  })
+
+  test("drops entries older than staleMs", () => {
+    const now = 1_000_000
+    const existing = { a: now - STALE_MS - 1, b: now - 1000 }
+    const merged = mergeManagerRegistry(existing, [], now, STALE_MS)
+    assert.deepEqual(merged, { b: now - 1000 })
+  })
+
+  test("a fresh shard for a host already in the registry updates it, never duplicates", () => {
+    const now = 1_000_000
+    const existing = { a: now - 1000 }
+    const merged = mergeManagerRegistry(existing, [{ host: "a", ts: now }], now, STALE_MS)
+    assert.deepEqual(merged, { a: now })
+  })
+
+  test("an older shard for an already-fresher host doesn't move it backwards", () => {
+    const now = 1_000_000
+    const existing = { a: now }
+    const merged = mergeManagerRegistry(existing, [{ host: "a", ts: now - 1000 }], now, STALE_MS)
+    assert.deepEqual(merged, { a: now })
+  })
+
+  test("malformed shard records are tolerated, not thrown", () => {
+    const now = 1_000_000
+    const merged = mergeManagerRegistry({}, [null, {}, { host: "a" }, { host: "b", ts: now }], now, STALE_MS)
+    assert.deepEqual(merged, { b: now })
+  })
+})
+
+describe("canSpawnManager — the actual cap decision (dnet_crawl.js's enforcement point)", () => {
+  const STALE_MS = 5 * 60 * 1000
+
+  test("allows a spawn when under the cap", () => {
+    const now = 1_000_000
+    const registry = { a: now, b: now }
+    assert.equal(canSpawnManager(registry, now, STALE_MS, 3), true)
+  })
+
+  test("denies a spawn once at the cap", () => {
+    const now = 1_000_000
+    const registry = { a: now, b: now, c: now }
+    assert.equal(canSpawnManager(registry, now, STALE_MS, 3), false)
+  })
+
+  test("denies a spawn over the cap", () => {
+    const now = 1_000_000
+    const registry = { a: now, b: now, c: now, d: now }
+    assert.equal(canSpawnManager(registry, now, STALE_MS, 3), false)
+  })
+
+  test("stale entries don't count against the cap", () => {
+    const now = 1_000_000
+    const registry = { a: now - STALE_MS - 1, b: now - STALE_MS - 1, c: now - STALE_MS - 1 }
+    assert.equal(canSpawnManager(registry, now, STALE_MS, 3), true)
+  })
+
+  test("an empty registry always allows a spawn", () => {
+    const now = 1_000_000
+    assert.equal(canSpawnManager({}, now, STALE_MS, 15), true)
+  })
+
+  test("defaults to MAX_ACTIVE_MANAGERS when no cap is passed", () => {
+    const now = 1_000_000
+    assert.equal(canSpawnManager({}, now, STALE_MS), true)
   })
 })

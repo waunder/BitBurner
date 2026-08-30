@@ -1,10 +1,23 @@
 # Darknet strategy
 
-> **Status, 2026-08-18:** disabled after a stability incident. Local tests,
-> static review, and historical telemetry analysis may continue. Do not
-> start/restart the swarm until the root cause is understood and Ken gives
-> an explicit go-ahead — see `AGENTS.md`'s stop-list. Historical "live"
-> descriptions below document capability, not current permission.
+> **Status, 2026-08-30:** root cause found and fixed, pending live
+> confirmation. Restarted 2026-08-30 with no concurrency cap and froze
+> Bitburner completely — confirmed via `ps`: the renderer process pegged at
+> 165-169% CPU, and the Remote API connection dropped at the same instant.
+> Root cause: `dnet_crawl.js` spread to every reachable neighbor with no
+> limit, and every host it landed on got a permanent resident
+> `dnet_manager.js` (polling at minimum every 1s, forever) — an uncapped
+> steady-state resident count on a single-threaded renderer. Fixed same day:
+> a `MAX_ACTIVE_MANAGERS` cap (15, conservative starting point) enforced in
+> `dnet_crawl.js` right before it would spawn a manager, backed by a
+> shard-and-merge registry (`dnet_manager_registry.json`) following this
+> codebase's existing credential/loot/deployer shard pattern exactly — see
+> `docs/processes.md`'s Darknet section for the full mechanism. `node --test`
+> covers the new logic (11 new cases, `dnet_lib.test.js`); the live restart
+> that actually confirms it holds hasn't happened yet — per `CLAUDE.md`,
+> that's the only thing that counts as verified. Historical "live"
+> descriptions below document capability from before this fix, not a
+> pre-cap invitation to restart without it.
 
 Synthesis and sequencing. Read `darknet-functions.md` for the API and the
 model solvers, `darknet-tactics.md` for the per-decision reasoning. This doc

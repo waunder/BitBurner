@@ -20,6 +20,11 @@ dnet_killswarm_status.json
 dnet_creds.txt
 dnet_cred_*.txt
 
+# Darknet concurrency-cap registry (2026-08-30) — game output, per-host
+# heartbeat shards plus the merged registry dnet_root.js assembles from them.
+dnet_manager_registry.json
+dnet_manager_active_*.json
+
 # macOS
 .DS_Store
 

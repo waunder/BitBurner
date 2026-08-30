@@ -14,10 +14,42 @@ const MANAGER = "dnet_manager.js"
 const REALLOC = "dnet_realloc.js"
 const FILES = [SELF, MANAGER, REALLOC, "dnet_lib.js", "dnet_loot.js", "dnet_loot_realloc.js", "dnet_phish.js"]
 
+// Concurrency cap (2026-08-30) — constants/logic duplicated from
+// dnet_lib.js rather than imported, same reason this whole file avoids that
+// import already (the header comment's "avoiding the all-purpose library's
+// 10GB static-analysis charge"): see dnet_lib.js's own MAX_ACTIVE_MANAGERS
+// comment for the incident this fixes. Keep this logic identical to
+// dnet_lib.js's canSpawnManager/writeManagerActiveShard — dnet_lib.test.js
+// covers the shared behavior those are copied from.
+const MAX_ACTIVE_MANAGERS = 15
+const MANAGER_REGISTRY_FILE = "dnet_manager_registry.json"
+const MANAGER_SHARD_PREFIX = "dnet_manager_active_"
+const MANAGER_STALE_MS = 5 * 60 * 1000
+
 function safeHost(host) {
   let safe = ""
   for (const ch of String(host)) safe += /[A-Za-z0-9_-]/.test(ch) ? ch : "x" + ch.codePointAt(0).toString(16)
   return safe.slice(0, 80)
+}
+
+function canSpawnManager(ns) {
+  let registry = {}
+  try {
+    const raw = ns.read(MANAGER_REGISTRY_FILE)
+    if (raw) registry = JSON.parse(raw)
+  } catch { /* missing/corrupt local registry snapshot — treat as empty */ }
+  const now = Date.now()
+  let active = 0
+  for (const ts of Object.values(registry)) {
+    if (typeof ts === "number" && now - ts < MANAGER_STALE_MS) active++
+  }
+  return active < MAX_ACTIVE_MANAGERS
+}
+
+function writeManagerActiveShard(ns, host) {
+  const shard = `${MANAGER_SHARD_PREFIX}${safeHost(host)}.json`
+  ns.write(shard, JSON.stringify({ ts: Date.now(), host }), "w")
+  return shard
 }
 
 function readCreds(ns) {
@@ -169,6 +201,7 @@ export async function main(ns) {
 
     const files = [...FILES]
     if (ns.fileExists(CREDS_FILE)) files.push(CREDS_FILE)
+    if (ns.fileExists(MANAGER_REGISTRY_FILE)) files.push(MANAGER_REGISTRY_FILE)
     try {
       if (!(await ns.scp(files, target))) {
         summary.failed++
@@ -189,6 +222,19 @@ export async function main(ns) {
   const maxRam = ns.getServerMaxRam(host)
   const blockedRam = ns.dnet.getBlockedRam(host)
   const farmCapacityThreads = phishRam > 0 ? Math.max(0, Math.floor((maxRam - blockedRam - managerRam) / phishRam)) : 0
+  // Concurrency cap (2026-08-30): read locally (pushed in above alongside
+  // CREDS_FILE), never a remote read — see dnet_lib.js's MAX_ACTIVE_MANAGERS
+  // comment for why this exists. A stale/missing snapshot (this host's very
+  // first-ever push, or an out-of-date one from a few hops back) fails open
+  // toward allowing the spawn — undercounting is the safe direction here,
+  // since the home-side merge in dnet_root.js is the actual source of truth
+  // and will catch up on its next 5s pass regardless of what this one host
+  // decided.
+  const spawnManager = canSpawnManager(ns)
+  if (spawnManager) {
+    const managerShard = writeManagerActiveShard(ns, host)
+    await ns.scp(managerShard, "home")
+  }
   const shard = writeHeartbeat(ns, host, {
     host,
     pass: 1,
@@ -198,11 +244,13 @@ export async function main(ns) {
     sinceProcessStart: summary,
     localKnownCreds: Object.keys(creds).length,
     instability: ns.dnet.getDarknetInstability(),
-    role: "transient-crawler",
+    role: spawnManager ? "transient-crawler" : "declined-cap",
     ramCosts: { crawlRam, managerRam, phishRam, maxRam, blockedRam },
     farmCapacityThreads,
   })
   await ns.scp(shard, "home")
+
+  if (!spawnManager) return // over the concurrency cap — release RAM, stay non-resident
 
   // spawn replaces this process after releasing its RAM, so the manager is
   // never forced to coexist with the transient crawler during handoff.

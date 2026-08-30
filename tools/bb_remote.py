@@ -819,6 +819,7 @@ PULL_FILES = [
     "mcp_multi_target_state.json",
     "mcp_multi_events.txt",
     "skim_probe.json",
+    "dnet_manager_registry.json",
     "mcp_formulas_shadow.txt",
     "ipvgo_status.json",
     "dnet_status.json",

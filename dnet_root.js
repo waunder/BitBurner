@@ -9,8 +9,12 @@
  */
 import {
   CREDS_FILE,
+  MANAGER_REGISTRY_FILE,
+  MANAGER_SHARD_PREFIX,
+  MANAGER_STALE_MS,
   acquireSession,
   freeBlockedRam,
+  mergeManagerRegistry,
   readCreds,
   shipShard,
   writeDeployerShard,
@@ -22,6 +26,31 @@ const REALLOC = "dnet_realloc.js"
 const LEGACY = "dnet_deploy.js"
 const FILES = [CRAWLER, MANAGER, REALLOC, "dnet_lib.js", "dnet_loot.js", "dnet_loot_realloc.js", "dnet_phish.js"]
 const RETRY_MS = 5000
+
+// Home-side half of the concurrency cap (2026-08-30) — see dnet_lib.js's own
+// comment on MAX_ACTIVE_MANAGERS for why this exists. Piggybacks on this
+// file's existing 5s poll loop rather than a new one; same scan-then-merge
+// shape as mergeCredentialShards below, just for manager heartbeats instead
+// of credentials.
+function mergeManagerRegistryShards(ns) {
+  let registry = {}
+  try {
+    const raw = ns.read(MANAGER_REGISTRY_FILE)
+    if (raw) registry = JSON.parse(raw)
+  } catch { /* corrupt/missing registry — rebuild from shards below */ }
+
+  const shardRecords = []
+  for (const file of ns.ls("home", MANAGER_SHARD_PREFIX)) {
+    if (!file.endsWith(".json")) continue
+    try {
+      const rec = JSON.parse(ns.read(file) || "")
+      if (rec && typeof rec.host === "string" && typeof rec.ts === "number") shardRecords.push(rec)
+    } catch { /* tolerate a killed writer's partial shard */ }
+  }
+
+  const merged = mergeManagerRegistry(registry, shardRecords, Date.now(), MANAGER_STALE_MS)
+  ns.write(MANAGER_REGISTRY_FILE, JSON.stringify(merged), "w")
+}
 
 function mergeCredentialShards(ns, creds) {
   let changed = false
@@ -57,6 +86,7 @@ export async function main(ns) {
     pass++
     const started = Date.now()
     mergeCredentialShards(ns, creds)
+    mergeManagerRegistryShards(ns)
     const summary = { seen: 0, sessions: 0, legacyKilled: 0, prepared: 0, delegated: 0, failed: 0 }
 
     for (const target of ns.dnet.probe()) {
@@ -96,6 +126,7 @@ export async function main(ns) {
       if (!delegated) {
         const files = [...FILES]
         if (ns.fileExists(CREDS_FILE)) files.push(CREDS_FILE)
+        if (ns.fileExists(MANAGER_REGISTRY_FILE)) files.push(MANAGER_REGISTRY_FILE)
         try {
           if (await ns.scp(files, target)) {
             const pid = ns.exec(CRAWLER, target, { preventDuplicates: true })

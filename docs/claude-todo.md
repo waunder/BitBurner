@@ -14,7 +14,56 @@ mode, print that same record to the tail, and document how the resulting file
 is retrieved. Verify the evidence channel end-to-end before treating a run as
 complete. Continuous monitors need an explicit retention or archive policy.
 
-## 2026-08-29 (latest): skim-vs-harvest tested and falsified; fixed a real gap it exposed in mcpMulti's own numbers
+## 2026-08-30 (latest): darknet froze the game live; root-caused and fixed same day
+
+Ken asked to restart darknet, after I flagged (from `docs/darknet-strategy.md`'s
+undated "stability incident" banner) that no actual postmortem existed —
+`STATE.md`'s only concrete incident record named IPvGO/faction-share, not
+darknet. Restarted cautiously (`dnet_killswarm.js --restart`, after
+diagnosing an initial pid-0 launch failure as a transient RAM race, not a
+real block — direct `run dnet_root.js` worked fine). Ran with no reported
+sluggishness for a while, charisma climbing nicely, then Ken reported
+Bitburner "completely unresponsive."
+
+Diagnosed remotely with OS-level tools (no in-game access needed): `ps`
+showed the renderer process pegged at 165-169% CPU — the single thread that
+runs every Netscript tick *and* the UI — and the Remote API log showed the
+connection dropping at the same instant with the familiar "no close frame
+received or sent" signature. Read `dnet_crawl.js`/`dnet_manager.js`/
+`dnet_root.js`/`dnet_lib.js` in full to find the actual mechanism: no cap
+anywhere on how many hosts get a resident manager. `dnet_crawl.js` spreads
+to every reachable, crackable neighbor unconditionally, and every host it
+lands on ends up with a permanent `dnet_manager.js` (`ns.spawn` at the end
+of `main()`) polling at minimum every 1s, forever. With 586+ credentials
+already cracked historically, an unbounded restart could accumulate however
+many resident managers the network allowed — real, unbounded, ever-growing
+per-tick JS work with a single-threaded renderer as the only place to run
+it. Ken recovered via Bitburner's built-in "reload and kill all scripts";
+`startup.js` relaunched cleanly (darknet was never part of its launch list,
+so nothing needed re-suppressing).
+
+**Fixed same day**, entered plan mode given the stakes (live-incident code,
+4 files touched). `MAX_ACTIVE_MANAGERS = 15` (conservative starting point,
+same instinct as `mcp.js`'s `HACK_BALANCE_SAFETY`), enforced at a single
+point — `dnet_crawl.js`, right before its `ns.spawn(MANAGER, ...)` call,
+since every host in the swarm becomes resident through that exact line.
+Backed by `dnet_manager_registry.json`, a shard-and-merge registry
+following this codebase's own existing credential/loot/deployer shard
+pattern exactly (`dnet_lib.js`'s `writeDeployerShard`/`shipShard`/
+`mergeStatus` were the templates) — `dnet_crawl.js` reserves a slot before
+spawning, `dnet_manager.js` refreshes its heartbeat once per loop iteration
+so a genuinely-alive manager never goes stale and gets wrongly evicted, and
+`dnet_root.js`'s existing 5s home-side loop folds shards into the registry
+(piggybacked, no new polling loop). `dnet_crawl.js`/`dnet_manager.js` both
+duplicate the tiny amount of needed logic rather than importing `dnet_lib.js`
+— same reason those files already avoid that import (the 10GB
+static-analysis RAM charge), documented inline at each duplication site.
+11 new `node --test` cases (`dnet_lib.test.js`), `node --check` clean on all
+four touched files, 177/177 full suite. **Not yet live-verified** — per
+`CLAUDE.md`, that only happens once Ken actually restarts it and we watch
+`dnet_manager_registry.json` plateau at 15 instead of growing unbounded.
+
+## 2026-08-29: skim-vs-harvest tested and falsified; fixed a real gap it exposed in mcpMulti's own numbers
 
 Ken's follow-up question: given augmentation installs reset everything
 periodically anyway, might "skim the easy money off each server, then move

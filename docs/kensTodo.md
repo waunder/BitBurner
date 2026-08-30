@@ -16,14 +16,23 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
   15→8, registry merge 5s→1s, documented as a soft (not hard) cap. Also
   fixed a real drift bug where `dnet_crawl.js`'s duplicated cap constant had
   gone stale.
-- [ ] **Restart darknet again (`dnet_killswarm.js --restart`) with the
-  tightened cap (8, 1s merge) synced in, and watch `dnet_manager_registry.json`
-  directly** — I'll also check it once connected. It's a *soft* cap now
-  (documented as such), so expect it to plateau somewhat above 8, not land
-  exactly on it — the concerning signal is unbounded growth, not a small
-  overshoot. Watch your own tab responsiveness too, same as before — that's
-  still the one signal I can't see remotely. See `docs/claude-todo.md`'s
-  2026-08-30 entry for the full writeup.
+- [x] **Historical: second cap attempt (tightened to 8, 1s merge) — done
+  2026-08-30.** Restarted, overshot *worse* (36 entries vs. cap 8) and
+  froze *faster* than the first attempt. Root cause turned out to be the
+  propagation burst itself, not resident count — a resident-count cap was
+  never going to fix that regardless of how tight. Fixed differently:
+  `MAX_SPREAD_PER_PASS` throttles `dnet_crawl.js`'s own fan-out directly,
+  `jitteredRecrawlMs` desyncs recrawl timing. See `docs/claude-todo.md`'s
+  2026-08-30 entries for the full arc.
+- [ ] **Restart darknet a third time (`run dnet_killswarm.js` then
+  `run dnet_root.js` — skip `--restart`, it's been unreliable) with the
+  propagation throttle synced in.** Two live freezes already on this
+  incident — worth actively watching this time rather than walking away.
+  Watch `dnet_manager_registry.json` grow *gradually* (not in synchronized
+  jumps) as the concrete "is this actually working" signal — I'll be
+  watching it too once connected — alongside tab responsiveness as always.
+  Genuinely not confirmed safe yet; node tests can't prove that part. See
+  `docs/claude-todo.md`'s 2026-08-30 entries for the full writeup.
 
 - [ ] **Run `mcpMulti.js` (dry-run, no arg) once it's synced into the game**
   to generate real projected numbers. Built 2026-08-29 to test whether

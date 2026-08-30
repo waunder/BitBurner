@@ -35,6 +35,12 @@ export const MAX_ACTIVE_MANAGERS = 8
 export const MANAGER_REGISTRY_FILE = "dnet_manager_registry.json"
 export const MANAGER_SHARD_PREFIX = "dnet_manager_active_"
 export const MANAGER_STALE_MS = 5 * 60 * 1000
+// Propagation throttle (2026-08-30) — see dnet_lib.js's own comment on
+// MAX_SPREAD_PER_PASS for why this exists: MAX_ACTIVE_MANAGERS alone
+// bounds steady-state resident count but does nothing to slow the
+// propagation burst itself, which turned out to be the actual driver of
+// two live freezes tonight.
+export const MAX_SPREAD_PER_PASS = 2
 
 function safeHost(host) {
   let safe = ""
@@ -176,6 +182,14 @@ export async function main(ns) {
   const summary = { seen: neighbours.length, sessions: 0, cracked: 0, prepared: 0, deployed: 0, failed: 0 }
 
   for (const target of neighbours) {
+    // Propagation throttle (2026-08-30) — hard stop, not a skip-and-continue:
+    // once this pass has spread to MAX_SPREAD_PER_PASS neighbors, don't even
+    // authenticate the rest. ns.dnet.authenticate is itself real work ("takes
+    // in-game seconds that scale with instability" — see acquireSession's own
+    // doc comment in dnet_lib.js), and there's no reason to pay that cost for
+    // neighbors this pass won't spread to anyway. Anything left unprocessed
+    // gets picked up on this host's next recrawl (dnet_manager.js).
+    if (summary.deployed >= MAX_SPREAD_PER_PASS) break
     const known = creds[target]
     const result = await acquireSession(ns, target, known, flags.brute)
     if (!result.ok) {

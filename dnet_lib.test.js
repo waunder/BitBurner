@@ -18,6 +18,7 @@ import {
   MAX_ACTIVE_MANAGERS as CRAWL_MAX_ACTIVE_MANAGERS,
   MANAGER_STALE_MS as CRAWL_MANAGER_STALE_MS,
   MANAGER_SHARD_PREFIX as CRAWL_MANAGER_SHARD_PREFIX,
+  MAX_SPREAD_PER_PASS as CRAWL_MAX_SPREAD_PER_PASS,
 } from "./dnet_crawl.js"
 import { MANAGER_SHARD_PREFIX as MANAGER_JS_SHARD_PREFIX } from "./dnet_manager.js"
 import {
@@ -36,7 +37,9 @@ import {
   MODEL,
   mergeManagerRegistry,
   canSpawnManager,
+  jitteredRecrawlMs,
   MAX_ACTIVE_MANAGERS,
+  MAX_SPREAD_PER_PASS,
   MANAGER_STALE_MS,
   MANAGER_SHARD_PREFIX,
 } from "./dnet_lib.js"
@@ -400,5 +403,35 @@ describe("dnet_crawl.js/dnet_manager.js's duplicated cap constants stay in sync 
 
   test("dnet_manager.js's MANAGER_SHARD_PREFIX matches dnet_lib.js's", () => {
     assert.equal(MANAGER_JS_SHARD_PREFIX, MANAGER_SHARD_PREFIX)
+  })
+
+  test("dnet_crawl.js's MAX_SPREAD_PER_PASS matches dnet_lib.js's", () => {
+    assert.equal(CRAWL_MAX_SPREAD_PER_PASS, MAX_SPREAD_PER_PASS)
+  })
+})
+
+describe("jitteredRecrawlMs — desynchronizing recrawl timing (2026-08-30, propagation-burst incident)", () => {
+  test("stays within +/- jitterFraction of the base", () => {
+    for (const rand of [0, 0.25, 0.5, 0.75, 0.999999]) {
+      const value = jitteredRecrawlMs(90000, 0.15, () => rand)
+      assert.ok(value >= 90000 * 0.85 - 1e-9 && value <= 90000 * 1.15 + 1e-9, `rand=${rand} -> ${value}`)
+    }
+  })
+
+  test("rand()=0 gives the minimum of the range", () => {
+    assert.equal(jitteredRecrawlMs(90000, 0.15, () => 0), 90000 * 0.85)
+  })
+
+  test("rand()=0.5 gives back the base exactly", () => {
+    assert.equal(jitteredRecrawlMs(90000, 0.15, () => 0.5), 90000)
+  })
+
+  test("zero jitterFraction always returns the base, regardless of rand()", () => {
+    assert.equal(jitteredRecrawlMs(90000, 0, () => 0.9), 90000)
+  })
+
+  test("defaults to Math.random when no rand is injected (smoke test, real range)", () => {
+    const value = jitteredRecrawlMs(90000, 0.15)
+    assert.ok(value >= 90000 * 0.85 && value <= 90000 * 1.15)
   })
 })

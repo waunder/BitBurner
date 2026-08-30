@@ -47,12 +47,39 @@ export const LOOT_SHARD_SUFFIX = ".json"
 // cap of 15 set that same day, a ~2-3x bootstrap-race overshoot. Lowered to
 // 8 in response, so that overshoot factor lands closer to the original
 // intent; retune again once a live run's actual peak is observed.
+//
+// **That tightened cap overshot worse on the very next live restart** — 36
+// entries against a cap of 8, several sharing the exact same millisecond
+// timestamp (direct evidence of many hosts registering essentially
+// simultaneously), and it froze the game faster than the first attempt.
+// Root cause: this cap only ever bounds STEADY-STATE resident count; it did
+// nothing to slow the PROPAGATION BURST itself, which turned out to be the
+// actual driver — the network is now mostly pre-cracked from earlier runs,
+// so acquireSession's fast path (a known password, near-instant) lets a
+// restart unfold the whole reachable fan-out tree far faster than a cold
+// run ever could, faster than any registry merge cadence could hope to
+// track. MAX_SPREAD_PER_PASS (below) is the actual fix for that; this
+// resident cap stays as a secondary, longer-run safety net now that the
+// burst itself is throttled at the source.
 export const MAX_ACTIVE_MANAGERS = 8
 // How often dnet_root.js folds fresh manager-heartbeat shards into the
 // registry (was 5000ms, tied to RETRY_MS, until the overshoot above showed
 // that gap was wide enough to matter) — this is the other lever on the
 // same race: not eliminating it, just shrinking the window.
 export const REGISTRY_MERGE_MS = 1000
+
+// Propagation throttle (2026-08-30, same incident as above, added after
+// MAX_ACTIVE_MANAGERS alone proved insufficient twice live). Bounds
+// dnet_crawl.js's own branching factor: at most this many neighbors get
+// spread to per pass, full stop, regardless of how many are reachable —
+// see dnet_crawl.js's own enforcement site for why it stops authenticating
+// entirely rather than just skipping the spread. Nothing is permanently
+// missed: a host's next 90s-ish recrawl (dnet_manager.js) re-invokes
+// dnet_crawl.js fresh and picks up wherever this pass left off. Small on
+// purpose — this governs how explosively the fan-out tree can grow per
+// generation, and two live incidents tonight argue for erring conservative
+// over erring fast.
+export const MAX_SPREAD_PER_PASS = 2
 export const MANAGER_REGISTRY_FILE = "dnet_manager_registry.json"
 export const MANAGER_SHARD_PREFIX = "dnet_manager_active_"
 export const MANAGER_SHARD_SUFFIX = ".json"
@@ -513,6 +540,32 @@ export function canSpawnManager(registry, now, staleMs, cap = MAX_ACTIVE_MANAGER
     if (now - ts < staleMs) active++
   }
   return active < cap
+}
+
+/**
+ * Recrawl interval with randomized jitter (2026-08-30, same incident as
+ * MAX_ACTIVE_MANAGERS/MAX_SPREAD_PER_PASS above). Every resident manager's
+ * recrawl clock used to be a flat `+RECRAWL_MS` from its own spawn/last-
+ * crawl time — managers spawned close together (exactly what one
+ * propagation wave produces) stay synchronized forever, so even a
+ * per-pass-throttled fan-out can re-synchronize into a wide simultaneous
+ * burst once enough residents accumulate and their clocks re-align. This
+ * desynchronizes them over time rather than fixing anything in the very
+ * first burst — complementary to, not a replacement for,
+ * MAX_SPREAD_PER_PASS.
+ *
+ * Pure and seedable (`rand` defaults to Math.random but accepts an
+ * injected PRNG for a deterministic test) so the "stays in range" property
+ * is node --test-able without the game.
+ *
+ * @param {number} baseMs - RECRAWL_MS.
+ * @param {number} jitterFraction - e.g. 0.15 for ±15%.
+ * @param {() => number} [rand] - returns a float in [0, 1).
+ * @returns {number} a value in [baseMs * (1 - jitterFraction), baseMs * (1 + jitterFraction)).
+ */
+export function jitteredRecrawlMs(baseMs, jitterFraction, rand = Math.random) {
+  const spread = baseMs * jitterFraction
+  return baseMs - spread + rand() * spread * 2
 }
 
 /**

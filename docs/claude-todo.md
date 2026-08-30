@@ -78,8 +78,43 @@ static-analysis RAM charge) can't silently drift again. 15 new test cases
 total today (181/181 full suite). Notable: Ken saw no sluggishness at the
 30-48-host peak, so 8 is a conservative starting point given the overshoot
 margin, not a measured safe ceiling — the real danger threshold is still
-unconfirmed. **Still not live-verified under the tightened cap** — that's
-the next restart.
+unconfirmed. **The tightened cap froze the game again, faster, on the very next
+restart.** `dnet_manager_registry.json` showed 36 entries against a cap of
+8 (worse overshoot ratio than the first attempt's 30-vs-15) before Ken
+killed it — several entries shared the exact same millisecond timestamp.
+That data ruled out "cap wasn't tight enough": `MAX_ACTIVE_MANAGERS` only
+ever bounds steady-state resident count, never the actual driver. Read the
+mechanism again with fresh eyes: the network is now mostly pre-cracked from
+the earlier runs, so `acquireSession`'s fast path (`connectToSession` with
+an already-known password) is near-instant — a restart can now unfold the
+whole reachable fan-out tree *faster* than the original cold run did,
+outracing any registry-based coordination no matter how tight the cap or
+fast the merge cadence. That's a rate problem, not a ceiling problem; two
+live freezes with the wrong mitigation before landing on the right one.
+
+Entered plan mode a third time given the stakes — Ken had already been
+through two live freezes, and this fix touches propagation dynamics
+directly rather than just counting after the fact. Shipped:
+`MAX_SPREAD_PER_PASS` (2, `dnet_lib.js`/`dnet_crawl.js`) hard-stops
+`dnet_crawl.js`'s spread loop at 2 successful spreads per pass — stopping
+authentication too, not just the `exec`, since `ns.dnet.authenticate` is
+itself real, non-trivial work. Nothing permanently missed: a host's next
+~90s recrawl (`dnet_manager.js`) re-invokes `dnet_crawl.js` fresh and picks
+up where the last pass left off, so coverage becomes gradual instead of a
+single burst. `jitteredRecrawlMs` (`dnet_lib.js`, ±15%) desyncs each
+manager's recrawl clock so managers spawned close together (exactly what
+one propagation wave produces) don't stay permanently synchronized and
+re-converge into a wide simultaneous burst later. Both duplicated into
+`dnet_crawl.js`/`dnet_manager.js` per the established lean-script pattern,
+with the drift-guard tests extended to cover the new constant too. 6 new
+`node --test` cases, 187/187 full suite.
+
+Stated plainly in `dnet_lib.js` itself, not just here: node tests can
+verify the throttling *logic* (the loop stops at exactly N, the jitter
+stays in range) but not the *emergent* behavior of many independently-
+scheduled live processes, which is what actually failed twice tonight.
+**Still not live-verified a third time** — that's the next restart, and
+worth Ken watching actively rather than walking away, given the history.
 
 ## 2026-08-29: skim-vs-harvest tested and falsified; fixed a real gap it exposed in mcpMulti's own numbers
 

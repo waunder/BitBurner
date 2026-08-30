@@ -35,6 +35,30 @@
 > at the 30-48-host peak before killing it, so the actual danger threshold
 > is unconfirmed and likely well above 8 — 8 is a conservative starting
 > point given the overshoot margin, not a measured safe maximum.
+>
+> **Update, same restart cycle:** the tightened cap froze the game again on
+> the very next live attempt — faster than the first freeze, and
+> `dnet_manager_registry.json` showed 36 entries against a cap of 8 (a
+> worse overshoot ratio than the first attempt's 30-vs-15), several sharing
+> the exact same millisecond timestamp. That ruled out "cap wasn't tight
+> enough": `MAX_ACTIVE_MANAGERS` only ever bounds steady-state resident
+> count, and never addressed the actual driver — the propagation burst
+> itself. The network is now mostly pre-cracked from earlier runs, so
+> `acquireSession`'s fast path (a known password) is near-instant, letting a
+> restart unfold the whole reachable fan-out tree faster than the first,
+> cold run did. Added two throttles directly on propagation (`dnet_lib.js`,
+> duplicated into `dnet_crawl.js`/`dnet_manager.js` per the existing
+> lean-script pattern): `MAX_SPREAD_PER_PASS` (2) hard-stops
+> `dnet_crawl.js`'s own spread loop — including authentication, not just
+> the `exec` — once it's spread to 2 neighbors in one pass, leaving the
+> rest for that host's next 90s-ish recrawl; `jitteredRecrawlMs` (±15%)
+> desynchronizes managers spawned close together so their recrawls don't
+> re-converge into a synchronized burst over time. 6 new tests, 187/187
+> full suite. **Two live misses already on this incident** — stated
+> plainly in `dnet_lib.js` itself: node tests can verify the throttling
+> logic, not the emergent behavior of many independently-scheduled live
+> processes, which is what actually failed twice. Not yet live-verified a
+> third time.
 
 Synthesis and sequencing. Read `darknet-functions.md` for the API and the
 model solvers, `darknet-tactics.md` for the per-decision reasoning. This doc

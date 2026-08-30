@@ -28,6 +28,19 @@ const STATUS_FILE = "dnet_manager_status.json"
 // accounting.
 export const MANAGER_SHARD_PREFIX = "dnet_manager_active_"
 
+// Recrawl jitter (2026-08-30) — see dnet_lib.js's jitteredRecrawlMs for the
+// full incident reasoning: a flat RECRAWL_MS keeps managers spawned close
+// together (exactly what one propagation wave produces) permanently
+// synchronized, so their recrawls can re-converge into a wide simultaneous
+// burst even with MAX_SPREAD_PER_PASS throttling each individual one.
+// Logic duplicated rather than imported, same lean-script reason as the
+// heartbeat constant above.
+const JITTER_FRACTION = 0.15
+function jitteredRecrawlMs(baseMs) {
+  const spread = baseMs * JITTER_FRACTION
+  return baseMs - spread + Math.random() * spread * 2
+}
+
 function safeHost(host) {
   let safe = ""
   for (const ch of String(host)) safe += /[A-Za-z0-9_-]/.test(ch) ? ch : "x" + ch.codePointAt(0).toString(16)
@@ -74,7 +87,7 @@ export async function main(ns) {
   ns.disableLog("ALL")
   let needsLoot = true
   let failures = 0
-  let nextCrawl = Date.now() + RECRAWL_MS
+  let nextCrawl = Date.now() + jitteredRecrawlMs(RECRAWL_MS)
   await writeStatus(ns, "starting", failures, nextCrawl)
 
   while (true) {
@@ -96,7 +109,7 @@ export async function main(ns) {
         const crawlPid = ns.run(CRAWLER, { preventDuplicates: true }, "--quiet")
         if (crawlPid !== 0) await waitPid(ns, crawlPid)
         else await ns.sleep(POLL_MS)
-        nextCrawl = Date.now() + RECRAWL_MS
+        nextCrawl = Date.now() + jitteredRecrawlMs(RECRAWL_MS)
         continue
       }
 

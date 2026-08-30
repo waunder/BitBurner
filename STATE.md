@@ -106,6 +106,21 @@ post-restart qualified switch evaluation.
   already drifted stale; added tests that import both files' exported
   copies and assert they match. 181/181 full suite. Still not live-verified
   under the tightened values.
+- **Darknet cap: tightened values froze the game again, faster — the real
+  fix was propagation throttling, not resident-count capping.** Second live
+  restart overshot worse (36 entries vs. cap 8, several sharing the exact
+  same millisecond timestamp) and froze faster than the first attempt.
+  Diagnosis: the network is now mostly pre-cracked from earlier runs, so
+  re-authentication is near-instant, letting propagation outrace any
+  registry-based coordination regardless of cap tightness or merge speed —
+  a rate problem, not a ceiling problem. Entered plan mode a third time
+  given two prior live misses. Shipped `MAX_SPREAD_PER_PASS` (2,
+  `dnet_crawl.js` hard-stops its spread loop, including authentication, at
+  2 successful spreads per pass) and `jitteredRecrawlMs` (±15%,
+  `dnet_manager.js`, desyncs recrawl clocks so managers spawned together
+  don't stay permanently synchronized). 187/187 full suite. Explicitly
+  documented that node tests can't prove live safety here — two prior
+  live misses despite clean logic. Still not live-verified a third time.
 
 ## Next
 

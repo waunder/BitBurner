@@ -113,8 +113,48 @@ Stated plainly in `dnet_lib.js` itself, not just here: node tests can
 verify the throttling *logic* (the loop stops at exactly N, the jitter
 stays in range) but not the *emergent* behavior of many independently-
 scheduled live processes, which is what actually failed twice tonight.
-**Still not live-verified a third time** — that's the next restart, and
-worth Ken watching actively rather than walking away, given the history.
+**Third live restart under the throttle: grew gradually, froze anyway.**
+13→19 registry entries over ~2 minutes, no burst — the throttle worked as
+designed — yet it froze at a *lower* resident count than either of the
+first two attempts. First sign the resident-count/propagation-burst theory
+was incomplete: something else was contributing.
+
+Ken proposed the right next experiment: isolate darknet completely and see
+if it fails on its own. First attempt at this was invalidated by a real
+procedural footgun, not a code bug — his terminal alias
+`dnet='run dnet_killswarm.js;run dnet_root.js'` chains two `run` calls with
+`;`, but `run` doesn't block for completion, so `dnet_killswarm.js`'s own
+cleanup scan (which explicitly targets `dnet_root.js`, and covers `home`,
+per `TARGET_SCRIPTS`) can race and kill the very process the same line just
+launched. Diagnosed from `ps` coming back completely empty right after, and
+confirmed by computing the registry file's actual age against wall-clock
+time (17+ minutes stale despite an active connection — proof the merge
+loop had died, not that it was quietly idle). Ken had independently
+suspected "nothing is happening" from charisma/cache/console signals alone
+and was right before I had proof.
+
+**Fourth restart, properly sequenced (two separate commands), cleanly
+isolated — the real finding.** `mcp.js`, `dnet_scorecard.js`, HUD,
+supervisor, `get_stats.js` all confirmed off; hacknet/factions passive
+game state only, nothing executing. Froze within ~90 seconds with only 6
+real, cleanly-propagated resident managers — well under the cap of 8, no
+ghosts, no race. This is conclusive: it rules out aggregate load from other
+scripts, propagation burst speed, and resident count as the primary
+driver, since a minimal well-behaved deployment with nothing else running
+still failed fast. Four live freezes total this session; neither the
+resident cap nor the propagation throttle actually fixed the problem, only
+ruled out increasingly specific theories about it.
+
+**Darknet stays off.** Recommended stopping rather than a fifth live
+attempt — diminishing returns from guess-and-check, real cost to Ken's
+evening each time. Whatever's actually happening most likely lives inside
+what `ns.dnet.probe()`/`getServerDetails()`/`authenticate()` themselves
+cost against this save's darknet graph (586+ historically-known hosts),
+not in anything reachable from `dnet_crawl.js`/`dnet_manager.js`-level
+throttling. Next real step is reading the game's own bundled source for
+what those calls do internally, or much more incremental live testing than
+one session has budget for — not another retune-and-restart cycle. Full
+incident arc in `docs/darknet-strategy.md`'s 2026-08-30 status banner.
 
 ## 2026-08-29: skim-vs-harvest tested and falsified; fixed a real gap it exposed in mcpMulti's own numbers
 

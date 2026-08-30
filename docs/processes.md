@@ -1772,8 +1772,27 @@ live, so its contents are readable outside the game.
   ever could). Actual fix: `MAX_SPREAD_PER_PASS` hard-stops `dnet_crawl.js`'s
   spread loop at 2 neighbors per pass, and `jitteredRecrawlMs` desyncs
   `dnet_manager.js`'s 90s recrawl clocks so they don't re-converge into a
-  synchronized burst. See `docs/darknet-strategy.md`'s 2026-08-30 updates
-  for the full incident writeup, including both live misses.
+  synchronized burst. **That wasn't the fix either — two more live freezes
+  followed, and darknet is off as of this writing.** A third restart under
+  this throttle grew gradually (no burst) yet froze anyway at a *lower*
+  resident count than either prior attempt; a fourth, cleanly isolated
+  restart (darknet alone, nothing else running) froze within ~90 seconds
+  with only 6 real resident managers, well under the cap. That rules out
+  aggregate load, propagation burst speed, and resident count as the
+  primary driver — the actual cause likely lives inside what
+  `ns.dnet.probe()`/`getServerDetails()`/`authenticate()` cost against this
+  save's darknet graph itself, not in anything `dnet_crawl.js`/
+  `dnet_manager.js`-level throttling can reach. See `docs/darknet-strategy.md`'s
+  2026-08-30 status banner for the full four-freeze arc.
+- **Chaining `run dnet_killswarm.js;run dnet_root.js` on one line can kill
+  the process it just started.** `run` doesn't block for the launched
+  script to finish, so both start nearly simultaneously; `dnet_killswarm.js`'s
+  `TARGET_SCRIPTS` set includes `dnet_root.js` itself and its cleanup scan
+  covers `home`, so the kill pass can catch its own sibling launch. Found
+  live 2026-08-30 via a terminal alias that did exactly this — `ps` came
+  back completely empty right after, and the registry file sat unchanged
+  for 15+ minutes despite an active connection (proof the merge loop had
+  died, not gone quiet). Always run the two commands separately.
 - **A RAM-fit check needs *free* RAM (`maxRam - usedRam`), not just
   `maxRam`.** `dnet_deploy.js`'s inline loot path first checked `maxRam`
   alone and passed a target (`darkweb`) whose *total* RAM was fine but whose

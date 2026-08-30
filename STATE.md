@@ -121,6 +121,25 @@ post-restart qualified switch evaluation.
   don't stay permanently synchronized). 187/187 full suite. Explicitly
   documented that node tests can't prove live safety here — two prior
   live misses despite clean logic. Still not live-verified a third time.
+- **Darknet: two more live freezes, root cause still not found — darknet
+  paused, not another retune.** Third restart under the propagation
+  throttle grew gradually (no burst, throttle worked as designed) yet
+  froze anyway at a lower resident count than either prior attempt. A
+  cleanly isolated fourth restart (darknet alone — mcp.js/scorecard/HUD/
+  supervisor all confirmed off, hacknet/factions passive-only) froze
+  within ~90 seconds with only 6 real, cleanly-propagated resident
+  managers, well under the cap of 8. Rules out aggregate load, propagation
+  burst speed, and resident count as the primary driver — a minimal,
+  well-behaved deployment with nothing else running still failed fast.
+  Also found and fixed procedurally (not a code bug): Ken's terminal alias
+  chaining `run dnet_killswarm.js;run dnet_root.js` let the kill scan
+  (which targets `dnet_root.js` and covers `home`) race and kill the
+  process the same line just launched — always run as two separate
+  commands. **Four live freezes total this session. Darknet stays off**
+  pending actual investigation of what `ns.dnet.probe()`/
+  `getServerDetails()`/`authenticate()` cost against this save's darknet
+  graph — not fixable by further Netscript-level throttling alone. Full
+  arc: `docs/darknet-strategy.md`'s 2026-08-30 status banner.
 
 ## Next
 

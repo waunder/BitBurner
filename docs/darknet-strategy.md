@@ -59,6 +59,37 @@
 > logic, not the emergent behavior of many independently-scheduled live
 > processes, which is what actually failed twice. Not yet live-verified a
 > third time.
+>
+> **Update: the propagation throttle didn't fix it either — and a fourth
+> live attempt isolated the real finding.** Third restart under the
+> throttle grew gradually (13→19 entries over ~2min, no burst) yet froze
+> anyway, at a lower resident count than either prior attempt — first sign
+> the resident-count/propagation-burst theory was incomplete. A cleanly
+> isolated fourth restart (only the `dnet_root.js` chain running — `mcp.js`,
+> `dnet_scorecard.js`, HUD/supervisor/`get_stats.js` all confirmed off,
+> hacknet/factions passive-only, no scripts) then froze within **~90
+> seconds with only 6 real resident managers** — well under the cap of 8,
+> cleanly propagated, no ghost contamination, no alias race (an earlier
+> attempt that night turned out to be invalidated by `dnet_killswarm.js`
+> racing its own `dnet_root.js` launch when chained with `;` in a terminal
+> alias — `TARGET_SCRIPTS` includes `dnet_root.js` itself and the kill scan
+> covers `home`, so `run dnet_killswarm.js;run dnet_root.js` on one line
+> can kill the very process it just started; always run them as two
+> separate commands).
+>
+> That rules out every mitigation tried so far as sufficient: aggregate
+> load from other scripts, propagation burst speed, and resident count are
+> all eliminated as the primary driver, since a minimal, well-behaved
+> 6-manager deployment with nothing else running still freezes fast.
+> **Status as of this writing: darknet stays off. Four live freezes in one
+> session; no live-restart-based fix landed.** Whatever's actually
+> happening most likely lives inside what `ns.dnet.probe()`/
+> `getServerDetails()`/`authenticate()` themselves cost against this save's
+> darknet graph (586+ historically-known hosts) — not fixable by
+> Netscript-level throttling in `dnet_crawl.js`/`dnet_manager.js` alone.
+> Needs either reading the game's own bundled source for what those calls
+> actually do, or much more incremental live testing than a single session
+> has budget for, before trying again.
 
 Synthesis and sequencing. Read `darknet-functions.md` for the API and the
 model solvers, `darknet-tactics.md` for the per-decision reasoning. This doc

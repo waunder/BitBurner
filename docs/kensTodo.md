@@ -24,15 +24,30 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
   `MAX_SPREAD_PER_PASS` throttles `dnet_crawl.js`'s own fan-out directly,
   `jitteredRecrawlMs` desyncs recrawl timing. See `docs/claude-todo.md`'s
   2026-08-30 entries for the full arc.
-- [ ] **Restart darknet a third time (`run dnet_killswarm.js` then
-  `run dnet_root.js` — skip `--restart`, it's been unreliable) with the
-  propagation throttle synced in.** Two live freezes already on this
-  incident — worth actively watching this time rather than walking away.
-  Watch `dnet_manager_registry.json` grow *gradually* (not in synchronized
-  jumps) as the concrete "is this actually working" signal — I'll be
-  watching it too once connected — alongside tab responsiveness as always.
-  Genuinely not confirmed safe yet; node tests can't prove that part. See
-  `docs/claude-todo.md`'s 2026-08-30 entries for the full writeup.
+- [x] **Historical: third and fourth cap/throttle attempts — done
+  2026-08-30, darknet paused.** Third restart under the propagation
+  throttle grew gradually (no burst) yet froze anyway, at a lower resident
+  count than either prior attempt. A cleanly isolated fourth restart
+  (darknet alone, nothing else running — `mcp.js`/`dnet_scorecard.js`/HUD/
+  supervisor all confirmed off) then froze within ~90 seconds with only 6
+  real resident managers, well under the cap. That rules out every
+  mitigation tried so far — aggregate load, propagation burst speed,
+  resident count are all eliminated. Four live freezes total this session;
+  no live-restart-based fix landed. **Darknet stays off** until a real
+  investigation happens (likely needs reading the game's own bundled
+  source for what `ns.dnet.probe()`/`getServerDetails()`/`authenticate()`
+  actually cost against this save's darknet graph) — see
+  `docs/darknet-strategy.md`'s 2026-08-30 status banner for the full
+  incident arc, and `docs/claude-todo.md` for the session-by-session
+  writeup. No restart action pending — the next step here is investigation,
+  not another retry.
+- [x] **Footgun found and fixed procedurally, not in code:**
+  `dnet_killswarm.js`'s `TARGET_SCRIPTS` includes `dnet_root.js` itself and
+  its cleanup scan covers `home` — chaining `run dnet_killswarm.js;run
+  dnet_root.js` on one line lets the kill scan race the very process the
+  same line just launched, since `run` doesn't block for completion. Always
+  run them as two separate terminal commands, never `;`-chained or
+  aliased that way.
 
 - [ ] **Run `mcpMulti.js` (dry-run, no arg) once it's synced into the game**
   to generate real projected numbers. Built 2026-08-29 to test whether

@@ -15,6 +15,12 @@
 import { test, describe } from "node:test"
 import assert from "node:assert/strict"
 import {
+  MAX_ACTIVE_MANAGERS as CRAWL_MAX_ACTIVE_MANAGERS,
+  MANAGER_STALE_MS as CRAWL_MANAGER_STALE_MS,
+  MANAGER_SHARD_PREFIX as CRAWL_MANAGER_SHARD_PREFIX,
+} from "./dnet_crawl.js"
+import { MANAGER_SHARD_PREFIX as MANAGER_JS_SHARD_PREFIX } from "./dnet_manager.js"
+import {
   chooseLootMode,
   freeBlockedRam,
   acquireSession,
@@ -30,6 +36,9 @@ import {
   MODEL,
   mergeManagerRegistry,
   canSpawnManager,
+  MAX_ACTIVE_MANAGERS,
+  MANAGER_STALE_MS,
+  MANAGER_SHARD_PREFIX,
 } from "./dnet_lib.js"
 
 describe("bounded shallow-model solvers", () => {
@@ -363,5 +372,33 @@ describe("canSpawnManager — the actual cap decision (dnet_crawl.js's enforceme
   test("defaults to MAX_ACTIVE_MANAGERS when no cap is passed", () => {
     const now = 1_000_000
     assert.equal(canSpawnManager({}, now, STALE_MS), true)
+  })
+})
+
+describe("dnet_crawl.js/dnet_manager.js's duplicated cap constants stay in sync with dnet_lib.js", () => {
+  // dnet_crawl.js and dnet_manager.js duplicate a handful of dnet_lib.js's
+  // constants rather than importing them (both files avoid dnet_lib.js's
+  // static-analysis RAM charge on purpose — see either file's own header
+  // comment). That duplication drifted for real, the same day it was
+  // introduced: dnet_crawl.js's local MAX_ACTIVE_MANAGERS was still 15 after
+  // dnet_lib.js's own was retuned to 8 in the very next edit. Both files now
+  // export their copies specifically so this test can import and compare
+  // them directly — exporting a plain leaf-script constant is inert for
+  // Bitburner's RAM accounting (nothing in-game imports these files), so
+  // this costs nothing live and needs no eval/regex parsing here.
+  test("dnet_crawl.js's MAX_ACTIVE_MANAGERS matches dnet_lib.js's", () => {
+    assert.equal(CRAWL_MAX_ACTIVE_MANAGERS, MAX_ACTIVE_MANAGERS)
+  })
+
+  test("dnet_crawl.js's MANAGER_STALE_MS matches dnet_lib.js's", () => {
+    assert.equal(CRAWL_MANAGER_STALE_MS, MANAGER_STALE_MS)
+  })
+
+  test("dnet_crawl.js's MANAGER_SHARD_PREFIX matches dnet_lib.js's", () => {
+    assert.equal(CRAWL_MANAGER_SHARD_PREFIX, MANAGER_SHARD_PREFIX)
+  })
+
+  test("dnet_manager.js's MANAGER_SHARD_PREFIX matches dnet_lib.js's", () => {
+    assert.equal(MANAGER_JS_SHARD_PREFIX, MANAGER_SHARD_PREFIX)
   })
 })

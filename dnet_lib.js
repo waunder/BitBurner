@@ -33,10 +33,26 @@ export const LOOT_SHARD_SUFFIX = ".json"
 // resident manager runs forever, polling at minimum every 1s — with 586+
 // credentials already cracked historically, an unbounded restart let the
 // resident count grow large enough to peg the renderer's single JS thread
-// at 165-169% CPU (confirmed via `ps`) and freeze the game. Conservative
-// starting point, same "ship low, raise after observing" instinct as
-// mcp.js's HACK_BALANCE_SAFETY — retune after watching a live run hold up.
-export const MAX_ACTIVE_MANAGERS = 15
+// at 165-169% CPU (confirmed via `ps`) and freeze the game.
+//
+// This is a SOFT cap, not a hard guarantee — worth stating plainly rather
+// than implying more precision than exists. The registry only merges on
+// home every REGISTRY_MERGE_MS; propagation fans out faster than that, so
+// many hosts make their spawn decision off a genuinely-real-but-already-
+// stale snapshot, each blind to the others' concurrent decisions. Bitburner
+// exec/read/write have no cross-host locking primitive, so this can't be
+// made race-proof without a much heavier consensus mechanism — not worth
+// building for what this is. First live run (2026-08-30) overshot to ~30
+// registry entries (48 known hosts by the time it was killed) against a
+// cap of 15 set that same day, a ~2-3x bootstrap-race overshoot. Lowered to
+// 8 in response, so that overshoot factor lands closer to the original
+// intent; retune again once a live run's actual peak is observed.
+export const MAX_ACTIVE_MANAGERS = 8
+// How often dnet_root.js folds fresh manager-heartbeat shards into the
+// registry (was 5000ms, tied to RETRY_MS, until the overshoot above showed
+// that gap was wide enough to matter) — this is the other lever on the
+// same race: not eliminating it, just shrinking the window.
+export const REGISTRY_MERGE_MS = 1000
 export const MANAGER_REGISTRY_FILE = "dnet_manager_registry.json"
 export const MANAGER_SHARD_PREFIX = "dnet_manager_active_"
 export const MANAGER_SHARD_SUFFIX = ".json"

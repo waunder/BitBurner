@@ -94,6 +94,18 @@ post-restart qualified switch evaluation.
   deployer shard pattern in `dnet_lib.js` exactly. 11 new `node --test`
   cases, 177/177 full suite clean. **Not yet live-confirmed** — the actual
   restart that proves the cap holds hasn't happened yet.
+- **Darknet cap: first live restart overshot it, tightened same day.** Ken
+  restarted under the new cap; registry showed 30 entries against a cap of
+  15 (48 known hosts) before he killed it — no sluggishness reported at that
+  peak, unlike the original freeze. Root cause: a real race between
+  propagation speed and the registry's merge cadence, not a logic bug —
+  Bitburner's NS API has no cross-host locking primitive to close it fully.
+  Mitigated: merge cadence 5s→1s, cap 15→8, documented as a *soft* cap in
+  `dnet_lib.js` rather than overclaiming precision. Also fixed a second bug
+  the same pass: `dnet_crawl.js`'s duplicated `MAX_ACTIVE_MANAGERS` had
+  already drifted stale; added tests that import both files' exported
+  copies and assert they match. 181/181 full suite. Still not live-verified
+  under the tightened values.
 
 ## Next
 

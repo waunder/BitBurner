@@ -10,14 +10,20 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
 
 ## Pending
 
-- [ ] **Restart darknet (`dnet_killswarm.js --restart`) once the
-  concurrency-cap fix is synced in, and watch it for real this time.** Root
-  cause of today's freeze found and fixed same day — see
-  `docs/claude-todo.md`'s 2026-08-30 entry and `docs/darknet-strategy.md`'s
-  status banner for the full writeup. Watch `dnet_manager_registry.json`
-  directly (I can also check it once connected): it should plateau at 15
-  entries instead of growing unbounded. Watch your own tab responsiveness
-  too, same as before — that's still the one signal I can't see remotely.
+- [x] **Historical: first cap attempt (15, 5s merge) — done 2026-08-30.**
+  Restarted, overshot to 30 registry entries (48 known hosts) before being
+  killed — no sluggishness reported at that peak. Tightened same day: cap
+  15→8, registry merge 5s→1s, documented as a soft (not hard) cap. Also
+  fixed a real drift bug where `dnet_crawl.js`'s duplicated cap constant had
+  gone stale.
+- [ ] **Restart darknet again (`dnet_killswarm.js --restart`) with the
+  tightened cap (8, 1s merge) synced in, and watch `dnet_manager_registry.json`
+  directly** — I'll also check it once connected. It's a *soft* cap now
+  (documented as such), so expect it to plateau somewhat above 8, not land
+  exactly on it — the concerning signal is unbounded growth, not a small
+  overshoot. Watch your own tab responsiveness too, same as before — that's
+  still the one signal I can't see remotely. See `docs/claude-todo.md`'s
+  2026-08-30 entry for the full writeup.
 
 - [ ] **Run `mcpMulti.js` (dry-run, no arg) once it's synced into the game**
   to generate real projected numbers. Built 2026-08-29 to test whether

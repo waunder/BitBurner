@@ -12,6 +12,7 @@ import {
   MANAGER_REGISTRY_FILE,
   MANAGER_SHARD_PREFIX,
   MANAGER_STALE_MS,
+  REGISTRY_MERGE_MS,
   acquireSession,
   freeBlockedRam,
   mergeManagerRegistry,
@@ -25,11 +26,17 @@ const MANAGER = "dnet_manager.js"
 const REALLOC = "dnet_realloc.js"
 const LEGACY = "dnet_deploy.js"
 const FILES = [CRAWLER, MANAGER, REALLOC, "dnet_lib.js", "dnet_loot.js", "dnet_loot_realloc.js", "dnet_phish.js"]
-const RETRY_MS = 5000
+// Was a flat 5000ms until the 2026-08-30 cap-overshoot incident showed that
+// gap was wide enough to matter for the registry merge below — now tied to
+// REGISTRY_MERGE_MS (dnet_lib.js) so both this loop's own polling and the
+// registry's freshness share the same, now-tighter cadence. This file's own
+// per-pass work (home's direct neighbors — normally just darkweb) is cheap
+// enough that running it more often costs little.
+const RETRY_MS = REGISTRY_MERGE_MS
 
 // Home-side half of the concurrency cap (2026-08-30) — see dnet_lib.js's own
 // comment on MAX_ACTIVE_MANAGERS for why this exists. Piggybacks on this
-// file's existing 5s poll loop rather than a new one; same scan-then-merge
+// file's existing poll loop rather than a new one; same scan-then-merge
 // shape as mergeCredentialShards below, just for manager heartbeats instead
 // of credentials.
 function mergeManagerRegistryShards(ns) {

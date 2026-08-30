@@ -20,11 +20,21 @@ const FILES = [SELF, MANAGER, REALLOC, "dnet_lib.js", "dnet_loot.js", "dnet_loot
 // 10GB static-analysis charge"): see dnet_lib.js's own MAX_ACTIVE_MANAGERS
 // comment for the incident this fixes. Keep this logic identical to
 // dnet_lib.js's canSpawnManager/writeManagerActiveShard — dnet_lib.test.js
-// covers the shared behavior those are copied from.
-const MAX_ACTIVE_MANAGERS = 15
-const MANAGER_REGISTRY_FILE = "dnet_manager_registry.json"
-const MANAGER_SHARD_PREFIX = "dnet_manager_active_"
-const MANAGER_STALE_MS = 5 * 60 * 1000
+// covers the shared behavior those are copied from, AND asserts these
+// duplicated values below stay in sync with dnet_lib.js's real exports
+// (found the hard way: this value drifted to a stale 15 the same day
+// dnet_lib.js's own MAX_ACTIVE_MANAGERS was retuned to 8, in the very next
+// edit — the guard test exists so that never ships unnoticed again).
+// Exported (not just local) purely so dnet_lib.test.js can import and
+// directly compare these against dnet_lib.js's real values instead of
+// regex/eval-parsing this file's source — see that test's own comment.
+// Bitburner's RAM accounting is driven by which ns-touching functions get
+// called, not by which plain constants a leaf script happens to export, and
+// nothing else in-game imports this file, so this costs nothing live.
+export const MAX_ACTIVE_MANAGERS = 8
+export const MANAGER_REGISTRY_FILE = "dnet_manager_registry.json"
+export const MANAGER_SHARD_PREFIX = "dnet_manager_active_"
+export const MANAGER_STALE_MS = 5 * 60 * 1000
 
 function safeHost(host) {
   let safe = ""

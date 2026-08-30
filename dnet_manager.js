@@ -22,7 +22,11 @@ const STATUS_FILE = "dnet_manager_status.json"
 // duplicated rather than imported from dnet_lib.js, same lean-script reason
 // as dnet_crawl.js (see that file's own comment) — see dnet_lib.js's
 // MAX_ACTIVE_MANAGERS comment for the incident this fixes.
-const MANAGER_SHARD_PREFIX = "dnet_manager_active_"
+// Exported so dnet_lib.test.js can compare it directly against dnet_lib.js's
+// real value — see dnet_crawl.js's matching constant for why exporting a
+// plain leaf-script constant like this is inert for Bitburner's RAM
+// accounting.
+export const MANAGER_SHARD_PREFIX = "dnet_manager_active_"
 
 function safeHost(host) {
   let safe = ""

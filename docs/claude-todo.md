@@ -59,9 +59,27 @@ duplicate the tiny amount of needed logic rather than importing `dnet_lib.js`
 — same reason those files already avoid that import (the 10GB
 static-analysis RAM charge), documented inline at each duplication site.
 11 new `node --test` cases (`dnet_lib.test.js`), `node --check` clean on all
-four touched files, 177/177 full suite. **Not yet live-verified** — per
-`CLAUDE.md`, that only happens once Ken actually restarts it and we watch
-`dnet_manager_registry.json` plateau at 15 instead of growing unbounded.
+four touched files, 177/177 full suite. **First live restart overshot the cap, same day.** Ken restarted; froze
+briefly again (though this time reported no sluggishness up to the point he
+killed it), and `dnet_manager_registry.json` showed 30 entries against a
+cap of 15 — 48 known hosts by the time `dnet_killswarm.js` cleaned up 69
+processes. Root cause: a real race, not a logic bug — the registry only
+merges on `home` every few seconds, propagation fans out faster than that,
+and Bitburner's NS API has no cross-host locking primitive to close the gap
+completely. Mitigated (not eliminated, and documented as such in
+`dnet_lib.js` now — this is a **soft** cap): registry merge cadence 5s → 1s
+(`REGISTRY_MERGE_MS`), cap 15 → 8 (`MAX_ACTIVE_MANAGERS`) for margin against
+the observed ~2-3x overshoot. Also caught and fixed a second real bug in
+the same pass: `dnet_crawl.js`'s duplicated copy of `MAX_ACTIVE_MANAGERS`
+had already drifted stale (still 15) the moment `dnet_lib.js`'s was retuned
+to 8 — added 4 new tests that import both files' exported copies directly
+and assert they match, so that duplication (needed to avoid `dnet_lib.js`'s
+static-analysis RAM charge) can't silently drift again. 15 new test cases
+total today (181/181 full suite). Notable: Ken saw no sluggishness at the
+30-48-host peak, so 8 is a conservative starting point given the overshoot
+margin, not a measured safe ceiling — the real danger threshold is still
+unconfirmed. **Still not live-verified under the tightened cap** — that's
+the next restart.
 
 ## 2026-08-29: skim-vs-harvest tested and falsified; fixed a real gap it exposed in mcpMulti's own numbers
 

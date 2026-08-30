@@ -18,6 +18,23 @@
 > that's the only thing that counts as verified. Historical "live"
 > descriptions below document capability from before this fix, not a
 > pre-cap invitation to restart without it.
+>
+> **Update, same day:** the first live restart under the cap overshot it —
+> `dnet_manager_registry.json` showed 30 entries (48 known hosts by the time
+> it was killed) against a cap of 15. Root cause: the registry only merges
+> on `home` every few seconds, but propagation fans out faster than that, so
+> many hosts made their spawn decision off a genuinely-real-but-already-stale
+> snapshot, each blind to the others' concurrent decisions — a real race,
+> not a logic bug, and Bitburner's NS API has no cross-host locking
+> primitive to close it completely. Mitigated, not eliminated: registry
+> merge cadence 5s → 1s (`REGISTRY_MERGE_MS`), cap 15 → 8 (`dnet_lib.js`'s
+> `MAX_ACTIVE_MANAGERS`) to build in margin against the observed ~2-3x
+> bootstrap-race overshoot. This is a **soft** cap by design now, documented
+> as such in `dnet_lib.js` — worth knowing before trusting the exact number
+> in the registry as a hard ceiling. Notably, Ken observed no sluggishness
+> at the 30-48-host peak before killing it, so the actual danger threshold
+> is unconfirmed and likely well above 8 — 8 is a conservative starting
+> point given the overshoot margin, not a measured safe maximum.
 
 Synthesis and sequencing. Read `darknet-functions.md` for the API and the
 model solvers, `darknet-tactics.md` for the per-decision reasoning. This doc

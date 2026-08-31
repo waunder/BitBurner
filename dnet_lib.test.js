@@ -178,6 +178,14 @@ describe("freeBlockedRam — shared reallocation loop (mock ns)", () => {
     assert.equal(res.after, 95)
     assert.equal(res.why, "hit call cap")
   })
+
+  test("can suppress the routine completion line for a caller with durable telemetry", async () => {
+    const printed = []
+    const ns = makeNs({ blocked: 1 })
+    ns.print = (line) => printed.push(line)
+    await freeBlockedRam(ns, "host1", 25, false)
+    assert.deepEqual(printed, [])
+  })
 })
 
 describe("acquireSession — invalid host resilience (mock ns)", () => {

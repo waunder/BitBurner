@@ -10,6 +10,9 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
 
 ## Now
 
+- [x] **Silence routine Darknet loot output.** `dnet_loot.js` now keeps
+  normal/no-op results in its event shards rather than terminal/log spam,
+  while preserving cache and shipping error output.
 - [x] **Add a safe Darknet health panel.** `dnet_hud.js` is opt-in and reads
   just the root heartbeat plus compact manager registry every 15 seconds;
   it avoids the scorecard's shard scans and emits no telemetry writes.

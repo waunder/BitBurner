@@ -53,16 +53,16 @@ export async function main(ns) {
   const host = ns.getHostname()
   const details = ns.dnet.getServerDetails()
   if (!details.isOnline) {
-    ns.tprint(`dnet_loot: ${host} reports offline; nothing to do`)
     return
   }
 
   const report = { host, model: details.modelId, difficulty: details.difficulty, mode: "full" }
 
-  if (!flags["no-ram"]) report.ram = await freeBlockedRam(ns, host, flags["max-realloc"])
+  // Normal results are preserved below as an immutable event shard. Do not
+  // also emit a per-run reallocation line: this script is launched often,
+  // and no-op console output can itself burden the renderer.
+  if (!flags["no-ram"]) report.ram = await freeBlockedRam(ns, host, flags["max-realloc"], false)
   if (!flags["no-cache"]) report.caches = openCaches(ns, host)
-
-  ns.tprint(`dnet_loot: ${JSON.stringify(report)}`)
 
   const ramFreed = Math.max(0, (report.ram?.before ?? 0) - (report.ram?.after ?? 0))
   const meaningful = ramFreed > 0 || (report.caches?.found ?? 0) > 0 || (report.caches?.opened ?? 0) > 0

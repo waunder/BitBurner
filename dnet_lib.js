@@ -709,9 +709,12 @@ export async function acquireSession(ns, host, known, opts = {}) {
  *   original local-loot behavior, or a freshly-authenticated neighbour to
  *   reclaim its RAM before deploying anything onto it.
  * @param {number} maxCalls
+ * @param {boolean} [log=true] - write the normal completion summary to this
+ * script's log. Callers that already persist a structured result can disable
+ * this to avoid high-volume no-op output.
  * @returns {Promise<{before: number, after: number, calls: number, why: string}>}
  */
-export async function freeBlockedRam(ns, host, maxCalls) {
+export async function freeBlockedRam(ns, host, maxCalls, log = true) {
   const getBlocked = () => (host === undefined ? ns.dnet.getBlockedRam() : ns.dnet.getBlockedRam(host))
   const reallocate = () =>
     host === undefined ? ns.dnet.memoryReallocation() : ns.dnet.memoryReallocation(host)
@@ -742,7 +745,7 @@ export async function freeBlockedRam(ns, host, maxCalls) {
   }
 
   const after = getBlocked()
-  ns.print(`REALLOC ${host} before=${before} after=${after} calls=${calls} why=${why}`)
+  if (log) ns.print(`REALLOC ${host} before=${before} after=${after} calls=${calls} why=${why}`)
   return { before, after, calls, why }
 }
 

@@ -15,6 +15,10 @@ post-restart qualified switch evaluation.
 
 ## Done
 
+- **Darknet loot log spam removed**, 2026-08-31: normal and no-op
+  `dnet_loot.js` runs no longer write a terminal report or routine
+  reallocation line. Meaningful results remain in immutable loot shards;
+  cache and shipping errors stay visible.
 - **Low-impact Darknet HUD added**, 2026-08-31: `dnet_hud.js` reads only the
   root heartbeat and compact manager registry every 15 seconds; it neither
   scans shards nor writes telemetry. It is source-synced but intentionally

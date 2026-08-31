@@ -216,6 +216,28 @@ export function computeTargetScore({
 }
 
 /**
+ * XP earned by hack, grow, and weaken is proportional to a server's base
+ * difficulty, while their completion rates are determined by hacking time.
+ * Money, growth, and pool size therefore do not belong in an XP target
+ * comparison. This is deliberately a per-thread rate: the allocation layer
+ * decides how many threads to give the selected target.
+ *
+ * A failed hack still grants one quarter of the normal experience, hence the
+ * chance term rather than treating low-chance targets as worth zero.
+ *
+ * @param {object} args
+ * @param {number} args.baseSecurity - `ns.getServerBaseSecurityLevel(server)`.
+ * @param {number} args.hackChance - `ns.hackAnalyzeChance(server)`.
+ * @param {number} args.hackTime - `ns.getHackTime(server) / 1000`.
+ * @returns {number} relative XP per hack thread-second
+ */
+export function computeXpTargetScore({ baseSecurity, hackChance, hackTime }) {
+  if (!(baseSecurity >= 0) || !(hackTime > 0) || !Number.isFinite(hackChance)) return 0
+  const chance = Math.min(1, Math.max(0, hackChance))
+  return ((3 + 0.3 * baseSecurity) * (0.25 + 0.75 * chance)) / hackTime
+}
+
+/**
  * Ramp-cost discount (hacking-strategy.md R4, 2026-08-14) — replaces
  * `READINESS_FLOOR`'s dimensionally-arbitrary `max(moneyPct, 0.05)`
  * multiplier with an explicit cost: the wall-clock time to grow a drained

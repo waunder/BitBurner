@@ -10,6 +10,10 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
 
 ## Now
 
+- [x] **Make XP targeting actually XP-aware.** XP mode now ranks target
+  hosts by XP per hack-thread second, rather than money potential, and uses
+  the 0.95/0.05 hack/grow split. The change is local-test verified (190/190)
+  and needs a live restart/rate comparison.
 - [x] **Configuration-validate the landed R8 switch-veto.** Commit `07b216a`
   landed the patch; the local suite passed (148/148), and the connected game
   accepted a bounded `R8_SWITCH_VETO_ENABLED` `0 → 1 → 0` check without

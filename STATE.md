@@ -15,6 +15,12 @@ post-restart qualified switch evaluation.
 
 ## Done
 
+- **XP-targeting upgrade implemented and locally verified**, 2026-08-31:
+  XP mode now ranks hosts by relative XP per hack-thread second rather than
+  money potential, and uses the evidence-backed 95% hack / 5% grow split.
+  This path is gated by the existing XP objective, leaving money selection
+  and allocation unchanged. `node --check` passed and the full local suite
+  passed (190/190); it still needs a live restart and rate observation.
 - **R8 switch-veto: implemented and tested**, in an isolated worktree —
   `/private/tmp/bitburner-r8.fyf9mg`, branch `codex/r8-evidence-tail`,
   commit `ff24542`. Adds `evaluateFormulaSwitchVeto` (`mcp_logic.js`) and
@@ -143,7 +149,10 @@ post-restart qualified switch evaluation.
 
 ## Next
 
-1. At the next qualified target switch, inspect the `r8_switch_veto_eval`
+1. Restart MCP in XP mode and compare its selected host and sustained
+   `expPerSec` with the pre-change baseline; verify it reports no invariant
+   violations.
+2. At the next qualified target switch, inspect the `r8_switch_veto_eval`
    event from run `msz75bg7-bz3o`: finite scores and `available:true` prove
    Formulas.exe is active; a veto is only expected when the candidate is
    below R8's 0.8 threshold.

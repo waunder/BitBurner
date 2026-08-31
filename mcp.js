@@ -9,6 +9,7 @@ import {
   SECURITY_EPSILON,
   computeWorkWeights,
   computeTargetScore,
+  computeXpTargetScore,
   computeTargetEffectiveScore,
   evaluateMoneyDegradation,
   evaluateOpportunitySwitch,
@@ -151,8 +152,10 @@ let OBJECTIVE = "money"
 // weaken, which econ_probe.js exists to gather. Expect these two numbers
 // specifically to change once that data exists — that's why they're
 // separate hot-reloadable config keys rather than a hardcoded table.
-let XP_WEIGHT_HACK = 0.8
-let XP_WEIGHT_GROW = 0.2
+// Hack gives the best XP per GB-second. Keep a small grow share solely to
+// prevent a target reaching exactly $0, where hacks only pay failure XP.
+let XP_WEIGHT_HACK = 0.95
+let XP_WEIGHT_GROW = 0.05
 const ACTION_SCRIPTS = ["/scripts/grow.js", "/scripts/hack.js", "/scripts/weaken.js"]
 const HACK_SEC_INCREASE = 0.002
 const GROW_SEC_INCREASE = 0.004
@@ -684,6 +687,23 @@ function getTargetEffectiveScore(ns, server, poolThreads) {
   return effective
 }
 
+// XP mode needs its own selector: money potential is irrelevant to XP per
+// thread-second and strongly favours slow, high-money targets. The score is
+// intentionally based on the target's current chance/time, matching the
+// scheduler's existing "can work it now" eligibility check.
+function getTargetXpScore(ns, server) {
+  if (!isHackableTarget(ns, server)) return 0
+  return computeXpTargetScore({
+    baseSecurity: ns.getServerBaseSecurityLevel(server),
+    hackChance: ns.hackAnalyzeChance(server),
+    hackTime: ns.getHackTime(server) / 1000,
+  })
+}
+
+function getTargetSelectionScore(ns, server, poolThreads) {
+  return OBJECTIVE === "xp" ? getTargetXpScore(ns, server) : getTargetEffectiveScore(ns, server, poolThreads)
+}
+
 // The optional R8 decision uses the game's formulas against a minimum-security
 // copy of each server. It is called only after the existing scheduler has
 // already selected a switch candidate, so it cannot become a parallel target
@@ -783,9 +803,8 @@ function expireTargetExclusions(skippedTargets, drainedTargets) {
 }
 
 /**
- * Ranks viable targets by income rate discounted for current readiness, so a
- * server that is already grown and immediately productive beats an equally
- * capable one that would need many minutes of grow first.
+ * Ranks viable targets by the active objective. Money mode uses income rate
+ * discounted for readiness; XP mode uses XP per hack thread-second.
  * @param {Map<string, number>} skippedTargets
  * @param {Map<string, number>} drainedTargets
  * @returns {{server: string, score: number}[]} ranked best-first
@@ -800,7 +819,7 @@ function rankTargets(ns, servers, maxWeaken, skippedTargets, drainedTargets, ign
     const requiredWeaken = getTargetWeakenThreads(ns, server)
     if (requiredWeaken > maxWeaken) continue
 
-    candidates.push({ server, score: getTargetEffectiveScore(ns, server, maxWeaken) })
+    candidates.push({ server, score: getTargetSelectionScore(ns, server, maxWeaken) })
   }
 
   candidates.sort((a, b) => b.score - a.score)
@@ -1343,7 +1362,7 @@ export async function main(ns) {
         // test read "too slow to see yet" as "dead" and drained a perfectly
         // good target on a level-1 character.
         //
-        // XP mode's fixed hack:0.8/grow:0.2 split (see buildPlan) drains
+        // XP mode's fixed hack:0.95/grow:0.05 split (see buildPlan) drains
         // every target's money toward zero by design and never lets it
         // recover — moneyDegraded would fire on essentially every target in
         // an endless chain, defeating XP mode's point of sitting still and
@@ -1445,9 +1464,11 @@ export async function main(ns) {
         // captured by closure as poolThreads — see getTargetScore/
         // getTargetEffectiveScore's own comments for why reusing it costs
         // nothing extra.
-        const measure = idle
-          ? (server) => getTargetEffectiveScore(ns, server, maxWeaken)
-          : (server) => getTargetScore(ns, server, maxWeaken)
+        const measure = OBJECTIVE === "xp"
+          ? (server) => getTargetXpScore(ns, server)
+          : idle
+            ? (server) => getTargetEffectiveScore(ns, server, maxWeaken)
+            : (server) => getTargetScore(ns, server, maxWeaken)
         const candidates = ranked.map(({ server }) => ({ server, score: measure(server) }))
         const currentScore = measure(currentTarget)
 
@@ -1496,7 +1517,7 @@ export async function main(ns) {
 
     const candidateTarget = chooseTarget(ns, servers, maxWeaken, skippedTargets, drainedTargets)
     const candidateExpectedIncome = candidateTarget ? getTargetExpectedIncome(ns, candidateTarget) : 0
-    const candidateScore = candidateTarget ? getTargetEffectiveScore(ns, candidateTarget, maxWeaken) : 0
+    const candidateScore = candidateTarget ? getTargetSelectionScore(ns, candidateTarget, maxWeaken) : 0
 
     if (!targetOverride && !currentTarget && candidateTarget) {
       const requiredWeaken = getTargetWeakenThreads(ns, candidateTarget)

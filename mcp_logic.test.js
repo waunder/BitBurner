@@ -22,6 +22,7 @@ import {
   evaluateStuckTarget,
   computeWorkWeights,
   computeTargetScore,
+  computeXpTargetScore,
   computeTargetEffectiveScore,
   computeTickInvariantChecks,
   computeDesiredAllocation,
@@ -31,6 +32,29 @@ import {
   missingDesiredScripts,
   missingActionLaunchPlan,
 } from "./mcp_logic.js"
+
+describe("computeXpTargetScore", () => {
+  test("prefers faster targets when XP and chance are otherwise equal", () => {
+    const fast = computeXpTargetScore({ baseSecurity: 15, hackChance: 1, hackTime: 2 })
+    const slow = computeXpTargetScore({ baseSecurity: 15, hackChance: 1, hackTime: 10 })
+    assert.equal(fast, slow * 5)
+  })
+
+  test("credits failed hacks at one quarter of the normal XP rate", () => {
+    const certain = computeXpTargetScore({ baseSecurity: 10, hackChance: 1, hackTime: 4 })
+    const impossible = computeXpTargetScore({ baseSecurity: 10, hackChance: 0, hackTime: 4 })
+    assert.equal(impossible, certain * 0.25)
+  })
+
+  test("rejects unusable inputs and clamps chance to its valid range", () => {
+    assert.equal(computeXpTargetScore({ baseSecurity: 10, hackChance: 1, hackTime: 0 }), 0)
+    assert.equal(computeXpTargetScore({ baseSecurity: -1, hackChance: 1, hackTime: 1 }), 0)
+    assert.equal(
+      computeXpTargetScore({ baseSecurity: 10, hackChance: 2, hackTime: 4 }),
+      computeXpTargetScore({ baseSecurity: 10, hackChance: 1, hackTime: 4 })
+    )
+  })
+})
 
 // Real values from mcp.js's own constants/RAM readouts (see
 // hacking-mechanics.md — cross-checked against the game's own source).

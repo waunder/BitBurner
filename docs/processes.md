@@ -530,26 +530,21 @@ argument, confirming hacking XP per completed action is independent of how
 much was actually stolen. The entire reason money mode ramps hack down to
 near-zero on a drained target is that a near-zero steal isn't worth the
 security cost — a reason that simply doesn't exist for XP. So XP mode uses
-one fixed split regardless of `moneyPct`: `XP_WEIGHT_HACK` (default 0.8) and
-`XP_WEIGHT_GROW` (default 0.2), tagged with the `"xp"` regime so switching
+one fixed split regardless of `moneyPct`: `XP_WEIGHT_HACK` (default 0.95) and
+`XP_WEIGHT_GROW` (default 0.05), tagged with the `"xp"` regime so switching
 `OBJECTIVE` live is still recognized as a regime change (`weight_regime_change`
 event) the same way a money-mode ramp/harvest transition is.
 
-**That 0.8/0.2 split is reasoned, not measured** — hack has the shortest
-cycle time of the three actions, so more threads complete per second, all
-else equal. It has not been checked against real exp/sec/thread numbers for
-grow or weaken. `econ_probe.js` exists to gather exactly that (see its own
-header) and these two numbers are expected to change once real data exists —
-that's why they're config keys instead of a hardcoded table.
+XP mode uses a 0.95/0.05 hack/grow split. Hack has the best XP per GB-second;
+the small grow share is insurance against reducing a target to exactly $0,
+where a hack receives only failure XP. It ranks targets independently of
+money using `(3 + 0.3 * baseSecurity) * (0.25 + 0.75 * chance) / hackTime`:
+the game's base XP per action, adjusted for a failed hack's quarter-XP award,
+per hack-thread second. This branch is reachable only while `OBJECTIVE` is
+`"xp"`; money-mode scoring and allocation are unchanged.
 
-Target *selection* is unchanged in both modes — still scored by $/s. Making
-selection itself XP-aware is a larger, riskier change than reweighting
-hack/grow, and is deliberately not happening until real data justifies a
-specific formula rather than a guess.
-
-**Money-based eviction is disabled in XP mode.** The 0.8/0.2 split above is
-hack-heavy by design, so it drains every target's money toward zero and never
-lets it recover (grow is only 20% of the mix) — the `moneyDegraded` check
+**Money-based eviction is disabled in XP mode.** The hack-heavy split above
+drains each target's money toward zero by design — the `moneyDegraded` check
 described under "The opportunity switch"/step 3 above would then read that as
 every target "yield degraded" in turn and evict it, chaining from target to
 target indefinitely and defeating XP mode's entire point of sitting still to

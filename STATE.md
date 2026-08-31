@@ -15,6 +15,10 @@ post-restart qualified switch evaluation.
 
 ## Done
 
+- **Low-impact Darknet HUD added**, 2026-08-31: `dnet_hud.js` reads only the
+  root heartbeat and compact manager registry every 15 seconds; it neither
+  scans shards nor writes telemetry. It is source-synced but intentionally
+  opt-in, and can be run safely while Darknet itself remains paused.
 - **XP-targeting upgrade implemented and locally verified**, 2026-08-31:
   XP mode now ranks hosts by relative XP per hack-thread second rather than
   money potential, and uses the evidence-backed 95% hack / 5% grow split.

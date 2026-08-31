@@ -10,6 +10,9 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
 
 ## Now
 
+- [x] **Add a safe Darknet health panel.** `dnet_hud.js` is opt-in and reads
+  just the root heartbeat plus compact manager registry every 15 seconds;
+  it avoids the scorecard's shard scans and emits no telemetry writes.
 - [x] **Make XP targeting actually XP-aware.** XP mode now ranks target
   hosts by XP per hack-thread second, rather than money potential, and uses
   the 0.95/0.05 hack/grow split. The change is local-test verified (190/190)

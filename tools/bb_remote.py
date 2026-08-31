@@ -773,6 +773,7 @@ WATCHED_FILES = [
     "dnet_realloc.js",
     "dnet_phish.js",
     "dnet_scorecard.js",
+    "dnet_hud.js",
     "dnet_crawl.js",
     "dnet_manager.js",
     "dnet_root.js",

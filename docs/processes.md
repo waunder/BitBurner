@@ -904,6 +904,25 @@ Dark Net money category.
 +----------------------------------+
 ```
 
+### `dnet_hud.js`
+
+Low-impact Darknet health panel. Unlike `dnet_scorecard.js`, it never scans
+credential, deployer, or loot shards and writes no telemetry of its own. It
+reads only `dnet_deployer_home.json` (the root gateway heartbeat) and
+`dnet_manager_registry.json` (the compact active-manager registry), then
+refreshes every 15 seconds.
+
+- **Start:** `run dnet_hud.js`; optional `x= y= w= h=` position it like the
+  other panels. Re-running it replaces the prior panel.
+- **Shows:** root heartbeat freshness, active-manager count, known
+  credentials, last-pass and lifetime delegation/failure counters,
+  instability, and the latest failure stage/host.
+- **Interpretation:** `STALE` means the root heartbeat is older than 30
+  seconds or unavailable; it does not itself prove the full Darknet is down.
+- **Cost profile:** two small `ns.read()` calls and one bounded tail redraw
+  per 15-second refresh. It deliberately avoids `ns.ls()` and per-shard JSON
+  parsing, which makes it appropriate while investigating renderer freezes.
+
 ### `mcp_stocks.js`
 
 Read-only stock market panel — groundwork for trading, not trading itself.

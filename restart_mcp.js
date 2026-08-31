@@ -26,16 +26,22 @@ export async function main(ns) {
   // relaunched MCP, which could consume home RAM before dnet_killswarm's
   // final `ns.run("dnet_root.js")`.
   if (restartDarknet) {
-    const dnetPid = ns.run("dnet_killswarm.js", 1, "--restart")
-    if (dnetPid === 0) ns.tprint("restart_mcp: failed to start dnet_killswarm.js --restart")
+    // Do not ask cleanup to launch the root itself: at that point cleanup is
+    // still occupying its own RAM, which made the root launch fail even
+    // though enough RAM became free a moment later. This parent has waited
+    // for cleanup to exit, so it is the reliable launcher.
+    const dnetPid = ns.run("dnet_killswarm.js", 1, "--quiet")
+    if (dnetPid === 0) ns.tprint("restart_mcp: failed to start dnet_killswarm.js")
     else {
-      ns.tprint(`restart_mcp: waiting for Dark Net cleanup/restart (pid ${dnetPid}) before MCP relaunch`)
+      ns.tprint(`restart_mcp: waiting for Dark Net cleanup (pid ${dnetPid}) before root/MCP relaunch`)
       const deadline = Date.now() + 2 * 60 * 1000
       while (ns.isRunning(dnetPid) && Date.now() < deadline) await ns.sleep(100)
       if (ns.isRunning(dnetPid)) {
         ns.tprint("restart_mcp: Dark Net cleanup exceeded 120s; restarting MCP without waiting further")
       } else {
-        ns.tprint("restart_mcp: Dark Net cleanup/restart completed")
+        const rootPid = ns.run("dnet_root.js", 1)
+        if (rootPid === 0) ns.tprint("restart_mcp: Dark Net cleanup completed, but dnet_root.js failed to start")
+        else ns.tprint(`restart_mcp: Dark Net cleanup completed; started dnet_root.js (pid ${rootPid})`)
       }
     }
   }

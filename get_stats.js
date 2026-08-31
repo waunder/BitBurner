@@ -218,6 +218,7 @@ function disableLogs(ns) {
 		"getServerMaxMoney",
 		"getServerMinSecurityLevel",
 		"getServerUsedRam",
+		"sleep",
 	]
 	for (const log of logs) {
 		ns.disableLog(log)

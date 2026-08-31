@@ -1102,6 +1102,9 @@ escaped) and filters `ns.ls(host)` client-side.
 - **Start:** `run lsf.js <pattern> [host]` — e.g. `run lsf.js *.msg`,
   `run lsf.js *.cct n00dles`. `host` defaults to the server the script runs
   on. `run lsf.js *` lists everything, same as plain `ls`.
+- **Output:** with AutoLink.exe, every returned filename is a clickable link
+  that connects the terminal to the server holding it; without it, output
+  remains plain text.
 - **Reads:** the live game (`ns.ls`), nothing on disk.
 
 ### `mcp_status.js`

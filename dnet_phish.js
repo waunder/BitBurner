@@ -20,7 +20,6 @@ export async function main(ns) {
   while (true) {
     if (flags.until > 0 && Date.now() >= flags.until) return
     const result = await ns.dnet.phishingAttack()
-    ns.print(`PHISH success=${result.success} code=${result.code} message=${JSON.stringify(result.message)}`)
     if (result.success && /cache file/i.test(String(result.message))) {
       ns.write(`dnet_phish_cache_${Date.now()}.txt`, "cache generated\n", "w")
       return

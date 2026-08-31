@@ -10,6 +10,11 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
 
 ## Now
 
+- [x] **Contain the Darknet freeze paths before another live run.** The
+  paused default is one gateway manager, one silent phish worker, and no
+  propagation; root shard scans are throttled to 60s (credentials) / 15s
+  (manager registry). A bounded live re-enable still needs Ken's approval.
+
 - [x] **Silence routine Darknet loot output.** `dnet_loot.js` now keeps
   normal/no-op results in its event shards rather than terminal/log spam,
   while preserving cache and shipping error output.

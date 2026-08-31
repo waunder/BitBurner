@@ -61,12 +61,15 @@ export const LOOT_SHARD_SUFFIX = ".json"
 // track. MAX_SPREAD_PER_PASS (below) is the actual fix for that; this
 // resident cap stays as a secondary, longer-run safety net now that the
 // burst itself is throttled at the source.
-export const MAX_ACTIVE_MANAGERS = 8
+// The only safe default while the freeze root cause is being verified is one
+// resident manager.  It makes the cap real even before a home-issued lease
+// protocol replaces the old, stale-snapshot admission scheme.
+export const MAX_ACTIVE_MANAGERS = 1
 // How often dnet_root.js folds fresh manager-heartbeat shards into the
 // registry (was 5000ms, tied to RETRY_MS, until the overshoot above showed
 // that gap was wide enough to matter) — this is the other lever on the
 // same race: not eliminating it, just shrinking the window.
-export const REGISTRY_MERGE_MS = 1000
+export const REGISTRY_MERGE_MS = 15 * 1000
 
 // Propagation throttle (2026-08-30, same incident as above, added after
 // MAX_ACTIVE_MANAGERS alone proved insufficient twice live). Bounds
@@ -79,7 +82,10 @@ export const REGISTRY_MERGE_MS = 1000
 // purpose — this governs how explosively the fan-out tree can grow per
 // generation, and two live incidents tonight argue for erring conservative
 // over erring fast.
-export const MAX_SPREAD_PER_PASS = 2
+// Diagnostic-safe default: retain the gateway manager but do not create a
+// propagation wave.  A controlled expansion needs an explicit new policy,
+// rather than silently returning to the failure-prone fan-out.
+export const MAX_SPREAD_PER_PASS = 0
 export const MANAGER_REGISTRY_FILE = "dnet_manager_registry.json"
 export const MANAGER_SHARD_PREFIX = "dnet_manager_active_"
 export const MANAGER_SHARD_SUFFIX = ".json"

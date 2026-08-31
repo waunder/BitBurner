@@ -26,13 +26,10 @@ const MANAGER = "dnet_manager.js"
 const REALLOC = "dnet_realloc.js"
 const LEGACY = "dnet_deploy.js"
 const FILES = [CRAWLER, MANAGER, REALLOC, "dnet_lib.js", "dnet_loot.js", "dnet_loot_realloc.js", "dnet_phish.js"]
-// Was a flat 5000ms until the 2026-08-30 cap-overshoot incident showed that
-// gap was wide enough to matter for the registry merge below — now tied to
-// REGISTRY_MERGE_MS (dnet_lib.js) so both this loop's own polling and the
-// registry's freshness share the same, now-tighter cadence. This file's own
-// per-pass work (home's direct neighbors — normally just darkweb) is cheap
-// enough that running it more often costs little.
-const RETRY_MS = REGISTRY_MERGE_MS
+// Gateway work is intentionally separate from shard maintenance: checking
+// darkweb may stay responsive without rereading hundreds of historic shards.
+const RETRY_MS = 5000
+const CREDENTIAL_MERGE_MS = 60 * 1000
 
 // Home-side half of the concurrency cap (2026-08-30) — see dnet_lib.js's own
 // comment on MAX_ACTIVE_MANAGERS for why this exists. Piggybacks on this
@@ -86,14 +83,22 @@ export async function main(ns) {
   ns.disableLog("ALL")
   const creds = readCreds(ns)
   let pass = 0
+  let lastCredentialMergeAt = -Infinity
+  let lastRegistryMergeAt = -Infinity
   const lifetime = { seen: 0, sessions: 0, legacyKilled: 0, prepared: 0, delegated: 0, failed: 0 }
   let lastFailure = null
 
   while (true) {
     pass++
     const started = Date.now()
-    mergeCredentialShards(ns, creds)
-    mergeManagerRegistryShards(ns)
+    if (started - lastCredentialMergeAt >= CREDENTIAL_MERGE_MS) {
+      mergeCredentialShards(ns, creds)
+      lastCredentialMergeAt = started
+    }
+    if (started - lastRegistryMergeAt >= REGISTRY_MERGE_MS) {
+      mergeManagerRegistryShards(ns)
+      lastRegistryMergeAt = started
+    }
     const summary = { seen: 0, sessions: 0, legacyKilled: 0, prepared: 0, delegated: 0, failed: 0 }
 
     for (const target of ns.dnet.probe()) {
@@ -166,6 +171,12 @@ export async function main(ns) {
       thisPass: summary,
       sinceProcessStart: { ...lifetime },
       localKnownCreds: Object.keys(creds).length,
+      maintenance: {
+        credentialMergeEveryMs: CREDENTIAL_MERGE_MS,
+        registryMergeEveryMs: REGISTRY_MERGE_MS,
+        lastCredentialMergeAt,
+        lastRegistryMergeAt,
+      },
       lastFailure,
       crawlRam: ns.getScriptRam(CRAWLER, "home"),
       instability: ns.dnet.getDarknetInstability(),

@@ -15,6 +15,14 @@ post-restart qualified switch evaluation.
 
 ## Done
 
+- **Darknet freeze safeguards implemented, 2026-08-31:** analysis isolated
+  unbounded 200ms phishing output/workers, stale local manager-cap snapshots,
+  and `dnet_root.js` rereading hundreds of credential shards every second.
+  The paused suite now defaults to one gateway manager, one phish worker, no
+  propagation, no per-attempt phish log, and 60s/15s credential/registry
+  maintenance. It still requires Ken's explicit approval for a bounded live
+  re-enable experiment.
+
 - **Darknet loot log spam removed**, 2026-08-31: normal and no-op
   `dnet_loot.js` runs no longer write a terminal report or routine
   reallocation line. Meaningful results remain in immutable loot shards;

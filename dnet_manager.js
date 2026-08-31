@@ -15,6 +15,11 @@ const POLL_MS = 1000
 const RETRY_MS = 5000
 const STATUS_FILE = "dnet_manager_status.json"
 
+// A manager must not turn every spare GB into an independent 200ms API loop.
+// Keep the initial post-incident experiment to exactly one worker; a future
+// controlled policy can raise this only with measured headroom.
+export const MAX_PHISH_THREADS = 1
+
 // Concurrency-cap heartbeat (2026-08-30) — dnet_crawl.js reserves this
 // host's slot once, right before spawning this process; this file's job is
 // only to keep that slot from going stale (MANAGER_STALE_MS, 5min in
@@ -113,7 +118,7 @@ export async function main(ns) {
         continue
       }
 
-      const threads = projectedThreads(ns, PHISH)
+      const threads = Math.min(MAX_PHISH_THREADS, projectedThreads(ns, PHISH))
       if (threads < 1) {
         await ns.sleep(POLL_MS)
         continue

@@ -31,7 +31,7 @@ const FILES = [SELF, MANAGER, REALLOC, "dnet_lib.js", "dnet_loot.js", "dnet_loot
 // Bitburner's RAM accounting is driven by which ns-touching functions get
 // called, not by which plain constants a leaf script happens to export, and
 // nothing else in-game imports this file, so this costs nothing live.
-export const MAX_ACTIVE_MANAGERS = 8
+export const MAX_ACTIVE_MANAGERS = 1
 export const MANAGER_REGISTRY_FILE = "dnet_manager_registry.json"
 export const MANAGER_SHARD_PREFIX = "dnet_manager_active_"
 export const MANAGER_STALE_MS = 5 * 60 * 1000
@@ -40,7 +40,7 @@ export const MANAGER_STALE_MS = 5 * 60 * 1000
 // bounds steady-state resident count but does nothing to slow the
 // propagation burst itself, which turned out to be the actual driver of
 // two live freezes tonight.
-export const MAX_SPREAD_PER_PASS = 2
+export const MAX_SPREAD_PER_PASS = 0
 
 function safeHost(host) {
   let safe = ""

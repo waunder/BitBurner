@@ -1,5 +1,20 @@
 # Darknet strategy
 
+> **Update, 2026-08-31 — freeze containment, not yet a live cure.** Reading
+> the game's source narrowed the API theory: `probe()` only enumerates direct
+> neighbours, `getServerDetails()` reads one host, and `phishingAttack()`
+> delays then mutates that host/player; none scans the whole Darknet. The
+> suite itself still had two unbounded load paths: every phishing worker
+> printed each result (one result can arrive every 200ms), and `dnet_root.js`
+> listed/read/parsed all historical credential shards on every one-second
+> pass. The resident-cap was also only a stale local snapshot, so it cannot
+> be treated as a hard global limit. The paused default now permits one
+> manager, one silent phish worker, zero propagation, credential merges once
+> per minute, and registry merges every 15 seconds. This is deliberately a
+> minimal **diagnostic profile**: do not re-enable it until a bounded live
+> experiment is explicitly approved and observed; a stable run is required
+> before designing a controlled expansion policy.
+
 > **Status, 2026-08-30:** root cause found and fixed, pending live
 > confirmation. Restarted 2026-08-30 with no concurrency cap and froze
 > Bitburner completely — confirmed via `ps`: the renderer process pegged at

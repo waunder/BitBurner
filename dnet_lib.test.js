@@ -20,7 +20,10 @@ import {
   MANAGER_SHARD_PREFIX as CRAWL_MANAGER_SHARD_PREFIX,
   MAX_SPREAD_PER_PASS as CRAWL_MAX_SPREAD_PER_PASS,
 } from "./dnet_crawl.js"
-import { MANAGER_SHARD_PREFIX as MANAGER_JS_SHARD_PREFIX } from "./dnet_manager.js"
+import {
+  MANAGER_SHARD_PREFIX as MANAGER_JS_SHARD_PREFIX,
+  MAX_PHISH_THREADS,
+} from "./dnet_manager.js"
 import {
   chooseLootMode,
   freeBlockedRam,
@@ -415,6 +418,12 @@ describe("dnet_crawl.js/dnet_manager.js's duplicated cap constants stay in sync 
 
   test("dnet_crawl.js's MAX_SPREAD_PER_PASS matches dnet_lib.js's", () => {
     assert.equal(CRAWL_MAX_SPREAD_PER_PASS, MAX_SPREAD_PER_PASS)
+  })
+
+  test("post-incident diagnostic profile cannot silently restore fan-out", () => {
+    assert.equal(MAX_ACTIVE_MANAGERS, 1)
+    assert.equal(MAX_SPREAD_PER_PASS, 0)
+    assert.equal(MAX_PHISH_THREADS, 1)
   })
 })
 

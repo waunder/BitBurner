@@ -1715,7 +1715,10 @@ does what the UI does). Design reasoning lives in `docs/darknet-functions.md`
 - `dnet_crawl.js` — `--brute N`, `--quiet`.
 - `dnet_phish.js` — `--until <epoch-ms>` (manager-owned clean recrawl deadline).
 - `dnet_killswarm.js` — `--quiet`, `--restart` (launch a fresh crawler after
-  cleanup; remotely reachable through `restart_mcp.js --darknet`). Cleanup
+  cleanup; remotely reachable through `restart_mcp.js --darknet`). The
+  restart wrapper waits up to 120 seconds for cleanup/root launch before it
+  relaunches MCP, so MCP cannot consume home RAM during the root-launch race.
+  Cleanup
   authenticates only hosts with a heartbeat from the last ten minutes, then
   runs remote `ps`/`kill`; this is both effective and bounded, unlike either
   unauthenticated cleanup (live failure) or visiting all 586 historical hosts.

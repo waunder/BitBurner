@@ -22,6 +22,11 @@ post-restart qualified switch evaluation.
   propagation, no per-attempt phish log, and 60s/15s credential/registry
   maintenance. It still requires Ken's explicit approval for a bounded live
   re-enable experiment.
+- **Darknet canary launch race fixed, 2026-08-31:** `restart_mcp.js --darknet`
+  previously started `dnet_killswarm.js --restart` and immediately restarted
+  MCP, sometimes leaving too little home RAM for the cleanup process's final
+  `dnet_root.js` launch. It now waits up to two minutes for that finite
+  cleanup/restart to complete before MCP returns.
 
 - **Darknet loot log spam removed**, 2026-08-31: normal and no-op
   `dnet_loot.js` runs no longer write a terminal report or routine

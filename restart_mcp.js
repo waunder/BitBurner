@@ -21,12 +21,23 @@ export async function main(ns) {
   }
 
   // Start Dark Net cleanup while MCP's large worker allocation is still
-  // absent. Starting MCP first can consume all but its reserve before this
-  // finite controller gets a chance to launch.
+  // absent.  Crucially, wait for it to launch the replacement root before
+  // starting MCP: previously this merely *started* cleanup and immediately
+  // relaunched MCP, which could consume home RAM before dnet_killswarm's
+  // final `ns.run("dnet_root.js")`.
   if (restartDarknet) {
     const dnetPid = ns.run("dnet_killswarm.js", 1, "--restart")
     if (dnetPid === 0) ns.tprint("restart_mcp: failed to start dnet_killswarm.js --restart")
-    else ns.tprint(`restart_mcp: Dark Net cleanup/restart delegated to dnet_killswarm.js (pid ${dnetPid})`)
+    else {
+      ns.tprint(`restart_mcp: waiting for Dark Net cleanup/restart (pid ${dnetPid}) before MCP relaunch`)
+      const deadline = Date.now() + 2 * 60 * 1000
+      while (ns.isRunning(dnetPid) && Date.now() < deadline) await ns.sleep(100)
+      if (ns.isRunning(dnetPid)) {
+        ns.tprint("restart_mcp: Dark Net cleanup exceeded 120s; restarting MCP without waiting further")
+      } else {
+        ns.tprint("restart_mcp: Dark Net cleanup/restart completed")
+      }
+    }
   }
 
   const pid = ns.run("mcp.js", 1, ...mcpArgs)

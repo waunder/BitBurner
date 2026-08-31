@@ -1,4 +1,6 @@
 /** @param {NS} ns */
+const DNET_RESTART_STATUS_FILE = "dnet_restart_status.json"
+
 export async function main(ns) {
   const restartDarknet = ns.args.some((arg) => String(arg) === "--darknet")
   const startScorecard = ns.args.some((arg) => String(arg) === "--dnet-scorecard")
@@ -38,9 +40,21 @@ export async function main(ns) {
       while (ns.isRunning(dnetPid) && Date.now() < deadline) await ns.sleep(100)
       if (ns.isRunning(dnetPid)) {
         ns.tprint("restart_mcp: Dark Net cleanup exceeded 120s; restarting MCP without waiting further")
+        ns.write(DNET_RESTART_STATUS_FILE, JSON.stringify({
+          ts: Date.now(), phase: "cleanup-timeout", cleanupPid: dnetPid,
+        }), "w")
       } else {
+        const before = {
+          ts: Date.now(), phase: "launching-root",
+          rootRam: ns.getScriptRam("dnet_root.js", "home"),
+          maxRam: ns.getServerMaxRam("home"),
+          usedRam: ns.getServerUsedRam("home"),
+        }
         const rootPid = ns.run("dnet_root.js", 1)
-        if (rootPid === 0) ns.tprint("restart_mcp: Dark Net cleanup completed, but dnet_root.js failed to start")
+        ns.write(DNET_RESTART_STATUS_FILE, JSON.stringify({
+          ...before, rootPid, usedRamAfter: ns.getServerUsedRam("home"),
+        }), "w")
+        if (rootPid === 0) ns.tprint(`restart_mcp: Dark Net cleanup completed, but dnet_root.js failed to start (${JSON.stringify(before)})`)
         else ns.tprint(`restart_mcp: Dark Net cleanup completed; started dnet_root.js (pid ${rootPid})`)
       }
     }

@@ -1,9 +1,20 @@
 /** Submit exactly one explicit Coding Contract, guarded by its audit snapshot. */
 import { solveContract } from "cct_logic.js"
-import { contractFingerprint } from "cct_audit.js"
 
 const INVENTORY = "cct_inventory.json"
 const OUTPUT = "cct_submit_status.json"
+
+// Keep this small helper local so the finite submit task does not import the
+// audit's network-scan API footprint when home RAM is tight.
+function contractFingerprint(type, data) {
+  const text = `${type}\n${JSON.stringify(data)}`
+  let hash = 2166136261
+  for (let i = 0; i < text.length; i++) {
+    hash ^= text.charCodeAt(i)
+    hash = Math.imul(hash, 16777619)
+  }
+  return `fnv1a-${(hash >>> 0).toString(16).padStart(8, "0")}`
+}
 
 function writeStatus(ns, status) {
   ns.write(OUTPUT, JSON.stringify({ ts: Date.now(), ...status }, null, 2), "w")

@@ -292,23 +292,12 @@ rejected at startup rather than silently ignored.
    conditional" below).
 8. Write status.
 
-**Worker hosts (`getWorkerHosts`) — `home` included since 2026-08-14 (R7,
-shipped, not yet confirmed live).** Previously excluded outright
-(`getHostFreeRam` special-cased it to a flat 0). Now included like any other
-rooted host, but `getHostFreeRam` subtracts `HOME_RAM_RESERVE` (default
-32GB) off `home`'s free RAM before anything else can claim it — `mcp.js`
-itself, `mcp_hud.js`, and `mcp_supervisor.js` all run there, so
-under-reserving is a farm-stopping failure (starves the orchestrator itself),
-not just a throughput loss. The reserve is a continuous subtraction, clamped
-at 0 via the existing `Math.max(0, freeRam)`, not a binary "skip home
-entirely below the reserve" gate — so `home` degrades gracefully toward zero
-allocated threads as its own footprint grows, rather than cutting out sharply
-at some other threshold. `allocateThreads` no longer special-cases `home` to
-skip deployment (that early-return only made sense while `home` was
-categorically excluded); it does still skip the `copyActionScripts` scp step
-for `home` specifically, since the action scripts already live there (`mcp.js`
-itself runs from `home`) — same guard `share_deploy.js` already uses for the
-same reason.
+**Worker hosts (`getWorkerHosts`) — `home` excluded since 2026-09-01.** MCP
+uses rooted remote servers only. `home` is reserved entirely for the manager,
+diagnostics, contract tools, and user work; startup also kills any historical
+home `weaken`/`grow`/`hack` workers so the change takes effect cleanly after a
+restart. `HOME_RAM_RESERVE` remains a compatibility/diagnostic setting but no
+longer allocates worker threads on home.
 
 **Target exclusions are preferences, not bans.** If nothing qualifies,
 selection reruns ignoring exclusions. Without that fallback the bot livelocked

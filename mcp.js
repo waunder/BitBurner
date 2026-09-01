@@ -844,11 +844,9 @@ function chooseTarget(ns, servers, maxWeaken, skippedTargets, drainedTargets) {
   return ranked.length > 0 ? ranked[0].server : null
 }
 
-// home (hacking-strategy.md R7, 2026-08-14): included as a worker like any
-// other rooted host, but with HOME_RAM_RESERVE (default 32GB) kept off the
-// top — mcp.js/the HUD/the supervisor all run there, and under-reserving
-// starves them, which is a farm-stopping failure rather than a throughput
-// loss. Every other host keeps its old unreserved behavior.
+// Retained for config compatibility and any diagnostics that calculate home
+// headroom. Home is deliberately not a worker host: it is the control plane
+// and should remain available for tools, contracts, and future RAM upgrades.
 function getHostFreeRam(ns, host) {
   const usedRam = ns.getServerUsedRam(host)
   let freeRam = ns.getServerMaxRam(host) - usedRam
@@ -860,6 +858,7 @@ function getWorkerHosts(ns, servers = null) {
   const hosts = servers || scanNetwork(ns)
   const workers = []
   for (const server of hosts) {
+    if (server === "home") continue
     if (!ns.hasRootAccess(server)) continue
     // Needs room for at least a couple of action threads to be worth the
     // scp/exec overhead; the largest action script is ~1.75GB.
@@ -1110,6 +1109,12 @@ function cleanupOrphanedActionScripts(ns) {
   // which then blocks every candidate in chooseTarget() and the bot can
   // never recover on its own. Sweep them all before doing anything else.
   let killedHosts = 0
+  // Home was a worker historically. Sweep it explicitly even though it no
+  // longer appears in getWorkerHosts(), so a restart releases old workers.
+  if (getRunningActions(ns, "home").length > 0) {
+    killActionScripts(ns, "home")
+    killedHosts++
+  }
   for (const host of getWorkerHosts(ns)) {
     const before = getRunningActions(ns, host).length
     if (before === 0) continue

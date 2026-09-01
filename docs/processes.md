@@ -1162,8 +1162,9 @@ and Darknet records explicitly.
 
 ### `cct_watcher.js`
 
-Read-only contract discovery, started with `restart_mcp.js --cct-watch`. It
-runs an audit on one cloud worker every ten minutes, then copies
+Read-only contract discovery, started with `restart_mcp.js --cct-watch`. A
+small home-side controller runs a finite audit on one cloud worker every ten
+minutes, then copies
 `cct_inventory.json` and `cct_watch_status.json` back to home. The operations
 HUD shows the discovered count and inventory age. It never submits or spends
 an attempt.

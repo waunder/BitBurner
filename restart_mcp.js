@@ -153,18 +153,12 @@ export async function main(ns) {
     else while (ns.isRunning(purchasePid)) await ns.sleep(100)
   }
 
-  // Discovery runs once per ten minutes and never submits. Place it on a
-  // cloud worker; MCP gets that worker's remaining RAM after it launches.
+  // Discovery stays a tiny controller on home; its finite scan runs on a
+  // cloud worker every ten minutes and releases that worker immediately.
   if (startCctWatcher) {
-    const watcherRam = ns.getScriptRam("cct_watcher.js", "home")
-    const worker = ns.cloud.getServerNames()
-      .filter((host) => ns.hasRootAccess(host) && ns.getServerMaxRam(host) >= watcherRam)
-      .sort((a, b) => ns.getServerMaxRam(b) - ns.getServerMaxRam(a))[0]
-    if (!worker) ns.tprint("restart_mcp: no cloud worker can host cct_watcher.js")
-    else if (!ns.ps(worker).some((proc) => proc.filename.replace(/^\//, "") === "cct_watcher.js")) {
-      const copied = await ns.scp(["cct_watcher.js", "cct_audit.js"], worker, "home")
-      const watcherPid = copied ? ns.exec("cct_watcher.js", worker, 1) : 0
-      if (watcherPid === 0) ns.tprint(`restart_mcp: failed to start cct watcher on ${worker}`)
+    if (!ns.isRunning("cct_watcher.js", "home")) {
+      const watcherPid = ns.run("cct_watcher.js", 1)
+      if (watcherPid === 0) ns.tprint("restart_mcp: failed to start cct watcher")
     }
   }
 

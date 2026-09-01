@@ -1107,6 +1107,18 @@ escaped) and filters `ns.ls(host)` client-side.
   remains plain text.
 - **Reads:** the live game (`ns.ls`), nothing on disk.
 
+### `cct_audit.js`
+
+Read-only coding-contract inventory. It breadth-first scans rooted servers,
+records each `.cct` file's type, input, description, and remaining attempts
+in `cct_inventory.json`, and **never** calls `ns.codingcontract.attempt()`.
+
+- **Start:** `run cct_audit.js` on `home`, or use the remote restart request
+  flag `--cct-audit` to run it after MCP relaunch.
+- **Output:** `cct_inventory.json`, pulled automatically by the Remote API.
+- **Purpose:** establish the actual contract mix and test solver inputs before
+  any code is allowed to submit an answer.
+
 ### `mcp_status.js`
 
 Mirrors `mcp.js`'s tail output into its own window, so the orchestrator's

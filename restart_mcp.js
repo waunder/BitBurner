@@ -4,7 +4,8 @@ const DNET_RESTART_STATUS_FILE = "dnet_restart_status.json"
 export async function main(ns) {
   const restartDarknet = ns.args.some((arg) => String(arg) === "--darknet")
   const startScorecard = ns.args.some((arg) => String(arg) === "--dnet-scorecard")
-  const mcpArgs = ns.args.filter((arg) => !["--darknet", "--dnet-scorecard"].includes(String(arg)))
+  const startCctAudit = ns.args.some((arg) => String(arg) === "--cct-audit")
+  const mcpArgs = ns.args.filter((arg) => !["--darknet", "--dnet-scorecard", "--cct-audit"].includes(String(arg)))
 
   if (ns.scriptKill("mcp.js", "home")) {
     // A killed script can still finish its in-flight tick, including writing
@@ -71,5 +72,11 @@ export async function main(ns) {
     const scorePid = ns.run("dnet_scorecard.js", 1)
     if (scorePid === 0) ns.tprint("restart_mcp: failed to start dnet_scorecard.js")
     else ns.tprint(`restart_mcp: started dnet_scorecard.js (pid ${scorePid})`)
+  }
+
+  if (startCctAudit) {
+    const auditPid = ns.run("cct_audit.js", 1)
+    if (auditPid === 0) ns.tprint("restart_mcp: failed to start cct_audit.js")
+    else ns.tprint(`restart_mcp: started read-only cct_audit.js (pid ${auditPid})`)
   }
 }

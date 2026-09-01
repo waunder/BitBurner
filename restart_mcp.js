@@ -101,6 +101,10 @@ export async function main(ns) {
       if (submitPid === 0) {
         ns.write("cct_submit_status.json", JSON.stringify({
           ts: Date.now(), ok: false, submitted: false, host: target[0], file: target[1], minTries,
+          homeMaxRam: ns.getServerMaxRam("home"),
+          homeUsedRam: ns.getServerUsedRam("home"),
+          submitRam: ns.getScriptRam("cct_submit.js", "home"),
+          sourcePresent: ns.fileExists("cct_submit.js", "home"),
           reason: "restart_mcp could not start cct_submit.js (insufficient home RAM or missing source)",
         }, null, 2), "w")
         ns.tprint("restart_mcp: failed to start cct_submit.js")

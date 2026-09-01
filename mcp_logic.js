@@ -839,13 +839,29 @@ export function computeTickInvariantChecks(ctx, config) {
     })
   }
 
-  // The idle-network finding: utilization sat at 7% during weaken phases
-  // while the code believed it was saturating the pool. Only meaningful once
-  // there is a pool to speak of.
+  // Low utilization is only a fault when the current weaken demand could
+  // actually occupy a material part of the pool. A nearly-secure target can
+  // legitimately need a handful of weaken threads; treating its unused
+  // capacity as an invariant violation turns the HUD into permanent noise.
+  //
+  // This is intentionally based on the current scheduled demand, not total
+  // server RAM usage: cloud contract/watch scripts and other unrelated work
+  // may share hosts, but neither should change MCP's own idle-pool verdict.
+  const poolWeakenCapacity = ctx.allocations.reduce(
+    (total, allocation) => total + Math.floor((allocation.maxRam || 0) / ctx.ramInfo.weakenRam),
+    0
+  )
+  const poolDemanded = poolWeakenCapacity > 0 && ctx.requiredWeaken >= poolWeakenCapacity * 0.5
   checks.push({
     name: "poolNotIdle",
-    ok: ctx.ramUtilization >= 0.5 || ctx.allocations.length === 0,
-    data: { ramUtilization: ctx.ramUtilization, hosts: ctx.allocations.length },
+    ok: !poolDemanded || ctx.ramUtilization >= 0.5 || ctx.allocations.length === 0,
+    data: {
+      ramUtilization: ctx.ramUtilization,
+      hosts: ctx.allocations.length,
+      requiredWeaken: ctx.requiredWeaken,
+      poolWeakenCapacity,
+      poolDemanded,
+    },
   })
 
   // Threads deployed must fit the host that is running them. This is the

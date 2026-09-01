@@ -1157,6 +1157,29 @@ describe("computeTickInvariantChecks", () => {
     assert.equal(violation.ok, false)
   })
 
+  test("poolNotIdle ignores expected spare capacity for a small weaken demand", () => {
+    const allocations = [{ host: "worker", maxRam: 1750, usedRam: 175, actions: [] }]
+    const checks = computeTickInvariantChecks(
+      { ...baseCtx, ramUtilization: 0.1, requiredWeaken: 100, allocations },
+      config
+    )
+    const poolNotIdle = checks.find((c) => c.name === "poolNotIdle")
+    assert.ok(poolNotIdle.ok)
+    assert.equal(poolNotIdle.data.poolWeakenCapacity, 1000)
+    assert.equal(poolNotIdle.data.poolDemanded, false)
+  })
+
+  test("poolNotIdle still catches a mostly idle pool when weaken demand is material", () => {
+    const allocations = [{ host: "worker", maxRam: 1750, usedRam: 175, actions: [] }]
+    const checks = computeTickInvariantChecks(
+      { ...baseCtx, ramUtilization: 0.1, requiredWeaken: 500, allocations },
+      config
+    )
+    const poolNotIdle = checks.find((c) => c.name === "poolNotIdle")
+    assert.equal(poolNotIdle.ok, false)
+    assert.equal(poolNotIdle.data.poolDemanded, true)
+  })
+
   test("threadsFitHost stops after the first failing host (one report per tick)", () => {
     const allocations = [
       {

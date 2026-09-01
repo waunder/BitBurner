@@ -570,7 +570,7 @@ Three things stamp or check every tick:
 | `eventLogWrites` | A write to `mcp_events.txt` failing — this is what caught the file's own invalid-extension bug, see below |
 | `weakenBudgetNonNegative` | Budget over-allocation, found originally only by an accident of two fields lining up |
 | `tickWithinBounds` | The 70–380s ticks that silently multiplied every rate |
-| `poolNotIdle` | The network sitting 93% idle during weaken phases |
+| `poolNotIdle` | The network sitting at least 50% idle while the current weaken demand could itself occupy at least half of its capacity; small, legitimate weaken demand does not alarm |
 | `threadsFitHost` | The inconsistent-RAM class (`usedRam 3.5, freeRam 16, maxRam 16`) |
 | `drainBelowEmptyTier` | A config edit that would strand recovering targets |
 | `configParses` | A malformed `mcp_config.json` |

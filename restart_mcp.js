@@ -121,6 +121,10 @@ export async function main(ns) {
         // than falsely reporting an out-of-RAM failure after one host.
         for (const worker of workers) {
           ns.killall(worker)
+          // `killall` requests termination, but RAM can remain accounted to
+          // the old processes for the rest of the current game tick. Give
+          // that accounting a bounded moment to settle before exec.
+          await ns.sleep(250)
           const copied = await ns.scp(["cct_submit.js", "cct_logic.js", "cct_inventory.json"], worker, "home")
           if (!copied) {
             ns.tprint(`restart_mcp: failed to copy CCT submit files to ${worker}`)

@@ -103,7 +103,28 @@ export async function main(ns) {
     const minTries = cctMinTriesArg ? String(cctMinTriesArg).slice("--cct-min-tries=".length) : "10"
     if (target.length !== 2 || !target[0] || !target[1]) ns.tprint("restart_mcp: cct submit requires --cct-submit=host|file")
     else {
-      const submitPid = ns.run("cct_submit.js", 1, target[0], target[1], minTries)
+      // `cct_submit.js` costs 23.6GB, while home intentionally reserves
+      // RAM for MCP/Darknet. Borrow one dedicated cloud worker briefly:
+      // MCP has already been stopped above, and it will refill the worker
+      // after this finite single-contract task completes.
+      const submitRam = ns.getScriptRam("cct_submit.js", "home")
+      const worker = ns.cloud.getServerNames()
+        .filter((host) => ns.hasRootAccess(host) && ns.getServerMaxRam(host) >= submitRam)
+        .sort((a, b) => ns.getServerMaxRam(b) - ns.getServerMaxRam(a))[0]
+      let submitPid = 0
+      if (worker) {
+        ns.killall(worker)
+        const copied = await ns.scp(["cct_submit.js", "cct_logic.js", "cct_inventory.json"], worker, "home")
+        if (!copied) ns.tprint(`restart_mcp: failed to copy CCT submit files to ${worker}`)
+        else {
+          submitPid = ns.exec("cct_submit.js", worker, 1, target[0], target[1], minTries)
+          if (submitPid !== 0) {
+            while (ns.isRunning(submitPid, worker)) await ns.sleep(100)
+            await ns.scp(["cct_submit_status.json", "cct_reward_ledger.json"], "home", worker)
+          }
+        }
+      }
+      else submitPid = ns.run("cct_submit.js", 1, target[0], target[1], minTries)
       if (submitPid === 0) {
         ns.write("cct_submit_status.json", JSON.stringify({
           ts: Date.now(), ok: false, submitted: false, host: target[0], file: target[1], minTries,

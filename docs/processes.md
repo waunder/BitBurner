@@ -1118,6 +1118,11 @@ the audit snapshot before it can call `ns.codingcontract.attempt()`. It also
 requires a minimum remaining-attempt count (10 by default). It never scans,
 selects, or batches contracts.
 
+When home cannot fit its 23.6GB RAM cost, `restart_mcp.js` briefly clears one
+dedicated cloud worker, copies the finite submit task plus its audit snapshot
+there, copies the resulting status back to home, then relaunches MCP to refill
+the worker. This remains one explicit submission, not a distributed batch.
+
 - **Start:** `run cct_dry_run.js`; guarded submission uses
   `run restart_mcp.js --cct-submit=host|file [--cct-min-tries=10]`.
 - **Output:** `cct_dry_run.json` and `cct_submit_status.json`, both pulled by

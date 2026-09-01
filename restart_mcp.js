@@ -67,7 +67,12 @@ export async function main(ns) {
 
   // Independent, quiet status consumer. Start it before MCP consumes home
   // RAM; it does not control Darknet or alter any gameplay action.
-  if (!ns.isRunning("automation_review.js", "home")) {
+  // A guarded CCT submission needs 23.6GB on this 64GB home. Pause the
+  // non-controller reviewer for its short finite run, then restore it below.
+  // This avoids degrading the active manager or Darknet merely to submit one
+  // explicitly requested contract.
+  if (cctSubmitArg) ns.scriptKill("automation_review.js", "home")
+  if (!cctSubmitArg && !ns.isRunning("automation_review.js", "home")) {
     const reviewerPid = ns.run("automation_review.js", 1)
     if (reviewerPid === 0) ns.tprint("restart_mcp: failed to start automation reviewer")
   }
@@ -110,6 +115,10 @@ export async function main(ns) {
         ns.tprint("restart_mcp: failed to start cct_submit.js")
       }
       else while (ns.isRunning(submitPid)) await ns.sleep(100)
+    }
+    if (!ns.isRunning("automation_review.js", "home")) {
+      const reviewerPid = ns.run("automation_review.js", 1)
+      if (reviewerPid === 0) ns.tprint("restart_mcp: failed to restore automation reviewer")
     }
   }
 

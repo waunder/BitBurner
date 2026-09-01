@@ -36,12 +36,14 @@ const CREDENTIAL_MERGE_MS = 60 * 1000
 // file's existing poll loop rather than a new one; same scan-then-merge
 // shape as mergeCredentialShards below, just for manager heartbeats instead
 // of credentials.
-function mergeManagerRegistryShards(ns, generation) {
+function mergeManagerRegistryShards(ns, generation, retainExisting) {
   let registry = {}
-  try {
-    const raw = ns.read(MANAGER_REGISTRY_FILE)
-    if (raw) registry = JSON.parse(raw)
-  } catch { /* corrupt/missing registry — rebuild from shards below */ }
+  if (retainExisting) {
+    try {
+      const raw = ns.read(MANAGER_REGISTRY_FILE)
+      if (raw) registry = JSON.parse(raw)
+    } catch { /* corrupt/missing registry — rebuild from shards below */ }
+  }
 
   const shardRecords = []
   for (const file of ns.ls("home", MANAGER_SHARD_PREFIX)) {
@@ -101,6 +103,7 @@ export async function main(ns) {
   let pass = 0
   let lastCredentialMergeAt = -Infinity
   let lastRegistryMergeAt = -Infinity
+  let hasMergedThisGeneration = false
   const lifetime = { seen: 0, sessions: 0, legacyKilled: 0, prepared: 0, delegated: 0, failed: 0 }
   let lastFailure = null
   // This is deliberately process-local: restarting root is the explicit
@@ -116,7 +119,8 @@ export async function main(ns) {
       lastCredentialMergeAt = started
     }
     if (started - lastRegistryMergeAt >= REGISTRY_MERGE_MS) {
-      mergeManagerRegistryShards(ns, generation)
+      mergeManagerRegistryShards(ns, generation, hasMergedThisGeneration)
+      hasMergedThisGeneration = true
       lastRegistryMergeAt = started
     }
     const summary = { seen: 0, sessions: 0, legacyKilled: 0, prepared: 0, delegated: 0, failed: 0 }

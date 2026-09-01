@@ -61,6 +61,18 @@ export async function main(ns) {
     }
   }
 
+  // The audit's read-only Coding Contract API footprint is too large to fit
+  // after MCP consumes home RAM. Run this finite task first, while its result
+  // is still available on disk for the Remote API to retrieve.
+  if (startCctAudit) {
+    const auditPid = ns.run("cct_audit.js", 1)
+    if (auditPid === 0) ns.tprint("restart_mcp: failed to start cct_audit.js")
+    else {
+      while (ns.isRunning(auditPid)) await ns.sleep(100)
+      ns.tprint("restart_mcp: read-only cct_audit.js completed")
+    }
+  }
+
   const pid = ns.run("mcp.js", 1, ...mcpArgs)
   if (pid === 0) {
     ns.tprint("restart_mcp: failed to start mcp.js (not enough RAM on home?)")
@@ -74,9 +86,4 @@ export async function main(ns) {
     else ns.tprint(`restart_mcp: started dnet_scorecard.js (pid ${scorePid})`)
   }
 
-  if (startCctAudit) {
-    const auditPid = ns.run("cct_audit.js", 1)
-    if (auditPid === 0) ns.tprint("restart_mcp: failed to start cct_audit.js")
-    else ns.tprint(`restart_mcp: started read-only cct_audit.js (pid ${auditPid})`)
-  }
 }

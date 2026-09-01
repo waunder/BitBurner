@@ -10,7 +10,9 @@
  *
  * @param {NS} ns
  */
-const POLL_MS = 2000
+// This panel scans historic shards.  It is observation, not control, so a
+// low cadence avoids turning an informational tail into a competing workload.
+const POLL_MS = 30000
 const FRESH_MS = 120000
 const WHITE = "\u001b[37m"
 const RESET = "\u001b[0m"

@@ -15,6 +15,13 @@ post-restart qualified switch evaluation.
 
 ## Done
 
+- **Console-output hygiene implemented, 2026-09-01:** MCP no longer prints a
+  duplicate full status line every tick; routine Darknet manager retries are
+  retained in home-visible heartbeat data instead of remote tails; the legacy
+  scorecard now refreshes every 30 seconds. `automation_review.js` is a quiet
+  home-side consumer of those durable status records, emitting only changed
+  actionable alerts and a bounded review log.
+
 - **Darknet freeze safeguards implemented, 2026-08-31:** analysis isolated
   unbounded 200ms phishing output/workers, stale local manager-cap snapshots,
   and `dnet_root.js` rereading hundreds of credential shards every second.

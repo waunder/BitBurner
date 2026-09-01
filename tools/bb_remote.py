@@ -793,6 +793,8 @@ WATCHED_FILES = [
     "share_deploy.js",
     "set_objective.js",
     "cct_audit.js",
+    "automation_review.js",
+    "automation_review_logic.js",
     "lsf.js",
     "scripts/copyScripts.js",
     "scripts/copy_scripts.js",
@@ -829,6 +831,8 @@ PULL_FILES = [
     "mcp_objective_override.txt",
     "cct_inventory.json",
     "purchased_worker_status.json",
+    "automation_review.json",
+    "automation_review.txt",
 ]
 
 PULL_POLL_S = 2.0  # mirrors SYNC_POLL_S / mcp_supervisor.js's POLL_MS

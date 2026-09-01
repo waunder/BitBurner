@@ -510,12 +510,10 @@ function checkTickInvariants(invariants, ctx) {
 /**
  * The single field list.
  *
- * Both the tail line and the log line derive from the status object, so a
- * field added to the status cannot be invisible to whichever channel is
- * actually being read. Three hand-maintained lists is how `lowMoneySeconds`
- * ended up in ns.print only, and how `switchEval` initially went into the JSON
- * only — the same miss, twelve hours apart. Add fields to `status`; this
- * function is the only place that decides how they render.
+ * The transition-log line derives from the status object, so a field added to
+ * status cannot be invisible to the durable channel.  Per-tick `ns.print`
+ * was deliberately removed: it was a 10-second tail-console write that
+ * duplicated `mcp_status.json` and buried the transitions worth reading.
  */
 function formatStatus(status) {
   const parts = [
@@ -1837,7 +1835,6 @@ export async function main(ns) {
     }
 
     const line = formatStatus(status)
-    ns.print(line)
 
     try {
       ns.write("mcp_status.json", JSON.stringify(status), "w")
@@ -1852,7 +1849,10 @@ export async function main(ns) {
         lastLogSignature = signature
       }
     } catch (e) {
-      ns.print("mcp: failed to write status file: " + e)
+      // Do not turn a persistent disk error into a tail flood.  The game UI
+      // still gets a visible critical notice, while the next invariant sweep
+      // records the failure in the durable event stream.
+      ns.toast("mcp: status-file write failed", "error", INVARIANT_TOAST_MS)
     }
 
     // Outside the try above: a status-write failure must not silently skip
@@ -1860,7 +1860,7 @@ export async function main(ns) {
     try {
       saveTargetState(ns, skippedTargets, drainedTargets)
     } catch (e) {
-      ns.print("mcp: failed to persist target state: " + e)
+      ns.toast("mcp: target-state write failed", "error", INVARIANT_TOAST_MS)
     }
 
     lastAvgRate = avgRate

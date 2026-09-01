@@ -1685,6 +1685,25 @@ A self-contained set, separate from everything above. It does not touch
 `mcp.js` and is **not** auto-started by `startup.js` or `mcp_supervisor.js` —
 deliberately, until it has worked by hand at least once.
 
+### Quiet operational review
+
+Routine state belongs in status files, not in the terminal or a script tail.
+`mcp.js` therefore writes its full state to `mcp_status.json` and only appends
+a readable line when its target/plan changes; it no longer prints one status
+line every tick. The normal transient Darknet path runs `dnet_crawl.js
+--quiet`, its manager records retry errors in its status record, and the
+legacy scorecard refreshes at 30 seconds rather than two.
+
+`automation_review.js` is the home-side consumer. It polls every 30 seconds,
+reads only MCP status, the Darknet root heartbeat, compact manager registry,
+and at most the active manager-heartbeat shards, and writes `automation_review.json` plus a bounded
+`automation_review.txt` transition log. It does not start/stop automation or
+scan Darknet shards. It raises a toast only for a new/changed actionable
+condition: stale MCP/root, an MCP invariant violation, or more than the
+configured two Darknet managers. Both files are Remote-API pull telemetry, so
+an external reviewer can inspect them without tailing the game.
+`restart_mcp.js` starts it when absent, before relaunching MCP.
+
 **Confirmed live 2026-08-12.** `dnet_probe.js` and a fresh `dnet_deploy.js
 --once` run from `home` both ran for real: `probe()` from home returned
 exactly `["darkweb"]` as predicted, and the deployer went on to crack 12+

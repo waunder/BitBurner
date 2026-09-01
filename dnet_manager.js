@@ -53,10 +53,10 @@ function safeHost(host) {
   return safe.slice(0, 80)
 }
 
-async function refreshManagerActiveShard(ns, generation) {
+async function refreshManagerActiveShard(ns, generation, failures = 0, lastError = null) {
   const host = ns.getHostname()
   const shard = `${MANAGER_SHARD_PREFIX}${safeHost(host)}.json`
-  ns.write(shard, JSON.stringify({ ts: Date.now(), host, generation }), "w")
+  ns.write(shard, JSON.stringify({ ts: Date.now(), host, generation, failures, lastError }), "w")
   await ns.scp(shard, "home")
 }
 
@@ -140,8 +140,11 @@ export async function main(ns) {
       await waitPid(ns, phishPid, () => refreshManagerActiveShard(ns, flags.generation))
     } catch (err) {
       failures++
-      ns.print(`MANAGER-RECOVER failure=${failures} error=${err}`)
+      // `dnet_manager_status.json` retains the error for the home-side
+      // reviewer.  Printing every retry used a remote tail as a log sink and
+      // could itself become noisy during an outage.
       await writeStatus(ns, "retrying", failures, nextCrawl, String(err))
+      await refreshManagerActiveShard(ns, flags.generation, failures, String(err))
       await ns.sleep(RETRY_MS)
     }
   }

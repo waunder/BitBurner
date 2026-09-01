@@ -62,6 +62,13 @@ export async function main(ns) {
     }
   }
 
+  // Independent, quiet status consumer. Start it before MCP consumes home
+  // RAM; it does not control Darknet or alter any gameplay action.
+  if (!ns.isRunning("automation_review.js", "home")) {
+    const reviewerPid = ns.run("automation_review.js", 1)
+    if (reviewerPid === 0) ns.tprint("restart_mcp: failed to start automation reviewer")
+  }
+
   // The audit's read-only Coding Contract API footprint is too large to fit
   // after MCP consumes home RAM. Run this finite task first, while its result
   // is still available on disk for the Remote API to retrieve.

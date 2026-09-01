@@ -56,6 +56,20 @@ function mergeManagerRegistryShards(ns) {
   ns.write(MANAGER_REGISTRY_FILE, JSON.stringify(merged), "w")
 }
 
+// `ns.ps(target)` is not reliable enough as the sole remote-manager signal:
+// a live DNET manager can be absent from that view even while its shipped
+// heartbeat is fresh, causing root to relaunch a crawler every gateway poll.
+// The home registry is precisely the durable signal for this decision.
+function hasFreshManager(ns, host) {
+  try {
+    const registry = JSON.parse(ns.read(MANAGER_REGISTRY_FILE) || "{}")
+    const ts = registry?.[host]
+    return typeof ts === "number" && Date.now() - ts < MANAGER_STALE_MS
+  } catch {
+    return false
+  }
+}
+
 function mergeCredentialShards(ns, creds) {
   let changed = false
   for (const file of ns.ls("home", "dnet_cred_")) {
@@ -111,7 +125,7 @@ export async function main(ns) {
       }
       summary.sessions++
 
-      let delegated = false
+      let delegated = hasFreshManager(ns, target)
       for (const proc of ns.ps(target)) {
         const name = proc.filename.startsWith("/") ? proc.filename.slice(1) : proc.filename
         if (name === LEGACY && ns.kill(proc.pid)) summary.legacyKilled++

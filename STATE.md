@@ -37,6 +37,10 @@ post-restart qualified switch evaluation.
   profile permits two managers and exactly one root-launched terminal child.
   Both that child and every manager recrawl use `--no-spread`, preventing
   recursive fan-out while allowing a meaningful two-node load check.
+- **Darknet root repeated-delegation fix staged, 2026-08-31:** remote
+  `ns.ps()` can omit a live DNET manager, which made root relaunch the gateway
+  crawler every five seconds. Root now treats the fresh home-side manager
+  registry as the durable ownership signal as well.
 
 - **Darknet loot log spam removed**, 2026-08-31: normal and no-op
   `dnet_loot.js` runs no longer write a terminal report or routine

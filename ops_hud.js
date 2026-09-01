@@ -95,6 +95,32 @@ function workerRam(mcp, cloudNames) {
   return { used, max }
 }
 
+// This intentionally derives advice only from the MCP snapshot.  The HUD is
+// a reader, not a player-work controller: it cannot see an augmentation's
+// individual reputation gap, so it only recommends changing focus when that
+// known, manual goal exists.
+function playerTimeAdvice(mcp) {
+  const skills = mcp?.player?.skills || {}
+  const hacking = Number(skills.hacking) || 0
+  const charisma = Number(skills.charisma) || 0
+  const objective = mcp?.OBJECTIVE || mcp?.objective || "--"
+  const scriptXp = Number(mcp?.expPerSec) || 0
+  if (objective === "xp") {
+    return {
+      stats: `YOU H${hacking} C${charisma}`,
+      recommendation: "Algorithms: KEEP STUDYING",
+      detail: `MCP +${compact(scriptXp)} XP/s independent`,
+      next: "switch only for an aug rep gap",
+    }
+  }
+  return {
+    stats: `YOU H${hacking} C${charisma}`,
+    recommendation: "Faction hack if rep is blocking",
+    detail: `MCP +${compact(scriptXp)} XP/s`,
+    next: "otherwise use the active objective",
+  }
+}
+
 function buildLines(ns) {
   const now = Date.now()
   const mcp = readJson(ns, "mcp_status.json")
@@ -120,12 +146,16 @@ function buildLines(ns) {
   const threadCount = (mcp?.workers || []).reduce((total, worker) => total + (worker.actions || []).reduce((sum, action) => sum + (Number(action.threads) || 0), 0), 0)
   const cloudPct = cloudRam.max ? `${Math.round(100 * cloudRam.used / cloudRam.max)}%` : "--"
   const recentText = !recent ? "no recorded submission" : recent.ok ? `accepted ${recent.type || "contract"}` : `paused ${recent.reason || "guard"}`
+  const playerTime = playerTimeAdvice(mcp)
 
   return [
     row("OPERATIONS", health),
     row(`MCP ${mcpState}`, `${mcp?.target || "--"} / ${mcp?.OBJECTIVE || mcp?.objective || "--"}`),
     row(`rate ${compact(mcp?.rate)}/s`, `avg ${compact(mcp?.avgRate)}/s`),
     row(`workers ${threadCount} threads`, `${(mcp?.workers || []).length} hosts / ${age(now, mcp?.ts)}`),
+    row(playerTime.stats, playerTime.recommendation),
+    row("player time", playerTime.detail),
+    row("next switch", playerTime.next),
     row(`contracts ${totals.accepted} accepted`, `$${compact(totals.cash)}`),
     row(`discovery ${inventory?.contracts?.length ?? "--"} available`, `${cctWatch?.ok === false ? "SCAN ERROR" : age(now, inventory?.ts)}`),
     ...reps.map(([name, rep]) => row(name.slice(0, 27), `+${compact(rep)} rep`)),

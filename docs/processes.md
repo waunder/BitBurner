@@ -1156,9 +1156,14 @@ and Darknet records explicitly.
 
 - **Start:** `run ops_hud.js` (optional `x= y= w= h=`), or add `--ops-hud` to
   a `restart_mcp.js` request.
-- **Shows:** MCP target/objective/rate/worker status; contract accepts, cash,
-  leading faction reputation and latest result; Darknet heartbeat/managers;
-  cloud-worker count/RAM utilization; and the first current automation alert.
+- **Shows:** MCP target/objective/rate/worker status; a local-telemetry-only
+  player-time recommendation; contract accepts, cash, leading faction
+  reputation and latest result; Darknet heartbeat/managers; cloud-worker
+  count/RAM utilization; and the first current automation alert.  In XP mode,
+  it recommends continuing Algorithms while MCP's separate script XP rate is
+  live, and only suggests faction hacking when a specific augmentation
+  reputation gap becomes the manual blocker.  It never starts, stops, or
+  inspects player work.
 
 ### `cct_watcher.js`
 

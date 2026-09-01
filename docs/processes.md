@@ -49,6 +49,7 @@ flowchart TB
         mcp -->|writes each tick| status[(mcp_status.json)]
         mcp -->|writes on change| logfile[(mcp_status_log.txt)]
         status --> hud[mcp_hud.js]
+        status --> xppanel[mcp_xp.js]
         pool -.->|scanned| stats[get_stats.js]
         status -.->|after Remote API pull| parser[mcp_status_parser.py]
         player[(player state)] -.->|ns.getMoneySources| moneypanel[mcp_money.js]
@@ -853,6 +854,23 @@ orchestrator-disagreement risk to design around).
 +------------------------------+
 ```
 
+### `mcp_xp.js`
+
+A focused, low-noise XP/progression panel in the same small-tail family as
+`mcp_money.js`. It reads `mcp_status.json` for the player skills, MCP objective,
+target, and script XP rate, so its ordinary 20-second refresh performs no player
+API reads, telemetry writes, or network scan. It performs a read-only server
+walk at most once every ten minutes to identify the next discovered hacking
+level gate.
+
+- **Start:** `run mcp_xp.js` (optional `x= y= w= h=`). It is started by
+  `startup.js` and refreshed after an MCP restart.
+- **Shows:** current Hacking and Charisma; reliable total script XP/sec from
+  MCP; current objective and target; the next server's required Hack level and
+  remaining gap; and a direct action such as `BEST NOW Rothman Algorithms`.
+  It intentionally does not claim a player XP-per-second delta, because that
+  rate is not durably measured across sessions.
+
 ### `dnet_scorecard.js`
 
 A compact Dark Net panel in the same visual family as `mcp_money.js`. It
@@ -1185,6 +1203,8 @@ attempt or skip ahead. This makes contract progress sequential and reviewable,
 not an uncontrolled batch.
 
 Supported contract types include `Total Ways to Sum II`, solved as standard
+coin-change dynamic programming, and `Compression I: RLE Compression`, which
+emits literal character runs in chunks of at most nine.
 unbounded coin-change combinations (denomination order does not create extra
 ways).
 

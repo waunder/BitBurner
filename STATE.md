@@ -21,6 +21,11 @@ post-restart qualified switch evaluation.
 
 ## Done
 
+- **Focused XP HUD added, 2026-09-01:** `mcp_xp.js` is a quiet 20-second panel
+  for player Hacking/Charisma, MCP script XP rate/objective/target, the next
+  discovered hacking gate and a direct player action. It starts with startup
+  and is refreshed after MCP restarts; its gate walk is cached for ten minutes.
+
 - **Console-output hygiene implemented, 2026-09-01:** MCP no longer prints a
   duplicate full status line every tick; routine Darknet manager retries are
   retained in home-visible heartbeat data instead of remote tails; the legacy

@@ -39,6 +39,15 @@ export async function main(ns) {
     }
     if (ns.run("ops_hud.js", 1) === 0) ns.tprint("mcp_launch: failed to start ops_hud.js")
   }
+  // The focused XP panel is intentionally separate from Operations: the
+  // latter reports broad health, while this remains readable beside the money
+  // panel during player-led hacking progression.
+  for (const proc of ns.ps("home")) {
+    if (proc.filename.replace(/^\//, "") !== "mcp_xp.js") continue
+    ns.ui?.closeTail(proc.pid)
+    ns.kill(proc.pid)
+  }
+  if (ns.run("mcp_xp.js", 1) === 0) ns.tprint("mcp_launch: failed to start mcp_xp.js")
   if (request.startScorecard) {
     const scorePid = ns.run("dnet_scorecard.js", 1)
     if (scorePid === 0) ns.tprint("mcp_launch: failed to start dnet_scorecard.js")

@@ -756,6 +756,7 @@ WATCHED_FILES = [
     "skim_probe.js",
     "mcp_hud.js",
     "mcp_money.js",
+    "mcp_xp.js",
     "mcp_stock_trader.js",
     "mcp_stock_trader_logic.js",
     "mcp_stocks.js",

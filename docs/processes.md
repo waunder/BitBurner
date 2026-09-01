@@ -1108,6 +1108,13 @@ in `cct_inventory.json`, and **never** calls `ns.codingcontract.attempt()`.
 - **Purpose:** establish the actual contract mix and test solver inputs before
   any code is allowed to submit an answer.
 
+### `purchase_worker_server.js`
+
+One-shot provisioner for a purchased 2^n-GB worker server. It performs no
+manual script copying: MCP discovers the new rooted server and deploys its
+workers on the next tick. Writes `purchased_worker_status.json` with the cost
+and result; the remote restart path accepts `--buy-worker=<GB>`.
+
 ### `mcp_status.js`
 
 Mirrors `mcp.js`'s tail output into its own window, so the orchestrator's

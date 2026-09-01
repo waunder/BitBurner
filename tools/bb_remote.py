@@ -784,6 +784,7 @@ WATCHED_FILES = [
     "dnet_killswarm.js",
     "dnet_ramcheck.js",
     "purchaseServer-8GB.js",
+    "purchase_worker_server.js",
     "ipvgo_player.js",
     "ipvgo_logic.js",
     "ipvgo_hud.js",
@@ -827,6 +828,7 @@ PULL_FILES = [
     "dnet_status.json",
     "mcp_objective_override.txt",
     "cct_inventory.json",
+    "purchased_worker_status.json",
 ]
 
 PULL_POLL_S = 2.0  # mirrors SYNC_POLL_S / mcp_supervisor.js's POLL_MS

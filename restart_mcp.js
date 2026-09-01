@@ -177,7 +177,14 @@ export async function main(ns) {
   // The consolidated panel is a read-only consumer of the durable MCP,
   // contract, Darknet, cloud, and reviewer records.  Start it after MCP so
   // a failed optional HUD can never delay the controller.
-  if (startOpsHud && !ns.isRunning("ops_hud.js", "home")) {
+  if (startOpsHud) {
+    // HUD source is not hot-reloaded. Replace an existing panel so an
+    // explicit --ops-hud restart always shows the version just synced.
+    for (const proc of ns.ps("home")) {
+      if (proc.filename.replace(/^\//, "") !== "ops_hud.js") continue
+      ns.ui?.closeTail(proc.pid)
+      ns.kill(proc.pid)
+    }
     const opsPid = ns.run("ops_hud.js", 1)
     if (opsPid === 0) ns.tprint("restart_mcp: failed to start ops_hud.js")
   }

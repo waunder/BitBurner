@@ -1159,11 +1159,12 @@ and Darknet records explicitly.
 - **Shows:** MCP target/objective/rate/worker status; a local-telemetry-only
   player-time recommendation; contract accepts, cash, leading faction
   reputation and latest result; Darknet heartbeat/managers; cloud-worker
-  count/RAM utilization; and the first current automation alert.  In XP mode,
-  it recommends continuing Algorithms while MCP's separate script XP rate is
-  live, and only suggests faction hacking when a specific augmentation
-  reputation gap becomes the manual blocker.  It never starts, stops, or
-  inspects player work.
+  count/RAM utilization; and the first current automation alert. It performs
+  a cached (ten-minute) read-only network walk to name the lowest discovered hacking-level gate,
+  showing the player's current level and the level gap (not an invented XP
+  total). In XP mode it therefore states, plainly, `need +N H: server (HX)`
+  and `Best: Rothman Algorithms`, while MCP's separate script XP rate remains
+  live. It never starts, stops, or inspects player work.
 
 ### `cct_watcher.js`
 

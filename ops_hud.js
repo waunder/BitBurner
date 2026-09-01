@@ -10,6 +10,7 @@
  * @param {NS} ns
  */
 const POLL_MS = 30000
+const GATE_REFRESH_MS = 600000
 const MCP_STALE_MS = 300000
 const DNET_STALE_MS = 30000
 const MANAGER_FRESH_MS = 120000
@@ -18,6 +19,7 @@ const OVERVIEW_DROP = 190
 const RIGHT_MARGIN = 8
 const WHITE = "\u001b[37m"
 const RESET = "\u001b[0m"
+let gateCache = { ts: 0, gates: [] }
 
 function parseArgs(ns) {
   const out = {}
@@ -95,29 +97,66 @@ function workerRam(mcp, cloudNames) {
   return { used, max }
 }
 
-// This intentionally derives advice only from the MCP snapshot.  The HUD is
-// a reader, not a player-work controller: it cannot see an augmentation's
-// individual reputation gap, so it only recommends changing focus when that
-// known, manual goal exists.
-function playerTimeAdvice(mcp) {
+// Read-only network walk: this is deliberately a *gate* finder, not target
+// selection.  It tells the player what the next discovered hacking-level
+// threshold is; MCP remains solely responsible for choosing a worker target.
+function nextHackingGate(ns, hacking) {
+  const now = Date.now()
+  if (now - gateCache.ts < GATE_REFRESH_MS) {
+    return gateCache.gates.find((gate) => gate.required > hacking) || null
+  }
+  try {
+    const seen = new Set(["home"])
+    const queue = ["home"]
+    const gates = []
+    for (let i = 0; i < queue.length; i++) {
+      const host = queue[i]
+      for (const next of ns.scan(host)) {
+        if (!seen.has(next)) {
+          seen.add(next)
+          queue.push(next)
+        }
+      }
+      if (host === "home") continue
+      const required = Number(ns.getServerRequiredHackingLevel(host))
+      if (Number.isFinite(required) && required > hacking) gates.push({ host, required })
+    }
+    gates.sort((a, b) => a.required - b.required || a.host.localeCompare(b.host))
+    gateCache = { ts: now, gates }
+    return gates[0] || null
+  } catch {
+    gateCache = { ts: now, gates: [] }
+    return null
+  }
+}
+
+// This HUD cannot see an augmentation's individual reputation gap, so it
+// never claims faction work is blocking unless another system supplies it.
+function playerTimeAdvice(ns, mcp) {
   const skills = mcp?.player?.skills || {}
   const hacking = Number(skills.hacking) || 0
   const charisma = Number(skills.charisma) || 0
   const objective = mcp?.OBJECTIVE || mcp?.objective || "--"
   const scriptXp = Number(mcp?.expPerSec) || 0
+  const gate = nextHackingGate(ns, hacking)
+  const gateText = gate
+    ? `need +${gate.required - hacking} H: ${gate.host} (H${gate.required})`
+    : "no higher discovered H gate"
   if (objective === "xp") {
     return {
       stats: `YOU H${hacking} C${charisma}`,
-      recommendation: "Algorithms: KEEP STUDYING",
+      recommendation: gate ? `NEXT H${gate.required}` : "NEXT GATE --",
+      gate: gateText,
+      best: "Best: Rothman Algorithms",
       detail: `MCP +${compact(scriptXp)} XP/s independent`,
-      next: "switch only for an aug rep gap",
     }
   }
   return {
     stats: `YOU H${hacking} C${charisma}`,
-    recommendation: "Faction hack if rep is blocking",
+    recommendation: gate ? `NEXT H${gate.required}` : "NEXT GATE --",
+    gate: gateText,
+    best: "Best: active objective",
     detail: `MCP +${compact(scriptXp)} XP/s`,
-    next: "otherwise use the active objective",
   }
 }
 
@@ -146,7 +185,7 @@ function buildLines(ns) {
   const threadCount = (mcp?.workers || []).reduce((total, worker) => total + (worker.actions || []).reduce((sum, action) => sum + (Number(action.threads) || 0), 0), 0)
   const cloudPct = cloudRam.max ? `${Math.round(100 * cloudRam.used / cloudRam.max)}%` : "--"
   const recentText = !recent ? "no recorded submission" : recent.ok ? `accepted ${recent.type || "contract"}` : `paused ${recent.reason || "guard"}`
-  const playerTime = playerTimeAdvice(mcp)
+  const playerTime = playerTimeAdvice(ns, mcp)
 
   return [
     row("OPERATIONS", health),
@@ -154,8 +193,9 @@ function buildLines(ns) {
     row(`rate ${compact(mcp?.rate)}/s`, `avg ${compact(mcp?.avgRate)}/s`),
     row(`workers ${threadCount} threads`, `${(mcp?.workers || []).length} hosts / ${age(now, mcp?.ts)}`),
     row(playerTime.stats, playerTime.recommendation),
-    row("player time", playerTime.detail),
-    row("next switch", playerTime.next),
+    row("gate", playerTime.gate),
+    row("best now", playerTime.best),
+    row("script XP", playerTime.detail),
     row(`contracts ${totals.accepted} accepted`, `$${compact(totals.cash)}`),
     row(`discovery ${inventory?.contracts?.length ?? "--"} available`, `${cctWatch?.ok === false ? "SCAN ERROR" : age(now, inventory?.ts)}`),
     ...reps.map(([name, rep]) => row(name.slice(0, 27), `+${compact(rep)} rep`)),

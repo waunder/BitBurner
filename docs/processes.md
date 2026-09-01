@@ -1231,9 +1231,10 @@ that loop.
 ### `restart_mcp.js`
 
 Kills `mcp.js` on home, waits for it to actually be gone, then always hands
-off with `ns.spawn()` using whatever args it was given. This ends the
-temporary launcher before MCP's allocation is evaluated, so a launcher-side
-RAM race cannot leave worker scripts running without their controller.
+off with `ns.spawn()` to the tiny `mcp_launch.js` helper using whatever args
+it was given. This ends the temporary launcher before MCP's allocation is
+evaluated, so a launcher-side RAM race cannot leave worker scripts running
+without their controller. The helper starts requested HUDs only after MCP.
 
 - **Start:** `run restart_mcp.js [target=<hostname>]`
 

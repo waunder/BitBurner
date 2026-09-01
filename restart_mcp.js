@@ -168,35 +168,11 @@ export async function main(ns) {
   // that check and `run`; the resulting generic "not enough RAM" message
   // was misleading even with hundreds of GB free immediately afterwards.
   // `spawn` ends this finite launcher first, releasing its full static RAM
-  // footprint before MCP's allocation is evaluated.
-  ns.tprint(`restart_mcp: handing off to mcp.js${mcpArgs.length ? " args=" + JSON.stringify(mcpArgs) : ""}`)
-  ns.spawn("mcp.js", 1, ...mcpArgs)
+  // footprint before MCP's allocation is evaluated. mcp_launch.js is tiny
+  // and starts any requested post-launch HUDs after MCP has its controller
+  // process, retaining restart_mcp's normal optional-panel behaviour.
+  const launch = JSON.stringify({ mcpArgs, startCctHud, startOpsHud, startScorecard })
+  ns.tprint(`restart_mcp: handing off to mcp_launch.js${mcpArgs.length ? " args=" + JSON.stringify(mcpArgs) : ""}`)
+  ns.spawn("mcp_launch.js", 1, launch)
   return
-
-  if (startCctHud && !ns.isRunning("cct_hud.js", "home")) {
-    const hudPid = ns.run("cct_hud.js", 1)
-    if (hudPid === 0) ns.tprint("restart_mcp: failed to start cct_hud.js")
-  }
-
-  // The consolidated panel is a read-only consumer of the durable MCP,
-  // contract, Darknet, cloud, and reviewer records.  Start it after MCP so
-  // a failed optional HUD can never delay the controller.
-  if (startOpsHud) {
-    // HUD source is not hot-reloaded. Replace an existing panel so an
-    // explicit --ops-hud restart always shows the version just synced.
-    for (const proc of ns.ps("home")) {
-      if (proc.filename.replace(/^\//, "") !== "ops_hud.js") continue
-      ns.ui?.closeTail(proc.pid)
-      ns.kill(proc.pid)
-    }
-    const opsPid = ns.run("ops_hud.js", 1)
-    if (opsPid === 0) ns.tprint("restart_mcp: failed to start ops_hud.js")
-  }
-
-  if (startScorecard) {
-    const scorePid = ns.run("dnet_scorecard.js", 1)
-    if (scorePid === 0) ns.tprint("restart_mcp: failed to start dnet_scorecard.js")
-    else ns.tprint(`restart_mcp: started dnet_scorecard.js (pid ${scorePid})`)
-  }
-
 }

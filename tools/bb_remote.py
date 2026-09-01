@@ -747,6 +747,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 # itself follows.
 WATCHED_FILES = [
     "mcp.js",
+    "mcp_launch.js",
     "mcp_logic.js",
     "mcp_config.json",
     "mcpMulti.js",

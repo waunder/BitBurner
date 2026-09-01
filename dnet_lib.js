@@ -94,7 +94,10 @@ export const MANAGER_SHARD_SUFFIX = ".json"
 // to comfortably outlast the longest normal gap between iterations
 // (RECRAWL_MS's 90s, or one phishingAttack cycle) so a genuinely-alive
 // manager is never mistaken for dead.
-export const MANAGER_STALE_MS = 5 * 60 * 1000
+// A healthy manager now refreshes while phishing, so two minutes is enough
+// to recover a killed/mutated process promptly without mistaking normal work
+// for a loss.
+export const MANAGER_STALE_MS = 2 * 60 * 1000
 
 /** Response codes, copied from the game's DarknetResponseCodeType. */
 export const CODE = {

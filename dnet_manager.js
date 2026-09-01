@@ -14,6 +14,7 @@ const RECRAWL_MS = 90000
 const POLL_MS = 1000
 const RETRY_MS = 5000
 const STATUS_FILE = "dnet_manager_status.json"
+const HEARTBEAT_MS = 15 * 1000
 
 // A manager must not turn every spare GB into an independent 200ms API loop.
 // Keep the initial post-incident experiment to exactly one worker; a future
@@ -59,8 +60,15 @@ async function refreshManagerActiveShard(ns) {
   await ns.scp(shard, "home")
 }
 
-async function waitPid(ns, pid) {
-  while (pid && ns.isRunning(pid)) await ns.sleep(POLL_MS)
+async function waitPid(ns, pid, heartbeat = null) {
+  let nextHeartbeat = Date.now() + HEARTBEAT_MS
+  while (pid && ns.isRunning(pid)) {
+    if (heartbeat && Date.now() >= nextHeartbeat) {
+      await heartbeat()
+      nextHeartbeat = Date.now() + HEARTBEAT_MS
+    }
+    await ns.sleep(POLL_MS)
+  }
 }
 
 export function threadsForFreeRam(freeRam, scriptRam) {
@@ -128,7 +136,7 @@ export async function main(ns) {
       await writeStatus(ns, "phishing", failures, nextCrawl)
       const phishPid = ns.run(PHISH, { threads, preventDuplicates: true }, "--until", nextCrawl)
       if (phishPid === 0) throw new Error(`${PHISH} did not start with ${threads} thread(s)`)
-      await waitPid(ns, phishPid)
+      await waitPid(ns, phishPid, () => refreshManagerActiveShard(ns))
     } catch (err) {
       failures++
       ns.print(`MANAGER-RECOVER failure=${failures} error=${err}`)

@@ -34,7 +34,7 @@ const FILES = [SELF, MANAGER, REALLOC, "dnet_lib.js", "dnet_loot.js", "dnet_loot
 export const MAX_ACTIVE_MANAGERS = 2
 export const MANAGER_REGISTRY_FILE = "dnet_manager_registry.json"
 export const MANAGER_SHARD_PREFIX = "dnet_manager_active_"
-export const MANAGER_STALE_MS = 5 * 60 * 1000
+export const MANAGER_STALE_MS = 2 * 60 * 1000
 // Propagation throttle (2026-08-30) — see dnet_lib.js's own comment on
 // MAX_SPREAD_PER_PASS for why this exists: MAX_ACTIVE_MANAGERS alone
 // bounds steady-state resident count but does nothing to slow the

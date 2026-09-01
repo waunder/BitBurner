@@ -14,6 +14,12 @@
 > minimal **diagnostic profile**: do not re-enable it until a bounded live
 > experiment is explicitly approved and observed; a stable run is required
 > before designing a controlled expansion policy.
+>
+> **Live check, 2026-08-31:** the containment profile was restarted after
+> `DarkScapeNavigator.exe` became available. The root completed 27 gateway
+> passes, the Remote API stayed connected, and the sole `darkweb` manager
+> refreshed after its first recrawl. This validates the one-manager/no-fanout
+> canary only; no expansion parameters have been approved or enabled.
 
 > **Status, 2026-08-30:** root cause found and fixed, pending live
 > confirmation. Restarted 2026-08-30 with no concurrency cap and froze

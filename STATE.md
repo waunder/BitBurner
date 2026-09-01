@@ -27,6 +27,12 @@ post-restart qualified switch evaluation.
   MCP, sometimes leaving too little home RAM for the cleanup process's final
   `dnet_root.js` launch. It now waits up to two minutes for cleanup to exit,
   launches the root from the parent, and only then returns MCP.
+- **Darknet containment canary live-validated, 2026-08-31:** after
+  DarkScapeNavigator.exe was purchased, the diagnostic profile ran through
+  its first manager recrawl with a responsive Remote API, a fresh root
+  heartbeat, and exactly one manager (`darkweb`). It remains intentionally
+  limited to one silent phish worker and no propagation; this validates the
+  containment profile, not a return to unrestricted Darknet automation.
 
 - **Darknet loot log spam removed**, 2026-08-31: normal and no-op
   `dnet_loot.js` runs no longer write a terminal report or routine

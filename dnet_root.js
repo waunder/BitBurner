@@ -36,7 +36,7 @@ const CREDENTIAL_MERGE_MS = 60 * 1000
 // file's existing poll loop rather than a new one; same scan-then-merge
 // shape as mergeCredentialShards below, just for manager heartbeats instead
 // of credentials.
-function mergeManagerRegistryShards(ns) {
+function mergeManagerRegistryShards(ns, generation) {
   let registry = {}
   try {
     const raw = ns.read(MANAGER_REGISTRY_FILE)
@@ -48,7 +48,9 @@ function mergeManagerRegistryShards(ns) {
     if (!file.endsWith(".json")) continue
     try {
       const rec = JSON.parse(ns.read(file) || "")
-      if (rec && typeof rec.host === "string" && typeof rec.ts === "number") shardRecords.push(rec)
+      // A restart is a new ownership generation. Never let a pre-restart
+      // manager reserve a slot merely by continuing to refresh its old shard.
+      if (rec && rec.generation === generation && typeof rec.host === "string" && typeof rec.ts === "number") shardRecords.push(rec)
     } catch { /* tolerate a killed writer's partial shard */ }
   }
 
@@ -101,6 +103,10 @@ export async function main(ns) {
   let lastRegistryMergeAt = -Infinity
   const lifetime = { seen: 0, sessions: 0, legacyKilled: 0, prepared: 0, delegated: 0, failed: 0 }
   let lastFailure = null
+  // This is deliberately process-local: restarting root is the explicit
+  // hand-off boundary. Children receive it as an argument and old residents
+  // cannot join the new registry without being launched by this root.
+  const generation = `g${Date.now()}-${Math.floor(Math.random() * 1e9)}`
 
   while (true) {
     pass++
@@ -110,7 +116,7 @@ export async function main(ns) {
       lastCredentialMergeAt = started
     }
     if (started - lastRegistryMergeAt >= REGISTRY_MERGE_MS) {
-      mergeManagerRegistryShards(ns)
+      mergeManagerRegistryShards(ns, generation)
       lastRegistryMergeAt = started
     }
     const summary = { seen: 0, sessions: 0, legacyKilled: 0, prepared: 0, delegated: 0, failed: 0 }
@@ -155,7 +161,7 @@ export async function main(ns) {
         if (ns.fileExists(MANAGER_REGISTRY_FILE)) files.push(MANAGER_REGISTRY_FILE)
         try {
           if (await ns.scp(files, target)) {
-            const pid = ns.exec(CRAWLER, target, { preventDuplicates: true })
+            const pid = ns.exec(CRAWLER, target, { preventDuplicates: true }, "--generation", generation)
             if (pid !== 0) summary.delegated++
             else {
               summary.failed++
@@ -186,6 +192,7 @@ export async function main(ns) {
       sinceProcessStart: { ...lifetime },
       localKnownCreds: Object.keys(creds).length,
       maintenance: {
+        generation,
         credentialMergeEveryMs: CREDENTIAL_MERGE_MS,
         registryMergeEveryMs: REGISTRY_MERGE_MS,
         lastCredentialMergeAt,

@@ -62,9 +62,9 @@ function canSpawnManager(ns) {
   return active < MAX_ACTIVE_MANAGERS
 }
 
-function writeManagerActiveShard(ns, host) {
+function writeManagerActiveShard(ns, host, generation) {
   const shard = `${MANAGER_SHARD_PREFIX}${safeHost(host)}.json`
-  ns.write(shard, JSON.stringify({ ts: Date.now(), host }), "w")
+  ns.write(shard, JSON.stringify({ ts: Date.now(), host, generation }), "w")
   return shard
 }
 
@@ -176,6 +176,7 @@ export async function main(ns) {
     ["brute", 0],
     ["quiet", false],
     ["no-spread", false],
+    ["generation", ""],
   ])
   const host = ns.getHostname()
   const creds = readCreds(ns)
@@ -244,7 +245,7 @@ export async function main(ns) {
       }
       // Children are terminal: the one authorised expansion is not allowed
       // to recursively create another propagation wave.
-      const pid = ns.exec(SELF, target, { preventDuplicates: true }, "--no-spread")
+      const pid = ns.exec(SELF, target, { preventDuplicates: true }, "--no-spread", "--generation", flags.generation)
       if (pid !== 0) summary.deployed++
       else {
         summary.failed++
@@ -273,7 +274,7 @@ export async function main(ns) {
   // decided.
   const spawnManager = canSpawnManager(ns)
   if (spawnManager) {
-    const managerShard = writeManagerActiveShard(ns, host)
+    const managerShard = writeManagerActiveShard(ns, host, flags.generation)
     await ns.scp(managerShard, "home")
   }
   const shard = writeHeartbeat(ns, host, {
@@ -295,9 +296,9 @@ export async function main(ns) {
 
   // spawn replaces this process after releasing its RAM, so the manager is
   // never forced to coexist with the transient crawler during handoff.
-  ns.spawn(MANAGER, { threads: 1, preventDuplicates: true, spawnDelay: 100 })
+  ns.spawn(MANAGER, { threads: 1, preventDuplicates: true, spawnDelay: 100 }, "--generation", flags.generation)
 }
 
 export function autocomplete() {
-  return ["--brute", "--quiet", "--no-spread"]
+  return ["--brute", "--quiet", "--no-spread", "--generation"]
 }

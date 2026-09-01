@@ -53,10 +53,10 @@ function safeHost(host) {
   return safe.slice(0, 80)
 }
 
-async function refreshManagerActiveShard(ns) {
+async function refreshManagerActiveShard(ns, generation) {
   const host = ns.getHostname()
   const shard = `${MANAGER_SHARD_PREFIX}${safeHost(host)}.json`
-  ns.write(shard, JSON.stringify({ ts: Date.now(), host }), "w")
+  ns.write(shard, JSON.stringify({ ts: Date.now(), host, generation }), "w")
   await ns.scp(shard, "home")
 }
 
@@ -98,6 +98,7 @@ async function writeStatus(ns, state, failures, nextCrawl, lastError = null) {
 
 export async function main(ns) {
   ns.disableLog("ALL")
+  const flags = ns.flags([["generation", ""]])
   let needsLoot = true
   let failures = 0
   let nextCrawl = Date.now() + jitteredRecrawlMs(RECRAWL_MS)
@@ -105,7 +106,7 @@ export async function main(ns) {
 
   while (true) {
     try {
-      await refreshManagerActiveShard(ns)
+      await refreshManagerActiveShard(ns, flags.generation)
       if (needsLoot) {
         await writeStatus(ns, "looting", failures, nextCrawl)
         await loot(ns)
@@ -136,7 +137,7 @@ export async function main(ns) {
       await writeStatus(ns, "phishing", failures, nextCrawl)
       const phishPid = ns.run(PHISH, { threads, preventDuplicates: true }, "--until", nextCrawl)
       if (phishPid === 0) throw new Error(`${PHISH} did not start with ${threads} thread(s)`)
-      await waitPid(ns, phishPid, () => refreshManagerActiveShard(ns))
+      await waitPid(ns, phishPid, () => refreshManagerActiveShard(ns, flags.generation))
     } catch (err) {
       failures++
       ns.print(`MANAGER-RECOVER failure=${failures} error=${err}`)

@@ -41,6 +41,11 @@ post-restart qualified switch evaluation.
   `ns.ps()` can omit a live DNET manager, which made root relaunch the gateway
   crawler every five seconds. Root now treats the fresh home-side manager
   registry as the durable ownership signal as well.
+- **Darknet generation ownership staged, 2026-09-01:** each root launch now
+  gives its crawlers/managers a unique ownership generation and folds only
+  matching heartbeats into the active registry. This lets a bounded restart
+  replace inherited managers cleanly instead of treating their continued
+  heartbeats as part of the new two-node profile.
 
 - **Darknet loot log spam removed**, 2026-08-31: normal and no-op
   `dnet_loot.js` runs no longer write a terminal report or routine

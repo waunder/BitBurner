@@ -98,7 +98,13 @@ export async function main(ns) {
     if (target.length !== 2 || !target[0] || !target[1]) ns.tprint("restart_mcp: cct submit requires --cct-submit=host|file")
     else {
       const submitPid = ns.run("cct_submit.js", 1, target[0], target[1], minTries)
-      if (submitPid === 0) ns.tprint("restart_mcp: failed to start cct_submit.js")
+      if (submitPid === 0) {
+        ns.write("cct_submit_status.json", JSON.stringify({
+          ts: Date.now(), ok: false, submitted: false, host: target[0], file: target[1], minTries,
+          reason: "restart_mcp could not start cct_submit.js (insufficient home RAM or missing source)",
+        }, null, 2), "w")
+        ns.tprint("restart_mcp: failed to start cct_submit.js")
+      }
       else while (ns.isRunning(submitPid)) await ns.sleep(100)
     }
   }

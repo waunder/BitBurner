@@ -1063,10 +1063,11 @@ live for as long as it's open.
 
 ### `get_stats.js`
 
-The wide view: one line per rooted server with money, security, RAM and what
-it is currently running. Auto-sizes its tail window to the text using real
-font metrics from `ns.ui.getStyles()`, and parks itself beside the sidebar by
-default.
+The wide view: one line per rooted money server and every purchased worker,
+with money, security, RAM and what it is currently running. This makes MCP's
+cloud-worker activity visible even though purchased servers have no money.
+Auto-sizes its tail window to the text using real font metrics from
+`ns.ui.getStyles()`, and parks itself beside the sidebar by default.
 
 - **Start:** `run get_stats.js`, or `run get_stats.js <server> [<server>…]`
   to restrict it — `x=`/`y=`/`w=`/`h=` also accepted, mixed in with server

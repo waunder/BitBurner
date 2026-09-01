@@ -113,6 +113,21 @@ function arrayJumpingGame(values) {
   return 0
 }
 
+// Encode maximal runs as one decimal digit followed by the literal character.
+// Bitburner's RLE format limits a count to 9, so longer runs must be split;
+// characters such as "7" are data, never a count on their own.
+function rleCompression(text) {
+  let result = ""
+  for (let index = 0; index < text.length;) {
+    const character = text[index]
+    let count = 1
+    while (count < 9 && index + count < text.length && text[index + count] === character) count++
+    result += `${count}${character}`
+    index += count
+  }
+  return result
+}
+
 const SOLVERS = {
   "Find Largest Prime Factor": largestPrimeFactor,
   "Merge Overlapping Intervals": mergeIntervals,
@@ -125,6 +140,7 @@ const SOLVERS = {
   "Algorithmic Stock Trader I": stockTraderI,
   "Algorithmic Stock Trader II": stockTraderII,
   "Array Jumping Game": arrayJumpingGame,
+  "Compression I: RLE Compression": rleCompression,
 }
 
 export function solveContract(type, data) {

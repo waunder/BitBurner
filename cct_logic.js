@@ -74,6 +74,20 @@ function totalWaysToSum(n) {
   return ways[n]
 }
 
+// `Total Ways to Sum II` supplies [target, denominations].  Count
+// combinations, not permutations: each denomination is introduced once and
+// may then be reused any number of times.
+function totalWaysToSumII([target, denominations]) {
+  const ways = Array(target + 1).fill(0)
+  ways[0] = 1
+  for (const denomination of denominations) {
+    for (let sum = denomination; sum <= target; sum++) {
+      ways[sum] += ways[sum - denomination]
+    }
+  }
+  return ways[target]
+}
+
 function stockTraderI(prices) {
   let low = Infinity
   let best = 0
@@ -107,6 +121,7 @@ const SOLVERS = {
   "Unique Paths in a Grid I": uniquePaths,
   "Subarray with Maximum Sum": maxSubarray,
   "Total Ways to Sum": totalWaysToSum,
+  "Total Ways to Sum II": totalWaysToSumII,
   "Algorithmic Stock Trader I": stockTraderI,
   "Algorithmic Stock Trader II": stockTraderII,
   "Array Jumping Game": arrayJumpingGame,

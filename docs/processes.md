@@ -1184,6 +1184,10 @@ the exact reason in `cct_queue_status.json`; it does not spend a second
 attempt or skip ahead. This makes contract progress sequential and reviewable,
 not an uncontrolled batch.
 
+Supported contract types include `Total Ways to Sum II`, solved as standard
+unbounded coin-change combinations (denomination order does not create extra
+ways).
+
 - **Start:** automatic with MCP; `run maintenance_steward.js` after a full
   manual recovery is also sufficient.
 - **Output:** `maintenance_status.json`, bounded `maintenance_history.txt`,

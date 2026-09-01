@@ -12,6 +12,8 @@ test("coding-contract solvers cover the audited types", () => {
   assert.equal(solve("Unique Paths in a Grid I", [4, 14]), 560)
   assert.equal(solve("Subarray with Maximum Sum", [-2, 1, -3, 4, -1, 2, 1, -5, 4]), 6)
   assert.equal(solve("Total Ways to Sum", 4), 4)
+  assert.equal(solve("Total Ways to Sum II", [10, [2, 5, 3, 6]]), 5)
+  assert.equal(solve("Total Ways to Sum II", [4, [1, 2, 3]]), 4)
   assert.equal(solve("Algorithmic Stock Trader I", [7, 1, 5, 3, 6, 4]), 5)
   assert.equal(solve("Algorithmic Stock Trader II", [7, 1, 5, 3, 6, 4]), 7)
   assert.equal(solve("Array Jumping Game", [2, 3, 1, 1, 4]), 1)

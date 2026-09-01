@@ -180,7 +180,12 @@ export async function main(ns) {
   const host = ns.getHostname()
   const creds = readCreds(ns)
   const neighbours = ns.dnet.probe()
-  const summary = { seen: neighbours.length, sessions: 0, cracked: 0, prepared: 0, deployed: 0, failed: 0 }
+  const summary = { seen: neighbours.length, sessions: 0, cracked: 0, prepared: 0, deployed: 0, failed: 0, failures: [] }
+  const noteFailure = (target, stage, why, code = null) => {
+    // One small bounded diagnostic is enough to distinguish stale credentials
+    // from topology/auth/RAM failures; never recreate a per-attempt log.
+    if (summary.failures.length < 5) summary.failures.push({ target, stage, why, code })
+  }
 
   for (const target of neighbours) {
     // Propagation throttle (2026-08-30) — hard stop, not a skip-and-continue:
@@ -196,6 +201,7 @@ export async function main(ns) {
     const result = await acquireSession(ns, target, known, flags.brute)
     if (!result.ok) {
       summary.failed++
+      noteFailure(target, "session", result.why, result.code ?? null)
       if (!flags.quiet) ns.print(`FAIL ${target} why=${result.why} code=${result.code}`)
       continue
     }
@@ -206,6 +212,7 @@ export async function main(ns) {
       details = result.details ?? ns.dnet.getServerDetails(target)
     } catch (err) {
       summary.failed++
+      noteFailure(target, "details", String(err))
       if (!flags.quiet) ns.print(`DETAILS-FAIL ${target}: ${err}`)
       continue
     }
@@ -220,6 +227,7 @@ export async function main(ns) {
       const prep = await prepareTarget(ns, target)
       if (prep.after < prep.before) summary.prepared++
       if (prep.after > 0) {
+        noteFailure(target, "prepare", prep.why)
         if (!flags.quiet) ns.print(`PREP-WAIT ${target} before=${prep.before} after=${prep.after} why=${prep.why}`)
         continue
       }
@@ -231,15 +239,20 @@ export async function main(ns) {
     try {
       if (!(await ns.scp(files, target))) {
         summary.failed++
+        noteFailure(target, "scp", "copy failed")
         continue
       }
       // Children are terminal: the one authorised expansion is not allowed
       // to recursively create another propagation wave.
       const pid = ns.exec(SELF, target, { preventDuplicates: true }, "--no-spread")
       if (pid !== 0) summary.deployed++
-      else summary.failed++
+      else {
+        summary.failed++
+        noteFailure(target, "exec", "child crawler did not start")
+      }
     } catch (err) {
       summary.failed++
+      noteFailure(target, "spread", String(err))
       if (!flags.quiet) ns.print(`SPREAD-FAIL ${target}: ${err}`)
     }
   }

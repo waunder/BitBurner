@@ -7,10 +7,12 @@ export async function main(ns) {
   const startCctAudit = ns.args.some((arg) => String(arg) === "--cct-audit")
   const startCctDryRun = ns.args.some((arg) => String(arg) === "--cct-dry-run")
   const startCctHud = ns.args.some((arg) => String(arg) === "--cct-hud")
+  const startCctWatcher = ns.args.some((arg) => String(arg) === "--cct-watch")
+  const startOpsHud = ns.args.some((arg) => String(arg) === "--ops-hud")
   const cctSubmitArg = ns.args.find((arg) => String(arg).startsWith("--cct-submit="))
   const cctMinTriesArg = ns.args.find((arg) => String(arg).startsWith("--cct-min-tries="))
   const buyWorkerArg = ns.args.find((arg) => String(arg).startsWith("--buy-worker="))
-  const mcpArgs = ns.args.filter((arg) => !["--darknet", "--dnet-scorecard", "--cct-audit", "--cct-dry-run", "--cct-hud"].includes(String(arg)) && !String(arg).startsWith("--buy-worker=") && !String(arg).startsWith("--cct-submit=") && !String(arg).startsWith("--cct-min-tries="))
+  const mcpArgs = ns.args.filter((arg) => !["--darknet", "--dnet-scorecard", "--cct-audit", "--cct-dry-run", "--cct-hud", "--cct-watch", "--ops-hud"].includes(String(arg)) && !String(arg).startsWith("--buy-worker=") && !String(arg).startsWith("--cct-submit=") && !String(arg).startsWith("--cct-min-tries="))
 
   if (ns.scriptKill("mcp.js", "home")) {
     // A killed script can still finish its in-flight tick, including writing
@@ -151,6 +153,21 @@ export async function main(ns) {
     else while (ns.isRunning(purchasePid)) await ns.sleep(100)
   }
 
+  // Discovery runs once per ten minutes and never submits. Place it on a
+  // cloud worker; MCP gets that worker's remaining RAM after it launches.
+  if (startCctWatcher) {
+    const watcherRam = ns.getScriptRam("cct_watcher.js", "home")
+    const worker = ns.cloud.getServerNames()
+      .filter((host) => ns.hasRootAccess(host) && ns.getServerMaxRam(host) >= watcherRam)
+      .sort((a, b) => ns.getServerMaxRam(b) - ns.getServerMaxRam(a))[0]
+    if (!worker) ns.tprint("restart_mcp: no cloud worker can host cct_watcher.js")
+    else if (!ns.ps(worker).some((proc) => proc.filename.replace(/^\//, "") === "cct_watcher.js")) {
+      const copied = await ns.scp(["cct_watcher.js", "cct_audit.js"], worker, "home")
+      const watcherPid = copied ? ns.exec("cct_watcher.js", worker, 1) : 0
+      if (watcherPid === 0) ns.tprint(`restart_mcp: failed to start cct watcher on ${worker}`)
+    }
+  }
+
   const pid = ns.run("mcp.js", 1, ...mcpArgs)
   if (pid === 0) {
     ns.tprint("restart_mcp: failed to start mcp.js (not enough RAM on home?)")
@@ -161,6 +178,14 @@ export async function main(ns) {
   if (startCctHud && !ns.isRunning("cct_hud.js", "home")) {
     const hudPid = ns.run("cct_hud.js", 1)
     if (hudPid === 0) ns.tprint("restart_mcp: failed to start cct_hud.js")
+  }
+
+  // The consolidated panel is a read-only consumer of the durable MCP,
+  // contract, Darknet, cloud, and reviewer records.  Start it after MCP so
+  // a failed optional HUD can never delay the controller.
+  if (startOpsHud && !ns.isRunning("ops_hud.js", "home")) {
+    const opsPid = ns.run("ops_hud.js", 1)
+    if (opsPid === 0) ns.tprint("restart_mcp: failed to start ops_hud.js")
   }
 
   if (startScorecard) {

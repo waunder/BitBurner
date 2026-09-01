@@ -31,7 +31,7 @@ function scanAll(ns) {
   return [...seen]
 }
 
-export async function main(ns) {
+export async function main(ns, quiet = false) {
   ns.disableLog("ALL")
   const contracts = []
   const inaccessible = []
@@ -74,5 +74,7 @@ export async function main(ns) {
     inaccessibleHosts: inaccessible,
   }
   ns.write(OUTPUT, JSON.stringify(report, null, 2), "w")
-  ns.tprint(`cct_audit: ${contracts.length} contract(s), ${Object.keys(byType).length} type(s); no submissions made.`)
+  if (!quiet && !ns.args.some((arg) => String(arg) === "--quiet")) {
+    ns.tprint(`cct_audit: ${contracts.length} contract(s), ${Object.keys(byType).length} type(s); no submissions made.`)
+  }
 }

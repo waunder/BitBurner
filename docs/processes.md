@@ -1144,6 +1144,30 @@ submissions, or steady-state writes.
   API; the panel shows accepted count, cash, faction-reputation totals, last
   outcome, and whether a failed guard has paused the sequence.
 
+### `ops_hud.js`
+
+The compact consolidated operations panel: one quiet tail for the decisions
+that need attention, with specialist HUDs retained for deeper inspection.
+It reads only the existing MCP status, contract ledger/latest result, Darknet
+root heartbeat/manager registry, automation-review status, and purchased-cloud
+names. It does not scan, parse Darknet shards, write telemetry, or control any
+gameplay script. It refreshes every 30 seconds and labels missing or stale MCP
+and Darknet records explicitly.
+
+- **Start:** `run ops_hud.js` (optional `x= y= w= h=`), or add `--ops-hud` to
+  a `restart_mcp.js` request.
+- **Shows:** MCP target/objective/rate/worker status; contract accepts, cash,
+  leading faction reputation and latest result; Darknet heartbeat/managers;
+  cloud-worker count/RAM utilization; and the first current automation alert.
+
+### `cct_watcher.js`
+
+Read-only contract discovery, started with `restart_mcp.js --cct-watch`. It
+runs an audit on one cloud worker every ten minutes, then copies
+`cct_inventory.json` and `cct_watch_status.json` back to home. The operations
+HUD shows the discovered count and inventory age. It never submits or spends
+an attempt.
+
 ### `purchase_worker_server.js`
 
 One-shot provisioner for a purchased 2^n-GB worker server. It performs no

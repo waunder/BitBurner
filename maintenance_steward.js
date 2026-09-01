@@ -26,10 +26,8 @@ function startWatcher(ns) {
 /** @param {NS} ns */
 export async function main(ns) {
   ns.disableLog("ALL")
-  // The watcher is code, not a persistent job: refresh it with this steward
-  // generation so a source deployment cannot leave an old read-only watcher
-  // silently running forever.
-  ns.scriptKill("cct_watcher.js", "home")
+  // mcp_launch refreshes the watcher before MCP is allocated. Do not kill it
+  // here: that would reintroduce a scheduling race on a RAM-full home.
   let prior = readJson(ns, STATUS, {})
   while (true) {
     const now = Date.now()

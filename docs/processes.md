@@ -1203,10 +1203,9 @@ attempt or skip ahead. This makes contract progress sequential and reviewable,
 not an uncontrolled batch.
 
 Supported contract types include `Total Ways to Sum II`, solved as standard
-coin-change dynamic programming, and `Compression I: RLE Compression`, which
-emits literal character runs in chunks of at most nine.
 unbounded coin-change combinations (denomination order does not create extra
-ways).
+ways), and `Compression I: RLE Compression`, which emits literal character
+runs in chunks of at most nine.
 
 - **Start:** automatic with MCP; `run maintenance_steward.js` after a full
   manual recovery is also sufficient.

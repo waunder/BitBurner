@@ -9,9 +9,13 @@
 export async function main(ns) {
   const request = JSON.parse(String(ns.args[0] || "{}"))
   const mcpArgs = Array.isArray(request.mcpArgs) ? request.mcpArgs : []
-  // Bring the small observer up before MCP reclaims the worker pool. It
-  // immediately writes its status and starts only the low-frequency cloud
-  // contract watcher; neither competes with the controller on home.
+  // The watcher must be live before MCP consumes home RAM. Starting it from
+  // the steward races its first scheduling slice against MCP and can leave
+  // every subsequent queue cycle starved.
+  ns.scriptKill("cct_watcher.js", "home")
+  const watcherPid = ns.run("cct_watcher.js", 1)
+  if (watcherPid === 0) ns.tprint("mcp_launch: failed to start cct watcher")
+  // Bring the small observer up before MCP reclaims the worker pool.
   ns.scriptKill("maintenance_steward.js", "home")
   const maintenancePid = ns.run("maintenance_steward.js", 1)
   if (maintenancePid === 0) ns.tprint("mcp_launch: failed to start maintenance steward")

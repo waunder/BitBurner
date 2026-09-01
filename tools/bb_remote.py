@@ -845,6 +845,7 @@ PULL_FILES = [
     "cct_watch_status.json",
     "cct_queue_status.json",
     "maintenance_status.json",
+    "maintenance_launch_status.json",
     "maintenance_history.txt",
     "purchased_worker_status.json",
     "automation_review.json",

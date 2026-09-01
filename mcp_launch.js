@@ -22,7 +22,14 @@ export async function main(ns) {
   // the supervisor for one cooled-down MCP recovery; contract work stays on
   // the cloud-backed watcher it starts.
   if (!ns.isRunning("maintenance_steward.js", "home")) {
-    if (ns.run("maintenance_steward.js", 1) === 0) ns.tprint("mcp_launch: failed to start maintenance steward")
+    const maintenancePid = ns.run("maintenance_steward.js", 1)
+    ns.write("maintenance_launch_status.json", JSON.stringify({
+      ts: Date.now(), pid: maintenancePid,
+      freeRam: ns.getServerMaxRam("home") - ns.getServerUsedRam("home"),
+      scriptRam: ns.getScriptRam("maintenance_steward.js", "home"),
+      reason: maintenancePid ? "started" : "could not start",
+    }, null, 2), "w")
+    if (maintenancePid === 0) ns.tprint("mcp_launch: failed to start maintenance steward")
   }
 
   if (request.startCctHud && !ns.isRunning("cct_hud.js", "home")) {

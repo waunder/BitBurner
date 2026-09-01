@@ -867,9 +867,14 @@ level gate.
   `startup.js` and refreshed after an MCP restart.
 - **Shows:** current Hacking and Charisma; reliable total script XP/sec from
   MCP; current objective and target; the next server's required Hack level and
-  remaining gap; and a direct action such as `BEST NOW Rothman Algorithms`.
-  It intentionally does not claim a player XP-per-second delta, because that
-  rate is not durably measured across sessions.
+  remaining gap; and an evidence-labelled player action. A discovered normal
+  server gate remains the high-confidence default (`BEST NOW Rothman
+  Algorithms until H…`). If no gate remains, a fresh Darknet heartbeat is
+  shown only as evidence of *passive* Charisma growth—not as a reason to
+  interrupt the player for manual Charisma training. It never invents a gym,
+  crime, or faction-reputation priority without a live requirement to support
+  it. It intentionally does not claim a player XP-per-second delta, because
+  that rate is not durably measured across sessions.
 
 ### `dnet_scorecard.js`
 
@@ -1175,14 +1180,17 @@ and Darknet records explicitly.
 - **Start:** `run ops_hud.js` (optional `x= y= w= h=`), or add `--ops-hud` to
   a `restart_mcp.js` request.
 - **Shows:** MCP target/objective/rate/worker status; a local-telemetry-only
-  player-time recommendation; contract accepts, cash, leading faction
+  player-time recommendation with an explicit confidence/basis; contract accepts, cash, leading faction
   reputation and latest result; Darknet heartbeat/managers; cloud-worker
   count/RAM utilization; and the first current automation alert. It performs
   a cached (ten-minute) read-only network walk to name the lowest discovered hacking-level gate,
   showing the player's current level and the level gap (not an invented XP
-  total). In XP mode it therefore states, plainly, `need +N H: server (HX)`
-  and `Best: Rothman Algorithms`, while MCP's separate script XP rate remains
-  live. It never starts, stops, or inspects player work.
+  total). A normal-server gate therefore takes priority and states, plainly,
+  `need +N H: server (HX)` and `Best: Rothman Algorithms until HX`. Once no
+  such gate exists, the panel calls out only evidence-backed alternatives:
+  a live Darknet means Charisma is already growing passively; otherwise it
+  says that no gym, crime, or faction-work requirement has been observed.
+  It never starts, stops, or inspects player work.
 
 ### `maintenance_steward.js` and `cct_watcher.js`
 

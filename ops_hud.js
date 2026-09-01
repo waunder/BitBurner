@@ -9,6 +9,8 @@
  *
  * @param {NS} ns
  */
+import { chooseProgressionGuidance } from "./progression_guidance_logic.js"
+
 const POLL_MS = 30000
 const GATE_REFRESH_MS = 600000
 const MCP_STALE_MS = 300000
@@ -19,7 +21,7 @@ const OVERVIEW_DROP = 190
 const RIGHT_MARGIN = 8
 const WHITE = "\u001b[37m"
 const RESET = "\u001b[0m"
-let gateCache = { ts: 0, gates: [] }
+let gateCache = { ts: 0, gates: [], ok: false }
 
 function parseArgs(ns) {
   const out = {}
@@ -103,7 +105,7 @@ function workerRam(mcp, cloudNames) {
 function nextHackingGate(ns, hacking) {
   const now = Date.now()
   if (now - gateCache.ts < GATE_REFRESH_MS) {
-    return gateCache.gates.find((gate) => gate.required > hacking) || null
+    return { gate: gateCache.gates.find((gate) => gate.required > hacking) || null, ok: gateCache.ok }
   }
   try {
     const seen = new Set(["home"])
@@ -122,41 +124,32 @@ function nextHackingGate(ns, hacking) {
       if (Number.isFinite(required) && required > hacking) gates.push({ host, required })
     }
     gates.sort((a, b) => a.required - b.required || a.host.localeCompare(b.host))
-    gateCache = { ts: now, gates }
-    return gates[0] || null
+    gateCache = { ts: now, gates, ok: true }
+    return { gate: gates[0] || null, ok: true }
   } catch {
-    gateCache = { ts: now, gates: [] }
-    return null
+    // A failed scan is not evidence that there is no remaining gate. Keep a
+    // prior successful cache, if any; otherwise communicate uncertainty.
+    if (!gateCache.ok) gateCache = { ts: now, gates: [], ok: false }
+    return { gate: gateCache.gates.find((gate) => gate.required > hacking) || null, ok: gateCache.ok }
   }
 }
 
-// This HUD cannot see an augmentation's individual reputation gap, so it
-// never claims faction work is blocking unless another system supplies it.
 function playerTimeAdvice(ns, mcp) {
   const skills = mcp?.player?.skills || {}
   const hacking = Number(skills.hacking) || 0
   const charisma = Number(skills.charisma) || 0
-  const objective = mcp?.OBJECTIVE || mcp?.objective || "--"
   const scriptXp = Number(mcp?.expPerSec) || 0
-  const gate = nextHackingGate(ns, hacking)
-  const gateText = gate
-    ? `need +${gate.required - hacking} H: ${gate.host} (H${gate.required})`
-    : "no higher discovered H gate"
-  if (objective === "xp") {
-    return {
-      stats: `YOU H${hacking} C${charisma}`,
-      recommendation: gate ? `NEXT H${gate.required}` : "NEXT GATE --",
-      gate: gateText,
-      best: "Best: Rothman Algorithms",
-      detail: `MCP +${compact(scriptXp)} XP/s independent`,
-    }
-  }
+  const gateState = nextHackingGate(ns, hacking)
+  const root = readJson(ns, "dnet_deployer_home.json")
+  const darknetLive = Number.isFinite(root?.ts) && Date.now() - root.ts <= DNET_STALE_MS
+  const guidance = chooseProgressionGuidance({ hacking, charisma, gate: gateState.gate, gateScanOk: gateState.ok, darknetLive })
   return {
     stats: `YOU H${hacking} C${charisma}`,
-    recommendation: gate ? `NEXT H${gate.required}` : "NEXT GATE --",
-    gate: gateText,
-    best: gate ? "Best: Rothman Algorithms" : "Best: pursue current objective",
-    detail: `MCP +${compact(scriptXp)} XP/s`,
+    recommendation: guidance.next,
+    gate: guidance.gate,
+    best: `Best: ${guidance.best}`,
+    detail: `MCP +${compact(scriptXp)} XP/s; ${guidance.confidence}`,
+    basis: guidance.basis,
   }
 }
 
@@ -197,6 +190,7 @@ function buildLines(ns) {
     row("gate", playerTime.gate),
     row("best now", playerTime.best),
     row("script XP", playerTime.detail),
+    row("guidance basis", playerTime.basis.slice(0, 25)),
     row(`contracts ${totals.accepted} accepted`, `$${compact(totals.cash)}`),
     row(`discovery ${inventory?.contracts?.length ?? "--"} available`, `${cctWatch?.ok === false ? "SCAN ERROR" : age(now, inventory?.ts)}`),
     row("CCT queue", `${cctQueue.action || "waiting"}: ${String(cctQueue.reason || "next scan").slice(0, 24)}`),

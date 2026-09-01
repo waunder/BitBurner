@@ -21,6 +21,13 @@ post-restart qualified switch evaluation.
 
 ## Done
 
+- **Evidence-based cross-skill guidance added, 2026-09-01:** Operations and
+  XP HUDs now default to the nearest discovered normal-server Hacking gate
+  and name the required level/action. When no such gate remains they do not
+  guess at gym, crime, or faction work: a fresh Darknet heartbeat is shown as
+  passive Charisma growth, otherwise the panel explicitly reports that no
+  alternate requirement has been observed.
+
 - **Focused XP HUD added, 2026-09-01:** `mcp_xp.js` is a quiet 20-second panel
   for player Hacking/Charisma, MCP script XP rate/objective/target, the next
   discovered hacking gate and a direct player action. It starts with startup

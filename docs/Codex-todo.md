@@ -10,6 +10,12 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
 
 ## Now
 
+- [x] **Make player-time guidance cross-skill but evidence-based.** HUDs now
+  prioritize the next discovered normal-server Hacking gate; without one,
+  they show live Darknet Charisma as passive growth or explicitly state that
+  no physical/crime/faction requirement has been observed, rather than
+  guessing a universal training path.
+
 - [x] **Build persistent maintenance stewardship.** The 30-second steward
   keeps a bounded health record, starts the ten-minute cloud contract cycle,
   requests only one cooled-down MCP recovery after sustained staleness, and

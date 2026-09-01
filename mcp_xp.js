@@ -10,15 +10,18 @@
  *
  * @param {NS} ns
  */
+import { chooseProgressionGuidance } from "./progression_guidance_logic.js"
+
 const POLL_MS = 20_000
 const GATE_REFRESH_MS = 600_000
+const DNET_LIVE_MS = 30_000
 const WIDTH_CHARS = 34
 const DEFAULT_Y = 570
 const RIGHT_MARGIN = 8
 const WHITE = "\u001b[37m"
 const RESET = "\u001b[0m"
 
-let gateCache = { refreshedAt: 0, gates: [] }
+let gateCache = { refreshedAt: 0, gates: [], ok: false }
 
 function parseArgs(ns) {
   const out = {}
@@ -84,14 +87,14 @@ function nextGate(ns, hacking) {
         }
       }
       gates.sort((a, b) => a.required - b.required || a.host.localeCompare(b.host))
-      gateCache = { refreshedAt: now, gates }
+      gateCache = { refreshedAt: now, gates, ok: true }
     } catch {
       // Keep the last known gate rather than replacing useful guidance with a
       // transient API failure. The age row makes the staleness visible.
-      if (!gateCache.refreshedAt) gateCache = { refreshedAt: now, gates: [] }
+      if (!gateCache.refreshedAt) gateCache = { refreshedAt: now, gates: [], ok: false }
     }
   }
-  return gateCache.gates.find((gate) => gate.required > hacking) || null
+  return { gate: gateCache.gates.find((gate) => gate.required > hacking) || null, ok: gateCache.ok }
 }
 
 function buildLines(ns) {
@@ -102,25 +105,29 @@ function buildLines(ns) {
   const skills = mcp.player?.skills || {}
   const hacking = Number(skills.hacking) || 0
   const charisma = Number(skills.charisma) || 0
-  const gate = nextGate(ns, hacking)
+  const gateState = nextGate(ns, hacking)
+  const root = readJson(ns, "dnet_deployer_home.json")
+  const darknetLive = Number.isFinite(root?.ts) && now - root.ts <= DNET_LIVE_MS
   const stale = !Number.isFinite(mcp.ts) || now - mcp.ts > 90_000
   const objective = String(mcp.OBJECTIVE || mcp.objective || "--").toUpperCase()
   const target = String(mcp.target || "--")
-  const gap = gate ? Math.max(0, gate.required - hacking) : 0
-  const advice = gate
-    ? gap > 0
-      ? "Rothman Algorithms"
-      : "use newly-opened host"
-    : "continue current goal"
+  const guidance = chooseProgressionGuidance({
+    hacking,
+    charisma,
+    gate: gateState.gate,
+    gateScanOk: gateState.ok,
+    darknetLive,
+  })
 
   return [
     row("XP / PROGRESSION", stale ? "STALE" : "LIVE"),
     row(`YOU H${hacking}`, `C${charisma}`),
     row("MCP XP", `${compact(mcp.expPerSec)} / sec`),
     row("mode / target", `${objective} ${target}`.slice(0, 20)),
-    row("NEXT", gate ? `${gate.host} H${gate.required}` : "none found"),
-    row("GAP", gate ? `+${gap} H` : "--"),
-    row("BEST NOW", advice),
+    row("NEXT", guidance.next),
+    row("gate", guidance.gate),
+    row("BEST NOW", guidance.best),
+    row("basis", `${guidance.confidence}: ${guidance.basis}`.slice(0, 22)),
     row("status age", statusAge(now, mcp.ts)),
   ]
 }

@@ -21,16 +21,17 @@ export async function main(ns) {
   // Persistent, low-frequency maintenance. It only observes status and asks
   // the supervisor for one cooled-down MCP recovery; contract work stays on
   // the cloud-backed watcher it starts.
-  if (!ns.isRunning("maintenance_steward.js", "home")) {
-    const maintenancePid = ns.run("maintenance_steward.js", 1)
-    ns.write("maintenance_launch_status.json", JSON.stringify({
-      ts: Date.now(), pid: maintenancePid,
-      freeRam: ns.getServerMaxRam("home") - ns.getServerUsedRam("home"),
-      scriptRam: ns.getScriptRam("maintenance_steward.js", "home"),
-      reason: maintenancePid ? "started" : "could not start",
-    }, null, 2), "w")
-    if (maintenancePid === 0) ns.tprint("mcp_launch: failed to start maintenance steward")
-  }
+  // Restart this observer with each MCP generation. A stale observer cannot
+  // retain an old cooldown/status view across a controller replacement.
+  ns.scriptKill("maintenance_steward.js", "home")
+  const maintenancePid = ns.run("maintenance_steward.js", 1)
+  ns.write("maintenance_launch_status.json", JSON.stringify({
+    ts: Date.now(), pid: maintenancePid,
+    freeRam: ns.getServerMaxRam("home") - ns.getServerUsedRam("home"),
+    scriptRam: ns.getScriptRam("maintenance_steward.js", "home"),
+    reason: maintenancePid ? "started" : "could not start",
+  }, null, 2), "w")
+  if (maintenancePid === 0) ns.tprint("mcp_launch: failed to start maintenance steward")
 
   if (request.startCctHud && !ns.isRunning("cct_hud.js", "home")) {
     if (ns.run("cct_hud.js", 1) === 0) ns.tprint("mcp_launch: failed to start cct_hud.js")

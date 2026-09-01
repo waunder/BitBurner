@@ -155,7 +155,7 @@ function playerTimeAdvice(ns, mcp) {
     stats: `YOU H${hacking} C${charisma}`,
     recommendation: gate ? `NEXT H${gate.required}` : "NEXT GATE --",
     gate: gateText,
-    best: "Best: active objective",
+    best: gate ? "Best: Rothman Algorithms" : "Best: pursue current objective",
     detail: `MCP +${compact(scriptXp)} XP/s`,
   }
 }
@@ -170,6 +170,7 @@ function buildLines(ns) {
   const latestSubmit = readJson(ns, "cct_submit_status.json")
   const inventory = readJson(ns, "cct_inventory.json")
   const cctWatch = readJson(ns, "cct_watch_status.json")
+  const cctQueue = readJson(ns, "cct_queue_status.json", {})
   const cloudNames = ns.cloud.getServerNames()
   const cloudRam = workerRam(mcp, cloudNames)
   const mcpAge = Number.isFinite(mcp?.ts) ? now - mcp.ts : Infinity
@@ -198,6 +199,7 @@ function buildLines(ns) {
     row("script XP", playerTime.detail),
     row(`contracts ${totals.accepted} accepted`, `$${compact(totals.cash)}`),
     row(`discovery ${inventory?.contracts?.length ?? "--"} available`, `${cctWatch?.ok === false ? "SCAN ERROR" : age(now, inventory?.ts)}`),
+    row("CCT queue", `${cctQueue.action || "waiting"}: ${String(cctQueue.reason || "next scan").slice(0, 24)}`),
     ...reps.map(([name, rep]) => row(name.slice(0, 27), `+${compact(rep)} rep`)),
     row("latest CCT", recentText.slice(0, WIDTH_CHARS - 11)),
     row(`DNET ${dnetState}`, `${managers} managers / ${age(now, root?.ts)}`),

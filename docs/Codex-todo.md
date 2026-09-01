@@ -10,6 +10,13 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
 
 ## Now
 
+- [x] **Build persistent maintenance stewardship.** The 30-second steward
+  keeps a bounded health record, starts the ten-minute cloud contract cycle,
+  requests only one cooled-down MCP recovery after sustained staleness, and
+  leaves stock, resets, and Darknet untouched. The queue submits one guarded
+  supported contract at a time and durably pauses on a rejection or unknown
+  type.
+
 - [x] **Show Coding Contract gains in-game.** `cct_hud.js` is a quiet,
   read-only panel over a bounded durable reward ledger; its opening balance
   records the verified twelve accepts while deliberately leaving CSEC

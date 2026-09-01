@@ -18,6 +18,13 @@ export async function main(ns) {
   }
   ns.tprint(`mcp_launch: started mcp.js (pid ${pid})${mcpArgs.length ? " args=" + JSON.stringify(mcpArgs) : ""}`)
 
+  // Persistent, low-frequency maintenance. It only observes status and asks
+  // the supervisor for one cooled-down MCP recovery; contract work stays on
+  // the cloud-backed watcher it starts.
+  if (!ns.isRunning("maintenance_steward.js", "home")) {
+    if (ns.run("maintenance_steward.js", 1) === 0) ns.tprint("mcp_launch: failed to start maintenance steward")
+  }
+
   if (request.startCctHud && !ns.isRunning("cct_hud.js", "home")) {
     if (ns.run("cct_hud.js", 1) === 0) ns.tprint("mcp_launch: failed to start cct_hud.js")
   }

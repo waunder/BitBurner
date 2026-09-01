@@ -1166,14 +1166,29 @@ and Darknet records explicitly.
   and `Best: Rothman Algorithms`, while MCP's separate script XP rate remains
   live. It never starts, stops, or inspects player work.
 
-### `cct_watcher.js`
+### `maintenance_steward.js` and `cct_watcher.js`
 
-Read-only contract discovery, started with `restart_mcp.js --cct-watch`. A
-small home-side controller runs a finite audit on one cloud worker every ten
-minutes, then copies
-`cct_inventory.json` and `cct_watch_status.json` back to home. The operations
-HUD shows the discovered count and inventory age. It never submits or spends
-an attempt.
+The persistent maintenance steward starts with `mcp_launch.js` and `startup.js`.
+It observes game health every 30 seconds, starts the contract watcher if it is
+absent, and writes a bounded status/history record. A stale MCP status must
+persist for 60 seconds before it asks the existing supervisor for one normal
+restart; further recovery requests are cooled down for 15 minutes. It never
+trades, resets/installs, or starts/stops/expands Darknet.
+
+The cloud-backed watcher runs a finite audit every ten minutes and then
+processes **at most one** contract. It selects only a solver-supported item
+with at least ten tries remaining, reuses `cct_submit.js`'s live fingerprint
+guard, and copies the status and bounded reward ledger home. An unsupported
+type, insufficient tries, rejection, or missing result pauses the queue with
+the exact reason in `cct_queue_status.json`; it does not spend a second
+attempt or skip ahead. This makes contract progress sequential and reviewable,
+not an uncontrolled batch.
+
+- **Start:** automatic with MCP; `run maintenance_steward.js` after a full
+  manual recovery is also sufficient.
+- **Output:** `maintenance_status.json`, bounded `maintenance_history.txt`,
+  `cct_watch_status.json`, `cct_queue_status.json`, the inventory, submit
+  status, and reward ledger — all pulled by the Remote API.
 
 ### `purchase_worker_server.js`
 

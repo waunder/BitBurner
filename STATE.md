@@ -5,10 +5,11 @@ purpose are defined in `docs/agent-working-agreement.md`.
 
 ## Current objective
 
-Coding Contracts are in a high-confidence pilot: the observed contract types
-have been inventoried and dry-run successfully. Next is one explicit,
-fingerprint-guarded submission of a 10-attempt Caesar contract; no automatic
-selection or batch submission is permitted.
+Persistent maintenance is active: observe health every 30 seconds, refresh
+contract inventory every ten minutes, and sequentially claim only supported,
+fingerprint-guarded contracts with at least ten tries. Pause with a durable
+reason on an unsupported type or a rejection; recovery remains bounded and
+never controls stock, resets, or Darknet expansion.
 
 Resume real gameplay-progress work now that the governance deadlock
 (retired 2026-08-18, see `AGENTS.md`) is cleared. R8 has been landed and

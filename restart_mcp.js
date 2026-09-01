@@ -162,6 +162,19 @@ export async function main(ns) {
     }
   }
 
+  const mcpRam = ns.getScriptRam("mcp.js", "home")
+  const homeFreeRam = ns.getServerMaxRam("home") - ns.getServerUsedRam("home")
+  // `restart_mcp.js` is invoked by the small permanent supervisor, so on a
+  // constrained home it can be the last piece of RAM preventing MCP itself
+  // from starting. `spawn` replaces this launcher at the next opportunity;
+  // its RAM is then released before MCP's allocation is attempted. This is
+  // only safe after all optional finite work above has completed.
+  if (homeFreeRam < mcpRam) {
+    ns.tprint(`restart_mcp: handing off to mcp.js (free ${homeFreeRam.toFixed(1)}GB < ${mcpRam.toFixed(1)}GB while launcher is resident)`)
+    ns.spawn("mcp.js", 1, ...mcpArgs)
+    return
+  }
+
   const pid = ns.run("mcp.js", 1, ...mcpArgs)
   if (pid === 0) {
     ns.tprint("restart_mcp: failed to start mcp.js (not enough RAM on home?)")

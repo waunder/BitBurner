@@ -1231,7 +1231,10 @@ that loop.
 ### `restart_mcp.js`
 
 Kills `mcp.js` on home, waits for it to actually be gone, relaunches it with
-whatever args it was given.
+whatever args it was given. If the temporary launcher is the RAM blocker on a
+constrained home, it hands off with `ns.spawn()` so its own RAM is released
+before MCP starts; this avoids a restart leaving the worker scripts running
+without their controller.
 
 - **Start:** `run restart_mcp.js [target=<hostname>]`
 

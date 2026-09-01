@@ -31,7 +31,7 @@ const FILES = [SELF, MANAGER, REALLOC, "dnet_lib.js", "dnet_loot.js", "dnet_loot
 // Bitburner's RAM accounting is driven by which ns-touching functions get
 // called, not by which plain constants a leaf script happens to export, and
 // nothing else in-game imports this file, so this costs nothing live.
-export const MAX_ACTIVE_MANAGERS = 1
+export const MAX_ACTIVE_MANAGERS = 2
 export const MANAGER_REGISTRY_FILE = "dnet_manager_registry.json"
 export const MANAGER_SHARD_PREFIX = "dnet_manager_active_"
 export const MANAGER_STALE_MS = 5 * 60 * 1000
@@ -40,7 +40,7 @@ export const MANAGER_STALE_MS = 5 * 60 * 1000
 // bounds steady-state resident count but does nothing to slow the
 // propagation burst itself, which turned out to be the actual driver of
 // two live freezes tonight.
-export const MAX_SPREAD_PER_PASS = 0
+export const MAX_SPREAD_PER_PASS = 1
 
 function safeHost(host) {
   let safe = ""
@@ -175,6 +175,7 @@ export async function main(ns) {
   const flags = ns.flags([
     ["brute", 0],
     ["quiet", false],
+    ["no-spread", false],
   ])
   const host = ns.getHostname()
   const creds = readCreds(ns)
@@ -189,7 +190,8 @@ export async function main(ns) {
     // doc comment in dnet_lib.js), and there's no reason to pay that cost for
     // neighbors this pass won't spread to anyway. Anything left unprocessed
     // gets picked up on this host's next recrawl (dnet_manager.js).
-    if (summary.deployed >= MAX_SPREAD_PER_PASS) break
+    const spreadLimit = flags["no-spread"] ? 0 : MAX_SPREAD_PER_PASS
+    if (summary.deployed >= spreadLimit) break
     const known = creds[target]
     const result = await acquireSession(ns, target, known, flags.brute)
     if (!result.ok) {
@@ -231,7 +233,9 @@ export async function main(ns) {
         summary.failed++
         continue
       }
-      const pid = ns.exec(SELF, target, { preventDuplicates: true })
+      // Children are terminal: the one authorised expansion is not allowed
+      // to recursively create another propagation wave.
+      const pid = ns.exec(SELF, target, { preventDuplicates: true }, "--no-spread")
       if (pid !== 0) summary.deployed++
       else summary.failed++
     } catch (err) {
@@ -282,5 +286,5 @@ export async function main(ns) {
 }
 
 export function autocomplete() {
-  return ["--brute", "--quiet"]
+  return ["--brute", "--quiet", "--no-spread"]
 }

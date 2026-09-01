@@ -33,6 +33,10 @@ post-restart qualified switch evaluation.
   heartbeat, and exactly one manager (`darkweb`). It remains intentionally
   limited to one silent phish worker and no propagation; this validates the
   containment profile, not a return to unrestricted Darknet automation.
+- **Darknet controlled expansion staged, 2026-08-31:** the next approved
+  profile permits two managers and exactly one root-launched terminal child.
+  Both that child and every manager recrawl use `--no-spread`, preventing
+  recursive fan-out while allowing a meaningful two-node load check.
 
 - **Darknet loot log spam removed**, 2026-08-31: normal and no-op
   `dnet_loot.js` runs no longer write a terminal report or routine

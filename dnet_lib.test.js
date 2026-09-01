@@ -420,9 +420,9 @@ describe("dnet_crawl.js/dnet_manager.js's duplicated cap constants stay in sync 
     assert.equal(CRAWL_MAX_SPREAD_PER_PASS, MAX_SPREAD_PER_PASS)
   })
 
-  test("post-incident diagnostic profile cannot silently restore fan-out", () => {
-    assert.equal(MAX_ACTIVE_MANAGERS, 1)
-    assert.equal(MAX_SPREAD_PER_PASS, 0)
+  test("controlled expansion profile remains bounded", () => {
+    assert.equal(MAX_ACTIVE_MANAGERS, 2)
+    assert.equal(MAX_SPREAD_PER_PASS, 1)
     assert.equal(MAX_PHISH_THREADS, 1)
   })
 })

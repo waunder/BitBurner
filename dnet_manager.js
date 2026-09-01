@@ -111,7 +111,9 @@ export async function main(ns) {
 
       if (Date.now() >= nextCrawl) {
         await writeStatus(ns, "crawling", failures, nextCrawl)
-        const crawlPid = ns.run(CRAWLER, { preventDuplicates: true }, "--quiet")
+        // Recrawls refresh local access only. They must never turn a stable
+        // manager into a new propagation source.
+        const crawlPid = ns.run(CRAWLER, { preventDuplicates: true }, "--quiet", "--no-spread")
         if (crawlPid !== 0) await waitPid(ns, crawlPid)
         else await ns.sleep(POLL_MS)
         nextCrawl = Date.now() + jitteredRecrawlMs(RECRAWL_MS)

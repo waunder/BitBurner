@@ -110,20 +110,30 @@ export async function main(ns) {
       // MCP has already been stopped above, and it will refill the worker
       // after this finite single-contract task completes.
       const submitRam = ns.getScriptRam("cct_submit.js", "home")
-      const worker = ns.cloud.getServerNames()
+      const workers = ns.cloud.getServerNames()
         .filter((host) => ns.hasRootAccess(host) && ns.getServerMaxRam(host) >= submitRam)
-        .sort((a, b) => ns.getServerMaxRam(b) - ns.getServerMaxRam(a))[0]
+        .sort((a, b) => ns.getServerMaxRam(b) - ns.getServerMaxRam(a))
       let submitPid = 0
-      if (worker) {
-        ns.killall(worker)
-        const copied = await ns.scp(["cct_submit.js", "cct_logic.js", "cct_inventory.json"], worker, "home")
-        if (!copied) ns.tprint(`restart_mcp: failed to copy CCT submit files to ${worker}`)
-        else {
-          submitPid = ns.exec("cct_submit.js", worker, 1, target[0], target[1], minTries)
-          if (submitPid !== 0) {
-            while (ns.isRunning(submitPid, worker)) await ns.sleep(100)
-            await ns.scp(["cct_submit_status.json", "cct_reward_ledger.json"], "home", worker)
+      if (workers.length) {
+        // A server can reject an exec transiently even after killall (for
+        // example while its old action processes are still exiting). This is
+        // a finite, isolated task, so try each eligible cloud worker rather
+        // than falsely reporting an out-of-RAM failure after one host.
+        for (const worker of workers) {
+          ns.killall(worker)
+          const copied = await ns.scp(["cct_submit.js", "cct_logic.js", "cct_inventory.json"], worker, "home")
+          if (!copied) {
+            ns.tprint(`restart_mcp: failed to copy CCT submit files to ${worker}`)
+            continue
           }
+          submitPid = ns.exec("cct_submit.js", worker, 1, target[0], target[1], minTries)
+          if (submitPid === 0) {
+            ns.tprint(`restart_mcp: CCT submit did not start on ${worker}; trying next worker`)
+            continue
+          }
+          while (ns.isRunning(submitPid, worker)) await ns.sleep(100)
+          await ns.scp(["cct_submit_status.json", "cct_reward_ledger.json"], "home", worker)
+          break
         }
       }
       else submitPid = ns.run("cct_submit.js", 1, target[0], target[1], minTries)

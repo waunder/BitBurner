@@ -31,7 +31,7 @@ function get_all_servers(ns, all=false) {
 	// Purchased servers have no money, so the normal rooted-money filter
 	// deliberately omits them. They are nevertheless where MCP's workers
 	// run, and therefore belong in this operational view.
-	for (var purchased of ns.getPurchasedServers()) {
+	for (var purchased of ns.cloud.getServerNames()) {
 		if (result.indexOf(purchased) < 0) {
 			result.push(purchased)
 		}

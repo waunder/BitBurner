@@ -6,10 +6,11 @@ export async function main(ns) {
   const startScorecard = ns.args.some((arg) => String(arg) === "--dnet-scorecard")
   const startCctAudit = ns.args.some((arg) => String(arg) === "--cct-audit")
   const startCctDryRun = ns.args.some((arg) => String(arg) === "--cct-dry-run")
+  const startCctHud = ns.args.some((arg) => String(arg) === "--cct-hud")
   const cctSubmitArg = ns.args.find((arg) => String(arg).startsWith("--cct-submit="))
   const cctMinTriesArg = ns.args.find((arg) => String(arg).startsWith("--cct-min-tries="))
   const buyWorkerArg = ns.args.find((arg) => String(arg).startsWith("--buy-worker="))
-  const mcpArgs = ns.args.filter((arg) => !["--darknet", "--dnet-scorecard", "--cct-audit", "--cct-dry-run"].includes(String(arg)) && !String(arg).startsWith("--buy-worker=") && !String(arg).startsWith("--cct-submit=") && !String(arg).startsWith("--cct-min-tries="))
+  const mcpArgs = ns.args.filter((arg) => !["--darknet", "--dnet-scorecard", "--cct-audit", "--cct-dry-run", "--cct-hud"].includes(String(arg)) && !String(arg).startsWith("--buy-worker=") && !String(arg).startsWith("--cct-submit=") && !String(arg).startsWith("--cct-min-tries="))
 
   if (ns.scriptKill("mcp.js", "home")) {
     // A killed script can still finish its in-flight tick, including writing
@@ -135,6 +136,11 @@ export async function main(ns) {
     return
   }
   ns.tprint(`restart_mcp: started mcp.js (pid ${pid})${mcpArgs.length ? " args=" + JSON.stringify(mcpArgs) : ""}`)
+
+  if (startCctHud && !ns.isRunning("cct_hud.js", "home")) {
+    const hudPid = ns.run("cct_hud.js", 1)
+    if (hudPid === 0) ns.tprint("restart_mcp: failed to start cct_hud.js")
+  }
 
   if (startScorecard) {
     const scorePid = ns.run("dnet_scorecard.js", 1)

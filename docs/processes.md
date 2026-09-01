@@ -1124,6 +1124,21 @@ selects, or batches contracts.
   the Remote API. The latter holds the exact answer, guard inputs, and reward
   or rejection result for the one requested contract.
 
+### `cct_hud.js`
+
+Low-refresh, read-only reward ledger panel for completed Coding Contracts.
+`cct_submit.js` appends one bounded (latest 100) outcome record after every
+attempt; the ledger starts with the verified 12-contract aggregate that
+predated it, explicitly excluding the unconfirmed CSEC result. The HUD reads
+only that ledger and the latest submit status every 30 seconds—no scans,
+submissions, or steady-state writes.
+
+- **Start:** `run cct_hud.js` (optional `x= y= w= h=`), or add `--cct-hud` to
+  a `restart_mcp.js` request.
+- **Output:** `cct_reward_ledger.json`, automatically pulled by the Remote
+  API; the panel shows accepted count, cash, faction-reputation totals, last
+  outcome, and whether a failed guard has paused the sequence.
+
 ### `purchase_worker_server.js`
 
 One-shot provisioner for a purchased 2^n-GB worker server. It performs no

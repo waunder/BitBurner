@@ -10,6 +10,11 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
 
 ## Now
 
+- [x] **Show Coding Contract gains in-game.** `cct_hud.js` is a quiet,
+  read-only panel over a bounded durable reward ledger; its opening balance
+  records the verified twelve accepts while deliberately leaving CSEC
+  unconfirmed.
+
 - [x] **Contain the Darknet freeze paths before another live run.** The
   paused default is one gateway manager, one silent phish worker, and no
   propagation; root shard scans are throttled to 60s (credentials) / 15s

@@ -67,6 +67,10 @@ post-restart qualified switch evaluation.
   root heartbeat and compact manager registry every 15 seconds; it neither
   scans shards nor writes telemetry. It is source-synced but intentionally
   opt-in, and can be run safely while Darknet itself remains paused.
+- **Coding-contract reward HUD added**, 2026-09-01: `cct_hud.js` retains the
+  verified pre-ledger aggregate (12 accepted contracts; CSEC intentionally
+  unconfirmed) and then shows each guarded submission's durable, bounded
+  reward history at a quiet 30-second refresh.
 - **XP-targeting upgrade implemented and locally verified**, 2026-08-31:
   XP mode now ranks hosts by relative XP per hack-thread second rather than
   money potential, and uses the evidence-backed 95% hack / 5% grow split.

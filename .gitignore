@@ -12,6 +12,7 @@ mcp_multi_events.txt
 skim_probe.json
 mcp_formulas_shadow.txt
 ipvgo_status.json
+cct_reward_ledger.json
 dnet_status.json
 dnet_scorecard_status.json
 dnet_killswarm_status.json

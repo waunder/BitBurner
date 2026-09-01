@@ -3,6 +3,23 @@ import { solveContract } from "cct_logic.js"
 
 const INVENTORY = "cct_inventory.json"
 const OUTPUT = "cct_submit_status.json"
+const LEDGER = "cct_reward_ledger.json"
+const LEDGER_LIMIT = 100
+
+// The first twelve accepted contracts predate this file. Keep their verified
+// aggregate as an explicit opening balance rather than inventing individual
+// rewards (the CSEC result was interrupted and is deliberately not included).
+const OPENING_BALANCE = {
+  accepted: 12,
+  cash: 25000000,
+  factionRep: {
+    "The Black Hand": 3262,
+    NiteSec: 3262,
+    "Sector-12": 3540.778,
+    CyberSec: 4095.333,
+  },
+  note: "Verified aggregate before durable per-submission ledger; CSEC outcome unconfirmed.",
+}
 
 // Keep this small helper local so the finite submit task does not import the
 // audit's network-scan API footprint when home RAM is tight.
@@ -18,6 +35,24 @@ function contractFingerprint(type, data) {
 
 function writeStatus(ns, status) {
   ns.write(OUTPUT, JSON.stringify({ ts: Date.now(), ...status }, null, 2), "w")
+}
+
+function readLedger(ns) {
+  try {
+    const parsed = JSON.parse(ns.read(LEDGER))
+    if (parsed && Array.isArray(parsed.entries)) return parsed
+  } catch { /* first submission creates the ledger */ }
+  return { version: 1, openingBalance: OPENING_BALANCE, entries: [] }
+}
+
+function appendLedger(ns, entry) {
+  const ledger = readLedger(ns)
+  ledger.entries.push(entry)
+  // Bounded append-only history: retained entries never change, and only the
+  // oldest detailed entries roll off after the visible hundred.
+  if (ledger.entries.length > LEDGER_LIMIT) ledger.entries = ledger.entries.slice(-LEDGER_LIMIT)
+  ledger.updatedAt = Date.now()
+  ns.write(LEDGER, JSON.stringify(ledger, null, 2), "w")
 }
 
 /** @param {NS} ns */
@@ -63,6 +98,8 @@ export async function main(ns) {
     return
   }
   const reward = ns.codingcontract.attempt(solved.answer, file, host, { returnReward: true })
-  writeStatus(ns, { ok: reward !== false, submitted: true, host, file, minTries, triesRemainingBefore: triesRemaining, type, fingerprint, answer: solved.answer, reward: reward === false ? null : reward, reason: reward === false ? "answer rejected" : "answer accepted" })
+  const outcome = { ts: Date.now(), ok: reward !== false, submitted: true, host, file, minTries, triesRemainingBefore: triesRemaining, type, fingerprint, reward: reward === false ? null : reward, reason: reward === false ? "answer rejected" : "answer accepted" }
+  appendLedger(ns, outcome)
+  writeStatus(ns, { ...outcome, answer: solved.answer })
   ns.tprint(`cct_submit: ${host}/${file}: ${reward === false ? "rejected" : `accepted (${reward})`}`)
 }

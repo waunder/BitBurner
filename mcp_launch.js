@@ -27,7 +27,11 @@ export async function main(ns) {
   if (request.startCctHud && !ns.isRunning("cct_hud.js", "home")) {
     if (ns.run("cct_hud.js", 1) === 0) ns.tprint("mcp_launch: failed to start cct_hud.js")
   }
-  if (request.startOpsHud) {
+  // Operations is the primary persistent panel; refresh it with the same
+  // generation so it sees newly added maintenance fields without a manual
+  // terminal command.
+  const refreshOpsHud = true
+  if (refreshOpsHud) {
     for (const proc of ns.ps("home")) {
       if (proc.filename.replace(/^\//, "") !== "ops_hud.js") continue
       ns.ui?.closeTail(proc.pid)

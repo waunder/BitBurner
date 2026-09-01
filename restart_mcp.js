@@ -6,8 +6,10 @@ export async function main(ns) {
   const startScorecard = ns.args.some((arg) => String(arg) === "--dnet-scorecard")
   const startCctAudit = ns.args.some((arg) => String(arg) === "--cct-audit")
   const startCctDryRun = ns.args.some((arg) => String(arg) === "--cct-dry-run")
+  const cctSubmitArg = ns.args.find((arg) => String(arg).startsWith("--cct-submit="))
+  const cctMinTriesArg = ns.args.find((arg) => String(arg).startsWith("--cct-min-tries="))
   const buyWorkerArg = ns.args.find((arg) => String(arg).startsWith("--buy-worker="))
-  const mcpArgs = ns.args.filter((arg) => !["--darknet", "--dnet-scorecard", "--cct-audit", "--cct-dry-run"].includes(String(arg)) && !String(arg).startsWith("--buy-worker="))
+  const mcpArgs = ns.args.filter((arg) => !["--darknet", "--dnet-scorecard", "--cct-audit", "--cct-dry-run"].includes(String(arg)) && !String(arg).startsWith("--buy-worker=") && !String(arg).startsWith("--cct-submit=") && !String(arg).startsWith("--cct-min-tries="))
 
   if (ns.scriptKill("mcp.js", "home")) {
     // A killed script can still finish its in-flight tick, including writing
@@ -86,6 +88,19 @@ export async function main(ns) {
     const dryRunPid = ns.run("cct_dry_run.js", 1)
     if (dryRunPid === 0) ns.tprint("restart_mcp: failed to start cct_dry_run.js")
     else while (ns.isRunning(dryRunPid)) await ns.sleep(100)
+  }
+
+  // One explicit pair only; cct_submit verifies the audited snapshot before
+  // it can call attempt(). Format avoids spaces: --cct-submit=host|file.
+  if (cctSubmitArg) {
+    const target = String(cctSubmitArg).slice("--cct-submit=".length).split("|")
+    const minTries = cctMinTriesArg ? String(cctMinTriesArg).slice("--cct-min-tries=".length) : "10"
+    if (target.length !== 2 || !target[0] || !target[1]) ns.tprint("restart_mcp: cct submit requires --cct-submit=host|file")
+    else {
+      const submitPid = ns.run("cct_submit.js", 1, target[0], target[1], minTries)
+      if (submitPid === 0) ns.tprint("restart_mcp: failed to start cct_submit.js")
+      else while (ns.isRunning(submitPid)) await ns.sleep(100)
+    }
   }
 
   if (buyWorkerArg) {

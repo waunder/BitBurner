@@ -5,6 +5,11 @@ purpose are defined in `docs/agent-working-agreement.md`.
 
 ## Current objective
 
+Coding Contracts are in a high-confidence pilot: the observed contract types
+have been inventoried and dry-run successfully. Next is one explicit,
+fingerprint-guarded submission of a 10-attempt Caesar contract; no automatic
+selection or batch submission is permitted.
+
 Resume real gameplay-progress work now that the governance deadlock
 (retired 2026-08-18, see `AGENTS.md`) is cleared. R8 has been landed and
 configuration-validated live and enabled for ordinary use, and the purchased

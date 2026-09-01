@@ -6,6 +6,16 @@
  */
 const OUTPUT = "cct_inventory.json"
 
+export function contractFingerprint(type, data) {
+  const text = `${type}\n${JSON.stringify(data)}`
+  let hash = 2166136261
+  for (let i = 0; i < text.length; i++) {
+    hash ^= text.charCodeAt(i)
+    hash = Math.imul(hash, 16777619)
+  }
+  return `fnv1a-${(hash >>> 0).toString(16).padStart(8, "0")}`
+}
+
 function scanAll(ns) {
   const seen = new Set(["home"])
   const queue = ["home"]
@@ -33,11 +43,14 @@ export async function main(ns) {
     }
     for (const file of ns.ls(host, ".cct")) {
       try {
+        const type = ns.codingcontract.getContractType(file, host)
+        const data = ns.codingcontract.getData(file, host)
         contracts.push({
           host,
           file,
-          type: ns.codingcontract.getContractType(file, host),
-          data: ns.codingcontract.getData(file, host),
+          type,
+          data,
+          fingerprint: contractFingerprint(type, data),
           description: ns.codingcontract.getDescription(file, host),
           triesRemaining: ns.codingcontract.getNumTriesRemaining(file, host),
         })

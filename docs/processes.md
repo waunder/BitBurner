@@ -1109,6 +1109,21 @@ in `cct_inventory.json`, and **never** calls `ns.codingcontract.attempt()`.
 - **Purpose:** establish the actual contract mix and test solver inputs before
   any code is allowed to submit an answer.
 
+### `cct_dry_run.js` and `cct_submit.js`
+
+`cct_dry_run.js` computes answers from the latest audit and never submits.
+`cct_submit.js` is the sole live-submit path: it accepts one explicit host and
+file, re-reads the type and input, and compares their FNV-1a fingerprint with
+the audit snapshot before it can call `ns.codingcontract.attempt()`. It also
+requires a minimum remaining-attempt count (10 by default). It never scans,
+selects, or batches contracts.
+
+- **Start:** `run cct_dry_run.js`; guarded submission uses
+  `run restart_mcp.js --cct-submit=host|file [--cct-min-tries=10]`.
+- **Output:** `cct_dry_run.json` and `cct_submit_status.json`, both pulled by
+  the Remote API. The latter holds the exact answer, guard inputs, and reward
+  or rejection result for the one requested contract.
+
 ### `purchase_worker_server.js`
 
 One-shot provisioner for a purchased 2^n-GB worker server. It performs no

@@ -79,6 +79,23 @@ function totals(ledger) {
   return totals
 }
 
+// Bitburner's reset API is a timestamp in current builds. Accept a duration
+// too, so an older build cannot make pre-reset rewards look current.
+function resetAt(ns) {
+  try {
+    const raw = Number(ns.getResetInfo?.().lastAugReset)
+    if (!Number.isFinite(raw) || raw <= 0) return null
+    return raw > 946684800000 ? raw : Date.now() - raw
+  } catch { return null }
+}
+
+function currentRunTotals(ns, ledger) {
+  const since = resetAt(ns)
+  if (!since) return { known: false, accepted: 0, cash: 0, reps: {} }
+  const scoped = { entries: (ledger?.entries || []).filter((entry) => Number(entry?.ts) >= since) }
+  return { known: true, ...totals(scoped) }
+}
+
 function latest(ledger, status) {
   const entry = (ledger?.entries || []).at(-1)
   return entry || status || null
@@ -88,14 +105,16 @@ function buildLines(ns) {
   const ledger = ensureLedger(ns)
   const status = readJson(ns, STATUS, null)
   const total = totals(ledger)
+  const current = currentRunTotals(ns, ledger)
   const recent = latest(ledger, status)
   const repLines = Object.entries(total.reps).sort((a, b) => b[1] - a[1]).slice(0, 4)
   const outcome = !recent ? "opening balance" : recent.ok ? `accepted: ${recent.type || "contract"}` : `paused: ${recent.reason || "guarded"}`
   return [
     row("CONTRACTS", recent?.ok === false ? "PAUSED" : "READY"),
-    row("accepted", String(total.accepted)),
-    row("cash rewards", money(total.cash)),
-    ...repLines.map(([name, rep]) => row(name.slice(0, 23), `+${Number(rep).toFixed(0)} rep`)),
+    row(current.known ? "this reset accepted" : "recorded accepted", String(current.known ? current.accepted : total.accepted)),
+    row(current.known ? "this reset rewards" : "recorded rewards", money(current.known ? current.cash : total.cash)),
+    ...(current.known ? [row("prior-run recorded", `${total.accepted} accepted`)] : []),
+    ...repLines.map(([name, rep]) => row(`${current.known ? "lifetime " : ""}${name}`.slice(0, 23), `+${Number(rep).toFixed(0)} rep`)),
     row("latest", outcome.slice(0, WIDTH_CHARS - 7)),
     row("guard", recent?.ok === false ? "review / retry" : "audit + tries"),
   ]

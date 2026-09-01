@@ -87,6 +87,21 @@ function contractTotals(ledger) {
   return out
 }
 
+function resetAt(ns) {
+  try {
+    const raw = Number(ns.getResetInfo?.().lastAugReset)
+    if (!Number.isFinite(raw) || raw <= 0) return null
+    return raw > 946684800000 ? raw : Date.now() - raw
+  } catch { return null }
+}
+
+function currentContractTotals(ns, ledger) {
+  const since = resetAt(ns)
+  if (!since) return { known: false, accepted: 0, cash: 0 }
+  const out = contractTotals({ entries: (ledger?.entries || []).filter((entry) => Number(entry?.ts) >= since) })
+  return { known: true, accepted: out.accepted, cash: out.cash }
+}
+
 function workerRam(mcp, cloudNames) {
   const cloud = new Set(cloudNames)
   let used = 0
@@ -170,6 +185,7 @@ function buildLines(ns) {
   const dnetAge = Number.isFinite(root?.ts) ? now - root.ts : Infinity
   const managers = Object.values(registry).filter((ts) => Number.isFinite(ts) && now - ts < MANAGER_FRESH_MS).length
   const totals = contractTotals(ledger)
+  const currentContracts = currentContractTotals(ns, ledger)
   const recent = (ledger.entries || []).at(-1) || latestSubmit
   const reps = Object.entries(totals.reps).sort((a, b) => b[1] - a[1]).slice(0, 2)
   const alerts = Array.isArray(review?.alerts) ? review.alerts : []
@@ -191,7 +207,7 @@ function buildLines(ns) {
     row("best now", playerTime.best),
     row("script XP", playerTime.detail),
     row("guidance basis", playerTime.basis.slice(0, 25)),
-    row(`contracts ${totals.accepted} accepted`, `$${compact(totals.cash)}`),
+    row(currentContracts.known ? `contracts ${currentContracts.accepted} this reset` : `contracts ${totals.accepted} recorded`, `$${compact(currentContracts.known ? currentContracts.cash : totals.cash)}`),
     row(`discovery ${inventory?.contracts?.length ?? "--"} available`, `${cctWatch?.ok === false ? "SCAN ERROR" : age(now, inventory?.ts)}`),
     row("CCT queue", `${cctQueue.action || "waiting"}: ${String(cctQueue.reason || "next scan").slice(0, 24)}`),
     ...reps.map(([name, rep]) => row(name.slice(0, 27), `+${compact(rep)} rep`)),

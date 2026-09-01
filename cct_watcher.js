@@ -1,6 +1,7 @@
 /** Low-frequency Coding Contract discovery and one-at-a-time guarded queue. */
 import { solveContract } from "cct_logic.js"
 import { selectContractWork } from "maintenance_logic.js"
+import { prepareContractWorker, selectContractWorker } from "cct_worker_pool.js"
 
 const POLL_MS = 10 * 60 * 1000
 const STATUS = "cct_watch_status.json"
@@ -28,18 +29,16 @@ export async function main(ns) {
   while (true) {
     try {
       const auditRam = ns.getScriptRam("cct_audit.js", "home")
-      const worker = ns.cloud.getServerNames()
-        .filter((host) => ns.hasRootAccess(host) && ns.getServerMaxRam(host) >= auditRam)
-        .sort((a, b) => ns.getServerMaxRam(b) - ns.getServerMaxRam(a))[0]
-      if (!worker) throw new Error("no cloud worker can host cct_audit.js")
+      const auditCandidate = selectContractWorker(ns, auditRam)
+      const auditWorker = await prepareContractWorker(ns, auditCandidate, auditRam)
+      if (!auditWorker.ok) throw new Error(`no safe worker can host cct_audit.js: ${auditWorker.reason}`)
       // The finite scan owns this worker for seconds, not ten minutes. MCP
       // refills its released RAM on the next normal tick.
-      ns.killall(worker)
-      const copied = await ns.scp("cct_audit.js", worker, "home")
-      const auditPid = copied ? ns.exec("cct_audit.js", worker, 1, "--quiet") : 0
-      if (auditPid === 0) throw new Error(`could not start audit on ${worker}`)
-      while (ns.isRunning(auditPid, worker)) await ns.sleep(100)
-      const pulled = await ns.scp("cct_inventory.json", "home", worker)
+      const copied = await ns.scp("cct_audit.js", auditWorker.worker, "home")
+      const auditPid = copied ? ns.exec("cct_audit.js", auditWorker.worker, 1, "--quiet") : 0
+      if (auditPid === 0) throw new Error(`could not start audit on ${auditWorker.worker}`)
+      while (ns.isRunning(auditPid, auditWorker.worker)) await ns.sleep(100)
+      const pulled = await ns.scp("cct_inventory.json", "home", auditWorker.worker)
       const inventory = pulled ? JSON.parse(ns.read("cct_inventory.json")) : null
       if (!inventory) throw new Error("audit did not produce inventory")
       // Solver support is deliberately resolved before selecting a queue item:
@@ -50,19 +49,22 @@ export async function main(ns) {
       })) }
       const selection = selectContractWork(enriched, readJson(ns, "cct_reward_ledger.json", { entries: [] }), MIN_TRIES)
       if (selection.action !== "submit") {
-        writeQueue(ns, { ...selection, worker, inventoryTs: inventory.ts })
-        writeStatus(ns, { ok: true, worker, contracts: inventory.contracts.length, inventoryTs: inventory.ts, queue: selection.action })
+        writeQueue(ns, { ...selection, worker: auditWorker.worker, workerSource: auditWorker.source, inventoryTs: inventory.ts })
+        writeStatus(ns, { ok: true, worker: auditWorker.worker, workerSource: auditWorker.source, contracts: inventory.contracts.length, inventoryTs: inventory.ts, queue: selection.action })
       } else {
         const target = selection.contract
-        const copiedSubmit = await ns.scp(["cct_submit.js", "cct_logic.js", "cct_inventory.json"], worker, "home")
-        const submitPid = copiedSubmit ? ns.exec("cct_submit.js", worker, 1, target.host, target.file, MIN_TRIES) : 0
-        if (submitPid === 0) throw new Error(`could not start guarded submission on ${worker}`)
-        while (ns.isRunning(submitPid, worker)) await ns.sleep(100)
-        const resultPulled = await ns.scp(["cct_submit_status.json", "cct_reward_ledger.json"], "home", worker)
+        const submitRam = ns.getScriptRam("cct_submit.js", "home")
+        const submitWorker = await prepareContractWorker(ns, selectContractWorker(ns, submitRam), submitRam)
+        if (!submitWorker.ok) throw new Error(`no safe worker can host cct_submit.js: ${submitWorker.reason}`)
+        const copiedSubmit = await ns.scp(["cct_submit.js", "cct_logic.js", "cct_inventory.json"], submitWorker.worker, "home")
+        const submitPid = copiedSubmit ? ns.exec("cct_submit.js", submitWorker.worker, 1, target.host, target.file, MIN_TRIES) : 0
+        if (submitPid === 0) throw new Error(`could not start guarded submission on ${submitWorker.worker}`)
+        while (ns.isRunning(submitPid, submitWorker.worker)) await ns.sleep(100)
+        const resultPulled = await ns.scp(["cct_submit_status.json", "cct_reward_ledger.json"], "home", submitWorker.worker)
         const result = resultPulled ? readJson(ns, "cct_submit_status.json", null) : null
-        if (!result?.ok) writeQueue(ns, { action: "paused", reason: result?.reason || "submission result unavailable", worker, contract: target, result })
-        else writeQueue(ns, { action: "accepted", reason: result.reason, worker, contract: target, result: { type: result.type, reward: result.reward } })
-        writeStatus(ns, { ok: Boolean(result?.ok), worker, contracts: inventory.contracts.length, inventoryTs: inventory.ts, queue: result?.ok ? "accepted" : "paused" })
+        if (!result?.ok) writeQueue(ns, { action: "paused", reason: result?.reason || "submission result unavailable", worker: submitWorker.worker, workerSource: submitWorker.source, contract: target, result })
+        else writeQueue(ns, { action: "accepted", reason: result.reason, worker: submitWorker.worker, workerSource: submitWorker.source, contract: target, result: { type: result.type, reward: result.reward } })
+        writeStatus(ns, { ok: Boolean(result?.ok), worker: submitWorker.worker, workerSource: submitWorker.source, contracts: inventory.contracts.length, inventoryTs: inventory.ts, queue: result?.ok ? "accepted" : "paused" })
       }
     } catch (error) {
       writeStatus(ns, { ok: false, error: String(error) })

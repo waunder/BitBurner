@@ -800,6 +800,7 @@ WATCHED_FILES = [
     "cct_submit.js",
     "cct_hud.js",
     "cct_watcher.js",
+    "cct_worker_pool.js",
     "maintenance_steward.js",
     "maintenance_logic.js",
     "ops_hud.js",

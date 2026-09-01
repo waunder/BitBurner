@@ -1141,10 +1141,11 @@ the audit snapshot before it can call `ns.codingcontract.attempt()`. It also
 requires a minimum remaining-attempt count (10 by default). It never scans,
 selects, or batches contracts.
 
-When home cannot fit its 23.6GB RAM cost, `restart_mcp.js` briefly clears one
-dedicated cloud worker, copies the finite submit task plus its audit snapshot
-there, copies the resulting status back to home, then relaunches MCP to refill
-the worker. This remains one explicit submission, not a distributed batch.
+When home cannot fit its 23.6GB RAM cost, `restart_mcp.js` briefly reclaims a
+cloud worker, or (after an augmentation reset removes cloud servers) a rooted
+ordinary host containing only MCP action loops. It never kills an unrelated
+process; MCP refills any preempted action RAM on its next tick. This remains
+one explicit submission, not a distributed batch.
 
 - **Start:** `run cct_dry_run.js`; guarded submission uses
   `run restart_mcp.js --cct-submit=host|file [--cct-min-tries=10]`.
@@ -1165,7 +1166,10 @@ submissions, or steady-state writes.
   a `restart_mcp.js` request.
 - **Output:** `cct_reward_ledger.json`, automatically pulled by the Remote
   API; the panel shows accepted count, cash, faction-reputation totals, last
-  outcome, and whether a failed guard has paused the sequence.
+  outcome, and whether a failed guard has paused the sequence. After an
+  augmentation reset it separates this reset's rewards from the retained
+  prior-run/lifetime record using reset state, so historical rewards are never
+  presented as current cash or faction reputation.
 
 ### `ops_hud.js`
 
@@ -1201,7 +1205,7 @@ persist for 60 seconds before it asks the existing supervisor for one normal
 restart; further recovery requests are cooled down for 15 minutes. It never
 trades, resets/installs, or starts/stops/expands Darknet.
 
-The cloud-backed watcher runs a finite audit every ten minutes and then
+The cloud-first watcher runs a finite audit every ten minutes and then
 processes **at most one** contract. It selects only a solver-supported item
 with at least ten tries remaining, reuses `cct_submit.js`'s live fingerprint
 guard, and copies the status and bounded reward ledger home. An unsupported
@@ -1209,6 +1213,10 @@ type, insufficient tries, rejection, or missing result pauses the queue with
 the exact reason in `cct_queue_status.json`; it does not spend a second
 attempt or skip ahead. This makes contract progress sequential and reviewable,
 not an uncontrolled batch.
+
+When purchased workers do not exist after an augmentation reset, both audit
+and submission use the same rooted-normal-host fallback. A host with any
+non-MCP process is excluded; only MCP action loops may be briefly preempted.
 
 Supported contract types include `Total Ways to Sum II`, solved as standard
 unbounded coin-change combinations (denomination order does not create extra

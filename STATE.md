@@ -11,6 +11,11 @@ fingerprint-guarded contracts with at least ten tries. Pause with a durable
 reason on an unsupported type or a rejection; recovery remains bounded and
 never controls stock, resets, or Darknet expansion.
 
+Post-reset repair: the contract watcher now prefers cloud workers but safely
+falls back to rooted ordinary MCP worker hosts when an augmentation reset
+removes purchased servers. Contract panels distinguish this reset's earnings
+from retained prior-run/lifetime records.
+
 Resume real gameplay-progress work now that the governance deadlock
 (retired 2026-08-18, see `AGENTS.md`) is cleared. R8 has been landed and
 configuration-validated live and enabled for ordinary use, and the purchased

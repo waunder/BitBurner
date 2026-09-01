@@ -1,3 +1,5 @@
+import { prepareContractWorker, selectContractWorker } from "cct_worker_pool.js"
+
 /** @param {NS} ns */
 const DNET_RESTART_STATUS_FILE = "dnet_restart_status.json"
 
@@ -110,37 +112,23 @@ export async function main(ns) {
       // MCP has already been stopped above, and it will refill the worker
       // after this finite single-contract task completes.
       const submitRam = ns.getScriptRam("cct_submit.js", "home")
-      const workers = ns.cloud.getServerNames()
-        .filter((host) => ns.hasRootAccess(host) && ns.getServerMaxRam(host) >= submitRam)
-        .sort((a, b) => ns.getServerMaxRam(b) - ns.getServerMaxRam(a))
       let submitPid = 0
-      if (workers.length) {
-        // A server can reject an exec transiently even after killall (for
-        // example while its old action processes are still exiting). This is
-        // a finite, isolated task, so try each eligible cloud worker rather
-        // than falsely reporting an out-of-RAM failure after one host.
-        for (const worker of workers) {
-          ns.killall(worker)
-          // `killall` requests termination, but RAM can remain accounted to
-          // the old processes for the rest of the current game tick. Give
-          // that accounting a bounded moment to settle before exec.
-          await ns.sleep(250)
-          const copied = await ns.scp(["cct_submit.js", "cct_logic.js", "cct_inventory.json"], worker, "home")
-          if (!copied) {
-            ns.tprint(`restart_mcp: failed to copy CCT submit files to ${worker}`)
-            continue
-          }
+      // Same safe cloud-first/rooted-fallback selection as the persistent
+      // queue. Only MCP action loops are preempted; a normal host with any
+      // other process is never disturbed.
+      const prepared = await prepareContractWorker(ns, selectContractWorker(ns, submitRam), submitRam)
+      if (prepared.ok) {
+        const worker = prepared.worker
+        const copied = await ns.scp(["cct_submit.js", "cct_logic.js", "cct_inventory.json"], worker, "home")
+        if (!copied) ns.tprint(`restart_mcp: failed to copy CCT submit files to ${worker}`)
+        else {
           submitPid = ns.exec("cct_submit.js", worker, 1, target[0], target[1], minTries)
-          if (submitPid === 0) {
-            ns.tprint(`restart_mcp: CCT submit did not start on ${worker}; trying next worker`)
-            continue
+          if (submitPid) {
+            while (ns.isRunning(submitPid, worker)) await ns.sleep(100)
+            await ns.scp(["cct_submit_status.json", "cct_reward_ledger.json"], "home", worker)
           }
-          while (ns.isRunning(submitPid, worker)) await ns.sleep(100)
-          await ns.scp(["cct_submit_status.json", "cct_reward_ledger.json"], "home", worker)
-          break
         }
-      }
-      else submitPid = ns.run("cct_submit.js", 1, target[0], target[1], minTries)
+      } else ns.tprint(`restart_mcp: no safe CCT worker (${prepared.reason})`)
       if (submitPid === 0) {
         ns.write("cct_submit_status.json", JSON.stringify({
           ts: Date.now(), ok: false, submitted: false, host: target[0], file: target[1], minTries,

@@ -81,10 +81,11 @@ function mcpStatus(ns, now) {
   const moneyPerMin = rate * 60
 
   // Count actions across all workers
-  let weakenTotal = 0, growTotal = 0, hackTotal = 0
+  let weakenTotal = 0, growTotal = 0, hackTotal = 0, threadTotal = 0
   for (const worker of workers) {
     for (const action of (worker.actions || [])) {
       const threads = action.threads || 0
+      threadTotal += threads
       if (action.script === "weaken") weakenTotal += threads
       else if (action.script === "grow") growTotal += threads
       else if (action.script === "hack") hackTotal += threads
@@ -100,7 +101,7 @@ function mcpStatus(ns, now) {
       `Target: ${target}`,
       `Rate: ${compact(rate, 2)}/s (avg ${compact(avgRate, 2)}/s)`,
       `Total hacked: ${compact(money)}`,
-      `${actionSummary}  (${workerCount} workers)`,
+      `${actionSummary}  (${workerCount} hosts / ${threadTotal} threads)`,
       "",
       `Workers (top 5):`,
       ...workers.slice(0, 5).map(w => {

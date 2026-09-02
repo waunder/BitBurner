@@ -34,17 +34,21 @@ export async function main(ns) {
   if (request.startCctHud && !ns.isRunning("cct_hud.js", "home")) {
     if (ns.run("cct_hud.js", 1) === 0) ns.tprint("mcp_launch: failed to start cct_hud.js")
   }
-  // Operations is the primary persistent panel; refresh it with the same
-  // generation so it sees newly added maintenance fields without a manual
-  // terminal command.
-  const refreshOpsHud = true
+  // Operations is intentionally independent of MCP generations. Replacing a
+  // live panel on each controller restart makes its tail visibly jump even
+  // though its input files stay valid. Only refresh it when a HUD source
+  // upgrade changes its explicit generation marker.
+  const opsVersion = "2026-09-02.1"
+  const refreshOpsHud = !ns.isRunning("ops_hud.js", "home") || String(ns.read("ops_hud_version.txt") || "").trim() !== opsVersion
   if (refreshOpsHud) {
     for (const proc of ns.ps("home")) {
       if (proc.filename.replace(/^\//, "") !== "ops_hud.js") continue
       ns.ui?.closeTail(proc.pid)
       ns.kill(proc.pid)
     }
-    if (ns.run("ops_hud.js", 1) === 0) ns.tprint("mcp_launch: failed to start ops_hud.js")
+  }
+  if (refreshOpsHud && ns.run("ops_hud.js", 1) === 0) {
+    ns.tprint("mcp_launch: failed to start ops_hud.js")
   }
   // The focused XP panel is intentionally separate from Operations: the
   // latter reports broad health, while this remains readable beside the money

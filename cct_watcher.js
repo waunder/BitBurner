@@ -7,6 +7,8 @@ const POLL_MS = 10 * 60 * 1000
 const STATUS = "cct_watch_status.json"
 const QUEUE_STATUS = "cct_queue_status.json"
 const MIN_TRIES = 10
+const RETRY_MIN_MS = 30_000
+const RETRY_MAX_MS = 5 * 60 * 1000
 
 function writeStatus(ns, extra = {}) {
   ns.write(STATUS, JSON.stringify({ ts: Date.now(), host: ns.getHostname(), pollMs: POLL_MS, mode: "read-only", ...extra }, null, 2), "w")
@@ -26,6 +28,7 @@ function writeQueue(ns, extra) {
 /** @param {NS} ns */
 export async function main(ns) {
   ns.disableLog("ALL")
+  let failures = 0
   while (true) {
     let delayMs = POLL_MS
     try {
@@ -36,7 +39,11 @@ export async function main(ns) {
       // The finite scan owns this worker for seconds, not ten minutes. MCP
       // refills its released RAM on the next normal tick.
       const copied = await ns.scp("cct_audit.js", auditWorker.worker, "home")
-      const auditPid = copied ? ns.exec("cct_audit.js", auditWorker.worker, 1, "--quiet") : 0
+      // MCP can refill action threads between the initial reservation and
+      // the copy. Reclaim only those action threads immediately before exec
+      // so a transient allocation race does not discard a valid inventory.
+      const auditReady = copied && await prepareContractWorker(ns, auditCandidate, auditRam)
+      const auditPid = auditReady?.ok ? ns.exec("cct_audit.js", auditWorker.worker, 1, "--quiet") : 0
       if (auditPid === 0) throw new Error(`could not start audit on ${auditWorker.worker}`)
       while (ns.isRunning(auditPid, auditWorker.worker)) await ns.sleep(100)
       const pulled = await ns.scp("cct_inventory.json", "home", auditWorker.worker)
@@ -55,10 +62,12 @@ export async function main(ns) {
       } else {
         const target = selection.contract
         const submitRam = ns.getScriptRam("cct_submit.js", "home")
-        const submitWorker = await prepareContractWorker(ns, selectContractWorker(ns, submitRam), submitRam)
+        const submitCandidate = selectContractWorker(ns, submitRam)
+        const submitWorker = await prepareContractWorker(ns, submitCandidate, submitRam)
         if (!submitWorker.ok) throw new Error(`no safe worker can host cct_submit.js: ${submitWorker.reason}`)
         const copiedSubmit = await ns.scp(["cct_submit.js", "cct_logic.js", "cct_inventory.json"], submitWorker.worker, "home")
-        const submitPid = copiedSubmit ? ns.exec("cct_submit.js", submitWorker.worker, 1, target.host, target.file, MIN_TRIES) : 0
+        const submitReady = copiedSubmit && await prepareContractWorker(ns, submitCandidate, submitRam)
+        const submitPid = submitReady?.ok ? ns.exec("cct_submit.js", submitWorker.worker, 1, target.host, target.file, MIN_TRIES) : 0
         if (submitPid === 0) throw new Error(`could not start guarded submission on ${submitWorker.worker}`)
         while (ns.isRunning(submitPid, submitWorker.worker)) await ns.sleep(100)
         const resultPulled = await ns.scp(["cct_submit_status.json", "cct_reward_ledger.json"], "home", submitWorker.worker)
@@ -74,8 +83,11 @@ export async function main(ns) {
         }
         writeStatus(ns, { ok: Boolean(result?.ok), worker: submitWorker.worker, workerSource: submitWorker.source, contracts: inventory.contracts.length, inventoryTs: inventory.ts, queue: result?.ok ? "accepted" : "paused" })
       }
+      failures = 0
     } catch (error) {
-      writeStatus(ns, { ok: false, error: String(error) })
+      failures += 1
+      delayMs = Math.min(RETRY_MAX_MS, RETRY_MIN_MS * (2 ** Math.min(failures - 1, 3)))
+      writeStatus(ns, { ok: false, error: String(error), failures, retryInMs: delayMs })
     }
     await ns.sleep(delayMs)
   }

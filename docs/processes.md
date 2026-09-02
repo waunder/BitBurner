@@ -1222,7 +1222,10 @@ and Darknet records explicitly.
   such gate exists, the panel calls out only evidence-backed alternatives:
   a live Darknet means Charisma is already growing passively; otherwise it
   says that no gym, crime, or faction-work requirement has been observed.
-  It never starts, stops, or inspects player work.
+  It never starts, stops, or inspects player work. The panel is not replaced
+  on ordinary MCP restarts (only a tagged HUD-source upgrade refreshes it), so its tail remains in place. When a contract
+  scan fails after a prior successful inventory, it retains the usable count
+  and shows the age of that last-good inventory plus a retry note.
 
 ### `maintenance_steward.js` and `cct_watcher.js`
 

@@ -17,6 +17,7 @@ const MCP_STALE_MS = 300000
 const DNET_STALE_MS = 30000
 const MANAGER_FRESH_MS = 120000
 const WIDTH_CHARS = 42
+export const OPS_HUD_VERSION = "2026-09-02.1"
 const OVERVIEW_DROP = 190
 const RIGHT_MARGIN = 8
 const WHITE = "\u001b[37m"
@@ -214,7 +215,11 @@ function buildLines(ns) {
     row("guidance basis", playerTime.basis.slice(0, 25)),
     row("augmentation runway", augText),
     row(currentContracts.known ? `contracts ${currentContracts.accepted} this reset` : `contracts ${totals.accepted} recorded`, `$${compact(currentContracts.known ? currentContracts.cash : totals.cash)}`),
-    row(`discovery ${inventory?.contracts?.length ?? "--"} available`, `${cctWatch?.ok === false ? "SCAN ERROR" : age(now, inventory?.ts)}`),
+    // Inventory is an independently durable *successful* scan. A later
+    // watcher failure must not make those known contracts look invalid or
+    // turn a useful count into the unhelpful blanket "SCAN ERROR".
+    row(`discovery ${inventory?.contracts?.length ?? "--"} available`, cctWatch?.ok === false ? `last OK ${age(now, inventory?.ts)}` : age(now, inventory?.ts)),
+    ...(cctWatch?.ok === false ? [row("discovery retry", "last scan failed; retrying")] : []),
     row("CCT queue", `${cctQueue.action || "waiting"}: ${String(cctQueue.reason || "next scan").slice(0, 24)}`),
     ...reps.map(([name, rep]) => row(name.slice(0, 27), `+${compact(rep)} rep`)),
     row("latest CCT", recentText.slice(0, WIDTH_CHARS - 11)),
@@ -248,6 +253,9 @@ function placeTail(ns, args, lines) {
 export async function main(ns) {
   ns.disableLog("ALL")
   closePrior(ns)
+  // A tiny generation marker lets the launcher refresh this panel once after
+  // a real HUD upgrade, while routine MCP restarts leave its tail untouched.
+  ns.write("ops_hud_version.txt", OPS_HUD_VERSION, "w")
   const args = parseArgs(ns)
   let placed = false
   while (true) {

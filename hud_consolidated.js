@@ -101,8 +101,7 @@ function mcpStatus(ns, now) {
       `Target: ${target}`,
       `Rate: ${compact(rate, 2)}/s (avg ${compact(avgRate, 2)}/s)`,
       `Total hacked: ${compact(money)}`,
-      `${actionSummary}  (${workerCount} hosts / ${threadTotal} threads)`,
-      "",
+      `${actionSummary} (${workerCount}h/${threadTotal}t)`,
       `Workers (top 5):`,
       ...workers.slice(0, 5).map(w => {
         const usedPct = Math.round((w.usedRam / w.maxRam) * 100)

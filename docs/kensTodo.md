@@ -65,6 +65,13 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
   local control channel, so Codex cannot pull fresh core telemetry. In
   Bitburner, open Options → Remote API and click Connect for port `12526`.
   No source sync, restart, or held-subsystem action is requested.
+  
+  **Keep-alive system added 2026-09-02:** See `docs/remote-api-keepalive.md`
+  for automated daemon monitoring. Start the system monitor with:
+  ```bash
+  nohup /Users/Shared/BitBurner/tools/remote_api_monitor.sh --daemon &
+  ```
+  This will auto-restart the daemon if it ever crashes again.
 
 - [x] **Historical: the promotion-state.json hold apparatus is retired
   (2026-08-18).** Stock, IPvGO, Darknet, and faction share stay off per

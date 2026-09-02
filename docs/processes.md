@@ -1244,7 +1244,9 @@ with at least ten tries remaining, reuses `cct_submit.js`'s live fingerprint
 guard, and copies the status and bounded reward ledger home. An unsupported
 type, insufficient tries, rejection, or missing result pauses the queue with
 the exact reason in `cct_queue_status.json`; it does not spend a second
-attempt or skip ahead. This makes contract progress sequential and reviewable,
+attempt or skip ahead. Tested contracts with at least five attempts proceed;
+one-attempt puzzles remain held for explicit approval. This makes contract
+progress sequential and reviewable,
 not an uncontrolled batch.
 
 When purchased workers do not exist after an augmentation reset, both audit

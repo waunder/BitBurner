@@ -6,7 +6,10 @@ import { prepareContractWorker, selectContractWorker } from "cct_worker_pool.js"
 const POLL_MS = 10 * 60 * 1000
 const STATUS = "cct_watch_status.json"
 const QUEUE_STATUS = "cct_queue_status.json"
-const MIN_TRIES = 10
+// Five attempts is still a meaningful guard for the tested solver suite and
+// keeps the queue moving on common contracts that spawn with five tries.
+// One-attempt puzzles remain held for explicit approval.
+const MIN_TRIES = 5
 const RETRY_MIN_MS = 30_000
 const RETRY_MAX_MS = 5 * 60 * 1000
 

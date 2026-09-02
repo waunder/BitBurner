@@ -1,0 +1,9 @@
+{
+  "enabled": true,
+  "override": "auto",
+  "physicalTarget": 30,
+  "gym": "Powerhouse Gym",
+  "university": "Rothman University",
+  "factionWorkType": "hacking",
+  "cooldownMs": 600000
+}

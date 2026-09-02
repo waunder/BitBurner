@@ -17,7 +17,7 @@ const MCP_STALE_MS = 300000
 const DNET_STALE_MS = 30000
 const MANAGER_FRESH_MS = 120000
 const WIDTH_CHARS = 42
-export const OPS_HUD_VERSION = "2026-09-02.1"
+export const OPS_HUD_VERSION = "2026-09-02.2"
 const OVERVIEW_DROP = 190
 const RIGHT_MARGIN = 8
 const WHITE = "\u001b[37m"
@@ -181,6 +181,7 @@ function buildLines(ns) {
   const cctWatch = readJson(ns, "cct_watch_status.json")
   const cctQueue = readJson(ns, "cct_queue_status.json", {})
   const augmentation = readJson(ns, "augmentation_readiness.json", {})
+  const playerActivity = readJson(ns, "player_activity_status.json", {})
   const cloudNames = ns.cloud.getServerNames()
   const cloudRam = workerRam(mcp, cloudNames)
   const mcpAge = Number.isFinite(mcp?.ts) ? now - mcp.ts : Infinity
@@ -198,6 +199,9 @@ function buildLines(ns) {
   const cloudPct = cloudRam.max ? `${Math.round(100 * cloudRam.used / cloudRam.max)}%` : "--"
   const recentText = !recent ? "no recorded submission" : recent.ok ? `accepted ${recent.type || "contract"}` : `paused ${recent.reason || "guard"}`
   const playerTime = playerTimeAdvice(ns, mcp, augmentation)
+  const activityText = !playerActivity?.decision ? "controller awaiting first check"
+    : playerActivity.decision.action === "hold" ? `hold: ${playerActivity.decision.reason}`
+      : `${playerActivity.decision.action}: ${playerActivity.decision.reason}`
   const augText = !augmentation?.ok ? "assessment unavailable" : augmentation.queuedCount
     ? `${augmentation.queuedCount} queued / ${augmentation.installedCount} installed`
     : augmentation.candidate ? `${augmentation.candidate.name.slice(0, 19)} +${compact(augmentation.candidate.repGap)} rep`
@@ -213,6 +217,7 @@ function buildLines(ns) {
     row("best now", playerTime.best),
     row("script XP", playerTime.detail),
     row("guidance basis", playerTime.basis.slice(0, 25)),
+    row("player activity", activityText.slice(0, WIDTH_CHARS - 16)),
     row("augmentation runway", augText),
     row(currentContracts.known ? `contracts ${currentContracts.accepted} this reset` : `contracts ${totals.accepted} recorded`, `$${compact(currentContracts.known ? currentContracts.cash : totals.cash)}`),
     // Inventory is an independently durable *successful* scan. A later

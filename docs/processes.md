@@ -904,6 +904,32 @@ and never changes player work.
   to work toward. If Singularity is unavailable, it explicitly says so rather
   than guessing.
 
+### `player_activity_controller.js`
+
+The sole persistent controller allowed to change the player's current work.
+It evaluates once per minute, records its decision and reason in
+`player_activity_status.json`, and changes activity only when the selected
+evidence-backed goal changes. A ten-minute hysteresis prevents churn.
+
+- **Start:** automatic before MCP via `mcp_launch.js` and `startup.js`.
+- **Policy:** the configured physical baseline comes first (default: train the
+  weakest of Strength, Defense, Dexterity, Agility to 30—the known Slum Snakes
+  gate); then the next normal-server Hack gate uses Rothman Algorithms; then a
+  cash-ready, live augmentation reputation gap can select faction hacking
+  work. It does not claim hidden augmentation requirements that the API cannot
+  expose.
+- **Control:** `player_activity_config.json` is committed and synced. Set
+  `"override": "manual"` or `"enabled": false` to stop changes at the next
+  minute; `"algorithms"` and `"physical"` are explicit overrides. Set
+  `physicalTarget` to `0` to remove gym training from automatic selection.
+- **Scope:** never buys/installs augmentations, trades, allocates share RAM,
+  or controls Darknet. Operations displays the current decision as `player
+  activity`.
+- **Capability check:** changing player work through this script requires
+  Source-File 4. Without it, the controller remains a durable, read-only
+  planner: it names the next activity but records the capability block once
+  and leaves the player's current work untouched.
+
 ### `dnet_scorecard.js`
 
 A compact Dark Net panel in the same visual family as `mcp_money.js`. It

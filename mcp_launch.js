@@ -19,13 +19,19 @@ export async function main(ns) {
   ns.scriptKill("maintenance_steward.js", "home")
   const maintenancePid = ns.run("maintenance_steward.js", 1)
   if (maintenancePid === 0) ns.tprint("mcp_launch: failed to start maintenance steward")
+  // This is the sole controller permitted to change the player's current
+  // activity. It starts before MCP reclaims home RAM and supersedes stale
+  // copies itself; its JSON config provides an immediate manual override.
+  ns.scriptKill("player_activity_controller.js", "home")
+  const activityPid = ns.run("player_activity_controller.js", 1)
+  if (activityPid === 0) ns.tprint("mcp_launch: failed to start player activity controller")
   ns.write("maintenance_launch_status.json", JSON.stringify({
-    ts: Date.now(), watcherPid, maintenancePid,
+    ts: Date.now(), watcherPid, maintenancePid, activityPid,
   }, null, 2), "w")
   // Start (or source-refresh) the panel while the heavy controller has not
   // reclaimed home RAM. Its own scan is cached and it is then left alone on
   // ordinary controller restarts.
-  const opsVersion = "2026-09-02.1"
+  const opsVersion = "2026-09-02.2"
   const refreshOpsHud = !ns.isRunning("ops_hud.js", "home") || String(ns.read("ops_hud_version.txt") || "").trim() !== opsVersion
   if (refreshOpsHud) {
     for (const proc of ns.ps("home")) {

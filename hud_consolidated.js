@@ -93,7 +93,7 @@ function mcpStatus(ns, now) {
   }
 
   const actionSummary = `${weakenTotal}w ${growTotal}g ${hackTotal}h`
-  const deployment = `${workerCount}h ${actionSummary}`
+  const deployment = `${workerCount}h ${threadTotal}t (${actionSummary})`
 
   return {
     compact: `${running ? "✓" : "⊘"} ${compact(moneyPerMin, 1)}/m ${actionSummary}`,

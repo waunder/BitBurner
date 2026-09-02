@@ -853,7 +853,13 @@ function getHostFreeRam(ns, host) {
 }
 
 function getWorkerHosts(ns, servers = null) {
-  const hosts = servers || scanNetwork(ns)
+  // Cloud servers are not guaranteed to appear in the normal network walk.
+  // They have no money and are never target candidates, but are dedicated
+  // rooted worker capacity and must be added to the allocation pool.
+  const hosts = servers ? [...servers] : scanNetwork(ns)
+  for (const cloudHost of ns.cloud.getServerNames()) {
+    if (!hosts.includes(cloudHost)) hosts.push(cloudHost)
+  }
   const workers = []
   for (const server of hosts) {
     if (server === "home") continue

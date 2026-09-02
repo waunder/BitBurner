@@ -92,22 +92,17 @@ function mcpStatus(ns, now) {
     }
   }
 
-  const actionSummary = `W:${weakenTotal} G:${growTotal} H:${hackTotal}`
+  const actionSummary = `${weakenTotal}w ${growTotal}g ${hackTotal}h`
+  const deployment = `${workerCount}h ${actionSummary}`
 
   return {
-    compact: `${running ? "✓" : "⊘"} ${compact(moneyPerMin, 1)}/m ${actionSummary}`,
+    compact: `${running ? "✓" : "⊘"} ${compact(moneyPerMin, 1)}/m ${deployment}`,
     expanded: [
       `Status: ${running ? "RUNNING" : "STOPPED"}`,
       `Target: ${target}`,
       `Rate: ${compact(rate, 2)}/s (avg ${compact(avgRate, 2)}/s)`,
       `Total hacked: ${compact(money)}`,
-      `${actionSummary} (${workerCount}h/${threadTotal}t)`,
-      `Workers (top 5):`,
-      ...workers.slice(0, 5).map(w => {
-        const usedPct = Math.round((w.usedRam / w.maxRam) * 100)
-        const actions = (w.actions || []).map(a => `${a.script}:${a.threads}`).join("+")
-        return `  ${w.host.padEnd(16)} ${usedPct}% ${actions}`
-      }),
+      `Deployment: ${deployment}`,
     ],
   }
 }

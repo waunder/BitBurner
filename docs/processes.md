@@ -209,7 +209,9 @@ The orchestrator, and where nearly all the complexity lives. Each tick
 (`LOOP_SLEEP_MS`, 10s) it scans the network, decides on a target, decides on a
 plan, and allocates worker threads across every rooted normal host plus every
 owned cloud server. Cloud servers are worker-only: they never enter target
-selection because they have no money. `mcp_status.json` exposes their raw
+selection because they have no money; unlike ordinary servers, they are
+owned work hosts rather than selected through the normal root-access test.
+`mcp_status.json` exposes their raw
 name, root status, and RAM separately as `cloudWorkers`, so an unavailable
 cloud host cannot be mistaken for a scheduler allocation problem.
 

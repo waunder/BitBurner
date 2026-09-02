@@ -857,13 +857,16 @@ function getWorkerHosts(ns, servers = null) {
   // They have no money and are never target candidates, but are dedicated
   // rooted worker capacity and must be added to the allocation pool.
   const hosts = servers ? [...servers] : scanNetwork(ns)
-  for (const cloudHost of ns.cloud.getServerNames()) {
+  const cloudHosts = new Set(ns.cloud.getServerNames())
+  for (const cloudHost of cloudHosts) {
     if (!hosts.includes(cloudHost)) hosts.push(cloudHost)
   }
   const workers = []
   for (const server of hosts) {
     if (server === "home") continue
-    if (!ns.hasRootAccess(server)) continue
+    // Cloud servers are bought by us and accept work even though the normal
+    // rooted-network predicate need not identify them in the Cloud API era.
+    if (!cloudHosts.has(server) && !ns.hasRootAccess(server)) continue
     // Needs room for at least a couple of action threads to be worth the
     // scp/exec overhead; the largest action script is ~1.75GB.
     if (ns.getServerMaxRam(server) <= 2.5) continue

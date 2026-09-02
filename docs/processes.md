@@ -923,8 +923,9 @@ evidence-backed goal changes. A ten-minute hysteresis prevents churn.
   minute; `"algorithms"` and `"physical"` are explicit overrides. Set
   `physicalTarget` to `0` to remove gym training from automatic selection.
 - **Scope:** never buys/installs augmentations, trades, allocates share RAM,
-  or controls Darknet. Operations displays the current decision as `player
-  activity`.
+  or controls Darknet. Operations makes this the `best now` recommendation:
+  it names the gym/stat and physical target before an otherwise-visible Hack
+  gate, so manual play has one unambiguous instruction.
 - **Capability check:** changing player work through this script requires
   Source-File 4. Without it, the controller remains a durable, read-only
   planner: it names the next activity but records the capability block once

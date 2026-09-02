@@ -17,7 +17,7 @@ const MCP_STALE_MS = 300000
 const DNET_STALE_MS = 30000
 const MANAGER_FRESH_MS = 120000
 const WIDTH_CHARS = 42
-export const OPS_HUD_VERSION = "2026-09-02.2"
+export const OPS_HUD_VERSION = "2026-09-02.3"
 const OVERVIEW_DROP = 190
 const RIGHT_MARGIN = 8
 const WHITE = "\u001b[37m"
@@ -169,6 +169,39 @@ function playerTimeAdvice(ns, mcp, augmentation) {
   }
 }
 
+// The activity planner has a more complete view of *manual* player time than
+// the generic Hack/augmentation guidance: it also knows about the explicit
+// physical baseline.  Prefer its durable decision when it is fresh, so the
+// panel never tells Ken to stay at university while asking him to train at a
+// gym on the line immediately below it.
+function manualActivityAdvice(playerActivity, fallback) {
+  const decision = playerActivity?.decision
+  if (!decision || decision.action === "hold") return fallback
+  const reason = String(decision.reason || "named player goal")
+  if (decision.action === "gym") {
+    const stat = String(decision.stat || "physical").replace(/^./, (char) => char.toUpperCase())
+    return {
+      recommendation: `NEXT ${stat} ${decision.current ?? "?"}→${decision.target ?? "?"}`,
+      gate: `physical baseline: ${reason}`,
+      best: `Gym: ${decision.gym || "Powerhouse Gym"} (${stat})`,
+      basis: "known Slum Snakes physical gate",
+    }
+  }
+  if (decision.action === "algorithms") return {
+    recommendation: "NEXT Hack progression",
+    gate: reason,
+    best: `Rothman: ${decision.course || "Algorithms"}`,
+    basis: "next discovered Hack gate",
+  }
+  if (decision.action === "faction") return {
+    recommendation: `NEXT rep: ${decision.faction || "faction"}`,
+    gate: reason,
+    best: `Faction work: ${decision.faction || "named faction"}`,
+    basis: "live augmentation reputation gap",
+  }
+  return fallback
+}
+
 function buildLines(ns) {
   const now = Date.now()
   const mcp = readJson(ns, "mcp_status.json")
@@ -199,10 +232,15 @@ function buildLines(ns) {
   const cloudPct = cloudRam.max ? `${Math.round(100 * cloudRam.used / cloudRam.max)}%` : "--"
   const recentText = !recent ? "no recorded submission" : recent.ok ? `accepted ${recent.type || "contract"}` : `paused ${recent.reason || "guard"}`
   const playerTime = playerTimeAdvice(ns, mcp, augmentation)
+  const manualAdvice = manualActivityAdvice(playerActivity, playerTime)
   const activityText = !playerActivity?.decision ? "controller awaiting first check"
     : playerActivity.decision.action === "hold" ? `hold: ${playerActivity.decision.reason}`
       : `${playerActivity.decision.action}: ${playerActivity.decision.reason}`
-  const augText = !augmentation?.ok ? "assessment unavailable" : augmentation.queuedCount
+  const augText = !augmentation?.ok
+    ? playerActivity?.apiUnavailable
+      ? "requires Source-File 4"
+      : "assessment unavailable"
+    : augmentation.queuedCount
     ? `${augmentation.queuedCount} queued / ${augmentation.installedCount} installed`
     : augmentation.candidate ? `${augmentation.candidate.name.slice(0, 19)} +${compact(augmentation.candidate.repGap)} rep`
       : "no prereq-ready offering"
@@ -212,12 +250,12 @@ function buildLines(ns) {
     row(`MCP ${mcpState}`, `${mcp?.target || "--"} / ${mcp?.OBJECTIVE || mcp?.objective || "--"}`),
     row(`rate ${compact(mcp?.rate)}/s`, `avg ${compact(mcp?.avgRate)}/s`),
     row(`workers ${threadCount} threads`, `${(mcp?.workers || []).length} hosts / ${age(now, mcp?.ts)}`),
-    row(playerTime.stats, playerTime.recommendation),
-    row("gate", playerTime.gate),
-    row("best now", playerTime.best),
+    row(playerTime.stats, manualAdvice.recommendation),
+    row("gate", manualAdvice.gate.slice(0, WIDTH_CHARS - 6)),
+    row("best now", manualAdvice.best),
     row("script XP", playerTime.detail),
-    row("guidance basis", playerTime.basis.slice(0, 25)),
-    row("player activity", activityText.slice(0, WIDTH_CHARS - 16)),
+    row("guidance basis", manualAdvice.basis.slice(0, 25)),
+    row("player action", playerActivity?.apiUnavailable ? "manual: SF4 required" : activityText.slice(0, WIDTH_CHARS - 14)),
     row("augmentation runway", augText),
     row(currentContracts.known ? `contracts ${currentContracts.accepted} this reset` : `contracts ${totals.accepted} recorded`, `$${compact(currentContracts.known ? currentContracts.cash : totals.cash)}`),
     // Inventory is an independently durable *successful* scan. A later

@@ -239,6 +239,17 @@ function placeTail(ns, pos, size) {
   ns.ui.moveTail(pos.x, pos.y)
 }
 
+function resizeTail(ns, lines, size) {
+  if (!ns.ui) return
+
+  // Each line is ~15px tall in monospace, plus 20px margin
+  const lineHeight = 15
+  const minHeight = 100
+  const calculatedHeight = Math.max(minHeight, lines.length * lineHeight + 20)
+
+  ns.ui.resizeTail(size.w, calculatedHeight)
+}
+
 export async function main(ns) {
   ns.disableLog("ALL")
   killPriorInstances(ns)
@@ -287,8 +298,10 @@ export async function main(ns) {
       if (!placed && ns.ui) {
         placeTail(ns, pos, size)
         placed = true
-        ns.ui.renderTail()
-      } else if (ns.ui) {
+      }
+
+      if (ns.ui) {
+        resizeTail(ns, lines, size)
         ns.ui.renderTail()
       }
     } catch (err) {

@@ -32,7 +32,7 @@ async function refreshAugmentationReadiness(ns) {
     // a briefly-preemptible worker, then copy the compact result home.
     const ram = ns.getScriptRam("augmentation_readiness.js", "home")
     const prepared = await prepareContractWorker(ns, selectContractWorker(ns, ram), ram)
-    if (!prepared.ok) return { refreshed: false, error: prepared.reason, status: current }
+    if (!prepared.ok) return { refreshed: false, error: prepared.reason, requiredRam: ram, status: current }
     const copied = await ns.scp("augmentation_readiness.js", prepared.worker, "home")
     const pid = copied ? ns.exec("augmentation_readiness.js", prepared.worker, 1, "--once") : 0
     if (!pid) return { refreshed: false, error: `could not start on ${prepared.worker}`, status: current }

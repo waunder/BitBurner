@@ -1267,12 +1267,13 @@ The cloud-first watcher runs a finite audit every ten minutes and then
 processes **at most one** contract. After an accepted submission it immediately
 re-audits so an already-known queue advances sequentially; it returns to the
 ten-minute cadence when idle or paused. It selects a solver-supported item with
-at least five tries remaining, reuses `cct_submit.js`'s live fingerprint guard,
-and copies the status and bounded reward ledger home. A low-try or unsupported
-item is held rather than allowed to deadlock later eligible work; when no safe
+at least one try remaining, reuses `cct_submit.js`'s live fingerprint guard,
+and copies the status and bounded reward ledger home. Unsupported items are
+held rather than allowed to deadlock later eligible work; when no supported
 item remains it pauses with the exact reason in `cct_queue_status.json`.
-Rejection or a missing result also pauses the queue and does not spend a second
-attempt. One-attempt puzzles remain held for explicit approval. This keeps
+Rejection or a missing result pauses the queue and does not spend a second
+attempt. Ken has explicitly approved fingerprint-matched one-attempt puzzles,
+so they proceed under the same solver and live-data checks. This keeps
 contract progress sequential and reviewable, not an uncontrolled batch.
 
 When purchased workers do not exist after an augmentation reset, both audit

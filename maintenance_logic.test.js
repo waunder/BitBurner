@@ -19,6 +19,10 @@ test("holds a low-try contract while advancing a later eligible contract", () =>
   assert.equal(result.action, "submit")
   assert.equal(result.contract.file, "safe.cct")
 })
+test("one-attempt contracts are eligible when the policy guard is one", () => {
+  const result = selectContractWork({ contracts: [contract({ triesRemaining: 1 })] }, { entries: [] }, 1)
+  assert.equal(result.action, "submit")
+})
 test("claims known safe work before pausing on a later unsupported contract", () => {
   const unsupported = contract({ host: "a", supported: false, type: "New Type" })
   const eligible = contract({ host: "b", file: "safe.cct" })

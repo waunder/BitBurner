@@ -22,6 +22,10 @@ function startWatcher(ns) {
   if (!ns.isRunning("cct_watcher.js", "home")) return ns.run("cct_watcher.js", 1)
   return -1
 }
+function startAugmentationReadiness(ns) {
+  if (!ns.isRunning("augmentation_readiness.js", "home")) return ns.run("augmentation_readiness.js", 1)
+  return -1
+}
 
 /** @param {NS} ns */
 export async function main(ns) {
@@ -38,6 +42,7 @@ export async function main(ns) {
       contracts: readJson(ns, "cct_queue_status.json", { action: "waiting" }),
       recovery: prior.recovery || { count: 0, lastAt: null },
       watcherPid: startWatcher(ns),
+      augmentationReadinessPid: startAugmentationReadiness(ns),
     }
     if (stale) state.mcpStaleSince = prior.mcpStaleSince || now
     if (shouldRequestMcpRecovery({ now, mcp, previous: { ...prior, mcpStaleSince: state.mcpStaleSince, lastRecoveryAt: state.recovery.lastAt } })) {

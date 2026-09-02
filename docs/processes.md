@@ -892,7 +892,8 @@ prerequisites; it selects the smallest positive reputation gap as a concrete
 next faction-work candidate. It neither buys nor installs an augmentation,
 and never changes player work.
 
-- **Start:** automatic with `startup.js` and `mcp_launch.js`.
+- **Start:** automatic with `startup.js` and `mcp_launch.js`; the persistent
+  maintenance steward also relaunches it if it exits.
 - **Output:** `augmentation_readiness.json`, pulled through the Remote API.
 - **HUD use:** Operations and XP panels show a concise runway line. A higher
   discovered Hack gate remains the priority (`Rothman Algorithms`). Once that

@@ -128,6 +128,68 @@ function rleCompression(text) {
   return result
 }
 
+function spiralizeMatrix(matrix) {
+  const out = []
+  if (!matrix.length || !matrix[0].length) return out
+  let top = 0
+  let bottom = matrix.length - 1
+  let left = 0
+  let right = matrix[0].length - 1
+  while (top <= bottom && left <= right) {
+    for (let col = left; col <= right; col++) out.push(matrix[top][col])
+    top++
+    for (let row = top; row <= bottom; row++) out.push(matrix[row][right])
+    right--
+    if (top <= bottom) {
+      for (let col = right; col >= left; col--) out.push(matrix[bottom][col])
+      bottom--
+    }
+    if (left <= right) {
+      for (let row = bottom; row >= top; row--) out.push(matrix[row][left])
+      left++
+    }
+  }
+  return out
+}
+
+function vigenereCipher([text, keyword]) {
+  let keyIndex = 0
+  return [...text].map((ch) => {
+    if (ch < "A" || ch > "Z") return ch
+    const shift = keyword.charCodeAt(keyIndex++ % keyword.length) - 65
+    return String.fromCharCode((ch.charCodeAt(0) - 65 + shift) % 26 + 65)
+  }).join("")
+}
+
+function totalNumberOfPrimes([start, end]) {
+  const limit = Math.max(1, Math.floor(end))
+  const prime = Array(limit + 1).fill(true)
+  prime[0] = prime[1] = false
+  for (let factor = 2; factor * factor <= limit; factor++) {
+    if (!prime[factor]) continue
+    for (let multiple = factor * factor; multiple <= limit; multiple += factor) prime[multiple] = false
+  }
+  let count = 0
+  for (let value = Math.max(2, Math.ceil(start)); value <= limit; value++) if (prime[value]) count++
+  return count
+}
+
+function arrayJumpingGameII(values) {
+  if (values.length <= 1) return 0
+  let jumps = 0
+  let currentEnd = 0
+  let furthest = 0
+  for (let index = 0; index < values.length - 1; index++) {
+    furthest = Math.max(furthest, index + values[index])
+    if (index !== currentEnd) continue
+    jumps++
+    currentEnd = furthest
+    if (currentEnd >= values.length - 1) return jumps
+    if (currentEnd <= index) return 0
+  }
+  return 0
+}
+
 const SOLVERS = {
   "Find Largest Prime Factor": largestPrimeFactor,
   "Merge Overlapping Intervals": mergeIntervals,
@@ -140,7 +202,11 @@ const SOLVERS = {
   "Algorithmic Stock Trader I": stockTraderI,
   "Algorithmic Stock Trader II": stockTraderII,
   "Array Jumping Game": arrayJumpingGame,
+  "Array Jumping Game II": arrayJumpingGameII,
   "Compression I: RLE Compression": rleCompression,
+  "Spiralize Matrix": spiralizeMatrix,
+  "Encryption II: Vigenère Cipher": vigenereCipher,
+  "Total Number of Primes": totalNumberOfPrimes,
 }
 
 export function solveContract(type, data) {

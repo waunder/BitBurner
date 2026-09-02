@@ -1226,8 +1226,9 @@ non-MCP process is excluded; only MCP action loops may be briefly preempted.
 
 Supported contract types include `Total Ways to Sum II`, solved as standard
 unbounded coin-change combinations (denomination order does not create extra
-ways), and `Compression I: RLE Compression`, which emits literal character
-runs in chunks of at most nine.
+ways); `Compression I: RLE Compression`, which emits literal character runs
+in chunks of at most nine; `Spiralize Matrix`; Vigenère encryption; inclusive
+prime-range counting; and minimum-jump `Array Jumping Game II`.
 
 - **Start:** automatic with MCP; `run maintenance_steward.js` after a full
   manual recovery is also sufficient.

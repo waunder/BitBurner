@@ -65,12 +65,20 @@ function mcpStatus(ns, now) {
   const status = json(ns, "mcp_status.json")
   if (!status) return { compact: "-- unavailable", expanded: [] }
 
-  const running = status.running
+  // MCP is running if status file is fresh (not stale); same logic as mcp_hud.js
+  const STALE_MS = 300000
+  const ageMs = now - (status.ts || 0)
+  const running = ageMs < STALE_MS
+
   const target = status.target || "--"
   const money = status.totalHacked || 0
-  const moneyRate = status.moneyPerMinute || 0
+  const rate = status.rate || 0  // Current rate
+  const avgRate = status.avgRate || 0  // Average rate
   const workers = status.workers || []
   const workerCount = workers.length
+
+  // Convert rate (per second) to per minute for display
+  const moneyPerMin = rate * 60
 
   // Count actions across all workers
   let weakenTotal = 0, growTotal = 0, hackTotal = 0
@@ -86,11 +94,11 @@ function mcpStatus(ns, now) {
   const actionSummary = `W:${weakenTotal} G:${growTotal} H:${hackTotal}`
 
   return {
-    compact: `${running ? "✓" : "⊘"} ${compact(moneyRate, 1)}/m ${actionSummary}`,
+    compact: `${running ? "✓" : "⊘"} ${compact(moneyPerMin, 1)}/m ${actionSummary}`,
     expanded: [
       `Status: ${running ? "RUNNING" : "STOPPED"}`,
       `Target: ${target}`,
-      `Money/min: ${compact(moneyRate, 2)}`,
+      `Rate: ${compact(rate, 2)}/s (avg ${compact(avgRate, 2)}/s)`,
       `Total hacked: ${compact(money)}`,
       `${actionSummary}  (${workerCount} workers)`,
       "",

@@ -5,12 +5,26 @@ mcp_status.json
 mcp_status_log.txt
 mcp_target_state.json
 mcp_events.txt
+mcp_multi_status.json
+mcp_multi_status_log.txt
+mcp_multi_target_state.json
+mcp_multi_events.txt
+skim_probe.json
+mcp_formulas_shadow.txt
 ipvgo_status.json
+cct_reward_ledger.json
 dnet_status.json
+dnet_scorecard_status.json
+dnet_killswarm_status.json
 
 # Darknet credential store — game output, and it holds cracked passwords.
 dnet_creds.txt
 dnet_cred_*.txt
+
+# Darknet concurrency-cap registry (2026-08-30) — game output, per-host
+# heartbeat shards plus the merged registry dnet_root.js assembles from them.
+dnet_manager_registry.json
+dnet_manager_active_*.json
 
 # macOS
 .DS_Store
@@ -38,6 +52,9 @@ mcp_objective_override.txt
 # content, different file, both generated at runtime, neither hand-authored
 tools/bb_remote_events.log
 tools/bb_remote_daemon.out
+
+# Generated local governance-auditor heartbeat and logs
+.audit/
 
 # Bitburner save-file snapshots synced from the game (saves/tsconfig.json
 # stays tracked regardless — it's hand-authored, not game output)

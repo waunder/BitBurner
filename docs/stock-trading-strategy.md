@@ -1,8 +1,13 @@
 # Stock market strategy
 
+> **Status, 2026-08-18:** Ken explicitly approved capital deployment. The
+> long-only trader is now committed and may run with `trade=1`, subject to its
+> WSE/TIX/4S capability checks and its 1%–10% portfolio-wide allocation cap.
+
 Synthesis and sequencing for *this specific situation*: WSE + TIX access
 already bought, no 4S data (either variant), trading held to manual/
-read-only pending Ken's explicit approval to automate. Read
+read-only pending Ken's explicit approval to automate. A trader artifact was
+built without a capital-deployment approval and stays off-limits. Read
 `stock-trading-mechanics.md` first for the API and the price-formation
 mechanics this reasons over; style follows `darknet-strategy.md`.
 

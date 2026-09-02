@@ -467,7 +467,8 @@ export function scoreAreaFlat(flat, W, H) {
 }
 
 // One rollout step: pick a legal, non-eye-filling move for `color` via
-// rejection sampling -- try random empty points and accept the first one
+// rejection sampling -- try a few random empty points and prefer a capture
+// when one appears, otherwise accept the first one.
 // that's both legal and not a self-filled eye, rather than enumerating
 // every empty point's legality every single step (that full-board-scan
 // approach was the original implementation here, and profiling on a 7x7
@@ -482,6 +483,8 @@ export function scoreAreaFlat(flat, W, H) {
 // becomes likely only very late in a game, when most remaining empty
 // points are eyes).
 //
+// This keeps rollout cost close to the old path while making obvious sampled
+// captures visible to the simulation policy.
 // Returns { idx: -1 } to mean "pass" (nothing worth playing found).
 // Otherwise returns { idx, flat, koIndex } -- the already-computed result
 // of playing that move, so the caller (runPlayout) never has to redo the
@@ -496,20 +499,33 @@ export function pickPlayoutMove(flat, W, H, color, koIndex, rng) {
   }
   if (emptyIdxs.length === 0) return { idx: -1 }
 
+  let firstLegal = null
+  let bestCapture = null
   for (let attempt = 0; attempt < REJECTION_SAMPLE_ATTEMPTS; attempt++) {
     const idx = emptyIdxs[Math.floor(rng() * emptyIdxs.length)]
     if (isSimpleEye(flat, W, H, idx, color)) continue
     const res = applyMoveFlat(flat, W, H, idx, color)
-    if (res.legal) return { idx, flat: res.flat, koIndex: res.koIndex }
+    if (!res.legal) continue
+    const candidate = { idx, flat: res.flat, koIndex: res.koIndex, capturedCount: res.capturedCount }
+    if (!firstLegal) firstLegal = candidate
+    if (candidate.capturedCount > 0 && (!bestCapture || candidate.capturedCount > bestCapture.capturedCount)) {
+      bestCapture = candidate
+    }
   }
+  if (bestCapture) return bestCapture
+  if (firstLegal) return firstLegal
   // Fallback: exhaustive scan (rare -- only reached when random sampling
   // keeps hitting eyes/illegal points, i.e. near the end of a game).
+  let firstFallback = null
   for (const idx of emptyIdxs) {
     if (isSimpleEye(flat, W, H, idx, color)) continue
     const res = applyMoveFlat(flat, W, H, idx, color)
-    if (res.legal) return { idx, flat: res.flat, koIndex: res.koIndex }
+    if (!res.legal) continue
+    const candidate = { idx, flat: res.flat, koIndex: res.koIndex, capturedCount: res.capturedCount }
+    if (!firstFallback) firstFallback = candidate
+    if (candidate.capturedCount > 0) return candidate
   }
-  return { idx: -1 }
+  return firstFallback || { idx: -1 }
 }
 
 // Plays a single random-ish game to completion (or until maxMoves, as a

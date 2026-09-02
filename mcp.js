@@ -9,15 +9,19 @@ import {
   SECURITY_EPSILON,
   computeWorkWeights,
   computeTargetScore,
+  computeXpTargetScore,
   computeTargetEffectiveScore,
   evaluateMoneyDegradation,
   evaluateOpportunitySwitch,
+  evaluateFormulaSwitchVeto,
   evaluateStuckTarget,
   computeTickInvariantChecks,
   computeDesiredAllocation,
   hostNeedsRedeploy,
   countRunningByScript,
+  missingActionLaunchPlan,
 } from "mcp_logic.js"
+import { auditTargetModels } from "./formulas_logic.js"
 
 // Tunables are declared with `let`, not `const`, so loadConfig can reassign
 // them in place from mcp_config.json at the top of every tick. Threading a
@@ -72,6 +76,9 @@ let MONEY_PCT_SAMPLE_COUNT = 9
 // can actually see. The ramp discount already prices in the cost of
 // switching, so 1.3 only needs to cover model error, not switching cost too.
 let OPPORTUNITY_SWITCH_FACTOR = 1.3
+// R8's production-ready integration is present but inert until its attested
+// canary/production contracts deliberately set this numeric flag to 1.
+let R8_SWITCH_VETO_ENABLED = 0
 // How long a *productive* target is committed to before better options are
 // even considered. Much longer than MIN_TARGET_HOLD_MS because leaving one
 // throws away its accumulated grow progress and the replacement must be
@@ -145,8 +152,10 @@ let OBJECTIVE = "money"
 // weaken, which econ_probe.js exists to gather. Expect these two numbers
 // specifically to change once that data exists — that's why they're
 // separate hot-reloadable config keys rather than a hardcoded table.
-let XP_WEIGHT_HACK = 0.8
-let XP_WEIGHT_GROW = 0.2
+// Hack gives the best XP per GB-second. Keep a small grow share solely to
+// prevent a target reaching exactly $0, where hacks only pay failure XP.
+let XP_WEIGHT_HACK = 0.95
+let XP_WEIGHT_GROW = 0.05
 const ACTION_SCRIPTS = ["/scripts/grow.js", "/scripts/hack.js", "/scripts/weaken.js"]
 const HACK_SEC_INCREASE = 0.002
 const GROW_SEC_INCREASE = 0.004
@@ -188,6 +197,7 @@ const CONFIG_DEFAULTS = {
   DEGRADED_MONEY_PCT,
   MONEY_PCT_SAMPLE_COUNT,
   OPPORTUNITY_SWITCH_FACTOR,
+  R8_SWITCH_VETO_ENABLED,
   MIN_TARGET_COMMIT_MS,
   DEGRADED_SKIP_MS,
   HACK_BALANCE_SAFETY,
@@ -300,6 +310,7 @@ function loadConfig(ns, state) {
     DEGRADED_MONEY_PCT,
     MONEY_PCT_SAMPLE_COUNT,
     OPPORTUNITY_SWITCH_FACTOR,
+    R8_SWITCH_VETO_ENABLED,
     MIN_TARGET_COMMIT_MS,
     DEGRADED_SKIP_MS,
     HACK_BALANCE_SAFETY,
@@ -331,6 +342,7 @@ function loadConfig(ns, state) {
   DEGRADED_MONEY_PCT = resolved.DEGRADED_MONEY_PCT
   MONEY_PCT_SAMPLE_COUNT = resolved.MONEY_PCT_SAMPLE_COUNT
   OPPORTUNITY_SWITCH_FACTOR = resolved.OPPORTUNITY_SWITCH_FACTOR
+  R8_SWITCH_VETO_ENABLED = resolved.R8_SWITCH_VETO_ENABLED
   MIN_TARGET_COMMIT_MS = resolved.MIN_TARGET_COMMIT_MS
   DEGRADED_SKIP_MS = resolved.DEGRADED_SKIP_MS
   HACK_BALANCE_SAFETY = resolved.HACK_BALANCE_SAFETY
@@ -498,12 +510,10 @@ function checkTickInvariants(invariants, ctx) {
 /**
  * The single field list.
  *
- * Both the tail line and the log line derive from the status object, so a
- * field added to the status cannot be invisible to whichever channel is
- * actually being read. Three hand-maintained lists is how `lowMoneySeconds`
- * ended up in ns.print only, and how `switchEval` initially went into the JSON
- * only — the same miss, twelve hours apart. Add fields to `status`; this
- * function is the only place that decides how they render.
+ * The transition-log line derives from the status object, so a field added to
+ * status cannot be invisible to the durable channel.  Per-tick `ns.print`
+ * was deliberately removed: it was a 10-second tail-console write that
+ * duplicated `mcp_status.json` and buried the transitions worth reading.
  */
 function formatStatus(status) {
   const parts = [
@@ -675,6 +685,58 @@ function getTargetEffectiveScore(ns, server, poolThreads) {
   return effective
 }
 
+// XP mode needs its own selector: money potential is irrelevant to XP per
+// thread-second and strongly favours slow, high-money targets. The score is
+// intentionally based on the target's current chance/time, matching the
+// scheduler's existing "can work it now" eligibility check.
+function getTargetXpScore(ns, server) {
+  if (!isHackableTarget(ns, server)) return 0
+  return computeXpTargetScore({
+    baseSecurity: ns.getServerBaseSecurityLevel(server),
+    hackChance: ns.hackAnalyzeChance(server),
+    hackTime: ns.getHackTime(server) / 1000,
+  })
+}
+
+function getTargetSelectionScore(ns, server, poolThreads) {
+  return OBJECTIVE === "xp" ? getTargetXpScore(ns, server) : getTargetEffectiveScore(ns, server, poolThreads)
+}
+
+// The optional R8 decision uses the game's formulas against a minimum-security
+// copy of each server. It is called only after the existing scheduler has
+// already selected a switch candidate, so it cannot become a parallel target
+// selector. Any problem returns null and lets the established scheduler act.
+function getFormulaMinimumSecurityScore(ns, target, poolThreads) {
+  if (!target || !ns.fileExists("Formulas.exe", "home") || !ns.formulas || !ns.formulas.hacking) return null
+  try {
+    const server = ns.getServer(target)
+    server.hackDifficulty = server.minDifficulty
+    const player = ns.getPlayer()
+    const formulas = ns.formulas.hacking
+    const model = {
+      targetMoneyGoal: TARGET_MONEY_GOAL,
+      horizonSeconds: SCORE_HORIZON_SECONDS,
+      growTimeRatio: WEAKEN_PER_HACK_RATIO / WEAKEN_PER_GROW_RATIO,
+      hackSecIncrease: HACK_SEC_INCREASE,
+      growSecIncrease: GROW_SEC_INCREASE,
+      weakenSecDecrease: WEAKEN_SEC_DECREASE,
+      weakenPerHackRatio: WEAKEN_PER_HACK_RATIO,
+      weakenPerGrowRatio: WEAKEN_PER_GROW_RATIO,
+      hackTimeSeconds: formulas.hackTime(server, player) / 1000,
+      hackPercentPerThread: formulas.hackPercent(server, player),
+      growLogPerThread: Math.log(formulas.growPercent(server, 1, player, 1)),
+      maxMoney: server.moneyMax,
+      hackChance: formulas.hackChance(server, player),
+      poolThreads,
+      money: server.moneyAvailable,
+    }
+    const audit = auditTargetModels({ target, currentModel: model, hypotheticalModel: model })
+    return audit.eligible ? audit.models.hypothetical.effectiveScore : null
+  } catch (_) {
+    return null
+  }
+}
+
 // SECURITY_EPSILON is imported from mcp_logic.js (used there by
 // computeTickInvariantChecks' threadsFitHost check too, hence one shared
 // definition): security readings accumulate floating-point noise over many
@@ -739,9 +801,8 @@ function expireTargetExclusions(skippedTargets, drainedTargets) {
 }
 
 /**
- * Ranks viable targets by income rate discounted for current readiness, so a
- * server that is already grown and immediately productive beats an equally
- * capable one that would need many minutes of grow first.
+ * Ranks viable targets by the active objective. Money mode uses income rate
+ * discounted for readiness; XP mode uses XP per hack thread-second.
  * @param {Map<string, number>} skippedTargets
  * @param {Map<string, number>} drainedTargets
  * @returns {{server: string, score: number}[]} ranked best-first
@@ -756,7 +817,7 @@ function rankTargets(ns, servers, maxWeaken, skippedTargets, drainedTargets, ign
     const requiredWeaken = getTargetWeakenThreads(ns, server)
     if (requiredWeaken > maxWeaken) continue
 
-    candidates.push({ server, score: getTargetEffectiveScore(ns, server, maxWeaken) })
+    candidates.push({ server, score: getTargetSelectionScore(ns, server, maxWeaken) })
   }
 
   candidates.sort((a, b) => b.score - a.score)
@@ -781,11 +842,9 @@ function chooseTarget(ns, servers, maxWeaken, skippedTargets, drainedTargets) {
   return ranked.length > 0 ? ranked[0].server : null
 }
 
-// home (hacking-strategy.md R7, 2026-08-14): included as a worker like any
-// other rooted host, but with HOME_RAM_RESERVE (default 32GB) kept off the
-// top — mcp.js/the HUD/the supervisor all run there, and under-reserving
-// starves them, which is a farm-stopping failure rather than a throughput
-// loss. Every other host keeps its old unreserved behavior.
+// Retained for config compatibility and any diagnostics that calculate home
+// headroom. Home is deliberately not a worker host: it is the control plane
+// and should remain available for tools, contracts, and future RAM upgrades.
 function getHostFreeRam(ns, host) {
   const usedRam = ns.getServerUsedRam(host)
   let freeRam = ns.getServerMaxRam(host) - usedRam
@@ -794,10 +853,20 @@ function getHostFreeRam(ns, host) {
 }
 
 function getWorkerHosts(ns, servers = null) {
-  const hosts = servers || scanNetwork(ns)
+  // Cloud servers are not guaranteed to appear in the normal network walk.
+  // They have no money and are never target candidates, but are dedicated
+  // rooted worker capacity and must be added to the allocation pool.
+  const hosts = servers ? [...servers] : scanNetwork(ns)
+  const cloudHosts = new Set(ns.cloud.getServerNames())
+  for (const cloudHost of cloudHosts) {
+    if (!hosts.includes(cloudHost)) hosts.push(cloudHost)
+  }
   const workers = []
   for (const server of hosts) {
-    if (!ns.hasRootAccess(server)) continue
+    if (server === "home") continue
+    // Cloud servers are bought by us and accept work even though the normal
+    // rooted-network predicate need not identify them in the Cloud API era.
+    if (!cloudHosts.has(server) && !ns.hasRootAccess(server)) continue
     // Needs room for at least a couple of action threads to be worth the
     // scp/exec overhead; the largest action script is ~1.75GB.
     if (ns.getServerMaxRam(server) <= 2.5) continue
@@ -960,7 +1029,30 @@ function allocateThreads(ns, host, target, plan, desired, tolerance, actionDurat
     tolerance,
     actionDurationsS,
   })
+  const missingLaunches = missingActionLaunchPlan(describedRunning, desired, getHostFreeRam(ns, host), {
+    weaken: ns.getScriptRam("/scripts/weaken.js"),
+    grow: ns.getScriptRam("/scripts/grow.js"),
+    hack: ns.getScriptRam("/scripts/hack.js"),
+  })
   if (!needsRedeploy) {
+    // A still-young action must not block launching an entirely missing
+    // complementary action. Keep the in-flight process intact, but use the
+    // otherwise idle RAM for the newly desired script now.
+    if (missingLaunches.length > 0) {
+      if (host !== "home") copyActionScripts(ns, host)
+      for (const { proc, normalized } of running) {
+        const script = normalized.replace("/scripts/", "").replace(".js", "")
+        allocation.actions.push({ script, threads: proc.threads })
+      }
+      for (const { script, threads } of missingLaunches) {
+        if (ns.exec(`/scripts/${script}.js`, host, threads, target) !== 0) {
+          allocation.actions.push({ script, threads })
+        }
+      }
+      allocation.usedRam = ns.getServerUsedRam(host)
+      allocation.freeRam = getHostFreeRam(ns, host)
+      return allocation
+    }
     allocation.usedRam = ns.getServerUsedRam(host)
     allocation.freeRam = getHostFreeRam(ns, host)
     for (const { proc, normalized } of running) {
@@ -1024,6 +1116,12 @@ function cleanupOrphanedActionScripts(ns) {
   // which then blocks every candidate in chooseTarget() and the bot can
   // never recover on its own. Sweep them all before doing anything else.
   let killedHosts = 0
+  // Home was a worker historically. Sweep it explicitly even though it no
+  // longer appears in getWorkerHosts(), so a restart releases old workers.
+  if (getRunningActions(ns, "home").length > 0) {
+    killActionScripts(ns, "home")
+    killedHosts++
+  }
   for (const host of getWorkerHosts(ns)) {
     const before = getRunningActions(ns, host).length
     if (before === 0) continue
@@ -1159,6 +1257,7 @@ export async function main(ns) {
     // Filled by the opportunity-switch predicate below and surfaced in the
     // status file. Null when there is no current target to compare against.
     let switchEval = null
+    let formulaSwitchVeto = null
 
     if (targetOverride) {
       // Automatic selection/switching disabled — just keep working the
@@ -1275,7 +1374,7 @@ export async function main(ns) {
         // test read "too slow to see yet" as "dead" and drained a perfectly
         // good target on a level-1 character.
         //
-        // XP mode's fixed hack:0.8/grow:0.2 split (see buildPlan) drains
+        // XP mode's fixed hack:0.95/grow:0.05 split (see buildPlan) drains
         // every target's money toward zero by design and never lets it
         // recover — moneyDegraded would fire on essentially every target in
         // an endless chain, defeating XP mode's point of sitting still and
@@ -1377,9 +1476,11 @@ export async function main(ns) {
         // captured by closure as poolThreads — see getTargetScore/
         // getTargetEffectiveScore's own comments for why reusing it costs
         // nothing extra.
-        const measure = idle
-          ? (server) => getTargetEffectiveScore(ns, server, maxWeaken)
-          : (server) => getTargetScore(ns, server, maxWeaken)
+        const measure = OBJECTIVE === "xp"
+          ? (server) => getTargetXpScore(ns, server)
+          : idle
+            ? (server) => getTargetEffectiveScore(ns, server, maxWeaken)
+            : (server) => getTargetScore(ns, server, maxWeaken)
         const candidates = ranked.map(({ server }) => ({ server, score: measure(server) }))
         const currentScore = measure(currentTarget)
 
@@ -1396,6 +1497,21 @@ export async function main(ns) {
         })
 
         if (switchEval.committed && switchEval.outbid) {
+          const formulaEnabled = R8_SWITCH_VETO_ENABLED > 0
+          const formulaCurrentScore = formulaEnabled ? getFormulaMinimumSecurityScore(ns, currentTarget, maxWeaken) : NaN
+          const formulaCandidateScore = formulaEnabled ? getFormulaMinimumSecurityScore(ns, switchEval.best, maxWeaken) : NaN
+          formulaSwitchVeto = evaluateFormulaSwitchVeto({
+            enabled: formulaEnabled,
+            currentTarget,
+            candidateTarget: switchEval.best,
+            currentScore: formulaCurrentScore,
+            candidateScore: formulaCandidateScore,
+          })
+          if (formulaSwitchVeto.enabled) events.emit("r8_switch_veto_eval", formulaSwitchVeto)
+          if (formulaSwitchVeto.veto) {
+            events.emit("r8_switch_veto", formulaSwitchVeto)
+            ns.tprint(`mcp: R8 retained ${currentTarget}; ${switchEval.best} formulas ratio ${formulaSwitchVeto.ratio.toFixed(2)} is below ${formulaSwitchVeto.threshold}`)
+          } else {
           ns.tprint(
             `mcp: ${switchEval.best} (${formatMoney(switchEval.bestScore)}/s) outperforms ${idle ? "idle" : "current"} ${currentTarget} (${formatMoney(currentScore)}/s) by ${switchEval.ratio.toFixed(1)}x after ${switchEval.heldSeconds}s; switching`
           )
@@ -1406,13 +1522,14 @@ export async function main(ns) {
           lastPlanType = null
           lastWeightBucket = null
           moneyPctSamples.length = 0
+          }
         }
       }
     }
 
     const candidateTarget = chooseTarget(ns, servers, maxWeaken, skippedTargets, drainedTargets)
     const candidateExpectedIncome = candidateTarget ? getTargetExpectedIncome(ns, candidateTarget) : 0
-    const candidateScore = candidateTarget ? getTargetEffectiveScore(ns, candidateTarget, maxWeaken) : 0
+    const candidateScore = candidateTarget ? getTargetSelectionScore(ns, candidateTarget, maxWeaken) : 0
 
     if (!targetOverride && !currentTarget && candidateTarget) {
       const requiredWeaken = getTargetWeakenThreads(ns, candidateTarget)
@@ -1636,6 +1753,15 @@ export async function main(ns) {
 
     // Build the status object first, then derive every rendering from it.
     const player = ns.getPlayer()
+    // Cloud hosts are not part of target discovery. Surface their raw
+    // properties separately so a failed allocation can distinguish an
+    // ownership/RAM problem from an MCP scheduling problem.
+    const cloudWorkers = ns.cloud.getServerNames().map((host) => ({
+      host,
+      rooted: ns.hasRootAccess(host),
+      maxRam: ns.getServerMaxRam(host),
+      usedRam: ns.getServerUsedRam(host),
+    }))
     const status = {
       ts: Date.now(),
       runId: runId,
@@ -1675,6 +1801,7 @@ export async function main(ns) {
       totalHacked: totalHacked,
       ramUtilization: ramUtilization,
       workers: allocations,
+      cloudWorkers,
       candidate: candidateTarget || null,
       candidateScore: candidateScore || 0,
       candidateExpectedIncome: candidateExpectedIncome || 0,
@@ -1687,6 +1814,7 @@ export async function main(ns) {
       weakenTimeS: weakenTimeS,
       hackChance: hackChance,
       switchEval: switchEval,
+      formulaSwitchVeto: formulaSwitchVeto,
       // set_objective.js's live override — see OBJECTIVE_OVERRIDE_FILE's own
       // comment. True means OBJECTIVE (below) came from
       // mcp_objective_override.txt, not mcp_config.json.
@@ -1707,6 +1835,7 @@ export async function main(ns) {
         DEGRADED_MONEY_PCT,
         MONEY_PCT_SAMPLE_COUNT,
         OPPORTUNITY_SWITCH_FACTOR,
+        R8_SWITCH_VETO_ENABLED,
         MIN_TARGET_COMMIT_MS,
         DEGRADED_SKIP_MS,
         HACK_BALANCE_SAFETY,
@@ -1725,7 +1854,6 @@ export async function main(ns) {
     }
 
     const line = formatStatus(status)
-    ns.print(line)
 
     try {
       ns.write("mcp_status.json", JSON.stringify(status), "w")
@@ -1740,7 +1868,10 @@ export async function main(ns) {
         lastLogSignature = signature
       }
     } catch (e) {
-      ns.print("mcp: failed to write status file: " + e)
+      // Do not turn a persistent disk error into a tail flood.  The game UI
+      // still gets a visible critical notice, while the next invariant sweep
+      // records the failure in the durable event stream.
+      ns.toast("mcp: status-file write failed", "error", INVARIANT_TOAST_MS)
     }
 
     // Outside the try above: a status-write failure must not silently skip
@@ -1748,7 +1879,7 @@ export async function main(ns) {
     try {
       saveTargetState(ns, skippedTargets, drainedTargets)
     } catch (e) {
-      ns.print("mcp: failed to persist target state: " + e)
+      ns.toast("mcp: target-state write failed", "error", INVARIANT_TOAST_MS)
     }
 
     lastAvgRate = avgRate

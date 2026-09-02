@@ -9,13 +9,9 @@
  * authentication itself carries no instability penalty, this script is the
  * thing that will find you enough servers to make backdoor budget matter.
  *
- * Known bug, not yet fixed (found live 2026-08-12, see darknet-functions.md
- * "Bug found live" note): spread() execs child copies with no args, so
- * --once does not propagate — a single `--once` invocation on home still
- * cascades into an indefinitely-looping crawl one hop out. Low-risk (no
- * backdoor/instability cost) and arguably does what Phase 2 of
- * darknet-strategy.md wants anyway, but worth knowing before assuming a
- * `--once` run is actually bounded.
+ * Fixed 2026-08-14: --once now propagates to child copies. Each process still
+ * gets one pass and may spread the bounded worker onward, but no child silently
+ * turns a requested experiment into an indefinitely-looping resident crawl.
  *
  * What it does that the tutorial's example script does not:
  *  - Reuses stored passwords via connectToSession (0.05GB, instant) before
@@ -77,11 +73,12 @@
  *         dnet_deployer_<host>.json shard (shipped to home, see
  *         writeDeployerStatus)
  *
- * RAM estimate ~4.8GB: 1.6 base + probe 0.2 + getServerDetails 0.1 +
+ * RAM estimate ~4.9GB after the 2026-08-14 preparation/phishing work: the
+ * earlier ~4.8GB call set (1.6 base + probe 0.2 + getServerDetails 0.1 +
  * authenticate 0.4 + connectToSession 0.05 + scp 0.6 + exec 1.3 +
  * getHostname 0.05 + ls 0.2 + getScriptRam 0.1 + getServerMaxRam 0.05 +
- * getServerUsedRam 0.05 (the last three added for lootDeploy's free-RAM
- * check). nextMutation, read, write, toast, and getDarknetInstability are
+ * getServerUsedRam 0.05) plus ps 0.2. nextMutation, read, write,
+ * toast, getBlockedRam, and getDarknetInstability are
  * 0GB, so the status heartbeat adds nothing — true both before and after
  * the 2026-08-12 sharding fix, since writeDeployerShard/shipShard use the
  * exact same 0GB write and already-paid-for scp that mergeStatus/shipStatus
@@ -118,6 +115,11 @@ import {
 const MUTATION_FLOOR_MS = 5000
 const LOOT_SCRIPT = "dnet_loot.js"
 const LOOT_REALLOC_SCRIPT = "dnet_loot_realloc.js"
+const REALLOC_SCRIPT = "dnet_realloc.js"
+const PHISH_SCRIPT = "dnet_phish.js"
+const PHISH_CACHE_PREFIX = "dnet_phish_cache_"
+const LEAN_CRAWLER = "dnet_crawl.js"
+const MANAGER_SCRIPT = "dnet_manager.js"
 
 export async function main(ns) {
   ns.disableLog("ALL")
@@ -130,6 +132,12 @@ export async function main(ns) {
   const self = ns.getScriptName()
   let creds = readCreds(ns)
   let pass = 0
+  // Per-process memory of neighbours already prepared and looted. A process
+  // restart intentionally clears this, causing one fresh preparation pass;
+  // ordinary mutation ticks do not relaunch a no-op loot script forever.
+  const preparedTargets = new Set()
+  const handledCacheMarkers = new Set()
+  const lastBlockedRam = new Map()
   // Lifetime-of-this-process counters, for the "deployer" status heartbeat.
   // These are this instance's own view only -- see writeDeployerStatus's
   // doc comment for why they are not a network-wide total.
@@ -141,6 +149,14 @@ export async function main(ns) {
     looted: 0,
     lootMode: { full: 0, realloc: 0 },
     lootSkipped: { ram: 0, scp: 0, exec: 0 },
+    ramFreedObserved: 0,
+    prepareStarted: 0,
+    prepareThreadsStarted: 0,
+    prepareWaiting: 0,
+    prepareSkipped: { ram: 0, scp: 0, exec: 0 },
+    phishStarted: 0,
+    phishThreadsStarted: 0,
+    phishSkipped: { ram: 0, scp: 0, exec: 0 },
   }
 
   do {
@@ -158,11 +174,27 @@ export async function main(ns) {
       looted: 0,
       lootMode: { full: 0, realloc: 0 },
       lootSkipped: { ram: 0, scp: 0, exec: 0 },
+      lootLastSkip: null,
+      ramFreedObserved: 0,
+      prepareStarted: 0,
+      prepareThreadsStarted: 0,
+      prepareWaiting: 0,
+      prepareSkipped: { ram: 0, scp: 0, exec: 0 },
+      prepareLastSkip: null,
+      phishStarted: 0,
+      phishThreadsStarted: 0,
+      phishSkipped: { ram: 0, scp: 0, exec: 0 },
+      phishLastSkip: null,
     }
 
     for (const target of neighbours) {
       const details = ns.dnet.getServerDetails(target)
       if (!flags.quiet) ns.print(describe(details, target))
+      const priorBlocked = lastBlockedRam.get(target)
+      if (typeof priorBlocked === "number" && details.blockedRam < priorBlocked) {
+        summary.ramFreedObserved += priorBlocked - details.blockedRam
+      }
+      lastBlockedRam.set(target, details.blockedRam)
 
       const known = creds[target]
       const result = await acquireSession(ns, target, known, { bruteForceLimit: flags.brute })
@@ -180,7 +212,9 @@ export async function main(ns) {
       }
 
       summary.sessions++
-      if (typeof result.password === "string" && known?.password !== result.password) {
+      const credentialChanged = typeof result.password === "string" && known?.password !== result.password
+      if (credentialChanged) {
+        preparedTargets.delete(target)
         summary.cracked++
         creds[target] = { host: target, password: result.password, model: details.modelId, at: Date.now() }
         const shard = recordCred(ns, target, result.password, details.modelId)
@@ -189,31 +223,101 @@ export async function main(ns) {
         ns.print(`CRACK ${target} model=${details.modelId} why=${result.why} tried=${result.tried}`)
       }
 
-      if (spread(ns, self, target)) summary.deployed++
+      // Once a target has the lean crawler or resident manager, that pair
+      // owns preparation, loot, phishing, and mutation recrawls locally.
+      // The 15GB home controller must not compete with it for target RAM.
+      try {
+        const delegated = ns.ps(target).some((p) => {
+          const name = p.filename.startsWith("/") ? p.filename.slice(1) : p.filename
+          return name === LEAN_CRAWLER || name === MANAGER_SCRIPT
+        })
+        if (delegated) continue
+      } catch {}
 
-      // Loot right now, while we know for certain target is online -- see
-      // the file-level doc comment for why a later, separate pass doesn't
-      // work (most previously-cracked servers are offline again by the
-      // time you come back).
-      const loot = lootDeploy(ns, target)
-      if (loot.ok) {
-        summary.looted++
-        summary.lootMode[loot.mode] = (summary.lootMode[loot.mode] ?? 0) + 1
-      } else {
+      if (!preparedTargets.has(target)) {
+        const prep = prepareTarget(ns, target, details.blockedRam)
+        if (!prep.ready) {
+          if (prep.waiting) summary.prepareWaiting++
+          else if (prep.ok) {
+            summary.prepareStarted++
+            summary.prepareThreadsStarted += prep.threads
+          } else {
+            summary.prepareSkipped[prep.why] = (summary.prepareSkipped[prep.why] ?? 0) + 1
+            summary.prepareLastSkip = { target, ...prep }
+            const detail = prep.why === "ram" ? ` freeRam=${prep.freeRam} reallocRam=${prep.reallocRam}` : ""
+            ns.print(`PREP-SKIP ${target} why=${prep.why}${detail}`)
+          }
+          continue
+        }
+      }
+
+      if (spread(ns, self, target, flags.once)) {
+        summary.deployed++
+        preparedTargets.add(target)
+        continue
+      }
+
+      if (!preparedTargets.has(target)) {
+        // Loot at the same fresh-session handoff. Once it starts successfully,
+        // avoid relaunching the one-shot script every mutation; the next pass
+        // can fill the released RAM with the persistent phishing worker.
+        const loot = lootDeploy(ns, target)
+        if (loot.ok) {
+          preparedTargets.add(target)
+          summary.looted++
+          summary.lootMode[loot.mode] = (summary.lootMode[loot.mode] ?? 0) + 1
+          continue
+        }
         // Always printed, not gated on --quiet -- a silent scp/exec failure
         // here was genuinely ambiguous to diagnose live on 2026-08-12 (no
         // tail window open, so `ok:false` gave no way to tell "RAM too
         // small" from "scp failed" from "exec failed" apart after the fact).
         summary.lootSkipped[loot.why] = (summary.lootSkipped[loot.why] ?? 0) + 1
+        summary.lootLastSkip = { target, ...loot }
         // Phase 3b: on a "ram" skip, log the exact numbers the decision was
         // made from -- freeRam vs both scripts' costs -- per this repo's own
         // diagnosis-discipline rule (CLAUDE.md: "an event should record
         // every variable that appeared in the predicate that fired it").
         // Neither variant fit means this is genuinely a hard skip, not a
-        // silent one.
         const detail =
           loot.why === "ram" ? ` freeRam=${loot.freeRam} fullRam=${loot.fullRam} reallocRam=${loot.reallocRam}` : ""
         ns.print(`LOOT-SKIP ${target} why=${loot.why}${detail}`)
+        continue
+      }
+
+      // A phishing success can generate a cache on this volatile host. The
+      // lean worker records a marker and exits; consume each marker once,
+      // then refill the released RAM with phishing on the following pass.
+      const marker = nextUnhandledCacheMarker(ns, target, handledCacheMarkers)
+      if (marker) {
+        const caches = ns.ls(target, ".cache")
+        if (caches.length === 0) {
+          handledCacheMarkers.add(`${target}\n${marker}`)
+        } else {
+          const loot = lootDeploy(ns, target)
+          if (loot.ok) {
+            summary.looted++
+            summary.lootMode[loot.mode] = (summary.lootMode[loot.mode] ?? 0) + 1
+          } else {
+            summary.lootSkipped[loot.why] = (summary.lootSkipped[loot.why] ?? 0) + 1
+            summary.lootLastSkip = { target, marker, caches: caches.length, ...loot }
+            ns.print(`CACHE-LOOT-SKIP ${target} marker=${marker} caches=${caches.length} why=${loot.why}`)
+          }
+          continue
+        }
+      }
+
+      const phish = phishDeploy(ns, target)
+      if (phish.ok) {
+        if (!phish.existing) {
+          summary.phishStarted++
+          summary.phishThreadsStarted += phish.threads
+        }
+      } else {
+        summary.phishSkipped[phish.why] = (summary.phishSkipped[phish.why] ?? 0) + 1
+        summary.phishLastSkip = { target, ...phish }
+        const detail = phish.why === "ram" ? ` freeRam=${phish.freeRam} phishRam=${phish.phishRam}` : ""
+        ns.print(`PHISH-SKIP ${target} why=${phish.why}${detail}`)
       }
     }
 
@@ -224,8 +328,16 @@ export async function main(ns) {
     lifetime.failed += summary.failed
     lifetime.deployed += summary.deployed
     lifetime.looted += summary.looted
+    lifetime.ramFreedObserved += summary.ramFreedObserved
+    lifetime.prepareStarted += summary.prepareStarted
+    lifetime.prepareThreadsStarted += summary.prepareThreadsStarted
+    lifetime.prepareWaiting += summary.prepareWaiting
+    lifetime.phishStarted += summary.phishStarted
+    lifetime.phishThreadsStarted += summary.phishThreadsStarted
     for (const k of Object.keys(lifetime.lootMode)) lifetime.lootMode[k] += summary.lootMode[k] ?? 0
     for (const k of Object.keys(lifetime.lootSkipped)) lifetime.lootSkipped[k] += summary.lootSkipped[k] ?? 0
+    for (const k of Object.keys(lifetime.prepareSkipped)) lifetime.prepareSkipped[k] += summary.prepareSkipped[k] ?? 0
+    for (const k of Object.keys(lifetime.phishSkipped)) lifetime.phishSkipped[k] += summary.phishSkipped[k] ?? 0
     writeDeployerStatus(ns, { pass, host, summary, lifetime, localKnownCreds: Object.keys(creds).length })
 
     if (flags.once) break
@@ -274,6 +386,9 @@ export async function main(ns) {
 function writeDeployerStatus(ns, { pass, host, summary, lifetime, localKnownCreds }) {
   try {
     const instability = ns.dnet.getDarknetInstability()
+    const maxRam = ns.getServerMaxRam(host)
+    const usedRam = ns.getServerUsedRam(host)
+    const processes = ns.ps(host).map((p) => ({ filename: p.filename, pid: p.pid, threads: p.threads, args: p.args }))
     const shard = writeDeployerShard(ns, host, {
       host,
       pass,
@@ -287,10 +402,29 @@ function writeDeployerStatus(ns, { pass, host, summary, lifetime, localKnownCred
         looted: summary.looted,
         lootMode: { ...summary.lootMode },
         lootSkipped: { ...summary.lootSkipped },
+        lootLastSkip: summary.lootLastSkip,
+        ramFreedObserved: summary.ramFreedObserved,
+        prepareStarted: summary.prepareStarted,
+        prepareThreadsStarted: summary.prepareThreadsStarted,
+        prepareWaiting: summary.prepareWaiting,
+        prepareSkipped: { ...summary.prepareSkipped },
+        prepareLastSkip: summary.prepareLastSkip,
+        phishStarted: summary.phishStarted,
+        phishThreadsStarted: summary.phishThreadsStarted,
+        phishSkipped: { ...summary.phishSkipped },
+        phishLastSkip: summary.phishLastSkip,
       },
       sinceProcessStart: { ...lifetime },
       localKnownCreds,
       instability,
+      controllerRam: {
+        scriptRam: ns.getScriptRam(ns.getScriptName(), host),
+        maxRam,
+        usedRam,
+        freeRam: maxRam - usedRam,
+        blockedRam: ns.dnet.getBlockedRam(host),
+        processes,
+      },
     })
     shipShard(ns, shard)
   } catch (err) {
@@ -307,8 +441,8 @@ function writeDeployerStatus(ns, { pass, host, summary, lifetime, localKnownCred
  * spread also ships them, the same way dnet_lib.js already has to ride
  * along for `self` to even run.
  */
-function spread(ns, self, target) {
-  const files = [self, "dnet_lib.js", LOOT_SCRIPT, LOOT_REALLOC_SCRIPT]
+function spread(ns, self, target, once = false) {
+  const files = [LEAN_CRAWLER, MANAGER_SCRIPT, "dnet_lib.js", LOOT_SCRIPT, LOOT_REALLOC_SCRIPT, PHISH_SCRIPT]
   if (ns.fileExists(CREDS_FILE)) files.push(CREDS_FILE)
   try {
     if (!ns.scp(files, target)) {
@@ -321,13 +455,117 @@ function spread(ns, self, target) {
   }
 
   try {
-    const pid = ns.exec(self, target, { preventDuplicates: true })
+    const pid = ns.exec(LEAN_CRAWLER, target, { preventDuplicates: true })
     if (pid === 0) return false
     ns.print(`SPREAD ${target} pid=${pid}`)
     return true
   } catch (err) {
     ns.print(`WARN exec on ${target} threw: ${err}`)
     return false
+  }
+}
+
+/**
+ * Start a temporary multi-thread reallocator on this crawler host, targeting
+ * the directly-connected authenticated neighbour. Running at the source is
+ * essential: deeper servers can spawn with every byte of their own RAM
+ * blocked, so a target-local worker could never start. Returning ready:false makes the
+ * crawler wait for a later mutation pass, when it re-reads blockedRam and
+ * either launches another capped pass or proceeds once the block is gone.
+ */
+function prepareTarget(ns, target, blockedRam) {
+  if (!(blockedRam > 0)) return { ready: true, ok: true }
+
+  try {
+    const source = ns.getHostname()
+    const running = ns.ps(source).some(
+      (p) =>
+        (p.filename === REALLOC_SCRIPT || p.filename === `/${REALLOC_SCRIPT}`) &&
+        String(p.args?.[0]) === target
+    )
+    if (running) return { ready: false, ok: true, waiting: true }
+  } catch (err) {
+    ns.print(`WARN prep ps ${target} threw: ${err}`)
+  }
+
+  const source = ns.getHostname()
+  const reallocRam = ns.getScriptRam(REALLOC_SCRIPT, source)
+  const freeRam = ns.getServerMaxRam(source) - ns.getServerUsedRam(source)
+  const threads = reallocRam > 0 ? Math.floor(freeRam / reallocRam) : 0
+  if (threads < 1) return { ready: false, ok: false, why: "ram", freeRam, reallocRam }
+
+  try {
+    const pid = ns.exec(REALLOC_SCRIPT, source, { threads, preventDuplicates: true }, target)
+    if (pid === 0) return { ready: false, ok: false, why: "exec" }
+    ns.print(
+      `PREP ${target} pid=${pid} threads=${threads} blockedRam=${blockedRam} ` +
+        `source=${source} freeRam=${freeRam} reallocRam=${reallocRam}`
+    )
+    return { ready: false, ok: true, waiting: false, pid, threads }
+  } catch (err) {
+    ns.print(`WARN prep exec on ${target} threw: ${err}`)
+    return { ready: false, ok: false, why: "exec" }
+  }
+}
+
+function nextUnhandledCacheMarker(ns, target, handled) {
+  let files
+  try {
+    files = ns.ls(target, PHISH_CACHE_PREFIX)
+  } catch (err) {
+    ns.print(`WARN cache-marker ls ${target} threw: ${err}`)
+    return null
+  }
+  return files.find((file) => !handled.has(`${target}\n${file}`)) ?? null
+}
+
+/**
+ * Fill a prepared neighbour's remaining RAM with the lean phishing worker.
+ * Existing copies are left alone: a mutation may kill them, at which point
+ * the next crawler pass sees no process and restores the worker. The worker
+ * has no durable state, so this is exactly the restart model it is built for.
+ *
+ * @returns {{ok: boolean, existing?: boolean, pid?: number, threads?: number,
+ *   why?: "ram"|"scp"|"exec", freeRam?: number, phishRam?: number}}
+ */
+function phishDeploy(ns, target) {
+  try {
+    const processes = ns.ps(target)
+    const existing = processes.find((p) => p.filename === PHISH_SCRIPT || p.filename === `/${PHISH_SCRIPT}`)
+    if (existing) return { ok: true, existing: true, pid: existing.pid, threads: existing.threads }
+    const transientLoot = processes.some(
+      (p) =>
+        p.filename === LOOT_SCRIPT ||
+        p.filename === `/${LOOT_SCRIPT}` ||
+        p.filename === LOOT_REALLOC_SCRIPT ||
+        p.filename === `/${LOOT_REALLOC_SCRIPT}`
+    )
+    if (transientLoot) return { ok: true, existing: true, waiting: true }
+  } catch (err) {
+    ns.print(`WARN phish ps ${target} threw: ${err}`)
+  }
+
+  const self = ns.getHostname()
+  const phishRam = ns.getScriptRam(PHISH_SCRIPT, self)
+  const freeRam = ns.getServerMaxRam(target) - ns.getServerUsedRam(target)
+  const threads = phishRam > 0 ? Math.floor(freeRam / phishRam) : 0
+  if (threads < 1) return { ok: false, why: "ram", freeRam, phishRam }
+
+  try {
+    if (!ns.scp(PHISH_SCRIPT, target)) return { ok: false, why: "scp" }
+  } catch (err) {
+    ns.print(`WARN phish scp to ${target} threw: ${err}`)
+    return { ok: false, why: "scp" }
+  }
+
+  try {
+    const pid = ns.exec(PHISH_SCRIPT, target, { threads, preventDuplicates: true })
+    if (pid === 0) return { ok: false, why: "exec" }
+    ns.print(`PHISH ${target} pid=${pid} threads=${threads} freeRam=${freeRam} phishRam=${phishRam}`)
+    return { ok: true, existing: false, pid, threads }
+  } catch (err) {
+    ns.print(`WARN phish exec on ${target} threw: ${err}`)
+    return { ok: false, why: "exec" }
   }
 }
 
@@ -362,13 +600,9 @@ function spread(ns, self, target) {
  * (dnet_lib.js) is the pure policy function, unit-tested in
  * dnet_lib.test.js.
  *
- * Runs unconditionally every pass a session succeeds, same as spread() --
- * not gated on "newly cracked this pass". Re-running a loot script on an
- * already-looted host is safe (openCache/memoryReallocation both report
- * nothing left to do rather than erroring or double-spending karma) and
- * matches how spread() already re-execs every pass with preventDuplicates
- * doing the actual dedup work. `preventDuplicates` here mainly protects
- * against exec-ing a second copy while a prior one is still mid-run.
+ * The controller launches this once after preparation, and again when a
+ * phishing worker reports that it generated a cache. `preventDuplicates`
+ * protects the handoff if two mutation wakes overlap.
  *
  * @returns {{ok: boolean, why?: "ram"|"scp"|"exec", pid?: number, mode?: "full"|"realloc",
  *   freeRam?: number, fullRam?: number, reallocRam?: number}}

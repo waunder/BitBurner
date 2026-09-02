@@ -1,11 +1,145 @@
 # Darknet strategy
 
+> **Update, 2026-08-31 — freeze containment, not yet a live cure.** Reading
+> the game's source narrowed the API theory: `probe()` only enumerates direct
+> neighbours, `getServerDetails()` reads one host, and `phishingAttack()`
+> delays then mutates that host/player; none scans the whole Darknet. The
+> suite itself still had two unbounded load paths: every phishing worker
+> printed each result (one result can arrive every 200ms), and `dnet_root.js`
+> listed/read/parsed all historical credential shards on every one-second
+> pass. The resident-cap was also only a stale local snapshot, so it cannot
+> be treated as a hard global limit. The paused default now permits one
+> manager, one silent phish worker, zero propagation, credential merges once
+> per minute, and registry merges every 15 seconds. This is deliberately a
+> minimal **diagnostic profile**: do not re-enable it until a bounded live
+> experiment is explicitly approved and observed; a stable run is required
+> before designing a controlled expansion policy.
+>
+> **Live check, 2026-08-31:** the containment profile was restarted after
+> `DarkScapeNavigator.exe` became available. The root completed 27 gateway
+> passes, the Remote API stayed connected, and the sole `darkweb` manager
+> refreshed after its first recrawl. This validates the one-manager/no-fanout
+> canary only; no expansion parameters have been approved or enabled.
+
+> **Status, 2026-08-30:** root cause found and fixed, pending live
+> confirmation. Restarted 2026-08-30 with no concurrency cap and froze
+> Bitburner completely — confirmed via `ps`: the renderer process pegged at
+> 165-169% CPU, and the Remote API connection dropped at the same instant.
+> Root cause: `dnet_crawl.js` spread to every reachable neighbor with no
+> limit, and every host it landed on got a permanent resident
+> `dnet_manager.js` (polling at minimum every 1s, forever) — an uncapped
+> steady-state resident count on a single-threaded renderer. Fixed same day:
+> a `MAX_ACTIVE_MANAGERS` cap (15, conservative starting point) enforced in
+> `dnet_crawl.js` right before it would spawn a manager, backed by a
+> shard-and-merge registry (`dnet_manager_registry.json`) following this
+> codebase's existing credential/loot/deployer shard pattern exactly — see
+> `docs/processes.md`'s Darknet section for the full mechanism. `node --test`
+> covers the new logic (11 new cases, `dnet_lib.test.js`); the live restart
+> that actually confirms it holds hasn't happened yet — per `CLAUDE.md`,
+> that's the only thing that counts as verified. Historical "live"
+> descriptions below document capability from before this fix, not a
+> pre-cap invitation to restart without it.
+>
+> **Update, same day:** the first live restart under the cap overshot it —
+> `dnet_manager_registry.json` showed 30 entries (48 known hosts by the time
+> it was killed) against a cap of 15. Root cause: the registry only merges
+> on `home` every few seconds, but propagation fans out faster than that, so
+> many hosts made their spawn decision off a genuinely-real-but-already-stale
+> snapshot, each blind to the others' concurrent decisions — a real race,
+> not a logic bug, and Bitburner's NS API has no cross-host locking
+> primitive to close it completely. Mitigated, not eliminated: registry
+> merge cadence 5s → 1s (`REGISTRY_MERGE_MS`), cap 15 → 8 (`dnet_lib.js`'s
+> `MAX_ACTIVE_MANAGERS`) to build in margin against the observed ~2-3x
+> bootstrap-race overshoot. This is a **soft** cap by design now, documented
+> as such in `dnet_lib.js` — worth knowing before trusting the exact number
+> in the registry as a hard ceiling. Notably, Ken observed no sluggishness
+> at the 30-48-host peak before killing it, so the actual danger threshold
+> is unconfirmed and likely well above 8 — 8 is a conservative starting
+> point given the overshoot margin, not a measured safe maximum.
+>
+> **Update, same restart cycle:** the tightened cap froze the game again on
+> the very next live attempt — faster than the first freeze, and
+> `dnet_manager_registry.json` showed 36 entries against a cap of 8 (a
+> worse overshoot ratio than the first attempt's 30-vs-15), several sharing
+> the exact same millisecond timestamp. That ruled out "cap wasn't tight
+> enough": `MAX_ACTIVE_MANAGERS` only ever bounds steady-state resident
+> count, and never addressed the actual driver — the propagation burst
+> itself. The network is now mostly pre-cracked from earlier runs, so
+> `acquireSession`'s fast path (a known password) is near-instant, letting a
+> restart unfold the whole reachable fan-out tree faster than the first,
+> cold run did. Added two throttles directly on propagation (`dnet_lib.js`,
+> duplicated into `dnet_crawl.js`/`dnet_manager.js` per the existing
+> lean-script pattern): `MAX_SPREAD_PER_PASS` (2) hard-stops
+> `dnet_crawl.js`'s own spread loop — including authentication, not just
+> the `exec` — once it's spread to 2 neighbors in one pass, leaving the
+> rest for that host's next 90s-ish recrawl; `jitteredRecrawlMs` (±15%)
+> desynchronizes managers spawned close together so their recrawls don't
+> re-converge into a synchronized burst over time. 6 new tests, 187/187
+> full suite. **Two live misses already on this incident** — stated
+> plainly in `dnet_lib.js` itself: node tests can verify the throttling
+> logic, not the emergent behavior of many independently-scheduled live
+> processes, which is what actually failed twice. Not yet live-verified a
+> third time.
+>
+> **Update: the propagation throttle didn't fix it either — and a fourth
+> live attempt isolated the real finding.** Third restart under the
+> throttle grew gradually (13→19 entries over ~2min, no burst) yet froze
+> anyway, at a lower resident count than either prior attempt — first sign
+> the resident-count/propagation-burst theory was incomplete. A cleanly
+> isolated fourth restart (only the `dnet_root.js` chain running — `mcp.js`,
+> `dnet_scorecard.js`, HUD/supervisor/`get_stats.js` all confirmed off,
+> hacknet/factions passive-only, no scripts) then froze within **~90
+> seconds with only 6 real resident managers** — well under the cap of 8,
+> cleanly propagated, no ghost contamination, no alias race (an earlier
+> attempt that night turned out to be invalidated by `dnet_killswarm.js`
+> racing its own `dnet_root.js` launch when chained with `;` in a terminal
+> alias — `TARGET_SCRIPTS` includes `dnet_root.js` itself and the kill scan
+> covers `home`, so `run dnet_killswarm.js;run dnet_root.js` on one line
+> can kill the very process it just started; always run them as two
+> separate commands).
+>
+> That rules out every mitigation tried so far as sufficient: aggregate
+> load from other scripts, propagation burst speed, and resident count are
+> all eliminated as the primary driver, since a minimal, well-behaved
+> 6-manager deployment with nothing else running still freezes fast.
+> **Status as of this writing: darknet stays off. Four live freezes in one
+> session; no live-restart-based fix landed.** Whatever's actually
+> happening most likely lives inside what `ns.dnet.probe()`/
+> `getServerDetails()`/`authenticate()` themselves cost against this save's
+> darknet graph (586+ historically-known hosts) — not fixable by
+> Netscript-level throttling in `dnet_crawl.js`/`dnet_manager.js` alone.
+> Needs either reading the game's own bundled source for what those calls
+> actually do, or much more incremental live testing than a single session
+> has budget for, before trying again.
+
 Synthesis and sequencing. Read `darknet-functions.md` for the API and the
 model solvers, `darknet-tactics.md` for the per-decision reasoning. This doc
 answers: what are we actually trying to get out of the darknet, in what order,
 and what has to be true before each step is worth taking.
 
-**Update 2026-08-12: Phases 0-2 are now live and working.** `dnet_probe.js`
+### Current architecture and status (2026-08-14)
+
+The supported entry point is `dnet_root.js` on `home` (normally reached by
+`dnet_killswarm.js --restart`, including `restart_mcp.js --darknet`). It owns
+the stable `home` -> `darkweb` gateway and quarantines surviving legacy
+`dnet_deploy.js` copies there. Each Dark Net node runs a finite
+`dnet_crawl.js` pass, which authenticates and prepares direct neighbours,
+propagates the crawler, writes credential and heartbeat shards, starts the
+local `dnet_manager.js`, and exits. The resident manager owns loot, maximum-fit
+phishing, cache follow-up, and a clean recrawl every 90 seconds.
+
+The replacement is live-confirmed: `dnet_root.js` delegated the 16GB gateway
+with zero launch failures; the transient crawler measures 6.7GB, the resident
+manager 3.15GB, and the phisher 3.6GB/thread; `darkweb` reports capacity for
+three phishing threads. A fresh heartbeat after the first scheduled
+90-second recrawl proves the manager/crawler handoff repeats. Instability
+remained pristine at 1x duration and 0% timeout. The legacy deployer remains
+useful historical evidence (15GB measured) but is no longer the live entry
+point.
+
+### Historical checkpoint: legacy deployer (2026-08-12)
+
+`dnet_probe.js`
 confirmed the entry-point model exactly as predicted (`["darkweb"]`, nothing
 more — see the "Reconciled" note in `darknet-functions.md` for why the
 "Dark Net" UI tab showing far more than that is expected, not a
@@ -14,16 +148,56 @@ due to a found-but-low-risk bug in `spread()` (child copies don't inherit
 `--once` — see `darknet-functions.md`'s deployer section), has already
 cascaded into exactly the autonomous Phase-2 crawl this roadmap describes:
 12+ servers cracked across all four solved password models, zero failures,
-credentials shipped to `home` as shards. **Recommended next concrete step:
-run `dnet_creds_merge.js` on `home` now** to fold those shards into
-`dnet_creds.txt` — they exist only as loose per-host shards right now, and
-merging is what makes the "recovery after mass script death" design
-actually pay off if anything kills the running copies. Do **not** run
+credentials shipped to `home` as shards. Do **not** run
 anything that backdoors or `setStasisLink`s a server yet — nothing has hit a
 point in this net that clearly justifies spending 1 of the ~2-4 backdoor
 budget (tactics §2/§3), and the crawl itself costs zero instability. The
 paragraphs below are the original pre-live-run plan, kept as-is; where they
 predicted a number, it held.
+
+### Superseded implementation checkpoint (do not use as run instructions)
+
+**Update 2026-08-14: turn the shallow
+net into a charisma engine.** Live state has reached 586 historical
+credentials across seven models with pristine instability (1× duration,
+0% timeout), but the merged scoreboard is stale and sampled crawler shards
+have stopped advancing. Source inspection also shows this save is confined
+to the shallow/basic darknet (observed maximum difficulty 4); deep labs and
+their stasis-limit augmentations are not a reachable optimization target in
+the current state. The highest-value reachable loop is therefore:
+
+1. authenticate a directly-connected neighbour;
+2. reclaim its blocked RAM from the authenticated source side;
+3. preserve the self-replicating crawl;
+4. hand the local node to loot and a lean multi-thread phishing loop.
+
+The first implementation used the 15GB resident deployer. It is retained only
+as legacy/fallback code. The replacement uses a temporary multi-thread
+`dnet_realloc.js` on the transient crawler's host to target the authenticated
+neighbour, then lets the manager own phishing, cache follow-up, and immutable cumulative
+loot-event telemetry. It does not use
+backdoors, stasis, migration, stock promotion, or Storm Seed. Phishing is the
+correct idle load because it builds charisma on every attempt (even failures),
+and charisma shortens later phishing/reallocation/authentication work while
+also improving phishing success and payout. Live validation requires a clean
+swarm restart because Bitburner does not hot-reload.
+
+**Live correction after that first restart:** the game's own
+`getScriptRam()` reports the full crawler at 15GB, not the hand-estimated
+~4.9GB. On a 16GB node it left exactly 1GB, explaining the scorecard's RAM
+skips and preventing every intended co-located worker. The replacement
+architecture keeps that controller on `home`: remote nodes use a transient
+lean `dnet_crawl.js`, then hand their released RAM to `dnet_manager.js` for
+loot/phishing and a clean 90-second recrawl cycle. The measured RAM costs and
+resulting phish capacity are emitted in each transient crawler heartbeat; do
+not treat this redesign as confirmed until those live fields appear.
+
+The same pass also closes three bounded authentication gaps already relevant
+to this shallow save: all unique PHP 5.4 permutations through length three,
+the exact AccountsManager difficulty range, and Pr0verFl0's one-shot overflow
+payload. Feedback-dependent models remain deliberately outside the roaming
+crawler until a separate charisma-gated heartbleed solver can correlate logs
+and retry 408 timeouts safely.
 
 ---
 

@@ -216,6 +216,28 @@ export function computeTargetScore({
 }
 
 /**
+ * XP earned by hack, grow, and weaken is proportional to a server's base
+ * difficulty, while their completion rates are determined by hacking time.
+ * Money, growth, and pool size therefore do not belong in an XP target
+ * comparison. This is deliberately a per-thread rate: the allocation layer
+ * decides how many threads to give the selected target.
+ *
+ * A failed hack still grants one quarter of the normal experience, hence the
+ * chance term rather than treating low-chance targets as worth zero.
+ *
+ * @param {object} args
+ * @param {number} args.baseSecurity - `ns.getServerBaseSecurityLevel(server)`.
+ * @param {number} args.hackChance - `ns.hackAnalyzeChance(server)`.
+ * @param {number} args.hackTime - `ns.getHackTime(server) / 1000`.
+ * @returns {number} relative XP per hack thread-second
+ */
+export function computeXpTargetScore({ baseSecurity, hackChance, hackTime }) {
+  if (!(baseSecurity >= 0) || !(hackTime > 0) || !Number.isFinite(hackChance)) return 0
+  const chance = Math.min(1, Math.max(0, hackChance))
+  return ((3 + 0.3 * baseSecurity) * (0.25 + 0.75 * chance)) / hackTime
+}
+
+/**
  * Ramp-cost discount (hacking-strategy.md R4, 2026-08-14) — replaces
  * `READINESS_FLOOR`'s dimensionally-arbitrary `max(moneyPct, 0.05)`
  * multiplier with an explicit cost: the wall-clock time to grow a drained
@@ -361,6 +383,48 @@ export function evaluateOpportunitySwitch({ idle, candidates, currentTarget, cur
     // What is actually preventing a switch right now, so the HUD can say so
     // in one word instead of making it inferable from four numbers.
     blockedBy: outbid ? (committed ? null : "hold") : "score",
+  }
+}
+
+/**
+ * Final guard for the scheduler's already-selected opportunity switch.
+ *
+ * This function is deliberately incapable of selecting a target: it can only
+ * veto the candidate emitted by evaluateOpportunitySwitch. Invalid/missing
+ * formulas data fails closed to the existing scheduler decision so enabling
+ * the feature cannot make the bot stick on a target merely because the
+ * optional comparison is unavailable.
+ */
+export function evaluateFormulaSwitchVeto({ enabled, currentTarget, candidateTarget, currentScore, candidateScore, threshold = 0.8 }) {
+  const base = {
+    enabled: !!enabled,
+    currentTarget: currentTarget || null,
+    candidateTarget: candidateTarget || null,
+    currentScore: Number(currentScore),
+    candidateScore: Number(candidateScore),
+    threshold: Number(threshold),
+    available: false,
+    ratio: null,
+    veto: false,
+    reason: "disabled",
+  }
+  if (!base.enabled) return base
+  if (!base.currentTarget || !base.candidateTarget || base.currentTarget === base.candidateTarget) {
+    return { ...base, reason: "no-distinct-candidate" }
+  }
+  if (!(Number.isFinite(base.currentScore) && base.currentScore > 0 && Number.isFinite(base.candidateScore) && base.candidateScore >= 0)) {
+    return { ...base, reason: "unavailable-score" }
+  }
+  if (!(Number.isFinite(base.threshold) && base.threshold > 0 && base.threshold <= 1)) {
+    return { ...base, reason: "invalid-threshold" }
+  }
+  const ratio = base.candidateScore / base.currentScore
+  return {
+    ...base,
+    available: true,
+    ratio,
+    veto: ratio < base.threshold,
+    reason: ratio < base.threshold ? "candidate-below-threshold" : "candidate-clears-threshold",
   }
 }
 
@@ -555,6 +619,38 @@ export function countRunningByScript(running) {
 }
 
 /**
+ * Desired action types that have no running process at all. These may start
+ * immediately even while a different, long-running action is intentionally
+ * left alone to finish its current call. This prevents an immature weaken
+ * loop from holding the entire host idle when the next weaken plan also needs
+ * grow work.
+ */
+export function missingDesiredScripts(running, desired) {
+  const have = countRunningByScript(running)
+  return ["hack", "grow", "weaken"].filter((script) => (desired[script] || 0) > 0 && have[script] === 0)
+}
+
+/**
+ * The immediately launchable portion of missing desired work. `desired` is
+ * based on reclaimable RAM and can include an immature action we deliberately
+ * preserve, so launch size must be capped by the host's real free RAM.
+ */
+export function missingActionLaunchPlan(running, desired, freeRam, ramByScript) {
+  let remainingRam = Math.max(0, freeRam)
+  const launches = []
+  for (const script of ["weaken", "grow", "hack"]) {
+    if (!missingDesiredScripts(running, desired).includes(script)) continue
+    const ram = ramByScript[script]
+    if (!(ram > 0)) continue
+    const threads = Math.min(desired[script], Math.floor(remainingRam / ram))
+    if (threads <= 0) continue
+    launches.push({ script, threads })
+    remainingRam -= threads * ram
+  }
+  return launches
+}
+
+/**
  * hostNeedsRedeploy — rewritten 2026-08-13 (hacking-strategy.md R3) from an
  * action-*type* comparison to an allocation-*quantity* comparison. The old
  * version (see git history) only checked which action types were running
@@ -743,13 +839,29 @@ export function computeTickInvariantChecks(ctx, config) {
     })
   }
 
-  // The idle-network finding: utilization sat at 7% during weaken phases
-  // while the code believed it was saturating the pool. Only meaningful once
-  // there is a pool to speak of.
+  // Low utilization is only a fault when the current weaken demand could
+  // actually occupy a material part of the pool. A nearly-secure target can
+  // legitimately need a handful of weaken threads; treating its unused
+  // capacity as an invariant violation turns the HUD into permanent noise.
+  //
+  // This is intentionally based on the current scheduled demand, not total
+  // server RAM usage: cloud contract/watch scripts and other unrelated work
+  // may share hosts, but neither should change MCP's own idle-pool verdict.
+  const poolWeakenCapacity = ctx.allocations.reduce(
+    (total, allocation) => total + Math.floor((allocation.maxRam || 0) / ctx.ramInfo.weakenRam),
+    0
+  )
+  const poolDemanded = poolWeakenCapacity > 0 && ctx.requiredWeaken >= poolWeakenCapacity * 0.5
   checks.push({
     name: "poolNotIdle",
-    ok: ctx.ramUtilization >= 0.5 || ctx.allocations.length === 0,
-    data: { ramUtilization: ctx.ramUtilization, hosts: ctx.allocations.length },
+    ok: !poolDemanded || ctx.ramUtilization >= 0.5 || ctx.allocations.length === 0,
+    data: {
+      ramUtilization: ctx.ramUtilization,
+      hosts: ctx.allocations.length,
+      requiredWeaken: ctx.requiredWeaken,
+      poolWeakenCapacity,
+      poolDemanded,
+    },
   })
 
   // Threads deployed must fit the host that is running them. This is the

@@ -1,14 +1,95 @@
 # Ken's to-do
 
-Actions that need a human hand. Claude cannot trigger the VS Code extension's
-download command or click anything in-game — see `CLAUDE.md`. Checked items
-stay here as a record of what's already done, not busywork to repeat.
+Only actions that genuinely need Ken's hand belong here. The Remote API now
+handles routine source sync and telemetry pull; an in-game click, a connector
+reopen, or one of the stop-list items in `AGENTS.md` still belongs here when
+actually needed. Checked items stay as history, not busywork to repeat.
 
-Claude should keep this current: add an item the moment something needs
-Ken's hand, and check it off once it's confirmed done — same rule as
-`docs/processes.md`.
+Codex keeps this current: add an item the moment something really needs Ken's
+hand and check it off once confirmed—same rule as `docs/processes.md`.
 
 ## Pending
+
+- [x] **Historical: first cap attempt (15, 5s merge) — done 2026-08-30.**
+  Restarted, overshot to 30 registry entries (48 known hosts) before being
+  killed — no sluggishness reported at that peak. Tightened same day: cap
+  15→8, registry merge 5s→1s, documented as a soft (not hard) cap. Also
+  fixed a real drift bug where `dnet_crawl.js`'s duplicated cap constant had
+  gone stale.
+- [x] **Historical: second cap attempt (tightened to 8, 1s merge) — done
+  2026-08-30.** Restarted, overshot *worse* (36 entries vs. cap 8) and
+  froze *faster* than the first attempt. Root cause turned out to be the
+  propagation burst itself, not resident count — a resident-count cap was
+  never going to fix that regardless of how tight. Fixed differently:
+  `MAX_SPREAD_PER_PASS` throttles `dnet_crawl.js`'s own fan-out directly,
+  `jitteredRecrawlMs` desyncs recrawl timing. See `docs/claude-todo.md`'s
+  2026-08-30 entries for the full arc.
+- [x] **Historical: third and fourth cap/throttle attempts — done
+  2026-08-30, darknet paused.** Third restart under the propagation
+  throttle grew gradually (no burst) yet froze anyway, at a lower resident
+  count than either prior attempt. A cleanly isolated fourth restart
+  (darknet alone, nothing else running — `mcp.js`/`dnet_scorecard.js`/HUD/
+  supervisor all confirmed off) then froze within ~90 seconds with only 6
+  real resident managers, well under the cap. That rules out every
+  mitigation tried so far — aggregate load, propagation burst speed,
+  resident count are all eliminated. Four live freezes total this session;
+  no live-restart-based fix landed. **Darknet stays off** until a real
+  investigation happens (likely needs reading the game's own bundled
+  source for what `ns.dnet.probe()`/`getServerDetails()`/`authenticate()`
+  actually cost against this save's darknet graph) — see
+  `docs/darknet-strategy.md`'s 2026-08-30 status banner for the full
+  incident arc, and `docs/claude-todo.md` for the session-by-session
+  writeup. No restart action pending — the next step here is investigation,
+  not another retry.
+- [x] **Footgun found and fixed procedurally, not in code:**
+  `dnet_killswarm.js`'s `TARGET_SCRIPTS` includes `dnet_root.js` itself and
+  its cleanup scan covers `home` — chaining `run dnet_killswarm.js;run
+  dnet_root.js` on one line lets the kill scan race the very process the
+  same line just launched, since `run` doesn't block for completion. Always
+  run them as two separate terminal commands, never `;`-chained or
+  aliased that way.
+
+- [ ] **Run `mcpMulti.js` (dry-run, no arg) once it's synced into the game**
+  to generate real projected numbers. Built 2026-08-29 to test whether
+  spreading the worker pool across several targets beats `mcp.js`'s
+  single-target approach — see `docs/claude-todo.md`'s 2026-08-29 entry.
+  Dry-run only: it never calls `ns.exec`/`ns.scp`/`ns.kill`, so it's safe to
+  run right alongside the live `mcp.js`. Check `mcp_multi_status.json`'s
+  `multiTargetProjectedTotal` vs. `singleTargetBaselineScore` after it's had
+  a few ticks. Needs the Remote API daemon reconnected first (next item) —
+  its `WATCHED_FILES`/`PULL_FILES` were updated for the new files, but that
+  needs the daemon process restarted, not just a resync, to take effect.
+
+- [ ] **Reconnect Bitburner to the existing Remote API daemon on port 12526.**
+  The daemon disconnected at 2026-08-16 13:33 PT and no longer answers its
+  local control channel, so Codex cannot pull fresh core telemetry. In
+  Bitburner, open Options → Remote API and click Connect for port `12526`.
+  No source sync, restart, or held-subsystem action is requested.
+
+- [x] **Historical: the promotion-state.json hold apparatus is retired
+  (2026-08-18).** Stock, IPvGO, Darknet, and faction share stay off per
+  `AGENTS.md`'s short stop-list now, not a JSON hold file; nothing here for
+  Ken to remember or execute either way.
+
+- [x] **Superseded: do not start the balanced faction-sharing allocation.**
+  The earlier `run share_deploy.js` request is cancelled after the stability/
+  loop incident. Re-enable needs Ken's explicit go-ahead per `AGENTS.md`'s
+  stop-list, after the root cause is understood.
+
+- [x] **Reconnect Bitburner to the Remote API on port 12526.** Confirmed
+  2026-08-14: all 43 then-current watched files synced, the remotely-triggered clean swarm
+  restart succeeded, and the new crawler/phishing behavior is live.
+
+- [x] **Provide a way to restart the Dark Net swarm without another in-game
+  command.** Done 2026-08-14: `restart_mcp.js --darknet` delegates cleanup and
+  relaunch to `dnet_killswarm.js --restart`. Once Remote API reconnects Codex
+  can push that trigger through the already-running supervisor.
+
+- [x] **Reconnect Bitburner to the Remote API daemon on port 12526.**
+  Confirmed 2026-08-14 via `tools/bb_remote.py ctl-status`: connected with
+  no sync or pull alarms. A forced resync pushed all 40 watched files and a
+  forced pull fetched all 7 telemetry files, with zero failures or missing
+  files in either direction.
 
 - [x] **Pull `origin/main` into the actual synced checkout at
   `/Users/Shared/BitBurner`.** Done — fast-forwarded `bd527fb..09062a6`,
@@ -26,25 +107,10 @@ Ken's hand, and check it off once it's confirmed done — same rule as
   times, `deployer.pass` climbed 200→201 in between — the swarm kept
   heartbeating through the window without erasing anything. That's the
   actual regression test, not a one-off snapshot. **Bug confirmed fixed.**
-- [ ] **Confirm the Darknet Phase 3b loot fix is live and check
-  `dnet_status.json`'s `deployer.*.lootMode` for `realloc` count movement.**
-  Built 2026-08-12: `dnet_loot_realloc.js` (a leaner RAM-only loot variant)
-  plus a `dnet_deploy.js` fallback so a host too RAM-constrained for the
-  full 5.55GB loot script now gets the cheaper ~3.35GB one instead of a
-  flat skip. Full reasoning and the $362M/100%-skip-rate findings that
-  motivated it: `docs/claude-todo.md`'s 2026-08-12 "Darknet Phase 3b"
-  entry. This session ran directly against the daemon-watched checkout at
-  `/Users/Shared/BitBurner` (confirmed via `git worktree list` before
-  starting, not one of the isolated `.claude/worktrees/agent-*` copies —
-  see the entry directly below this one for why that distinction mattered
-  last time), so a plain push should be enough this time; a quick
-  `git log -1` in that checkout after pulling/restarting is worth
-  double-checking anyway given the precedent. Once a fresh
-  `dnet_deploy.js` is running the new code (restart required — Bitburner
-  doesn't hot-reload), the useful signal is `dnet_status.json`'s
-  `deployer.thisPass.lootMode`/`sinceProcessStart.lootMode` fields moving
-  `realloc` off zero. Nothing here could be run live this session — no
-  in-game execution access from this context.
+- [x] **Superseded by the current Darknet hold: no Phase 3b live check is
+  requested.** Historical task was to confirm the loot fix and check
+  `dnet_status.json`'s `deployer.*.lootMode`; the implementation history is
+  retained in `docs/claude-todo.md` and the Darknet plans, not as a launch ask.
 - [x] **Pull `origin/main` into the actual synced checkout at
   `/Users/Shared/BitBurner`.** Done — plain `git pull`, fast-forwarded
   `001e504..d2e3ae3` (brought in `c33c13f`'s `NUM_SIMULATIONS` 1500→6000
@@ -151,6 +217,10 @@ Ken's hand, and check it off once it's confirmed done — same rule as
   Restarts no longer need a keystroke; Claude bumps `mcp_restart.txt` directly.
 - [x] `run mcp_hud.js` — confirmed running and healthy (`OK`, `ver ok`,
   `inv 0`, 2026-08-08).
+
+- [x] **Stock trader authorization and launch.** Ken explicitly approved
+  capital deployment on 2026-08-18; the adaptive `trade=1` instance is live
+  and its two source files are now daemon-watched for reconnect-safe sync.
 - [x] **Leftover `get_stats.js` processes.** `ps` confirmed a single instance
   (PID 914) alongside a single `mcp_hud.js` (PID 986) — the three stray
   copies from before the self-supersede fix are gone.

@@ -1,6 +1,257 @@
 # Claude's working list
 
-## 2026-08-14 (latest): R1 through R7 all confirmed live — R4 delivered a ~60x income jump; set_objective.js and lsf.js shipped
+## Lesson learned — telemetry must be cumulative and visible where it is read
+
+The first version of `mcp_formulas_shadow.js` overwrote
+`mcp_formulas_shadow.txt` on every sample and only left the latest snapshot.
+Although the script technically wrote a valid `.txt` file, repeated runs could
+not be compared reliably, and the tail did not show the exact persisted
+record. This consumed substantial investigation time because “the file was
+written” was mistaken for “the run produced retrievable evidence.”
+
+For bounded diagnostic runs, write one complete record per sample in append
+mode, print that same record to the tail, and document how the resulting file
+is retrieved. Verify the evidence channel end-to-end before treating a run as
+complete. Continuous monitors need an explicit retention or archive policy.
+
+## 2026-08-30 (latest): darknet froze the game live; root-caused and fixed same day
+
+Ken asked to restart darknet, after I flagged (from `docs/darknet-strategy.md`'s
+undated "stability incident" banner) that no actual postmortem existed —
+`STATE.md`'s only concrete incident record named IPvGO/faction-share, not
+darknet. Restarted cautiously (`dnet_killswarm.js --restart`, after
+diagnosing an initial pid-0 launch failure as a transient RAM race, not a
+real block — direct `run dnet_root.js` worked fine). Ran with no reported
+sluggishness for a while, charisma climbing nicely, then Ken reported
+Bitburner "completely unresponsive."
+
+Diagnosed remotely with OS-level tools (no in-game access needed): `ps`
+showed the renderer process pegged at 165-169% CPU — the single thread that
+runs every Netscript tick *and* the UI — and the Remote API log showed the
+connection dropping at the same instant with the familiar "no close frame
+received or sent" signature. Read `dnet_crawl.js`/`dnet_manager.js`/
+`dnet_root.js`/`dnet_lib.js` in full to find the actual mechanism: no cap
+anywhere on how many hosts get a resident manager. `dnet_crawl.js` spreads
+to every reachable, crackable neighbor unconditionally, and every host it
+lands on ends up with a permanent `dnet_manager.js` (`ns.spawn` at the end
+of `main()`) polling at minimum every 1s, forever. With 586+ credentials
+already cracked historically, an unbounded restart could accumulate however
+many resident managers the network allowed — real, unbounded, ever-growing
+per-tick JS work with a single-threaded renderer as the only place to run
+it. Ken recovered via Bitburner's built-in "reload and kill all scripts";
+`startup.js` relaunched cleanly (darknet was never part of its launch list,
+so nothing needed re-suppressing).
+
+**Fixed same day**, entered plan mode given the stakes (live-incident code,
+4 files touched). `MAX_ACTIVE_MANAGERS = 15` (conservative starting point,
+same instinct as `mcp.js`'s `HACK_BALANCE_SAFETY`), enforced at a single
+point — `dnet_crawl.js`, right before its `ns.spawn(MANAGER, ...)` call,
+since every host in the swarm becomes resident through that exact line.
+Backed by `dnet_manager_registry.json`, a shard-and-merge registry
+following this codebase's own existing credential/loot/deployer shard
+pattern exactly (`dnet_lib.js`'s `writeDeployerShard`/`shipShard`/
+`mergeStatus` were the templates) — `dnet_crawl.js` reserves a slot before
+spawning, `dnet_manager.js` refreshes its heartbeat once per loop iteration
+so a genuinely-alive manager never goes stale and gets wrongly evicted, and
+`dnet_root.js`'s existing 5s home-side loop folds shards into the registry
+(piggybacked, no new polling loop). `dnet_crawl.js`/`dnet_manager.js` both
+duplicate the tiny amount of needed logic rather than importing `dnet_lib.js`
+— same reason those files already avoid that import (the 10GB
+static-analysis RAM charge), documented inline at each duplication site.
+11 new `node --test` cases (`dnet_lib.test.js`), `node --check` clean on all
+four touched files, 177/177 full suite. **First live restart overshot the cap, same day.** Ken restarted; froze
+briefly again (though this time reported no sluggishness up to the point he
+killed it), and `dnet_manager_registry.json` showed 30 entries against a
+cap of 15 — 48 known hosts by the time `dnet_killswarm.js` cleaned up 69
+processes. Root cause: a real race, not a logic bug — the registry only
+merges on `home` every few seconds, propagation fans out faster than that,
+and Bitburner's NS API has no cross-host locking primitive to close the gap
+completely. Mitigated (not eliminated, and documented as such in
+`dnet_lib.js` now — this is a **soft** cap): registry merge cadence 5s → 1s
+(`REGISTRY_MERGE_MS`), cap 15 → 8 (`MAX_ACTIVE_MANAGERS`) for margin against
+the observed ~2-3x overshoot. Also caught and fixed a second real bug in
+the same pass: `dnet_crawl.js`'s duplicated copy of `MAX_ACTIVE_MANAGERS`
+had already drifted stale (still 15) the moment `dnet_lib.js`'s was retuned
+to 8 — added 4 new tests that import both files' exported copies directly
+and assert they match, so that duplication (needed to avoid `dnet_lib.js`'s
+static-analysis RAM charge) can't silently drift again. 15 new test cases
+total today (181/181 full suite). Notable: Ken saw no sluggishness at the
+30-48-host peak, so 8 is a conservative starting point given the overshoot
+margin, not a measured safe ceiling — the real danger threshold is still
+unconfirmed. **The tightened cap froze the game again, faster, on the very next
+restart.** `dnet_manager_registry.json` showed 36 entries against a cap of
+8 (worse overshoot ratio than the first attempt's 30-vs-15) before Ken
+killed it — several entries shared the exact same millisecond timestamp.
+That data ruled out "cap wasn't tight enough": `MAX_ACTIVE_MANAGERS` only
+ever bounds steady-state resident count, never the actual driver. Read the
+mechanism again with fresh eyes: the network is now mostly pre-cracked from
+the earlier runs, so `acquireSession`'s fast path (`connectToSession` with
+an already-known password) is near-instant — a restart can now unfold the
+whole reachable fan-out tree *faster* than the original cold run did,
+outracing any registry-based coordination no matter how tight the cap or
+fast the merge cadence. That's a rate problem, not a ceiling problem; two
+live freezes with the wrong mitigation before landing on the right one.
+
+Entered plan mode a third time given the stakes — Ken had already been
+through two live freezes, and this fix touches propagation dynamics
+directly rather than just counting after the fact. Shipped:
+`MAX_SPREAD_PER_PASS` (2, `dnet_lib.js`/`dnet_crawl.js`) hard-stops
+`dnet_crawl.js`'s spread loop at 2 successful spreads per pass — stopping
+authentication too, not just the `exec`, since `ns.dnet.authenticate` is
+itself real, non-trivial work. Nothing permanently missed: a host's next
+~90s recrawl (`dnet_manager.js`) re-invokes `dnet_crawl.js` fresh and picks
+up where the last pass left off, so coverage becomes gradual instead of a
+single burst. `jitteredRecrawlMs` (`dnet_lib.js`, ±15%) desyncs each
+manager's recrawl clock so managers spawned close together (exactly what
+one propagation wave produces) don't stay permanently synchronized and
+re-converge into a wide simultaneous burst later. Both duplicated into
+`dnet_crawl.js`/`dnet_manager.js` per the established lean-script pattern,
+with the drift-guard tests extended to cover the new constant too. 6 new
+`node --test` cases, 187/187 full suite.
+
+Stated plainly in `dnet_lib.js` itself, not just here: node tests can
+verify the throttling *logic* (the loop stops at exactly N, the jitter
+stays in range) but not the *emergent* behavior of many independently-
+scheduled live processes, which is what actually failed twice tonight.
+**Third live restart under the throttle: grew gradually, froze anyway.**
+13→19 registry entries over ~2 minutes, no burst — the throttle worked as
+designed — yet it froze at a *lower* resident count than either of the
+first two attempts. First sign the resident-count/propagation-burst theory
+was incomplete: something else was contributing.
+
+Ken proposed the right next experiment: isolate darknet completely and see
+if it fails on its own. First attempt at this was invalidated by a real
+procedural footgun, not a code bug — his terminal alias
+`dnet='run dnet_killswarm.js;run dnet_root.js'` chains two `run` calls with
+`;`, but `run` doesn't block for completion, so `dnet_killswarm.js`'s own
+cleanup scan (which explicitly targets `dnet_root.js`, and covers `home`,
+per `TARGET_SCRIPTS`) can race and kill the very process the same line just
+launched. Diagnosed from `ps` coming back completely empty right after, and
+confirmed by computing the registry file's actual age against wall-clock
+time (17+ minutes stale despite an active connection — proof the merge
+loop had died, not that it was quietly idle). Ken had independently
+suspected "nothing is happening" from charisma/cache/console signals alone
+and was right before I had proof.
+
+**Fourth restart, properly sequenced (two separate commands), cleanly
+isolated — the real finding.** `mcp.js`, `dnet_scorecard.js`, HUD,
+supervisor, `get_stats.js` all confirmed off; hacknet/factions passive
+game state only, nothing executing. Froze within ~90 seconds with only 6
+real, cleanly-propagated resident managers — well under the cap of 8, no
+ghosts, no race. This is conclusive: it rules out aggregate load from other
+scripts, propagation burst speed, and resident count as the primary
+driver, since a minimal well-behaved deployment with nothing else running
+still failed fast. Four live freezes total this session; neither the
+resident cap nor the propagation throttle actually fixed the problem, only
+ruled out increasingly specific theories about it.
+
+**Darknet stays off.** Recommended stopping rather than a fifth live
+attempt — diminishing returns from guess-and-check, real cost to Ken's
+evening each time. Whatever's actually happening most likely lives inside
+what `ns.dnet.probe()`/`getServerDetails()`/`authenticate()` themselves
+cost against this save's darknet graph (586+ historically-known hosts),
+not in anything reachable from `dnet_crawl.js`/`dnet_manager.js`-level
+throttling. Next real step is reading the game's own bundled source for
+what those calls do internally, or much more incremental live testing than
+one session has budget for — not another retune-and-restart cycle. Full
+incident arc in `docs/darknet-strategy.md`'s 2026-08-30 status banner.
+
+## 2026-08-29: skim-vs-harvest tested and falsified; fixed a real gap it exposed in mcpMulti's own numbers
+
+Ken's follow-up question: given augmentation installs reset everything
+periodically anyway, might "skim the easy money off each server, then move
+on" beat sitting on one target forever? Built `skim_probe.js` (read-only,
+dumps every hackable server's live economics) to test it for real rather
+than reason about it in the abstract — see `docs/processes.md`'s new
+`skim_probe.js` section for the script itself.
+
+**Result: falsified, by 3x-75x.** Two things killed it: untouched servers
+sit at ~2% money / 13-62 security points above floor (no free lunch — same
+weaken+grow priming investment either strategy pays), and priming one with
+the whole 278-thread pool takes 30min-50hr depending on the server;
+`hackAnalyze`'s steal-fraction-per-thread is also small enough that even a
+primed target only yields 3-20% of its money in one burst with the current
+pool size, so there's no big one-shot grab available either. Ran the actual
+$/hour math (priming cost + capped burst, amortized) against
+`mcp_logic.js`'s own `computeTargetScore` for every server on the network —
+steady harvest won every single comparison. No skim mode built.
+
+**Second-order finding, more important long-term:** this exposed a real gap
+in `mcpMulti.js`'s own numbers. Its per-assignment `projectedScore` and
+`singleTargetBaselineScore` were both the *raw* steady-state rate
+(`getTargetScore`), with no ramp-cost discount — meaning once mcpMulti
+actually spreads to a second (necessarily still-priming) target,
+`upliftRatio` would have overstated near-term reality the same way the
+pre-R4 single-target score used to for a drained target. Fixed same day:
+both now use `getTargetEffectiveScore` (the ramp-discounted function
+`mcp.js`'s own `candidateScore` already uses), and `singleTargetBaselineScore`
+reuses the candidate's already-computed ranking score instead of a redundant
+second read. Deliberately did *not* touch `computeTargetPoolNeed`/
+`partitionHostsAcrossTargets` — capacity (how much RAM a target can
+usefully absorb) and value (what it's worth) are different axes, and
+discounting capacity by ramp cost would wrongly make the partitioner
+reluctant to start priming a good second target with surplus RAM that would
+otherwise sit idle. `docs/processes.md`'s `mcpMulti.js` section has the
+full reasoning.
+
+Also explains the `upliftRatio=1.0` degenerate case watched live all
+afternoon: 15 of 16 servers on the network are unprimed right now, so there
+currently isn't a second target cheap enough to be worth diverting hosts to
+— not a bug, just an accurate reflection of the network's current state.
+
+## 2026-08-29 (earlier, same day): mcpMulti.js — dry-run-first multi-target farmer
+
+Built after a conversation about `mcp.js`'s single-target design: whether it
+was a game constraint or a policy choice, and if the latter, where on the
+single-vs-multi-target spectrum to sit. Conclusion — it's a policy choice
+baked into `computeDesiredAllocation`/scoring (`poolThreads` assumes one
+target owns the whole network), and the reasoned answer was "stay
+single-target until `ramUtilization` during work phases shows sustained
+slack, then move to 2-3 concurrent targets, not full breadth."
+
+Ken asked for that built out for real rather than staying theoretical, as a
+script separate from `mcp.js` (untouched, keeps farming live) with a way to
+experiment safely first. Shipped:
+
+- `mcpMulti_logic.js` + `mcpMulti_logic.test.js` (11 new tests, all passing)
+  — the actual "test logic to experiment" deliverable, no game required.
+  `computeTargetPoolNeed` derives a saturation-based pool-thread need per
+  target from `computeTargetScore`'s own drained-fraction model;
+  `partitionHostsAcrossTargets` greedily splits the worker pool across
+  ranked targets by that need.
+- `mcpMulti.js` — the orchestrator, dry-run by default (mirrors
+  `mcp_stock_trader.js`'s `trade=1` gate exactly): computes and logs a full
+  multi-target plan plus a `singleTargetBaselineScore` for direct comparison
+  against what `mcp.js`'s own approach would project, but calls no
+  `ns.exec`/`ns.scp`/`ns.kill` unless started with `live=1`. `live=1` refuses
+  to start while `mcp.js` is running on `home` (mutual-exclusion guard —
+  they'd fight over the same worker RAM otherwise).
+- Own files throughout (`mcp_multi_config.json`, `mcp_multi_status.json`,
+  `mcp_multi_status_log.txt`, `mcp_multi_events.txt`,
+  `mcp_multi_target_state.json`) so none of this touches `mcp.js`'s state.
+  `mcp_multi_config.json` added as the hand-authored exception to
+  `.gitignore`, same as `mcp_config.json`.
+- `tools/bb_remote.py`'s `WATCHED_FILES`/`PULL_FILES` updated so the daemon
+  syncs the new script/config/telemetry files once it's reconnected —
+  **the daemon process itself needs restarting (not just a resync) to pick
+  these up**, same caveat as `set_objective.js`'s launch below. It's
+  currently disconnected already (see the pending Remote API item in
+  `docs/kensTodo.md`), so this rides along with that reconnect rather than
+  needing a separate one.
+- `docs/processes.md` gained a `### mcpMulti.js / mcpMulti_logic.js` section
+  under Farming at the same depth as `mcp.js`'s own.
+
+**Not yet verified live** — per `CLAUDE.md`, every behavioural claim here is
+unverified until it actually runs in Bitburner. `node --test *.test.js`
+(166/166) and `node --check mcpMulti.js mcpMulti_logic.js` are clean, which
+is everything checkable from outside the game. What to watch once Ken runs
+it (dry-run, no arg needed): does `multiTargetProjectedTotal` actually beat
+`singleTargetBaselineScore` by a meaningful margin, or does the network's
+current pool size not yet justify spreading past one target — either answer
+is useful, that's the point of building this dry-run-first instead of just
+flipping `mcp.js` over.
+
+## 2026-08-14: R1 through R7 all confirmed live — R4 delivered a ~60x income jump; set_objective.js and lsf.js shipped
 
 Full arc, in order:
 

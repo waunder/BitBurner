@@ -22,22 +22,25 @@ whenever you want everything freshly running:
 run startup.js
 ```
 
-Kills everything else on the host, then brings up the whole suite — see
+Kills everything else on the host, then brings up the established core suite — see
 [`docs/processes.md`](docs/processes.md#startupjs) for exactly what it
 starts and in what order. `mcp_supervisor.js` comes up first, so restarts and
 file inspection become remote-triggerable from then on; see
 [`docs/processes.md`](docs/processes.md#mcp_supervisorjs).
 
-Use the BitBurner File Sync extension's "Download Files Matching Pattern..."
-(pattern in [`docs/kensTodo.md`](docs/kensTodo.md)) to sync the generated
-status files back to this repo.
+The Remote API daemon now provides routine source sync and generated-file
+pulls. Editing a watched source in this connected checkout is itself
+deployment-capable — see `tools/bb_remote.py::WATCHED_FILES`. The working
+method and the short list of things that need Ken directly are in
+[`docs/agent-working-agreement.md`](docs/agent-working-agreement.md) and
+`AGENTS.md`.
 
 ## Local workflow
 
 Once `mcp_status.json` is present in the workspace, run:
 
 ```bash
-cd /Users/kth/Documents/BitBurner
+cd /Users/Shared/BitBurner
 python3 mcp_status_parser.py
 ```
 
@@ -48,3 +51,5 @@ That prints a summary of the latest manager status, including per-host allocatio
 - `mcp.js` writes `mcp_status.json` every loop, overwriting the previous status.
 - `mcp_status_log.txt` is appended each loop for historical review.
 - The parser is written in Python for local execution without Node.
+- Current objective/status lives in `STATE.md`; the short list of things
+  that need Ken's explicit go-ahead is in `AGENTS.md`.

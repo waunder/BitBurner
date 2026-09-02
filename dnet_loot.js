@@ -32,18 +32,15 @@
  * is 0GB. The game's own RAM readout is still the authority, not this
  * arithmetic.
  *
- * Added 2026-08-12: writes its own report as a per-host shard
- * (dnet_loot_<host>.json, same reasoning as dnet_lib.js's credential
- * shards -- many roaming instances looting concurrently would clobber one
- * shared file) and ships it to home. dnet_loot_merge.js folds these into
- * dnet_status.json's "loot" section, same relationship dnet_creds_merge.js
- * has to credential shards. The report carries `mode: "full"` so a merge
- * can tell a full pass apart from a dnet_loot_realloc.js (RAM-only lean
- * variant, added same day) pass over the same host.
+ * Meaningful results are written as immutable, timestamped, filename-safe
+ * event shards and shipped home. No-op passes write nothing, so the home
+ * merge can produce cumulative totals without a later snapshot erasing an
+ * earlier gain. The report carries `mode: "full"` to distinguish it from
+ * the RAM-only lean variant.
  *
  * @param {NS} ns
  */
-import { freeBlockedRam } from "dnet_lib.js"
+import { freeBlockedRam, lootEventShardName } from "dnet_lib.js"
 
 export async function main(ns) {
   ns.disableLog("ALL")
@@ -56,19 +53,24 @@ export async function main(ns) {
   const host = ns.getHostname()
   const details = ns.dnet.getServerDetails()
   if (!details.isOnline) {
-    ns.tprint(`dnet_loot: ${host} reports offline; nothing to do`)
     return
   }
 
   const report = { host, model: details.modelId, difficulty: details.difficulty, mode: "full" }
 
-  if (!flags["no-ram"]) report.ram = await freeBlockedRam(ns, host, flags["max-realloc"])
+  // Normal results are preserved below as an immutable event shard. Do not
+  // also emit a per-run reallocation line: this script is launched often,
+  // and no-op console output can itself burden the renderer.
+  if (!flags["no-ram"]) report.ram = await freeBlockedRam(ns, host, flags["max-realloc"], false)
   if (!flags["no-cache"]) report.caches = openCaches(ns, host)
 
-  ns.tprint(`dnet_loot: ${JSON.stringify(report)}`)
+  const ramFreed = Math.max(0, (report.ram?.before ?? 0) - (report.ram?.after ?? 0))
+  const meaningful = ramFreed > 0 || (report.caches?.found ?? 0) > 0 || (report.caches?.opened ?? 0) > 0
+  if (!meaningful) return
 
-  const shard = `dnet_loot_${host}.json`
-  ns.write(shard, JSON.stringify({ ...report, at: Date.now() }), "w")
+  const at = Date.now()
+  const shard = lootEventShardName(host, at)
+  ns.write(shard, JSON.stringify({ ...report, at }), "w")
   if (host !== "home") {
     try {
       ns.scp(shard, "home")

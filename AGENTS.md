@@ -6,6 +6,56 @@ match a solo hobby project. See `README.md` for the workflow, and in `docs/`:
 `kensTodo.md` for actions that need Ken's hand specifically, and the audit
 reports for why the current design is what it is.
 
+## Working method — replaces the 2026-08-15/16 governance overlay
+
+**2026-08-18: the tiered governance spine (standing-orders.md, the
+directive ledger, promotion-state machine, the auditor tool, the
+independent-review/controller/canary apparatus) is retired.** It produced a
+genuine deadlock — no reachable stopping condition, a Tier-3 "independent
+review" gate with no real independent party to perform it, a persistent
+controller role that required exactly the kind of always-on automation the
+same rules classified as forbidden, and a watched-file carve-out that taxed
+ordinary edits. The result was measured directly: weeks where nearly every
+logged "failure" was a process-compliance failure about the governance
+system itself, and real, tested, working code (the R8 switch-veto patch)
+sitting unlanded for two days for lack of a reviewer who didn't exist. Full
+diagnosis is in the session history that produced this rewrite; it isn't
+duplicated here.
+
+**The working method is `docs/agent-working-agreement.md`.** It is
+deliberately generic — written to be portable to any project, not just this
+one — so this section only adds what's specific to *this* project: the
+concrete list of things that still need Ken directly, and where session
+continuity lives.
+
+### The stop-list (this project's version of the agreement's fixed category 1)
+
+Everything else is Codex's call, proceed without asking. Stop and get Ken's
+explicit go-ahead first for:
+
+- **Deploying real stock-market capital.** See "Stock trading" below —
+  this one has already been crossed once and needs a clean bill before it's
+  revisited.
+- **Re-enabling Darknet or faction-share automation** after their stability
+  incidents, until the root cause is understood well enough to say why it
+  won't recur.
+- **An augmentation install, or any other in-game action that resets or
+  permanently forfeits progress.**
+
+That's the whole list. It replaces the old risk-tier system; don't
+reintroduce a parallel one. Landing tested, flag-gated, reversible code
+(committing it, restarting `mcp.js` to pick it up, even flipping a new
+feature flag on for a bounded live check) is ordinary work, not a stop
+condition — the flag and the restart *are* the rollback.
+
+### Session continuity
+
+`STATE.md` at the repo root is the one durable file — current objective,
+what's done, the next concrete action, and any real blocker. Read it at the
+start of a session and resume from it. `docs/Codex-todo.md` is the same
+information in slightly more detail; `docs/claude-todo.md` and the various
+historical audit reports are history, not current authority.
+
 **Keep `docs/processes.md` and `docs/kensTodo.md` current.** If a script
 gains an argument, a file it reads or writes, or a failure mode, update
 `processes.md` in the same commit. The moment something needs Ken's hand —
@@ -57,8 +107,8 @@ reading).
   existed in the game and nothing visible said so. If a new generated file
   needs a "this is structured/line-delimited" hint, put it in the content or
   the filename stem, not the extension.
-- **File sync auto-pushes, but a download reverses and re-affirms it.** The
-  extension watches the filesystem (not just editor saves), so edits written
+- **The legacy VS Code file-sync extension auto-pushes, and its broad download
+  reverses and re-affirms source.** If it is enabled, the extension watches the filesystem (not just editor saves), so edits written
   by tooling *do* auto-push — but only while the server is running and the
   game is connected. **"Download Files from Server" overwrites local source
   with the game's copies, and the watcher then pushes those straight back**,
@@ -78,19 +128,23 @@ reading).
     output.
   - Keep the tree committed regardless, so a bad pull costs a `git checkout`
     (and the restore itself auto-pushes the correct version back).
-- **Codex cannot trigger the download.** No CLI or API for the extension
-  command, and its WebSocket port is occupied by the game. Getting in-game
-  state onto disk requires Ken to click. Design telemetry accordingly:
-  maximise information per click.
-- **A dropped sync session doesn't replay what it missed on reconnect.**
+- **Codex can trigger routine source sync and telemetry pulls through the
+  Remote API daemon.** The extension's UI-only command still cannot be clicked
+  by Codex, but it is now a recovery path, not the normal workflow. The exact
+  watched/pulled sets are `tools/bb_remote.py::WATCHED_FILES`/`PULL_FILES` —
+  editing a `WATCHED_FILES` path in this connected checkout can push it into
+  the running game (and, on restart, make it live), so know which file a
+  given edit is before assuming it's purely local.
+- **A dropped legacy extension session doesn't replay what it missed on reconnect.**
   `startup.js` was created and committed while the session had silently
   dropped (a known recurring issue — see the note above); reconnecting alone
   did not push it, even after confirming the connection was back. The
   watcher reacts to *new* filesystem events going forward, it doesn't diff
   local against remote on reconnect. Fix: force a fresh event —
   `touch <file>` from Codex's side (no content change needed) or a manual
-  save in the editor from Ken's — and it pushes normally. Worth checking for
-  after any reconnect if a file that should be new in-game isn't.
+  save in the editor from Ken's — and it pushes normally. The Remote API
+  daemon instead performs a manifest resync/pull on reconnect; verify its
+  result rather than applying this legacy workaround by habit.
 
 ## Diagnosis discipline
 
@@ -149,8 +203,9 @@ doesn't want the mechanics narrated at him. Practical rules:
 
 ## Git
 
-Standing approval: commit and push (non-force) to `origin main` at Codex's
-discretion. Repo is private at github.com/waunder/BitBurner. Ken is
+Standing approval: commit and push non-force changes at Codex's discretion;
+a task-specific protected-branch or no-push instruction overrides this
+default. Repo is private at github.com/waunder/BitBurner. Ken is
 habit-averse and has explicitly assigned version-control hygiene to Codex —
 do not hand him routines to remember, just keep the tree committed.
 
@@ -162,26 +217,23 @@ stay committed and out of the ignore list, or it can't sync into the game.
 
 ## Open work
 
-`docs/process-backlog.md` holds the current backlog — it re-scores the
-2026-08-07 process audit against the loop as it now exists (CDP connection,
-supervisor, HUD, watcher), which invalidated that audit's "maximize
-information per click" premise. The audit itself stays as the historical
-record. **Top item as of 2026-08-10 is replacing the VS Code extension's
-file sync entirely** — see `docs/Codex-todo.md` priority 1 for the concrete
-next steps. Version stamps, the single field list, hot-reloaded config, the
-event log, and invariants all shipped 2026-08-08 — see the Done table there
-for what shipped and what's still worth watching about each. Below the sync
-replacement, in order: pure-function extraction for `node --test`, `probe=`
-experiment mode, ports as a telemetry ring buffer, `mcp_doctor.js` (no
-longer RAM-gated — home is 128GB as of 2026-08-09, build if independent
-network measurement turns out to be wanted).
+`STATE.md` and `docs/Codex-todo.md` carry the current backlog. The Remote
+API replacement for routine push/pull is built and live-confirmed; current
+priority is `STATE.md`'s named next action.
 
 **Stock trading stays read-only until Ken explicitly approves capital
 deployment.** `mcp_stocks.js` (built 2026-08-09) never references
 `buyStock`/`sellStock`/`buyShort`/`sellShort`/`placeOrder`/`cancelOrder`
 anywhere, by design — it's a display panel, not a trader. Don't add a call to
 any of those functions in this repo without Ken saying so directly first,
-even in draft/experimental code.
+even in draft/experimental code. **This has already been violated once:**
+`mcp_stock_trader.js` (untracked, present in the working tree) does call
+`buyStock`/`sellStock` behind a `trade=1` flag, and a process list once
+showed it actually running with that flag live before a restart (no
+confirmed order execution). Leave the file as-is — it's evidence, not just
+draft code — but do not run it, sync it, or add it to any watched/startup
+path under any argument until Ken gives an explicit go-ahead on capital
+deployment.
 
 Rooting is handled by `hacking/crawler.js` → `hacking/worm.js` (not by
 `mcp.js`), so the worker pool only grows while the crawler is running and

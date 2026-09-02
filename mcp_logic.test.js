@@ -18,16 +18,43 @@ import assert from "node:assert/strict"
 import {
   evaluateMoneyDegradation,
   evaluateOpportunitySwitch,
+  evaluateFormulaSwitchVeto,
   evaluateStuckTarget,
   computeWorkWeights,
   computeTargetScore,
+  computeXpTargetScore,
   computeTargetEffectiveScore,
   computeTickInvariantChecks,
   computeDesiredAllocation,
   weakenThreadsToOffset,
   hostNeedsRedeploy,
   countRunningByScript,
+  missingDesiredScripts,
+  missingActionLaunchPlan,
 } from "./mcp_logic.js"
+
+describe("computeXpTargetScore", () => {
+  test("prefers faster targets when XP and chance are otherwise equal", () => {
+    const fast = computeXpTargetScore({ baseSecurity: 15, hackChance: 1, hackTime: 2 })
+    const slow = computeXpTargetScore({ baseSecurity: 15, hackChance: 1, hackTime: 10 })
+    assert.equal(fast, slow * 5)
+  })
+
+  test("credits failed hacks at one quarter of the normal XP rate", () => {
+    const certain = computeXpTargetScore({ baseSecurity: 10, hackChance: 1, hackTime: 4 })
+    const impossible = computeXpTargetScore({ baseSecurity: 10, hackChance: 0, hackTime: 4 })
+    assert.equal(impossible, certain * 0.25)
+  })
+
+  test("rejects unusable inputs and clamps chance to its valid range", () => {
+    assert.equal(computeXpTargetScore({ baseSecurity: 10, hackChance: 1, hackTime: 0 }), 0)
+    assert.equal(computeXpTargetScore({ baseSecurity: -1, hackChance: 1, hackTime: 1 }), 0)
+    assert.equal(
+      computeXpTargetScore({ baseSecurity: 10, hackChance: 2, hackTime: 4 }),
+      computeXpTargetScore({ baseSecurity: 10, hackChance: 1, hackTime: 4 })
+    )
+  })
+})
 
 // Real values from mcp.js's own constants/RAM readouts (see
 // hacking-mechanics.md — cross-checked against the game's own source).
@@ -249,6 +276,29 @@ describe("countRunningByScript (hacking-strategy.md R5, 2026-08-14)", () => {
 
   test("no running actions gives all zeros", () => {
     assert.deepEqual(countRunningByScript([]), { hack: 0, grow: 0, weaken: 0 })
+  })
+})
+
+describe("missingDesiredScripts — action-specific redeploy escape hatch", () => {
+  test("starts missing grow without requiring an immature weaken loop to be killed", () => {
+    const running = [{ script: "weaken", target: "t", threads: 1800, elapsedS: 30 }]
+    assert.deepEqual(missingDesiredScripts(running, { hack: 0, grow: 9000, weaken: 62 }), ["grow"])
+  })
+
+  test("does not relaunch an action that already has threads running", () => {
+    const running = [{ script: "grow", target: "t", threads: 10, elapsedS: 1 }]
+    assert.deepEqual(missingDesiredScripts(running, { hack: 0, grow: 50, weaken: 0 }), [])
+  })
+
+  test("caps a missing grow launch to real free RAM while preserving an oversized weaken", () => {
+    const running = [{ script: "weaken", target: "t", threads: 1800, elapsedS: 30 }]
+    const plan = missingActionLaunchPlan(
+      running,
+      { hack: 0, grow: 9000, weaken: 62 },
+      17.5,
+      { hack: 1.7, grow: 1.75, weaken: 1.75 }
+    )
+    assert.deepEqual(plan, [{ script: "grow", threads: 10 }])
   })
 })
 
@@ -600,6 +650,44 @@ describe("evaluateMoneyDegradation — the moneyDegraded/OBJECTIVE bug", () => {
       degradedThreshold: 0.9, // high threshold so this test isolates `declining`
     })
     assert.equal(result.declining, true)
+  })
+})
+
+describe("evaluateFormulaSwitchVeto — veto-only formulas guard", () => {
+  test("is inert while disabled", () => {
+    const result = evaluateFormulaSwitchVeto({
+      enabled: false, currentTarget: "current", candidateTarget: "candidate", currentScore: 100, candidateScore: 1,
+    })
+    assert.equal(result.veto, false)
+    assert.equal(result.reason, "disabled")
+  })
+
+  test("vetoes only an inferior scheduler candidate", () => {
+    const result = evaluateFormulaSwitchVeto({
+      enabled: true, currentTarget: "current", candidateTarget: "candidate", currentScore: 100, candidateScore: 79,
+    })
+    assert.equal(result.available, true)
+    assert.equal(result.veto, true)
+    assert.equal(result.ratio, 0.79)
+    assert.equal(result.reason, "candidate-below-threshold")
+  })
+
+  test("passes a candidate at the threshold and never substitutes another", () => {
+    const result = evaluateFormulaSwitchVeto({
+      enabled: true, currentTarget: "current", candidateTarget: "candidate", currentScore: 100, candidateScore: 80,
+    })
+    assert.equal(result.veto, false)
+    assert.equal(result.candidateTarget, "candidate")
+    assert.equal(result.reason, "candidate-clears-threshold")
+  })
+
+  test("fails closed to the existing switch when formulas data is unavailable", () => {
+    const result = evaluateFormulaSwitchVeto({
+      enabled: true, currentTarget: "current", candidateTarget: "candidate", currentScore: NaN, candidateScore: 80,
+    })
+    assert.equal(result.available, false)
+    assert.equal(result.veto, false)
+    assert.equal(result.reason, "unavailable-score")
   })
 })
 
@@ -1067,6 +1155,29 @@ describe("computeTickInvariantChecks", () => {
     const violation = checks.find((c) => c.name === "tickWithinBounds")
     assert.ok(violation)
     assert.equal(violation.ok, false)
+  })
+
+  test("poolNotIdle ignores expected spare capacity for a small weaken demand", () => {
+    const allocations = [{ host: "worker", maxRam: 1750, usedRam: 175, actions: [] }]
+    const checks = computeTickInvariantChecks(
+      { ...baseCtx, ramUtilization: 0.1, requiredWeaken: 100, allocations },
+      config
+    )
+    const poolNotIdle = checks.find((c) => c.name === "poolNotIdle")
+    assert.ok(poolNotIdle.ok)
+    assert.equal(poolNotIdle.data.poolWeakenCapacity, 1000)
+    assert.equal(poolNotIdle.data.poolDemanded, false)
+  })
+
+  test("poolNotIdle still catches a mostly idle pool when weaken demand is material", () => {
+    const allocations = [{ host: "worker", maxRam: 1750, usedRam: 175, actions: [] }]
+    const checks = computeTickInvariantChecks(
+      { ...baseCtx, ramUtilization: 0.1, requiredWeaken: 500, allocations },
+      config
+    )
+    const poolNotIdle = checks.find((c) => c.name === "poolNotIdle")
+    assert.equal(poolNotIdle.ok, false)
+    assert.equal(poolNotIdle.data.poolDemanded, true)
   })
 
   test("threadsFitHost stops after the first failing host (one report per tick)", () => {

@@ -1,5 +1,11 @@
 # Hacking strategy
 
+> **Status, 2026-08-18:** the established core MCP path runs normally.
+> Formulas R8's shadow monitor is live-validated and its switch-veto
+> integration is implemented/tested but not yet merged — see `STATE.md` for
+> current status. Historical completion wording below is history, not a
+> claim about what's merged today.
+
 Analysis of `mcp.js`/`mcp_logic.js` against the real game formulas, with
 ranked recommendations. Companion doc: `docs/hacking-mechanics.md` — that
 one is the knowledge base (formulas extracted from the game's own

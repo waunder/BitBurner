@@ -1,0 +1,33 @@
+import { test } from "node:test"
+import assert from "node:assert/strict"
+import { solveContract } from "./cct_logic.js"
+
+const solve = (type, data) => solveContract(type, data).answer
+
+test("coding-contract solvers cover the audited types", () => {
+  assert.equal(solve("Find Largest Prime Factor", 780424956), 12227)
+  assert.deepEqual(solve("Merge Overlapping Intervals", [[1, 3], [8, 10], [2, 6], [10, 16]]), [[1, 6], [8, 16]])
+  assert.deepEqual(solve("Generate IP Addresses", "25525511135"), ["255.255.11.135", "255.255.111.35"])
+  assert.equal(solve("Encryption I: Caesar Cipher", ["ABC Z", 2]), "YZA X")
+  assert.equal(solve("Unique Paths in a Grid I", [4, 14]), 560)
+  assert.equal(solve("Subarray with Maximum Sum", [-2, 1, -3, 4, -1, 2, 1, -5, 4]), 6)
+  assert.equal(solve("Total Ways to Sum", 4), 4)
+  assert.equal(solve("Total Ways to Sum II", [10, [2, 5, 3, 6]]), 5)
+  assert.equal(solve("Total Ways to Sum II", [4, [1, 2, 3]]), 4)
+  assert.equal(solve("Algorithmic Stock Trader I", [7, 1, 5, 3, 6, 4]), 5)
+  assert.equal(solve("Algorithmic Stock Trader II", [7, 1, 5, 3, 6, 4]), 7)
+  assert.equal(solve("Array Jumping Game", [2, 3, 1, 1, 4]), 1)
+  assert.equal(solve("Array Jumping Game", [3, 2, 1, 0, 4]), 0)
+  assert.equal(solve("Compression I: RLE Compression", ""), "")
+  assert.equal(solve("Compression I: RLE Compression", "aabccc"), "2a1b3c")
+  assert.equal(solve("Compression I: RLE Compression", "aaaaaaaaaa"), "9a1a")
+  assert.equal(solve("Compression I: RLE Compression", "7777777777"), "9717")
+  assert.equal(solve("Compression I: RLE Compression", "a111b"), "1a311b")
+  assert.deepEqual(solve("Spiralize Matrix", [[1, 2, 3], [4, 5, 6], [7, 8, 9]]), [1, 2, 3, 6, 9, 8, 7, 4, 5])
+  assert.deepEqual(solve("Spiralize Matrix", [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]), [1, 2, 3, 4, 8, 12, 11, 10, 9, 5, 6, 7])
+  assert.equal(solve("Encryption II: Vigenère Cipher", ["DASHBOARD", "LINUX"]), "OIFBYZIEX")
+  assert.equal(solve("Total Number of Primes", [0, 20]), 8)
+  assert.equal(solve("Total Number of Primes", [2613956, 3373214]), 50952)
+  assert.equal(solve("Array Jumping Game II", [2, 3, 1, 1, 4]), 2)
+  assert.equal(solve("Array Jumping Game II", [3, 2, 1, 0, 4]), 0)
+})

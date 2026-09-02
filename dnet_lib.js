@@ -23,6 +23,81 @@ export const SHARD_SUFFIX = ".txt"
 export const STATUS_FILE = "dnet_status.json"
 export const DEPLOYER_SHARD_PREFIX = "dnet_deployer_"
 export const DEPLOYER_SHARD_SUFFIX = ".json"
+export const LOOT_SHARD_PREFIX = "dnet_loot_"
+export const LOOT_SHARD_SUFFIX = ".json"
+
+// Concurrency cap (2026-08-30), added after a confirmed live incident:
+// dnet_crawl.js spread to every reachable, crackable neighbor with no
+// limit, and every host it landed on got a permanent resident
+// dnet_manager.js (ns.spawn at the end of dnet_crawl.js's main()). Each
+// resident manager runs forever, polling at minimum every 1s — with 586+
+// credentials already cracked historically, an unbounded restart let the
+// resident count grow large enough to peg the renderer's single JS thread
+// at 165-169% CPU (confirmed via `ps`) and freeze the game.
+//
+// This is a SOFT cap, not a hard guarantee — worth stating plainly rather
+// than implying more precision than exists. The registry only merges on
+// home every REGISTRY_MERGE_MS; propagation fans out faster than that, so
+// many hosts make their spawn decision off a genuinely-real-but-already-
+// stale snapshot, each blind to the others' concurrent decisions. Bitburner
+// exec/read/write have no cross-host locking primitive, so this can't be
+// made race-proof without a much heavier consensus mechanism — not worth
+// building for what this is. First live run (2026-08-30) overshot to ~30
+// registry entries (48 known hosts by the time it was killed) against a
+// cap of 15 set that same day, a ~2-3x bootstrap-race overshoot. Lowered to
+// 8 in response, so that overshoot factor lands closer to the original
+// intent; retune again once a live run's actual peak is observed.
+//
+// **That tightened cap overshot worse on the very next live restart** — 36
+// entries against a cap of 8, several sharing the exact same millisecond
+// timestamp (direct evidence of many hosts registering essentially
+// simultaneously), and it froze the game faster than the first attempt.
+// Root cause: this cap only ever bounds STEADY-STATE resident count; it did
+// nothing to slow the PROPAGATION BURST itself, which turned out to be the
+// actual driver — the network is now mostly pre-cracked from earlier runs,
+// so acquireSession's fast path (a known password, near-instant) lets a
+// restart unfold the whole reachable fan-out tree far faster than a cold
+// run ever could, faster than any registry merge cadence could hope to
+// track. MAX_SPREAD_PER_PASS (below) is the actual fix for that; this
+// resident cap stays as a secondary, longer-run safety net now that the
+// burst itself is throttled at the source.
+// The only safe default while the freeze root cause is being verified is one
+// resident manager.  It makes the cap real even before a home-issued lease
+// protocol replaces the old, stale-snapshot admission scheme.
+export const MAX_ACTIVE_MANAGERS = 2
+// How often dnet_root.js folds fresh manager-heartbeat shards into the
+// registry (was 5000ms, tied to RETRY_MS, until the overshoot above showed
+// that gap was wide enough to matter) — this is the other lever on the
+// same race: not eliminating it, just shrinking the window.
+export const REGISTRY_MERGE_MS = 15 * 1000
+
+// Propagation throttle (2026-08-30, same incident as above, added after
+// MAX_ACTIVE_MANAGERS alone proved insufficient twice live). Bounds
+// dnet_crawl.js's own branching factor: at most this many neighbors get
+// spread to per pass, full stop, regardless of how many are reachable —
+// see dnet_crawl.js's own enforcement site for why it stops authenticating
+// entirely rather than just skipping the spread. Nothing is permanently
+// missed: a host's next 90s-ish recrawl (dnet_manager.js) re-invokes
+// dnet_crawl.js fresh and picks up wherever this pass left off. Small on
+// purpose — this governs how explosively the fan-out tree can grow per
+// generation, and two live incidents tonight argue for erring conservative
+// over erring fast.
+// Controlled expansion: the root's first crawl may create one child. That
+// child is explicitly marked no-spread, and resident-manager recrawls use
+// the same mark, so this cannot turn into recursive fan-out.
+export const MAX_SPREAD_PER_PASS = 1
+export const MANAGER_REGISTRY_FILE = "dnet_manager_registry.json"
+export const MANAGER_SHARD_PREFIX = "dnet_manager_active_"
+export const MANAGER_SHARD_SUFFIX = ".json"
+// A resident manager refreshes its heartbeat once per main-loop iteration
+// (writeManagerActiveShard, called from dnet_manager.js) — this just needs
+// to comfortably outlast the longest normal gap between iterations
+// (RECRAWL_MS's 90s, or one phishingAttack cycle) so a genuinely-alive
+// manager is never mistaken for dead.
+// A healthy manager now refreshes while phishing, so two minutes is enough
+// to recover a killed/mutated process promptly without mistaking normal work
+// for a loss.
+export const MANAGER_STALE_MS = 2 * 60 * 1000
 
 /** Response codes, copied from the game's DarknetResponseCodeType. */
 export const CODE = {
@@ -142,8 +217,20 @@ export function candidatesFor(d, bruteForceLimit = 0) {
     }
 
     case MODEL.SortedEchoVuln:
-      add(data, "PHP 5.4: sorted form, correct only if password was already sorted")
-      break
+      for (const p of uniquePermutations(data, 3)) add(p, "PHP 5.4: permutation of the sorted digits")
+      return { model: d.modelId, exhaustive: data.length > 0 && data.length <= 3, candidates: out }
+
+    case MODEL.BufferOverflow:
+      if (Number.isInteger(d.passwordLength) && d.passwordLength > 0) {
+        add("A".repeat(2 * d.passwordLength), "Pr0verFl0: overflow payload is twice the password length")
+      }
+      return { model: d.modelId, exhaustive: out.length > 0, candidates: out }
+
+    case MODEL.GuessNumber: {
+      const upper = Math.ceil((10 * ((d.difficulty ?? 0) + 3)) / 3)
+      for (let i = 0; i < upper; i++) add(String(i), "AccountsManager_4.2: exact generated-number range")
+      return { model: d.modelId, exhaustive: upper > 0, candidates: out }
+    }
 
     case MODEL.DogNames:
       for (const p of DOG_NAMES) add(p, "Laika4: dog-name list")
@@ -171,6 +258,29 @@ export function candidatesFor(d, bruteForceLimit = 0) {
   }
 
   return { model: d.modelId, exhaustive: false, candidates: out }
+}
+
+/** Unique permutations, bounded so the roaming crawler never explodes into
+ * an unbounded factorial search. Current shallow PHP 5.4 passwords are at
+ * most three digits; longer variants belong in the feedback solver. */
+export function uniquePermutations(value, maxLength = 3) {
+  const text = String(value)
+  if (!text || text.length > maxLength) return text ? [text] : []
+  const out = []
+  const visit = (prefix, remaining) => {
+    if (!remaining.length) {
+      out.push(prefix)
+      return
+    }
+    const used = new Set()
+    for (let i = 0; i < remaining.length; i++) {
+      if (used.has(remaining[i])) continue
+      used.add(remaining[i])
+      visit(prefix + remaining[i], remaining.slice(0, i) + remaining.slice(i + 1))
+    }
+  }
+  visit("", text)
+  return out
 }
 
 /** Bare words and quoted spans in a hint, longest first — cheap generic guesses. */
@@ -204,10 +314,8 @@ export function numericCandidates(d, limit) {
  * loot, and 2026-08-12's deployer heartbeat) needs the same escaping, so it
  * lives here once rather than each caller inventing its own. Defaults match
  * the original credential-shard naming so every existing caller is
- * unaffected. `dnet_loot.js`/`dnet_loot_realloc.js` still build their own
- * shard name with raw `dnet_loot_${host}.json` string interpolation instead
- * of this — a latent bug on a host with `:`/`%`/`@`/emoji in its name, flagged
- * but out of scope to fix here.
+ * unaffected. Loot event names use this same escaping through
+ * lootEventShardName below.
  */
 export function shardName(host, prefix = SHARD_PREFIX, suffix = SHARD_SUFFIX) {
   let safe = ""
@@ -215,6 +323,59 @@ export function shardName(host, prefix = SHARD_PREFIX, suffix = SHARD_SUFFIX) {
     safe += /[A-Za-z0-9_-]/.test(ch) ? ch : "x" + ch.codePointAt(0).toString(16)
   }
   return `${prefix}${safe.slice(0, 80)}${suffix}`
+}
+
+/** Unique, filename-safe loot event shard. The timestamp is appended after
+ * shardName's host truncation so long/hostile names cannot truncate it and
+ * collapse several events back onto one snapshot filename. */
+export function lootEventShardName(host, at) {
+  const base = shardName(host, LOOT_SHARD_PREFIX, "")
+  return `${base}_${at}${LOOT_SHARD_SUFFIX}`
+}
+
+/** Fold immutable loot-event records into an idempotent cumulative summary. */
+export function aggregateLootRecords(records) {
+  const perHost = {}
+  let totalKarma = 0
+  let totalRamFreed = 0
+  let totalCachesOpened = 0
+  let totalCachesFound = 0
+
+  for (const rec of records) {
+    if (!rec || typeof rec.host !== "string") continue
+    const ramFreed = Math.max(0, (rec.ram?.before ?? 0) - (rec.ram?.after ?? 0))
+    const karma = rec.caches?.karma ?? 0
+    const opened = rec.caches?.opened ?? 0
+    const found = rec.caches?.found ?? 0
+    const prev = perHost[rec.host] ?? {
+      model: rec.model,
+      difficulty: rec.difficulty,
+      mode: rec.mode ?? "full",
+      ramFreed: 0,
+      karma: 0,
+      opened: 0,
+      found: 0,
+      events: 0,
+      at: 0,
+    }
+    prev.ramFreed += ramFreed
+    prev.karma += karma
+    prev.opened += opened
+    prev.found += found
+    prev.events++
+    if ((rec.at ?? 0) >= prev.at) {
+      prev.model = rec.model
+      prev.difficulty = rec.difficulty
+      prev.mode = rec.mode ?? "full"
+      prev.at = rec.at ?? prev.at
+    }
+    perHost[rec.host] = prev
+    totalRamFreed += ramFreed
+    totalKarma += karma
+    totalCachesOpened += opened
+    totalCachesFound += found
+  }
+  return { perHost, totalKarma, totalRamFreed, totalCachesOpened, totalCachesFound }
 }
 
 /** Parse the credential store. Tolerates a missing or truncated file. */
@@ -325,6 +486,95 @@ export function writeDeployerShard(ns, host, patch) {
 export function pickFreshestShard(shards) {
   if (!shards.length) return null
   return shards.reduce((best, cur) => (cur.rec.ts > best.rec.ts ? cur : best))
+}
+
+/**
+ * Write this host's "I have a resident manager" heartbeat to a uniquely-named
+ * local shard and return the shard name — does NOT ship it anywhere (same
+ * read/write split as writeDeployerShard/recordCred). Called both by
+ * dnet_crawl.js (once, right before it spawns dnet_manager.js, to reserve
+ * the slot before the manager itself is even running) and by
+ * dnet_manager.js (repeatedly, once per main-loop iteration, to keep the
+ * slot from going stale while it's genuinely still alive).
+ */
+export function writeManagerActiveShard(ns, host) {
+  const shard = shardName(host, MANAGER_SHARD_PREFIX, MANAGER_SHARD_SUFFIX)
+  ns.write(shard, JSON.stringify({ ts: Date.now(), host }), "w")
+  return shard
+}
+
+/**
+ * Fold fresh manager-heartbeat shards into the existing registry, dropping
+ * anything older than `staleMs`. Pure — no ns calls — so the "is this
+ * manager still really alive" policy is unit-testable without the game,
+ * same shape as pickFreshestShard/expireTargetExclusions (mcp_logic.js).
+ * Self-healing by construction: a killed/orphaned manager was never
+ * explicitly deregistered (there's no durable in-memory state to notice its
+ * own death), so staleness is the only mechanism that ever frees its slot.
+ *
+ * @param {Record<string, number>} existing - current {host: ts} registry.
+ * @param {{host: string, ts: number}[]} shardRecords - freshly-read shards.
+ * @param {number} now
+ * @param {number} staleMs
+ * @returns {Record<string, number>} updated registry.
+ */
+export function mergeManagerRegistry(existing, shardRecords, now, staleMs) {
+  const merged = { ...existing }
+  for (const rec of shardRecords) {
+    if (!rec || typeof rec.host !== "string" || typeof rec.ts !== "number") continue
+    if (!(merged[rec.host] >= rec.ts)) merged[rec.host] = rec.ts
+  }
+  const fresh = {}
+  for (const [host, ts] of Object.entries(merged)) {
+    if (now - ts < staleMs) fresh[host] = ts
+  }
+  return fresh
+}
+
+/**
+ * The cap decision itself, pulled out as its own named/testable function
+ * rather than inlined at dnet_crawl.js's call site — counts only non-stale
+ * entries, so an over-cap-looking registry that's actually full of dead
+ * managers doesn't wrongly block a real host from becoming resident.
+ *
+ * @param {Record<string, number>} registry
+ * @param {number} now
+ * @param {number} staleMs
+ * @param {number} [cap]
+ * @returns {boolean}
+ */
+export function canSpawnManager(registry, now, staleMs, cap = MAX_ACTIVE_MANAGERS) {
+  let active = 0
+  for (const ts of Object.values(registry || {})) {
+    if (now - ts < staleMs) active++
+  }
+  return active < cap
+}
+
+/**
+ * Recrawl interval with randomized jitter (2026-08-30, same incident as
+ * MAX_ACTIVE_MANAGERS/MAX_SPREAD_PER_PASS above). Every resident manager's
+ * recrawl clock used to be a flat `+RECRAWL_MS` from its own spawn/last-
+ * crawl time — managers spawned close together (exactly what one
+ * propagation wave produces) stay synchronized forever, so even a
+ * per-pass-throttled fan-out can re-synchronize into a wide simultaneous
+ * burst once enough residents accumulate and their clocks re-align. This
+ * desynchronizes them over time rather than fixing anything in the very
+ * first burst — complementary to, not a replacement for,
+ * MAX_SPREAD_PER_PASS.
+ *
+ * Pure and seedable (`rand` defaults to Math.random but accepts an
+ * injected PRNG for a deterministic test) so the "stays in range" property
+ * is node --test-able without the game.
+ *
+ * @param {number} baseMs - RECRAWL_MS.
+ * @param {number} jitterFraction - e.g. 0.15 for ±15%.
+ * @param {() => number} [rand] - returns a float in [0, 1).
+ * @returns {number} a value in [baseMs * (1 - jitterFraction), baseMs * (1 + jitterFraction)).
+ */
+export function jitteredRecrawlMs(baseMs, jitterFraction, rand = Math.random) {
+  const spread = baseMs * jitterFraction
+  return baseMs - spread + rand() * spread * 2
 }
 
 /**
@@ -451,7 +701,8 @@ export async function acquireSession(ns, host, known, opts = {}) {
 }
 
 /**
- * Reclaim blocked RAM on the calling script's current server, checking
+ * Reclaim blocked RAM on an authenticated, directly-connected server,
+ * defaulting to the calling script's current server. Checking
  * getBlockedRam (0GB) before and after each 1GB memoryReallocation call so a
  * call that had nothing to reclaim, or that frees nothing, terminates the
  * loop instead of spinning or paying for calls with nothing to gain.
@@ -463,25 +714,32 @@ export async function acquireSession(ns, host, known, opts = {}) {
  * sync on the actual reallocation loop.
  *
  * @param {NS} ns
- * @param {string} host - for the log line only; the call always targets the
- *   current server (memoryReallocation has no target argument)
+ * @param {string} host - target server; pass the current hostname for the
+ *   original local-loot behavior, or a freshly-authenticated neighbour to
+ *   reclaim its RAM before deploying anything onto it.
  * @param {number} maxCalls
+ * @param {boolean} [log=true] - write the normal completion summary to this
+ * script's log. Callers that already persist a structured result can disable
+ * this to avoid high-volume no-op output.
  * @returns {Promise<{before: number, after: number, calls: number, why: string}>}
  */
-export async function freeBlockedRam(ns, host, maxCalls) {
-  const before = ns.dnet.getBlockedRam()
+export async function freeBlockedRam(ns, host, maxCalls, log = true) {
+  const getBlocked = () => (host === undefined ? ns.dnet.getBlockedRam() : ns.dnet.getBlockedRam(host))
+  const reallocate = () =>
+    host === undefined ? ns.dnet.memoryReallocation() : ns.dnet.memoryReallocation(host)
+  const before = getBlocked()
   if (before <= 0) return { before, after: before, calls: 0, why: "nothing blocked" }
 
   let calls = 0
   let why = "hit call cap"
   while (calls < maxCalls) {
-    const remaining = ns.dnet.getBlockedRam()
+    const remaining = getBlocked()
     if (remaining <= 0) {
       why = "fully reclaimed"
       break
     }
 
-    const res = await ns.dnet.memoryReallocation()
+    const res = await reallocate()
     calls++
 
     if (!res.success) {
@@ -489,14 +747,14 @@ export async function freeBlockedRam(ns, host, maxCalls) {
       break
     }
 
-    if (ns.dnet.getBlockedRam() >= remaining) {
+    if (getBlocked() >= remaining) {
       why = "call freed nothing; stopping rather than spinning"
       break
     }
   }
 
-  const after = ns.dnet.getBlockedRam()
-  ns.print(`REALLOC ${host} before=${before} after=${after} calls=${calls} why=${why}`)
+  const after = getBlocked()
+  if (log) ns.print(`REALLOC ${host} before=${before} after=${after} calls=${calls} why=${why}`)
   return { before, after, calls, why }
 }
 

@@ -484,7 +484,7 @@
 <div class="page">
   <div class="topbar">
     <div class="brand"><strong>BitBurner</strong> &middot; status dashboard</div>
-    <div class="updated mono">rebuilt 2026&#8209;08&#8209;14 13:35 PDT</div>
+    <div class="updated mono">governance status updated 2026&#8209;08&#8209;15</div>
   </div>
 
   <div class="glance">
@@ -493,14 +493,15 @@
     <span class="chip"><span class="dot dot-good"></span>flagged <span class="n mono">0</span></span>
   </div>
 
-  <p class="lede">Every row below is dated; nothing on this page is presented as current unless it was
-    confirmed current at that date. History lives in <code class="cite">git log</code> and the docs it
-    points to, not here.</p>
+  <p class="lede"><strong>Current operating state:</strong> the core MCP baseline may run; stock,
+    IPvGO, Darknet, faction share, and another Formulas R8 live run are off or paused under
+    <code class="cite">docs/promotion-state.json</code>. The scoreboards below are historical evidence,
+    not present launch authority. History lives in <code class="cite">git log</code> and the dated docs.</p>
 
   <section aria-labelledby="scoreboard-title">
     <div class="block-head">
       <h2 class="block-title" id="scoreboard-title">IPvGO Scoreboard</h2>
-      <span class="block-count mono">live</span>
+      <span class="block-count mono">historical &middot; off</span>
     </div>
 
     <div class="scoreboard">
@@ -560,7 +561,7 @@
   <section aria-labelledby="darknet-scoreboard-title">
     <div class="block-head">
       <h2 class="block-title" id="darknet-scoreboard-title">Dark Net Scoreboard</h2>
-      <span class="block-count mono">live</span>
+      <span class="block-count mono">historical &middot; off</span>
     </div>
 
     <div class="scoreboard">
@@ -649,7 +650,8 @@
   </section>
 
   <footer>
-    <p>This page is the standing dashboard for the BitBurner project &mdash; Claude redeploys it in place from
+    <p>This page is the standing dashboard for the BitBurner project &mdash; its current permission layer is
+      <code class="mono">docs/promotion-state.json</code>; historical performance remains here for context. It is maintained from
       <code class="mono">docs/status-dashboard.html</code> whenever there's something new to see, instead of
       narrating status in chat. Rows stay here until Ken says he's reviewed them; nothing is pruned on
       Claude's own judgment.</p>

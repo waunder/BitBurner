@@ -10,6 +10,24 @@ file is the map.
 Keep it current. If a script gains an argument, a file, or a failure mode,
 it changes here in the same commit.
 
+## Current working state — 2026-08-18
+
+The tiered governance apparatus described in this section through
+2026-08-16 (directive ledger, promotion-state machine, auditor tool, R8
+controller/canary apparatus) is retired — it produced a genuine deadlock,
+not just overhead. See `AGENTS.md`'s "Working method" section for why and
+what replaced it: `docs/agent-working-agreement.md` for the portable
+working method, `STATE.md` for current objective/status, and `AGENTS.md`'s
+short stop-list for the few things that still need Ken directly.
+
+- The `startup.js` core MCP baseline is established and runs normally.
+- The adaptive stock trader is live with Ken's explicit 2026-08-18 capital
+  approval. IPvGO, Darknet, and faction sharing remain off; see `AGENTS.md`'s
+  stop-list for exactly what re-enabling each needs.
+- Formulas R8: the shadow monitor has been live-validated (see
+  `docs/evidence/`); the switch-veto integration is implemented and tested
+  and is the current active objective — see `STATE.md`.
+
 ---
 
 ## The map
@@ -31,8 +49,9 @@ flowchart TB
         mcp -->|writes each tick| status[(mcp_status.json)]
         mcp -->|writes on change| logfile[(mcp_status_log.txt)]
         status --> hud[mcp_hud.js]
+        status --> xppanel[mcp_xp.js]
         pool -.->|scanned| stats[get_stats.js]
-        status -.->|after a manual download| parser[mcp_status_parser.py]
+        status -.->|after Remote API pull| parser[mcp_status_parser.py]
         player[(player state)] -.->|ns.getMoneySources| moneypanel[mcp_money.js]
         player -.->|ns.stock.*| stockpanel[mcp_stocks.js]
     end
@@ -50,12 +69,12 @@ flowchart TB
         sup -->|renders| dumptail[mcp_dump tail window]
     end
 
-    subgraph direct["Direct Remote API connection (2026-08-10/11) — both directions built; push side is live-confirmed, pull side is mock/subprocess-validated only"]
+    subgraph direct["Direct Remote API connection — both directions live-confirmed by 2026-08-14"]
         daemon["bb_remote.py daemon<br/>(persistent, local control channel,<br/>full resync/pull on every (re)connect)"]
         daemon -->|pushFile, confirmed by getFile readback| flag
-        daemon ==>|getFile, routine pull, full pull on (re)connect + 2s incremental — writes to disk now, not yet live-tested| status
+        daemon ==>|getFile, routine pull, full pull on (re)connect + 2s incremental, live-confirmed| status
         daemon ==>|getFile, routine pull — same as above| logfile
-        daemon ==>|pushFile, routine sync, 28 watched files, live-confirmed 2026-08-11| mcp
+        daemon ==>|pushFile, routine manifest sync, live-confirmed| mcp
         daemon ==>|pushFile, routine sync| actions
     end
 
@@ -188,7 +207,13 @@ so the pool shrinks to what needs no ports. Rebuilding it means Create Program
 
 The orchestrator, and where nearly all the complexity lives. Each tick
 (`LOOP_SLEEP_MS`, 10s) it scans the network, decides on a target, decides on a
-plan, and allocates worker threads across every rooted host.
+plan, and allocates worker threads across every rooted normal host plus every
+owned cloud server. Cloud servers are worker-only: they never enter target
+selection because they have no money; unlike ordinary servers, they are
+owned work hosts rather than selected through the normal root-access test.
+`mcp_status.json` exposes their raw
+name, root status, and RAM separately as `cloudWorkers`, so an unavailable
+cloud host cannot be mistaken for a scheduler allocation problem.
 
 **2026-08-14: read `docs/hacking-mechanics.md` and `docs/hacking-strategy.md`
 before changing anything below.** The mechanics doc has the actual game
@@ -274,23 +299,12 @@ rejected at startup rather than silently ignored.
    conditional" below).
 8. Write status.
 
-**Worker hosts (`getWorkerHosts`) — `home` included since 2026-08-14 (R7,
-shipped, not yet confirmed live).** Previously excluded outright
-(`getHostFreeRam` special-cased it to a flat 0). Now included like any other
-rooted host, but `getHostFreeRam` subtracts `HOME_RAM_RESERVE` (default
-32GB) off `home`'s free RAM before anything else can claim it — `mcp.js`
-itself, `mcp_hud.js`, and `mcp_supervisor.js` all run there, so
-under-reserving is a farm-stopping failure (starves the orchestrator itself),
-not just a throughput loss. The reserve is a continuous subtraction, clamped
-at 0 via the existing `Math.max(0, freeRam)`, not a binary "skip home
-entirely below the reserve" gate — so `home` degrades gracefully toward zero
-allocated threads as its own footprint grows, rather than cutting out sharply
-at some other threshold. `allocateThreads` no longer special-cases `home` to
-skip deployment (that early-return only made sense while `home` was
-categorically excluded); it does still skip the `copyActionScripts` scp step
-for `home` specifically, since the action scripts already live there (`mcp.js`
-itself runs from `home`) — same guard `share_deploy.js` already uses for the
-same reason.
+**Worker hosts (`getWorkerHosts`) — `home` excluded since 2026-09-01.** MCP
+uses rooted remote servers only. `home` is reserved entirely for the manager,
+diagnostics, contract tools, and user work; startup also kills any historical
+home `weaken`/`grow`/`hack` workers so the change takes effect cleanly after a
+restart. `HOME_RAM_RESERVE` remains a compatibility/diagnostic setting but no
+longer allocates worker threads on home.
 
 **Target exclusions are preferences, not bans.** If nothing qualifies,
 selection reruns ignoring exclusions. Without that fallback the bot livelocked
@@ -310,7 +324,11 @@ which hack/grow kept landing and fortifying security with nothing
 counteracting it — consistent with the observed security ratchet. The
 have-side counting (`countRunningByScript`, `mcp_logic.js`) is now shared
 between `hostNeedsRedeploy`'s mismatch check and `allocateThreads`'s
-per-script decision, rather than two independent tallies. `killActionScripts`
+per-script decision, rather than two independent tallies.
+The missing-action escape hatch starts the portion of a newly desired action
+that fits in *currently free* RAM while preserving an immature, unrelated
+action; without it, a long weaken loop can leave the rest of a host idle while
+the next weaken plan also needs grow capacity. `killActionScripts`
 (kills all three unconditionally) is unchanged and still used for its other
 two purposes — sweeping orphaned scripts from a previous `mcp.js` run at
 startup, and releasing the whole network when no target is found — both of
@@ -413,6 +431,18 @@ the two blockers demand different responses. Losing on score means the
 factor is what stands between the bot and a richer server. Losing on the hold
 timer just means waiting. `blockedBy` names which.
 
+`R8_SWITCH_VETO_ENABLED` defaults to `0`. When set to `1`, the existing
+scheduler still chooses the candidate first; R8 can only retain the present
+target when the candidate's Formulas minimum-security score is below 80% of
+the present target's score.
+`formulaSwitchVeto` in status and `r8_switch_veto_eval`/`r8_switch_veto`
+events retain the candidate, both scores, ratio, availability, verdict, and
+reason. Missing Formulas.exe or invalid formulas data preserves the existing
+switch rather than blocking it. A 2026-08-18 bounded live configuration check
+confirmed the manager accepts `0 → 1 → 0`; no qualified switch arose during
+that window, so the veto outcome itself remains locally tested but not yet
+observed live.
+
 **2026-08-14 (R4):** `OPPORTUNITY_SWITCH_FACTOR` dropped from 3 to 1.3 (the
 doc's suggested 1.25-1.3 range, safer end) — but *only* together with the
 `getTargetScore`/`getTargetEffectiveScore` rewrite above, never before, per
@@ -440,6 +470,7 @@ The ones that actually get retuned:
 | `TARGET_MONEY_GOAL` | 0.95 | Money fraction `readiness` (see the work-weight calculation above) treats as "full" |
 | `DEGRADED_MONEY_PCT` | 0.05 | Drain threshold — **must** stay below the idle-regime cutoff of 0.1, and an invariant enforces it |
 | `OPPORTUNITY_SWITCH_FACTOR` | 1.3 | Margin required to abandon a working target |
+| `R8_SWITCH_VETO_ENABLED` | 0 | Enables the attested formulas veto only after its named canary/production gate; `0` preserves existing switching exactly |
 | `LOOP_SLEEP_MS` | 10000 | Tick length |
 | `HACK_BALANCE_SAFETY` | 0.5 | Fraction of the balanced hack share actually deployed — see the work-weight calculation above |
 | `HOME_RAM_RESERVE` | 32 | GB kept off-limits on `home` before any of it counts as free for worker threads — see "Worker hosts" below |
@@ -495,26 +526,21 @@ argument, confirming hacking XP per completed action is independent of how
 much was actually stolen. The entire reason money mode ramps hack down to
 near-zero on a drained target is that a near-zero steal isn't worth the
 security cost — a reason that simply doesn't exist for XP. So XP mode uses
-one fixed split regardless of `moneyPct`: `XP_WEIGHT_HACK` (default 0.8) and
-`XP_WEIGHT_GROW` (default 0.2), tagged with the `"xp"` regime so switching
+one fixed split regardless of `moneyPct`: `XP_WEIGHT_HACK` (default 0.95) and
+`XP_WEIGHT_GROW` (default 0.05), tagged with the `"xp"` regime so switching
 `OBJECTIVE` live is still recognized as a regime change (`weight_regime_change`
 event) the same way a money-mode ramp/harvest transition is.
 
-**That 0.8/0.2 split is reasoned, not measured** — hack has the shortest
-cycle time of the three actions, so more threads complete per second, all
-else equal. It has not been checked against real exp/sec/thread numbers for
-grow or weaken. `econ_probe.js` exists to gather exactly that (see its own
-header) and these two numbers are expected to change once real data exists —
-that's why they're config keys instead of a hardcoded table.
+XP mode uses a 0.95/0.05 hack/grow split. Hack has the best XP per GB-second;
+the small grow share is insurance against reducing a target to exactly $0,
+where a hack receives only failure XP. It ranks targets independently of
+money using `(3 + 0.3 * baseSecurity) * (0.25 + 0.75 * chance) / hackTime`:
+the game's base XP per action, adjusted for a failed hack's quarter-XP award,
+per hack-thread second. This branch is reachable only while `OBJECTIVE` is
+`"xp"`; money-mode scoring and allocation are unchanged.
 
-Target *selection* is unchanged in both modes — still scored by $/s. Making
-selection itself XP-aware is a larger, riskier change than reweighting
-hack/grow, and is deliberately not happening until real data justifies a
-specific formula rather than a guess.
-
-**Money-based eviction is disabled in XP mode.** The 0.8/0.2 split above is
-hack-heavy by design, so it drains every target's money toward zero and never
-lets it recover (grow is only 20% of the mix) — the `moneyDegraded` check
+**Money-based eviction is disabled in XP mode.** The hack-heavy split above
+drains each target's money toward zero by design — the `moneyDegraded` check
 described under "The opportunity switch"/step 3 above would then read that as
 every target "yield degraded" in turn and evict it, chaining from target to
 target indefinitely and defeating XP mode's entire point of sitting still to
@@ -551,7 +577,7 @@ Three things stamp or check every tick:
 | `eventLogWrites` | A write to `mcp_events.txt` failing — this is what caught the file's own invalid-extension bug, see below |
 | `weakenBudgetNonNegative` | Budget over-allocation, found originally only by an accident of two fields lining up |
 | `tickWithinBounds` | The 70–380s ticks that silently multiplied every rate |
-| `poolNotIdle` | The network sitting 93% idle during weaken phases |
+| `poolNotIdle` | The network sitting at least 50% idle while the current weaken demand could itself occupy at least half of its capacity; small, legitimate weaken demand does not alarm |
 | `threadsFitHost` | The inconsistent-RAM class (`usedRam 3.5, freeRam 16, maxRam 16`) |
 | `drainBelowEmptyTier` | A config edit that would strand recovering targets |
 | `configParses` | A malformed `mcp_config.json` |
@@ -595,6 +621,111 @@ Trimmed to the last 300 lines at startup, so it stays bounded inside the save
 file while still surviving the restarts that wipe every in-memory sample. The
 most recent 20 also ride inline in `mcp_status.json`, so one read gives both
 "now" and "how we got here".
+
+### `mcpMulti.js` / `mcpMulti_logic.js`
+
+Experimental multi-target farmer, built 2026-08-29 to test the single- vs.
+multi-target question from that session's discussion: `mcp.js`'s
+`computeDesiredAllocation` (mcp_logic.js) hands the *entire* worker pool's
+RAM to one target's plan every tick, and its scoring assumes `poolThreads`
+is the whole network's capacity — a policy choice, not a game constraint.
+`mcpMulti.js` is a completely separate script so `mcp.js` stays untouched
+and keeps farming live while this is tried out.
+
+**Dry-run by default** — same shape as `mcp_stock_trader.js`'s `trade=1`
+gate. Default mode computes a full multi-target plan every tick (which
+targets, which hosts, projected $/s per target, and a
+`singleTargetBaselineScore` — what `mcp.js`'s own approach would project if
+it gave the whole pool to just the best target) and writes it to
+`mcp_multi_status.json`, but never calls `ns.exec`/`ns.scp`/`ns.kill`. Only
+`run mcpMulti.js live=1` deploys real threads.
+
+- **Start:** `run mcpMulti.js` (dry-run) or `run mcpMulti.js live=1` (deploys
+  real threads)
+- **Reads:** `mcp_multi_config.json` every tick
+- **Writes:** `mcp_multi_status.json` (every tick), `mcp_multi_status_log.txt`
+  (on change), `mcp_multi_events.txt`, `mcp_multi_target_state.json`
+- **Deploys** (`live=1` only): the same `/scripts/weaken.js`, `/scripts/grow.js`,
+  `/scripts/hack.js` `mcp.js` uses
+- **Mutual exclusion:** `live=1` refuses to start while `mcp.js` is running on
+  `home` — the two would fight over the same rooted hosts' RAM (both
+  `ns.exec` the same action scripts, both `ns.kill` mismatched threads). Kill
+  `mcp.js` first, or stay in dry-run to run it alongside the live bot.
+
+**The scheduler (`mcpMulti_logic.js`, `node --test mcpMulti_logic.test.js`):**
+everything about what a good plan looks like *for one target* — work-weight
+sizing, target scoring, stuck detection — is imported unchanged from
+`mcp_logic.js`; multi-target only changes how many targets run at once and
+how hosts split across them. Two new pure functions:
+
+- `computeTargetPoolNeed` — `computeTargetScore`'s own model has a target's
+  money-drained fraction saturate as
+  `1 - exp(-growTimeRatio * hackThreads * hackPercentPerThread)`; this solves
+  that same formula for "how many pool-thread-slots until this target is
+  `SATURATION_FRACTION` (default 0.9) saturated," instead of leaving
+  unbounded RAM parked on one target indefinitely.
+- `partitionHostsAcrossTargets` — greedily assigns whole hosts (largest
+  first, so `home` lands on the best target) to the top-ranked candidate
+  until its need is met, then the next, up to `MAX_CONCURRENT_TARGETS`
+  (default 3). Leftover RAM once every target's need is met goes back to the
+  single best target, never left idle. Whole-host granularity — a host isn't
+  split across two targets' plans — so each target's own allocation still
+  goes through `computeDesiredAllocation` unmodified, just once per assigned
+  host subset.
+
+**v1 scope, narrower than `mcp.js` on purpose:** money objective only (no
+XP mode — spreading across targets doesn't share XP mode's "sit still and
+grind one target" rationale); no R8/Formulas.exe switch veto; no
+money-degradation eviction timer (`mcp.js` needs one because it *commits* to
+one target and must decide when to stop re-litigating that commitment;
+`mcpMulti.js` recomputes the whole partition from live scores every tick, so
+a draining target's declining `moneyPct` already lowers its own next-tick
+need/rank — nothing is "committed" for a timer to protect). Stuck-target
+detection (`evaluateStuckTarget`) is kept: a target whose security never
+converges would otherwise permanently occupy an assignment slot for zero
+income.
+
+**Known duplication:** `mcp.js` only exports `main`, so the small `ns`-glue
+infrastructure it doesn't share (network scan, RAM accounting, event log,
+thread exec, ...) is copied into `mcpMulti.js` rather than imported —
+consistent with `mcp_logic.js`'s own "copied verbatim, not rewritten"
+extraction, and the alternative (a shared module) would require editing
+`mcp.js`.
+
+**`projectedScore`/`singleTargetBaselineScore` are ramp-discounted
+(2026-08-29), not the raw steady-state rate.** `skim_probe.js`'s live
+analysis (see below) found priming an unweakened, ~2%-money target runs
+30 minutes to 50+ hours depending on the server — so a raw score for a
+still-priming assignment would overstate near-term reality the same way the
+pre-R4 single-target score used to. Both fields now use
+`getTargetEffectiveScore` (same ramp-cost-discount function `mcp.js`'s own
+`candidateScore` uses), so `upliftRatio` is an apples-to-apples comparison.
+Deliberately *not* applied to `computeTargetPoolNeed`/
+`partitionHostsAcrossTargets`'s capacity math — how much RAM a target can
+usefully absorb doesn't depend on whether it's primed yet, and discounting
+it would make the partitioner wrongly reluctant to start priming a good
+second target early with surplus RAM that would otherwise sit idle.
+
+### `skim_probe.js`
+
+One-shot, read-only diagnostic (2026-08-29) — dumps every currently-hackable
+server's money/security/timing to `skim_probe.json`. Built to test a "skim
+the top off each server and move on" hypothesis against `mcp.js`'s steady
+balance-point harvest. **Finding:** untouched servers sit at ~2% money and
+13-62 security points above floor (not full-money/floor-security as a "skim"
+strategy would need), and priming one (weaken-to-floor + grow-to-full) with
+the whole worker pool takes 30 minutes to 50+ hours depending on the server.
+Comparing real per-server numbers against `mcp_logic.js`'s own scoring
+formulas: steady harvest beats a best-case one-shot skim by roughly 3x-75x
+on every server on the network — no dedicated skim mode was built as a
+result. Directly motivated the `projectedScore`/`singleTargetBaselineScore`
+ramp-discount fix in `mcpMulti.js` above, once it was clear priming cost is
+large enough to matter for multi-target's own numbers too.
+
+- **Start:** `run skim_probe.js`
+- **Writes:** `skim_probe.json` (overwritten each run)
+- No `ns.hack`/`ns.grow`/`ns.weaken` calls — unlike `econ_probe.js`, purely
+  read-only.
 
 ### `scripts/weaken.js`, `scripts/grow.js`, `scripts/hack.js`
 
@@ -729,6 +860,87 @@ orchestrator-disagreement risk to design around).
 +------------------------------+
 ```
 
+### `mcp_xp.js`
+
+A focused, low-noise XP/progression panel in the same small-tail family as
+`mcp_money.js`. It reads `mcp_status.json` for the player skills, MCP objective,
+target, and script XP rate, so its ordinary 20-second refresh performs no player
+API reads, telemetry writes, or network scan. It performs a read-only server
+walk at most once every ten minutes to identify the next discovered hacking
+level gate.
+
+- **Start:** `run mcp_xp.js` (optional `x= y= w= h=`). It is started by
+  `startup.js` and refreshed after an MCP restart.
+- **Shows:** current Hacking and Charisma; reliable total script XP/sec from
+  MCP; current objective and target; the next server's required Hack level and
+  remaining gap; and an evidence-labelled player action. A discovered normal
+  server gate remains the high-confidence default (`BEST NOW Rothman
+  Algorithms until H…`). If no gate remains, a fresh Darknet heartbeat is
+  shown only as evidence of *passive* Charisma growth—not as a reason to
+  interrupt the player for manual Charisma training. It never invents a gym,
+  crime, or faction-reputation priority without a live requirement to support
+  it. It intentionally does not claim a player XP-per-second delta, because
+  that rate is not durably measured across sessions.
+
+### `dnet_scorecard.js`
+
+A compact Dark Net panel in the same visual family as `mcp_money.js`. It
+reads the durable home-side crawler and loot shards directly, rather than
+depending on manually refreshed `dnet_status.json`, and combines them with
+the credential ledger, current player charisma, and the game's since-install
+Dark Net money category.
+
+- **Start:** `run dnet_scorecard.js`; optional `x= y= w= h=` use the same
+  positioning convention and echo row as the other panels. A remote start is
+  available through `restart_mcp.js --dnet-scorecard`.
+- **Refresh:** every 2 seconds. A crawler shard is considered fresh for 120
+  seconds, making churn visible without declaring a healthy mutation pause
+  dead immediately.
+- **Shows:** live/stale state; charisma and gain/rate since the panel opened;
+  Dark Net money since the last augmentation install; fresh/known crawler
+  count; current-pass sessions, failures, preparation, loot, phishing-thread
+  starts and RAM-decision skips; unique credentials/models; cumulative RAM
+  reclaimed, caches opened/found and karma; global instability; heartbeat age.
+- **Verification:** every render writes `dnet_scorecard_status.json` with the
+  exact displayed lines and an `ok` flag, making a successful live panel
+  distinguishable from a process that merely launched and then crashed.
+- **Durability:** cumulative loot is recomputed from immutable event shards,
+  and credentials from the newest record per hostname, so the display does
+  not inherit the stale merged-scoreboard problem found on 2026-08-14.
+- Opt-in, like `mcp_money.js`; it is not added to `startup.js`.
+
+```
++----------------------------------+
+|DARK NET                      LIVE|
+|charisma                  189  +12|
+|charisma / min                26.4|
+|darknet $ / install          8.20m|
+|crawlers fresh / known      31 / 94|
+|credentials / models        592 / 7|
+|caches opened / found         2 / 2|
+|instability              1.00x / 0%|
++----------------------------------+
+```
+
+### `dnet_hud.js`
+
+Low-impact Darknet health panel. Unlike `dnet_scorecard.js`, it never scans
+credential, deployer, or loot shards and writes no telemetry of its own. It
+reads only `dnet_deployer_home.json` (the root gateway heartbeat) and
+`dnet_manager_registry.json` (the compact active-manager registry), then
+refreshes every 15 seconds.
+
+- **Start:** `run dnet_hud.js`; optional `x= y= w= h=` position it like the
+  other panels. Re-running it replaces the prior panel.
+- **Shows:** root heartbeat freshness, active-manager count, known
+  credentials, last-pass and lifetime delegation/failure counters,
+  instability, and the latest failure stage/host.
+- **Interpretation:** `STALE` means the root heartbeat is older than 30
+  seconds or unavailable; it does not itself prove the full Darknet is down.
+- **Cost profile:** two small `ns.read()` calls and one bounded tail redraw
+  per 15-second refresh. It deliberately avoids `ns.ls()` and per-shard JSON
+  parsing, which makes it appropriate while investigating renderer freezes.
+
 ### `mcp_stocks.js`
 
 Read-only stock market panel — groundwork for trading, not trading itself.
@@ -784,6 +996,68 @@ is bought — what looks worth buying.
 +----------------------------------+
 ```
 
+### `mcp_stock_trader.js`
+
+**Current state: live since 2026-08-18.** The approved instance runs as
+`mcp_stock_trader.js trade=1`; its source and required logic module are in
+the Remote API daemon's watched set so reconnects preserve that deployment.
+
+Conservative long-only trader implementing a portfolio-wide adaptive 1%–10%
+allocation cap and a 10% net-profit exit target. It requires WSE, TIX API, and 4S Market Data TIX
+API; without 4S, forecast-based entries are not available and commission plus
+spread make guessing a poor starting metric. It is dry-run by default and
+cannot place orders unless started with `trade=1`.
+
+- **Optional:** `interval=<ms>` (default 4000); the current output is the
+  script log.
+- Buys only when `getForecast(symbol) > 0.5`, and keeps the *combined*
+  liquidation value of all positions within its cap of total portfolio equity.
+  The cap starts at 10%, falls by one percentage point after each realized
+  loss, rises by one after each realized gain, and is clamped to 1%–10%.
+- Records actual entry cost in `mcp_stock_trader_state.json` (including
+  commission) so profit is not recalculated at the current purchase price.
+  Legacy positions fall back to average share price plus one commission.
+- Takes profit above 10% net; a losing position is sold only after its
+  forecast reverses to 0.5 or below, which is the realized-loss path that
+  reduces the cap. It never shorts.
+- **Incident evidence:** Ken's supplied process list showed a `trade=1`
+  instance before restart. That proves the boundary was crossed, not that an
+  order executed or the trader caused the game failure.
+
+### `mcp_formulas_shadow.js`
+
+**Current state: live-validated, shadow-only.** Run 5713 (2026-08-16)
+confirmed the tracked-checkout version of this script opens its evidence
+tail, samples once, and writes a retrievable `ready:true` snapshot — see
+`docs/evidence/`. A further, tested-but-unmerged step exists in an isolated
+worktree: a conservative switch-veto that uses this same formulas-based
+minimum-security score to veto (never choose) a scheduler target switch.
+See `STATE.md` for its status and the next step to land it.
+
+Read-only, opt-in formulas shadow monitor. Reads `mcp_status.json` for the
+manager's current target, income, pool capacity, and invariant counters; then
+calculates a minimum-security target ranking with Formulas.exe. The tracked
+version here never changes target selection, worker allocation, or
+configuration — the veto variant in `STATE.md` still never *selects* a
+target, only vetoes an already-chosen switch, and is off by default.
+
+- **Interface:** `run mcp_formulas_shadow.js [intervalMs] [samples]` (default 120
+  seconds; minimum 60 seconds). Set `samples` to a positive count for a
+  bounded run; omit it for continuous monitoring.
+- **Stop:** `kill mcp_formulas_shadow.js`.
+- **Output:** cumulative JSON-lines snapshots in
+  `mcp_formulas_shadow.txt`; each poll appends one complete snapshot and also
+  prints that exact snapshot to the script log. Until explicit tail opening is
+  implemented, there is no automatically visible tail panel. The file preserves the
+  evidence from a bounded run, rather than leaving only its final poll. For
+  continuous monitoring, stop and clear/archive the file deliberately if its
+  size becomes material.
+- **Failure mode:** missing/stale manager status or a formulas exception is
+  recorded as a failed snapshot and shown in the tail; no production action is
+  taken. Requires Formulas.exe.
+- **Status:** audit/shadow tooling only; not part of `startup.js` and not
+  integrated into `mcp.js`.
+
 ### `ipvgo_hud.js`
 
 Terse status panel for `ipvgo_player.js`, same shape as `mcp_hud.js` — reads
@@ -818,10 +1092,11 @@ live for as long as it's open.
 
 ### `get_stats.js`
 
-The wide view: one line per rooted server with money, security, RAM and what
-it is currently running. Auto-sizes its tail window to the text using real
-font metrics from `ns.ui.getStyles()`, and parks itself beside the sidebar by
-default.
+The wide view: one line per rooted money server and every purchased worker,
+with money, security, RAM and what it is currently running. This makes MCP's
+cloud-worker activity visible even though purchased servers have no money.
+Auto-sizes its tail window to the text using real font metrics from
+`ns.ui.getStyles()`, and parks itself beside the sidebar by default.
 
 - **Start:** `run get_stats.js`, or `run get_stats.js <server> [<server>…]`
   to restrict it — `x=`/`y=`/`w=`/`h=` also accepted, mixed in with server
@@ -846,7 +1121,127 @@ escaped) and filters `ns.ls(host)` client-side.
 - **Start:** `run lsf.js <pattern> [host]` — e.g. `run lsf.js *.msg`,
   `run lsf.js *.cct n00dles`. `host` defaults to the server the script runs
   on. `run lsf.js *` lists everything, same as plain `ls`.
+- **Output:** with AutoLink.exe, every returned filename is a clickable link
+  that connects the terminal to the server holding it; without it, output
+  remains plain text.
 - **Reads:** the live game (`ns.ls`), nothing on disk.
+
+### `cct_audit.js`
+
+Read-only coding-contract inventory. It breadth-first scans rooted servers,
+records each `.cct` file's type, input, description, and remaining attempts
+in `cct_inventory.json`, and **never** calls `ns.codingcontract.attempt()`.
+
+- **Start:** `run cct_audit.js` on `home`, or use the remote restart request
+  flag `--cct-audit` to run it after MCP relaunch.
+- **Output:** `cct_inventory.json`, pulled automatically by the Remote API.
+- **Purpose:** establish the actual contract mix and test solver inputs before
+  any code is allowed to submit an answer.
+
+### `cct_dry_run.js` and `cct_submit.js`
+
+`cct_dry_run.js` computes answers from the latest audit and never submits.
+`cct_submit.js` is the sole live-submit path: it accepts one explicit host and
+file, re-reads the type and input, and compares their FNV-1a fingerprint with
+the audit snapshot before it can call `ns.codingcontract.attempt()`. It also
+requires a minimum remaining-attempt count (10 by default). It never scans,
+selects, or batches contracts.
+
+When home cannot fit its 23.6GB RAM cost, `restart_mcp.js` briefly reclaims a
+cloud worker, or (after an augmentation reset removes cloud servers) a rooted
+ordinary host containing only MCP action loops. It never kills an unrelated
+process; MCP refills any preempted action RAM on its next tick. This remains
+one explicit submission, not a distributed batch.
+
+- **Start:** `run cct_dry_run.js`; guarded submission uses
+  `run restart_mcp.js --cct-submit=host|file [--cct-min-tries=10]`.
+- **Output:** `cct_dry_run.json` and `cct_submit_status.json`, both pulled by
+  the Remote API. The latter holds the exact answer, guard inputs, and reward
+  or rejection result for the one requested contract.
+
+### `cct_hud.js`
+
+Low-refresh, read-only reward ledger panel for completed Coding Contracts.
+`cct_submit.js` appends one bounded (latest 100) outcome record after every
+attempt; the ledger starts with the verified 12-contract aggregate that
+predated it, explicitly excluding the unconfirmed CSEC result. The HUD reads
+only that ledger and the latest submit status every 30 seconds—no scans,
+submissions, or steady-state writes.
+
+- **Start:** `run cct_hud.js` (optional `x= y= w= h=`), or add `--cct-hud` to
+  a `restart_mcp.js` request.
+- **Output:** `cct_reward_ledger.json`, automatically pulled by the Remote
+  API; the panel shows accepted count, cash, faction-reputation totals, last
+  outcome, and whether a failed guard has paused the sequence. After an
+  augmentation reset it separates this reset's rewards from the retained
+  prior-run/lifetime record using reset state, so historical rewards are never
+  presented as current cash or faction reputation.
+
+### `ops_hud.js`
+
+The compact consolidated operations panel: one quiet tail for the decisions
+that need attention, with specialist HUDs retained for deeper inspection.
+It reads only the existing MCP status, contract ledger/latest result, Darknet
+root heartbeat/manager registry, automation-review status, and purchased-cloud
+names. It does not scan, parse Darknet shards, write telemetry, or control any
+gameplay script. It refreshes every 30 seconds and labels missing or stale MCP
+and Darknet records explicitly.
+
+- **Start:** `run ops_hud.js` (optional `x= y= w= h=`), or add `--ops-hud` to
+  a `restart_mcp.js` request.
+- **Shows:** MCP target/objective/rate/worker status; a local-telemetry-only
+  player-time recommendation with an explicit confidence/basis; contract accepts, cash, leading faction
+  reputation and latest result; Darknet heartbeat/managers; cloud-worker
+  count/RAM utilization; and the first current automation alert. It performs
+  a cached (ten-minute) read-only network walk to name the lowest discovered hacking-level gate,
+  showing the player's current level and the level gap (not an invented XP
+  total). A normal-server gate therefore takes priority and states, plainly,
+  `need +N H: server (HX)` and `Best: Rothman Algorithms until HX`. Once no
+  such gate exists, the panel calls out only evidence-backed alternatives:
+  a live Darknet means Charisma is already growing passively; otherwise it
+  says that no gym, crime, or faction-work requirement has been observed.
+  It never starts, stops, or inspects player work.
+
+### `maintenance_steward.js` and `cct_watcher.js`
+
+The persistent maintenance steward starts with `mcp_launch.js` and `startup.js`.
+It observes game health every 30 seconds, starts the contract watcher if it is
+absent, and writes a bounded status/history record. A stale MCP status must
+persist for 60 seconds before it asks the existing supervisor for one normal
+restart; further recovery requests are cooled down for 15 minutes. It never
+trades, resets/installs, or starts/stops/expands Darknet.
+
+The cloud-first watcher runs a finite audit every ten minutes and then
+processes **at most one** contract. It selects only a solver-supported item
+with at least ten tries remaining, reuses `cct_submit.js`'s live fingerprint
+guard, and copies the status and bounded reward ledger home. An unsupported
+type, insufficient tries, rejection, or missing result pauses the queue with
+the exact reason in `cct_queue_status.json`; it does not spend a second
+attempt or skip ahead. This makes contract progress sequential and reviewable,
+not an uncontrolled batch.
+
+When purchased workers do not exist after an augmentation reset, both audit
+and submission use the same rooted-normal-host fallback. A host with any
+non-MCP process is excluded; only MCP action loops may be briefly preempted.
+
+Supported contract types include `Total Ways to Sum II`, solved as standard
+unbounded coin-change combinations (denomination order does not create extra
+ways); `Compression I: RLE Compression`, which emits literal character runs
+in chunks of at most nine; `Spiralize Matrix`; Vigenère encryption; inclusive
+prime-range counting; and minimum-jump `Array Jumping Game II`.
+
+- **Start:** automatic with MCP; `run maintenance_steward.js` after a full
+  manual recovery is also sufficient.
+- **Output:** `maintenance_status.json`, bounded `maintenance_history.txt`,
+  `cct_watch_status.json`, `cct_queue_status.json`, the inventory, submit
+  status, and reward ledger — all pulled by the Remote API.
+
+### `purchase_worker_server.js`
+
+One-shot provisioner for a purchased 2^n-GB worker server. It performs no
+manual script copying: MCP discovers the new rooted server and deploys its
+workers on the next tick. Writes `purchased_worker_status.json` with the cost
+and result; the remote restart path accepts `--buy-worker=<GB>`.
 
 ### `mcp_status.js`
 
@@ -896,8 +1291,11 @@ that loop.
 
 ### `restart_mcp.js`
 
-Kills `mcp.js` on home, waits for it to actually be gone, relaunches it with
-whatever args it was given.
+Kills `mcp.js` on home, waits for it to actually be gone, then always hands
+off with `ns.spawn()` to the tiny `mcp_launch.js` helper using whatever args
+it was given. This ends the temporary launcher before MCP's allocation is
+evaluated, so a launcher-side RAM race cannot leave worker scripts running
+without their controller. The helper starts requested HUDs only after MCP.
 
 - **Start:** `run restart_mcp.js [target=<hostname>]`
 
@@ -1418,6 +1816,25 @@ A self-contained set, separate from everything above. It does not touch
 `mcp.js` and is **not** auto-started by `startup.js` or `mcp_supervisor.js` —
 deliberately, until it has worked by hand at least once.
 
+### Quiet operational review
+
+Routine state belongs in status files, not in the terminal or a script tail.
+`mcp.js` therefore writes its full state to `mcp_status.json` and only appends
+a readable line when its target/plan changes; it no longer prints one status
+line every tick. The normal transient Darknet path runs `dnet_crawl.js
+--quiet`, its manager records retry errors in its status record, and the
+legacy scorecard refreshes at 30 seconds rather than two.
+
+`automation_review.js` is the home-side consumer. It polls every 30 seconds,
+reads only MCP status, the Darknet root heartbeat, compact manager registry,
+and at most the active manager-heartbeat shards, and writes `automation_review.json` plus a bounded
+`automation_review.txt` transition log. It does not start/stop automation or
+scan Darknet shards. It raises a toast only for a new/changed actionable
+condition: stale MCP/root, an MCP invariant violation, or more than the
+configured two Darknet managers. Both files are Remote-API pull telemetry, so
+an external reviewer can inspect them without tailing the game.
+`restart_mcp.js` starts it when absent, before relaunching MCP.
+
 **Confirmed live 2026-08-12.** `dnet_probe.js` and a fresh `dnet_deploy.js
 --once` run from `home` both ran for real: `probe()` from home returned
 exactly `["darkweb"]` as predicted, and the deployer went on to crack 12+
@@ -1434,11 +1851,17 @@ does what the UI does). Design reasoning lives in `docs/darknet-functions.md`
 | File | Runs on | RAM (est.) | What it does |
 | --- | --- | --- | --- |
 | `dnet_probe.js` | `home` | ~2.3GB | First contact. Probes, reports each neighbour's details, attempts `authenticate("darkweb","")`. Mutates almost nothing. |
-| `dnet_lib.js` | — | 0GB alone | Shared module. Model-aware password candidates, credential store, session acquisition, `shardName`/`shipShard` (generalized 2026-08-12 for any per-host shard family — credential, loot, or deployer), `writeDeployerShard`/`pickFreshestShard` (2026-08-12, deployer heartbeat sharding), and `mergeStatus` (the `dnet_status.json` read-merge-write helper, now called only by home-only scripts). Not runnable. |
-| `dnet_deploy.js` | `home`, then darknet | ~4.8GB | Roaming self-replicating deployer. Cracks, persists, spreads, follows mutations. **2026-08-12 (Phase 3):** also scp+execs `dnet_loot.js` onto every neighbour right when a session is freshly confirmed on it (see `dnet_loot.js`'s row and `docs/darknet-functions.md`'s Phase 3 section for why a later separate pass doesn't work). Writes a "deployer" heartbeat every pass (this instance's own view — visible/cracked/sessions/failed/looted/lootSkipped this pass and since process start, plus the genuinely-global `getDarknetInstability()` reading) to a per-host shard (`dnet_deployer_<host>.json`) and ships that shard to home. **Fixed 2026-08-12:** previously shipped the *entire* `dnet_status.json` via a raw `scp`, which let concurrent instances clobber each other's `credsMerge`/`loot` sections on home — see `docs/darknet-functions.md`'s 2026-08-12 "status-file clobbering" section. `dnet_status_merge.js` (below) now folds these shards into the dashboard's view. |
-| `dnet_loot.js` | a darknet server | ~5.0GB | Frees blocked RAM (gated on the free `getBlockedRam`), opens `.cache` files, reports karma spent. Writes its own per-host shard (`dnet_loot_<host>.json`) and ships it to home, same sharding reasoning as credentials. As of 2026-08-12, launched inline by `dnet_deploy.js` (see above) rather than only via the standalone batch tool below. |
+| `dnet_lib.js` | — | 0GB alone | Shared module. Model-aware password candidates, credential store, session acquisition, filename-safe credential/deployer/loot-event shards, targeted `freeBlockedRam`, cumulative loot-event aggregation, and `dnet_status.json` merge helpers. Not runnable. |
+| `dnet_root.js` | `home` | home-only; exact RAM not yet surfaced | Stable gateway for the transient architecture. Its unique filename cannot be overwritten by surviving legacy crawlers. It authenticates `darkweb`, kills any reappearing `dnet_deploy.js` process there, prepares the gateway, and launches `dnet_crawl.js` only when neither a visible process nor a fresh manager-registry heartbeat owns it. Credential shards are folded at most once per minute and manager shards at most once per 15 seconds, rather than being fully reread at every gateway poll. |
+| `dnet_deploy.js` | legacy compatibility only | 15GB, measured live | Former roaming controller. Retained for history/fallback but no longer launched by the restart path. Surviving old in-memory copies can temporarily repopulate nodes, so `dnet_root.js` actively quarantines this filename at the gateway. |
+| `dnet_crawl.js` | transient on darknet nodes | 6.7GB measured live | Lean one-pass crawler: authenticate with an inline shallow-net solver (avoiding the all-purpose library's 10GB static-analysis charge), persist new credentials, reclaim a blocked direct neighbour using the source-side API, propagate itself, write a heartbeat, start the local manager, and exit. This keeps discovery and authentication costs out of the permanent farm. Each heartbeat records measured crawler/manager/phisher RAM, resulting phishing-thread capacity, and at most five compact failure reasons—enough to diagnose an access block without per-attempt console output. |
+| `dnet_manager.js` | resident on darknet nodes | 3.15GB measured live | Local lifecycle manager. After the transient crawler releases RAM, it runs one `dnet_phish.js` worker. Its 90-second recrawl uses `--no-spread`, so it refreshes local access without becoming a propagation source. The current controlled-expansion restart permits at most two managers total and exactly one terminal child from the root's initial crawl. |
+| `dnet_realloc.js` | the crawler adjacent to a blocked neighbour | ~2.6GB/thread | Temporary remote preparation worker. Accepts the authenticated neighbour as argv[0], uses a deliberately inline minimal reallocation loop, and exits. Running on the source side can unlock a deep host even when 100% of the target's RAM is blocked. `memoryReallocation` scales with threads, so the controller uses every source-side thread that fits. Safe to lose and retry after a mutation. It ships no telemetry—the controller observes `blockedRam` between passes. |
+| `dnet_phish.js` | a prepared darknet server | ~3.6GB/thread | Lean `phishingAttack()` loop. It deliberately emits no per-attempt script-log lines: a successful call can complete every 200ms, so per-call output was a renderer-pressure source. On a cache-producing success it writes a zero-RAM marker and exits; the controller launches loot to open the cache, then restores phishing on a later pass. |
+| `dnet_loot.js` | a darknet server | ~5.55GB | Frees blocked RAM (normally already reclaimed remotely by the new crawler path), opens `.cache` files, and reports karma spent. Meaningful results are immutable timestamped event shards (`dnet_loot_<escaped-host>_<timestamp>.json`); normal and no-op runs emit no terminal or script-log output, while cache/shipping errors remain visible. Launched once per neighbour/process lifetime by `dnet_deploy.js`. |
+| `dnet_loot_realloc.js` | a darknet server | ~3.35GB | RAM-only legacy fallback when the full loot worker does not fit. Still supported, but remote-before-spread reallocation in `dnet_deploy.js` is now the primary path because it does not require enough target RAM to launch first. Meaningful results use the same immutable event-shard ledger. |
 | `dnet_loot_all.js` | `home` | ~3.0GB | Manual/one-off: loots every host in `dnet_creds.txt`, one at a time, via `connectToSession`. **Superseded as the primary loot path 2026-08-12** — tried live against 103 known hosts, 0 looted (48 offline by the time it circled back, 7 "RAM too small" via a check that reads a field that doesn't exist on `DarknetServerDetails` and always evaluates to 0 — see `docs/darknet-functions.md`, not fixed here, kept only for manual/one-off use). Kept as a tool, not removed. |
-| `dnet_loot_merge.js` | `home` | ~2.0GB | Folds `dnet_loot_<host>.json` shards into `dnet_status.json`'s `"loot"` section (total karma spent, RAM freed, caches opened, per-host breakdown) — same relationship `dnet_creds_merge.js` has to credential shards. |
+| `dnet_loot_merge.js` | `home` | ~1.8GB | Recomputes cumulative, idempotent totals from every immutable `dnet_loot_*_<timestamp>.json` event shard and writes `dnet_status.json`'s `"loot"` section. `--prune` is retained for CLI compatibility but intentionally ignored: the event shards are the durable ledger. |
 | `dnet_creds_merge.js` | `home` | ~2.0GB | Folds per-host credential shards into `dnet_creds.txt`. Also writes the "credsMerge" section of `dnet_status.json` — total cracked count and a per-model breakdown off the merged file, the one genuinely network-wide number in that file (stale until re-run after new cracks land, but not a guess). |
 | `dnet_status_merge.js` | `home` | ~2.0GB | **New 2026-08-12**, the fix's other half. Folds `dnet_deployer_<host>.json` shards into `dnet_status.json`'s `"deployer"` section — picks the single *freshest* shard by `ts` (not a network-wide sum; see the file's own doc comment for why) and writes it plus `assembledAt`/`shardsSeen`/`sourceShard` bookkeeping. Must be run (and re-run periodically) for the dashboard's `deployer` section to show anything, same manual-refresh cadence Ken already uses for the other two merge scripts. |
 
@@ -1446,10 +1869,27 @@ does what the UI does). Design reasoning lives in `docs/darknet-functions.md`
 
 - `dnet_deploy.js` — `--once` (single pass, no loop), `--brute N` (allow up to
   N numeric candidates per host; default 0 = off), `--quiet`.
+- `dnet_realloc.js` — `--max-realloc N` (default 25).
+- `dnet_crawl.js` — `--brute N`, `--quiet`, `--no-spread` (perform local
+  discovery/manager handoff without creating children; used for all manager
+  recrawls and terminal expansion children).
+- `dnet_phish.js` — `--until <epoch-ms>` (manager-owned clean recrawl deadline).
+- `dnet_killswarm.js` — `--quiet`, `--restart` (launch a fresh crawler after
+  cleanup; remotely reachable through `restart_mcp.js --darknet`). The
+  restart wrapper waits up to 120 seconds for cleanup to exit, launches the
+  root itself, and only then relaunches MCP. This avoids both MCP and the
+  cleanup process consuming home RAM during the root launch.
+  Cleanup
+  authenticates only hosts with a heartbeat from the last ten minutes, then
+  runs remote `ps`/`kill`; this is both effective and bounded, unlike either
+  unauthenticated cleanup (live failure) or visiting all 586 historical hosts.
+  `dnet_killswarm_status.json` records `started`/`complete`, targets, inspected,
+  unavailable, and killed counts. The remote restart path launches cleanup
+  after stopping MCP but before restarting it, guaranteeing launch RAM.
 - `dnet_loot.js` — `--no-cache`, `--no-ram`, `--max-realloc N` (default 25).
 - `dnet_loot_all.js` — `--limit N` (stop after N hosts, default: all),
   `--wait-ms N` (per-host completion timeout, default 15000).
-- `dnet_loot_merge.js` — `--prune` (delete shards after merging), `--quiet`.
+- `dnet_loot_merge.js` — `--prune` (accepted but ignored; event shards are the cumulative ledger), `--quiet`.
 - `dnet_creds_merge.js` — `--prune` (delete shards after merging), `--quiet`.
 - `dnet_status_merge.js` — `--prune` (delete shards after merging), `--quiet`.
 
@@ -1459,9 +1899,11 @@ does what the UI does). Design reasoning lives in `docs/darknet-functions.md`
 | --- | --- | --- |
 | `dnet_creds.txt` | `dnet_deploy.js`, `dnet_creds_merge.js` | JSON-lines, one record per line: `{host, password, model, at}`. `.txt` not `.jsonl` — `ns.write` rejects `.jsonl`. Carried along on every `scp` so a child agent inherits what its parent knew. |
 | `dnet_cred_<host>.txt` | `dnet_deploy.js` | Per-host shard, scp'd to `home`. Sharded so concurrent agents can't clobber one shared file. Hostnames are escaped (`meta:inc` → `metax3ainc`) because darknet hostnames contain `:`, `%`, `@` and emoji. |
-| `dnet_loot_<host>.json` | `dnet_loot.js` | Per-host shard, scp'd to `home`, same sharding reasoning as credential shards. `{host, model, difficulty, ram:{before,after,calls,why}, caches:{found,opened,karma,detail}, at}`. |
+| `dnet_loot_<escaped-host>_<timestamp>.json` | `dnet_loot.js`, `dnet_loot_realloc.js` | Immutable event shard, scp'd to `home`, written only when RAM was actually reclaimed or a cache was found/opened. Timestamp remains outside the escaped/truncated hostname so events cannot collapse onto one filename. `{host, model, difficulty, mode, ram?, caches?, at}`. `dnet_loot_merge.js` recomputes cumulative totals from this ledger idempotently. |
 | `dnet_deployer_<host>.json` | `dnet_deploy.js` | **New 2026-08-12.** Per-host shard, scp'd to `home`, via `dnet_lib.js`'s `writeDeployerShard`/`shipShard`. Fixes a real bug: `dnet_deploy.js` used to `scp` the *whole* `dnet_status.json` to home every pass, and since every roaming instance's own local copy only ever has a `deployer` key, whichever instance's `scp` landed last silently erased the `credsMerge`/`loot` sections other scripts had written there. Sharded the same way credentials/loot already are, so concurrent `scp`s can never collide. `dnet_status_merge.js` folds these into `dnet_status.json`. |
 | `dnet_status.json` | `dnet_status_merge.js` (`deployer` section, folded from `dnet_deployer_<host>.json` shards — **no longer written directly by `dnet_deploy.js`**, see above), `dnet_creds_merge.js` (`credsMerge` section), `dnet_loot_merge.js` (`loot` section) | Read-merge-write at the JSON-object level (`mergeStatus` in `dnet_lib.js`, called only by these three home-only scripts as of 2026-08-12) so the three writers don't stomp each other's section. In `WATCHED_FILES`/`PULL_FILES` (added 2026-08-12, same pattern as `ipvgo_status.json`), so it pushes/pulls automatically for `docs/status-dashboard.html`'s darknet scoreboard. `deployer.*` reflects whichever shard `dnet_status_merge.js` last judged freshest — one roaming instance's own view, not a network total (many independent copies run at once, each seeing only its own `probe()` neighbours) — `deployer.instability` is the one exception, since `getDarknetInstability()` is genuinely global regardless of which host calls it. `credsMerge.totalCracked`/`byModel` and `loot.*` are the trustworthy network-wide figures, but only as fresh as the last `dnet_creds_merge.js`/`dnet_loot_merge.js` run, and `deployer.*` is likewise only as fresh as the last `dnet_status_merge.js` run. |
+| `dnet_manager_registry.json` | `dnet_root.js` (folded from `dnet_manager_active_<host>.json` shards, cadence `REGISTRY_MERGE_MS`) | `{host: ts}` of currently-believed-active resident managers. Every root launch creates an ownership generation; only shards tagged with that generation count, so old residents cannot block clean replacement after a restart. A crawler reserves a slot before spawning its manager; the manager refreshes that shard every 15 seconds while phishing. Entries older than two minutes are dropped on the next home-side merge. |
+| `dnet_restart_status.json` | `restart_mcp.js --darknet` | One small launch diagnostic: the root script RAM, home RAM before/after, and resulting root PID (or zero on failure). Written only for a Darknet restart attempt, so it makes a failed canary launch diagnosable without tail/terminal log volume. |
 
 All of the above are game output and should be gitignored if they ever land locally.
 `dnet_creds.txt` is worth adding to the download pattern once the system is
@@ -1488,6 +1930,51 @@ live, so its contents are readable outside the game.
   small" counts don't reflect real capacity. Not fixed there (kept as a
   manual tool); `dnet_deploy.js`'s inline loot path uses
   `ns.getServerMaxRam` correctly.
+- **The Remote API watch list is explicit.** `dnet_loot_realloc.js` had been
+  omitted despite being a live dependency; it and the new `dnet_phish.js`
+  are now listed in `tools/bb_remote.py`. The daemon must restart once to
+  load that changed Python list, then the game must reconnect.
+- **Unbounded resident-manager growth froze the game — confirmed live
+  2026-08-30, fixed same day.** `dnet_crawl.js` spread to every reachable,
+  crackable neighbor with no limit, and every host it landed on got a
+  permanent resident `dnet_manager.js` (`ns.spawn` at the end of its
+  `main()`) — each polling at minimum every 1s, forever. Restarted with no
+  cap, Bitburner became completely unresponsive; `ps` showed the renderer
+  process (the single thread running every Netscript tick *and* the UI)
+  pegged at 165-169% CPU. Fixed with a `MAX_ACTIVE_MANAGERS` cap (15)
+  enforced in `dnet_crawl.js` right before the `ns.spawn` call, backed by
+  the `dnet_manager_registry.json` shard-and-merge registry described
+  above. **That cap alone wasn't the fix — it took two live freezes to
+  find the real one.** A resident-count cap can only ever bound
+  steady-state count; it never touched the actual driver, the propagation
+  burst itself, and a tightened version of it (8, 1s merge) froze the game
+  *faster* than the original (15, 5s merge) once the network was mostly
+  pre-cracked from earlier runs (near-instant re-authentication lets a
+  restart unfold the whole reachable fan-out tree quicker than a cold run
+  ever could). Actual fix: `MAX_SPREAD_PER_PASS` hard-stops `dnet_crawl.js`'s
+  spread loop at 2 neighbors per pass, and `jitteredRecrawlMs` desyncs
+  `dnet_manager.js`'s 90s recrawl clocks so they don't re-converge into a
+  synchronized burst. **That wasn't the fix either — two more live freezes
+  followed, and darknet is off as of this writing.** A third restart under
+  this throttle grew gradually (no burst) yet froze anyway at a *lower*
+  resident count than either prior attempt; a fourth, cleanly isolated
+  restart (darknet alone, nothing else running) froze within ~90 seconds
+  with only 6 real resident managers, well under the cap. That rules out
+  aggregate load, propagation burst speed, and resident count as the
+  primary driver — the actual cause likely lives inside what
+  `ns.dnet.probe()`/`getServerDetails()`/`authenticate()` cost against this
+  save's darknet graph itself, not in anything `dnet_crawl.js`/
+  `dnet_manager.js`-level throttling can reach. See `docs/darknet-strategy.md`'s
+  2026-08-30 status banner for the full four-freeze arc.
+- **Chaining `run dnet_killswarm.js;run dnet_root.js` on one line can kill
+  the process it just started.** `run` doesn't block for the launched
+  script to finish, so both start nearly simultaneously; `dnet_killswarm.js`'s
+  `TARGET_SCRIPTS` set includes `dnet_root.js` itself and its cleanup scan
+  covers `home`, so the kill pass can catch its own sibling launch. Found
+  live 2026-08-30 via a terminal alias that did exactly this — `ps` came
+  back completely empty right after, and the registry file sat unchanged
+  for 15+ minutes despite an active connection (proof the merge loop had
+  died, not gone quiet). Always run the two commands separately.
 - **A RAM-fit check needs *free* RAM (`maxRam - usedRam`), not just
   `maxRam`.** `dnet_deploy.js`'s inline loot path first checked `maxRam`
   alone and passed a target (`darkweb`) whose *total* RAM was fine but whose
@@ -1537,27 +2024,34 @@ for `ns.singularity` without SF4 — done up front here instead.
 
 ## Reputation (`ns.share`)
 
+**Current state: disabled after the stability/loop incident.** Do not run
+`share_deploy.js` or `scripts/share.js` until the worker has an explicit
+bounded cooldown, focused tests, a bounded canary, and re-enable approval.
+The table describes the existing artifact only.
+
 Added 2026-08-13, Ken-requested ("boost our rate of reputation growth").
 Self-contained, not touched by `mcp.js`, not auto-started by anything.
 
 | File | Runs on | RAM | What it does |
 | --- | --- | --- | --- |
-| `scripts/share.js` | any host, spread by `share_deploy.js` | 2.4GB/thread | Three-line loop, same shape as `scripts/weaken.js`: `while(true) await ns.share()`. All the logic lives in the deployer, same division of labor as the weaken/grow/hack workers. |
-| `share_deploy.js` | run once from `home` | ~2.6GB to run itself (exits after launching) | Launches `scripts/share.js` threads. Default (`run share_deploy.js`, no args) only claims `home`'s free RAM above a 16GB reserve. **Since 2026-08-14 (R7), this does compete with the money farm**: `mcp.js` now uses `home` as a worker host too (behind its own, separate `HOME_RAM_RESERVE`, default 32GB — see "Worker hosts" above), so `share.js` threads eating into `home`'s free RAM leave correspondingly less for `mcp.js`'s own weaken/grow/hack there on its next tick, same as the `network` mode below always did for other hosts. Before R7 this mode genuinely had zero effect on the farm (`home` was categorically excluded); that is no longer true. `run share_deploy.js network` additionally claims free RAM on every rooted worker host; `mcp.js` reads each host's actual free RAM fresh every tick, so it will deploy fewer weaken/grow/hack threads there on its own next tick — a real, deliberate trade of hacking income for rep-gain rate, not a bug. `run share_deploy.js stop` kills every running `share.js` instance network-wide. Args: `[mode] [reserveHomeGb] [maxThreads]`. |
+| `scripts/share.js` | any host, spread by `share_deploy.js` | 2.4GB/thread | Repeatedly calls `ns.share()` and then yields for one second. The explicit yield prevents a large share deployment from monopolising the game event loop. All allocation logic remains in the deployer, same division of labor as the weaken/grow/hack workers. |
+| `share_deploy.js` | run once from `home` | ~2.6GB to run itself (exits after launching) | Launches `scripts/share.js` threads idempotently (every start first removes the previous share allocation). Default balanced mode kills only home's MCP action workers, reserves 256GB for 106 share threads at the measured 2.4GB/thread, then exits; MCP sees the occupied RAM and refills the rest of home on its next tick. `home` aliases balanced, `spare` uses only currently free home RAM, and `network` additionally fills currently free rooted ordinary-network RAM. `run share_deploy.js stop` kills all ordinary-network/home share workers, after which MCP automatically reclaims the RAM next tick. Args: `[mode] [shareHomeGb=256] [reserveHomeGb=32] [maxThreads]`. |
 
-**Caveat that matters more than the RAM math:** per `NetscriptDefinitions.d.ts`,
-share power only affects reputation gain *while actively doing faction work
-or a company job* (manually in the UI, or via `workForFaction`/`workForCompany`).
+**Caveat that matters more than the RAM math:** share power only affects
+reputation gain while actively doing faction work (manually in the UI or via
+`workForFaction`); the current company-work formula does not apply it.
 This repo has no scripted faction-work automation — running this while
-nobody is doing rep-earning work burns RAM for nothing. Diminishing returns
-per thread are documented in-engine ("sharply decreasing rate") but the
-exact curve wasn't found in the game's bundled (minified, unmappable)
-source, so thread counts here are sized by available RAM, not by a modeled
-optimum — check `ns.getSharePower()` (printed by `share_deploy.js` on
-launch) to see the actual effect rather than trusting a guessed curve.
+nobody is doing faction work burns RAM for nothing. The exact global curve is
+`sharePower = 1 + ln(effectiveThreads) / 25`; effective threads include the
+calling host's core bonus and aggregate across all hosts. `home` is therefore
+usually the most share-efficient RAM, but returns remain logarithmic. Check
+`ns.getSharePower()` (printed by `share_deploy.js` on launch) for the live
+result.
 
-**Not yet run live** — built and `node --check`ed this session, needs Ken to
-`run share_deploy.js` in the live terminal. See `docs/kensTodo.md`.
+The original free-RAM mode has run live. The bounded balanced allocation was
+added 2026-08-14 and is locally tested; its first in-game run still needs the
+terminal command recorded in `docs/kensTodo.md` because Codex cannot execute
+terminal commands through the file bridge.
 
 ---
 

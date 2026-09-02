@@ -882,6 +882,25 @@ level gate.
   it. It intentionally does not claim a player XP-per-second delta, because
   that rate is not durably measured across sessions.
 
+### `augmentation_readiness.js`
+
+A quiet, read-only augmentation runway assessor. Every two minutes it records
+the installed and currently purchased-but-uninstalled augmentation counts,
+then examines the player's current factions for prerequisite-ready offerings.
+For each it reads live faction reputation, required reputation, price, and
+prerequisites; it selects the smallest positive reputation gap as a concrete
+next faction-work candidate. It neither buys nor installs an augmentation,
+and never changes player work.
+
+- **Start:** automatic with `startup.js` and `mcp_launch.js`.
+- **Output:** `augmentation_readiness.json`, pulled through the Remote API.
+- **HUD use:** Operations and XP panels show a concise runway line. A higher
+  discovered Hack gate remains the priority (`Rothman Algorithms`). Once that
+  gate is clear, a three-or-more purchased batch reports `Install-ready`; or
+  a live, affordable faction-reputation gap names the faction and augmentation
+  to work toward. If Singularity is unavailable, it explicitly says so rather
+  than guessing.
+
 ### `dnet_scorecard.js`
 
 A compact Dark Net panel in the same visual family as `mcp_money.js`. It

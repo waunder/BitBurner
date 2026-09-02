@@ -149,7 +149,7 @@ function nextHackingGate(ns, hacking) {
   }
 }
 
-function playerTimeAdvice(ns, mcp) {
+function playerTimeAdvice(ns, mcp, augmentation) {
   const skills = mcp?.player?.skills || {}
   const hacking = Number(skills.hacking) || 0
   const charisma = Number(skills.charisma) || 0
@@ -157,7 +157,7 @@ function playerTimeAdvice(ns, mcp) {
   const gateState = nextHackingGate(ns, hacking)
   const root = readJson(ns, "dnet_deployer_home.json")
   const darknetLive = Number.isFinite(root?.ts) && Date.now() - root.ts <= DNET_STALE_MS
-  const guidance = chooseProgressionGuidance({ hacking, charisma, gate: gateState.gate, gateScanOk: gateState.ok, darknetLive })
+  const guidance = chooseProgressionGuidance({ hacking, charisma, gate: gateState.gate, gateScanOk: gateState.ok, darknetLive, augmentation: augmentation?.ok ? { queued: augmentation.queuedCount, candidate: augmentation.candidate } : null })
   return {
     stats: `YOU H${hacking} C${charisma}`,
     recommendation: guidance.next,
@@ -179,6 +179,7 @@ function buildLines(ns) {
   const inventory = readJson(ns, "cct_inventory.json")
   const cctWatch = readJson(ns, "cct_watch_status.json")
   const cctQueue = readJson(ns, "cct_queue_status.json", {})
+  const augmentation = readJson(ns, "augmentation_readiness.json", {})
   const cloudNames = ns.cloud.getServerNames()
   const cloudRam = workerRam(mcp, cloudNames)
   const mcpAge = Number.isFinite(mcp?.ts) ? now - mcp.ts : Infinity
@@ -195,7 +196,11 @@ function buildLines(ns) {
   const threadCount = (mcp?.workers || []).reduce((total, worker) => total + (worker.actions || []).reduce((sum, action) => sum + (Number(action.threads) || 0), 0), 0)
   const cloudPct = cloudRam.max ? `${Math.round(100 * cloudRam.used / cloudRam.max)}%` : "--"
   const recentText = !recent ? "no recorded submission" : recent.ok ? `accepted ${recent.type || "contract"}` : `paused ${recent.reason || "guard"}`
-  const playerTime = playerTimeAdvice(ns, mcp)
+  const playerTime = playerTimeAdvice(ns, mcp, augmentation)
+  const augText = !augmentation?.ok ? "assessment unavailable" : augmentation.queuedCount
+    ? `${augmentation.queuedCount} queued / ${augmentation.installedCount} installed`
+    : augmentation.candidate ? `${augmentation.candidate.name.slice(0, 19)} +${compact(augmentation.candidate.repGap)} rep`
+      : "no prereq-ready offering"
 
   return [
     row("OPERATIONS", health),
@@ -207,6 +212,7 @@ function buildLines(ns) {
     row("best now", playerTime.best),
     row("script XP", playerTime.detail),
     row("guidance basis", playerTime.basis.slice(0, 25)),
+    row("augmentation runway", augText),
     row(currentContracts.known ? `contracts ${currentContracts.accepted} this reset` : `contracts ${totals.accepted} recorded`, `$${compact(currentContracts.known ? currentContracts.cash : totals.cash)}`),
     row(`discovery ${inventory?.contracts?.length ?? "--"} available`, `${cctWatch?.ok === false ? "SCAN ERROR" : age(now, inventory?.ts)}`),
     row("CCT queue", `${cctQueue.action || "waiting"}: ${String(cctQueue.reason || "next scan").slice(0, 24)}`),

@@ -9,12 +9,16 @@ export function selectContractWork(inventory, ledger, minTries = 10) {
     .filter((contract) => !accepted.has(`${contract.host}|${contract.file}|${contract.fingerprint}`))
     .sort((a, b) => a.host.localeCompare(b.host) || a.file.localeCompare(b.file))
   if (!contracts.length) return { action: "idle", reason: "no unclaimed audited contracts" }
-  const first = contracts[0]
-  if (!first.supported) return { action: "paused", reason: `unsupported contract type: ${first.type}`, contract: first }
-  if (Number(first.triesRemaining) < minTries) {
-    return { action: "paused", reason: `tries below guard (${first.triesRemaining}/${minTries}): ${first.host}/${first.file}`, contract: first }
-  }
-  return { action: "submit", reason: "supported contract meets attempt guard", contract: first }
+  // A held low-attempt contract must not deadlock every later, independently
+  // safe contract. Keep it visible in the eventual paused result, but claim
+  // the first fingerprinted, supported item that meets the active guard.
+  const eligible = contracts.find((contract) => contract.supported && Number(contract.triesRemaining) >= minTries)
+  if (eligible) return { action: "submit", reason: "supported contract meets attempt guard", contract: eligible }
+
+  const unsupported = contracts.find((contract) => !contract.supported)
+  if (unsupported) return { action: "paused", reason: `unsupported contract type: ${unsupported.type}`, contract: unsupported }
+  const held = contracts[0]
+  return { action: "paused", reason: `tries below guard (${held.triesRemaining}/${minTries}): ${held.host}/${held.file}`, contract: held }
 }
 
 export function shouldRequestMcpRecovery({ now, mcp, previous, cooldownMs = 15 * 60 * 1000 }) {

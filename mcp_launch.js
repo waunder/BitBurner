@@ -9,6 +9,13 @@
 export async function main(ns) {
   const request = JSON.parse(String(ns.args[0] || "{}"))
   const mcpArgs = Array.isArray(request.mcpArgs) ? request.mcpArgs : []
+  // A direct `run restart_mcp.js` is also a valid recovery path. Ensure the
+  // lightweight supervisor exists afterward so later Remote API restart
+  // tokens are consumed instead of silently remaining in mcp_restart.txt.
+  if (!ns.isRunning("mcp_supervisor.js", "home")) {
+    const supervisorPid = ns.run("mcp_supervisor.js", 1)
+    if (supervisorPid === 0) ns.tprint("mcp_launch: failed to start mcp supervisor")
+  }
   // The watcher must be live before MCP consumes home RAM. Starting it from
   // the steward races its first scheduling slice against MCP and can leave
   // every subsequent queue cycle starved.

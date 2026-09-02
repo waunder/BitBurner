@@ -67,43 +67,37 @@ for RUN in 1 2 3; do
   echo "[$(date '+%H:%M:%S')] Phase 2 Canary Run $RUN / 3"
   echo "[$(date '+%H:%M:%S')] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-  echo "[$(date '+%H:%M:%S')] Launching dnet_root.js via Remote API..."
-
-  # Push and launch Phase 2 test
-  RESULT=$(python3 "$REPO_DIR/tools/bb_remote.py" ctl-push dnet_canary_phase2.js dnet_canary_phase2.js 2>&1)
-  echo "$RESULT"
-
-  # Launch the test
-  LAUNCH=$(python3 "$REPO_DIR/tools/bb_remote.py" ctl-restart --target "run dnet_canary_phase2.js" 2>&1 || echo '{"ok":false}')
-  echo "$LAUNCH"
+  echo "[$(date '+%H:%M:%S')] Run dnet_canary_phase2.js in Bitburner: run dnet_canary_phase2.js"
+  echo "[$(date '+%H:%M:%S')] Waiting for test to complete (10 minutes)..."
 
   # Monitor for 10 minutes + buffer
-  MONITOR_TIME=$((600 + 30))
-  echo "[$(date '+%H:%M:%S')] Monitoring CPU for ${MONITOR_TIME}s..."
-
+  MONITOR_TIME=$((600 + 60))
   START_SEC=$(date '+%s')
   FREEZE_DETECTED=0
-  MAX_CPU=0
   FINAL_MANAGERS=0
 
   while [ $(($(date '+%s') - START_SEC)) -lt $MONITOR_TIME ]; do
     sleep 15
 
-    # Check for freeze (crude: look at process state)
+    # Check for freeze
     if ! python3 "$REPO_DIR/tools/bb_remote.py" ctl-status --control-port $CONTROL_PORT > /dev/null 2>&1; then
       echo "[$(date '+%H:%M:%S')] ⚠️  Remote API disconnected - possible freeze"
       FREEZE_DETECTED=1
       break
     fi
+
+    # Check if test completed
+    if [ -f "$REPO_DIR/dnet_canary_phase2_completed.txt" ]; then
+      echo "[$(date '+%H:%M:%S')] ✅ Phase 2 test file detected - test completed"
+      FINAL=$(cat "$REPO_DIR/dnet_canary_phase2_completed.txt")
+      FINAL_MANAGERS=$(echo "$FINAL" | grep -o '"finalManagerCount":[0-9]*' | cut -d: -f2)
+      echo "[$(date '+%H:%M:%S')] Final managers: $FINAL_MANAGERS"
+      rm -f "$REPO_DIR/dnet_canary_phase2_completed.txt"
+      break
+    fi
   done
 
-  # Get final results
-  if [ -f "$REPO_DIR/dnet_canary_phase2_completed.txt" ]; then
-    FINAL=$(cat "$REPO_DIR/dnet_canary_phase2_completed.txt")
-    FINAL_MANAGERS=$(echo "$FINAL" | grep -o '"finalManagerCount":[0-9]*' | cut -d: -f2)
-  fi
-
-  echo "[$(date '+%H:%M:%S')] ✅ Test completed: CPU peak ???%, $FINAL_MANAGERS managers"
+  echo "[$(date '+%H:%M:%S')] Test window closed"
   echo "[$(date '+%H:%M:%S')] Cleaning up darknet processes..."
   python3 "$REPO_DIR/tools/bb_remote.py" ctl-push dnet_killswarm.js dnet_killswarm.js > /dev/null 2>&1 || true
   sleep 2
@@ -113,11 +107,10 @@ for RUN in 1 2 3; do
     echo "[$(date '+%H:%M:%S')] ❌ FREEZE DETECTED - stopping Phase 2"
     echo ""
     echo "## Run $RUN: FREEZE DETECTED" >> "$LOG_FILE"
-    break
+    exit 1
   fi
 
-  echo "### Run $RUN: SUCCESS" >> "$LOG_FILE"
-  echo "- CPU Peak: ??? %" >> "$LOG_FILE"
+  echo "### Run $RUN: COMPLETED" >> "$LOG_FILE"
   echo "- Final Managers: $FINAL_MANAGERS" >> "$LOG_FILE"
   echo "" >> "$LOG_FILE"
 

@@ -1212,7 +1212,9 @@ restart; further recovery requests are cooled down for 15 minutes. It never
 trades, resets/installs, or starts/stops/expands Darknet.
 
 The cloud-first watcher runs a finite audit every ten minutes and then
-processes **at most one** contract. It selects only a solver-supported item
+processes **at most one** contract. After an accepted submission it immediately
+re-audits so an already-known queue advances sequentially; it returns to the
+ten-minute cadence when idle or paused. It selects only a solver-supported item
 with at least ten tries remaining, reuses `cct_submit.js`'s live fingerprint
 guard, and copies the status and bounded reward ledger home. An unsupported
 type, insufficient tries, rejection, or missing result pauses the queue with

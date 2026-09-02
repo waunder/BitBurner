@@ -27,6 +27,7 @@ function writeQueue(ns, extra) {
 export async function main(ns) {
   ns.disableLog("ALL")
   while (true) {
+    let delayMs = POLL_MS
     try {
       const auditRam = ns.getScriptRam("cct_audit.js", "home")
       const auditCandidate = selectContractWorker(ns, auditRam)
@@ -63,12 +64,19 @@ export async function main(ns) {
         const resultPulled = await ns.scp(["cct_submit_status.json", "cct_reward_ledger.json"], "home", submitWorker.worker)
         const result = resultPulled ? readJson(ns, "cct_submit_status.json", null) : null
         if (!result?.ok) writeQueue(ns, { action: "paused", reason: result?.reason || "submission result unavailable", worker: submitWorker.worker, workerSource: submitWorker.source, contract: target, result })
-        else writeQueue(ns, { action: "accepted", reason: result.reason, worker: submitWorker.worker, workerSource: submitWorker.source, contract: target, result: { type: result.type, reward: result.reward } })
+        else {
+          writeQueue(ns, { action: "accepted", reason: result.reason, worker: submitWorker.worker, workerSource: submitWorker.source, contract: target, result: { type: result.type, reward: result.reward } })
+          // A successful claim changes the inventory immediately. Re-audit
+          // without waiting ten minutes so a known queue advances one
+          // guarded item at a time; an idle or paused queue still remains
+          // deliberately low-frequency.
+          delayMs = 250
+        }
         writeStatus(ns, { ok: Boolean(result?.ok), worker: submitWorker.worker, workerSource: submitWorker.source, contracts: inventory.contracts.length, inventoryTs: inventory.ts, queue: result?.ok ? "accepted" : "paused" })
       }
     } catch (error) {
       writeStatus(ns, { ok: false, error: String(error) })
     }
-    await ns.sleep(POLL_MS)
+    await ns.sleep(delayMs)
   }
 }

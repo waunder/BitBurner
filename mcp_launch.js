@@ -22,6 +22,19 @@ export async function main(ns) {
   ns.write("maintenance_launch_status.json", JSON.stringify({
     ts: Date.now(), watcherPid, maintenancePid,
   }, null, 2), "w")
+  // Start (or source-refresh) the panel while the heavy controller has not
+  // reclaimed home RAM. Its own scan is cached and it is then left alone on
+  // ordinary controller restarts.
+  const opsVersion = "2026-09-02.1"
+  const refreshOpsHud = !ns.isRunning("ops_hud.js", "home") || String(ns.read("ops_hud_version.txt") || "").trim() !== opsVersion
+  if (refreshOpsHud) {
+    for (const proc of ns.ps("home")) {
+      if (proc.filename.replace(/^\//, "") !== "ops_hud.js") continue
+      ns.ui?.closeTail(proc.pid)
+      ns.kill(proc.pid)
+    }
+    if (ns.run("ops_hud.js", 1) === 0) ns.tprint("mcp_launch: failed to start ops_hud.js")
+  }
   const pid = ns.run("mcp.js", 1, ...mcpArgs)
   if (pid === 0) {
     const max = ns.getServerMaxRam("home")
@@ -33,22 +46,6 @@ export async function main(ns) {
 
   if (request.startCctHud && !ns.isRunning("cct_hud.js", "home")) {
     if (ns.run("cct_hud.js", 1) === 0) ns.tprint("mcp_launch: failed to start cct_hud.js")
-  }
-  // Operations is intentionally independent of MCP generations. Replacing a
-  // live panel on each controller restart makes its tail visibly jump even
-  // though its input files stay valid. Only refresh it when a HUD source
-  // upgrade changes its explicit generation marker.
-  const opsVersion = "2026-09-02.1"
-  const refreshOpsHud = !ns.isRunning("ops_hud.js", "home") || String(ns.read("ops_hud_version.txt") || "").trim() !== opsVersion
-  if (refreshOpsHud) {
-    for (const proc of ns.ps("home")) {
-      if (proc.filename.replace(/^\//, "") !== "ops_hud.js") continue
-      ns.ui?.closeTail(proc.pid)
-      ns.kill(proc.pid)
-    }
-  }
-  if (refreshOpsHud && ns.run("ops_hud.js", 1) === 0) {
-    ns.tprint("mcp_launch: failed to start ops_hud.js")
   }
   // The focused XP panel is intentionally separate from Operations: the
   // latter reports broad health, while this remains readable beside the money

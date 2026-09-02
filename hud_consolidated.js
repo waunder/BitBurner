@@ -96,7 +96,7 @@ function mcpStatus(ns, now) {
   const deployment = `${workerCount}h ${actionSummary}`
 
   return {
-    compact: `${running ? "✓" : "⊘"} ${compact(moneyPerMin, 1)}/m ${deployment}`,
+    compact: `${running ? "✓" : "⊘"} ${compact(moneyPerMin, 1)}/m ${actionSummary}`,
     expanded: [
       `Status: ${running ? "RUNNING" : "STOPPED"}`,
       `Target: ${target}`,

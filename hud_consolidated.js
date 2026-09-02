@@ -1,27 +1,29 @@
-/** Consolidated Interactive HUD
+/** Consolidated Interactive HUD - Clickable Sections
  *
- * Single unified dashboard for MCP, Darknet, Augmentation, and System status.
- * Click sections to expand/collapse for deeper details.
- * Very compact by default, resizable, bottom-right corner.
+ * Single summary window showing MCP, Darknet, Augmentation, System status.
+ * Each section clickable to expand/collapse.
  *
- * Replaces: mcp_money.js, dnet_scorecard.js, ops_hud.js
+ * Also spawns a background click detector (hud_click_monitor.js) that tracks
+ * mouse position and toggles sections when you click on them.
  *
  * Usage:
  *   run hud_consolidated.js [x=<px>] [y=<px>] [w=<px>] [h=<px>]
  *
- * Click on section headers (MCP, Darknet, etc.) to expand/collapse.
- * Re-running supersedes the prior panel.
+ * Click on any section header to expand/collapse.
  */
 
-const DEFAULT_X = 900
-const DEFAULT_Y = 600
-const DEFAULT_W = 320
-const DEFAULT_H = 240
+const DEFAULT_X = 2180  // Bottom-right for 2560x1440
+const DEFAULT_Y = 1140
+const DEFAULT_W = 360
+const DEFAULT_H = 280
 const POLL_MS = 5000
 const FRESH_MS = 120000
+const STATE_FILE = "hud_consolidated_state.json"
+const POSITION_FILE = "hud_consolidated_position.json"
 
 const COLORS = {
   HEADER: "[1;37m",    // Bright white
+  SECTION: "[1;36m",   // Bright cyan (for clickable sections)
   HEALTHY: "[1;32m",   // Bright green
   WARNING: "[1;33m",   // Bright yellow
   CRITICAL: "[1;31m",  // Bright red
@@ -59,97 +61,77 @@ function compact(value, digits = 1) {
   return sign + (Number.isInteger(abs) ? String(abs) : abs.toFixed(digits))
 }
 
-function getStatus(value, thresholds = {}) {
-  if (value === undefined || value === null) return "?"
-  if (thresholds.critical && value <= thresholds.critical) return "🔴"
-  if (thresholds.warning && value <= thresholds.warning) return "🟡"
-  return "🟢"
-}
-
-function row(left, right = "", maxLen = 40) {
-  const gap = maxLen - left.length - right.length
-  if (gap > 0) return left + " ".repeat(gap) + right
-  return left.slice(0, maxLen - right.length - 2) + " " + right
-}
-
 function mcpStatus(ns, now) {
   const status = json(ns, "mcp_status.json")
-  if (!status) return { compact: "MCP     --", expanded: ["Status unavailable"] }
+  if (!status) return { compact: "-- unavailable", expanded: [] }
 
   const running = status.running
   const target = status.target?.hostname || "--"
   const money = status.totalHacked || 0
   const moneyRate = status.moneyPerMinute || 0
   const workers = status.workers?.length || 0
-  const freshMs = now - (status.timestamp || 0)
-  const fresh = freshMs < FRESH_MS ? "✓" : "⚠"
 
   return {
-    compact: `MCP ${fresh}  ${compact(moneyRate, 1)}/m  target: ${target.slice(0, 12)}`,
+    compact: `${running ? "✓" : "⊘"} ${compact(moneyRate, 1)}/m target: ${target.slice(0, 12)}`,
     expanded: [
-      `MCP Status: ${running ? "RUNNING" : "STOPPED"}`,
+      `Status: ${running ? "RUNNING" : "STOPPED"}`,
       `Target: ${target}`,
-      `$/min: ${compact(moneyRate, 2)}`,
-      `Total: ${compact(money)}`,
+      `Money/min: ${compact(moneyRate, 2)}`,
+      `Total hacked: ${compact(money)}`,
       `Workers: ${workers}`,
-      `Freshness: ${freshMs < 10000 ? "now" : Math.floor(freshMs / 1000) + "s ago"}`,
     ],
-    color: running ? COLORS.HEALTHY : COLORS.WARNING,
   }
 }
 
 function darknetStatus(ns, now) {
-  // Check if canary test is running
   const canaryState = json(ns, "dnet_canary_phase1_completed.txt")
   const registryRaw = json(ns, "dnet_manager_registry.json")
   const managers = registryRaw ? Object.keys(registryRaw).filter(k => k.startsWith("host_")).length : 0
 
   let state = "PAUSED"
-  let detail = "No active process"
+  let detail = "Paused"
 
   if (canaryState) {
-    state = "CANARY (Phase 1)"
-    detail = `${managers} manager(s) — ${canaryState.status}`
+    state = "CANARY"
+    detail = `Phase 1: ${managers} manager(s)`
   } else if (managers > 0) {
     state = "ACTIVE"
     detail = `${managers} manager(s) running`
   }
 
   return {
-    compact: `Darknet ${state === "PAUSED" ? "⏸" : "▶"}  ${detail}`,
+    compact: `${state === "PAUSED" ? "⏸" : "▶"} ${detail}`,
     expanded: [
-      `Darknet: ${state}`,
+      `Status: ${state}`,
       detail,
       `Registry entries: ${registryRaw ? Object.keys(registryRaw).length : 0}`,
     ],
-    color: state === "PAUSED" ? COLORS.DIMMED : (state === "CANARY (Phase 1)" ? COLORS.WARNING : COLORS.HEALTHY),
   }
 }
 
 function augmentationStatus(ns, now) {
   const mcp = json(ns, "mcp_status.json")
-  if (!mcp) return { compact: "Augmentation --", expanded: ["Data unavailable"] }
+  if (!mcp) return { compact: "-- unavailable", expanded: [] }
 
   const charisma = mcp.player?.skills?.charisma || 0
   const xpRate = mcp.xpPerMinute?.xp || 0
   const nextAugMs = mcp.augmentation?.nextAugmentationMs || 0
   const nextAugMin = Math.max(0, Math.floor(nextAugMs / 60000))
 
-  let detail = `+${compact(xpRate)}/m XP`
+  let detail = `+${compact(xpRate)}/m`
   if (nextAugMin > 0) {
-    const hours = Math.floor(nextAugMin / 60)
-    const mins = nextAugMin % 60
-    detail += ` → next in ${hours}h ${mins}m`
+    const h = Math.floor(nextAugMin / 60)
+    const m = nextAugMin % 60
+    detail += ` → ${h}h ${m}m`
   }
 
   return {
-    compact: `Aug ${detail}`,
+    compact: detail,
     expanded: [
       `Charisma: ${charisma}`,
       `XP/min: ${compact(xpRate, 1)}`,
-      `Next augmentation: ${nextAugMin > 0 ? `${nextAugMin}m` : "unknown"}`,
+      `Next aug: ${nextAugMin > 0 ? `${nextAugMin}m` : "unknown"}`,
     ],
-    color: COLORS.HEALTHY,
   }
 }
 
@@ -163,13 +145,11 @@ function systemStatus(ns, now) {
   const mcpOk = mcpFreshMs < 60000
 
   return {
-    compact: `System  API ${apiOk ? "✓" : "⚠"}  MCP ${mcpOk ? "✓" : "⚠"}`,
+    compact: `API ${apiOk ? "✓" : "⚠"} MCP ${mcpOk ? "✓" : "⚠"}`,
     expanded: [
       `Remote API: ${apiOk ? "connected" : "stale"}`,
-      `MCP Freshness: ${mcpFreshMs < 10000 ? "now" : Math.floor(mcpFreshMs / 1000) + "s ago"}`,
-      `Status files: ${apiOk && mcpOk ? "healthy" : "degraded"}`,
+      `MCP: ${mcpOk ? "fresh" : "stale"}`,
     ],
-    color: (apiOk && mcpOk) ? COLORS.HEALTHY : COLORS.WARNING,
   }
 }
 
@@ -184,28 +164,37 @@ function buildDisplay(ns, state, pos) {
   ]
 
   const lines = []
-  lines.push(COLORS.HEADER + "╔════════════════════════════════╗" + COLORS.RESET)
-  lines.push(COLORS.HEADER + "║  CONSOLIDATED HUD              ║" + COLORS.RESET)
-  lines.push(COLORS.HEADER + "╚════════════════════════════════╝" + COLORS.RESET)
+  lines.push(COLORS.HEADER + "╔═══════════════════════════════════╗" + COLORS.RESET)
+  lines.push(COLORS.HEADER + "║        CONSOLIDATED HUD           ║" + COLORS.RESET)
+  lines.push(COLORS.HEADER + "╚═══════════════════════════════════╝" + COLORS.RESET)
   lines.push("")
+
+  let lineNum = 4
 
   for (const section of sections) {
     const isExpanded = state.expanded === section.key
     const indicator = isExpanded ? "▼" : "▶"
-    const compactLine = section.data.color + indicator + " " + section.data.compact + COLORS.RESET
+    const keyHint = { mcp: "hm", darknet: "hd", aug: "ha", system: "hs" }[section.key]
+    const hint = COLORS.DIMMED + `[${keyHint}]` + COLORS.RESET
+    const sectionHeader = COLORS.SECTION + `${indicator} ${section.label}` + COLORS.RESET
+    const compactLine = sectionHeader + " " + section.data.compact + " " + hint
 
     lines.push(compactLine)
+    lineNum++
 
     if (isExpanded) {
-      lines.push(COLORS.DIMMED + "─".repeat(40) + COLORS.RESET)
+      lines.push(COLORS.DIMMED + "  " + "─".repeat(30) + COLORS.RESET)
+      lineNum++
       for (const detail of section.data.expanded) {
         lines.push("  " + detail)
+        lineNum++
       }
       lines.push("")
+      lineNum++
     }
   }
 
-  lines.push(COLORS.DIMMED + `Last update: ${new Date().toLocaleTimeString()}` + COLORS.RESET)
+  lines.push(COLORS.DIMMED + `Updated: ${new Date().toLocaleTimeString()}` + COLORS.RESET)
 
   return lines
 }
@@ -220,7 +209,7 @@ function killPriorInstances(ns) {
   }
 }
 
-function placeTail(ns, lines, pos, size) {
+function placeTail(ns, pos, size) {
   if (!ns.ui) return
 
   ns.ui.openTail()
@@ -244,13 +233,29 @@ export async function main(ns) {
   }
 
   const state = {
-    expanded: null,  // Which section is expanded: "mcp", "darknet", "aug", "system", or null
+    expanded: null,
   }
 
   let placed = false
 
+  // Start click detector background process
+  try {
+    ns.run("hud_click_monitor.js", 1)
+  } catch (e) {
+    // Click monitor not available yet
+  }
+
+  // Save position for click detector to use
+  ns.write(POSITION_FILE, JSON.stringify(pos), "w")
+
   while (true) {
     try {
+      // Read current expanded state (might be toggled by click detector)
+      const savedState = json(ns, STATE_FILE)
+      if (savedState?.expanded !== undefined) {
+        state.expanded = savedState.expanded
+      }
+
       const lines = buildDisplay(ns, state, pos)
 
       ns.clearLog()
@@ -258,11 +263,8 @@ export async function main(ns) {
         ns.print(line)
       }
 
-      // Persist state
-      ns.write("hud_consolidated_state.json", JSON.stringify({ expanded: state.expanded }, null, 2), "w")
-
       if (!placed && ns.ui) {
-        placeTail(ns, lines, pos, size)
+        placeTail(ns, pos, size)
         placed = true
         ns.ui.renderTail()
       } else if (ns.ui) {

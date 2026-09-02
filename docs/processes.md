@@ -882,6 +882,55 @@ level gate.
   it. It intentionally does not claim a player XP-per-second delta, because
   that rate is not durably measured across sessions.
 
+### `augmentation_readiness.js`
+
+A quiet, read-only augmentation runway assessor. Every two minutes it records
+the installed and currently purchased-but-uninstalled augmentation counts,
+then examines the player's current factions for prerequisite-ready offerings.
+For each it reads live faction reputation, required reputation, price, and
+prerequisites; it selects the smallest positive reputation gap as a concrete
+next faction-work candidate. It neither buys nor installs an augmentation,
+and never changes player work.
+
+- **Start:** automatic through the persistent maintenance steward, which runs
+  a finite remote assessment every two minutes and copies its result home.
+  This deliberately avoids permanently reserving its relatively large
+  Singularity API RAM footprint on `home`.
+- **Output:** `augmentation_readiness.json`, pulled through the Remote API.
+- **HUD use:** Operations and XP panels show a concise runway line. A higher
+  discovered Hack gate remains the priority (`Rothman Algorithms`). Once that
+  gate is clear, a three-or-more purchased batch reports `Install-ready`; or
+  a live, affordable faction-reputation gap names the faction and augmentation
+  to work toward. If Singularity is unavailable, it explicitly says so rather
+  than guessing.
+
+### `player_activity_controller.js`
+
+The sole persistent controller allowed to change the player's current work.
+It evaluates once per minute, records its decision and reason in
+`player_activity_status.json`, and changes activity only when the selected
+evidence-backed goal changes. A ten-minute hysteresis prevents churn.
+
+- **Start:** automatic before MCP via `mcp_launch.js` and `startup.js`.
+- **Policy:** the configured physical baseline comes first (default: train the
+  weakest of Strength, Defense, Dexterity, Agility to 30—the known Slum Snakes
+  gate); then the next normal-server Hack gate uses Rothman Algorithms; then a
+  cash-ready, live augmentation reputation gap can select faction hacking
+  work. It does not claim hidden augmentation requirements that the API cannot
+  expose.
+- **Control:** `player_activity_config.json` is committed and synced. Set
+  `"override": "manual"` or `"enabled": false` to stop changes at the next
+  minute; `"algorithms"` and `"physical"` are explicit overrides. Set
+  `physicalTarget` to `0` to remove gym training from automatic selection.
+- **Scope:** never buys/installs augmentations, trades, allocates share RAM,
+  or controls Darknet. Operations makes this the `best now` recommendation:
+  it names the gym/stat and physical target before an otherwise-visible Hack
+  gate, so manual play has one unambiguous instruction.
+- **Capability check:** changing player work through this script requires
+  Source-File 4. Without it, the controller remains a durable, read-only
+  planner: it names the next activity but records the capability block once
+  and leaves the player's current work untouched.
+
 ### `dnet_scorecard.js`
 
 A compact Dark Net panel in the same visual family as `mcp_money.js`. It
@@ -1200,7 +1249,10 @@ and Darknet records explicitly.
   such gate exists, the panel calls out only evidence-backed alternatives:
   a live Darknet means Charisma is already growing passively; otherwise it
   says that no gym, crime, or faction-work requirement has been observed.
-  It never starts, stops, or inspects player work.
+  It never starts, stops, or inspects player work. The panel is not replaced
+  on ordinary MCP restarts (only a tagged HUD-source upgrade refreshes it), so its tail remains in place. When a contract
+  scan fails after a prior successful inventory, it retains the usable count
+  and shows the age of that last-good inventory plus a retry note.
 
 ### `maintenance_steward.js` and `cct_watcher.js`
 
@@ -1212,13 +1264,17 @@ restart; further recovery requests are cooled down for 15 minutes. It never
 trades, resets/installs, or starts/stops/expands Darknet.
 
 The cloud-first watcher runs a finite audit every ten minutes and then
-processes **at most one** contract. It selects only a solver-supported item
-with at least ten tries remaining, reuses `cct_submit.js`'s live fingerprint
-guard, and copies the status and bounded reward ledger home. An unsupported
-type, insufficient tries, rejection, or missing result pauses the queue with
-the exact reason in `cct_queue_status.json`; it does not spend a second
-attempt or skip ahead. This makes contract progress sequential and reviewable,
-not an uncontrolled batch.
+processes **at most one** contract. After an accepted submission it immediately
+re-audits so an already-known queue advances sequentially; it returns to the
+ten-minute cadence when idle or paused. It selects a solver-supported item with
+at least one try remaining, reuses `cct_submit.js`'s live fingerprint guard,
+and copies the status and bounded reward ledger home. Unsupported items are
+held rather than allowed to deadlock later eligible work; when no supported
+item remains it pauses with the exact reason in `cct_queue_status.json`.
+Rejection or a missing result pauses the queue and does not spend a second
+attempt. Ken has explicitly approved fingerprint-matched one-attempt puzzles,
+so they proceed under the same solver and live-data checks. This keeps
+contract progress sequential and reviewable, not an uncontrolled batch.
 
 When purchased workers do not exist after an augmentation reset, both audit
 and submission use the same rooted-normal-host fallback. A host with any

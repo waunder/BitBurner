@@ -107,6 +107,7 @@ function buildLines(ns) {
   const charisma = Number(skills.charisma) || 0
   const gateState = nextGate(ns, hacking)
   const root = readJson(ns, "dnet_deployer_home.json")
+  const augmentation = readJson(ns, "augmentation_readiness.json")
   const darknetLive = Number.isFinite(root?.ts) && now - root.ts <= DNET_LIVE_MS
   const stale = !Number.isFinite(mcp.ts) || now - mcp.ts > 90_000
   const objective = String(mcp.OBJECTIVE || mcp.objective || "--").toUpperCase()
@@ -117,6 +118,7 @@ function buildLines(ns) {
     gate: gateState.gate,
     gateScanOk: gateState.ok,
     darknetLive,
+    augmentation: augmentation?.ok ? { queued: augmentation.queuedCount, candidate: augmentation.candidate } : null,
   })
 
   return [
@@ -127,6 +129,7 @@ function buildLines(ns) {
     row("NEXT", guidance.next),
     row("gate", guidance.gate),
     row("BEST NOW", guidance.best),
+    row("AUG RUNWAY", !augmentation?.ok ? "assessment unavailable" : augmentation.queuedCount ? `${augmentation.queuedCount} queued` : augmentation.candidate ? `${augmentation.candidate.name.slice(0, 17)} +${compact(augmentation.candidate.repGap)} rep` : "no ready offer"),
     row("basis", `${guidance.confidence}: ${guidance.basis}`.slice(0, 22)),
     row("status age", statusAge(now, mcp.ts)),
   ]

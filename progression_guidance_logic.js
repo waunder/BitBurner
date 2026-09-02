@@ -10,7 +10,7 @@
  * without an explicit, observable requirement.
  */
 
-export function chooseProgressionGuidance({ hacking = 0, charisma = 0, gate = null, gateScanOk = false, darknetLive = false } = {}) {
+export function chooseProgressionGuidance({ hacking = 0, charisma = 0, gate = null, gateScanOk = false, darknetLive = false, augmentation = null } = {}) {
   const h = Number(hacking) || 0
   const c = Number(charisma) || 0
   if (gate && Number(gate.required) > h) {
@@ -22,6 +22,35 @@ export function chooseProgressionGuidance({ hacking = 0, charisma = 0, gate = nu
       gate: `need +${gap} H: ${gate.host} (H${gate.required})`,
       best: `Rothman Algorithms until H${gate.required}`,
       basis: "nearest discovered normal-server gate",
+    }
+  }
+
+  // A purchased batch is an observable, reset-relevant fact.  Do not claim
+  // that installing is mandatory, but make the threshold visible once the
+  // player is no longer blocked by an immediately reachable Hack gate.
+  if (Number(augmentation?.queued) >= 3) {
+    return {
+      focus: "Augmentation batch ready",
+      confidence: "HIGH",
+      next: `${augmentation.queued} purchased augmentations`,
+      gate: "no higher discovered H gate",
+      best: `Install-ready: ${augmentation.queued} augmentations queued`,
+      basis: "live owned/purchased augmentation state",
+    }
+  }
+
+  // Faction work is only recommended when the game API identifies a specific
+  // prerequisite-ready augmentation, its faction, and its missing reputation.
+  // This avoids the old vague 'active objective' advice.
+  const candidate = augmentation?.candidate
+  if (candidate && Number(candidate.repGap) > 0 && candidate.cashReady) {
+    return {
+      focus: "Faction reputation",
+      confidence: "HIGH",
+      next: `${candidate.name} (${candidate.faction})`,
+      gate: `need +${Math.ceil(candidate.repGap)} rep: ${candidate.faction}`,
+      best: `Faction work: ${candidate.faction} for ${candidate.name}`,
+      basis: "live faction reputation and augmentation requirement",
     }
   }
 

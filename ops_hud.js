@@ -17,6 +17,7 @@ const MCP_STALE_MS = 300000
 const DNET_STALE_MS = 30000
 const MANAGER_FRESH_MS = 120000
 const WIDTH_CHARS = 42
+export const OPS_HUD_VERSION = "2026-09-02.3"
 const OVERVIEW_DROP = 190
 const RIGHT_MARGIN = 8
 const WHITE = "\u001b[37m"
@@ -149,7 +150,7 @@ function nextHackingGate(ns, hacking) {
   }
 }
 
-function playerTimeAdvice(ns, mcp) {
+function playerTimeAdvice(ns, mcp, augmentation) {
   const skills = mcp?.player?.skills || {}
   const hacking = Number(skills.hacking) || 0
   const charisma = Number(skills.charisma) || 0
@@ -157,7 +158,7 @@ function playerTimeAdvice(ns, mcp) {
   const gateState = nextHackingGate(ns, hacking)
   const root = readJson(ns, "dnet_deployer_home.json")
   const darknetLive = Number.isFinite(root?.ts) && Date.now() - root.ts <= DNET_STALE_MS
-  const guidance = chooseProgressionGuidance({ hacking, charisma, gate: gateState.gate, gateScanOk: gateState.ok, darknetLive })
+  const guidance = chooseProgressionGuidance({ hacking, charisma, gate: gateState.gate, gateScanOk: gateState.ok, darknetLive, augmentation: augmentation?.ok ? { queued: augmentation.queuedCount, candidate: augmentation.candidate } : null })
   return {
     stats: `YOU H${hacking} C${charisma}`,
     recommendation: guidance.next,
@@ -166,6 +167,39 @@ function playerTimeAdvice(ns, mcp) {
     detail: `MCP +${compact(scriptXp)} XP/s; ${guidance.confidence}`,
     basis: guidance.basis,
   }
+}
+
+// The activity planner has a more complete view of *manual* player time than
+// the generic Hack/augmentation guidance: it also knows about the explicit
+// physical baseline.  Prefer its durable decision when it is fresh, so the
+// panel never tells Ken to stay at university while asking him to train at a
+// gym on the line immediately below it.
+function manualActivityAdvice(playerActivity, fallback) {
+  const decision = playerActivity?.decision
+  if (!decision || decision.action === "hold") return fallback
+  const reason = String(decision.reason || "named player goal")
+  if (decision.action === "gym") {
+    const stat = String(decision.stat || "physical").replace(/^./, (char) => char.toUpperCase())
+    return {
+      recommendation: `NEXT ${stat} ${decision.current ?? "?"}→${decision.target ?? "?"}`,
+      gate: `physical baseline: ${reason}`,
+      best: `Gym: ${decision.gym || "Powerhouse Gym"} (${stat})`,
+      basis: "known Slum Snakes physical gate",
+    }
+  }
+  if (decision.action === "algorithms") return {
+    recommendation: "NEXT Hack progression",
+    gate: reason,
+    best: `Rothman: ${decision.course || "Algorithms"}`,
+    basis: "next discovered Hack gate",
+  }
+  if (decision.action === "faction") return {
+    recommendation: `NEXT rep: ${decision.faction || "faction"}`,
+    gate: reason,
+    best: `Faction work: ${decision.faction || "named faction"}`,
+    basis: "live augmentation reputation gap",
+  }
+  return fallback
 }
 
 function buildLines(ns) {
@@ -179,6 +213,8 @@ function buildLines(ns) {
   const inventory = readJson(ns, "cct_inventory.json")
   const cctWatch = readJson(ns, "cct_watch_status.json")
   const cctQueue = readJson(ns, "cct_queue_status.json", {})
+  const augmentation = readJson(ns, "augmentation_readiness.json", {})
+  const playerActivity = readJson(ns, "player_activity_status.json", {})
   const cloudNames = ns.cloud.getServerNames()
   const cloudRam = workerRam(mcp, cloudNames)
   const mcpAge = Number.isFinite(mcp?.ts) ? now - mcp.ts : Infinity
@@ -195,20 +231,38 @@ function buildLines(ns) {
   const threadCount = (mcp?.workers || []).reduce((total, worker) => total + (worker.actions || []).reduce((sum, action) => sum + (Number(action.threads) || 0), 0), 0)
   const cloudPct = cloudRam.max ? `${Math.round(100 * cloudRam.used / cloudRam.max)}%` : "--"
   const recentText = !recent ? "no recorded submission" : recent.ok ? `accepted ${recent.type || "contract"}` : `paused ${recent.reason || "guard"}`
-  const playerTime = playerTimeAdvice(ns, mcp)
+  const playerTime = playerTimeAdvice(ns, mcp, augmentation)
+  const manualAdvice = manualActivityAdvice(playerActivity, playerTime)
+  const activityText = !playerActivity?.decision ? "controller awaiting first check"
+    : playerActivity.decision.action === "hold" ? `hold: ${playerActivity.decision.reason}`
+      : `${playerActivity.decision.action}: ${playerActivity.decision.reason}`
+  const augText = !augmentation?.ok
+    ? playerActivity?.apiUnavailable
+      ? "requires Source-File 4"
+      : "assessment unavailable"
+    : augmentation.queuedCount
+    ? `${augmentation.queuedCount} queued / ${augmentation.installedCount} installed`
+    : augmentation.candidate ? `${augmentation.candidate.name.slice(0, 19)} +${compact(augmentation.candidate.repGap)} rep`
+      : "no prereq-ready offering"
 
   return [
     row("OPERATIONS", health),
     row(`MCP ${mcpState}`, `${mcp?.target || "--"} / ${mcp?.OBJECTIVE || mcp?.objective || "--"}`),
     row(`rate ${compact(mcp?.rate)}/s`, `avg ${compact(mcp?.avgRate)}/s`),
     row(`workers ${threadCount} threads`, `${(mcp?.workers || []).length} hosts / ${age(now, mcp?.ts)}`),
-    row(playerTime.stats, playerTime.recommendation),
-    row("gate", playerTime.gate),
-    row("best now", playerTime.best),
+    row(playerTime.stats, manualAdvice.recommendation),
+    row("gate", manualAdvice.gate.slice(0, WIDTH_CHARS - 6)),
+    row("best now", manualAdvice.best),
     row("script XP", playerTime.detail),
-    row("guidance basis", playerTime.basis.slice(0, 25)),
+    row("guidance basis", manualAdvice.basis.slice(0, 25)),
+    row("player action", playerActivity?.apiUnavailable ? "manual: SF4 required" : activityText.slice(0, WIDTH_CHARS - 14)),
+    row("augmentation runway", augText),
     row(currentContracts.known ? `contracts ${currentContracts.accepted} this reset` : `contracts ${totals.accepted} recorded`, `$${compact(currentContracts.known ? currentContracts.cash : totals.cash)}`),
-    row(`discovery ${inventory?.contracts?.length ?? "--"} available`, `${cctWatch?.ok === false ? "SCAN ERROR" : age(now, inventory?.ts)}`),
+    // Inventory is an independently durable *successful* scan. A later
+    // watcher failure must not make those known contracts look invalid or
+    // turn a useful count into the unhelpful blanket "SCAN ERROR".
+    row(`discovery ${inventory?.contracts?.length ?? "--"} available`, cctWatch?.ok === false ? `last OK ${age(now, inventory?.ts)}` : age(now, inventory?.ts)),
+    ...(cctWatch?.ok === false ? [row("discovery retry", "last scan failed; retrying")] : []),
     row("CCT queue", `${cctQueue.action || "waiting"}: ${String(cctQueue.reason || "next scan").slice(0, 24)}`),
     ...reps.map(([name, rep]) => row(name.slice(0, 27), `+${compact(rep)} rep`)),
     row("latest CCT", recentText.slice(0, WIDTH_CHARS - 11)),
@@ -242,6 +296,9 @@ function placeTail(ns, args, lines) {
 export async function main(ns) {
   ns.disableLog("ALL")
   closePrior(ns)
+  // A tiny generation marker lets the launcher refresh this panel once after
+  // a real HUD upgrade, while routine MCP restarts leave its tail untouched.
+  ns.write("ops_hud_version.txt", OPS_HUD_VERSION, "w")
   const args = parseArgs(ns)
   let placed = false
   while (true) {

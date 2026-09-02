@@ -17,6 +17,19 @@ test("a live Darknet is passive Charisma evidence, not a reason to interrupt pla
   assert.equal(result.confidence, "MEDIUM")
 })
 
+test("a concrete live augmentation reputation gap directs faction work when hacking is clear", () => {
+  const result = chooseProgressionGuidance({ hacking: 500, gateScanOk: true, augmentation: { queued: 0, candidate: { name: "BitWire", faction: "CyberSec", repGap: 250, cashReady: true } } })
+  assert.equal(result.focus, "Faction reputation")
+  assert.match(result.best, /CyberSec/)
+  assert.match(result.gate, /\+250 rep/)
+})
+
+test("a queued augmentation batch becomes visible when no Hack gate remains", () => {
+  const result = chooseProgressionGuidance({ hacking: 500, gateScanOk: true, augmentation: { queued: 3 } })
+  assert.equal(result.focus, "Augmentation batch ready")
+  assert.match(result.best, /3 augmentations queued/)
+})
+
 test("does not invent a physical, crime, or faction goal", () => {
   const result = chooseProgressionGuidance({ hacking: 500, gateScanOk: true, darknetLive: false })
   assert.equal(result.focus, "Choose a named goal")

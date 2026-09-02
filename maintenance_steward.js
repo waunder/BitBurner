@@ -4,11 +4,13 @@
  * discovery/submission remains in cct_watcher.js on a cloud worker.
  */
 import { shouldRequestMcpRecovery } from "maintenance_logic.js"
+import { prepareContractWorker, selectContractWorker } from "cct_worker_pool.js"
 
 const STATUS = "maintenance_status.json"
 const HISTORY = "maintenance_history.txt"
 const POLL_MS = 30_000
 const HISTORY_LIMIT = 100
+const AUGMENTATION_REFRESH_MS = 120_000
 
 function readJson(ns, file, fallback = null) {
   try { const raw = ns.read(file); return raw ? JSON.parse(raw) : fallback } catch { return fallback }
@@ -22,6 +24,26 @@ function startWatcher(ns) {
   if (!ns.isRunning("cct_watcher.js", "home")) return ns.run("cct_watcher.js", 1)
   return -1
 }
+async function refreshAugmentationReadiness(ns) {
+  const current = readJson(ns, "augmentation_readiness.json", null)
+  if (Number.isFinite(current?.ts) && Date.now() - current.ts < AUGMENTATION_REFRESH_MS) return { refreshed: false, status: current }
+  try {
+    // Singularity's augmentation API has a large static-RAM footprint. Use
+    // a briefly-preemptible worker, then copy the compact result home.
+    const ram = ns.getScriptRam("augmentation_readiness.js", "home")
+    const prepared = await prepareContractWorker(ns, selectContractWorker(ns, ram), ram)
+    if (!prepared.ok) return { refreshed: false, error: prepared.reason, requiredRam: ram, status: current }
+    const copied = await ns.scp("augmentation_readiness.js", prepared.worker, "home")
+    const pid = copied ? ns.exec("augmentation_readiness.js", prepared.worker, 1, "--once") : 0
+    if (!pid) return { refreshed: false, error: `could not start on ${prepared.worker}`, status: current }
+    while (ns.isRunning(pid, prepared.worker)) await ns.sleep(100)
+    const pulled = await ns.scp("augmentation_readiness.json", "home", prepared.worker)
+    const status = pulled ? readJson(ns, "augmentation_readiness.json", null) : null
+    return { refreshed: Boolean(status), worker: prepared.worker, source: prepared.source, status, error: status?.ok ? null : status?.reason || "assessment did not produce status" }
+  } catch (error) {
+    return { refreshed: false, error: String(error), status: current }
+  }
+}
 
 /** @param {NS} ns */
 export async function main(ns) {
@@ -33,11 +55,13 @@ export async function main(ns) {
     const now = Date.now()
     const mcp = readJson(ns, "mcp_status.json")
     const stale = !Number.isFinite(mcp?.ts) || now - mcp.ts > 90_000
+    const augmentation = await refreshAugmentationReadiness(ns)
     const state = {
       ts: now, pollMs: POLL_MS, mcp: { stale, ageMs: Number.isFinite(mcp?.ts) ? now - mcp.ts : null },
       contracts: readJson(ns, "cct_queue_status.json", { action: "waiting" }),
       recovery: prior.recovery || { count: 0, lastAt: null },
       watcherPid: startWatcher(ns),
+      augmentation,
     }
     if (stale) state.mcpStaleSince = prior.mcpStaleSince || now
     if (shouldRequestMcpRecovery({ now, mcp, previous: { ...prior, mcpStaleSince: state.mcpStaleSince, lastRecoveryAt: state.recovery.lastAt } })) {

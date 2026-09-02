@@ -9,6 +9,13 @@
 export async function main(ns) {
   const request = JSON.parse(String(ns.args[0] || "{}"))
   const mcpArgs = Array.isArray(request.mcpArgs) ? request.mcpArgs : []
+  // A direct `run restart_mcp.js` is also a valid recovery path. Ensure the
+  // lightweight supervisor exists afterward so later Remote API restart
+  // tokens are consumed instead of silently remaining in mcp_restart.txt.
+  if (!ns.isRunning("mcp_supervisor.js", "home")) {
+    const supervisorPid = ns.run("mcp_supervisor.js", 1)
+    if (supervisorPid === 0) ns.tprint("mcp_launch: failed to start mcp supervisor")
+  }
   // The watcher must be live before MCP consumes home RAM. Starting it from
   // the steward races its first scheduling slice against MCP and can leave
   // every subsequent queue cycle starved.
@@ -19,6 +26,28 @@ export async function main(ns) {
   ns.scriptKill("maintenance_steward.js", "home")
   const maintenancePid = ns.run("maintenance_steward.js", 1)
   if (maintenancePid === 0) ns.tprint("mcp_launch: failed to start maintenance steward")
+  // This is the sole controller permitted to change the player's current
+  // activity. It starts before MCP reclaims home RAM and supersedes stale
+  // copies itself; its JSON config provides an immediate manual override.
+  ns.scriptKill("player_activity_controller.js", "home")
+  const activityPid = ns.run("player_activity_controller.js", 1)
+  if (activityPid === 0) ns.tprint("mcp_launch: failed to start player activity controller")
+  ns.write("maintenance_launch_status.json", JSON.stringify({
+    ts: Date.now(), watcherPid, maintenancePid, activityPid,
+  }, null, 2), "w")
+  // Start (or source-refresh) the panel while the heavy controller has not
+  // reclaimed home RAM. Its own scan is cached and it is then left alone on
+  // ordinary controller restarts.
+  const opsVersion = "2026-09-02.3"
+  const refreshOpsHud = !ns.isRunning("ops_hud.js", "home") || String(ns.read("ops_hud_version.txt") || "").trim() !== opsVersion
+  if (refreshOpsHud) {
+    for (const proc of ns.ps("home")) {
+      if (proc.filename.replace(/^\//, "") !== "ops_hud.js") continue
+      ns.ui?.closeTail(proc.pid)
+      ns.kill(proc.pid)
+    }
+    if (ns.run("ops_hud.js", 1) === 0) ns.tprint("mcp_launch: failed to start ops_hud.js")
+  }
   const pid = ns.run("mcp.js", 1, ...mcpArgs)
   if (pid === 0) {
     const max = ns.getServerMaxRam("home")
@@ -30,18 +59,6 @@ export async function main(ns) {
 
   if (request.startCctHud && !ns.isRunning("cct_hud.js", "home")) {
     if (ns.run("cct_hud.js", 1) === 0) ns.tprint("mcp_launch: failed to start cct_hud.js")
-  }
-  // Operations is the primary persistent panel; refresh it with the same
-  // generation so it sees newly added maintenance fields without a manual
-  // terminal command.
-  const refreshOpsHud = true
-  if (refreshOpsHud) {
-    for (const proc of ns.ps("home")) {
-      if (proc.filename.replace(/^\//, "") !== "ops_hud.js") continue
-      ns.ui?.closeTail(proc.pid)
-      ns.kill(proc.pid)
-    }
-    if (ns.run("ops_hud.js", 1) === 0) ns.tprint("mcp_launch: failed to start ops_hud.js")
   }
   // The focused XP panel is intentionally separate from Operations: the
   // latter reports broad health, while this remains readable beside the money

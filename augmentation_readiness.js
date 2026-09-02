@@ -80,6 +80,9 @@ function assess(ns) {
 
 export async function main(ns) {
   ns.disableLog("ALL")
+  // Leave an immediate, durable launch marker.  It distinguishes inability to
+  // allocate this optional observer from a later live-API assessment error.
+  writeStatus(ns, { ts: Date.now(), ok: false, starting: true, resetAt: resetAt(ns) })
   while (true) {
     writeStatus(ns, assess(ns))
     await ns.sleep(POLL_MS)

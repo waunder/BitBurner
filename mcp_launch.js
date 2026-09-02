@@ -19,10 +19,15 @@ export async function main(ns) {
   ns.scriptKill("maintenance_steward.js", "home")
   const maintenancePid = ns.run("maintenance_steward.js", 1)
   if (maintenancePid === 0) ns.tprint("mcp_launch: failed to start maintenance steward")
+  let augmentationPid = -1
   if (!ns.isRunning("augmentation_readiness.js", "home")) {
-    const augmentationPid = ns.run("augmentation_readiness.js", 1)
+    augmentationPid = ns.run("augmentation_readiness.js", 1)
     if (augmentationPid === 0) ns.tprint("mcp_launch: failed to start augmentation readiness")
   }
+  ns.write("maintenance_launch_status.json", JSON.stringify({
+    ts: Date.now(), watcherPid, maintenancePid, augmentationPid,
+    augmentationRunning: ns.isRunning("augmentation_readiness.js", "home"),
+  }, null, 2), "w")
   const pid = ns.run("mcp.js", 1, ...mcpArgs)
   if (pid === 0) {
     const max = ns.getServerMaxRam("home")

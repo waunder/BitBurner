@@ -66,19 +66,40 @@ function mcpStatus(ns, now) {
   if (!status) return { compact: "-- unavailable", expanded: [] }
 
   const running = status.running
-  const target = status.target?.hostname || "--"
+  const target = status.target || "--"
   const money = status.totalHacked || 0
   const moneyRate = status.moneyPerMinute || 0
-  const workers = status.workers?.length || 0
+  const workers = status.workers || []
+  const workerCount = workers.length
+
+  // Count actions across all workers
+  let weakenTotal = 0, growTotal = 0, hackTotal = 0
+  for (const worker of workers) {
+    for (const action of (worker.actions || [])) {
+      const threads = action.threads || 0
+      if (action.script === "weaken") weakenTotal += threads
+      else if (action.script === "grow") growTotal += threads
+      else if (action.script === "hack") hackTotal += threads
+    }
+  }
+
+  const actionSummary = `W:${weakenTotal} G:${growTotal} H:${hackTotal}`
 
   return {
-    compact: `${running ? "✓" : "⊘"} ${compact(moneyRate, 1)}/m target: ${target.slice(0, 12)}`,
+    compact: `${running ? "✓" : "⊘"} ${compact(moneyRate, 1)}/m ${actionSummary}`,
     expanded: [
       `Status: ${running ? "RUNNING" : "STOPPED"}`,
       `Target: ${target}`,
       `Money/min: ${compact(moneyRate, 2)}`,
       `Total hacked: ${compact(money)}`,
-      `Workers: ${workers}`,
+      `${actionSummary}  (${workerCount} workers)`,
+      "",
+      `Workers (top 5):`,
+      ...workers.slice(0, 5).map(w => {
+        const usedPct = Math.round((w.usedRam / w.maxRam) * 100)
+        const actions = (w.actions || []).map(a => `${a.script}:${a.threads}`).join("+")
+        return `  ${w.host.padEnd(16)} ${usedPct}% ${actions}`
+      }),
     ],
   }
 }

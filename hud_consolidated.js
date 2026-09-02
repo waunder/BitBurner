@@ -112,22 +112,37 @@ function darknetStatus(ns, now) {
   const registryRaw = json(ns, "dnet_manager_registry.json")
   const managers = registryRaw ? Object.keys(registryRaw).filter(k => k.startsWith("host_")).length : 0
 
+  // Get phish thread capacity from latest deployer shard
+  let phishThreads = 0
+  const deployerFiles = ns.ls("home", "dnet_deployer_")
+  for (const file of deployerFiles) {
+    if (!file.endsWith(".json")) continue
+    const rec = json(ns, file)
+    if (rec && Number.isFinite(rec.farmCapacityThreads)) {
+      phishThreads = Math.max(phishThreads, rec.farmCapacityThreads)
+    }
+  }
+
   let state = "PAUSED"
   let detail = "Paused"
+  let threadStr = "0t"
 
   if (canaryState) {
     state = "CANARY"
     detail = `Phase 1: ${managers} manager(s)`
+    threadStr = `${phishThreads}t`
   } else if (managers > 0) {
     state = "ACTIVE"
     detail = `${managers} manager(s) running`
+    threadStr = `${phishThreads}t`
   }
 
   return {
-    compact: `${state === "PAUSED" ? "⏸" : "▶"} ${detail}`,
+    compact: `${state === "PAUSED" ? "⏸" : "▶"} ${detail} ${threadStr}`,
     expanded: [
       `Status: ${state}`,
       detail,
+      `Phish threads: ${phishThreads}`,
       `Registry entries: ${registryRaw ? Object.keys(registryRaw).length : 0}`,
     ],
   }

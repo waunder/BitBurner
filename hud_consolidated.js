@@ -12,8 +12,8 @@
  * Click on any section header to expand/collapse.
  */
 
-const DEFAULT_X = 2180  // Bottom-right for 2560x1440
-const DEFAULT_Y = 1140
+const DEFAULT_X = 0    // Top-left, resolution-agnostic
+const DEFAULT_Y = 0
 const DEFAULT_W = 360
 const DEFAULT_H = 280
 const POLL_MS = 5000

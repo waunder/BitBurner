@@ -32,26 +32,28 @@ function unique(values) {
 function assess(ns) {
   const now = Date.now()
   const player = ns.getPlayer()
-  const singularity = ns.singularity
-  if (!singularity || typeof singularity.getOwnedAugmentations !== "function") {
+  // Keep calls directly qualified. Netscript's static RAM analyser charges
+  // the entire Singularity namespace if it is assigned to an alias, whereas
+  // direct members are charged individually.
+  if (!ns.singularity || typeof ns.singularity.getOwnedAugmentations !== "function") {
     return { ts: now, ok: false, reason: "Singularity augmentation API unavailable", resetAt: resetAt(ns) }
   }
 
   try {
-    const installed = unique(singularity.getOwnedAugmentations(false) || [])
-    const includingQueued = unique(singularity.getOwnedAugmentations(true) || [])
+    const installed = unique(ns.singularity.getOwnedAugmentations(false) || [])
+    const includingQueued = unique(ns.singularity.getOwnedAugmentations(true) || [])
     const owned = new Set(includingQueued)
     const queued = includingQueued.filter((name) => !installed.includes(name))
     const factions = Array.isArray(player?.factions) ? player.factions : []
     const candidates = []
     for (const faction of factions) {
-      const rep = Number(singularity.getFactionRep(faction)) || 0
-      for (const name of singularity.getAugmentationsFromFaction(faction) || []) {
+      const rep = Number(ns.singularity.getFactionRep(faction)) || 0
+      for (const name of ns.singularity.getAugmentationsFromFaction(faction) || []) {
         if (owned.has(name) || name === "NeuroFlux Governor") continue
-        const prerequisites = singularity.getAugmentationPrereq(name) || []
+        const prerequisites = ns.singularity.getAugmentationPrereq(name) || []
         if (!prerequisites.every((prereq) => owned.has(prereq))) continue
-        const repRequired = Number(singularity.getAugmentationRepReq(name)) || 0
-        const price = Number(singularity.getAugmentationPrice(name)) || 0
+        const repRequired = Number(ns.singularity.getAugmentationRepReq(name)) || 0
+        const price = Number(ns.singularity.getAugmentationPrice(name)) || 0
         candidates.push({
           name, faction, rep, repRequired, repGap: Math.max(0, repRequired - rep),
           price, cashReady: Number(player?.money) >= price, prerequisites,

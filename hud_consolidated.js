@@ -250,10 +250,18 @@ function placeTail(ns, pos, size) {
 function resizeTail(ns, lines, size) {
   if (!ns.ui) return
 
-  // Each line is ~15px tall in monospace, plus 20px margin
-  const lineHeight = 15
-  const minHeight = 100
-  const calculatedHeight = Math.max(minHeight, lines.length * lineHeight + 20)
+  // Use actual font metrics from game if available, otherwise estimate
+  let lineHeight = 16
+  try {
+    const styles = ns.ui.getStyles?.()
+    if (styles) {
+      lineHeight = styles.tailFontSize * (styles.lineHeight || 1)
+    }
+  } catch (e) {
+    // Fallback to 16px if styles unavailable
+  }
+
+  const calculatedHeight = Math.ceil((lines.length + 1) * lineHeight) + 40
 
   ns.ui.resizeTail(size.w, calculatedHeight)
 }

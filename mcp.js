@@ -1750,6 +1750,15 @@ export async function main(ns) {
 
     // Build the status object first, then derive every rendering from it.
     const player = ns.getPlayer()
+    // Cloud hosts are not part of target discovery. Surface their raw
+    // properties separately so a failed allocation can distinguish an
+    // ownership/RAM problem from an MCP scheduling problem.
+    const cloudWorkers = ns.cloud.getServerNames().map((host) => ({
+      host,
+      rooted: ns.hasRootAccess(host),
+      maxRam: ns.getServerMaxRam(host),
+      usedRam: ns.getServerUsedRam(host),
+    }))
     const status = {
       ts: Date.now(),
       runId: runId,
@@ -1789,6 +1798,7 @@ export async function main(ns) {
       totalHacked: totalHacked,
       ramUtilization: ramUtilization,
       workers: allocations,
+      cloudWorkers,
       candidate: candidateTarget || null,
       candidateScore: candidateScore || 0,
       candidateExpectedIncome: candidateExpectedIncome || 0,

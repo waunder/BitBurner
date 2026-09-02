@@ -209,7 +209,9 @@ The orchestrator, and where nearly all the complexity lives. Each tick
 (`LOOP_SLEEP_MS`, 10s) it scans the network, decides on a target, decides on a
 plan, and allocates worker threads across every rooted normal host plus every
 owned cloud server. Cloud servers are worker-only: they never enter target
-selection because they have no money.
+selection because they have no money. `mcp_status.json` exposes their raw
+name, root status, and RAM separately as `cloudWorkers`, so an unavailable
+cloud host cannot be mistaken for a scheduler allocation problem.
 
 **2026-08-14: read `docs/hacking-mechanics.md` and `docs/hacking-strategy.md`
 before changing anything below.** The mechanics doc has the actual game

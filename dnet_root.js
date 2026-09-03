@@ -127,7 +127,7 @@ export async function main(ns) {
 
     for (const target of ns.dnet.probe()) {
       summary.seen++
-      const session = await acquireSession(ns, target, creds[target])
+      const session = await acquireSession(ns, target, creds[target], { bruteForceLimit: 10000 })
       if (!session.ok) {
         summary.failed++
         lastFailure = { at: Date.now(), target, stage: "session", why: session.why, code: session.code }

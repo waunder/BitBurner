@@ -347,8 +347,27 @@ class RemoteApiServer:
         self._on_connect_hook = hook
 
     async def start(self):
+        async def _add_pna_header(connection, request, response):
+            # Chrome's Private Network Access (WebSocket handshakes covered
+            # since Chrome 126, full enforcement from Chrome 130) blocks a
+            # public-origin page -- bitburner-official.github.io is public,
+            # this daemon on 127.0.0.1 is loopback/private -- from
+            # completing the handshake unless the response explicitly opts
+            # in with this header. Without it, Chrome aborts with close
+            # code 1006 and zero console detail (by design -- browsers
+            # don't leak *why* a security policy blocked something).
+            # Confirmed live 2026-09-03: a raw Python websockets client
+            # connected to this exact port instantly; the game's own
+            # Options -> Remote API -> Connect button failed every time
+            # until this header was added. Steam's Electron-hosted game
+            # isn't a "public origin" the same way, so this was never
+            # needed there -- only the web version hits this.
+            response.headers["Access-Control-Allow-Private-Network"] = "true"
+            return response
+
         self._server = await websockets.serve(
-            self._on_connection, self.host, self.port, max_size=WS_MAX_SIZE
+            self._on_connection, self.host, self.port, max_size=WS_MAX_SIZE,
+            process_response=_add_pna_header,
         )
         _log(f"LISTENING on {self.host}:{self.port}")
 

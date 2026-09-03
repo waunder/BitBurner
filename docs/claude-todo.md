@@ -2040,3 +2040,35 @@ reasoning here; read it there.
   millisecond-scale unit test now catches directly — see
   `docs/processes.md`'s `mcp.js` section and `mcp_logic.test.js` for what
   that regression test actually looks like.
+
+## 2026-09-03: remote_api_monitor.sh infinite restart loop, and a deferred idea
+
+- [x] **Found and fixed `tools/remote_api_monitor.sh`'s `daemon_healthy()`
+  bug.** It required `PID_FILE` to hold the exact PID of a live process
+  *before* even trying the control port. `start_daemon()` unconditionally
+  overwrote `PID_FILE` with whatever `nohup ... &` returned, even when that
+  process was about to die from a failed bind (because a working daemon
+  already held the port under some other, untracked PID). Once drifted,
+  `kill -0` on the latest doomed clone failed immediately, so the function
+  never even tried `ctl-status` — spawning another equally-doomed clone
+  every ~61s, forever, while a real, working daemon (confirmed 23+ hours
+  uptime) sat there the whole time, completely invisible to its own
+  monitor. Fixed: `daemon_healthy()` now checks control-port reachability
+  directly as the sole signal (a daemon that answers is healthy, whoever's
+  PID it has); `start_daemon()` now polls to confirm the daemon actually
+  became reachable before declaring success, and logs a clear warning
+  instead of silently trusting the PID if it doesn't. See `docs/processes.md`
+  for the fuller writeup once this lands there too.
+- [ ] **Deferred idea, not started: multi-port Remote API support** — one
+  port per concurrently-connected game session (Steam + a Chrome tab, etc.)
+  instead of the current single shared port, so file-sync could reach
+  whichever sessions are open at once instead of only the one currently
+  connected. Ken raised this while watching the daemon-loop fix live;
+  agreed to defer until the current single-port daemon is confirmed stable
+  again, since it's a real architecture change (per-connection sync-state
+  tracking, a way for control-port commands to target a specific session)
+  and not something to bundle into a bug fix. Worth a fresh look once
+  Remote API reconnects reliably and stays that way for a while. Note:
+  this would NOT sync save/game state between sessions either way — Remote
+  API only ever syncs source files, so Steam and a browser tab would still
+  be two independently-diverging saves regardless of port count.

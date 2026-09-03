@@ -21,25 +21,42 @@ log() {
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOG_FILE"
 }
 
-# Check if daemon is running and connected
+# Check if daemon is running and connected.
+#
+# Reachability via the control port is the ONLY health signal (2026-09-03
+# fix, after a confirmed live incident). The old version required PID_FILE
+# to hold the exact PID of a live process *before* even trying the control
+# port -- but start_daemon() below unconditionally overwrites PID_FILE with
+# whatever `nohup ... &` returns, even when that process is about to die
+# from a failed bind. Once PID_FILE drifts to a doomed spawn (because a
+# working daemon already holds the port under some other PID -- e.g. one
+# started independently, outside this monitor's tracking), `kill -0` on
+# that dead PID fails immediately, this function returns unhealthy WITHOUT
+# ever trying ctl-status, and check_and_restart's stop+start cycle spawns
+# another equally-doomed clone -- forever, once a minute, while the actual
+# working daemon sits there the whole time, completely invisible to this
+# check. Confirmed live: a real daemon ran healthy and reachable for 23+
+# hours while this monitor churned uselessly around it every ~61s because
+# its own PID_FILE had drifted to a series of instantly-dead clones.
+#
+# A daemon that answers ctl-status IS healthy, full stop, regardless of
+# whether its PID happens to match what this monitor last spawned.
 daemon_healthy() {
-  if [ ! -f "$PID_FILE" ]; then
-    return 1
-  fi
-
-  local pid=$(cat "$PID_FILE" 2>/dev/null)
-  if ! kill -0 "$pid" 2>/dev/null; then
-    return 1
-  fi
-
-  # Try to reach control port
   if python3 "$REPO_DIR/tools/bb_remote.py" ctl-status --control-port "$CONTROL_PORT" &>/dev/null; then
     return 0
   fi
   return 1
 }
 
-# Start daemon
+# Start daemon. Verifies the daemon actually became reachable before
+# declaring success (2026-09-03 fix, same incident as daemon_healthy above)
+# -- previously this recorded whatever PID `nohup ... &` handed back
+# unconditionally, even when that process was about to die from a failed
+# bind (e.g. because the port is already held by a daemon started outside
+# this monitor). A doomed spawn's PID landing in PID_FILE was exactly what
+# fed the infinite restart loop. Now: if the daemon doesn't become
+# reachable within a few seconds, that's logged as a real problem instead
+# of silently trusted.
 start_daemon() {
   log "Starting remote API daemon on port $DAEMON_PORT (control: $CONTROL_PORT)"
 
@@ -51,10 +68,19 @@ start_daemon() {
 
   local daemon_pid=$!
   echo "$daemon_pid" > "$PID_FILE"
-  log "Daemon started with PID $daemon_pid"
+  log "Spawned PID $daemon_pid, verifying it's actually reachable..."
 
-  # Wait a moment for daemon to bind ports
-  sleep 1
+  local tries=0
+  while [ $tries -lt 5 ]; do
+    sleep 1
+    tries=$((tries + 1))
+    if daemon_healthy; then
+      log "Daemon confirmed reachable (spawned PID $daemon_pid, took ${tries}s)"
+      return 0
+    fi
+  done
+
+  log "WARNING: daemon spawned (PID $daemon_pid) but never became reachable on control port $CONTROL_PORT after ${tries}s. Something else may be wrong (port genuinely blocked by an unresponsive process, firewall, etc.) -- not silently retrying every cycle. Check tools/bb_remote_daemon.log and 'lsof -nP -iTCP:$DAEMON_PORT'."
 }
 
 # Stop daemon gracefully

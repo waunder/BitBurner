@@ -10,18 +10,50 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
 
 ## Pending
 
-- [ ] **Remote API daemon (port 12526) won't accept a browser connection — 2026-09-03.**
-  `bb_remote.py` (PID confirmed via `ps`/`lsof` holding the port) logs a
-  continuous "Could not bind... address already in use" line against
-  itself every ~62s for 20+ minutes — looks like a bug in its own
-  reconnect/health-check loop, not an actual port conflict (no other
-  process was on 12526; Steam was stopped, both web sessions confirmed
-  disconnected). Bitburner's in-game Remote API → Connect (localhost:12526)
-  fails with a generic websocket error and no matching log line on the
-  daemon side, meaning the attempt likely never got a clean handshake.
-  Not chased further today — fixes proceeded via clipboard-paste into the
-  in-game Script Editor instead. Worth restarting the daemon fresh and
-  retrying when there's time; see `tools/bb_remote_daemon.log`.
+- [x] **Root-caused why the browser can't connect to Remote API — done 2026-09-03.
+  Two real bugs fixed; the actual blocker turns out to be outside our
+  control.**
+  1. **Fixed:** `remote_api_monitor.sh`'s `daemon_healthy()` required
+     `PID_FILE` to hold the exact PID of a live process before even trying
+     the control port. Once that file drifted to a doomed clone (spawned
+     because the real daemon already held the port under an untracked
+     PID), the monitor was stuck spawning-and-losing-track-of a fresh
+     clone every ~60s forever — the "address already in use" spam — while
+     a real, working daemon sat there the whole time, invisible to its own
+     monitor. `daemon_healthy()` now checks control-port reachability
+     directly; `start_daemon()` now verifies the daemon actually became
+     reachable before declaring success instead of trusting the PID
+     blindly.
+  2. **Fixed but not sufficient alone:** added the
+     `Access-Control-Allow-Private-Network: true` header to the daemon's
+     WebSocket handshake response, for Chrome's Private Network Access
+     policy. Real fix, but Chrome enforces PNA for WebSocket entirely
+     client-side — the daemon's log showed *zero* trace of the browser's
+     connection attempts even after this fix, confirming Chrome blocks it
+     before ever asking the server.
+  3. **The actual, unfixable-from-our-side blocker:** confirmed via a
+     differential test (a page served from `localhost` connects to the
+     daemon instantly; the identical code from
+     `https://bitburner-official.github.io` gets silently blocked, same
+     browser/profile/daemon) that this is genuinely Chrome's Private
+     Network Access policy rejecting a public origin reaching `localhost`.
+     Also confirmed it's not `claude-in-chrome`'s extension interfering —
+     you reproduced the identical failure yourself, in a completely
+     separate, non-automated tab. The real fix needs Bitburner's own
+     hosting to send a `Permissions-Policy` header opting into private-
+     network access, which neither of us controls. **Practical
+     consequence: the web version cannot get automatic Remote API sync
+     under current Chrome policy — keep using the clipboard-paste-into-
+     Script-Editor method there.** The Steam app should be unaffected
+     (not a public web origin the same way) — worth confirming next time
+     you're in it. If you want to chase a personal override, `chrome://flags`
+     may have a private-network-access-related entry, but I can't check
+     since automating `chrome://` pages is blocked for me — not expecting
+     much given how far enforcement has progressed (full enforcement since
+     Chrome 130).
+  See `docs/processes.md`'s "Failure modes worth knowing" for the fuller
+  writeup and `tools/bb_remote.py`/`tools/remote_api_monitor.sh` for the
+  actual code fixes (commit pending).
 
 - [x] **Verify dnet_root.js hang + HUD fix on the browser save — done 2026-09-03.**
   Root-caused and fixed the dnet "paused" issue live (commits a235dbf,

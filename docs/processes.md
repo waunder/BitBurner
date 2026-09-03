@@ -1967,6 +1967,49 @@ live, so its contents are readable outside the game.
 
 ### Failure modes worth knowing
 
+- **The web version of Bitburner cannot get automatic Remote API sync under
+  current Chrome policy — confirmed 2026-09-03, not fixable from this repo's
+  side.** Chrome's Private Network Access (PNA) policy, enforced for
+  WebSocket handshakes since Chrome 126 (full enforcement from Chrome 130),
+  blocks a public-origin page — `https://bitburner-official.github.io` is
+  public, `ws://localhost:12526` is loopback/private — from completing the
+  handshake at all. Confirmed via a differential test: a page served from
+  `localhost` itself connects to the daemon instantly (`OPEN` fires); the
+  identical JS from the public Bitburner origin gets silently blocked (close
+  code 1006, no reason, zero console detail — by design, browsers don't leak
+  *why* a security policy blocked something). The daemon's own log shows
+  *zero* trace of the browser's connection attempts even after adding the
+  `Access-Control-Allow-Private-Network: true` response header (the
+  documented server-side opt-in) — Chrome enforces this entirely
+  client-side for WebSocket, never asking the server at all, so no
+  server-side header can help. Also ruled out: `claude-in-chrome` extension
+  interference (reproduced identically in a separate, non-automated tab)
+  and the `tools/remote_api_monitor.sh` restart-loop bug below (reproduced
+  against a freshly-verified-healthy daemon). The actual fix needs
+  Bitburner's own hosting to send a `Permissions-Policy` header opting into
+  private-network access — outside anyone's control here. **Practical
+  consequence: use the clipboard-paste-into-Script-Editor method for the web
+  version; rely on Remote API only from the Steam app**, which isn't a
+  public web origin the same way and should be unaffected (not independently
+  re-confirmed this session).
+- **`tools/remote_api_monitor.sh`'s health check could get stuck in an
+  infinite restart loop against a daemon that was actually fine (fixed
+  2026-09-03, same investigation as above).** `daemon_healthy()` required
+  `PID_FILE` to hold the exact PID of a live process *before* even trying
+  the control port. `start_daemon()` unconditionally overwrote `PID_FILE`
+  with whatever `nohup ... &` returned, even when that process was about to
+  die from a failed bind — which happens whenever a working daemon already
+  holds the port under some other, untracked PID (e.g. one started
+  independently of this monitor). Once `PID_FILE` drifted to a doomed
+  clone, `kill -0` on it failed immediately every cycle, so the function
+  never even reached the `ctl-status` check — spawning another
+  equally-doomed clone every ~60s, forever, while a real daemon (confirmed
+  23+ hours uptime) sat there completely fine and totally invisible to its
+  own monitor. Fixed: `daemon_healthy()` now checks control-port
+  reachability directly as the sole signal (a daemon that answers is
+  healthy, whoever's PID it has); `start_daemon()` now polls to confirm the
+  daemon actually became reachable before declaring success, logging a
+  clear warning instead of silently trusting the PID if it doesn't.
 - **The Darknet HUD line showed "Paused" independent of whether darknet was
   actually alive (fixed 2026-09-03, same investigation as the hang above).**
   `hud_consolidated.js`'s `darknetStatus()` filtered `dnet_manager_registry.json`

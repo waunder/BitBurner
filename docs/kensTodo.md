@@ -10,16 +10,44 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
 
 ## Pending
 
-- [ ] **Verify dnet_root.js hang fix on your Steam save — 2026-09-03.**
-  Root-caused and fixed the dnet "paused" issue live, in a fresh Chrome tab
-  with your Steam save imported (Remote API was disconnected there, so the
-  fix was pasted directly into the in-game Script Editor and saved, then
-  verified running — pass counter climbed steadily instead of freezing).
-  Fix is committed to `dnet_lib.js`/`dnet_root.js` (commit a235dbf, pushed).
-  Next time you're in the Steam app: confirm the Remote API sync picks up
-  these files normally, then run `restart_mcp.js --darknet` (or your usual
-  dnet restart) and confirm it stays live instead of going back to Paused.
-  See `docs/processes.md`'s "Failure modes worth knowing" for the full story.
+- [ ] **Remote API daemon (port 12526) won't accept a browser connection — 2026-09-03.**
+  `bb_remote.py` (PID confirmed via `ps`/`lsof` holding the port) logs a
+  continuous "Could not bind... address already in use" line against
+  itself every ~62s for 20+ minutes — looks like a bug in its own
+  reconnect/health-check loop, not an actual port conflict (no other
+  process was on 12526; Steam was stopped, both web sessions confirmed
+  disconnected). Bitburner's in-game Remote API → Connect (localhost:12526)
+  fails with a generic websocket error and no matching log line on the
+  daemon side, meaning the attempt likely never got a clean handshake.
+  Not chased further today — fixes proceeded via clipboard-paste into the
+  in-game Script Editor instead. Worth restarting the daemon fresh and
+  retrying when there's time; see `tools/bb_remote_daemon.log`.
+
+- [x] **Verify dnet_root.js hang + HUD fix on the browser save — done 2026-09-03.**
+  Root-caused and fixed the dnet "paused" issue live (commits a235dbf,
+  4c26e3a, pushed). Confirmed from your own fresh browser tab, not just
+  Codex's: `Darknet ▶ gateway live, network already covered 5t [hd]`,
+  `Status: ACTIVE`.
+  **Near-miss along the way:** you had a second tab open to the same
+  exported save, opened before Codex's. Both tabs autosave to the same
+  browser storage independently — your older tab's stale in-memory state
+  (still showing Paused) was overwriting Codex's saved fix each time it
+  autosaved, so a refresh of your tab kept showing the bug as "back."
+  Fixed by closing your tab and forcing an explicit save from Codex's, then
+  you reopened fresh and confirmed ACTIVE. **Lesson: never have two tabs
+  open to the same Bitburner save at once** — same-origin browser storage
+  has no merge, last write wins, and it's very easy to silently undo real
+  work this way.
+
+- [ ] **Verify the same fix reaches your Steam save — 2026-09-03.**
+  The browser-save verification above is a *different* save (imported
+  export) from your Steam app's own save — the Steam save was never
+  touched this session. Next time you're in the Steam app: confirm the
+  Remote API sync picks up `dnet_lib.js`/`dnet_root.js`/
+  `hud_consolidated.js` normally, then run `restart_mcp.js --darknet` (or
+  your usual dnet restart) and confirm it stays ACTIVE instead of going
+  back to Paused. See `docs/processes.md`'s "Failure modes worth knowing"
+  for the full story.
 
 - [ ] **Run Darknet Canary Phase 1 (single-manager test) — 2026-09-02 infrastructure ready.**
   Testing infrastructure created to diagnose the 4 freeze incidents (2026-08-30).

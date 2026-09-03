@@ -10,6 +10,39 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
 
 ## Pending
 
+- [ ] **Verify dnet_root.js hang fix on your Steam save — 2026-09-03.**
+  Root-caused and fixed the dnet "paused" issue live, in a fresh Chrome tab
+  with your Steam save imported (Remote API was disconnected there, so the
+  fix was pasted directly into the in-game Script Editor and saved, then
+  verified running — pass counter climbed steadily instead of freezing).
+  Fix is committed to `dnet_lib.js`/`dnet_root.js` (commit a235dbf, pushed).
+  Next time you're in the Steam app: confirm the Remote API sync picks up
+  these files normally, then run `restart_mcp.js --darknet` (or your usual
+  dnet restart) and confirm it stays live instead of going back to Paused.
+  See `docs/processes.md`'s "Failure modes worth knowing" for the full story.
+
+- [ ] **Run Darknet Canary Phase 1 (single-manager test) — 2026-09-02 infrastructure ready.**
+  Testing infrastructure created to diagnose the 4 freeze incidents (2026-08-30).
+  **Key insight:** `dnet_scorecard.js` reads 586+ credential shards every 30s and could cause CPU spike.
+  
+  **To run:**
+  ```bash
+  bash tools/dnet_canary_test.sh --phase 1 --runs 3
+  ```
+  
+  - Prerequisites: MCP running stable 30+ min, Remote API connected
+  - Runs 3x 5-minute tests with scorecard disabled
+  - Monitors CPU, game responsiveness, manager count
+  - Stops immediately on freeze detection
+  - Logs results to `docs/darknet-canary-log.md`
+  - **Timeline:** ~2 hours (30m runtime + 90m waits)
+  
+  **Outcomes:**
+  - ✅ Phase 1 succeeds: Scorecard is likely culprit, safe to expand
+  - ❌ Phase 1 fails: Problem is `ns.dnet.*` API cost, needs game source investigation
+  
+  See `docs/dnet-canary-testing-guide.md` for complete walkthrough.
+
 - [x] **Historical: first cap attempt (15, 5s merge) — done 2026-08-30.**
   Restarted, overshot to 30 registry entries (48 known hosts) before being
   killed — no sluggishness reported at that peak. Tightened same day: cap

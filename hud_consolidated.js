@@ -192,12 +192,69 @@ function systemStatus(ns, now) {
   }
 }
 
+function cctStatus(ns, now) {
+  const ledger = json(ns, "cct_reward_ledger.json")
+  if (!ledger) return { compact: "-- unavailable", expanded: [] }
+
+  // Calculate all-time stats
+  let totalAccepted = ledger.openingBalance?.accepted || 0
+  let totalCash = ledger.openingBalance?.cash || 0
+  let totalReps = { ...(ledger.openingBalance?.factionRep || {}) }
+  let successful = 0
+  let failed = 0
+  let claudeSuccess = 0
+  let claudeTotal = 0
+
+  for (const entry of ledger.entries || []) {
+    totalAccepted++
+    if (entry.ok) {
+      successful++
+      // Track solver if present
+      if (entry.solver === "claude" || !entry.solver) claudeSuccess++
+      if (!entry.solver) claudeTotal++  // Legacy entries without solver
+      else if (entry.solver === "claude") claudeTotal++
+    } else {
+      failed++
+      if (entry.solver === "claude") claudeTotal++
+    }
+
+    // Parse reward
+    const rewardText = String(entry.reward || "")
+    const cashMatch = rewardText.match(/\$([\d,.]+)\s*([kmbt]?)/i)
+    if (cashMatch) {
+      const factor = { k: 1e3, m: 1e6, b: 1e9, t: 1e12 }[(cashMatch[2] || "").toLowerCase()] || 1
+      totalCash += Number(cashMatch[1].replaceAll(",", "")) * factor
+    }
+
+    const repMatches = [...rewardText.matchAll(/([\d,.]+)\s*(?:faction\s+)?reputation\s*(?:with|for)\s*([^,.;]+)/gi)]
+    for (const match of repMatches) {
+      const name = match[2].trim()
+      const amount = Number(match[1].replaceAll(",", "")) || 0
+      totalReps[name] = (totalReps[name] || 0) + amount
+    }
+  }
+
+  const successRate = totalAccepted > 0 ? ((successful / totalAccepted) * 100).toFixed(0) : "0"
+  const claudeRate = claudeTotal > 0 ? ((claudeSuccess / claudeTotal) * 100).toFixed(0) : "--"
+
+  return {
+    compact: `${totalAccepted} accepted ${successRate}% success`,
+    expanded: [
+      `Total: ${totalAccepted} contracts (${successful}✓ ${failed}✗)`,
+      `Success rate: ${successRate}%${claudeTotal > 0 ? ` (Claude: ${claudeRate}%)` : ""}`,
+      `Cash: ${compact(totalCash, 2)}`,
+      `Top rep: ${Object.entries(totalReps).sort((a, b) => b[1] - a[1])[0]?.[0] || "--"} ${compact(Object.values(totalReps)[0] || 0)}`,
+    ],
+  }
+}
+
 function buildDisplay(ns, state, pos) {
   const now = Date.now()
 
   const sections = [
     { key: "mcp", label: "MCP", data: mcpStatus(ns, now) },
     { key: "darknet", label: "Darknet", data: darknetStatus(ns, now) },
+    { key: "cct", label: "Contracts", data: cctStatus(ns, now) },
     { key: "aug", label: "Augmentation", data: augmentationStatus(ns, now) },
     { key: "system", label: "System", data: systemStatus(ns, now) },
   ]
@@ -213,7 +270,7 @@ function buildDisplay(ns, state, pos) {
   for (const section of sections) {
     const isExpanded = state.expanded === section.key
     const indicator = isExpanded ? "▼" : "▶"
-    const keyHint = { mcp: "hm", darknet: "hd", aug: "ha", system: "hs" }[section.key]
+    const keyHint = { mcp: "hm", darknet: "hd", cct: "hc", aug: "ha", system: "hs" }[section.key]
     const hint = COLORS.DIMMED + `[${keyHint}]` + COLORS.RESET
     const sectionHeader = COLORS.SECTION + `${indicator} ${section.label}` + COLORS.RESET
     const compactLine = sectionHeader + " " + section.data.compact + " " + hint

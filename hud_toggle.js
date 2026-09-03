@@ -1,24 +1,41 @@
-/** Toggle expanded section in consolidated HUD
+/** Toggle HUD sections - supports short names
  *
- * Usage (from terminal):
- *   run hud_toggle.js mcp        # Expand/collapse MCP section
- *   run hud_toggle.js darknet
- *   run hud_toggle.js aug
- *   run hud_toggle.js system
- *   run hud_toggle.js none       # Collapse all
+ * Usage:
+ *   hm   # Toggle MCP
+ *   hd   # Toggle Darknet
+ *   hc   # Toggle Contracts
+ *   ha   # Toggle Augmentation
+ *   hs   # Toggle System
+ *   hn   # Collapse all
  *
- * Or create shortcuts:
- *   alias hud-mcp="run hud_toggle.js mcp"
- *   alias hud-dnet="run hud_toggle.js darknet"
+ * Or run directly:
+ *   run hud_toggle.js m
+ *   run hud_toggle.js d
+ *   run hud_toggle.js c
+ *   run hud_toggle.js a
+ *   run hud_toggle.js s
+ *   run hud_toggle.js n
  */
 
 export async function main(ns) {
-  const section = String(ns.args[0] || "none").toLowerCase()
+  const arg = String(ns.args[0] || "").toLowerCase().trim()
 
-  const valid = ["mcp", "darknet", "aug", "system", "none"]
+  // Map short names to full section names
+  const shortMap = {
+    m: "mcp",
+    d: "darknet",
+    c: "cct",
+    a: "aug",
+    s: "system",
+    n: "none",
+  }
+
+  const section = shortMap[arg] || arg
+  const valid = ["mcp", "darknet", "cct", "aug", "system", "none"]
+
   if (!valid.includes(section)) {
-    ns.tprint(`Invalid section: ${section}`)
-    ns.tprint(`Valid: ${valid.join(", ")}`)
+    ns.tprint(`Invalid section: ${arg}`)
+    ns.tprint(`Valid: m(cp), d(arknet), c(ct), a(ug), s(ystem), n(one-collapse)`)
     return
   }
 
@@ -26,8 +43,18 @@ export async function main(ns) {
     const state = JSON.parse(ns.read("hud_consolidated_state.json"))
     state.expanded = state.expanded === section ? null : section
     ns.write("hud_consolidated_state.json", JSON.stringify(state, null, 2), "w")
-    ns.tprint(`HUD: ${section === "none" ? "all collapsed" : section + " expanded"}`)
+
+    const label = {
+      mcp: "MCP",
+      darknet: "Darknet",
+      cct: "Contracts",
+      aug: "Augmentation",
+      system: "System",
+      none: "all",
+    }[section]
+
+    ns.tprint(`${label} ${state.expanded === section ? "expanded" : "collapsed"}`)
   } catch (e) {
-    ns.tprint("HUD state not found. Start hud_consolidated.js first.")
+    ns.tprint("HUD not running. Start with: hud")
   }
 }

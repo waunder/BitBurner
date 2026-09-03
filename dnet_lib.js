@@ -632,12 +632,28 @@ export function mergeStatus(ns, section, patch, file = STATUS_FILE) {
  * password can still come back 408. Counting that as a failure is how a
  * cracker silently skips the right answer.
  *
+ * `timeBudgetMs` bounds the brute-force loop by wall-clock time, not just
+ * candidate count. Added 2026-09-03: `bruteForceLimit` alone let a single
+ * numeric-format target enumerate ~9000 candidates, each an `await
+ * ns.dnet.authenticate()` that "takes in-game seconds that scale with
+ * instability" per this function's own cost comment above -- with no time
+ * bound, one such target could block dnet_root.js's entire single-threaded
+ * pass (and therefore every status write and manager delegation downstream
+ * of it) for a very long time. Live-observed: dnet_root.js hung indefinitely
+ * on "zero_day@bi7org", with dnet_status.json never updating past the pass
+ * that hit it -- indistinguishable from "paused" to every outside observer
+ * (HUD, status file, Darknet map) because nothing else in the loop got a
+ * turn. Default is Infinity (old behavior) so existing callers are
+ * unaffected; dnet_root.js now passes an explicit budget.
+ *
  * @returns {Promise<{ok: boolean, password?: string, why?: string, code?: number,
  *   tried: number, timeouts: number, exhaustive?: boolean}>}
  */
 export async function acquireSession(ns, host, known, opts = {}) {
   const retries = opts.timeoutRetries ?? 2
   const bruteForceLimit = opts.bruteForceLimit ?? 0
+  const timeBudgetMs = opts.timeBudgetMs ?? Infinity
+  const deadline = Date.now() + timeBudgetMs
 
   // getServerDetails throws (not a return-value error) on a host string
   // that isn't a real darknet server -- confirmed live 2026-08-12: a
@@ -675,6 +691,16 @@ export async function acquireSession(ns, host, known, opts = {}) {
   let timeouts = 0
 
   for (const cand of plan.candidates) {
+    if (Date.now() >= deadline) {
+      return {
+        ok: false,
+        why: `time budget (${timeBudgetMs}ms) exceeded after ${tried}/${plan.candidates.length} candidates`,
+        code: CODE.RequestTimeOut,
+        tried,
+        timeouts,
+        exhaustive: false,
+      }
+    }
     for (let attempt = 0; attempt <= retries; attempt++) {
       const res = await ns.dnet.authenticate(host, cand.password)
       tried++

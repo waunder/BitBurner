@@ -30,6 +30,15 @@ const FILES = [CRAWLER, MANAGER, REALLOC, "dnet_lib.js", "dnet_loot.js", "dnet_l
 // darkweb may stay responsive without rereading hundreds of historic shards.
 const RETRY_MS = 5000
 const CREDENTIAL_MERGE_MS = 60 * 1000
+// Per-target cap on acquireSession's brute-force loop (2026-09-03). See
+// acquireSession's own doc comment in dnet_lib.js for the incident this
+// fixes: without a wall-clock bound, one numeric-format target could block
+// this entire single-threaded pass -- and therefore every status write and
+// manager delegation after it -- for a very long time, indistinguishable
+// from "paused" to every outside observer. RETRY_MS-sized so one slow
+// target costs at most roughly one extra pass interval, not an unbounded
+// multiple of it.
+const SESSION_TIME_BUDGET_MS = RETRY_MS
 
 // Home-side half of the concurrency cap (2026-08-30) — see dnet_lib.js's own
 // comment on MAX_ACTIVE_MANAGERS for why this exists. Piggybacks on this
@@ -141,7 +150,26 @@ export async function main(ns) {
 
     for (const target of ns.dnet.probe()) {
       summary.seen++
-      const session = await acquireSession(ns, target, creds[target], { bruteForceLimit: 10000 })
+      // Heartbeat before the (potentially slow, now time-bounded) session
+      // attempt: makes a target-in-progress visible immediately instead of
+      // only after the whole pass finishes -- see SESSION_TIME_BUDGET_MS's
+      // comment above for the incident this is paired with.
+      const heartbeat = writeDeployerShard(ns, "home", {
+        host: "home",
+        pass,
+        role: "transient-root",
+        scopeNote: "home gateway; quarantines legacy deployers and delegates darkweb",
+        inProgress: { target, startedAt: Date.now() },
+        thisPassSoFar: summary,
+        sinceProcessStart: { ...lifetime },
+        localKnownCreds: Object.keys(creds).length,
+      })
+      await shipShard(ns, heartbeat)
+
+      const session = await acquireSession(ns, target, creds[target], {
+        bruteForceLimit: 10000,
+        timeBudgetMs: SESSION_TIME_BUDGET_MS,
+      })
       if (!session.ok) {
         summary.failed++
         lastFailure = { at: Date.now(), target, stage: "session", why: session.why, code: session.code }

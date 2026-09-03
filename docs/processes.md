@@ -1972,6 +1972,23 @@ live, so its contents are readable outside the game.
   password can return 408. `dnet_lib.js` retries 408 with the same password and
   only drops a candidate on 401. Any code that gets this wrong silently skips
   the right answer.
+- **`acquireSession`'s brute-force loop had no wall-clock bound (fixed
+  2026-09-03).** `dnet_root.js` calls it with `bruteForceLimit: 10000`; for a
+  numeric-format target that can enumerate ~9000 candidates, each a serial
+  `await ns.dnet.authenticate()` that itself takes real seconds and scales
+  with instability. With only a candidate-count cap, one such target blocked
+  `dnet_root.js`'s entire single-threaded pass — and therefore every status
+  write and manager delegation after it — for a very long time, indistinguishable
+  from "paused" to every outside observer (HUD, `dnet_status.json`, the
+  Darknet map) because the shard is only written *after* the full `probe()`
+  loop finishes. Live-observed hung indefinitely on `zero_day@bi7org`, with
+  `dnet_restart_status.json` frozen at `"phase":"launching-root"` from a prior
+  automated restart that hit the same wall. Fixed by adding `timeBudgetMs` to
+  `acquireSession` (bounds the loop by wall-clock time, not just candidate
+  count; `dnet_root.js` passes `RETRY_MS`) and by having `dnet_root.js` write
+  an `inProgress: {target, startedAt}` heartbeat shard *before* each target's
+  session attempt, so a slow-but-now-bounded target is visible immediately
+  instead of only after the whole pass completes.
 - **Backdoors, not authentications, drive instability.** Free allowance is 2;
   each one past that adds 3% to the global authentication timeout chance,
   capping at 50%. `dnet_deploy.js` never backdoors.

@@ -111,6 +111,13 @@ export async function main(ns) {
   // cannot join the new registry without being launched by this root.
   const generation = `g${Date.now()}-${Math.floor(Math.random() * 1e9)}`
 
+  // Authenticate to darkweb gateway before probing (empty password)
+  const darkwebAuth = await ns.dnet.authenticate("darkweb", "")
+  if (!darkwebAuth.success) {
+    ns.tprint(`ERROR: Cannot authenticate to darkweb: ${darkwebAuth.message}`)
+    return
+  }
+
   while (true) {
     pass++
     const started = Date.now()

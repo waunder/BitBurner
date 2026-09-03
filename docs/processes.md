@@ -1967,6 +1967,22 @@ live, so its contents are readable outside the game.
 
 ### Failure modes worth knowing
 
+- **The Darknet HUD line showed "Paused" independent of whether darknet was
+  actually alive (fixed 2026-09-03, same investigation as the hang above).**
+  `hud_consolidated.js`'s `darknetStatus()` filtered `dnet_manager_registry.json`
+  keys for a `"host_"` prefix that `mergeManagerRegistry` (`dnet_lib.js`) never
+  writes -- registry keys are the raw hostname -- so the filter matched
+  nothing, ever. Separately, even a correct count would have been the wrong
+  signal: the registry only counts managers `dnet_root.js` has launched under
+  its *current* restart generation (intentional -- stops a stale pre-restart
+  manager from squatting a `MAX_ACTIVE_MANAGERS` slot), but `dnet_root.js`
+  only launches a new one when `ns.ps(target)` shows nothing already running
+  there, so a fully-covered, healthy network never re-registers anything
+  under the new generation and the registry can stay empty forever even while
+  darknet works fine. Fixed by reading `dnet_root.js`'s own heartbeat
+  freshness (`dnet_deployer_home.json`'s `ts`, same pattern `mcpStatus`
+  already uses for MCP) as the ACTIVE/PAUSED signal, with registry size kept
+  as informational detail only.
 - **Response code 408 (`RequestTimeOut`) does not mean "wrong password."** The
   game rolls the instability timeout *after* the attempt resolves, so a correct
   password can return 408. `dnet_lib.js` retries 408 with the same password and

@@ -16,8 +16,6 @@
  * Watch the remote API logs for detailed output.
  */
 
-import { checkTickInvariants } from "./mcp_logic.js"
-
 export async function main(ns) {
   ns.disableLog("ALL")
 

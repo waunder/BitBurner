@@ -118,6 +118,13 @@ export async function main(ns) {
     return
   }
 
+  // Connect to darkweb session (authenticate cracks password, connectToSession establishes connection)
+  const darkwebConnect = await ns.dnet.connectToSession("darkweb", "")
+  if (!darkwebConnect.success) {
+    ns.tprint(`ERROR: Cannot connect to darkweb: ${darkwebConnect.message}`)
+    return
+  }
+
   while (true) {
     pass++
     const started = Date.now()

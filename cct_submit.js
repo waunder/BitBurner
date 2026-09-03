@@ -98,7 +98,7 @@ export async function main(ns) {
     return
   }
   const reward = ns.codingcontract.attempt(solved.answer, file, host, { returnReward: true })
-  const outcome = { ts: Date.now(), ok: reward !== false, submitted: true, host, file, minTries, triesRemainingBefore: triesRemaining, type, fingerprint, reward: reward === false ? null : reward, reason: reward === false ? "answer rejected" : "answer accepted" }
+  const outcome = { ts: Date.now(), ok: reward !== false, submitted: true, host, file, minTries, triesRemainingBefore: triesRemaining, type, fingerprint, reward: reward === false ? null : reward, reason: reward === false ? "answer rejected" : "answer accepted", solver: "claude" }
   appendLedger(ns, outcome)
   writeStatus(ns, { ...outcome, answer: solved.answer })
   ns.tprint(`cct_submit: ${host}/${file}: ${reward === false ? "rejected" : `accepted (${reward})`}`)

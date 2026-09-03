@@ -110,7 +110,28 @@ function mcpStatus(ns, now) {
 function darknetStatus(ns, now) {
   const canaryState = json(ns, "dnet_canary_phase1_completed.txt")
   const registryRaw = json(ns, "dnet_manager_registry.json")
-  const managers = registryRaw ? Object.keys(registryRaw).filter(k => k.startsWith("host_")).length : 0
+  // Registry keys are the raw hostname (dnet_lib.js's mergeManagerRegistry
+  // sets merged[rec.host] = rec.ts) -- never "host_"-prefixed. The old
+  // filter here matched nothing, ever, so this always read 0 regardless of
+  // real registry size. Fixed 2026-09-03.
+  const managers = registryRaw ? Object.keys(registryRaw).length : 0
+
+  // dnet_root.js's own heartbeat, not the manager registry, is the ACTIVE/
+  // PAUSED signal (fixed 2026-09-03, same investigation as the filter
+  // above). The registry only ever counts managers dnet_root.js has
+  // launched under its CURRENT restart generation -- by design, so a
+  // stale pre-restart manager can't squat a concurrency-cap slot (see
+  // MAX_ACTIVE_MANAGERS in dnet_lib.js, added after two live freeze
+  // incidents). But dnet_root.js only launches a new manager when
+  // ns.ps(target) shows nothing already running there -- a fully-covered,
+  // perfectly healthy network never re-registers anything under the new
+  // generation, so the registry can stay empty forever even while darknet
+  // is working fine. Same freshness pattern as mcpStatus above: fresh
+  // dnet_deployer_home.json means dnet_root.js is alive and completing
+  // passes, which is what "PAUSED" is actually supposed to mean.
+  const deployer = json(ns, "dnet_deployer_home.json")
+  const deployerAgeMs = deployer ? now - (deployer.ts || 0) : Infinity
+  const rootAlive = deployerAgeMs < FRESH_MS
 
   // Get phish thread capacity from latest deployer shard
   let phishThreads = 0
@@ -131,9 +152,9 @@ function darknetStatus(ns, now) {
     state = "CANARY"
     detail = `Phase 1: ${managers} manager(s)`
     threadStr = `${phishThreads}t`
-  } else if (managers > 0) {
+  } else if (rootAlive) {
     state = "ACTIVE"
-    detail = `${managers} manager(s) running`
+    detail = managers > 0 ? `${managers} manager(s) running` : "gateway live, network already covered"
     threadStr = `${phishThreads}t`
   }
 
@@ -143,7 +164,7 @@ function darknetStatus(ns, now) {
       `Status: ${state}`,
       detail,
       `Phish threads: ${phishThreads}`,
-      `Registry entries: ${registryRaw ? Object.keys(registryRaw).length : 0}`,
+      `Registry entries: ${managers}`,
     ],
   }
 }

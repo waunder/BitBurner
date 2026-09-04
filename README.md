@@ -1,5 +1,16 @@
 # BitBurner MCP Monitor
 
+> **What this repo actually is.** A personal sandbox for learning to work
+> with AI coding assistants (Claude and Codex), using the game
+> [Bitburner](https://github.com/bitburner-official/bitburner-src) as the
+> exercise. Every script here was written through conversation with Claude
+> and Codex, not by me. I have no meaningful coding background of my own
+> that isn't 50 years out of date, and I make no claim to have progressed
+> through the game on my own programming skill — this is a "vibe coding"
+> log, not an example of hand-authored strategy code. If that's useful or
+> interesting to you as a reference for AI-assisted development, great;
+> just don't mistake it for my own engineering work.
+
 This workspace contains a BitBurner manager script plus helper status and parser tools.
 
 **See [`docs/processes.md`](docs/processes.md)** for what every script does, what it reads

@@ -21,8 +21,11 @@
  * historical credential ledger.
  *
  * Args: --quiet (suppress per-host SKIP lines), --restart (launch a fresh
- * dnet_deploy.js after cleanup finishes). The latter makes a full Dark Net
- * hot-reload remotely triggerable through restart_mcp.js --darknet.
+ * dnet_root.js after cleanup finishes -- updated 2026-09-04 to match the
+ * current gateway architecture; dnet_deploy.js is legacy and actively
+ * quarantined by dnet_root.js now, see docs/processes.md). The latter makes
+ * a full Dark Net hot-reload remotely triggerable through
+ * restart_mcp.js --darknet.
  *
  * Reads:  dnet_creds.txt, dnet_deployer_*.json
  * Writes: nothing
@@ -126,7 +129,7 @@ export async function main(ns) {
     `dnet_killswarm: inspected ${hostsInspected}/${hosts.size} active host(s) (${hostsUnavailable} unavailable), ` +
       `killed ${killed} Dark Net process(es). ` +
       `Per-host: ${JSON.stringify(killedByHost)}. ` +
-      (flags.restart ? `Restart requested.` : `Now run: run dnet_deploy.js from home.`)
+      (flags.restart ? `Restart requested.` : `Now run: run dnet_root.js from home.`)
   )
   ns.write(
     STATUS_FILE,

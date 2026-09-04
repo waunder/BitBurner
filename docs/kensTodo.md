@@ -115,27 +115,19 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
   ACTIVE, not Paused. Second independent save confirmed — this item is
   closed.
 
-- [ ] **Run Darknet Canary Phase 1 (single-manager test) — 2026-09-02 infrastructure ready.**
-  Testing infrastructure created to diagnose the 4 freeze incidents (2026-08-30).
-  **Key insight:** `dnet_scorecard.js` reads 586+ credential shards every 30s and could cause CPU spike.
-  
-  **To run:**
-  ```bash
-  bash tools/dnet_canary_test.sh --phase 1 --runs 3
-  ```
-  
-  - Prerequisites: MCP running stable 30+ min, Remote API connected
-  - Runs 3x 5-minute tests with scorecard disabled
-  - Monitors CPU, game responsiveness, manager count
-  - Stops immediately on freeze detection
-  - Logs results to `docs/darknet-canary-log.md`
-  - **Timeline:** ~2 hours (30m runtime + 90m waits)
-  
-  **Outcomes:**
-  - ✅ Phase 1 succeeds: Scorecard is likely culprit, safe to expand
-  - ❌ Phase 1 fails: Problem is `ns.dnet.*` API cost, needs game source investigation
-  
-  See `docs/dnet-canary-testing-guide.md` for complete walkthrough.
+- [x] **Stale checkbox, corrected 2026-09-04: Darknet Canary Phase 1 already
+  ran — 3/3 runs succeeded 2026-09-02.** This item said "infrastructure
+  ready," not run, but `docs/darknet-canary-log.md` (never committed, found
+  during a 2026-09-04 review) shows all three 5-minute runs completed
+  2026-09-02 13:35–14:51 with `Status: ✅ SUCCESS` and no freeze detected —
+  the checkbox just never got updated at the time. Every run logged "Manager
+  Count (Final): 0," which is ambiguous (clean shutdown vs. the harness
+  never actually getting a manager running) and wasn't investigated further
+  before the canary-testing thread was overtaken by the 2026-09-03 auth-flow
+  fix and the 2026-09-04 decision to re-enable darknet outright (see
+  `AGENTS.md`). Phase 2 (5 managers, 10-min runs) only got 1 of 3 planned
+  runs logged, with a broken CPU-peak reading (`???%`) — never completed,
+  and now moot for the same reason. No action needed here going forward.
 
 - [x] **Historical: first cap attempt (15, 5s merge) — done 2026-08-30.**
   Restarted, overshot to 30 registry entries (48 known hosts) before being
@@ -187,18 +179,12 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
   its `WATCHED_FILES`/`PULL_FILES` were updated for the new files, but that
   needs the daemon process restarted, not just a resync, to take effect.
 
-- [ ] **Reconnect Bitburner to the existing Remote API daemon on port 12526.**
-  The daemon disconnected at 2026-08-16 13:33 PT and no longer answers its
-  local control channel, so Codex cannot pull fresh core telemetry. In
-  Bitburner, open Options → Remote API and click Connect for port `12526`.
-  No source sync, restart, or held-subsystem action is requested.
-  
-  **Keep-alive system added 2026-09-02:** See `docs/remote-api-keepalive.md`
-  for automated daemon monitoring. Start the system monitor with:
-  ```bash
-  nohup /Users/Shared/BitBurner/tools/remote_api_monitor.sh --daemon &
-  ```
-  This will auto-restart the daemon if it ever crashes again.
+- [x] **Stale, cleared 2026-09-04: the 2026-08-16 daemon disconnect this
+  item was about is long since moot.** The daemon has been connected via
+  Steam continuously for most of today's session (uptime 16+ hours before
+  the restart below), reconfirmed live via `ctl-status` multiple times.
+  `docs/remote-api-keepalive.md`'s monitor script remains available if the
+  daemon ever actually drops again.
 
 - [x] **Historical: the promotion-state.json hold apparatus is retired
   (2026-08-18).** Stock, IPvGO, Darknet, and faction share stay off per

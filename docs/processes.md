@@ -1246,11 +1246,11 @@ an auth token, and `ns.wget` has no way to send one.
   `docs/claude-todo.md`'s 2026-08-30 entries).
 - **Output:** `sync_from_github_status.json` — one record per run: counts,
   which files (if any) failed, pattern used if any.
-- **Not yet live-verified** (per `CLAUDE.md` — nothing here has run in
-  Bitburner): `ns.wget`'s real-world success rate across ~80 sequential
-  fetches, and whether GitHub or the game itself rate-limits a burst like
-  that. Reports a clear per-file pass/fail tally either way and never aborts
-  the whole run over one failed file.
+- **Confirmed live 2026-09-04.** First run: `fetching manifest ...` →
+  `pulling 80 file(s) from waunder/BitBurner@main ...` → `done — 80/80
+  pulled`. No rate-limiting encountered, no failures. Reports a clear
+  per-file pass/fail tally regardless and never aborts the whole run over
+  one failed file, but that path hasn't actually been exercised yet.
 
 ### `cct_audit.js`
 

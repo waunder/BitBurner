@@ -10,26 +10,15 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
 
 ## Pending
 
-- [ ] **One-time bootstrap: paste `sync_from_github.js` into the browser
-  save's Script Editor — 2026-09-04.** The real fix for "the browser can't
-  use the Remote API" (root-caused below): the repo is now public, and
-  `sync_from_github.js` pulls every current file straight from GitHub via
-  `ns.wget` (0GB, confirmed real function) — no browser automation, no
-  remembering the clipboard-paste dance. This one script is the *only*
-  thing that ever needs manual pasting; every future update, including to
-  this script itself, comes through running it again. Steps:
-  1. In the browser save's terminal: `nano sync_from_github.js` (creates it
-     if new).
-  2. Paste the full contents of `sync_from_github.js` from this repo, save.
-  3. `run sync_from_github.js` — pulls everything `sync_manifest.json`
-     lists. Watch the tail/terminal for a `done — N/N pulled` line; if
-     anything's in the FAILED list, check `sync_from_github_status.json`.
-  4. From then on, whenever you want the browser save current: just
-     `run sync_from_github.js` again (no re-paste needed unless this
-     script's own source changes — I'll flag that here if it ever does).
-  **Not yet live-verified** (per `CLAUDE.md`): `ns.wget`'s real-world
-  success rate across ~80 sequential fetches is unconfirmed. First run is
-  the actual test — let me know what happens either way.
+- [x] **Bootstrap `sync_from_github.js` into the browser save — done and
+  confirmed live 2026-09-04.** Ken pasted it once via `nano` +
+  `pbcopy`/paste, ran `run sync_from_github.js`: `fetching manifest ...` →
+  `pulling 80 file(s) from waunder/BitBurner@main ...` → `done — 80/80
+  pulled`. First live test of `ns.wget` for this, 100% success rate across
+  every manifest entry, no failures to investigate. Browser-save sync is
+  now a solved problem going forward: whenever the save needs to be
+  current, just `run sync_from_github.js` again — no re-paste needed unless
+  this script's own source changes.
 
 - [x] **Root-caused why the browser can't connect to Remote API — done 2026-09-03.
   Two real bugs fixed; the actual blocker turns out to be outside our

@@ -31,11 +31,10 @@
  *   run sync_from_github.js dnet_*   — only manifest entries matching the
  *                                       glob (same * / ? syntax as lsf.js)
  *
- * Not live-verified yet (per CLAUDE.md — nothing here has run in Bitburner):
- * ns.wget's real-world success rate across ~80 sequential fetches, and
- * whether GitHub or the game itself rate-limits a burst like that. Reports
- * a clear per-file pass/fail tally rather than assuming success either way,
- * and never aborts the whole run over one failed file.
+ * Confirmed live 2026-09-04, first run: manifest fetched, 80/80 files
+ * pulled, no rate-limiting encountered from GitHub or the game. Still
+ * reports a clear per-file pass/fail tally and never aborts the whole run
+ * over one failed file, but that path hasn't actually been exercised yet.
  *
  * Writes: sync_from_github_status.json (one record per run: counts, list of
  * any failed files, branch/commit reference where available)

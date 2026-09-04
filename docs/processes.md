@@ -1176,22 +1176,37 @@ override or add real terminal commands, so `lsf.js` can't literally replace
   `host` defaults to the server the script runs on; `-l`/`--long` may appear
   anywhere among the args. `run lsf.js *` lists everything, same as plain
   `ls`.
-- **`-l` output:** a `[category] size` prefix ahead of each filename —
-  `[script]` with `ns.getScriptRam`'s RAM-per-thread for `.js`/`.script`/
-  `.ns`; `[text]` with a character count from `ns.read().length` for
-  everything else, **but only when listing the host the script is actually
-  running on** — `ns.read` has no remote-host parameter (this repo's own
-  2026-08-12 finding, see `claude-todo.md`), so a remote host's text files
-  show `n/a (remote)` instead of silently misreading or crashing;
-  `[contract]`/`[program]` always show `n/a` (a contract's real detail costs
-  RAM per-contract to read — see `cct_inventory.js` — and isn't worth paying
-  here). Every per-file game call is try/catch-guarded to `n/a` rather than
-  aborting the listing.
-- **Output:** with AutoLink.exe, every returned line is a clickable link
-  that connects the terminal to the server holding it; without it, output
-  remains plain text.
+- **`-l` output:** a `[category] size modified` prefix ahead of each
+  filename — `[script]` with `ns.getScriptRam`'s RAM-per-thread for `.js`/
+  `.script`/`.ns` (works cross-host); `[text]` with a character count from
+  `ns.read().length` for everything else, **but only when listing the host
+  the script is actually running on** — `ns.read` has no remote-host
+  parameter (this repo's own 2026-08-12 finding, see `claude-todo.md`), so a
+  remote host's text files show `n/a (remote)` instead of silently
+  misreading or crashing; `[contract]`/`[program]` always show `n/a` (a
+  contract's real detail costs RAM per-contract to read — see
+  `cct_inventory.js` — and isn't worth paying here). `modified` uses
+  `ns.getFileMetadata(file).mtime` (0GB, real function, confirmed in the
+  local `NetscriptDefinitions.d.ts`) for `.txt`/`.json`/`.css`/`.js`/`.jsx`/
+  `.ts`/`.tsx` on the local host only — same no-remote-host constraint as
+  `ns.read` — everything else shows `-`. Every per-file game call is
+  try/catch-guarded to `n/a`/`-` rather than aborting the listing.
+- **No hyperlinks.** An earlier version claimed clickable connect-links via
+  `ns.ui.createConnectLink` — that function doesn't exist anywhere in this
+  game's Netscript API (confirmed by grepping the local
+  `NetscriptDefinitions.d.ts`'s full `UserInterface` interface: no
+  link-creation method of any kind), so the feature silently no-op'd to
+  plain text every time and nobody noticed until Ken asked for it directly.
+  Removed rather than reshipped broken. Matches this repo's own independent
+  2026-08-14 finding: the built-in `ls`'s clickable filenames are privileged
+  `Terminal.printRaw` + React + internal router code with no public `ns`
+  equivalent. (`ns.tprintRaw` does accept an arbitrary `ReactNode`, and
+  `React`/`ReactDOM` are exposed as script globals, so a hand-built
+  clickable element is theoretically constructible — but there's no
+  confirmed way for its `onClick` to actually do anything useful after this
+  one-shot script has already exited, so not attempted.)
 - **Reads:** the live game (`ns.ls`, `ns.getScriptRam`, and — local host
-  only — `ns.read`), nothing on disk.
+  only — `ns.read`, `ns.getFileMetadata`), nothing on disk.
 
 ### `cct_audit.js`
 

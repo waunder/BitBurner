@@ -12,14 +12,18 @@ one is the knowledge base (formulas extracted from the game's own
 TypeScript), this one is the argument built on top of it. Read that first;
 every formula cited here comes from there unless marked otherwise.
 
-**Status as of 2026-08-14: R1–R5 and R7 are all implemented, live, and
-confirmed working correctly — R4 landed last and delivered the
-order-of-magnitude payoff for real: `incomePerSec` went from ~$170–190K/s
-to $11.4M/s (~60×) the moment it picked a genuinely well-suited target
-instead of the poor-fit one R1's live confirmation run had exposed. See §5
-for the current, maintained status of every item — only R6 (XP mode) is
-left, and it's deliberately parked.** The rest of this document is the
-original analysis; read §5 first if you just want to know what's left.
+**Status as of 2026-09-04: R1–R5 and R7 are implemented, live, and confirmed
+working correctly — R4 landed last and delivered the order-of-magnitude
+payoff for real: `incomePerSec` went from ~$170–190K/s to $11.4M/s (~60×)
+the moment it picked a genuinely well-suited target instead of the poor-fit
+one R1's live confirmation run had exposed. R6 (XP mode) shipped 2026-08-31
+(code implemented, full test suite passing) but was never restarted and
+watched live in XP mode specifically — see §5 item 7 for the correction to
+this doc's earlier "not started" status. R8 (switch-veto) also shipped
+(2026-08-18), is enabled in live config, but its veto branch itself has
+never been observed firing.** See §5 for the current, maintained status of
+every item. The rest of this document is the original analysis; read §5
+first if you just want to know what's left.
 
 ## Status vocabulary
 
@@ -1025,17 +1029,37 @@ truth for "what's left," not just the original ranking.
      key is live and separately monitored.
    - **`tickWithinBounds` firing** — no code change, per the doc's own
      "informational only" note.
-7. **R6 (XP mode) — not started, low priority.** `OBJECTIVE` is `"money"`
-   and income is the binding constraint; revisit when that changes.
+7. **R6 (XP mode) — corrected 2026-09-04, this entry previously said "not
+   started."** It's actually shipped: `XP_WEIGHT_HACK = 0.95` /
+   `XP_WEIGHT_GROW = 0.05` and a dedicated `getTargetXpScore`/
+   `computeXpTargetScore` ranking by XP-per-thread-second (independent of
+   `maxMoney`) are both in `mcp.js` today, exactly this item's recommended
+   split and selection fix. Per `STATE.md`'s 2026-08-31 entry: `node --check`
+   clean, full suite passing (190/190 at the time) — but it "still needs a
+   live restart and rate observation," and no later entry anywhere in this
+   repo confirms that happened. `OBJECTIVE` is `"money"` in live config
+   right now, so the code path isn't currently exercised. **Still the one
+   genuinely open item — not because it's unbuilt, but because it's
+   untested in the one mode it exists for.**
 
-**All of steps 1–6 are now shipped, live, and confirmed working — only R6
-(step 7) remains, deliberately parked until `OBJECTIVE` ever leaves
-`"money"`.** R1 alone (step 3) was the order-of-magnitude payload
-*in theory*; R4 (step 4) is what actually cashed it in — R1 correctly
-computes near-zero hack on a poor-fit target, which is mathematically
-right but produces nothing, and R4 is the piece that stops the bot landing
-on such targets in the first place. Confirmed live together:
-$170–190K/s → $11.4M/s, ~60× in one restart. This document's own original
-estimate (§1's "Modelled achievable rate on the bot's current target:
-~$13M/s" against a live $436K/s, a ~30× gap) undersold it once R4 also
-fixed *which* target gets that treatment.
+**Steps 1–7 are all now shipped and code-confirmed; live confirmation is
+complete for 1–6, still outstanding for R6/step 7 specifically** (see the
+correction above — it needs a restart with `OBJECTIVE` actually set to
+`"xp"` to close out, not more code work). R1 alone (step 3) was the
+order-of-magnitude payload *in theory*; R4 (step 4) is what actually cashed
+it in — R1 correctly computes near-zero hack on a poor-fit target, which is
+mathematically right but produces nothing, and R4 is the piece that stops
+the bot landing on such targets in the first place. Confirmed live
+together: $170–190K/s → $11.4M/s, ~60× in one restart. This document's own
+original estimate (§1's "Modelled achievable rate on the bot's current
+target: ~$13M/s" against a live $436K/s, a ~30× gap) undersold it once R4
+also fixed *which* target gets that treatment.
+
+**R8 (switch-veto, built after this document's original R1–R7 ranking) —
+see `AGENTS.md`'s and `docs/claude-todo.md`'s 2026-09-04 entries for its
+current status: implemented and enabled in live config, but never observed
+actually firing since it shipped 2026-08-18.** As of 2026-09-04, its
+floor-corrected scoring primitive (`getFormulaMinimumSecurityScore`) is
+also being wired into the primary target-ranking path (not just the veto
+check) to close R4's own documented current-security-vs-floor gap — see
+the dated entry in `docs/claude-todo.md` for that change once it lands.

@@ -102,7 +102,7 @@
 > load from other scripts, propagation burst speed, and resident count are
 > all eliminated as the primary driver, since a minimal, well-behaved
 > 6-manager deployment with nothing else running still freezes fast.
-> **Status as of this writing: darknet stays off. Four live freezes in one
+> **Status as of 2026-08-30: darknet stays off. Four live freezes in one
 > session; no live-restart-based fix landed.** Whatever's actually
 > happening most likely lives inside what `ns.dnet.probe()`/
 > `getServerDetails()`/`authenticate()` themselves cost against this save's
@@ -111,6 +111,26 @@
 > Needs either reading the game's own bundled source for what those calls
 > actually do, or much more incremental live testing than a single session
 > has budget for, before trying again.
+>
+> **Update 2026-09-04: darknet is back on, resolved as a practical matter,
+> not via the isolated-root-cause experiment this banner called for.**
+> 2026-09-03 turned up a real bug on exactly the code path the freeze
+> theory pointed at: `dnet_root.js` was missing `authenticate()`/
+> `connectToSession()` calls and brute-force wasn't enabled, so
+> `acquireSession` could fail and retry indefinitely instead of succeeding
+> once — a coherent, plausible driver for the kind of runaway per-tick cost
+> suspected above, found independently while fixing an unrelated hang/HUD
+> bug, not by chasing this freeze directly. Since that fix: two clean
+> restarts (browser save, Steam save) and one sustained 75+ minute live run
+> under real concurrent load (`mcp.js`, HUD, maintenance steward all
+> running), zero freezes, zero sluggishness — more load and more time than
+> the isolated single-manager test above that failed in under 90 seconds
+> pre-fix. The source-reading step this banner asked for was never actually
+> done, so this isn't proof the original theory was exactly right, only
+> that whatever was wrong is no longer reproducing under real use. Ken's
+> call, 2026-09-04, to treat that as sufficient for a solo hobby project and
+> re-enable it — see `AGENTS.md`'s stop-list, which no longer lists darknet.
+> `startup.js`/`startup_browser.js` both launch `dnet_root.js` by default.
 
 Synthesis and sequencing. Read `darknet-functions.md` for the API and the
 model solvers, `darknet-tactics.md` for the per-decision reasoning. This doc

@@ -14,17 +14,19 @@
  * to a normal public HTTPS host, not localhost — so it isn't subject to the
  * same Private Network Access block. The repo (github.com/waunder/BitBurner)
  * was made public 2026-09-04 specifically to unblock this: raw.githubusercontent.com
- * won't serve a private repo's content without an auth token, and ns.wget
- * has no way to send one.
+ * won't serve a private repo without an auth token, and ns.wget has no way
+ * to send one.
  *
- * Reads sync_manifest.json fresh from GitHub every run rather than
- * expecting a local copy — the browser save otherwise has no way to receive
- * one, and this keeps this script itself the *only* thing that ever needs
- * pasting into the Script Editor by hand. Whatever the manifest lists is
- * whatever gets pulled; this file has no independent file list to drift out
- * of sync with tools/bb_remote.py's WATCHED_FILES (same manifest, both
- * readers — see sync_manifest.json's own "_comment" and the note where
- * bb_remote.py loads it).
+ * Deliberately self-contained rather than importing a shared helper from a
+ * sync_lib.js-style module: a script's `import` is resolved when it's
+ * loaded, before its body ever runs, so a fresh browser save with only this
+ * one file pasted in by hand could never reach the point of wget-ing a
+ * missing dependency into existence — it would just fail to load. Keeping
+ * every game-loadable entry point (this file and startup_browser.js, which
+ * needs the same pull logic) able to bootstrap from nothing pasted but
+ * itself is worth the small duplication; see startup_browser.js's own
+ * pullFromGithub for the twin copy, kept in sync by hand since both are
+ * short and rarely touched.
  *
  * Usage: run sync_from_github.js [pattern]
  *   run sync_from_github.js          — every file in the manifest

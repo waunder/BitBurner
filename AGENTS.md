@@ -36,11 +36,31 @@ explicit go-ahead first for:
 - **Deploying real stock-market capital.** See "Stock trading" below —
   this one has already been crossed once and needs a clean bill before it's
   revisited.
-- **Re-enabling Darknet or faction-share automation** after their stability
-  incidents, until the root cause is understood well enough to say why it
-  won't recur.
+- **Re-enabling faction-share automation** after its stability incident
+  (2026-08-18, `share_deploy.js`, a separate incident from darknet's below),
+  until the root cause is understood well enough to say why it won't recur.
 - **An augmentation install, or any other in-game action that resets or
   permanently forfeits progress.**
+
+**Darknet is no longer on this list — resolved 2026-09-04, Ken's call.**
+Four live freezes 2026-08-30 (`docs/darknet-strategy.md`'s status banner)
+never pinned an exact mechanism; the working theory was `ns.dnet.probe()`/
+`getServerDetails()`/`authenticate()` cost against the save's darknet graph.
+2026-09-03 turned up a real, independently-motivated bug on the exact same
+code path: `dnet_root.js` was missing `authenticate()`/`connectToSession()`
+calls and brute-force wasn't enabled, so `acquireSession` could fail and
+retry rather than succeed once — a coherent, plausible driver for exactly
+the kind of runaway per-tick cost the freeze theory pointed at, found and
+fixed without originally chasing the freeze itself. Since that fix: two
+independent clean restarts (browser save, Steam save) plus one sustained
+75+ minute live run under real load (mcp.js, HUD, maintenance all running
+concurrently — more load than the isolated single-freeze test that failed
+in under 90 seconds pre-fix), no freeze, no sluggishness. Not a controlled
+isolated-root-cause experiment (the original incident's own suggested next
+step — reading the game's bundled source for what those three calls cost
+internally — was never done), but enough real-world evidence to close this
+out as a practical matter for a solo hobby project. `startup.js` and
+`startup_browser.js` both launch `dnet_root.js` by default now.
 
 That's the whole list. It replaces the old risk-tier system; don't
 reintroduce a parallel one. Landing tested, flag-gated, reversible code

@@ -1231,10 +1231,15 @@ an auth token, and `ns.wget` has no way to send one.
 - **Mechanism:** fetches `sync_manifest.json` fresh from GitHub every run
   (never expects a local copy — the browser save has no other way to get
   one), then `ns.wget`s each listed file from
-  `raw.githubusercontent.com/waunder/BitBurner/main/<file>`. This script
-  itself is the *only* file that ever needs pasting into the Script Editor
-  by hand — everything after that, including its own future updates, comes
-  through the wget path.
+  `raw.githubusercontent.com/waunder/BitBurner/main/<file>`. This script and
+  `startup_browser.js` (below) are the *only* two files that ever need
+  pasting into the Script Editor by hand — everything after that, including
+  their own future updates, comes through the wget path. Deliberately
+  self-contained (no shared `sync_lib.js`-style import) for exactly that
+  reason: an `import` resolves before a script's body ever runs, so a script
+  pasted in fresh could never wget a missing dependency into existence
+  before failing to load. `startup_browser.js` carries its own duplicate
+  copy of this same pull loop rather than importing this file.
 - **Shared manifest, not a second file list:** `sync_manifest.json` (repo
   root, hand-maintained, tracked — allow-listed in `.gitignore` alongside
   `mcp_config.json`) is the single source of truth for "every file that
@@ -1251,6 +1256,39 @@ an auth token, and `ns.wget` has no way to send one.
   pulled`. No rate-limiting encountered, no failures. Reports a clear
   per-file pass/fail tally regardless and never aborts the whole run over
   one failed file, but that path hasn't actually been exercised yet.
+
+### `startup_browser.js`
+
+The browser save's one-command boot, built 2026-09-04: sync from GitHub
+(this script's own duplicated copy of `sync_from_github.js`'s pull loop —
+see that section above for why it's a duplicate, not an import), then bring
+up the same suite `startup.js` starts on Steam, including `dnet_root.js`.
+One thing to remember instead of two: `run sync_from_github.js` followed by
+`run startup.js`.
+
+- **Start:** `run startup_browser.js`, no arguments.
+- **Sync is best-effort, not blocking:** a failed GitHub fetch is logged
+  loudly (`sync FAILED (<reason>) — continuing with whatever's already on
+  disk`) but does not stop the rest of boot — a stale-but-working suite
+  beats none at all.
+- **Launch sequence:** identical to `startup.js` below — close every tail
+  window before `ns.killall`, then launch `mcp_supervisor.js`,
+  `hacking/crawler.js`, `player_activity_controller.js`, `mcp.js`,
+  `dnet_root.js`, `maintenance_steward.js`, `hud_consolidated.js`,
+  `mcp_xp.js` in that order, skipping anything `ns.scriptRunning` already
+  shows as up.
+- **`dnet_root.js` needs no special "is darknet available yet" check
+  here** — it already fails cleanly on its own (`ns.tprint` + `return` on a
+  failed `authenticate()`/`connectToSession()` call to `darkweb`, confirmed
+  in its own source) if darkweb isn't reachable yet, so it's launched the
+  same as every other script in the list.
+- **Bootstrap:** this file and `sync_from_github.js` are the two files that
+  ever need pasting into the Script Editor by hand for a fresh browser save
+  — everything else, including future updates to these two, arrives via the
+  sync step. See `docs/kensTodo.md` for the one-time paste steps.
+- **Not yet live-verified end-to-end** (per `CLAUDE.md`): this exact
+  sync-then-launch combination hasn't run in the game yet, only its two
+  halves separately.
 
 ### `cct_audit.js`
 
@@ -1503,10 +1541,13 @@ download every time.
 
 Brings up the whole suite from a clean slate in **one** command:
 `run startup.js`. Closes every open tail window, kills everything else on
-the host, then launches `mcp_supervisor.js`, `hacking/crawler.js`, `mcp.js`,
-`mcp_hud.js`, `get_stats.js` in that order via `ns.run`, then exits rather
-than staying resident, so its own footprint doesn't compete with what it
-just started.
+the host, then launches `mcp_supervisor.js`, `hacking/crawler.js`,
+`player_activity_controller.js`, `mcp.js`, `dnet_root.js` (added 2026-09-04,
+see `AGENTS.md`'s note on why darknet is back in the default list),
+`maintenance_steward.js`, `hud_consolidated.js`, `mcp_xp.js` in that order
+via `ns.run`, then exits rather than staying resident, so its own footprint
+doesn't compete with what it just started. `startup_browser.js` (above)
+runs the same sequence for the browser save, plus a GitHub sync step first.
 
 - **Start:** `run startup.js` — the one command besides the supervisor's own
   bootstrap that still needs a human hand

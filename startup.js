@@ -45,7 +45,7 @@
  *
  * @param {NS} ns
  */
-const SCRIPTS = ["mcp_supervisor.js", "hacking/crawler.js", "player_activity_controller.js", "mcp.js", "maintenance_steward.js", "hud_consolidated.js", "mcp_xp.js"]
+const SCRIPTS = ["mcp_supervisor.js", "hacking/crawler.js", "player_activity_controller.js", "mcp.js", "dnet_root.js", "maintenance_steward.js", "hud_consolidated.js", "mcp_xp.js"]
 
 export async function main(ns) {
   ns.disableLog("ALL")

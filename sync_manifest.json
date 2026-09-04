@@ -73,6 +73,7 @@
     "automation_review_logic.js",
     "lsf.js",
     "sync_from_github.js",
+    "startup_browser.js",
     "scripts/copyScripts.js",
     "scripts/copy_scripts.js",
     "scripts/execute.js",

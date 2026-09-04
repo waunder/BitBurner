@@ -1208,6 +1208,50 @@ override or add real terminal commands, so `lsf.js` can't literally replace
 - **Reads:** the live game (`ns.ls`, `ns.getScriptRam`, and — local host
   only — `ns.read`, `ns.getFileMetadata`), nothing on disk.
 
+### `sync_from_github.js`
+
+The browser save's answer to what the Remote API does for Steam, built
+2026-09-04. The browser can't use the Remote API at all — Chrome's Private
+Network Access policy silently blocks a public origin from opening a
+WebSocket to `localhost` (root-caused 2026-09-03, see `docs/kensTodo.md`,
+confirmed unfixable from our side) — so clipboard-paste into the Script
+Editor, file by file, was the only way to get code into a browser save.
+`ns.wget(url, target)` is a real, 0GB Netscript function (confirmed in the
+local `NetscriptDefinitions.d.ts`, whose own doc example fetches from
+`raw.githubusercontent.com`) whose fetch target is a normal public HTTPS
+host, not `localhost` — not subject to the same PNA block. The repo
+(`github.com/waunder/BitBurner`) was made public 2026-09-04 specifically to
+unblock this: `raw.githubusercontent.com` won't serve a private repo without
+an auth token, and `ns.wget` has no way to send one.
+
+- **Start:** `run sync_from_github.js [pattern]` — no pattern pulls every
+  file `sync_manifest.json` lists; a glob pattern (same `*`/`?` syntax as
+  `lsf.js`) pulls only manifest entries matching it, e.g.
+  `run sync_from_github.js dnet_*`.
+- **Mechanism:** fetches `sync_manifest.json` fresh from GitHub every run
+  (never expects a local copy — the browser save has no other way to get
+  one), then `ns.wget`s each listed file from
+  `raw.githubusercontent.com/waunder/BitBurner/main/<file>`. This script
+  itself is the *only* file that ever needs pasting into the Script Editor
+  by hand — everything after that, including its own future updates, comes
+  through the wget path.
+- **Shared manifest, not a second file list:** `sync_manifest.json` (repo
+  root, hand-maintained, tracked — allow-listed in `.gitignore` alongside
+  `mcp_config.json`) is the single source of truth for "every file that
+  loads into the game," consumed by both this script and
+  `tools/bb_remote.py`'s `WATCHED_FILES` (which now loads it via `json.load`
+  instead of hardcoding its own copy — fixed 2026-09-04 specifically to
+  avoid the kind of two-copies-drift this project has already been burned
+  by once, `dnet_crawl.js`'s duplicated `MAX_ACTIVE_MANAGERS`, see
+  `docs/claude-todo.md`'s 2026-08-30 entries).
+- **Output:** `sync_from_github_status.json` — one record per run: counts,
+  which files (if any) failed, pattern used if any.
+- **Not yet live-verified** (per `CLAUDE.md` — nothing here has run in
+  Bitburner): `ns.wget`'s real-world success rate across ~80 sequential
+  fetches, and whether GitHub or the game itself rate-limits a burst like
+  that. Reports a clear per-file pass/fail tally either way and never aborts
+  the whole run over one failed file.
+
 ### `cct_audit.js`
 
 Read-only coding-contract inventory. It breadth-first scans rooted servers,

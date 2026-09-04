@@ -12,6 +12,7 @@
 !/mcp_config.json
 !/mcp_multi_config.json
 !/player_activity_config.json
+!/sync_manifest.json
 !/tsconfig.json
 
 # macOS

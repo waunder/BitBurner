@@ -747,103 +747,24 @@ async def cmd_dump(args):
 DEFAULT_CONTROL_PORT = 12527
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
-# Every file that actually loads into the game, mirrored from
-# docs/processes.md's script map. Repo-relative, POSIX separators, no
-# leading slash (the leading slash the game's own filesystem wants is added
-# at push time — see _remote_name below — matching what the VS Code
-# extension's own PathMapper does: `r.startsWith("/")||(r="/"+r)`, read
-# directly out of its bundled extension.js).
-#
-# Deliberately excludes: generated game-output files (mcp_status.json,
-# mcp_status_log.txt, mcp_target_state.json, mcp_events.txt, mcp_restart.txt,
-# mcp_dump_request.txt — these flow game-to-disk; pushing them back would
-# overwrite live game state with a stale local copy), mcp_logic.test.js and
-# ipvgo_logic.test.js (node --test files, never loaded by the game),
-# mcp_status_parser.py/js (local out-of-game tooling), and
-# NetscriptDefinitions.d.ts/NetscriptGlobals.d.ts/tsconfig.json/README.md
-# (editor support, not netscript). If a new live script is added to the
-# repo, add it here in the same commit — same rule docs/processes.md
-# itself follows.
-WATCHED_FILES = [
-    "mcp.js",
-    "mcp_launch.js",
-    "mcp_logic.js",
-    "mcp_config.json",
-    "mcpMulti.js",
-    "mcpMulti_logic.js",
-    "mcp_multi_config.json",
-    "skim_probe.js",
-    "mcp_hud.js",
-    "mcp_money.js",
-    "mcp_xp.js",
-    "progression_guidance_logic.js",
-    "mcp_stock_trader.js",
-    "mcp_stock_trader_logic.js",
-    "mcp_stocks.js",
-    "mcp_status.js",
-    "mcp_supervisor.js",
-    "get_stats.js",
-    "restart_mcp.js",
-    "startup.js",
-    "tail_mcp.js",
-    "econ_probe.js",
-    "dnet_probe.js",
-    "dnet_deploy.js",
-    "dnet_lib.js",
-    "dnet_loot.js",
-    "dnet_loot_realloc.js",
-    "dnet_realloc.js",
-    "dnet_phish.js",
-    "dnet_scorecard.js",
-    "dnet_hud.js",
-    "dnet_crawl.js",
-    "dnet_manager.js",
-    "dnet_root.js",
-    "dnet_loot_all.js",
-    "dnet_loot_merge.js",
-    "dnet_creds_merge.js",
-    "dnet_status_merge.js",
-    "dnet_killswarm.js",
-    "dnet_ramcheck.js",
-    "dnet_canary_phase1.js",
-    "purchaseServer-8GB.js",
-    "purchase_worker_server.js",
-    "ipvgo_player.js",
-    "ipvgo_logic.js",
-    "ipvgo_hud.js",
-    "hacking/crawler.js",
-    "hacking/worm.js",
-    "share_deploy.js",
-    "set_objective.js",
-    "cct_audit.js",
-    "cct_dry_run.js",
-    "cct_submit.js",
-    "cct_hud.js",
-    "cct_watcher.js",
-    "cct_worker_pool.js",
-    "maintenance_steward.js",
-    "maintenance_logic.js",
-    "augmentation_readiness.js",
-    "player_activity_controller.js",
-    "player_activity_logic.js",
-    "player_activity_config.json",
-    "ops_hud.js",
-    "hud_consolidated.js",
-    "hud_toggle.js",
-    "remote_api_keepalive.js",
-    "cct_logic.js",
-    "automation_review.js",
-    "automation_review_logic.js",
-    "lsf.js",
-    "scripts/copyScripts.js",
-    "scripts/copy_scripts.js",
-    "scripts/execute.js",
-    "scripts/grow.js",
-    "scripts/hack.js",
-    "scripts/share.js",
-    "scripts/weaken.js",
-    "scripts/weakenGrowHack.js",
-]
+# Every file that actually loads into the game. Loaded from
+# sync_manifest.json (2026-09-04) rather than hardcoded here, because that
+# manifest is now also the browser-sync path's source of truth
+# (sync_from_github.js fetches it via ns.wget and pulls whatever it lists —
+# see docs/processes.md). Two independently-maintained copies of this same
+# list was exactly the kind of drift this project has been burned by before
+# (dnet_crawl.js's duplicated MAX_ACTIVE_MANAGERS going stale, see
+# docs/claude-todo.md's 2026-08-30 entries) — one JSON file, two readers,
+# can't drift. Repo-relative, POSIX separators, no leading slash (the
+# leading slash the game's own filesystem wants is added at push time — see
+# _remote_name below — matching what the VS Code extension's own PathMapper
+# does: `r.startsWith("/")||(r="/"+r)`, read directly out of its bundled
+# extension.js). See sync_manifest.json's own "_comment" field for exactly
+# what's deliberately excluded and why. If a new live script is added to the
+# repo, add it to sync_manifest.json in the same commit — same rule
+# docs/processes.md itself follows.
+with open(REPO_ROOT / "sync_manifest.json", encoding="utf-8") as _f:
+    WATCHED_FILES = json.load(_f)["files"]
 
 SYNC_POLL_S = 2.0  # mirrors mcp_supervisor.js's own POLL_MS
 

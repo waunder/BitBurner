@@ -1165,15 +1165,33 @@ built-in terminal `ls -g/--grep` only does plain substring matching
 `parsedPath.includes(filter)`) — `ls *.msg` matches nothing there, since
 `*` isn't special to it at all. `lsf.js` translates the pattern to an
 anchored regex (`*` → `.*`, `?` → `.`, every other regex-special character
-escaped) and filters `ns.ls(host)` client-side.
+escaped) and filters `ns.ls(host)` client-side. Gained an optional `-l`
+long-format on 2026-09-04, prompted by the file count at repo root simply
+getting too large to browse with plain `ls`. Netscript has no hook to
+override or add real terminal commands, so `lsf.js` can't literally replace
+`ls`; `alias ls="run lsf.js"` in the terminal is the closest thing to that.
 
-- **Start:** `run lsf.js <pattern> [host]` — e.g. `run lsf.js *.msg`,
-  `run lsf.js *.cct n00dles`. `host` defaults to the server the script runs
-  on. `run lsf.js *` lists everything, same as plain `ls`.
-- **Output:** with AutoLink.exe, every returned filename is a clickable link
+- **Start:** `run lsf.js [pattern] [-l] [host]` — e.g. `run lsf.js *.msg`,
+  `run lsf.js *.cct -l n00dles`. `pattern` defaults to `*` (everything) and
+  `host` defaults to the server the script runs on; `-l`/`--long` may appear
+  anywhere among the args. `run lsf.js *` lists everything, same as plain
+  `ls`.
+- **`-l` output:** a `[category] size` prefix ahead of each filename —
+  `[script]` with `ns.getScriptRam`'s RAM-per-thread for `.js`/`.script`/
+  `.ns`; `[text]` with a character count from `ns.read().length` for
+  everything else, **but only when listing the host the script is actually
+  running on** — `ns.read` has no remote-host parameter (this repo's own
+  2026-08-12 finding, see `claude-todo.md`), so a remote host's text files
+  show `n/a (remote)` instead of silently misreading or crashing;
+  `[contract]`/`[program]` always show `n/a` (a contract's real detail costs
+  RAM per-contract to read — see `cct_inventory.js` — and isn't worth paying
+  here). Every per-file game call is try/catch-guarded to `n/a` rather than
+  aborting the listing.
+- **Output:** with AutoLink.exe, every returned line is a clickable link
   that connects the terminal to the server holding it; without it, output
   remains plain text.
-- **Reads:** the live game (`ns.ls`), nothing on disk.
+- **Reads:** the live game (`ns.ls`, `ns.getScriptRam`, and — local host
+  only — `ns.read`), nothing on disk.
 
 ### `cct_audit.js`
 

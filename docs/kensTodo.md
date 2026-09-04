@@ -10,26 +10,16 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
 
 ## Pending
 
-- [ ] **One-time bootstrap: paste `startup_browser.js` into the browser
-  save's Script Editor — 2026-09-04.** Combines the GitHub sync
-  (`sync_from_github.js`, already bootstrapped below) with launching the
-  whole suite — mcp, darknet, HUD, everything — into one command, so a
-  fresh browser session only needs `run startup_browser.js` instead of two
-  separate commands. Steps:
-  1. `pbcopy < /Users/Shared/BitBurner/startup_browser.js` (or open the file
-     and copy it) — same method as `sync_from_github.js` earlier.
-  2. In the browser save's terminal: `nano startup_browser.js`, paste, save.
-  3. `run startup_browser.js` — watch for `synced N/N file(s)`, then
-     `started`/`already running` lines for each script in the suite,
-     ending in a `done — N started, N already running, N failed` summary.
-  4. From then on, `run startup_browser.js` alone (no re-paste) brings a
-     fresh browser session fully current and running.
-  Darknet (`dnet_root.js`) is included in this list now — see `AGENTS.md`'s
-  2026-09-04 note on why it came off the stop-list. It fails cleanly on its
-  own (an `ERROR: Cannot authenticate to darkweb` line, not a hang) if
-  darkweb isn't reachable yet, so no separate check was needed here.
-  **Not yet live-verified end-to-end** (per `CLAUDE.md`): this exact
-  sync-then-launch combination hasn't run in the game yet.
+- [x] **`startup_browser.js` bootstrapped and confirmed live end-to-end —
+  2026-09-04.** Ken pasted it once, ran `run startup_browser.js`: `synced
+  81/81 file(s)` → `killed everything else on home` → all 8 suite scripts
+  (`mcp_supervisor.js`, `hacking/crawler.js`, `player_activity_controller.js`,
+  `mcp.js`, `dnet_root.js`, `maintenance_steward.js`, `hud_consolidated.js`,
+  `mcp_xp.js`) started clean, 0 failed — then `mcp.js` immediately picked a
+  target (`sigma-cosmetics`) and started running. First real test of the
+  full sync-then-launch combination, not just its two halves separately.
+  From here on, `run startup_browser.js` alone (no re-paste) brings a fresh
+  browser session fully current and running, darknet included.
 
 - [x] **Bootstrap `sync_from_github.js` into the browser save — done and
   confirmed live 2026-09-04.** Ken pasted it once via `nano` +

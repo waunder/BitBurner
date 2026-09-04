@@ -1286,9 +1286,10 @@ One thing to remember instead of two: `run sync_from_github.js` followed by
   ever need pasting into the Script Editor by hand for a fresh browser save
   — everything else, including future updates to these two, arrives via the
   sync step. See `docs/kensTodo.md` for the one-time paste steps.
-- **Not yet live-verified end-to-end** (per `CLAUDE.md`): this exact
-  sync-then-launch combination hasn't run in the game yet, only its two
-  halves separately.
+- **Confirmed live end-to-end 2026-09-04.** First run: `synced 81/81
+  file(s)` → `killed everything else on home` → all 8 suite scripts started,
+  0 failed, `dnet_root.js` included — `mcp.js` then immediately picked a
+  target and started running.
 
 ### `cct_audit.js`
 

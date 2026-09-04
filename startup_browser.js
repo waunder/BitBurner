@@ -31,10 +31,9 @@
  * Cost: transient only, same shape as startup.js's own (ns.wget adds
  * negligible RAM — 0GB per the type definitions — on top of that).
  *
- * Not yet live-verified end-to-end (per CLAUDE.md): this exact combination
- * of sync-then-launch hasn't run in the game yet, only its two halves
- * separately (sync_from_github.js confirmed 80/80 2026-09-04; the
- * kill+relaunch pattern is startup.js's, already confirmed live).
+ * Confirmed live end-to-end 2026-09-04, first run: synced 81/81 file(s),
+ * all 8 suite scripts started with 0 failed (dnet_root.js included), mcp.js
+ * immediately picked a target and started running.
  *
  * @param {NS} ns
  */

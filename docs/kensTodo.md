@@ -71,15 +71,18 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
   has no merge, last write wins, and it's very easy to silently undo real
   work this way.
 
-- [ ] **Verify the same fix reaches your Steam save — 2026-09-03.**
-  The browser-save verification above is a *different* save (imported
-  export) from your Steam app's own save — the Steam save was never
-  touched this session. Next time you're in the Steam app: confirm the
-  Remote API sync picks up `dnet_lib.js`/`dnet_root.js`/
-  `hud_consolidated.js` normally, then run `restart_mcp.js --darknet` (or
-  your usual dnet restart) and confirm it stays ACTIVE instead of going
-  back to Paused. See `docs/processes.md`'s "Failure modes worth knowing"
-  for the full story.
+- [x] **Verify the same fix reaches your Steam save — done 2026-09-04.**
+  Confirmed via Remote API (Steam's own Electron connection, distinct from
+  the browser save — `dnet_status.json` there was stale from 2026-08-12/13,
+  proving darknet hadn't run on this save since before the freeze
+  investigation). Ken ran `dnet_killswarm.js` then `dnet_root.js` as two
+  separate commands. Pulled `dnet_deployer_home.json` fresh afterward:
+  heartbeat 3.8s old (well under the 120s staleness threshold), `pass: 15`
+  and climbing; `dnet_manager_registry.json` showed 2 resident managers
+  (`darkweb`, `d0s_s11ppers`) registered 25s prior. By the HUD's own
+  liveness logic (`hud_consolidated.js`'s `darknetStatus`) that reads
+  ACTIVE, not Paused. Second independent save confirmed — this item is
+  closed.
 
 - [ ] **Run Darknet Canary Phase 1 (single-manager test) — 2026-09-02 infrastructure ready.**
   Testing infrastructure created to diagnose the 4 freeze incidents (2026-08-30).

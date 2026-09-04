@@ -2072,3 +2072,42 @@ reasoning here; read it there.
   this would NOT sync save/game state between sessions either way — Remote
   API only ever syncs source files, so Steam and a browser tab would still
   be two independently-diverging saves regardless of port count.
+
+## 2026-09-04: R4/R8 follow-through — Formulas.exe floor-corrected scoring wired into primary ranking
+
+Ken asked for a review of R1-R8 (a fork did the deep read against actual
+source, not just docs). Two real findings: `docs/hacking-strategy.md`'s R6
+status was stale (said "not started," code shipped 2026-08-31 per
+`STATE.md`), and R8's own floor-corrected scoring primitive
+(`getFormulaMinimumSecurityScore`) was sitting unused outside its narrow
+switch-veto role, while R4's own documented gap — scoring every candidate
+at *current* security, systematically under-rating anything above its floor
+— was still exactly as originally deferred.
+
+**Fixed both, same session, per Ken's explicit "ship it, if faulty we'll
+fix it" direction** (a stated preference, not just this one instance — see
+memory). Doc fix: corrected §5 item 7 and the summary paragraphs. Code fix:
+extracted the model-building logic into `getFormulaTargetScores` (mcp.js),
+shared by `getTargetScore`/`getTargetEffectiveScore` (new — try the
+floor-corrected score first when Formulas.exe is owned, fall back to the
+existing current-security approximation on any failure) and
+`getFormulaMinimumSecurityScore` (R8's veto check, now a thin wrapper —
+deduplicated what used to be its own separate copy). New tunable
+`FORMULA_RANKING_ENABLED`, same ship-inert/flip-on-in-config convention as
+`R8_SWITCH_VETO_ENABLED`; set to 1 in the live `mcp_config.json` immediately
+rather than staged, per the same direction. Added `formulaRankingActive` to
+`mcp_status.json` for the same reason R8's own unexercised-for-2.5-weeks
+status was a finding worth flagging — a feature nobody can confirm is
+active isn't meaningfully shipped.
+
+**Confirmed live same session:** `node --check`/`node --test` (216/216)
+clean before commit; `ctl-restart` triggered a fresh `mcp.js`; first status
+pull post-restart showed `formulaRankingActive: true`,
+`config.FORMULA_RANKING_ENABLED: 1`, zero `invariantViolations`, 99% RAM
+utilization. Watched ~60s more: still clean, still active, no invariant
+violations — target (`phantasy`) was mid-weaken from a fresh restart so
+`incomePerSec` hadn't ramped yet in that window, not itself a signal of a
+problem. Worth a later glance to confirm income settles at or above
+pre-change levels once the weaken phase completes, but the actual ask
+(wire it in, confirm it's genuinely active, don't break anything) is done
+and verified.

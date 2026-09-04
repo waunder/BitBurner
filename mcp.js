@@ -79,6 +79,19 @@ let OPPORTUNITY_SWITCH_FACTOR = 1.3
 // R8's production-ready integration is present but inert until its attested
 // canary/production contracts deliberately set this numeric flag to 1.
 let R8_SWITCH_VETO_ENABLED = 0
+// hacking-strategy.md R4 explicitly deferred this: readTargetScoreInputs
+// scores every candidate at its CURRENT security, not the floor it would sit
+// at once weakened -- systematically under-rating any target sitting well
+// above its floor. getFormulaMinimumSecurityScore (R8, 2026-08-18) already
+// built the fix -- a floor-corrected ns.formulas.hacking model -- but only
+// used it for the switch-veto's own re-check, not primary ranking. Wired in
+// 2026-09-04: when Formulas.exe is owned, getTargetScore/
+// getTargetEffectiveScore try the floor-corrected formula score first,
+// falling back to the current-security approximation on any missing
+// precondition or computation failure (see getFormulaTargetScores). Code
+// default is 0, matching R8's own "ship inert, flip on in mcp_config.json"
+// convention -- this repo's live config sets it to 1.
+let FORMULA_RANKING_ENABLED = 0
 // How long a *productive* target is committed to before better options are
 // even considered. Much longer than MIN_TARGET_HOLD_MS because leaving one
 // throws away its accumulated grow progress and the replacement must be
@@ -198,6 +211,7 @@ const CONFIG_DEFAULTS = {
   MONEY_PCT_SAMPLE_COUNT,
   OPPORTUNITY_SWITCH_FACTOR,
   R8_SWITCH_VETO_ENABLED,
+  FORMULA_RANKING_ENABLED,
   MIN_TARGET_COMMIT_MS,
   DEGRADED_SKIP_MS,
   HACK_BALANCE_SAFETY,
@@ -311,6 +325,7 @@ function loadConfig(ns, state) {
     MONEY_PCT_SAMPLE_COUNT,
     OPPORTUNITY_SWITCH_FACTOR,
     R8_SWITCH_VETO_ENABLED,
+    FORMULA_RANKING_ENABLED,
     MIN_TARGET_COMMIT_MS,
     DEGRADED_SKIP_MS,
     HACK_BALANCE_SAFETY,
@@ -343,6 +358,7 @@ function loadConfig(ns, state) {
   MONEY_PCT_SAMPLE_COUNT = resolved.MONEY_PCT_SAMPLE_COUNT
   OPPORTUNITY_SWITCH_FACTOR = resolved.OPPORTUNITY_SWITCH_FACTOR
   R8_SWITCH_VETO_ENABLED = resolved.R8_SWITCH_VETO_ENABLED
+  FORMULA_RANKING_ENABLED = resolved.FORMULA_RANKING_ENABLED
   MIN_TARGET_COMMIT_MS = resolved.MIN_TARGET_COMMIT_MS
   DEGRADED_SKIP_MS = resolved.DEGRADED_SKIP_MS
   HACK_BALANCE_SAFETY = resolved.HACK_BALANCE_SAFETY
@@ -633,6 +649,52 @@ function readTargetScoreInputs(ns, server) {
   }
 }
 
+// Floor-corrected Formulas.exe model, shared by getTargetScore/
+// getTargetEffectiveScore (primary ranking, wired in 2026-09-04) and
+// getFormulaMinimumSecurityScore (R8's switch-veto re-check, 2026-08-18,
+// which used to duplicate this exact model-building logic on its own).
+// Simulates the target already weakened to its floor (hackDifficulty forced
+// to minDifficulty) and reads ns.formulas.hacking against that, instead of
+// readTargetScoreInputs' cheap-but-current-security ns.hackAnalyze/
+// growthAnalyze/hackAnalyzeChance/getHackTime calls — closing
+// hacking-strategy.md R4's own documented gap: scoring at current security
+// systematically under-rates any target sitting well above its floor.
+// Returns null on any missing precondition (no Formulas.exe, no ns.formulas)
+// or computation failure; every caller falls back to the current-security
+// approximation in that case, so a Formulas.exe hiccup never breaks target
+// selection, only makes it slightly less precise for one tick.
+function getFormulaTargetScores(ns, target, poolThreads) {
+  if (!target || !ns.fileExists("Formulas.exe", "home") || !ns.formulas || !ns.formulas.hacking) return null
+  try {
+    const server = ns.getServer(target)
+    server.hackDifficulty = server.minDifficulty
+    const player = ns.getPlayer()
+    const formulas = ns.formulas.hacking
+    const model = {
+      targetMoneyGoal: TARGET_MONEY_GOAL,
+      horizonSeconds: SCORE_HORIZON_SECONDS,
+      growTimeRatio: WEAKEN_PER_HACK_RATIO / WEAKEN_PER_GROW_RATIO,
+      hackSecIncrease: HACK_SEC_INCREASE,
+      growSecIncrease: GROW_SEC_INCREASE,
+      weakenSecDecrease: WEAKEN_SEC_DECREASE,
+      weakenPerHackRatio: WEAKEN_PER_HACK_RATIO,
+      weakenPerGrowRatio: WEAKEN_PER_GROW_RATIO,
+      hackTimeSeconds: formulas.hackTime(server, player) / 1000,
+      hackPercentPerThread: formulas.hackPercent(server, player),
+      growLogPerThread: Math.log(formulas.growPercent(server, 1, player, 1)),
+      maxMoney: server.moneyMax,
+      hackChance: formulas.hackChance(server, player),
+      poolThreads,
+      money: server.moneyAvailable,
+    }
+    const audit = auditTargetModels({ target, currentModel: model, hypotheticalModel: model })
+    if (!audit.eligible) return null
+    return { raw: audit.models.hypothetical.rawScore, effective: audit.models.hypothetical.effectiveScore }
+  } catch (_) {
+    return null
+  }
+}
+
 // Achievable-rate score (hacking-strategy.md R4, 2026-08-14) — see
 // computeTargetScore's own doc comment in mcp_logic.js for the full
 // derivation and for why poolThreads reuses getTotalWeakenCapacity's result
@@ -640,6 +702,11 @@ function readTargetScoreInputs(ns, server) {
 // which never read serverGrowth and systematically misranked grow-limited
 // targets (strategy doc §1.3/§2 R4).
 function getTargetScore(ns, server, poolThreads) {
+  if (!isHackableTarget(ns, server)) return 0
+  if (FORMULA_RANKING_ENABLED) {
+    const formulaScores = getFormulaTargetScores(ns, server, poolThreads)
+    if (formulaScores) return formulaScores.raw
+  }
   const inputs = readTargetScoreInputs(ns, server)
   if (!inputs) return 0
   const { score } = computeTargetScore({
@@ -663,6 +730,11 @@ function getTargetScore(ns, server, poolThreads) {
 // hackTime — so "easier servers cycle faster" is already priced in, and having
 // it as a *primary* key let it override the money signal completely.
 function getTargetEffectiveScore(ns, server, poolThreads) {
+  if (!isHackableTarget(ns, server)) return 0
+  if (FORMULA_RANKING_ENABLED) {
+    const formulaScores = getFormulaTargetScores(ns, server, poolThreads)
+    if (formulaScores) return formulaScores.effective
+  }
   const inputs = readTargetScoreInputs(ns, server)
   if (!inputs) return 0
   const growTimeRatio = WEAKEN_PER_HACK_RATIO / WEAKEN_PER_GROW_RATIO
@@ -706,35 +778,12 @@ function getTargetSelectionScore(ns, server, poolThreads) {
 // copy of each server. It is called only after the existing scheduler has
 // already selected a switch candidate, so it cannot become a parallel target
 // selector. Any problem returns null and lets the established scheduler act.
+// Thin wrapper over getFormulaTargetScores (2026-09-04) — was its own
+// separate copy of the model-building logic until that function extracted
+// it for reuse in primary ranking too.
 function getFormulaMinimumSecurityScore(ns, target, poolThreads) {
-  if (!target || !ns.fileExists("Formulas.exe", "home") || !ns.formulas || !ns.formulas.hacking) return null
-  try {
-    const server = ns.getServer(target)
-    server.hackDifficulty = server.minDifficulty
-    const player = ns.getPlayer()
-    const formulas = ns.formulas.hacking
-    const model = {
-      targetMoneyGoal: TARGET_MONEY_GOAL,
-      horizonSeconds: SCORE_HORIZON_SECONDS,
-      growTimeRatio: WEAKEN_PER_HACK_RATIO / WEAKEN_PER_GROW_RATIO,
-      hackSecIncrease: HACK_SEC_INCREASE,
-      growSecIncrease: GROW_SEC_INCREASE,
-      weakenSecDecrease: WEAKEN_SEC_DECREASE,
-      weakenPerHackRatio: WEAKEN_PER_HACK_RATIO,
-      weakenPerGrowRatio: WEAKEN_PER_GROW_RATIO,
-      hackTimeSeconds: formulas.hackTime(server, player) / 1000,
-      hackPercentPerThread: formulas.hackPercent(server, player),
-      growLogPerThread: Math.log(formulas.growPercent(server, 1, player, 1)),
-      maxMoney: server.moneyMax,
-      hackChance: formulas.hackChance(server, player),
-      poolThreads,
-      money: server.moneyAvailable,
-    }
-    const audit = auditTargetModels({ target, currentModel: model, hypotheticalModel: model })
-    return audit.eligible ? audit.models.hypothetical.effectiveScore : null
-  } catch (_) {
-    return null
-  }
+  const scores = getFormulaTargetScores(ns, target, poolThreads)
+  return scores ? scores.effective : null
 }
 
 // SECURITY_EPSILON is imported from mcp_logic.js (used there by
@@ -1815,6 +1864,11 @@ export async function main(ns) {
       hackChance: hackChance,
       switchEval: switchEval,
       formulaSwitchVeto: formulaSwitchVeto,
+      // Whether the current target's own score this tick actually came from
+      // the floor-corrected Formulas.exe path (2026-09-04) rather than the
+      // current-security fallback -- so a live pull can confirm the new
+      // ranking path is genuinely active, not silently falling back.
+      formulaRankingActive: FORMULA_RANKING_ENABLED > 0 && getFormulaTargetScores(ns, currentTarget, maxWeaken) !== null,
       // set_objective.js's live override — see OBJECTIVE_OVERRIDE_FILE's own
       // comment. True means OBJECTIVE (below) came from
       // mcp_objective_override.txt, not mcp_config.json.
@@ -1836,6 +1890,7 @@ export async function main(ns) {
         MONEY_PCT_SAMPLE_COUNT,
         OPPORTUNITY_SWITCH_FACTOR,
         R8_SWITCH_VETO_ENABLED,
+        FORMULA_RANKING_ENABLED,
         MIN_TARGET_COMMIT_MS,
         DEGRADED_SKIP_MS,
         HACK_BALANCE_SAFETY,

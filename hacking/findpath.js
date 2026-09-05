@@ -5,6 +5,19 @@
  * Source-File 4, ns.singularity.* (including connect/installBackdoor)
  * throws at the call site, but plain ns.scan is never gated.
  *
+ * Also prints a single semicolon-chained PASTE line (added 2026-09-04, Ken's
+ * ask): Bitburner's terminal accepts multiple `;`-separated commands typed
+ * as one line (confirmed working this way 2026-08-11 for a real
+ * connect-chain + backdoor), so this is one paste instead of typing each
+ * hop as a separate command. This is genuinely the closest thing to an
+ * automated walk available without Source-File 4 -- there's no ungated
+ * Netscript function that moves the terminal's connection itself, only
+ * ns.singularity.connect (gated) or typing/pasting connect commands
+ * directly, which is what this line is for.
+ *
+ * Starts with a plain `home` command so the chain works regardless of
+ * where the terminal is currently connected, not just when already at home.
+ *
  * @param {NS} ns
  */
 export async function main(ns) {
@@ -30,4 +43,10 @@ export async function main(ns) {
 		path.unshift(node)
 	}
 	ns.tprint("PATH: ", path.join(" -> "))
+	if (path.length === 1) {
+		ns.tprint("PASTE: home  (target is home itself)")
+	} else {
+		const hops = path.slice(1).map((hop) => `connect ${hop}`)
+		ns.tprint("PASTE: ", ["home", ...hops].join(";"))
+	}
 }

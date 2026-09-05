@@ -186,7 +186,13 @@ Opens as many ports as it has `.exe`s for, then `ns.nuke()`s a single server.
   ... `connect <target>`, `backdoor` — plain terminal commands are never
   Singularity-gated, only the `ns.singularity` API wrapper around them is.
   `hacking/findpath.js <target>` (added alongside this fix, `ns.scan`
-  only, never gated either) prints the exact hop sequence to type.
+  only, never gated either) prints the exact hop sequence to type, plus
+  (2026&#8209;09&#8209;04) a single `PASTE:` line chaining every hop with
+  `;` — Bitburner's terminal accepts multiple `;`-separated commands in one
+  line, so this is one paste instead of typing each hop separately. Also
+  found missing from `sync_manifest.json` the same day (this file and
+  `hacking/backdoor.js` had been un-synced to any save since they were
+  created) — fixed.
   **Confirmed working this way 2026&#8209;08&#8209;11**: typed the real
   connect-chain + `backdoor` into the live terminal via Claude's
   CDP-driven terminal write for `I.I.I.I` — The Black Hand now shows under

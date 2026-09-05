@@ -1423,11 +1423,44 @@ When purchased workers do not exist after an augmentation reset, both audit
 and submission use the same rooted-normal-host fallback. A host with any
 non-MCP process is excluded; only MCP action loops may be briefly preempted.
 
-Supported contract types include `Total Ways to Sum II`, solved as standard
-unbounded coin-change combinations (denomination order does not create extra
-ways); `Compression I: RLE Compression`, which emits literal character runs
-in chunks of at most nine; `Spiralize Matrix`; Vigenère encryption; inclusive
-prime-range counting; and minimum-jump `Array Jumping Game II`.
+**Solver coverage: 29 of Bitburner's 30 documented contract types
+(`NetscriptDefinitions.d.ts`'s `CodingContractName` enum), as of 2026-09-05**
+— all in `cct_logic.js`'s `SOLVERS` map, pure functions with no `ns` calls,
+`node --test cct_logic.test.js` covers every one. Originally 16 types
+(`Find Largest Prime Factor`, `Merge Overlapping Intervals`,
+`Generate IP Addresses`, `Encryption I: Caesar Cipher`,
+`Unique Paths in a Grid I`, `Subarray with Maximum Sum`,
+`Total Ways to Sum`/`II` — the latter as standard unbounded coin-change
+combinations, denomination order doesn't create extra ways —
+`Algorithmic Stock Trader I`/`II`, `Array Jumping Game`/`II`,
+`Compression I: RLE Compression` — literal character runs in chunks of at
+most nine — `Spiralize Matrix`, `Encryption II: Vigenère Cipher`, and
+`Total Number of Primes`, inclusive prime-range counting). 2026-09-05 added
+13 more: `Algorithmic Stock Trader III`/`IV` (2/k-transaction DP),
+`Minimum Path Sum in a Triangle`, `Unique Paths in a Grid II` (obstacle DP),
+`Shortest Path in a Grid` (BFS, D/U/L/R move string), `Sanitize Parentheses
+in Expression` and `Find All Valid Math Expressions` (both classic
+backtracking/BFS puzzle types, the latter BigInt-safe for large operands),
+`HammingCodes: Integer to Encoded Binary`/`Encoded Binary to Integer`
+(extended Hamming code with an overall parity bit — hand-verified this
+session, see `cct_logic.js`'s own header comment), `Proper 2-Coloring of a
+Graph` (bipartite BFS), `Compression II: LZ Decompression` and
+`Compression III: LZ Compression` (a from-scratch LZ scheme matching
+Bitburner's own chunk format — decompression by direct simulation,
+compression via an optimal dynamic-programming search over chunk
+length/distance, tested by round-tripping every compressed output back
+through the decompressor). **Not implemented — deliberately, not an
+oversight:** `Largest Rectangle in a Matrix`, whose documented output shape
+(two corner coordinates) didn't match this session's confident recollection
+of the usual area-only version of that problem, with no live specimen
+available to check against; held unsupported by the watcher rather than
+guessed at. **Square Root** is implemented (BigInt Newton's-method integer
+sqrt, rounded to nearest) but flagged lower-confidence than the rest — its
+`NetscriptDefinitions.d.ts` tuple entry is malformed compared to every other
+type (three elements instead of the usual `[data, answer]` pair), so the
+exact data/answer shape is inferred rather than read cleanly off a type
+signature; worth a live dry-run check the first time one actually appears
+before trusting it in the automatic watcher pathway.
 
 - **Start:** automatic with MCP; `run maintenance_steward.js` after a full
   manual recovery is also sufficient.

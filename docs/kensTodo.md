@@ -10,6 +10,20 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
 
 ## Pending
 
+- [ ] **Not urgent — restart `maintenance_steward.js` (or the full
+  `startup.js` suite) whenever convenient, to pick up 2026-09-05's expanded
+  coding-contract solver coverage.** Bitburner doesn't hot-reload, so the
+  currently-running `cct_watcher.js` process keeps using the old 16-type
+  solver list until restarted; `cct_inventory.json` shows zero contracts
+  outstanding right now, so nothing is actually being missed by waiting —
+  this will also just happen naturally on the next normal MCP/full-suite
+  restart. When it does take effect, the first live contract of any of the
+  13 newly-supported types is worth a quick glance at
+  `cct_submit_status.json` after it resolves, and if it's specifically a
+  `Square Root` contract, a `cct_dry_run.js` check first is worth it before
+  trusting the automatic submit — see `docs/claude-todo.md`'s 2026-09-05
+  entry for why that one type is flagged lower-confidence.
+
 - [x] **Restart `ipvgo_player.js` to pick up the 2026-09-05 freeze fix —
   done and confirmed live 2026-09-05.** Restarted twice (first attempt hit
   a Remote API connection mix-up — Ken was pointed at the web version,

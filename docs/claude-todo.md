@@ -1,6 +1,60 @@
 # Claude's working list
 
-## 2026-09-05 (latest): IPvGO browser-freeze root-caused and fixed; cloud-server idea investigated and rejected with reasoning
+## 2026-09-05 (latest): coding-contract solver coverage expanded 16 -> 29 of 30 types
+
+Ken asked to work on improving coding-contract ("cct") performance in
+parallel with the IPvGO session above. Investigation found the existing
+pipeline (`cct_audit.js`/`cct_watcher.js`/`cct_logic.js`/`cct_submit.js`)
+already mature and safe (fingerprint-guarded live submission, dry-run-first
+discipline, sequential one-contract-at-a-time processing) but its solver
+coverage (`cct_logic.js`'s `SOLVERS` map) only covered 16 of Bitburner's 30
+documented contract types (`NetscriptDefinitions.d.ts`'s
+`CodingContractName` enum) — every contract of the other 14 types was
+silently held by the watcher as unsupported rather than ever solved. This
+was the concrete, measurable "performance" lever: coverage, not speed (the
+existing cadence/architecture wasn't the bottleneck).
+
+Implemented 13 of the 14 missing types in `cct_logic.js`, all standard
+well-established algorithms (DP for the stock-trader/triangle/grid
+variants, BFS for shortest-path/bipartite-coloring, backtracking for the
+parentheses-sanitizing and math-expression puzzle types), plus the two
+genuinely hard ones: `HammingCodes` (both directions — extended Hamming
+code with an overall parity bit; hand-derived and verified this session,
+encode(8)="11110000", confirmed every single-bit flip still decodes back to
+8) and the `Compression II`/`III` LZ pair (decompression by direct
+simulation of Bitburner's documented chunk format; compression via a true
+optimal dynamic-programming search over chunk length/distance — tested by
+round-tripping every compressed output back through the decompressor for
+8 different strings, plus a sanity check that a 50-character repeated run
+compresses to well under 50 characters). 13 new test cases, `node --test
+cct_logic.test.js` 13/13, full repo suite 232/232.
+
+**Deliberately not implemented — flagged, not silently skipped:**
+`Largest Rectangle in a Matrix` — its documented output shape (two corner
+coordinates) doesn't match this session's confident recollection of the
+usual area-only version of this problem, and there's no live specimen in
+the current (empty) contract inventory to check against; guessing wrong
+here would burn a contract's limited attempts for nothing, so it stays
+unsupported (held by the watcher, same as before) rather than risk that.
+`Square Root` **was** implemented (BigInt integer-sqrt via Newton's
+method, rounded to nearest) but flagged lower-confidence than the rest in
+`docs/processes.md` — its own `.d.ts` type entry is malformed compared to
+every other contract type (a 3-element tuple instead of the usual clean
+`[data, answer]` pair), so the exact shape is inferred from general
+knowledge rather than read cleanly off a type signature. Worth a live
+dry-run check (`cct_dry_run.js`, which never submits) the first time either
+of these types actually appears, before fully trusting the automatic
+`cct_watcher.js` pathway with it — see `docs/kensTodo.md`.
+
+**Not yet live-verified**: no contract of any of the 13 newly-supported
+types currently exists in the live game (`cct_inventory.json` shows zero
+contracts outstanding right now), so none of this has been exercised
+against real Bitburner-generated data yet — only against hand-verified and
+textbook examples. The existing architecture's own safety net (dry-run
+first, fingerprint-guarded submission) already covers this risk for
+whichever type appears first.
+
+## 2026-09-05: IPvGO browser-freeze root-caused and fixed; cloud-server idea investigated and rejected with reasoning
 
 Ken asked to resume strengthening IPvGO against tougher opponents, assess
 every recent defeat for improvement opportunities, and investigate his

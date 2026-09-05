@@ -10,21 +10,17 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
 
 ## Pending
 
-- [ ] **Restart `ipvgo_player.js` in the live terminal to pick up the
-  2026-09-05 freeze fix.** `run ipvgo_player.js` once this push has synced —
-  Bitburner doesn't hot-reload, so the currently-resident process keeps
-  running the old code (the one that blocks the browser tab for 11-14
-  seconds per move) until it's killed and restarted. No need to pass any
-  arguments: the script now continues whatever faction it was last playing
-  (The Black Hand, 13x13) automatically — only pass `run ipvgo_player.js
-  <faction> <size>` if you actually want to switch targets. After it's
-  running, check `ipvgo_status.json`'s `lastResult.avgMoveMs`/`maxMoveMs`
-  (or watch a live game directly) to confirm the freeze is actually gone —
-  local profiling says it should be, but that's not the same as confirmed
-  live — and check the new `isFactionMember` field/HUD row to see whether
-  you're actually a member of the faction being farmed (only matters for
-  the win-streak reputation payout, not for playing itself).
-  See `docs/ipvgo-strategy.md`'s 2026-09-05 sections for the full diagnosis.
+- [x] **Restart `ipvgo_player.js` to pick up the 2026-09-05 freeze fix —
+  done and confirmed live 2026-09-05.** Restarted twice (first attempt hit
+  a Remote API connection mix-up — Ken was pointed at the web version,
+  which can't connect at all under Chrome's PNA policy; reconnected via the
+  Steam game instead, which worked). `ipvgo_status.json` confirmed
+  `algorithm: "mcts-ucb1-v3"` running against `The Black Hand`/13x13 (the
+  actual board size that had the problem), `isFactionMember: true` (so the
+  win-streak favor conversion is live for this run), 2/2 games won, and
+  `avgMoveMs`/`maxMoveMs` at 6100/8351ms — down from the pre-fix
+  11,721/13,591ms. **Ken confirmed directly: "No sign of bb interface
+  freezing."** Live-validated, not just locally profiled.
 
 - [x] **`startup_browser.js` bootstrapped and confirmed live end-to-end —
   2026-09-04.** Ken pasted it once, ran `run startup_browser.js`: `synced

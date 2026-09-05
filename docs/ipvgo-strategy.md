@@ -1,15 +1,17 @@
 # IPvGO strategy
 
-> **Status, 2026-09-05:** live and active. The 2026-08-18 "disabled after
-> repeated responsiveness incidents" banner that stood here was stale —
-> `ipvgo_status.json` shows 12,700+ lifetime games under `mcts-ucb1-v2`
-> alone, so play continued after that note was written without the doc
+> **Status, 2026-09-05:** live and active; the freeze fix below is
+> **live-confirmed**, not just locally profiled — Ken, watching a real game
+> against The Black Hand on 13x13 (the exact board that had the problem):
+> "No sign of bb interface freezing. Your diagnosis is solid!" Measured
+> `avgMoveMs`/`maxMoveMs` 6100/8351ms, down from the pre-fix
+> 11,721/13,591ms. The 2026-08-18 "disabled after repeated responsiveness
+> incidents" banner that stood here before today was itself stale —
+> `ipvgo_status.json` showed 12,700+ lifetime games under `mcts-ucb1-v2`
+> alone, so play had continued after that note was written without the doc
 > being corrected; `AGENTS.md`'s stop-list no longer lists IPvGO either.
-> Ken asked directly (2026-09-05) to resume strengthening the algorithm and
-> to investigate the responsiveness/freeze problem those incidents actually
-> named — see the new section immediately below for the root cause found
-> and fixed that day. Historical "live"/"disabled" wording further down is
-> the record of what happened when, not current status; this banner is.
+> Historical "live"/"disabled" wording further down is the record of what
+> happened when, not current status; this banner is.
 
 ## 2026-09-05: browser-freeze root cause found and fixed; time-budgeted search
 
@@ -223,31 +225,37 @@ Surfaced in `ipvgo_status.json` as `targetFaction`/`isFactionMember` and in
 `ipvgo_hud.js` as a new row, so "is this run actually banking reputation"
 is visible at a glance rather than something to infer.
 
-**Not yet confirmed live**: whether Ken is currently a member of The Black
-Hand (the presently-targeted faction) — this check hasn't run live yet
-since the fix hasn't been started. Worth reading off the startup
-`ns.tprint` line or the HUD's new row once it has.
+**Confirmed live, 2026-09-05 (same day):** restarting surfaced the
+persistence bug in the act — the first restart attempt used no faction arg
+and landed on `Netburners`/7x7 (the old hardcoded default), because the
+*prior* run of the pre-fix code had already overwritten
+`ipvgo_status.json`'s persisted choice away from The Black Hand before the
+fix could take effect — a real, live demonstration of exactly the bug the
+persistence fix targets. A second restart with the faction spelled out
+explicitly (`run ipvgo_player.js "The Black Hand" 13`) confirmed
+`isFactionMember: true` (Ken is a member) and `algorithm: "mcts-ucb1-v3"`.
+Separately, the first restart attempt also failed to connect the Remote API
+at all — traced to Ken being on the **web** version, where the connection
+is categorically blocked by Chrome's Private Network Access policy
+(pre-existing, confirmed-unfixable finding, not new); switching to the
+**Steam** app connected immediately.
 
 ### Next steps, in order
 
-1. **Get `ipvgo_player.js` restarted live** (`run ipvgo_player.js` in the
-   in-game terminal) so the new code actually runs — Bitburner does not
-   hot-reload; the resident process keeps executing the old 6000-sim
-   blocking version until restarted. See `docs/kensTodo.md`.
-2. **Watch `ipvgo_status.json`'s `lastResult.avgMoveMs`/`maxMoveMs` after
-   the restart** — should land somewhere under ~10-10.1 seconds (the
-   `TARGET_THINK_MS` budget plus fixed overhead) with `maxMoveMs` no longer
-   wildly exceeding the average the way 13,591 did against 11,721 before
-   (that gap was itself a symptom: the old design had no upper bound at
-   all on a single move's blocking time beyond "however long the fixed sim
-   count happens to take on this exact position"). Also confirm the restart
-   actually continued targeting The Black Hand (not a silent reset to
-   Netburners) and check the new `isFactionMember` field/HUD row — see the
-   "reputation is the real goal" section immediately above.
-3. **Accumulate enough post-fix games against The Black Hand/13x13 to read
-   a real win rate** — the current 76%/handful-of-games figure spans the
-   size transition and is not yet a fair read of the new search depth.
-4. **If the win rate still lags after that**, the next well-cited lever
+1. ~~Get `ipvgo_player.js` restarted live.~~ **Done and confirmed live
+   2026-09-05.** `ipvgo_status.json` after the restart: `algorithm:
+   "mcts-ucb1-v3"`, `opponent: "The Black Hand"`, `size: 13`,
+   `isFactionMember: true`, `avgMoveMs`/`maxMoveMs` **6100/8351ms** (down
+   from the pre-fix 11,721/13,591ms, and both comfortably under the
+   `TARGET_THINK_MS=10000` budget plus overhead). **Ken, watching the actual
+   game live: "No sign of bb interface freezing. Your diagnosis is
+   solid!"** This is the real-world confirmation the local 13x13 profiling
+   (595 sims/sec, max chunk 57ms) predicted but couldn't itself prove.
+2. **Accumulate enough post-fix games against The Black Hand/13x13 to read
+   a real win rate** — 2/2 so far right after the restart, nowhere near
+   enough of a sample; the pre-fix 76%/handful-of-games figure spanning the
+   size transition still isn't a fair read of the new search depth either.
+3. **If the win rate still lags after that**, the next well-cited lever
    (not attempted this round, kept simple per this project's own
    discipline, but a real published technique rather than another
    heuristic) is RAVE / AMAF (Gelly & Silver, "Combining Online and Offline

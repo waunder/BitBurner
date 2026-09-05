@@ -95,6 +95,21 @@ stat bonuses don't; surfaced as `targetFaction`/`isFactionMember` in the
 status file and a new `ipvgo_hud.js` row. Full writeup in
 `docs/ipvgo-strategy.md`'s "reputation is the real goal" section.
 
+**Live-confirmed, same day.** First restart attempt failed to connect the
+Remote API at all — Ken was on the web version, where this is categorically
+blocked (Chrome PNA policy, a pre-existing confirmed-unfixable finding, not
+new); switching to Steam connected immediately. That restart also landed on
+`Netburners`/7x7 instead of The Black Hand — not a bug in today's fix, but
+the *prior* pre-fix run had already overwritten the persisted choice before
+the fix could take effect, a live demonstration of exactly the bug being
+fixed. Restarting a second time with the faction spelled out explicitly
+(`run ipvgo_player.js "The Black Hand" 13`) confirmed everything: `algorithm:
+"mcts-ucb1-v3"`, `isFactionMember: true`, and — the actual point of all of
+this — `avgMoveMs`/`maxMoveMs` **6100/8351ms**, down from the pre-fix
+11,721/13,591ms. Ken, watching the live game: **"No sign of bb interface
+freezing. Your diagnosis is solid!"** Root cause, fix, and result all
+confirmed live, not just in local profiling.
+
 ## Lesson learned — telemetry must be cumulative and visible where it is read
 
 The first version of `mcp_formulas_shadow.js` overwrote

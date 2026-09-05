@@ -712,22 +712,85 @@ function expandNode(node, W, H, isRoot, openingContext, rng) {
 // remaining valid move would fill one of our own true eyes -- either way,
 // the caller should pass.
 //
-// opts:
-//   numSimulations   total simulation budget (default DEFAULT_NUM_SIMULATIONS)
-//   maxPlayoutMoves  safety cap on a single rollout's length (default 2*W*H)
-//   rng              injectable RNG for deterministic tests (default Math.random)
-//   explorationConstant  UCB1's C (default sqrt(2) -- see file header)
-//   komi             added to the opponent's score before deciding
-//                     win/loss for backpropagation (default 0 -- see file
-//                     header's "Known limitations" on why this must be
-//                     passed explicitly, not baked into scoreAreaFlat)
-//   isOpeningMove    true iff this is the very first move of a fresh game
-//                     (caller's own responsibility to determine, e.g. via
-//                     ns.go.getMoveHistory().length === 0) -- gates whether
-//                     openingStats is consulted at all
-//   openingStats     computeOpeningMoveStats(...)'s return value, or null
-//   minOpeningSample / openingPriorWeight  see the DEFAULT_* constants above
+// A thin synchronous wrapper around createMctsSearch (below): builds a
+// search, runs its entire numSimulations budget in one uninterrupted call,
+// and returns the result. This is exactly what this function always did --
+// kept as-is, unchanged behavior, for every existing caller/test. As of
+// 2026-09-05 it is NOT what ipvgo_player.js calls directly anymore for live
+// play (see createMctsSearch's own header comment for why: running the full
+// budget synchronously is what froze the browser tab). Still the right
+// entry point for tests and any one-shot, non-interactive use, since
+// blocking is exactly what a synchronous Node test wants.
+//
+// opts: see createMctsSearch below -- identical options, same meaning.
 export function chooseBestMove(board, validMoves, colorChar, opts = {}) {
+  const search = createMctsSearch(board, validMoves, colorChar, opts)
+  if (!search) return { move: null, visits: 0, winRate: null, simulations: 0, evaluated: 0 }
+  search.runIterations(search.numSimulations)
+  return search.getResult()
+}
+
+// ============================================================================
+// Resumable search handle (2026-09-05) -- the actual freeze fix.
+// ============================================================================
+//
+// Why this exists: chooseBestMove's simulation loop above is a single
+// uninterrupted synchronous `for` loop with no `await` anywhere inside it.
+// Bitburner executes Netscript on the browser tab's one JS thread -- the
+// same thread that renders the UI and runs every other resident script --
+// so a long synchronous call blocks everything else for exactly as long as
+// it takes. Live data confirmed this: ipvgo_status.json's lastResult showed
+// avgMoveMs ~11,721 / maxMoveMs 13,591 once NUM_SIMULATIONS was raised to
+// 6000 on a 13x13 board against The Black Hand -- an eleven-to-fourteen
+// *second* unbroken freeze on every single move, all game long. That
+// matches this repo's own precedent exactly (docs/CLAUDE.md /
+// scripts/share.js's fix for the identical class of bug: many resident
+// ns.share() calls monopolizing the event loop) -- the fix there was the
+// same shape as here: stop doing all the work in one uninterrupted stretch,
+// yield periodically instead.
+//
+// This is *not* what a bigger/faster machine (Ken's "cloud server"
+// proposal) would fix. Bitburner's ns.go.* calls only exist inside the
+// running game's own JS VM in the browser tab -- there is no remote-
+// execution surface for actual gameplay (the Remote API this repo already
+// uses for file sync, tools/bb_remote.py, only pushes/pulls source files;
+// it has no live low-latency channel for "compute a move externally and
+// hand it back mid-turn"). Moving `ipvgo_player.js` to run somewhere else
+// is not an option the game exposes. What actually matters is not how much
+// total CPU time move selection uses -- it's whether that time is spent in
+// one continuous stretch (blocks everything) or handed back to the browser
+// in small pieces (invisible, even if the grand total is the same or
+// larger). Hence: keep the *pure* MCTS computation exactly as it was
+// (createMctsSearch does no I/O, no ns calls, stays 100% synchronous and
+// unit-testable), but expose it as something a caller can run in bounded
+// chunks with an `await ns.sleep(0)` between them -- see ipvgo_player.js's
+// own move-selection loop for the actual chunking driver.
+//
+// createMctsSearch(board, validMoves, colorChar, opts) does exactly the
+// setup chooseBestMove used to do inline (candidate filtering, root
+// creation, opening-move context) and returns either `null` (no legal
+// non-self-eye-fill move exists -- the caller should pass, identical to
+// chooseBestMove's `{ move: null }` case) or a search handle:
+//
+//   numSimulations         the budget this search was created with
+//   candidateCount         real root candidate count (post eye-filtering)
+//   remaining()            how many simulations are left in the budget
+//   runIterations(n)       run up to n more simulations (or however many
+//                          remain), synchronously, right now
+//   runIterationsForMs(ms) run simulations for approximately ms of wall
+//                          time (checked every few iterations, not after
+//                          every single one -- checking Date.now() that
+//                          often would itself add meaningful overhead on a
+//                          small/fast board), or until the budget is
+//                          exhausted, whichever comes first
+//   getResult()            same shape chooseBestMove always returned:
+//                          { move, visits, winRate, simulations, evaluated }
+//                          -- `simulations` here is however many actually
+//                          ran so far (may be less than numSimulations if
+//                          the caller stopped early on a wall-clock
+//                          deadline), which is more honest than always
+//                          reporting the nominal budget.
+export function createMctsSearch(board, validMoves, colorChar, opts = {}) {
   const {
     numSimulations = DEFAULT_NUM_SIMULATIONS,
     maxPlayoutMoves,
@@ -749,7 +812,7 @@ export function chooseBestMove(board, validMoves, colorChar, opts = {}) {
       if (validMoves[x]?.[y]) allValidCandidates.push(xyToIdx(x, y, H))
     }
   }
-  if (allValidCandidates.length === 0) return { move: null, visits: 0, winRate: null, simulations: 0, evaluated: 0 }
+  if (allValidCandidates.length === 0) return null
 
   // Root-level eye safety, confirmed needed live 2026-08-12 (Ken watched a
   // game where Black held the majority of the board, then filled both of
@@ -769,7 +832,7 @@ export function chooseBestMove(board, validMoves, colorChar, opts = {}) {
   // If every remaining legal move is a self-eye-fill, that's strictly worse
   // than passing -- it can only shrink our own liberties -- so treat it the
   // same as "no valid moves" and let the caller pass instead.
-  if (rootCandidates.length === 0) return { move: null, visits: 0, winRate: null, simulations: 0, evaluated: 0 }
+  if (rootCandidates.length === 0) return null
   // Captured now, before the tree mutates: root.untriedMoves *is*
   // rootCandidates (same array reference, not a copy), and expandNode
   // drains it via .pop() as the search progresses -- reading
@@ -781,23 +844,53 @@ export function chooseBestMove(board, validMoves, colorChar, opts = {}) {
   const openingContext =
     isOpeningMove && openingStats ? { stats: openingStats, minSample: minOpeningSample, priorWeight: openingPriorWeight } : null
 
-  for (let i = 0; i < numSimulations; i++) {
+  let simsRun = 0
+
+  function runOne() {
     runMctsIteration(root, W, H, komi, explorationConstant, cap, rng, openingContext)
+    simsRun++
   }
 
-  let best = null
-  for (const entry of root.children) {
-    if (!best || entry.node.visits > best.node.visits) best = entry
+  function getResult() {
+    let best = null
+    for (const entry of root.children) {
+      if (!best || entry.node.visits > best.node.visits) best = entry
+    }
+    if (!best) return { move: null, visits: 0, winRate: null, simulations: simsRun, evaluated: candidateCount }
+    const [x, y] = idxToXY(best.moveIdx, H)
+    return {
+      move: [x, y],
+      visits: best.node.visits,
+      winRate: best.node.visits ? best.node.wins / best.node.visits : null,
+      simulations: simsRun,
+      evaluated: candidateCount,
+    }
   }
-  if (!best) return { move: null, visits: 0, winRate: null, simulations: numSimulations, evaluated: candidateCount }
 
-  const [x, y] = idxToXY(best.moveIdx, H)
   return {
-    move: [x, y],
-    visits: best.node.visits,
-    winRate: best.node.visits ? best.node.wins / best.node.visits : null,
-    simulations: numSimulations,
-    evaluated: candidateCount,
+    numSimulations,
+    candidateCount,
+    remaining() {
+      return Math.max(0, numSimulations - simsRun)
+    },
+    runIterations(n) {
+      const limit = Math.min(n, numSimulations - simsRun)
+      for (let i = 0; i < limit; i++) runOne()
+      return limit
+    },
+    // checkEvery: how many iterations run between Date.now() checks. Kept
+    // small enough that overshooting `ms` by one batch's worth of work
+    // stays negligible even on the slowest (13x13) boards, but large enough
+    // that Date.now() itself isn't a meaningful fraction of the work on the
+    // fastest (5x5) ones.
+    runIterationsForMs(ms, checkEvery = 8) {
+      const stopAt = Date.now() + ms
+      while (simsRun < numSimulations) {
+        for (let i = 0; i < checkEvery && simsRun < numSimulations; i++) runOne()
+        if (Date.now() >= stopAt) break
+      }
+    },
+    getResult,
   }
 }
 

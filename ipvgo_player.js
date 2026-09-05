@@ -96,62 +96,102 @@
  * ns.getScriptRam() figure on startup as before; treat the number above as
  * a placeholder until a live run confirms it, same as last time.
  *
- * ## Timing
+ * ## Timing -- rewritten 2026-09-05, this is the freeze fix
  *
- * Move selection runs entirely synchronously (no `await` inside
- * chooseBestMove), which means it blocks the browser's single JS thread --
- * shared with the rest of the game and with mcp.js's own 10-second tick --
- * for however long it takes. Live data on the flat-MC predecessor (~980
- * total playouts/move): avg 52ms, max 164ms -- comfortable headroom, which
- * is why NUM_SIMULATIONS was raised for the MCTS rewrite. Local profiling
- * of *this* MCTS version on a synthetic empty 7x7 board (worst case): 1500
- * sims ~ 250ms (see ipvgo_logic.js's DEFAULT_NUM_SIMULATIONS comment for
- * the full table and reasoning). **Not yet confirmed against real live
- * play** -- logs its own elapsed-ms per move (ns.print) and tracks avg/max
- * per game in ipvgo_status.json specifically so this can be checked
- * without guessing, per this repo's own "measure live, don't estimate"
- * discipline -- turn NUM_SIMULATIONS down here if that data shows it's too
- * slow.
+ * **What went wrong:** the constant below used to be a fixed
+ * `NUM_SIMULATIONS`, tuned (see git history) from live timing data on a 7x7
+ * board and never re-checked when the opponent/board size later escalated
+ * to 13x13 against The Black Hand. `chooseBestMove` runs its entire
+ * simulation budget in one uninterrupted synchronous loop -- no `await`
+ * anywhere inside it -- and Bitburner executes Netscript on the browser
+ * tab's single JS thread, shared with rendering and every other resident
+ * script. `ipvgo_status.json`'s `lastResult` confirmed the consequence
+ * directly: avgMoveMs ~11,721 / maxMoveMs 13,591 at 6000 sims on the 13x13
+ * board -- an eleven-to-fourteen *second* unbroken freeze on literally
+ * every move, all game long. That arithmetic checks out exactly: a 13x13
+ * board has ~3.4x the points of 7x7, and this file's own `maxPlayoutMoves`
+ * cap (2*W*H) scales the same way, so per-simulation cost roughly
+ * quadruples with board area; combined with the 4x sim-count raise from
+ * the 2026-08-12 tuning, ~12x * 4x ~= 48x the original ~250ms/1500-sim
+ * baseline lands almost exactly on the observed ~12s. Not a mystery, and
+ * not "the program got too large" in a code-size/RAM sense -- a single
+ * long synchronous call, repeated every move.
+ *
+ * **Why "run it on a bigger/cloud machine" doesn't apply here:** every
+ * `ns.go.*` call only exists inside the actual running game's own JS VM in
+ * the browser tab. There is no remote-execution surface for gameplay --
+ * the Remote API this repo already uses (tools/bb_remote.py) is a one-way-
+ * per-direction *file* sync channel for source code, not a live low-latency
+ * link that could ship a board state out, compute a move on faster
+ * hardware, and hand it back mid-turn. Moving this script to run somewhere
+ * else isn't an option Bitburner exposes, regardless of how much compute
+ * that somewhere else has. What actually matters is not the total CPU time
+ * move selection uses, but whether it's spent in one continuous blocking
+ * stretch or handed back to the browser in small pieces.
+ *
+ * **The fix:** ipvgo_logic.js's `createMctsSearch` (unchanged pure
+ * computation, same algorithm, same tests) is now driven here in small
+ * time-boxed chunks (`runIterationsForMs(CHUNK_MS)`), each followed by
+ * `await ns.sleep(0)` to hand control back to the browser -- the same
+ * shape as this repo's own share.js fix for the identical class of bug
+ * (many resident ns.share() calls monopolizing the event loop; see
+ * docs/CLAUDE.md / git history). This also replaces the fixed
+ * NUM_SIMULATIONS constant (which is what silently became wrong when board
+ * size changed) with a wall-clock thinking budget (TARGET_THINK_MS) plus a
+ * high simulation ceiling (MAX_SIMULATIONS) as a safety valve: a slow board
+ * (13x13) naturally gets fewer, deeper simulations within the time budget; a
+ * fast board (5x5/7x7) exhausts MAX_SIMULATIONS and returns early, well
+ * under the time budget, rather than burning the full budget on redundant
+ * search. No more per-board-size retuning trap.
+ *
+ * Logs its own elapsed-ms and actual-sims-run per move (ns.print) and
+ * tracks avg/max per game in ipvgo_status.json, same as before -- per this
+ * repo's own "measure live, don't estimate" discipline, watch those numbers
+ * once this is live and adjust TARGET_THINK_MS/CHUNK_MS if needed.
  *
  * @param {NS} ns
  */
 
-import { chooseBestMove, computeOpeningMoveStats } from "ipvgo_logic.js"
+import { createMctsSearch, computeOpeningMoveStats } from "ipvgo_logic.js"
 
-// Total MCTS simulation budget per move (shared across the whole search
-// tree, not per candidate the way the old flat-MC NUM_PLAYOUTS was -- see
-// ipvgo_logic.js's own header for why that's the entire point of the
-// 2026-08-12 (later) MCTS upgrade). 1500 was chosen from local profiling
-// (see ipvgo_logic.js's DEFAULT_NUM_SIMULATIONS comment) after live data
-// on the flat-MC version showed huge unused timing headroom (avg 52ms, max
-// 164ms/move at ~980 total playouts/move); needs live confirmation this
-// stays comfortably fast now that the budget has grown -- watch the
-// moveMs figures in ipvgo_status.json and turn this down if they climb.
+// Hard ceiling on total simulations regardless of board size or elapsed
+// time -- a safety valve, not the primary budget (see TARGET_THINK_MS
+// below). Prevents burning the whole time budget on redundant search once a
+// small/fast board's search has clearly converged.
+const MAX_SIMULATIONS = 20000
+
+// Wall-clock thinking budget per move, replacing the old fixed
+// NUM_SIMULATIONS (see this file's own "Timing" header section above for
+// why a fixed sim count silently broke when the board size changed). A few
+// seconds of "thinking time" per move is normal for a Go engine and, unlike
+// the old design, no longer freezes anything while it happens (see
+// CHUNK_MS below) -- so this can be tuned for search strength rather than
+// for staying under some now-irrelevant per-move latency ceiling.
 //
-// Raised 1500 -> 6000 (4x) on 2026-08-12 (still later), per the
-// coordinator's own diagnosis of the last-100-games rolling window at
-// 1500 sims: 16 losses total, and only 1 of those 16 is a whole-group
-// collapse (blackScore=0, whiteScore=42.5 -- the shutout signature from
-// the already-fixed 2026-08-11 eye-safety bug). The other 15 are close,
-// competitive losses, margins 0.5 to 12.5 points on a 49-point board --
-// the shape of a search that's evaluating correctly but not deeply
-// enough, not the shape of a structural blind spot like missing
-// eye-shape awareness. `docs/ipvgo-strategy.md`'s own "Open questions"
-// section (item 7) says the expensive getChains()/getControlledEmptyNodes()
-// route is only worth building "if live results show the bot still
-// losing to whole-group captures despite Monte Carlo evaluation" -- 1/16
-// does not clear that bar, so this bump reaches for the lever the doc
-// names first instead: more simulations before a structurally different
-// algorithm. And there's room to pull it -- live data at 1500 sims
-// measured avg 261ms / max 307ms per move against mcp.js's shared
-// 10-second tick budget, only ~3% of it used. Since MCTS's simulation
-// loop is the dominant cost and the rest of chooseBestMove's per-move
-// work is fixed overhead, timing should scale roughly linearly with this
-// constant, putting 6000 sims around 1000-1200ms/move -- still
-// comfortable headroom, not a number pulled from nowhere. Confirm against
-// the real moveMs figures once this is live and turn it back down if
-// they come in meaningfully higher than that estimate.
-const NUM_SIMULATIONS = 6000
+// 10000ms, not the more conservative 5000 first tried: local profiling
+// (node, this session) of createMctsSearch on a synthetic empty 13x13
+// board -- the actual board size/opponent this bump matters for -- measured
+// ~595 simulations/sec (2984 sims in 5014ms of chunked runIterationsForMs
+// calls, max single chunk 57ms). At 5000ms that's under half the old
+// (blocking, 11.7s/move) 6000-sim budget -- eliminating the freeze while
+// quietly *weakening* the search wouldn't be the right trade given this
+// task's own "strengthen against tougher opponents" goal. 10000ms instead
+// lands close to or above the old 6000-sim depth (~5950 sims at this
+// profiled rate) while every individual chunk still stays under ~60ms --
+// still zero perceptible blocking, just a slower-paced game in real time
+// (unattended background play, so this is a non-issue). Turn this down
+// first if that trade turns out wrong; the sim-quality lever is
+// CHUNK_MS/MAX_SIMULATIONS, not this one. Needs live moveMs/win-rate
+// confirmation like every timing number in this file's history.
+const TARGET_THINK_MS = 10000
+
+// How long a single uninterrupted burst of MCTS iterations is allowed to
+// run before yielding back to the browser via `await ns.sleep(0)` -- this
+// is the actual freeze fix. Small enough that any one uninterrupted stretch
+// stays well under what reads as a UI hitch, even on the slowest (13x13)
+// board; large enough that Date.now() polling overhead inside
+// runIterationsForMs stays negligible.
+const CHUNK_MS = 40
 
 // Tag written into every ipvgo_status.json this script produces, and
 // checked on startup (see loadPersistedStatus below) before resuming any
@@ -174,7 +214,15 @@ const NUM_SIMULATIONS = 6000
 // the deeper search or was just diluted by the old budget's games still
 // sitting in the sample. This is now the third algorithm-tag bump in this
 // file's history for exactly this reason, not a one-off judgment call.
-const ALGORITHM = "mcts-ucb1-v2"
+//
+// Bumped again, "mcts-ucb1-v2" -> "mcts-ucb1-v3" (2026-09-05), alongside
+// replacing the fixed 6000-sim NUM_SIMULATIONS with the time-budgeted
+// MAX_SIMULATIONS/TARGET_THINK_MS design above -- v2's rolling window was
+// produced under a sim budget that was silently wrong for the current
+// (13x13, The Black Hand) board/opponent (see this file's "Timing" header),
+// so blending its games into v3's own window would misattribute any
+// win-rate change to the wrong cause, same reasoning as both prior bumps.
+const ALGORITHM = "mcts-ucb1-v3"
 
 // How many recent game outcomes to keep for the rolling win rate.
 const RECENT_GAMES_WINDOW = 100
@@ -261,6 +309,35 @@ function readOpponentStats(ns, opponent) {
   }
 }
 
+// GoOpponent values that are actual joinable factions -- the ones the
+// win-streak favor conversion (docs/ipvgo-strategy.md, "official doc": two
+// consecutive wins against the same opponent's faction converts 500
+// reputation into favor, "but only if you are already a member of that
+// faction") can ever apply to. "No AI" isn't a faction; "????????????" is a
+// distinct hidden/endgame opponent that doesn't correspond to any real
+// FactionName -- neither is worth checking membership for.
+const REAL_FACTION_OPPONENTS = new Set(["Netburners", "Slum Snakes", "The Black Hand", "Tetrads", "Daedalus", "Illuminati"])
+
+// Added 2026-09-05 per Ken's own framing: "the primary IPvGO reward is
+// faction reputation" (confirmed correct -- see docs/ipvgo-strategy.md's
+// "Scoring and rewards" section) -- which only actually banks anything if
+// the target opponent is a faction Ken has already joined. Checked once at
+// startup (ns.getPlayer(), already used elsewhere in this repo -- see
+// docs/processes.md's other callers -- no Source-File gate, cheap) purely
+// for visibility: this never blocks play, since territory-held stat-
+// multiplier bonuses accrue regardless of membership per the same doc
+// section, and the win-rate/algorithm signal is equally valid either way.
+function checkFactionMembership(ns, opponent) {
+  if (!REAL_FACTION_OPPONENTS.has(opponent)) return null
+  try {
+    const factions = ns.getPlayer().factions ?? []
+    return factions.includes(opponent)
+  } catch (e) {
+    ns.print(`ipvgo_player: ns.getPlayer() threw while checking faction membership -- ${String(e)}`)
+    return null
+  }
+}
+
 // Reads back whatever ipvgo_status.json already exists (if anything) on
 // startup, so gamesPlayed/wins/recentGames survive a script restart
 // instead of resetting to zero/empty every time -- CLAUDE.md's own
@@ -296,6 +373,31 @@ function loadPersistedStatus(ns, algorithm) {
 	}
 }
 
+// Which opponent/size this script was actually playing last time, read
+// straight off ipvgo_status.json -- unlike loadPersistedStatus above, this
+// is NOT scoped to the current `algorithm` tag, because it isn't a
+// performance measurement that a rewrite should start fresh; it's just
+// "what was Ken farming." Added 2026-09-05 per Ken's direct point: the real
+// reward here is faction reputation, which only accrues from consecutive
+// wins against the *same* faction (docs/ipvgo-strategy.md), so a restart
+// silently reverting to the hardcoded "Netburners"/7 default -- which is
+// exactly what would have happened today when restarting to pick up the
+// freeze fix -- would quietly throw away whatever faction/streak was
+// actually in progress. ns.args[0]/[1] remain an explicit override for when
+// Ken deliberately wants to redirect at a different faction or board size;
+// omitting them now means "keep going," not "start over."
+function readPersistedFactionChoice(ns) {
+	try {
+		const raw = ns.read("ipvgo_status.json")
+		if (!raw) return null
+		const parsed = JSON.parse(raw)
+		if (typeof parsed.opponent !== "string" || !Number.isFinite(parsed.size)) return null
+		return { opponent: parsed.opponent, size: parsed.size }
+	} catch (e) {
+		return null
+	}
+}
+
 // Persisted so lifetime record/last result can be checked from outside the
 // game (ctl-pull, same pattern as mcp_status.json) instead of only living in
 // terminal scrollback.
@@ -314,7 +416,7 @@ function loadPersistedStatus(ns, algorithm) {
 // this script has ever used against it, which is the right source for the
 // reward/favor fields specifically (see readOpponentStats above) but the
 // wrong source for "is this algorithm good."
-function writeStatus(ns, { gamesPlayed, wins, recentGames, opponent, size, lastResult, opponentLifetime }) {
+function writeStatus(ns, { gamesPlayed, wins, recentGames, opponent, size, lastResult, opponentLifetime, isFactionMember }) {
 	const recentWins = recentGames.filter((g) => g.won).length
 	// Surfaced for the dashboard/coordinator per the 2026-08-12 (later)
 	// "keep this simple... say so plainly if the sample size is too small"
@@ -331,6 +433,18 @@ function writeStatus(ns, { gamesPlayed, wins, recentGames, opponent, size, lastR
 				gamesPlayed,
 				wins,
 				opponent,
+				// Same value as `opponent` -- ns.go's own API param is named
+				// "opponent," but per Ken's 2026-09-05 framing (confirmed correct
+				// against docs/ipvgo-strategy.md's "Scoring and rewards" section)
+				// the actual reward this is played for is faction reputation, so
+				// the dashboard/HUD reads this name instead.
+				targetFaction: opponent,
+				// Whether Ken has actually joined `opponent` as a faction -- null
+				// for the two non-faction GoOpponent values ("No AI",
+				// "????????????"), see checkFactionMembership's own header. Only
+				// the win-streak favor conversion needs this to be true; territory
+				// stat bonuses accrue regardless.
+				isFactionMember: isFactionMember ?? null,
 				size,
 				lastResult,
 				// Rolling window, added 2026-08-12: last RECENT_GAMES_WINDOW game
@@ -370,14 +484,35 @@ export async function main(ns) {
 
   if (!checkGoApiAvailable(ns)) return
 
-  const opponent = ns.args[0] ?? "Netburners"
-  const size = Number(ns.args[1] ?? 7)
+  // ns.args[0]/[1] are an explicit override; omitting them continues
+  // whatever faction/size was last actually being played (see
+  // readPersistedFactionChoice's own header for why that matters). Only
+  // falls back to the original Netburners/7 placeholder when there's
+  // neither an arg nor any persisted choice yet (a genuinely fresh setup).
+  const persistedChoice = readPersistedFactionChoice(ns)
+  const opponent = ns.args[0] ?? persistedChoice?.opponent ?? "Netburners"
+  const size = Number(ns.args[1] ?? persistedChoice?.size ?? 7)
+
+  // Informational only -- see checkFactionMembership's own header. Doesn't
+  // gate play: territory-held stat bonuses accrue either way, only the
+  // win-streak favor conversion specifically needs membership.
+  const isFactionMember = checkFactionMembership(ns, opponent)
 
   ns.tprint(
     `ipvgo_player: starting (RAM ${ns.getScriptRam(ns.getScriptName()).toFixed(2)}GB, ` +
-      `MCTS/UCB1, ${NUM_SIMULATIONS} simulations/move, algorithm=${ALGORITHM}). ` +
-      `Fresh-subnet default: ${opponent} ${size}x${size} -- an in-progress game is always continued as-is first.`
+      `MCTS/UCB1, up to ${MAX_SIMULATIONS} sims/move within ${TARGET_THINK_MS}ms (chunked, non-blocking), ` +
+      `algorithm=${ALGORITHM}). ` +
+      `Target faction: ${opponent} ${size}x${size}` +
+      (persistedChoice && ns.args[0] == null ? " (continuing from last run)" : "") +
+      ` -- an in-progress game is always continued as-is first.`
   )
+  if (isFactionMember === false) {
+    ns.tprint(
+      `ipvgo_player: WARNING -- not currently a member of ${opponent}. Per docs/ipvgo-strategy.md, ` +
+        `the win-streak favor conversion (2 wins in a row -> reputation) only applies to factions you've ` +
+        `already joined; territory-held stat-multiplier bonuses still accrue regardless.`
+    )
+  }
 
   let { gamesPlayed, wins, recentGames } = loadPersistedStatus(ns, ALGORITHM)
   let moveMsSum = 0
@@ -402,7 +537,16 @@ export async function main(ns) {
     `ipvgo_player: resuming this algorithm's own record: ${wins}/${gamesPlayed} lifetime, ` +
       `${recentGames.length} game(s) in the rolling window.`
   )
-  writeStatus(ns, { gamesPlayed, wins, recentGames, opponent, size, lastResult: null, opponentLifetime: readOpponentStats(ns, opponent) })
+  writeStatus(ns, {
+    gamesPlayed,
+    wins,
+    recentGames,
+    opponent,
+    size,
+    lastResult: null,
+    opponentLifetime: readOpponentStats(ns, opponent),
+    isFactionMember,
+  })
 
   while (true) {
     try {
@@ -437,6 +581,7 @@ export async function main(ns) {
               maxMoveMs: moveMsMax || null,
             },
             opponentLifetime: readOpponentStats(ns, opponent),
+            isFactionMember,
           })
         }
         moveMsSum = 0
@@ -475,13 +620,31 @@ export async function main(ns) {
       const isOpeningMove = ns.go.getMoveHistory().length === 0
       const openingStats = isOpeningMove ? computeOpeningMoveStats(recentGames) : null
 
+      // Chunked, yielding search -- the actual freeze fix (see this file's
+      // own "Timing" header section). createMctsSearch's own computation is
+      // unchanged (same MCTS/UCB1 algorithm, same tests); what changed is
+      // that it's driven here in CHUNK_MS-sized bursts, each followed by
+      // `await ns.sleep(0)`, instead of running its whole budget in one
+      // uninterrupted call. search === null means every legal move is a
+      // self-eye-fill (or there are no legal moves at all) -- same "pass"
+      // case chooseBestMove used to signal via move: null.
       const t0 = Date.now()
-      const { move, visits, winRate, simulations, evaluated } = chooseBestMove(board, validMoves, "X", {
-        numSimulations: NUM_SIMULATIONS,
+      const search = createMctsSearch(board, validMoves, "X", {
+        numSimulations: MAX_SIMULATIONS,
         komi,
         isOpeningMove,
         openingStats,
       })
+      if (search) {
+        const deadline = t0 + TARGET_THINK_MS
+        while (search.remaining() > 0 && Date.now() < deadline) {
+          search.runIterationsForMs(CHUNK_MS)
+          await ns.sleep(0)
+        }
+      }
+      const { move, visits, winRate, simulations, evaluated } = search
+        ? search.getResult()
+        : { move: null, visits: 0, winRate: null, simulations: 0, evaluated: 0 }
       const elapsedMs = Date.now() - t0
       moveMsSum += elapsedMs
       moveMsCount++

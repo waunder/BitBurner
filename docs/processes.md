@@ -22,8 +22,13 @@ short stop-list for the few things that still need Ken directly.
 
 - The `startup.js` core MCP baseline is established and runs normally.
 - The adaptive stock trader is live with Ken's explicit 2026-08-18 capital
-  approval. IPvGO, Darknet, and faction sharing remain off; see `AGENTS.md`'s
-  stop-list for exactly what re-enabling each needs.
+  approval. Faction sharing remains off; see `AGENTS.md`'s stop-list for
+  what re-enabling it needs. **This line's "IPvGO... remains off" was stale**
+  — `ipvgo_status.json` shows 12,700+ lifetime games under `mcts-ucb1-v2`
+  alone, i.e. it has been running live for some time; Darknet was also
+  cleared off the stop-list 2026-09-04 (see `AGENTS.md`). See
+  `docs/ipvgo-strategy.md`'s 2026-09-05 section for the current algorithm
+  generation and the freeze fix shipped that day.
 - Formulas R8: the shadow monitor has been live-validated (see
   `docs/evidence/`); the switch-veto integration is implemented and tested
   and is the current active objective — see `STATE.md`.
@@ -2265,25 +2270,43 @@ A self-contained set, same shape as the darknet set above: not touched by
 reference (with RAM costs, gating, and citations to the in-game
 documentation itself), the reward-structure writeup, and the move-priority
 design all live in `docs/ipvgo-strategy.md` — this entry is just the map.
+**This table went stale for most of its own history** (last kept current at
+the 2026-08-12 flat-Monte-Carlo rewrite, then not updated through the
+same-day MCTS upgrade, the `ipvgo_hud.js` addition, or ~12,700 games of live
+play) — corrected 2026-09-05 alongside that day's freeze fix; see
+`docs/ipvgo-strategy.md`'s dated sections for the history this table skipped.
 
 | File | Runs on | RAM | What it does |
 | --- | --- | --- | --- |
-| `ipvgo_player.js` | any host with `ns.go` access (the API is not tied to a specific server) | ~17.6GB arithmetic estimate as of the 2026-08-12 rewrite (down from 34.45GB measured live pre-rewrite) — **not yet measured live**, see its own header comment | The `ns.go` event loop only, as of 2026-08-12: fetches the real board/valid-move grid each turn and asks `ipvgo_logic.js`'s `chooseBestMove()` (flat Monte Carlo — see below) which move to play. Self-supersedes, never discards an in-progress game, starts a fresh one (default `Netburners` 7x7 — still a placeholder, not tuned) once the current one ends. Writes `ipvgo_status.json` on startup and after every game — in `WATCHED_FILES`/`PULL_FILES` both. Fields: `algorithm`, `gamesPlayed`/`wins` (cumulative for the current `algorithm` tag, restart-safe — reads the existing file back on startup, see `ipvgo_player.js`'s `loadPersistedStatus()`), `recentGames`/`recentGamesCount`/`recentWinRate` (rolling last-100-games window, also restart-safe but reset on an `algorithm` tag change so a rewrite doesn't dilute its own number with a predecessor's results), `opponent`, `size`, `lastResult` (now includes `avgMoveMs`/`maxMoveMs`), and — added 2026-08-12 for the dashboard's "rewards" section — `winStreak`, `highestWinStreak`, `favorRep`, `bonusPercent`, `bonusDescription`, `opponentLifetimeWins`, `opponentLifetimeLosses`, all read from `ns.go.analysis.getStats()` (0GB, the game's own all-time per-opponent record — see `ipvgo_player.js`'s `readOpponentStats()`). |
-| `ipvgo_logic.js` | local only + pushed to the game as an import target for `ipvgo_player.js` | n/a (pure logic, no `ns` calls) | New 2026-08-12, mirroring the `mcp.js`/`mcp_logic.js` split. A from-scratch local Go rules engine (flood-fill chains/liberties, capture, suicide prevention with the game's own "except when it captures" exception, a simplified single-capture ko rule, area scoring, a diagonal-based simple-eye heuristic) plus a flat Monte Carlo move-selection algorithm built on top of it (`chooseBestMove`/`evaluateMove`/`runPlayout`). Full citations and design rationale — including a documented, profiled performance rewrite (rejection-sampling instead of full-board-scan move selection, after the first draft took multiple *seconds* per move) — are in the file's own header and `docs/ipvgo-strategy.md`'s 2026-08-12 section. |
-| `ipvgo_logic.test.js` | local only, `node --test ipvgo_logic.test.js` | n/a | 23 tests against small hand-built boards (using the real `board[x][y]` convention): capture (single- and multi-stone chains), suicide prevention and its capture exception, the simplified ko rule (both a real ko shape and a negative control), simple-eye detection (interior/edge/corner cases), area scoring (including contested space and dead nodes), and — the ones that actually validate the algorithm choice, not just the plumbing — that `evaluateMove`/`chooseBestMove` reliably prefer a real capture over a self-atari move. |
+| `ipvgo_player.js` | any host with `ns.go` access (the API is not tied to a specific server) | ~17.6GB arithmetic estimate since the 2026-08-12 rewrite (down from 34.45GB measured live pre-rewrite); not re-measured since | The `ns.go` event loop: fetches the real board/valid-move grid each turn and drives `ipvgo_logic.js`'s `createMctsSearch` (MCTS/UCB1) in small non-blocking chunks (`runIterationsForMs` + `await ns.sleep(0)` between them — see "2026-09-05: freeze fix" below) to pick a move. Self-supersedes, never discards an in-progress game, starts a fresh one once the current one ends. `ns.args[0]`/`[1]` (opponent faction/size) are now an *override*, not the only source — as of 2026-09-05, omitting them continues whatever faction/size was last actually played (read back from `ipvgo_status.json`, regardless of `algorithm` tag), since the real reward here is faction reputation, which only accrues from a consecutive-win *series* against one faction and shouldn't silently reset on every restart (`readPersistedFactionChoice`). Also checks (`checkFactionMembership`, `ns.getPlayer().factions`, 0GB) and warns if the target isn't a faction Ken has actually joined, since the win-streak favor conversion needs membership even though territory-based stat bonuses don't. Writes `ipvgo_status.json` on startup and after every game (in `WATCHED_FILES`/`PULL_FILES` both): `algorithm` (`mcts-ucb1-v3` as of 2026-09-05 — bumped whenever the search itself or its budget changes meaningfully, so the rolling window below doesn't blend across generations), `gamesPlayed`/`wins` (cumulative for the current `algorithm` tag, restart-safe), `recentGames`/`recentGamesCount`/`recentWinRate` (rolling last-100-games window, also restart-safe, also reset on an algorithm-tag change), `opponent`/`targetFaction` (same value, second name for dashboard clarity), `isFactionMember`, `size`, `lastResult` (includes `avgMoveMs`/`maxMoveMs`), `openingStats` (per-opening-move win-rate table, feeds the opening-move prior — see `ipvgo_logic.js`), and `winStreak`/`highestWinStreak`/`favorRep`/`bonusPercent`/`bonusDescription`/`opponentLifetimeWins`/`opponentLifetimeLosses` from `ns.go.analysis.getStats()` (0GB, the game's own all-time per-opponent record). |
+| `ipvgo_logic.js` | local only + pushed to the game as an import target for `ipvgo_player.js` | n/a (pure logic, no `ns` calls) | A from-scratch local Go rules engine (flood-fill chains/liberties, capture, suicide prevention with the game's own "except when it captures" exception, a simplified single-capture ko rule, area scoring, a diagonal-based simple-eye heuristic) plus Monte Carlo Tree Search with UCB1 (`chooseBestMove`, opening-move prior via `computeOpeningMoveStats`) built on top of it. As of 2026-09-05, the search is also exposed as a resumable handle (`createMctsSearch`: `runIterations(n)`/`runIterationsForMs(ms)`/`getResult()`) — `chooseBestMove` is now a thin synchronous wrapper around it for tests/one-shot use; `ipvgo_player.js` drives the handle directly in small time-boxed chunks instead, which is the actual fix for the browser-freeze incident (see "2026-09-05" below). Full citations and design rationale are in the file's own header and `docs/ipvgo-strategy.md`. |
+| `ipvgo_logic.test.js` | local only, `node --test ipvgo_logic.test.js` | n/a | 39 tests (as of 2026-09-05) against small hand-built boards (real `board[x][y]` convention): rules-engine correctness (capture, suicide/its capture exception, simplified ko, simple-eye detection, area scoring), the UCB1 formula itself, MCTS move selection (capture-over-self-atari, root-level eye safety, komi), the opening-move prior, and (new 2026-09-05) that chunked `createMctsSearch` calls produce results identical to one uninterrupted `chooseBestMove` call given the same seed — the regression guard for the freeze fix. |
+| `ipvgo_hud.js` | `home`, self-superseding | small, reads `ipvgo_status.json` only | In-game panel (added 2026-08-12), same shape as `mcp_hud.js`: current record, rolling win rate, last game's score/move-timing, streak/favor/bonus fields. Started once by hand (`kensTodo.md`), not auto-launched by `startup.js`. |
 
-**Running live as of 2026-08-11 (the prior heuristic version); the 2026-08-12
-Monte Carlo rewrite above is pushed to the game (`ctl-push`, confirmed via a
-round-trip `ctl-get`) but has not yet been started with `run
-ipvgo_player.js` in the live terminal** — see `docs/claude-todo.md`'s
-2026-08-12 section for the exact one-line next step. The 2026-08-11
-heuristic version did run live and collected real data (see
-`docs/ipvgo-strategy.md`'s 2026-08-11 (later) section for the
-single-network-collapse diagnosis and its fix, and the 2026-08-12 section
-for the last heuristic-era sample: 3 wins / 5 games, most recently a 45-1.5
-win, before this rewrite). Check current record any time via `cat
-ipvgo_status.json` or `python3 tools/bb_remote.py ctl-get
-/ipvgo_status.json --control-port 12527`.
+**2026-09-05: browser-freeze root-caused and fixed.** `ipvgo_status.json`'s
+`lastResult` showed `avgMoveMs` ~11,721 / `maxMoveMs` 13,591 once
+`NUM_SIMULATIONS` had been raised to 6000 for a 7x7-tuned budget that never
+got re-checked after the board/opponent escalated to 13x13 vs. The Black
+Hand — `chooseBestMove`'s entire simulation budget ran in one uninterrupted
+synchronous loop, and Bitburner runs Netscript on the browser tab's single
+JS thread (shared with rendering and every other script), so that was an
+11-14 *second* freeze on literally every move. Not "the program got too
+large" in a code-size/RAM sense, and not something a more powerful remote
+machine would fix — `ns.go.*` only exists inside the live game's own JS VM,
+and the Remote API (`tools/bb_remote.py`) is a one-way file-sync channel,
+not a live low-latency link that could compute a move externally and hand
+it back mid-turn. The fix (same shape as `scripts/share.js`'s fix for the
+identical class of bug): drive the same MCTS computation in small chunks
+(`runIterationsForMs`, ~40ms each) with `await ns.sleep(0)` between them,
+and replace the fixed sim count with a wall-clock thinking budget
+(`TARGET_THINK_MS`) plus a high ceiling (`MAX_SIMULATIONS`) so board-size
+changes no longer silently break the tuning. Local profiling (13x13, empty
+board): ~595 simulations/sec, max single chunk 57ms — confirmed live
+timing is still pending (see `docs/ipvgo-strategy.md`'s 2026-09-05 section
+and `docs/kensTodo.md`).
+
+Check current record any time via `cat ipvgo_status.json` or `python3
+tools/bb_remote.py ctl-get /ipvgo_status.json --control-port 12527`.
 
 **Deliberately never references `ns.go.cheat.*`** — that surface needs
 Source-File 14.2 (confirmed live this session Ken doesn't have it, and

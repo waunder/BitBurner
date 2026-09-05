@@ -10,6 +10,22 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
 
 ## Pending
 
+- [ ] **Restart `ipvgo_player.js` in the live terminal to pick up the
+  2026-09-05 freeze fix.** `run ipvgo_player.js` once this push has synced —
+  Bitburner doesn't hot-reload, so the currently-resident process keeps
+  running the old code (the one that blocks the browser tab for 11-14
+  seconds per move) until it's killed and restarted. No need to pass any
+  arguments: the script now continues whatever faction it was last playing
+  (The Black Hand, 13x13) automatically — only pass `run ipvgo_player.js
+  <faction> <size>` if you actually want to switch targets. After it's
+  running, check `ipvgo_status.json`'s `lastResult.avgMoveMs`/`maxMoveMs`
+  (or watch a live game directly) to confirm the freeze is actually gone —
+  local profiling says it should be, but that's not the same as confirmed
+  live — and check the new `isFactionMember` field/HUD row to see whether
+  you're actually a member of the faction being farmed (only matters for
+  the win-streak reputation payout, not for playing itself).
+  See `docs/ipvgo-strategy.md`'s 2026-09-05 sections for the full diagnosis.
+
 - [x] **`startup_browser.js` bootstrapped and confirmed live end-to-end —
   2026-09-04.** Ken pasted it once, ran `run startup_browser.js`: `synced
   81/81 file(s)` → `killed everything else on home` → all 8 suite scripts

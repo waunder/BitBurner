@@ -104,8 +104,11 @@ function buildLines(status, pos) {
   const lastLine = last ? (last.won ? "WIN " : "loss ") + last.blackScore + "-" + last.whiteScore : "--"
   const moveLine = last ? Math.round(last.avgMoveMs || 0) + "/" + Math.round(last.maxMoveMs || 0) + "ms" : "--"
 
+  const memberLine = status.isFactionMember === true ? "yes" : status.isFactionMember === false ? "NO (no favor payout)" : "n/a"
+
   return [
-    row(verdict(status, Date.now() - status.ts), status.opponent || "-"),
+    row(verdict(status, Date.now() - status.ts), status.targetFaction || status.opponent || "-"),
+    row("faction member?", memberLine),
     row("algo", status.algorithm || "-"),
     row("win " + pct(status.recentWinRate), "n=" + (status.recentGamesCount ?? "-")),
     row("record", (status.wins ?? "-") + "/" + (status.gamesPlayed ?? "-")),

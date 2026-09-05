@@ -29,6 +29,7 @@ import {
   scoreAreaFlat,
   runPlayout,
   chooseBestMove,
+  createMctsSearch,
   ucb1Score,
   computeOpeningMoveStats,
   makeRng,
@@ -487,6 +488,63 @@ describe("chooseBestMove — MCTS actually distinguishes good from bad moves", (
     const withoutKomi = chooseBestMove(board, validMoves, "X", { numSimulations: 100, komi: 0, rng: makeRng(1) })
     const withHugeKomi = chooseBestMove(board, validMoves, "X", { numSimulations: 100, komi: 1000, rng: makeRng(1) })
     assert.ok((withoutKomi.winRate ?? 0) > (withHugeKomi.winRate ?? 0))
+  })
+})
+
+describe("createMctsSearch — resumable/chunked search (2026-09-05 freeze fix)", () => {
+  // The whole point of this API: ipvgo_player.js now drives the search in
+  // small chunks (runIterationsForMs) with an `await ns.sleep(0)` between
+  // them, instead of chooseBestMove's single uninterrupted loop, so the
+  // browser tab never blocks for the full move-selection time in one go.
+  // These tests exist to prove that chunking produces the *identical* tree
+  // (same rng draws, same move order) as running the same total simulation
+  // count in one call -- i.e. this is a scheduling change, not an algorithm
+  // change, and chooseBestMove's own behavior (and its passing tests above)
+  // is preserved exactly because it's now just this same code path run to
+  // completion in one call.
+  function openBoard3x3() {
+    const board = ["...", "...", "..."]
+    const validMoves = Array.from({ length: 3 }, () => Array(3).fill(true))
+    return { board, validMoves }
+  }
+
+  test("running iterations in several small chunks matches one big chunk, given the same rng", () => {
+    const { board, validMoves } = openBoard3x3()
+    const chunked = createMctsSearch(board, validMoves, "X", { numSimulations: 120, rng: makeRng(42) })
+    for (let i = 0; i < 12; i++) chunked.runIterations(10)
+    const chunkedResult = chunked.getResult()
+
+    const oneShot = chooseBestMove(board, validMoves, "X", { numSimulations: 120, rng: makeRng(42) })
+
+    assert.deepEqual(chunkedResult.move, oneShot.move)
+    assert.equal(chunkedResult.visits, oneShot.visits)
+    assert.equal(chunkedResult.winRate, oneShot.winRate)
+    assert.equal(chunkedResult.simulations, 120)
+  })
+
+  test("runIterations never exceeds the configured budget and reports how many actually ran", () => {
+    const { board, validMoves } = openBoard3x3()
+    const search = createMctsSearch(board, validMoves, "X", { numSimulations: 50, rng: makeRng(7) })
+    const ranFirst = search.runIterations(30)
+    const ranSecond = search.runIterations(30) // only 20 remain in the budget
+    assert.equal(ranFirst, 30)
+    assert.equal(ranSecond, 20)
+    assert.equal(search.remaining(), 0)
+    assert.equal(search.getResult().simulations, 50)
+  })
+
+  test("runIterationsForMs stops at the simulation budget even given a generous time budget", () => {
+    const { board, validMoves } = openBoard3x3()
+    const search = createMctsSearch(board, validMoves, "X", { numSimulations: 40, rng: makeRng(13) })
+    search.runIterationsForMs(5000) // budget exhausts almost instantly; the ms cap is never hit
+    assert.equal(search.remaining(), 0)
+    assert.equal(search.getResult().simulations, 40)
+  })
+
+  test("returns null (caller should pass) under the same conditions chooseBestMove returns move: null", () => {
+    const board = ["...", "...", "..."]
+    const validMoves = Array.from({ length: 3 }, () => Array(3).fill(false))
+    assert.equal(createMctsSearch(board, validMoves, "X", {}), null)
   })
 })
 

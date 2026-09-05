@@ -1,10 +1,265 @@
 # IPvGO strategy
 
-> **Status, 2026-08-18:** disabled after repeated responsiveness incidents.
-> Neither `ipvgo_player.js` nor `ipvgo_hud.js` may run. Local tests and
-> profiling remain open; re-enabling needs containment evidence plus Ken's
-> explicit approval — see `AGENTS.md`'s stop-list. Historical "live" and
-> next-step wording below is evidence, not current permission.
+> **Status, 2026-09-05:** live and active. The 2026-08-18 "disabled after
+> repeated responsiveness incidents" banner that stood here was stale —
+> `ipvgo_status.json` shows 12,700+ lifetime games under `mcts-ucb1-v2`
+> alone, so play continued after that note was written without the doc
+> being corrected; `AGENTS.md`'s stop-list no longer lists IPvGO either.
+> Ken asked directly (2026-09-05) to resume strengthening the algorithm and
+> to investigate the responsiveness/freeze problem those incidents actually
+> named — see the new section immediately below for the root cause found
+> and fixed that day. Historical "live"/"disabled" wording further down is
+> the record of what happened when, not current status; this banner is.
+
+## 2026-09-05: browser-freeze root cause found and fixed; time-budgeted search
+
+Ken's own framing: results against tougher opponents needed improvement,
+and separately, IPvGO has repeatedly been suspected of freezing the
+Bitburner tab — his working theory was "the program became too large,"
+with a proposed fix of moving it to a cloud server. Investigated the freeze
+claim first, since a plausible-sounding cause proposed without evidence is
+exactly this repo's own recurring failure mode (`docs/CLAUDE.md`'s
+"Diagnosis discipline") — and because the fix that follows from "too large"
+(more/different hardware) is completely different from the fix that
+follows from "blocks the render thread" (yield more often), so getting this
+right mattered before writing any code.
+
+### What was actually found
+
+**confirmed live** (data already sitting in `ipvgo_status.json`, not
+newly gathered): `lastResult.avgMoveMs` = 11,721, `maxMoveMs` = 13,591, on
+the current 13x13-vs-The-Black-Hand subnet. That is an eleven-to-fourteen
+*second* delay before every single move gets submitted.
+
+**derived, then confirmed by direct code reading**: `ipvgo_player.js`
+called `chooseBestMove()` once per move, synchronously, with no `await`
+anywhere inside `ipvgo_logic.js`'s MCTS simulation loop
+(`for (let i = 0; i < numSimulations; i++) runMctsIteration(...)`).
+Bitburner executes Netscript on the browser tab's single JS thread — the
+same thread that renders the UI and runs every other script, including
+`mcp.js` — so a long uninterrupted synchronous call blocks *everything*,
+not just this script, for exactly as long as it takes. This is the same
+class of bug this repo already fixed once, in the same session that
+produced the current `ipvgo_player.js` commit history: `scripts/share.js`
+needed a sleep between `ns.share()` calls "so many resident share threads
+don't monopolize the event loop." The arithmetic checks out exactly against
+the observed timing: 13x13 has ~3.4x the points of the 7x7 board the
+6000-simulation budget (`NUM_SIMULATIONS`, raised 2026-08-12) was tuned
+against, `maxPlayoutMoves` (2×W×H) scales the same way so per-simulation
+rollout cost scales with roughly the *square* of that ratio (~12x), and the
+sim count itself was already 4x the original 1500 — 12×4 = 48x the
+original ~250ms/1500-sim profiled baseline lands almost exactly on the
+observed ~11.7s. **Conclusion: this is not "the program became too
+large" in a code-size or RAM sense — RAM was last measured at ~17.6GB
+(arithmetic) and doesn't scale with board size at all.** It is a single
+long synchronous computation that was never re-checked after the board
+size it was tuned for changed, and that computation blocks the whole
+browser tab for its entire duration because nothing inside it ever yields.
+
+### Why a cloud server would not fix this (the investigation Ken asked for)
+
+Ken's proposed fix — "acquire a cloud server with sufficient resources to
+run your program reliably" — does not apply here, and this is worth being
+explicit about since it was a direct instruction:
+
+- **`ns.go.*` only exists inside the actual running game's own JS VM, in
+  the browser tab.** There is no Bitburner API, documented or otherwise,
+  for calling `makeMove`/`getBoardState`/etc. from outside the game.
+  Whatever compute a cloud server has, it cannot submit a move.
+- **This repo's own Remote API bridge (`tools/bb_remote.py`) is a file-sync
+  channel, not a live RPC link.** It pushes/pulls source files and a
+  handful of generated telemetry files, on a poll/reconnect cadence meant
+  for development, not a sub-second round trip that could ship a board
+  state out mid-turn, compute a move on faster hardware, and get it back in
+  time to matter. Building that channel from scratch would be a
+  significantly larger project than the actual fix, for a problem it
+  doesn't even solve (see next point).
+- **The bottleneck was never "not enough CPU somewhere."** A cloud server
+  would compute the same 6000 simulations *faster in wall-clock terms*, but
+  the freeze isn't caused by the computation being slow in absolute terms —
+  it's caused by however long it takes happening in one uninterrupted
+  stretch on the thread the browser also needs for everything else. A
+  faster machine still produces one long blocking call; it would freeze the
+  tab for less time, not zero time, and only if the hypothetical low-latency
+  RPC channel above existed to use it at all.
+
+**Recommendation, followed through below:** fix the actual mechanism —
+make the existing computation yield periodically — rather than build
+infrastructure that doesn't address the cause.
+
+### The fix: chunked, yielding search + a time-based budget
+
+`ipvgo_logic.js`'s `chooseBestMove` is unchanged in what it computes (same
+MCTS/UCB1 algorithm, same rules engine, same 35 pre-existing tests still
+pass verbatim) but its internals are now exposed as a resumable handle,
+`createMctsSearch(board, validMoves, colorChar, opts)`, returning either
+`null` (no legal non-self-eye-fill move — caller should pass, same as
+`chooseBestMove`'s `{ move: null }`) or an object with:
+
+- `runIterations(n)` — run up to `n` more simulations right now
+- `runIterationsForMs(ms)` — run simulations for approximately `ms` of wall
+  time (checked every 8 iterations, not every single one, to keep the
+  `Date.now()` polling itself cheap on a fast board)
+- `getResult()` — same return shape `chooseBestMove` always had
+
+`chooseBestMove` itself is now a two-line wrapper (`createMctsSearch(...)`
+then `runIterations(numSimulations)` then `getResult()`) — kept for tests
+and any one-shot use, where blocking synchronously is exactly what's
+wanted. `ipvgo_player.js` no longer calls it for live play. Instead its
+move-selection loop now looks like:
+
+```js
+const search = createMctsSearch(board, validMoves, "X", { numSimulations: MAX_SIMULATIONS, komi, isOpeningMove, openingStats })
+if (search) {
+  const deadline = Date.now() + TARGET_THINK_MS
+  while (search.remaining() > 0 && Date.now() < deadline) {
+    search.runIterationsForMs(CHUNK_MS) // 40ms
+    await ns.sleep(0)
+  }
+}
+const { move, visits, winRate, simulations, evaluated } = search ? search.getResult() : { move: null, ... }
+```
+
+This also replaces the fixed `NUM_SIMULATIONS` constant — the actual root
+cause of the tuning drift above — with a wall-clock **thinking budget**
+(`TARGET_THINK_MS`) plus a high simulation ceiling (`MAX_SIMULATIONS =
+20000`) as a safety valve. A slow-per-simulation board (13x13) naturally
+gets fewer, deeper simulations within the time budget; a fast board
+(5x5/7x7) exhausts the simulation ceiling and returns early, well under the
+time budget, instead of wasting time on search that's already converged.
+Board size can never again silently invalidate a hand-tuned constant the
+way it did here, because there is no board-size-specific constant to tune.
+
+**Strengthening, not just a fix**: local profiling (`node`, this session)
+of `createMctsSearch` on a synthetic empty 13x13 board — the actual size
+now in play — measured ~595 simulations/sec via chunked
+`runIterationsForMs` calls, max single chunk 57ms (i.e. no perceptible
+freeze at all, versus the prior single 11.7s block). At the first,
+more conservative `TARGET_THINK_MS` value tried (5000ms) that only reaches
+~2984 simulations — under half the old (blocking, 11.7s/move) 6000-sim
+depth, which would have traded the freeze for a quietly *weaker* search,
+the opposite of what this task asked for. `TARGET_THINK_MS` was set to
+10000ms instead, landing close to or above the old depth (~5950 sims at
+the profiled rate) while every individual chunk still stays under ~60ms.
+Games now take longer in real wall-clock time per move (this runs
+unattended in the background, so that's an acceptable trade), but the
+browser tab is never blocked, and search depth on the harder board/opponent
+matches or exceeds what it had before the freeze was even a known problem.
+
+### What the loss data actually shows (the "assess every defeat" ask)
+
+`recentGames` (last 100, `ipvgo_status.json`) shows a size/opponent
+transition partway through the current window: earlier entries are
+smaller-margin games (`32-41.5`, `29-47.5`, etc. — consistent with a
+smaller board) and the most recent handful jump to much larger absolute
+scores (`66-95.5`, `71-90.5`, `64-96.5`) against The Black Hand on 13x13,
+with `recentWinRate` at 76% overall but `opponentLifetimeWins: 0,
+opponentLifetimeLosses: 1` for this specific opponent — i.e. the
+tougher-opponent/bigger-board era so far is only a handful of games, too
+small a sample to read as a rate yet (this doc's own standing discipline,
+restated every time this comes up).
+
+**What the three recent losses are *not***: none is a shutout-to-zero
+(Black still holds 64-71 points in each), which is the specific signature
+of the already-fixed 2026-08-11 whole-network-collapse bug (single blob, no
+separate eyes, dies all at once — that bug's own shutout scores were things
+like `0 vs 49.5`). These are comfortable, whole-game losses on a bigger
+board, not a structural blind spot recurring.
+
+**What they're consistent with**: a search that's evaluating correctly
+locally but not deeply enough relative to a board with ~3.4x the points and
+proportionally longer rollouts — exactly this doc's own already-stated
+escalation order ("more simulations before a structurally different
+algorithm," `docs/ipvgo-strategy.md`'s pre-2026-09-05 "Open questions" #6)
+— compounded by the fact that the freeze itself was silently preventing
+the sim count from being raised any further to compensate, since doing so
+would only have made the blocking worse. The freeze fix above directly
+addresses this: it doesn't just stop the freeze, it removes the ceiling
+that made "just use more simulations" a bad trade in the first place.
+
+**Not yet separable from the above without more games**: whether the
+freeze itself (an 11-14s browser stall every move, all game) had any
+in-game side effect beyond slow play — e.g. whether a stalled tab ever
+caused a missed `opponentNextTurn()` read or a stale board fetch. No
+evidence either way was found (no error logs from that period point to it),
+so this is flagged as an open question, not asserted as a contributing
+cause.
+
+### 2026-09-05 (later): reputation is the real goal — faction targeting now persists across restarts
+
+Ken's own follow-up, mid-session: "I think the primary IPvGO reward is
+faction reputation... your goal is not just to win a single game, but
+improvement through a series of games." This is correct against this doc's
+own "Scoring and rewards" section above — winning twice in a row against
+the same opponent's faction converts 500 reputation into favor with that
+faction, but only while you're a member of it — and it exposed a real,
+timely bug: `ipvgo_player.js` picked its target opponent purely from
+`ns.args[0]`, defaulting to the hardcoded `"Netburners"` whenever no arg was
+given. **Every restart with no arg silently reset the target faction back
+to that default**, discarding whatever win streak/reputation series was
+actually in progress against whatever faction was really being farmed
+(currently The Black Hand, 13x13) — including the restart this very session
+is about to ask Ken to do, to pick up the freeze fix above. A "series of
+games" goal cannot survive a bug that resets the series on every restart.
+
+**Fixed**: `ipvgo_player.js` now reads the opponent/size it was last
+actually playing straight back off `ipvgo_status.json`
+(`readPersistedFactionChoice`) and uses that as the default whenever
+`ns.args[0]`/`[1]` aren't given — an explicit arg still overrides it, for
+whenever Ken deliberately wants to redirect at a different faction. Unlike
+`gamesPlayed`/`wins`/`recentGames` (`loadPersistedStatus`), this is *not*
+scoped to the current `algorithm` tag, since which faction to farm isn't a
+performance measurement a rewrite should reset — it's just "what Ken chose."
+
+**Also added**: a startup check (`checkFactionMembership`, via
+`ns.getPlayer().factions` — 0GB, no Source-File gate, already used
+elsewhere in this repo) that warns plainly if the target opponent is a real
+joinable faction (`Netburners`/`Slum Snakes`/`The Black Hand`/`Tetrads`/
+`Daedalus`/`Illuminati` — not `"No AI"` or `"????????????"`, neither of
+which is a real faction) Ken hasn't actually joined yet, since the
+win-streak favor conversion silently does nothing in that case (territory
+stat bonuses still accrue regardless — this is informational, not a gate).
+Surfaced in `ipvgo_status.json` as `targetFaction`/`isFactionMember` and in
+`ipvgo_hud.js` as a new row, so "is this run actually banking reputation"
+is visible at a glance rather than something to infer.
+
+**Not yet confirmed live**: whether Ken is currently a member of The Black
+Hand (the presently-targeted faction) — this check hasn't run live yet
+since the fix hasn't been started. Worth reading off the startup
+`ns.tprint` line or the HUD's new row once it has.
+
+### Next steps, in order
+
+1. **Get `ipvgo_player.js` restarted live** (`run ipvgo_player.js` in the
+   in-game terminal) so the new code actually runs — Bitburner does not
+   hot-reload; the resident process keeps executing the old 6000-sim
+   blocking version until restarted. See `docs/kensTodo.md`.
+2. **Watch `ipvgo_status.json`'s `lastResult.avgMoveMs`/`maxMoveMs` after
+   the restart** — should land somewhere under ~10-10.1 seconds (the
+   `TARGET_THINK_MS` budget plus fixed overhead) with `maxMoveMs` no longer
+   wildly exceeding the average the way 13,591 did against 11,721 before
+   (that gap was itself a symptom: the old design had no upper bound at
+   all on a single move's blocking time beyond "however long the fixed sim
+   count happens to take on this exact position"). Also confirm the restart
+   actually continued targeting The Black Hand (not a silent reset to
+   Netburners) and check the new `isFactionMember` field/HUD row — see the
+   "reputation is the real goal" section immediately above.
+3. **Accumulate enough post-fix games against The Black Hand/13x13 to read
+   a real win rate** — the current 76%/handful-of-games figure spans the
+   size transition and is not yet a fair read of the new search depth.
+4. **If the win rate still lags after that**, the next well-cited lever
+   (not attempted this round, kept simple per this project's own
+   discipline, but a real published technique rather than another
+   heuristic) is RAVE / AMAF (Gelly & Silver, "Combining Online and Offline
+   Knowledge in UCT," ICML 2007 — already cited in `ipvgo_logic.js`'s
+   header for the opening-move prior, which is one of that same paper's
+   three proposed techniques): share value estimates across tree nodes for
+   the same move regardless of when it's played, which converges much
+   faster than plain UCB1 under a limited simulation budget — exactly the
+   "sparse samples on a big board" situation here. Deferred this round
+   because it changes the tree's selection formula and needs its own live
+   validation the way every algorithm change here has, and this session's
+   priority (per Ken's own framing) was the freeze fix first.
 
 ## 2026-08-14: low-cost tactical rollout upgrade
 

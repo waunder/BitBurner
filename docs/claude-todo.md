@@ -1,5 +1,100 @@
 # Claude's working list
 
+## 2026-09-05 (latest): IPvGO browser-freeze root-caused and fixed; cloud-server idea investigated and rejected with reasoning
+
+Ken asked to resume strengthening IPvGO against tougher opponents, assess
+every recent defeat for improvement opportunities, and investigate his
+suspicion that the recurring "freezes the bb interface" problem was caused
+by the program being too large — proposing a cloud server as the fix if so.
+
+**Investigation found a different, fully confirmed mechanism, not "too
+large."** `ipvgo_status.json`'s `lastResult` already showed `avgMoveMs`
+11,721 / `maxMoveMs` 13,591 (an 11-14 second delay per move) on the current
+13x13-vs-The-Black-Hand subnet. Direct code reading confirmed why:
+`chooseBestMove()`'s entire MCTS simulation loop (6000 sims, raised
+2026-08-12 while tuned for a 7x7 board) ran synchronously with no `await`
+inside it, and Bitburner executes Netscript on the browser tab's single JS
+thread — so that loop blocks the *entire tab*, not just this script, for
+its full duration, every move. The arithmetic checks out almost exactly
+against the observed timing (13x13 has ~3.4x 7x7's points, rollout cost
+scales roughly with the square of that, times the 4x sim-count raise ≈
+48x the original ~250ms/1500-sim baseline ≈ the observed ~11.7s). RAM
+(~17.6GB, arithmetic) doesn't scale with board size at all, so this isn't a
+"too large" problem in any sense that would call for more hardware.
+
+**Cloud server: investigated, does not apply, said so plainly rather than
+building it anyway.** `ns.go.*` only exists inside the live game's own
+browser-tab JS VM; there's no remote-execution surface for gameplay, and
+this repo's existing Remote API bridge (`tools/bb_remote.py`) is a
+file-sync channel with no live low-latency round trip that could compute a
+move externally and hand it back mid-turn. Even hypothetically, faster
+external hardware wouldn't fix a blocking-thread problem, just shorten the
+block. Full reasoning in `docs/ipvgo-strategy.md`'s 2026-09-05 section.
+
+**Fix shipped**: `ipvgo_logic.js`'s MCTS computation is unchanged (same
+algorithm, all 35 pre-existing tests pass verbatim) but now exposed as a
+resumable handle (`createMctsSearch` — `runIterations`/`runIterationsForMs`/
+`getResult()`); `ipvgo_player.js` drives it in ~40ms chunks with `await
+ns.sleep(0)` between them instead of one blocking call, and replaced the
+fixed `NUM_SIMULATIONS` (the actual root of the tuning drift) with a
+wall-clock thinking budget (`TARGET_THINK_MS=10000`) plus a simulation
+ceiling (`MAX_SIMULATIONS=20000`) so board-size changes can't silently
+break the tuning again. Local profiling (13x13, empty board): ~595
+sims/sec, max single chunk 57ms (vs. the old single 11.7s block) — and the
+new 10s budget lands at or above the old 6000-sim depth, so this is a
+strengthening, not just a fix, on the exact board where recent losses
+occurred. `algorithm` tag bumped `mcts-ucb1-v2` → `mcts-ucb1-v3` per this
+repo's own standing practice, so the rolling win-rate window starts fresh
+rather than blending pre/post-fix games. 4 new tests added
+(`createMctsSearch` chunking-equivalence + budget/null-result behavior),
+full suite 220/220 (`node --test *.test.js`).
+
+**Defeat analysis**: the three most recent losses (66-95.5, 71-90.5,
+64-96.5) are comfortable whole-game losses on the new 13x13 board, not
+shutouts — none match the already-fixed 2026-08-11 whole-network-collapse
+signature (Black still holds 64-71 points each). Consistent with "search
+too shallow for a much bigger board," which the fix above directly
+addresses by removing the ceiling that made raising the sim count a bad
+trade. Sample size post-transition is still small (opponent lifetime record
+against The Black Hand: 0 wins / 1 loss) — not enough games yet to read a
+rate, called out as such in the doc rather than asserted.
+
+**Also found and fixed in passing**: `docs/processes.md`'s "IPvGO... remain
+off" line was stale (12,700+ lifetime games recorded under the prior
+algorithm tag alone, i.e. it's been running live this whole time) — updated
+alongside a fuller rewrite of that file's entire IPvGO table, which hadn't
+been kept current since the 2026-08-12 rewrite (predated the MCTS upgrade,
+the HUD, and ~all of this history).
+
+**Not yet done, needs Ken's hand** (Bitburner doesn't hot-reload — the
+resident `ipvgo_player.js` process keeps running the old blocking code
+until restarted): `run ipvgo_player.js` in the live terminal once this push
+lands, then watch `ipvgo_status.json`'s `avgMoveMs`/`maxMoveMs` to confirm
+the freeze is actually gone live, not just in local profiling. See
+`docs/kensTodo.md`. RAVE/AMAF (Gelly & Silver 2007, already cited in
+`ipvgo_logic.js` for the opening-move prior) is the next well-cited lever
+if win rate still lags after enough post-fix games accumulate — deferred
+this round, not attempted half-done.
+
+**Mid-session follow-up from Ken**: "the primary IPvGO reward is faction
+reputation... the goal is improvement through a series of games, not just
+a single game" — correct per `docs/ipvgo-strategy.md`'s own reward-structure
+writeup, and it caught a real, timely bug: `ipvgo_player.js` picked its
+target faction purely from `ns.args[0]`, defaulting to `"Netburners"`
+whenever omitted, so *every* restart with no arg (including the very
+restart just requested above) would have silently reset away from whatever
+faction/streak was actually in progress (The Black Hand, currently).
+Fixed: the target now persists across restarts by reading it back from
+`ipvgo_status.json` (`readPersistedFactionChoice`, not scoped to the
+`algorithm` tag the way performance counters are, since it's a choice, not
+a measurement) — an explicit arg still overrides it. Also added a startup
+faction-membership check (`ns.getPlayer().factions`) that warns plainly if
+the target isn't a faction Ken has actually joined yet, since the
+win-streak-to-favor conversion needs membership even though territory
+stat bonuses don't; surfaced as `targetFaction`/`isFactionMember` in the
+status file and a new `ipvgo_hud.js` row. Full writeup in
+`docs/ipvgo-strategy.md`'s "reputation is the real goal" section.
+
 ## Lesson learned — telemetry must be cumulative and visible where it is read
 
 The first version of `mcp_formulas_shadow.js` overwrote

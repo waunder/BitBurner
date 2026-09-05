@@ -12,13 +12,24 @@
  * terminal (typed by you, not scriptable) — after that, `ls -l *.js`
  * becomes `run lsf.js -l *.js` automatically.
  *
- * Usage: run lsf.js [pattern] [-l] [host]
+ * Usage: run lsf.js [pattern] [-l] [-t] [host]
  *   run lsf.js                  — everything on the current server
  *   run lsf.js -l               — everything, long format
+ *   run lsf.js -t               — everything, newest-modified first
  *   run lsf.js *.msg            — glob-filtered, current server
  *   run lsf.js *.cct -l n00dles — glob-filtered, long format, specific host
- *   (pattern and -l/--long may appear in either order; host, if given, is
- *   always the last positional argument)
+ *   (pattern, -l/--long, and -t/--time may appear in any order; host, if
+ *   given, is always the last positional argument)
+ *
+ * `-t` sorts newest-modified-first instead of the default alphabetical
+ * order, using the same `ns.getFileMetadata(file).mtime` as `-l`'s
+ * `modified` column — so it has the exact same two limits: **local host
+ * only** (`ns.getFileMetadata` has no remote-host parameter) and only
+ * `.txt`/`.json`/`.css`/`.js`/`.jsx`/`.ts`/`.tsx` have a real mtime at all.
+ * Asking for `-t` on a remote host prints a one-line note and falls back to
+ * alphabetical rather than silently guessing; a file whose extension has no
+ * mtime sorts to the end (oldest-last position), alphabetically among
+ * itself, rather than being dropped from the listing.
  *
  * **No hyperlinks — corrected 2026-09-04.** An earlier version of this file
  * claimed a clickable-connect-link feature via `ns.ui.createConnectLink`.
@@ -66,7 +77,8 @@
 export async function main(ns) {
   const rawArgs = ns.args.map(String)
   const longFormat = rawArgs.some((a) => a === "-l" || a === "--long")
-  const positional = rawArgs.filter((a) => a !== "-l" && a !== "--long")
+  const byDate = rawArgs.some((a) => a === "-t" || a === "--time")
+  const positional = rawArgs.filter((a) => !["-l", "--long", "-t", "--time"].includes(a))
   const pattern = positional[0] ?? "*"
   const host = positional[1] ?? ns.getHostname()
   const isLocal = host === ns.getHostname()
@@ -86,7 +98,28 @@ export async function main(ns) {
     ns.tprint(`lsf: no files on ${host} matching "${pattern}"`)
     return
   }
-  files.sort()
+
+  if (byDate && !isLocal) {
+    ns.tprint(`lsf: -t needs the local host (ns.getFileMetadata has no remote-host parameter) — showing alphabetical order instead`)
+  }
+  if (byDate && isLocal) {
+    // Newest first; unavailable mtime (wrong extension, or getFileMetadata
+    // throwing) sorts to the end rather than dropping the file, using name
+    // as a stable tiebreak both there and among equal timestamps.
+    const mtimeOf = (file) => {
+      if (!METADATA_EXTENSIONS.test(file)) return -Infinity
+      try {
+        const ts = ns.getFileMetadata(file).mtime
+        return Number.isFinite(ts) ? ts : -Infinity
+      } catch {
+        return -Infinity
+      }
+    }
+    files.sort((a, b) => mtimeOf(b) - mtimeOf(a) || a.localeCompare(b))
+  } else {
+    files.sort()
+  }
+
   ns.tprint(`lsf: ${host} (${files.length} match${files.length === 1 ? "" : "es"} for "${pattern}")`)
 
   for (const file of files) {
@@ -147,5 +180,5 @@ function formatTimestamp(ms) {
 }
 
 export function autocomplete() {
-  return ["-l", "--long", "*"]
+  return ["-l", "--long", "-t", "--time", "*"]
 }

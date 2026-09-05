@@ -10,6 +10,11 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
 
 ## Pending
 
+- [ ] **Not urgent — restart `hud_consolidated.js` whenever convenient to
+  show the new IPvGO section.** `run hud_consolidated.js` — it
+  self-supersedes (kills the old copy automatically), same as before. Pure
+  cosmetic addition, nothing time-sensitive.
+
 - [ ] **Restart `ipvgo_player.js` once more to pick up the doubled thinking
   budget (2026-09-05, same day as RAVE).** `run ipvgo_player.js` — no args
   needed, continues The Black Hand/9x9 automatically. Once restarted,

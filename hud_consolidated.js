@@ -269,6 +269,47 @@ function cctStatus(ns, now) {
   }
 }
 
+// ipvgo_player.js only writes ipvgo_status.json at game boundaries (game
+// start, game end) -- not after every move, unlike mcp_status.json's
+// per-tick writes. At the current TARGET_THINK_MS (20s/move as of
+// 2026-09-05) a single game can easily run 10-20+ minutes between writes,
+// so the 5-minute staleness window every other section here uses would
+// falsely flag a mid-game, perfectly healthy process as STOPPED. Given a
+// generous margin instead -- a real dead process still gets caught, just
+// with more lag than the other sections, which is the honest tradeoff for
+// a script that doesn't checkpoint every tick.
+const IPVGO_STALE_MS = 45 * 60 * 1000
+
+function ipvgoStatus(ns, now) {
+  const status = json(ns, "ipvgo_status.json")
+  if (!status) return { compact: "-- unavailable", expanded: [] }
+
+  const ageMs = now - (status.ts || 0)
+  const running = ageMs < IPVGO_STALE_MS
+
+  const opponent = status.targetFaction || status.opponent || "--"
+  const size = status.size ? `${status.size}x${status.size}` : "--"
+  const notMember = status.isFactionMember === false
+  const winRatePct = Number.isFinite(status.recentWinRate) ? Math.round(status.recentWinRate * 100) : null
+  const compactRecord = winRatePct !== null ? `${winRatePct}% (${status.recentGamesCount ?? 0}g)` : "no games yet"
+  const streak = status.winStreak
+  const streakStr = Number.isFinite(streak) ? (streak > 0 ? `+${streak}` : `${streak}`) : "--"
+
+  const last = status.lastResult
+  const lastLine = last ? `${last.won ? "W" : "L"} ${last.blackScore}-${last.whiteScore}` : "--"
+
+  return {
+    compact: `${running ? "✓" : "⊘"} ${size} ${opponent}${notMember ? " ⚠" : ""} ${compactRecord}`,
+    expanded: [
+      `Status: ${running ? "RUNNING" : "STOPPED"} (${status.algorithm || "--"})`,
+      `Target: ${opponent} ${size}${notMember ? " -- NOT a member (no favor payout)" : ""}`,
+      `Record: ${status.wins ?? 0}/${status.gamesPlayed ?? 0} lifetime, ${compactRecord} rolling, streak ${streakStr}`,
+      `Last game: ${lastLine}${last ? ` (avg ${Math.round(last.avgMoveMs || 0)}ms/move)` : ""}`,
+      `Favor rep: ${status.favorRep ?? 0}${status.bonusPercent != null ? `, bonus +${status.bonusPercent.toFixed(1)}% (${status.bonusDescription || "?"})` : ""}`,
+    ],
+  }
+}
+
 function buildDisplay(ns, state, pos) {
   const now = Date.now()
 
@@ -276,6 +317,7 @@ function buildDisplay(ns, state, pos) {
     { key: "mcp", label: "MCP", data: mcpStatus(ns, now) },
     { key: "darknet", label: "Darknet", data: darknetStatus(ns, now) },
     { key: "cct", label: "Contracts", data: cctStatus(ns, now) },
+    { key: "ipvgo", label: "IPvGO", data: ipvgoStatus(ns, now) },
     { key: "aug", label: "Augmentation", data: augmentationStatus(ns, now) },
     { key: "system", label: "System", data: systemStatus(ns, now) },
   ]
@@ -291,7 +333,7 @@ function buildDisplay(ns, state, pos) {
   for (const section of sections) {
     const isExpanded = state.expanded === section.key
     const indicator = isExpanded ? "▼" : "▶"
-    const keyHint = { mcp: "hm", darknet: "hd", cct: "hc", aug: "ha", system: "hs" }[section.key]
+    const keyHint = { mcp: "hm", darknet: "hd", cct: "hc", ipvgo: "hg", aug: "ha", system: "hs" }[section.key]
     const hint = COLORS.DIMMED + `[${keyHint}]` + COLORS.RESET
     const sectionHeader = COLORS.SECTION + `${indicator} ${section.label}` + COLORS.RESET
     const compactLine = sectionHeader + " " + section.data.compact + " " + hint

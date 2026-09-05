@@ -2,7 +2,17 @@
 
 **New unified dashboard** replacing mcp_money.js, dnet_scorecard.js, ops_hud.js.
 
-Single compact panel showing MCP, Darknet, Augmentation, and System status. Click sections to expand/collapse for details.
+Single compact panel showing MCP, Darknet, Contracts, IPvGO, Augmentation, and
+System status (Contracts added 2026-09-02, IPvGO added 2026-09-05 — this doc
+went stale for a while and is corrected as of the IPvGO addition).
+
+**Toggle sections via `hud_toggle.js`, not by clicking.** The panel's own
+doc comment mentions a background click detector
+(`hud_click_monitor.js`) that would let you click a section header to
+expand/collapse it — that file doesn't exist anywhere in this repo (never
+built, not in `sync_manifest.json`), so `ns.run("hud_click_monitor.js", 1)`
+in `hud_consolidated.js` always silently fails its own try/catch. Section
+toggling only actually works via the terminal command below.
 
 ---
 
@@ -24,6 +34,8 @@ Shows 1 line per system with key metrics:
 ```
 MCP ✓  2.8m/min  target: foo
 Darknet ⏸  PAUSED
+Contracts  42 accepted 95% success
+IPvGO ✓  9x9 The Black Hand 67% (3g)
 Aug +850 XP/min → next in 2h 14m
 System  API ✓  MCP ✓
 ```
@@ -51,19 +63,27 @@ MCP ✓  2.8m/min  target: foo
 
 ## Toggling Sections
 
-**From terminal** (quick toggle):
+**From terminal** (this is the only way — see the click-detector note
+above):
 ```javascript
 run hud_toggle.js mcp       // Expand/collapse MCP
 run hud_toggle.js darknet
+run hud_toggle.js cct
+run hud_toggle.js ipvgo
 run hud_toggle.js aug
 run hud_toggle.js system
 run hud_toggle.js none      // Collapse all
 ```
 
+Short forms also work (`run hud_toggle.js g` toggles IPvGO, etc. — see
+`hud_toggle.js`'s own header comment for the full short-name list).
+
 **Create aliases** for quick access:
 ```javascript
 alias hud-mcp="run hud_toggle.js mcp"
 alias hud-dnet="run hud_toggle.js darknet"
+alias hud-cct="run hud_toggle.js cct"
+alias hud-go="run hud_toggle.js ipvgo"
 alias hud-aug="run hud_toggle.js aug"
 alias hud-sys="run hud_toggle.js system"
 ```
@@ -90,6 +110,33 @@ Then just type: `hud-mcp` to toggle MCP expanded view.
 - Darknet state
 - Manager count & details
 - Registry entry count
+
+### Contracts
+**Compact:** Total accepted, success rate  
+**Expanded:**
+- Total contracts (accepted/failed breakdown)
+- Success rate (overall and Claude-solver-specific, when tracked)
+- Cumulative cash from rewards
+- Top faction reputation reward seen
+
+### IPvGO
+**Compact:** Running/stopped, board size, target faction (⚠ if not a
+member — see below), rolling win rate  
+**Expanded:**
+- Algorithm generation tag (bumps whenever the search itself changes —
+  see `docs/ipvgo-strategy.md`)
+- Target faction/board size, and whether you're currently a member (the
+  win-streak favor payout needs membership; territory-based stat bonuses
+  don't)
+- Lifetime record, rolling win rate, current streak
+- Last game's result and average move time
+- Favor/reputation and stat-multiplier bonus from `ns.go.analysis.getStats()`
+
+Uses a much longer staleness window (45 minutes) than every other
+section — `ipvgo_player.js` only writes its status file at the start/end
+of each game, not every move, so a single game can easily run past the
+5-minute window every other section uses without that being a real
+problem.
 
 ### Augmentation
 **Compact:** XP rate, time to next purchase  
@@ -118,7 +165,10 @@ run hud_consolidated.js x=100 y=200 w=400 h=300
 - `w`, `h`: Window width/height in pixels
 
 ### Default Position
-Bottom-right corner (900, 600) with 320×240 size.
+Top-left corner (0, 0), resolution-agnostic, with 360×280 size — corrected
+2026-09-05; this doc previously (and incorrectly) said bottom-right
+(900, 600) with 320×240, which doesn't match `hud_consolidated.js`'s own
+`DEFAULT_X`/`DEFAULT_Y`/`DEFAULT_W`/`DEFAULT_H` constants.
 
 ---
 

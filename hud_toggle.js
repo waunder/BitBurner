@@ -4,6 +4,7 @@
  *   hm   # Toggle MCP
  *   hd   # Toggle Darknet
  *   hc   # Toggle Contracts
+ *   hg   # Toggle IPvGO
  *   ha   # Toggle Augmentation
  *   hs   # Toggle System
  *   hn   # Collapse all
@@ -12,6 +13,7 @@
  *   run hud_toggle.js m
  *   run hud_toggle.js d
  *   run hud_toggle.js c
+ *   run hud_toggle.js g
  *   run hud_toggle.js a
  *   run hud_toggle.js s
  *   run hud_toggle.js n
@@ -25,17 +27,18 @@ export async function main(ns) {
     m: "mcp",
     d: "darknet",
     c: "cct",
+    g: "ipvgo",
     a: "aug",
     s: "system",
     n: "none",
   }
 
   const section = shortMap[arg] || arg
-  const valid = ["mcp", "darknet", "cct", "aug", "system", "none"]
+  const valid = ["mcp", "darknet", "cct", "ipvgo", "aug", "system", "none"]
 
   if (!valid.includes(section)) {
     ns.tprint(`Invalid section: ${arg}`)
-    ns.tprint(`Valid: m(cp), d(arknet), c(ct), a(ug), s(ystem), n(one-collapse)`)
+    ns.tprint(`Valid: m(cp), d(arknet), c(ct), g(o/ipvgo), a(ug), s(ystem), n(one-collapse)`)
     return
   }
 
@@ -48,6 +51,7 @@ export async function main(ns) {
       mcp: "MCP",
       darknet: "Darknet",
       cct: "Contracts",
+      ipvgo: "IPvGO",
       aug: "Augmentation",
       system: "System",
       none: "all",

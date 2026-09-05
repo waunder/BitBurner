@@ -1,6 +1,38 @@
 # Claude's working list
 
-## 2026-09-05 (latest): thinking budget doubled to 20s after Ken confirmed zero freeze twice live
+## 2026-09-05 (latest): IPvGO section added to the consolidated HUD; caught the guide doc going stale
+
+Ken asked to add an IPvGO section to `hud_consolidated.js`. Straightforward
+addition following the existing section pattern (`ipvgoStatus(ns, now)`,
+registered in `buildDisplay`'s section list, key hint `hg`), with one real
+design decision: `ipvgo_player.js` only writes `ipvgo_status.json` at game
+start/end, not every move (unlike `mcp_status.json`'s per-tick writes), and
+at the current 20s/move thinking budget a single game can run well past
+the 5-minute staleness window every other section uses. Used a 45-minute
+window for this section specifically rather than copying the 5-minute
+pattern blindly — a shorter window would falsely flag a perfectly healthy
+mid-game process as STOPPED. Also updated `hud_toggle.js` (the only actual
+way to expand/collapse a section — see below) to recognize the new
+`ipvgo`/`g` section.
+
+**Also found while doing this, fixed in passing**:
+`docs/hud-consolidated-guide.md` had drifted in three ways, none related
+to today's change: (1) it claimed clicking a section header toggles it,
+but `hud_click_monitor.js` (the click detector `hud_consolidated.js` tries
+to launch) doesn't exist anywhere in this repo — toggling only ever worked
+via the `hud_toggle.js` terminal command; (2) it never documented the
+Contracts section at all (added 2026-09-02, three days before this doc
+apparently stopped being updated); (3) it claimed a bottom-right
+(900, 600)/320×240 default position, which doesn't match
+`hud_consolidated.js`'s own `DEFAULT_X`/`Y`/`W`/`H` constants (top-left
+0,0, 360×280). All three corrected.
+
+Full suite 235/235 (no logic under test here, HUD scripts aren't unit
+tested in this repo — `node --check` clean on both files). Needs a
+restart to actually show live — see `docs/kensTodo.md` — but it's
+cosmetic/additive, not urgent.
+
+## 2026-09-05: thinking budget doubled to 20s after Ken confirmed zero freeze twice live
 
 Quick follow-up to the RAVE entry below, same day. Ken restarted twice to
 verify: v3→v4 confirmed via `ipvgo_status.json`'s `algorithm` field each

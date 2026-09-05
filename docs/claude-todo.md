@@ -1,6 +1,28 @@
 # Claude's working list
 
-## 2026-09-05 (latest): IPvGO section added to the consolidated HUD; caught the guide doc going stale
+## 2026-09-05 (latest): "not a member" warning confirmed working as intended, not a bug
+
+Ken reported the new HUD/status `isFactionMember: false` warning for The
+Black Hand as incorrect after restarting the HUD. Investigated live rather
+than assuming either side: pulled `ipvgo_status.json` directly and
+confirmed `isFactionMember: false` really was what the running
+`ipvgo_player.js` (v5, same process, `gamesPlayed` climbing normally) had
+computed — not a stale HUD read, since the HUD only displays what that
+file already says. Also noticed `favorRep: 1500` in the same pull, which
+requires the win-streak favor conversion to have actually fired at some
+point, meaning membership was genuinely true earlier in this same run.
+
+Ken's own explanation, given directly: he installed augmentations, which
+resets faction memberships in Bitburner (independent of anything in this
+script) — exactly the same mechanism already seen with Netburners earlier
+today (`docs/ipvgo-strategy.md`'s "reputation is the real goal" section).
+**Confirmed working as designed, not a bug**: `checkFactionMembership` is
+supposed to reflect real-time membership at each script startup, and
+correctly did. No code change needed. Worth remembering for any future
+"why does the HUD say not a member" report: check for a recent
+augmentation install before assuming the check itself is wrong.
+
+## 2026-09-05: IPvGO section added to the consolidated HUD; caught the guide doc going stale
 
 Ken asked to add an IPvGO section to `hud_consolidated.js`. Straightforward
 addition following the existing section pattern (`ipvgoStatus(ns, now)`,

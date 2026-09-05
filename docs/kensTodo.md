@@ -10,16 +10,24 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
 
 ## Pending
 
-- [ ] **Restart `ipvgo_player.js` again to pick up RAVE/AMAF (2026-09-05,
-  same day as the freeze fix).** `run ipvgo_player.js` — no args needed
-  now, it'll continue The Black Hand/9x9 automatically (the size you
-  already switched to). Bitburner doesn't hot-reload, so the currently-
-  running process is still on `mcts-ucb1-v3` (pre-RAVE) even though it's
-  already on the right board size. Once restarted, `ipvgo_status.json`
-  should show `algorithm: "mcts-ucb1-v4"`; worth watching the win rate over
-  the next several dozen games to see whether it actually recovers from
-  the 4.3% seen at 13x13 — see `docs/ipvgo-strategy.md`'s 2026-09-05
-  sections for the full story.
+- [ ] **Restart `ipvgo_player.js` once more to pick up the doubled thinking
+  budget (2026-09-05, same day as RAVE).** `run ipvgo_player.js` — no args
+  needed, continues The Black Hand/9x9 automatically. Once restarted,
+  `ipvgo_status.json` should show `algorithm: "mcts-ucb1-v5"` and
+  `avgMoveMs` around 20 seconds (up from ~10s). This one's for search
+  depth, not correctness — v4 is already running and playing fine (2/3
+  won) — so no rush, just whenever convenient.
+
+- [x] **Restart `ipvgo_player.js` to pick up RAVE/AMAF — done and confirmed
+  live 2026-09-05.** Took two attempts: the first restart raced the file
+  sync (the game's own copy of `ipvgo_player.js` genuinely hadn't finished
+  updating yet — confirmed by pulling its live content directly, not just
+  re-checking status) and came back up still on `mcts-ucb1-v3`. Second
+  restart confirmed `algorithm: "mcts-ucb1-v4"`, fresh rolling window
+  (`gamesPlayed: 0` as designed), then 2 wins in the first 3 games (66.7%,
+  tiny sample) — a promising jump from v3's 4.3% at 13x13, though far too
+  early to call. Ken also confirmed live, twice, no sign of interface
+  freezing at all while watching it play.
 
 - [ ] **Not urgent — restart `maintenance_steward.js` (or the full
   `startup.js` suite) whenever convenient, to pick up 2026-09-05's expanded

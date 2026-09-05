@@ -68,6 +68,32 @@ rate (none yet as of this writing). If it's still weak, `DEFAULT_RAVE_EQUIVALENC
 first knob to revisit before reaching for a structurally different
 approach.
 
+## 2026-09-05 (later still): thinking budget doubled, algorithm tag bumped to v5
+
+Live confirmation, twice: Ken watched actual games and reported "No sign of
+bb interface freezing" (right after the freeze fix landed) and then, later
+the same day, "No signs whatsoever of bb interface freezing" again while
+also directly encouraging the search to "go deeper" — the freeze fix means
+there is genuinely no UI cost to spending more time thinking, so the only
+reason not to had been caution, not evidence.
+
+Profiled before changing anything (RAVE now included): 9x9 does ~1388
+simulations/sec, running 13,912 sims in a 10-second budget without ever
+reaching the (then) 20,000-sim ceiling — confirmation that the 10-second
+`TARGET_THINK_MS` really was the binding constraint, not simulation count,
+so doubling it genuinely buys more search rather than hitting an invisible
+cap. `TARGET_THINK_MS` 10000 → 20000ms, `MAX_SIMULATIONS` 20000 → 40000
+(raised in step so it doesn't become the new binding constraint — at the
+profiled rate, 20s of 9x9 search reaches ~27,760 sims, comfortably under
+the new 40,000 cap). `algorithm` tag bumped `mcts-ucb1-v4` → `mcts-ucb1-v5`
+— only 3 games had accumulated under v4 (a promising 2/3, but far too
+small a sample to matter), so the reset costs almost nothing.
+
+**Not yet live-confirmed**: the new pace/depth combination. Watch
+`ipvgo_status.json`'s `avgMoveMs` after the next restart — should land
+somewhere around 20 seconds plus fixed overhead — and, over a real sample,
+whether win rate actually improves further from wherever v4 alone landed.
+
 ## 2026-09-05: browser-freeze root cause found and fixed; time-budgeted search
 
 Ken's own framing: results against tougher opponents needed improvement,

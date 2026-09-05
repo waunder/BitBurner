@@ -157,8 +157,14 @@ import { createMctsSearch, computeOpeningMoveStats } from "ipvgo_logic.js"
 // Hard ceiling on total simulations regardless of board size or elapsed
 // time -- a safety valve, not the primary budget (see TARGET_THINK_MS
 // below). Prevents burning the whole time budget on redundant search once a
-// small/fast board's search has clearly converged.
-const MAX_SIMULATIONS = 20000
+// small/fast board's search has clearly converged. Raised alongside
+// TARGET_THINK_MS below (2026-09-05, same day as the RAVE addition) so it
+// doesn't quietly become the *new* binding constraint: profiling with RAVE
+// measured ~1388 sims/sec on 9x9, so the doubled 20000ms budget below would
+// reach ~27,760 sims -- comfortably under the old 20000 ceiling, which
+// would have started capping the search exactly when the point was to let
+// it go deeper.
+const MAX_SIMULATIONS = 40000
 
 // Wall-clock thinking budget per move, replacing the old fixed
 // NUM_SIMULATIONS (see this file's own "Timing" header section above for
@@ -168,22 +174,22 @@ const MAX_SIMULATIONS = 20000
 // CHUNK_MS below) -- so this can be tuned for search strength rather than
 // for staying under some now-irrelevant per-move latency ceiling.
 //
-// 10000ms, not the more conservative 5000 first tried: local profiling
-// (node, this session) of createMctsSearch on a synthetic empty 13x13
-// board -- the actual board size/opponent this bump matters for -- measured
-// ~595 simulations/sec (2984 sims in 5014ms of chunked runIterationsForMs
-// calls, max single chunk 57ms). At 5000ms that's under half the old
-// (blocking, 11.7s/move) 6000-sim budget -- eliminating the freeze while
-// quietly *weakening* the search wouldn't be the right trade given this
-// task's own "strengthen against tougher opponents" goal. 10000ms instead
-// lands close to or above the old 6000-sim depth (~5950 sims at this
-// profiled rate) while every individual chunk still stays under ~60ms --
-// still zero perceptible blocking, just a slower-paced game in real time
-// (unattended background play, so this is a non-issue). Turn this down
-// first if that trade turns out wrong; the sim-quality lever is
-// CHUNK_MS/MAX_SIMULATIONS, not this one. Needs live moveMs/win-rate
-// confirmation like every timing number in this file's history.
-const TARGET_THINK_MS = 10000
+// 10000ms was the first value tried (see git history for the original
+// profiling that picked it, against a pre-RAVE 13x13 baseline). Doubled to
+// 20000ms on 2026-09-05, same day RAVE was added, after Ken confirmed live
+// -- twice, watching actual games -- "No signs whatsoever of bb interface
+// freezing" and directly asked to let the search go deeper, since the
+// freeze fix means there is no longer any UI-responsiveness cost to
+// spending more time here: only real-world pace (unattended background
+// play, so a non-issue) and the MAX_SIMULATIONS ceiling above, raised in
+// step. Confirmed via profiling (RAVE, this session): 9x9 does ~1388
+// sims/sec (not ceiling-bound at the old 20000 cap even at 10s -- i.e. the
+// prior 10000ms value really was the binding constraint, not simulation
+// count, so doubling this genuinely buys more search rather than hitting
+// an invisible ceiling). Needs live moveMs/win-rate confirmation like
+// every timing number in this file's history -- turn this down first if
+// the real-time pace turns out to matter more than expected.
+const TARGET_THINK_MS = 20000
 
 // How long a single uninterrupted burst of MCTS iterations is allowed to
 // run before yielding back to the browser via `await ns.sleep(0)` -- this
@@ -231,7 +237,14 @@ const CHUNK_MS = 40
 // writeup); v3's window was produced entirely without it, so blending its
 // games in would misattribute any change to the wrong cause, same
 // reasoning as every prior bump.
-const ALGORITHM = "mcts-ucb1-v4"
+//
+// Bumped again, "mcts-ucb1-v4" -> "mcts-ucb1-v5" (2026-09-05, still the
+// same day), alongside doubling TARGET_THINK_MS/MAX_SIMULATIONS above --
+// only 3 games had accumulated under v4 at this point (a promising 2/3,
+// but nowhere near enough to matter), so resetting the window here costs
+// almost nothing while keeping the same "don't blend generations"
+// discipline as every prior bump.
+const ALGORITHM = "mcts-ucb1-v5"
 
 // How many recent game outcomes to keep for the rolling win rate.
 const RECENT_GAMES_WINDOW = 100

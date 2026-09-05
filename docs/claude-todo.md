@@ -1,6 +1,31 @@
 # Claude's working list
 
-## 2026-09-05 (latest): IPvGO win rate collapsed at 13x13 (3/70 games) -- dropped to 9x9, added RAVE/AMAF
+## 2026-09-05 (latest): thinking budget doubled to 20s after Ken confirmed zero freeze twice live
+
+Quick follow-up to the RAVE entry below, same day. Ken restarted twice to
+verify: v3→v4 confirmed via `ipvgo_status.json`'s `algorithm` field each
+time (one restart raced the file sync and needed a second try — the game's
+copy of `ipvgo_player.js` genuinely wasn't updated yet the first time,
+confirmed by pulling the live file content directly, not just re-checking
+status). Once v4/RAVE was actually running: 2/3 games won (promising, tiny
+sample), then Ken watched it play live and reported, twice, no sign of
+interface freezing at all, and directly asked to let the search go deeper
+now that there's no UI cost to it.
+
+Profiled first rather than guessing: RAVE-included 9x9 does ~1388 sims/sec,
+using only ~13,912 of the old 20,000-sim ceiling in the old 10-second
+budget — confirmed the time budget, not the sim cap, was the actual
+constraint. Doubled `TARGET_THINK_MS` to 20000ms and raised
+`MAX_SIMULATIONS` to 40000 in step (so it doesn't become the new ceiling).
+`algorithm` bumped `mcts-ucb1-v4` → `mcts-ucb1-v5` (only 3 games existed
+under v4, negligible cost to reset). Full suite 235/235 (no logic changes,
+just player-side constants).
+
+**Not yet live-confirmed**: the new 20s pace, or whether win rate improves
+further from wherever v4 alone landed. Needs a restart to take effect —
+see `docs/kensTodo.md`.
+
+## 2026-09-05: IPvGO win rate collapsed at 13x13 (3/70 games) -- dropped to 9x9, added RAVE/AMAF
 
 Follow-up to the freeze-fix entry below, same day. Once the freeze fix let
 the search run its full ~10s thinking budget without blocking anything,

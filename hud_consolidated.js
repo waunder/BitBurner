@@ -217,17 +217,28 @@ function cctStatus(ns, now) {
   const ledger = json(ns, "cct_reward_ledger.json")
   if (!ledger) return { compact: "-- unavailable", expanded: [] }
 
-  // Calculate all-time stats
-  let totalAccepted = ledger.openingBalance?.accepted || 0
+  // openingBalance.accepted counts contracts solved *before* this
+  // per-submission ledger existed -- by definition all successes (the
+  // field is literally named "accepted"; there's no historical failure
+  // count from before the ledger, and there couldn't be one). Both
+  // totalAttempted and successful start from it, so that historical
+  // window contributes symmetrically to numerator and denominator instead
+  // of only ever diluting the success rate downward. Fixed 2026-09-05:
+  // the old code started `successful` at 0 while `totalAccepted` started
+  // at openingBalance.accepted, which is how 12 real historical
+  // successes plus one single newly-solved contract produced a
+  // nonsensical "8% success" reading (1 success counted out of 13
+  // "accepted," rather than 13 out of 13) -- see docs/claude-todo.md.
+  let totalAttempted = ledger.openingBalance?.accepted || 0
+  let successful = ledger.openingBalance?.accepted || 0
   let totalCash = ledger.openingBalance?.cash || 0
   let totalReps = { ...(ledger.openingBalance?.factionRep || {}) }
-  let successful = 0
   let failed = 0
   let claudeSuccess = 0
   let claudeTotal = 0
 
   for (const entry of ledger.entries || []) {
-    totalAccepted++
+    totalAttempted++
     if (entry.ok) {
       successful++
       // Track solver if present
@@ -255,13 +266,13 @@ function cctStatus(ns, now) {
     }
   }
 
-  const successRate = totalAccepted > 0 ? ((successful / totalAccepted) * 100).toFixed(0) : "0"
+  const successRate = totalAttempted > 0 ? ((successful / totalAttempted) * 100).toFixed(0) : "0"
   const claudeRate = claudeTotal > 0 ? ((claudeSuccess / claudeTotal) * 100).toFixed(0) : "--"
 
   return {
-    compact: `${totalAccepted} accepted ${successRate}% success`,
+    compact: `${successful}/${totalAttempted} solved ${successRate}%`,
     expanded: [
-      `Total: ${totalAccepted} contracts (${successful}✓ ${failed}✗)`,
+      `Total: ${totalAttempted} attempted (${successful}✓ ${failed}✗)`,
       `Success rate: ${successRate}%${claudeTotal > 0 ? ` (Claude: ${claudeRate}%)` : ""}`,
       `Cash: ${compact(totalCash, 2)}`,
       `Top rep: ${Object.entries(totalReps).sort((a, b) => b[1] - a[1])[0]?.[0] || "--"} ${compact(Object.values(totalReps)[0] || 0)}`,

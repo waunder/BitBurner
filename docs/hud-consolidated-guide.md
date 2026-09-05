@@ -34,7 +34,7 @@ Shows 1 line per system with key metrics:
 ```
 MCP ✓  2.8m/min  target: foo
 Darknet ⏸  PAUSED
-Contracts  42 accepted 95% success
+Contracts  40/42 solved 95%
 IPvGO ✓  9x9 The Black Hand 67% (3g)
 Aug +850 XP/min → next in 2h 14m
 System  API ✓  MCP ✓
@@ -112,12 +112,19 @@ Then just type: `hud-mcp` to toggle MCP expanded view.
 - Registry entry count
 
 ### Contracts
-**Compact:** Total accepted, success rate  
+**Compact:** Solved/attempted, success rate  
 **Expanded:**
-- Total contracts (accepted/failed breakdown)
+- Total attempted (solved/failed breakdown)
 - Success rate (overall and Claude-solver-specific, when tracked)
 - Cumulative cash from rewards
 - Top faction reputation reward seen
+
+Success rate counts `cct_reward_ledger.json`'s pre-ledger
+`openingBalance.accepted` figure as successes in both the numerator and
+denominator (fixed 2026-09-05 — it used to only count it in the
+denominator, which made the rate look far worse than reality, e.g. a
+single new success alongside 12 historical ones read as "8%" instead of
+the true 100%).
 
 ### IPvGO
 **Compact:** Running/stopped, board size, target faction (⚠ if not a

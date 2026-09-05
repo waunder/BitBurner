@@ -1,6 +1,41 @@
 # Claude's working list
 
-## 2026-09-05 (latest): faction membership check tightened again -- per-game still wasn't responsive enough
+## 2026-09-05 (latest): the "8% cct success rate" was a HUD math bug, not a solver problem
+
+Ken flagged the consolidated HUD's Contracts section reporting an 8%
+success rate and asked to turn attention back to cct. Investigated live
+before assuming any of the just-shipped new solvers were producing wrong
+answers: pulled `cct_reward_ledger.json` directly. It has exactly one
+tracked entry (`Total Ways to Sum II`, `ok: true`) plus
+`openingBalance.accepted: 12` (historical successes from before the
+per-submission ledger existed). Every known contract attempt, ever, has
+succeeded -- there is no evidence of a real solving problem at all.
+
+Root cause of the "8%" reading: `hud_consolidated.js`'s `cctStatus()`
+started its denominator (`totalAccepted`, now renamed `totalAttempted`)
+from `openingBalance.accepted` (12) but started its numerator
+(`successful`) at 0, only ever incrementing it for entries in the
+per-submission `entries` array. That meant the historical 12 successes
+counted toward "how many contracts existed" but never toward "how many
+succeeded" -- 12 + 1 = 13 attempted, only the 1 new entry ever credited as
+a success, giving 1/13 ≈ 8%. `cct_hud.js` (the older, separate standalone
+panel) already handles this correctly -- its own `totals()` starts both
+counters from `openingBalance.accepted` symmetrically -- so this was a bug
+specific to the newer `hud_consolidated.js` implementation, introduced
+independently rather than copied from a shared source.
+
+Fixed: `successful` now starts from `openingBalance.accepted` too, same as
+`totalAttempted`, since "accepted" is definitionally a success and there's
+no way to have a historical failure count from before failures were even
+tracked. Recomputed: 13/13 = 100%, matching the actual, unbroken record.
+Also relabeled the compact/expanded lines (`"N accepted"` → `"N/M solved"`,
+`"Total: N contracts"` → `"Total: N attempted"`) since the old wording
+called every tracked attempt "accepted" even when it had failed.
+
+`node --check` clean, full suite 235/235 (no logic-module changes, HUD
+script only, not unit tested in this repo).
+
+## 2026-09-05: faction membership check tightened again -- per-game still wasn't responsive enough
 
 Ken: "still a false negative on The Black Hand," after the per-game recheck
 fix below had already been live for at least one full game boundary

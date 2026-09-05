@@ -560,6 +560,12 @@ export async function main(ns) {
   // data computeOpeningMoveStats builds its win-rate-per-opening-move
   // table from. null until the first successful makeMove of a fresh game.
   let openingMove = null
+  // Tracks whatever `lastResult` was most recently written, purely so the
+  // out-of-band membership-change write below (which fires mid-game, not
+  // just at a game boundary) can reuse it instead of clobbering the field
+  // with something wrong -- writeStatus's `lastResult` means "the last
+  // *completed* game," and an out-of-band write isn't reporting a new one.
+  let lastRecordedResult = null
   ns.tprint(
     `ipvgo_player: resuming this algorithm's own record: ${wins}/${gamesPlayed} lifetime, ` +
       `${recentGames.length} game(s) in the rolling window.`
@@ -577,6 +583,35 @@ export async function main(ns) {
 
   while (true) {
     try {
+      // Re-checked every loop iteration (roughly once per move during
+      // active play, more often while polling between games), not just
+      // once per new game -- confirmed live 2026-09-05 that the
+      // once-per-game version still lagged badly: the recheck happened at
+      // a new game's start, but nothing was actually *written* until that
+      // whole game finished, so a membership change could take up to two
+      // full games (the one in progress when it changed, plus the next
+      // one) to ever appear in ipvgo_status.json. The check itself is
+      // free (0GB, `ns.getPlayer()`), so there's no real cost to just
+      // checking constantly and writing the instant it actually changes,
+      // instead of trying to pick the "right" checkpoint at all.
+      const freshFactionMember = checkFactionMembership(ns, opponent)
+      if (freshFactionMember !== isFactionMember) {
+        ns.tprint(
+          `ipvgo_player: faction membership for ${opponent} changed -- now ${freshFactionMember === true ? "a member" : "not a member"}.`
+        )
+        isFactionMember = freshFactionMember
+        writeStatus(ns, {
+          gamesPlayed,
+          wins,
+          recentGames,
+          opponent,
+          size,
+          lastResult: lastRecordedResult,
+          opponentLifetime: readOpponentStats(ns, opponent),
+          isFactionMember,
+        })
+      }
+
       if (ns.go.getCurrentPlayer() === "None") {
         const state = ns.go.getGameState()
         const hadAGame = observedActiveGame || state.whiteScore > 0 || state.blackScore > 0
@@ -594,19 +629,20 @@ export async function main(ns) {
               `rolling last ${recentGames.length}: ${(recentWinRate * 100).toFixed(1)}%. ` +
               `avg/max move time ${avgMoveMs?.toFixed(0) ?? "?"}/${moveMsMax}ms.`
           )
+          lastRecordedResult = {
+            won,
+            blackScore: state.blackScore,
+            whiteScore: state.whiteScore,
+            avgMoveMs,
+            maxMoveMs: moveMsMax || null,
+          }
           writeStatus(ns, {
             gamesPlayed,
             wins,
             recentGames,
             opponent,
             size,
-            lastResult: {
-              won,
-              blackScore: state.blackScore,
-              whiteScore: state.whiteScore,
-              avgMoveMs,
-              maxMoveMs: moveMsMax || null,
-            },
+            lastResult: lastRecordedResult,
             opponentLifetime: readOpponentStats(ns, opponent),
             isFactionMember,
           })
@@ -617,17 +653,6 @@ export async function main(ns) {
         observedActiveGame = false
         openingMove = null
         ns.go.resetBoardState(opponent, size)
-        // Re-check membership for the game about to start, not just once
-        // at process startup (see isFactionMember's own comment above) --
-        // a cheap (0GB) call, and the natural point to refresh it: a
-        // player joining/leaving mid-game wouldn't retroactively change
-        // that game's own reward anyway, so "once per new game" already
-        // matches the game's own real granularity.
-        const wasFactionMember = isFactionMember
-        isFactionMember = checkFactionMembership(ns, opponent)
-        if (isFactionMember !== wasFactionMember) {
-          ns.tprint(`ipvgo_player: faction membership for ${opponent} changed -- now ${isFactionMember === true ? "a member" : "not a member"}.`)
-        }
         ns.tprint(`ipvgo_player: new subnet vs ${opponent}, ${size}x${size}.`)
         await ns.sleep(200)
         continue

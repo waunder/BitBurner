@@ -334,13 +334,25 @@ cause: nothing in the running process ever re-evaluated membership after
 startup, so a real membership change mid-run had no way to surface until
 the next full restart.
 
-**Fixed**: `isFactionMember` re-checks once per new game (right after
-`ns.go.resetBoardState`, the natural game-boundary this script already
-has) instead of only at process startup — cheap (0GB, once per game not
-once per move) and logs a line when it actually changes. Needs one more
-restart to pick up this code change itself, same hot-reload limitation as
-always, but after that a future faction join/leave will be reflected at
-the start of the next game with no restart needed for that specifically.
+**First fix**: `isFactionMember` re-checked once per new game (right after
+`ns.go.resetBoardState`) instead of only at process startup. **Still not
+responsive enough** — Ken reported "still a false negative" after this had
+already been live across at least one full game boundary. The actual
+latency: the recheck happened at a new game's *start*, but nothing was
+*written* to the status file until that same game *ended* — so a real
+membership change could take up to two full games (the one already in
+progress, plus the entire next one) before appearing anywhere, plausibly
+20-40+ minutes at the current 20s/move pace. Not a second bug, a design gap
+in *when the check gets surfaced*, not in the check itself.
+
+**Actual fix**: dropped the "per new game" framing — the check now runs
+every loop iteration (roughly once per move during active play, more often
+while polling between games) and writes the status file the instant it
+actually changes. The check is free (`ns.getPlayer()`, 0GB), so there was
+never a real reason to ration it to any particular checkpoint; that
+framing solved a compute-cost problem that didn't exist while leaving the
+real one (write latency) in place. Needs one more restart to pick up this
+code change, same hot-reload limitation as always.
 
 ### Next steps, in order
 

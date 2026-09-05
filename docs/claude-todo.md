@@ -1,6 +1,35 @@
 # Claude's working list
 
-## 2026-09-05 (latest): faction membership now re-checked per game, not just once at startup
+## 2026-09-05 (latest): faction membership check tightened again -- per-game still wasn't responsive enough
+
+Ken: "still a false negative on The Black Hand," after the per-game recheck
+fix below had already been live for at least one full game boundary
+(`ipvgo_status.json`'s `gamesPlayed` had genuinely incremented since the
+fix shipped). Investigated the actual latency the once-per-game design
+had, rather than assuming a new bug: the recheck ran at a new game's
+*start*, but nothing was ever *written* to the status file until that same
+game *ended* — so a membership change could take up to two full games (the
+one already in progress when it changed, plus the entire next one) before
+ever showing up anywhere. At the current 20s/move pace on 9x9, that's
+plausibly 20-40+ minutes of apparent staleness for a change that already
+happened. Not a bug in the check itself, but a real design gap in how
+often it was surfaced.
+
+Fixed by dropping the "per new game" framing entirely: the check now runs
+every loop iteration (roughly once per move during active play, more often
+while polling between games) and writes the status file immediately the
+instant it actually changes, rather than waiting for any particular
+checkpoint. The check itself is free (`ns.getPlayer()`, 0GB, no Source-File
+gate), so there was never a real reason to ration it to once per game --
+that framing solved the wrong problem (compute cost, which was never the
+issue) while leaving the actual one (write latency) unaddressed. Added
+`lastRecordedResult` tracking so this out-of-band write can correctly
+reuse "last completed game" data instead of clobbering it.
+
+Needs one more restart (Bitburner doesn't hot-reload). `node --check`
+clean, full suite 235/235 (player-script only).
+
+## 2026-09-05: faction membership now re-checked per game, not just once at startup
 
 Follow-up to the entry below, same day. Ken rejoined The Black Hand after
 the augmentation-install-triggered membership loss, but the HUD/status

@@ -1,17 +1,72 @@
 # IPvGO strategy
 
-> **Status, 2026-09-05:** live and active; the freeze fix below is
-> **live-confirmed**, not just locally profiled — Ken, watching a real game
-> against The Black Hand on 13x13 (the exact board that had the problem):
-> "No sign of bb interface freezing. Your diagnosis is solid!" Measured
-> `avgMoveMs`/`maxMoveMs` 6100/8351ms, down from the pre-fix
-> 11,721/13,591ms. The 2026-08-18 "disabled after repeated responsiveness
-> incidents" banner that stood here before today was itself stale —
-> `ipvgo_status.json` showed 12,700+ lifetime games under `mcts-ucb1-v2`
-> alone, so play had continued after that note was written without the doc
-> being corrected; `AGENTS.md`'s stop-list no longer lists IPvGO either.
-> Historical "live"/"disabled" wording further down is the record of what
-> happened when, not current status; this banner is.
+> **Status, 2026-09-05:** live and active. Freeze fix **live-confirmed**
+> (Ken, watching a real game against The Black Hand on 13x13: "No sign of
+> bb interface freezing. Your diagnosis is solid!" — `avgMoveMs`/`maxMoveMs`
+> down from 11,721/13,591ms to 6100/8351ms). Separately, a 70-game live
+> sample under that same fix then showed only 3 wins against The Black Hand
+> on 13x13 — a real algorithmic weakness the freeze fix alone didn't
+> address. Board size dropped to 9x9 (Ken's call) and RAVE/AMAF added
+> (`ipvgo_logic.js`'s own header has the full citation and writeup) as the
+> two responses — see the new section below. The 2026-08-18 "disabled after
+> repeated responsiveness incidents" banner that stood here before today
+> was itself stale — `ipvgo_status.json` showed 12,700+ lifetime games
+> under `mcts-ucb1-v2` alone, so play had continued after that note was
+> written without the doc being corrected; `AGENTS.md`'s stop-list no
+> longer lists IPvGO either. Historical "live"/"disabled" wording further
+> down is the record of what happened when, not current status; this
+> banner is.
+
+## 2026-09-05 (later): 4.3% win rate at 13x13 revealed by a large sample; dropped to 9x9, added RAVE
+
+The freeze fix above let the search run its full time budget without
+blocking anything — but the very next thing that live data showed was that
+the search itself wasn't strong enough for the board it was running on.
+`ipvgo_status.json` after 70 games under `mcts-ucb1-v3` (all against The
+Black Hand, 13x13, with the freeze fix's own consistent timing throughout —
+`avgMoveMs`/`maxMoveMs` both pinned right at the ~10-second budget): **3
+wins, 4.3% rolling win rate, current streak -2, best-ever streak against
+this opponent 0.** `favorRep: 0` — since favor only banks on consecutive
+wins, this win rate meant the reputation payout Ken specifically asked to
+farm essentially never triggered. The one loss checked in detail (75 vs
+92.5, holding 44% of a 169-point board) wasn't a shutout-collapse — this
+wasn't the already-fixed 2026-08-11 whole-network-collapse bug recurring,
+it was the search consistently getting outplayed on a board too large for
+its current strength.
+
+Ken, watching it play live, asked directly whether this was "worth some web
+research and re-think," having seen fundamental flaws himself. Two things
+happened in response:
+
+1. **Board size dropped to 9x9** (`run ipvgo_player.js "The Black Hand" 9`),
+   Ken's own immediate call — a smaller board is inherently more
+   competitive for a fixed search budget, independent of any algorithm
+   change. (The game already in progress at 13x13 when this was requested
+   finished out first per this file's own "never abandon a game" rule, and
+   won, 78-76.5 — a real, close win, not a fluke blowout, pushing the
+   streak to +1 right before the switch took effect.)
+2. **RAVE/AMAF added** to the search itself — see `ipvgo_logic.js`'s own
+   2026-09-05 header section for the full citation, algorithm, a real bug
+   it caught before going live (an uninitialized `amafWins` produced `NaN`
+   scores that silently broke move selection — see that file), and the
+   measured performance cost (595 → 429 simulations/sec on 13x13, a ~28%
+   overhead from the added bookkeeping, accepted since RAVE's whole premise
+   is fewer-but-smarter simulations beating more-but-isolated ones).
+   `algorithm` tag bumped `mcts-ucb1-v3` → `mcts-ucb1-v4` so this doesn't
+   blend with the 70-game v3 sample that motivated it.
+
+**Not yet separated**: whether the eventual win-rate recovery (if any) came
+from the smaller board, RAVE, or both together, since both changed at
+close to the same time. If it's worth knowing which contributed how much,
+that would need holding one variable fixed for a stretch of games — not
+done here, since the immediate goal was fixing the win rate, not isolating
+credit.
+
+**Next**: accumulate enough `mcts-ucb1-v4`/9x9 games to read a real win
+rate (none yet as of this writing). If it's still weak, `DEFAULT_RAVE_EQUIVALENCE`
+(500, an untuned starting point per `ipvgo_logic.js`'s own comment) is the
+first knob to revisit before reaching for a structurally different
+approach.
 
 ## 2026-09-05: browser-freeze root cause found and fixed; time-budgeted search
 

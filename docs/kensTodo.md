@@ -10,6 +10,17 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
 
 ## Pending
 
+- [ ] **Restart `ipvgo_player.js` again to pick up RAVE/AMAF (2026-09-05,
+  same day as the freeze fix).** `run ipvgo_player.js` — no args needed
+  now, it'll continue The Black Hand/9x9 automatically (the size you
+  already switched to). Bitburner doesn't hot-reload, so the currently-
+  running process is still on `mcts-ucb1-v3` (pre-RAVE) even though it's
+  already on the right board size. Once restarted, `ipvgo_status.json`
+  should show `algorithm: "mcts-ucb1-v4"`; worth watching the win rate over
+  the next several dozen games to see whether it actually recovers from
+  the 4.3% seen at 13x13 — see `docs/ipvgo-strategy.md`'s 2026-09-05
+  sections for the full story.
+
 - [ ] **Not urgent — restart `maintenance_steward.js` (or the full
   `startup.js` suite) whenever convenient, to pick up 2026-09-05's expanded
   coding-contract solver coverage.** Bitburner doesn't hot-reload, so the

@@ -33,6 +33,7 @@ import {
   ucb1Score,
   computeOpeningMoveStats,
   makeRng,
+  raveScore,
 } from "./ipvgo_logic.js"
 
 // Small 5x5 test board, board[x][y] convention (x = column-string index,
@@ -372,6 +373,40 @@ describe("ucb1Score — the UCT selection formula", () => {
     const fewVisits = ucb1Score(2, 1, 50, Math.SQRT2) // 50% winrate, barely explored
     const manyVisits = ucb1Score(40, 20, 50, Math.SQRT2) // same 50%, well explored
     assert.ok(fewVisits > manyVisits)
+  })
+})
+
+describe("raveScore — RAVE/AMAF-blended selection (2026-09-05)", () => {
+  test("a never-visited, never-AMAF-credited child always scores Infinity", () => {
+    assert.equal(raveScore({ visits: 0, wins: 0 }, 100, Math.SQRT2, 500), Infinity)
+  })
+
+  // Regression test for a real bug caught this session before it ever ran
+  // live: a node whose only qualifying simulations so far were all losses
+  // left `amafWins` permanently `undefined` (only ever incremented on a
+  // win, never initialized to 0 otherwise), so `amafWins / amafVisits`
+  // evaluated to NaN -- which made selectBestChild's `score > bestScore`
+  // comparison silently fail for every child (NaN compares false against
+  // everything), returning `null` and crashing chooseBestMove. This board
+  // reproduces it directly: amafVisits > 0 but amafWins deliberately never
+  // set to anything other than its default.
+  test("never produces NaN for a child with AMAF visits but zero AMAF wins", () => {
+    const child = { visits: 1, wins: 0, amafVisits: 3, amafWins: 0 }
+    const score = raveScore(child, 13, Math.SQRT2, 500)
+    assert.ok(Number.isFinite(score), `expected a finite score, got ${score}`)
+  })
+
+  test("blends toward the AMAF estimate when real visits are few, and toward the real estimate as they grow", () => {
+    // Same real record (1 visit, 1 win -> qUct = 1.0) and same AMAF record
+    // (100 visits, 0 wins -> qAmaf = 0.0) in both cases; only the real
+    // visit count differs. RAVE's beta shrinks as real visits grow, so the
+    // low-real-visits case should be pulled down much closer to qAmaf's 0
+    // than the high-real-visits case.
+    const lowRealVisits = raveScore({ visits: 1, wins: 1, amafVisits: 100, amafWins: 0 }, 1000, 0, 500)
+    const highRealVisits = raveScore({ visits: 50000, wins: 50000, amafVisits: 100, amafWins: 0 }, 60000, 0, 500)
+    assert.ok(lowRealVisits < highRealVisits, `expected ${lowRealVisits} < ${highRealVisits}`)
+    assert.ok(lowRealVisits < 0.1) // pulled way down toward qAmaf=0
+    assert.ok(highRealVisits > 0.9) // barely pulled down from qUct=1.0 at all
   })
 })
 

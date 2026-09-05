@@ -222,7 +222,16 @@ const CHUNK_MS = 40
 // (13x13, The Black Hand) board/opponent (see this file's "Timing" header),
 // so blending its games into v3's own window would misattribute any
 // win-rate change to the wrong cause, same reasoning as both prior bumps.
-const ALGORITHM = "mcts-ucb1-v3"
+//
+// Bumped again, "mcts-ucb1-v3" -> "mcts-ucb1-v4" (2026-09-05, same day),
+// after v3's own rolling window showed only 3 wins in 70 games against The
+// Black Hand on 13x13 -- a real, large-sample signal that the search
+// itself, not just its timing, needed strengthening. Added RAVE/AMAF (see
+// ipvgo_logic.js's own header for the full citation and implementation
+// writeup); v3's window was produced entirely without it, so blending its
+// games in would misattribute any change to the wrong cause, same
+// reasoning as every prior bump.
+const ALGORITHM = "mcts-ucb1-v4"
 
 // How many recent game outcomes to keep for the rolling win rate.
 const RECENT_GAMES_WINDOW = 100
@@ -500,7 +509,7 @@ export async function main(ns) {
 
   ns.tprint(
     `ipvgo_player: starting (RAM ${ns.getScriptRam(ns.getScriptName()).toFixed(2)}GB, ` +
-      `MCTS/UCB1, up to ${MAX_SIMULATIONS} sims/move within ${TARGET_THINK_MS}ms (chunked, non-blocking), ` +
+      `MCTS/UCB1+RAVE, up to ${MAX_SIMULATIONS} sims/move within ${TARGET_THINK_MS}ms (chunked, non-blocking), ` +
       `algorithm=${ALGORITHM}). ` +
       `Target faction: ${opponent} ${size}x${size}` +
       (persistedChoice && ns.args[0] == null ? " (continuing from last run)" : "") +

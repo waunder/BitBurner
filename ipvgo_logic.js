@@ -193,6 +193,92 @@
  *   makes a capture-seeking bias expensive to compute again for the same
  *   reason. Kept simple and fast rather than clever and slow, consistent
  *   with the whole point of picking a "rudimentary" algorithm.
+ *
+ * ## 2026-09-05: RAVE/AMAF -- added after a large live sample (70 games)
+ * showed only 3 wins against The Black Hand on 13x13, despite the freeze
+ * fix (same session, see docs/ipvgo-strategy.md) letting the search run a
+ * full 10-second thinking budget per move. Ken's own framing, watching it
+ * play live: "even I can see some fundamental flaws in our go play" --
+ * asked for web research into what's actually known to help here, not
+ * another from-scratch heuristic.
+ *
+ * **What was found** (web search, this session): plain UCT with a uniform-
+ * random (or lightly-biased) playout policy is a well-documented weak
+ * combination once the board gets large enough that a fixed simulation
+ * budget only reaches a small fraction of the tree with any real
+ * confidence -- exactly this engine's situation on 9x9/13x13. The
+ * standard, well-cited fix predating this project's own MCTS upgrade:
+ * **RAVE** (Rapid Action Value Estimation), from the same Gelly & Silver
+ * paper already cited above for the opening-move prior (their third
+ * proposed technique for injecting prior knowledge into UCT is exactly
+ * this one) -- "Monte-Carlo Tree Search and Rapid Action Value Estimation
+ * in Computer Go," Artificial Intelligence 175 (2011), 1856-1875. Measured
+ * effect sizes found this session, both independent of this engine and
+ * both in 9x9 Go at simulation counts comparable to this file's own
+ * budget: one source reports MC-RAVE lifting win rate against GnuGo from
+ * ~24% (plain UCT) to 50-60%, at 3000 simulations/move; another reports
+ * RAVE winning ~70% of games against a plain-UCT baseline at 1000
+ * simulations/move. Both are exactly the shape of problem observed live
+ * here (weak win rate at a modest, realistic simulation budget), which is
+ * why this was the first lever reached for rather than, say, a different
+ * playout policy or a bigger simulation budget alone.
+ *
+ * **The idea**: standard UCT only learns a move's value from simulations
+ * where it was chosen as the *immediate* next move at that exact tree
+ * node. RAVE additionally credits a move using every simulation where that
+ * same move was played by the same color *later* in the sequence --
+ * either deeper in the tree or during the random rollout -- on the
+ * heuristic that a move's value doesn't usually depend much on exactly
+ * when in a short sequence it's played. This shares information across
+ * the whole tree instead of learning each branch in isolation, which is
+ * what lets it converge to a good estimate with far fewer real visits per
+ * node than plain UCT needs.
+ *
+ * **Implementation**: each tree node's children track `amafVisits`/
+ * `amafWins` (see `createMctsNode`/`raveScore`) alongside their normal
+ * `visits`/`wins`. Every simulation's full move sequence (the moves chosen
+ * while descending the tree, concatenated with the rollout's own moves --
+ * `runPlayout` now returns that sequence too, not just the final score) is
+ * walked once per tree node it passed through, crediting every matching
+ * sibling move. Selection blends the two estimates via Gelly & Silver's
+ * own beta schedule (`raveScore`: `beta = sqrt(k / (3*visits + k))`,
+ * `k = DEFAULT_RAVE_EQUIVALENCE`) -- trusting AMAF more when a child has
+ * few real visits, and trusting its own real record more as visits grow.
+ *
+ * **A real bug this caught before it ever ran live**: the first
+ * implementation only ever set `amafWins` inside an `if (moverWon)`
+ * branch, leaving it `undefined` for any child whose only credited
+ * simulations so far were losses -- `undefined / amafVisits` is `NaN`,
+ * which made every selection comparison silently fail (`NaN > anything`
+ * is always false) and crashed `chooseBestMove` outright once the tree got
+ * deep enough to hit it (the existing test suite's small, shallow test
+ * boards didn't reach it; a 200-simulation test on a slightly larger board
+ * did). Fixed by always initializing `amafWins` to 0 alongside
+ * `amafVisits`, whether or not that particular credit was a win. Covered
+ * by a dedicated regression test now (see `cct_logic.test.js`'s sibling
+ * file, `ipvgo_logic.test.js`'s "raveScore" describe block).
+ *
+ * **Cost, measured, not assumed**: the AMAF bookkeeping is real per-
+ * simulation overhead -- naively (a linear scan of a node's children to
+ * find a move-index match), this made a synthetic empty-13x13-board
+ * benchmark ~4.8x slower (595 -> 124 simulations/sec), because the root
+ * alone can have up to 169 children and every future move in a long
+ * rollout has to be checked against all of them. Fixed by adding a
+ * `moveIdx -> entry` map per node (`childByMove`) for O(1) lookup instead
+ * of a linear scan, bringing it back to a ~28% overhead (595 -> 429
+ * simulations/sec) -- a real, accepted cost, not a regression to chase
+ * further, since RAVE's whole premise (per the cited papers) is that a
+ * smaller number of well-shared simulations beats a larger number of
+ * independently-learned ones.
+ *
+ * **Not yet confirmed live**: whether this actually raises the win rate
+ * against The Black Hand on 9x9 (the board size in play when this shipped
+ * -- see docs/ipvgo-strategy.md) the way the cited papers' effect sizes
+ * would suggest. `DEFAULT_RAVE_EQUIVALENCE` (500) is a reasonable-looking
+ * starting point, not independently tuned against this specific engine's
+ * playout policy or board sizes -- the next thing worth adjusting if live
+ * results are lukewarm, per this file's own history of measuring before
+ * re-tuning.
  */
 
 export const EMPTY = 0
@@ -537,11 +623,20 @@ export function pickPlayoutMove(flat, W, H, color, koIndex, rng) {
 // Gobble" (same source) -- no capture bias or other pattern knowledge, by
 // design, both for fidelity to the cited algorithm and because it keeps
 // each rollout step to ~O(1) amortized work (see pickPlayoutMove above).
+// Also returns `moves` (the `{ color, idx }` sequence actually played this
+// rollout) -- added 2026-09-05 for RAVE/AMAF (see the file header and the
+// "MCTS design" section below): the tree-search side needs to know which
+// moves each color played *anywhere* during a simulation, not just the one
+// move chosen at each tree node, and rollout moves are the majority of
+// that sequence in practice (the tree itself is usually shallow relative
+// to a full playout). Collecting this array costs little relative to the
+// board copies applyMoveFlat already makes every step.
 export function runPlayout(flat, W, H, colorToMove, koIndex, maxMoves, rng) {
   let board = flat
   let color = colorToMove
   let ko = koIndex
   let consecutivePasses = 0
+  const moves = []
   for (let move = 0; move < maxMoves; move++) {
     const picked = pickPlayoutMove(board, W, H, color, ko, rng)
     if (picked.idx === -1) {
@@ -552,11 +647,12 @@ export function runPlayout(flat, W, H, colorToMove, koIndex, maxMoves, rng) {
       continue
     }
     consecutivePasses = 0
+    moves.push({ color, idx: picked.idx })
     board = picked.flat
     ko = picked.koIndex
     color = color === BLACK ? WHITE : BLACK
   }
-  return scoreAreaFlat(board, W, H)
+  return { ...scoreAreaFlat(board, W, H), moves }
 }
 
 // ============================================================================
@@ -590,13 +686,52 @@ export function ucb1Score(childVisits, childWins, parentVisits, explorationConst
   return childWins / childVisits + explorationConstant * Math.sqrt(Math.log(parentVisits) / childVisits)
 }
 
+// RAVE/AMAF (2026-09-05) -- see the file header for the citation and the
+// measured strength case (24% -> 50-60% win rate vs GnuGo in one paper,
+// ~70% win rate vs plain UCT in another, both in 9x9 Go at simulation
+// counts comparable to this file's own budget). Blends each child's own
+// (real) simulation statistics with its AMAF statistics -- results
+// gathered from every simulation where that same move was played by the
+// same color *later* in the sequence, not just when it was chosen as the
+// immediate next move -- via Gelly & Silver's beta schedule, then adds the
+// same UCB1 exploration bonus as before on top of the blended value.
+//
+// beta shrinks toward 0 (trust only the real Q) as the child accumulates
+// more real visits, and toward 1 (trust the AMAF estimate) when it has
+// few or none -- exactly the "AMAF is a fast but biased early estimate,
+// real simulation is slow but unbiased" tradeoff RAVE is built to exploit.
+// `equivalenceParam` (k) is the real-visit count at which beta = 0.5;
+// DEFAULT_RAVE_EQUIVALENCE below is a starting point, not independently
+// tuned against this specific engine yet -- see that constant's own
+// comment.
+export const DEFAULT_RAVE_EQUIVALENCE = 500
+
+export function raveScore(child, parentVisits, explorationConstant, equivalenceParam) {
+  const visits = child.visits
+  const amafVisits = child.amafVisits || 0
+  if (visits === 0 && amafVisits === 0) return Infinity
+  const beta = amafVisits > 0 ? Math.sqrt(equivalenceParam / (3 * visits + equivalenceParam)) : 0
+  const qUct = visits > 0 ? child.wins / visits : 0
+  const qAmaf = amafVisits > 0 ? child.amafWins / amafVisits : 0
+  const blended = (1 - beta) * qUct + beta * qAmaf
+  const exploration = explorationConstant * Math.sqrt(Math.log(parentVisits) / Math.max(1, visits))
+  return blended + exploration
+}
+
 function createMctsNode(flat, koIndex, colorToMove, untriedMoves, priorVisits, priorWins) {
   return {
     flat,
     koIndex,
     colorToMove,
     untriedMoves,
-    children: [], // { moveIdx, node }
+    children: [], // { moveIdx, node } -- node also carries amafVisits/amafWins, see raveScore
+    // moveIdx -> entry, kept in step with `children` -- lets the AMAF update
+    // below look up "does this node have a child for move X" in O(1)
+    // instead of scanning `children` linearly for every candidate move in
+    // every simulation's move sequence. Profiled necessary, not
+    // speculative: without it, a 13x13 root (up to 169 children) made RAVE
+    // ~5x slower than the pre-RAVE search; with it, back in line.
+    childByMove: new Map(),
     visits: priorVisits,
     wins: priorWins,
   }
@@ -619,13 +754,13 @@ function nonRootCandidateMoves(flat, W, H, color, koIndex) {
   return legal.filter((idx) => !isSimpleEye(flat, W, H, idx, color))
 }
 
-// Selection phase: descend via UCB1 while a node is fully expanded (no
-// untried moves left) and has at least one child.
-function selectBestChild(node, explorationConstant) {
+// Selection phase: descend via the RAVE-blended score while a node is
+// fully expanded (no untried moves left) and has at least one child.
+function selectBestChild(node, explorationConstant, raveEquivalence) {
   let best = null
   let bestScore = -Infinity
   for (const entry of node.children) {
-    const score = ucb1Score(entry.node.visits, entry.node.wins, node.visits, explorationConstant)
+    const score = raveScore(entry.node, node.visits, explorationConstant, raveEquivalence)
     if (score > bestScore) {
       bestScore = score
       best = entry
@@ -635,24 +770,35 @@ function selectBestChild(node, explorationConstant) {
 }
 
 // Runs one full select -> expand -> simulate -> backpropagate iteration
-// starting from `root`, mutating the tree in place.
-function runMctsIteration(root, W, H, komi, explorationConstant, maxPlayoutMoves, rng, openingContext) {
+// starting from `root`, mutating the tree in place. Also updates every
+// visited node's *other* children's AMAF statistics (RAVE, see file
+// header): `pathMoves` records the move actually chosen at each tree node
+// along the way; concatenated with the rollout's own move sequence, that
+// gives the complete list of moves played by each color during this one
+// simulation, which is exactly what AMAF credits back to every matching
+// sibling move at every node the simulation passed through.
+function runMctsIteration(root, W, H, komi, explorationConstant, maxPlayoutMoves, rng, openingContext, raveEquivalence) {
   const path = [root]
+  const pathMoves = [] // { color, idx } -- the move that led from path[i] to path[i+1]
   let node = root
   while (node.untriedMoves.length === 0 && node.children.length > 0) {
-    const entry = selectBestChild(node, explorationConstant)
+    const entry = selectBestChild(node, explorationConstant, raveEquivalence)
+    pathMoves.push({ color: node.colorToMove, idx: entry.moveIdx })
     node = entry.node
     path.push(node)
   }
   if (node.untriedMoves.length > 0) {
     const isRoot = node === root
+    const priorColor = node.colorToMove
     const entry = expandNode(node, W, H, isRoot, openingContext, rng)
+    pathMoves.push({ color: priorColor, idx: entry.moveIdx })
     node = entry.node
     path.push(node)
   }
 
-  const { black, white } = runPlayout(node.flat, W, H, node.colorToMove, node.koIndex, maxPlayoutMoves, rng)
+  const { black, white, moves: rolloutMoves } = runPlayout(node.flat, W, H, node.colorToMove, node.koIndex, maxPlayoutMoves, rng)
   const blackWon = black > white + komi
+  const fullSequence = pathMoves.concat(rolloutMoves)
 
   for (let i = path.length - 1; i >= 0; i--) {
     const n = path[i]
@@ -661,6 +807,24 @@ function runMctsIteration(root, W, H, komi, explorationConstant, maxPlayoutMoves
     const moverColor = path[i - 1].colorToMove
     const moverWon = moverColor === BLACK ? blackWon : !blackWon
     if (moverWon) n.wins++
+  }
+
+  for (let i = 0; i < path.length; i++) {
+    const n = path[i]
+    if (!n.children.length) continue
+    const color = n.colorToMove
+    const moverWon = color === BLACK ? blackWon : !blackWon
+    for (let j = i; j < fullSequence.length; j++) {
+      if (fullSequence[j].color !== color) continue
+      const entry = n.childByMove.get(fullSequence[j].idx)
+      if (!entry) continue
+      // Stored on entry.node (not entry itself) -- that's what raveScore
+      // reads via selectBestChild's `raveScore(entry.node, ...)` call, and
+      // keeps AMAF stats living alongside the same node's own visits/wins,
+      // which represent the identical move.
+      entry.node.amafVisits = (entry.node.amafVisits || 0) + 1
+      entry.node.amafWins = (entry.node.amafWins || 0) + (moverWon ? 1 : 0)
+    }
   }
 }
 
@@ -695,6 +859,7 @@ function expandNode(node, W, H, isRoot, openingContext, rng) {
 
   const entry = { moveIdx, node: createMctsNode(res.flat, res.koIndex, childColor, childCandidates, priorVisits, priorWins) }
   node.children.push(entry)
+  node.childByMove.set(moveIdx, entry)
   return entry
 }
 
@@ -790,6 +955,24 @@ export function chooseBestMove(board, validMoves, colorChar, opts = {}) {
 //                          the caller stopped early on a wall-clock
 //                          deadline), which is more honest than always
 //                          reporting the nominal budget.
+//
+// opts:
+//   numSimulations   total simulation budget (default DEFAULT_NUM_SIMULATIONS)
+//   maxPlayoutMoves  safety cap on a single rollout's length (default 2*W*H)
+//   rng              injectable RNG for deterministic tests (default Math.random)
+//   explorationConstant  UCB1's C (default sqrt(2) -- see file header)
+//   komi             added to the opponent's score before deciding
+//                     win/loss for backpropagation (default 0 -- see file
+//                     header's "Known limitations" on why this must be
+//                     passed explicitly, not baked into scoreAreaFlat)
+//   isOpeningMove    true iff this is the very first move of a fresh game
+//                     (caller's own responsibility to determine, e.g. via
+//                     ns.go.getMoveHistory().length === 0) -- gates whether
+//                     openingStats is consulted at all
+//   openingStats     computeOpeningMoveStats(...)'s return value, or null
+//   minOpeningSample / openingPriorWeight  see the DEFAULT_* constants above
+//   raveEquivalence  RAVE's k parameter (default DEFAULT_RAVE_EQUIVALENCE
+//                    -- see raveScore's own comment for what it controls)
 export function createMctsSearch(board, validMoves, colorChar, opts = {}) {
   const {
     numSimulations = DEFAULT_NUM_SIMULATIONS,
@@ -801,6 +984,7 @@ export function createMctsSearch(board, validMoves, colorChar, opts = {}) {
     openingStats = null,
     minOpeningSample = DEFAULT_MIN_OPENING_SAMPLE,
     openingPriorWeight = DEFAULT_OPENING_PRIOR_WEIGHT,
+    raveEquivalence = DEFAULT_RAVE_EQUIVALENCE,
   } = opts
   const { flat, W, H } = boardToFlat(board)
   const color = colorChar === "X" ? BLACK : WHITE
@@ -847,7 +1031,7 @@ export function createMctsSearch(board, validMoves, colorChar, opts = {}) {
   let simsRun = 0
 
   function runOne() {
-    runMctsIteration(root, W, H, komi, explorationConstant, cap, rng, openingContext)
+    runMctsIteration(root, W, H, komi, explorationConstant, cap, rng, openingContext, raveEquivalence)
     simsRun++
   }
 

@@ -1,6 +1,67 @@
 # Claude's working list
 
-## 2026-09-05 (latest): coding-contract solver coverage expanded 16 -> 29 of 30 types
+## 2026-09-05 (latest): IPvGO win rate collapsed at 13x13 (3/70 games) -- dropped to 9x9, added RAVE/AMAF
+
+Follow-up to the freeze-fix entry below, same day. Once the freeze fix let
+the search run its full ~10s thinking budget without blocking anything,
+the very next live data point was that the search wasn't strong enough for
+the board size it was running on: 70 games under `mcts-ucb1-v3` against The
+Black Hand/13x13 came back **3 wins, 4.3% win rate, streak -2**. This was
+new information, not a regression from today's earlier changes — the same
+matchup had already shown blowout losses in a tiny pre-fix sample, and this
+large sample confirmed it wasn't noise. `favorRep: 0` throughout, since
+favor only banks on consecutive wins.
+
+Ken, watching it play live (something I structurally can't observe myself
+— no view into the Steam client), said "even I can see some fundamental
+flaws in our go play" and asked whether web research and a re-think were
+worth it. Two responses, same session:
+
+1. **Board dropped to 9x9** on Ken's own direct call
+   (`run ipvgo_player.js "The Black Hand" 9`) — the game already in
+   progress at 13x13 finished first (per the "never abandon a game" rule)
+   and actually won, 78-76.5, a genuine close win right before the switch.
+2. **RAVE/AMAF implemented** in `ipvgo_logic.js` after web research found
+   two independent, directly-relevant citations: MC-RAVE lifting 9x9 Go
+   win rate from ~24% to 50-60% vs GnuGo at 3000 sims/move (one source),
+   and ~70% vs a plain-UCT baseline at 1000 sims/move (another) — both
+   Gelly & Silver's own technique, already cited in this file for the
+   opening-move prior. Implementation: each child tracks AMAF visits/wins
+   credited from every simulation where that move was played later by the
+   same color (not just when chosen immediately), blended into selection
+   via the standard beta schedule. `runPlayout` now also returns its move
+   sequence (previously just the final score) so this bookkeeping has
+   something to walk.
+
+**A real bug caught before going live, not after**: the first version only
+set `amafWins` inside a win-branch, leaving it `undefined` for any child
+whose only credited simulations so far were losses --
+`undefined / amafVisits` = `NaN`, which made every selection score
+comparison silently fail (`NaN > x` is always false) and crashed
+`chooseBestMove` outright. The existing small test boards didn't reach the
+tree depth needed to trigger it; a deliberate 200-simulation test did.
+Fixed by always initializing `amafWins` to 0. Also found and fixed a real
+performance issue the naive implementation introduced: a linear scan of a
+node's children to find a move-index match made a 13x13 benchmark ~4.8x
+slower (595 → 124 sims/sec) because the root can have up to 169 children;
+added a `moveIdx -> entry` map per node for O(1) lookup, bringing it back
+to a ~28% overhead (429 sims/sec) — an accepted cost given RAVE's whole
+premise is fewer-but-smarter simulations. 3 new tests (including a direct
+regression test for the NaN bug), full suite 235/235.
+
+`algorithm` tag bumped `mcts-ucb1-v3` → `mcts-ucb1-v4` so the 70-game v3
+sample that motivated this doesn't blend into the new rolling window.
+
+**Not yet live-verified**: whether the win rate actually recovers on
+9x9/v4 — no games completed under the new algorithm as of this writing.
+Also not separated: whether any recovery comes from the smaller board,
+RAVE, or both (both changed close together; not worth an isolated
+experiment right now given the immediate goal was fixing the win rate, not
+attributing credit). See `docs/ipvgo-strategy.md`'s matching section for
+the full writeup and `docs/kensTodo.md` for the one thing this needs from
+Ken.
+
+## 2026-09-05: coding-contract solver coverage expanded 16 -> 29 of 30 types
 
 Ken asked to work on improving coding-contract ("cct") performance in
 parallel with the IPvGO session above. Investigation found the existing

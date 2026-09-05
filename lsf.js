@@ -12,21 +12,30 @@
  * terminal (typed by you, not scriptable) — after that, `ls -l *.js`
  * becomes `run lsf.js -l *.js` automatically.
  *
- * Usage: run lsf.js [pattern] [-l] [-t] [host]
+ * Usage: run lsf.js [pattern] [-l] [-d] [host]
  *   run lsf.js                  — everything on the current server
  *   run lsf.js -l               — everything, long format
- *   run lsf.js -t               — everything, newest-modified first
+ *   run lsf.js -d               — everything, newest-modified first
  *   run lsf.js *.msg            — glob-filtered, current server
  *   run lsf.js *.cct -l n00dles — glob-filtered, long format, specific host
- *   (pattern, -l/--long, and -t/--time may appear in any order; host, if
+ *   (pattern, -l/--long, and -d/--date may appear in any order; host, if
  *   given, is always the last positional argument)
  *
- * `-t` sorts newest-modified-first instead of the default alphabetical
+ * **`-d`, not `-t` — corrected 2026-09-04.** The sort-by-date flag was
+ * originally `-t`/`--time`. Ken hit this live: `run lsf.js -t *.js` failed
+ * with "Invalid number of threads specified" — Bitburner's own `run`
+ * command reserves `-t` for thread count (`run script.js -t <threads>`)
+ * and intercepts it before the script ever sees `ns.args`, not a bug in
+ * this file. Renamed to `-d`/`--date`, which isn't a reserved `run` flag.
+ * Worth remembering for any future flag choice here too — `run`'s other
+ * known reserved flag is `--tail`.
+ *
+ * `-d` sorts newest-modified-first instead of the default alphabetical
  * order, using the same `ns.getFileMetadata(file).mtime` as `-l`'s
  * `modified` column — so it has the exact same two limits: **local host
  * only** (`ns.getFileMetadata` has no remote-host parameter) and only
  * `.txt`/`.json`/`.css`/`.js`/`.jsx`/`.ts`/`.tsx` have a real mtime at all.
- * Asking for `-t` on a remote host prints a one-line note and falls back to
+ * Asking for `-d` on a remote host prints a one-line note and falls back to
  * alphabetical rather than silently guessing; a file whose extension has no
  * mtime sorts to the end (oldest-last position), alphabetically among
  * itself, rather than being dropped from the listing.
@@ -77,8 +86,8 @@
 export async function main(ns) {
   const rawArgs = ns.args.map(String)
   const longFormat = rawArgs.some((a) => a === "-l" || a === "--long")
-  const byDate = rawArgs.some((a) => a === "-t" || a === "--time")
-  const positional = rawArgs.filter((a) => !["-l", "--long", "-t", "--time"].includes(a))
+  const byDate = rawArgs.some((a) => a === "-d" || a === "--date")
+  const positional = rawArgs.filter((a) => !["-l", "--long", "-d", "--date"].includes(a))
   const pattern = positional[0] ?? "*"
   const host = positional[1] ?? ns.getHostname()
   const isLocal = host === ns.getHostname()
@@ -100,7 +109,7 @@ export async function main(ns) {
   }
 
   if (byDate && !isLocal) {
-    ns.tprint(`lsf: -t needs the local host (ns.getFileMetadata has no remote-host parameter) — showing alphabetical order instead`)
+    ns.tprint(`lsf: -d needs the local host (ns.getFileMetadata has no remote-host parameter) — showing alphabetical order instead`)
   }
   if (byDate && isLocal) {
     // Newest first; unavailable mtime (wrong extension, or getFileMetadata
@@ -180,5 +189,5 @@ function formatTimestamp(ms) {
 }
 
 export function autocomplete() {
-  return ["-l", "--long", "-t", "--time", "*"]
+  return ["-l", "--long", "-d", "--date", "*"]
 }

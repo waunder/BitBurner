@@ -1167,23 +1167,31 @@ built-in terminal `ls -g/--grep` only does plain substring matching
 anchored regex (`*` → `.*`, `?` → `.`, every other regex-special character
 escaped) and filters `ns.ls(host)` client-side. Gained an optional `-l`
 long-format on 2026-09-04, prompted by the file count at repo root simply
-getting too large to browse with plain `ls`, and a `-t` newest-first sort
-the same day. Netscript has no hook to override or add real terminal
-commands, so `lsf.js` can't literally replace `ls`; `alias ls="run lsf.js"`
-in the terminal is the closest thing to that.
+getting too large to browse with plain `ls`, and a `-d` newest-first sort
+the same day (originally `-t` — see below for why that broke). Netscript
+has no hook to override or add real terminal commands, so `lsf.js` can't
+literally replace `ls`; `alias ls="run lsf.js"` in the terminal is the
+closest thing to that.
 
-- **Start:** `run lsf.js [pattern] [-l] [-t] [host]` — e.g. `run lsf.js
+- **Start:** `run lsf.js [pattern] [-l] [-d] [host]` — e.g. `run lsf.js
   *.msg`, `run lsf.js *.cct -l n00dles`. `pattern` defaults to `*`
   (everything) and `host` defaults to the server the script runs on;
-  `-l`/`--long` and `-t`/`--time` may appear anywhere among the args.
+  `-l`/`--long` and `-d`/`--date` may appear anywhere among the args.
   `run lsf.js *` lists everything, same as plain `ls`.
-- **`-t` output:** sorts newest-modified-first instead of the default
+- **`-d` output:** sorts newest-modified-first instead of the default
   alphabetical order, using the same `ns.getFileMetadata(file).mtime` as
   `-l`'s `modified` column — so the same two limits apply: **local host
   only**, and only `.txt`/`.json`/`.css`/`.js`/`.jsx`/`.ts`/`.tsx` have a
-  real mtime. `-t` on a remote host prints a note and falls back to
+  real mtime. `-d` on a remote host prints a note and falls back to
   alphabetical; a file with no mtime available sorts to the end rather than
   being dropped.
+- **Why `-d` and not `-t`:** shipped as `-t`/`--time` first, but Ken hit it
+  live — `run lsf.js -t *.js` failed with "Invalid number of threads
+  specified," because Bitburner's own `run` command reserves `-t` for
+  thread count (`run script.js -t <threads>`) and intercepts it before the
+  script ever sees `ns.args`. Not a bug in this file; renamed to `-d`/
+  `--date`, which isn't a reserved `run` flag. `run`'s other known reserved
+  flag is `--tail`.
 - **`-l` output:** a `[category] size modified` prefix ahead of each
   filename — `[script]` with `ns.getScriptRam`'s RAM-per-thread for `.js`/
   `.script`/`.ns` (works cross-host); `[text]` with a character count from

@@ -1,6 +1,28 @@
 # Claude's working list
 
-## 2026-09-05 (latest): "not a member" warning confirmed working as intended, not a bug
+## 2026-09-05 (latest): faction membership now re-checked per game, not just once at startup
+
+Follow-up to the entry below, same day. Ken rejoined The Black Hand after
+the augmentation-install-triggered membership loss, but the HUD/status
+still showed `isFactionMember: false` — this time a real gap, not a
+misunderstanding: `checkFactionMembership` only ever ran once, at
+`ipvgo_player.js` startup, so nothing re-evaluated it for the rest of that
+process's life no matter what Ken did in-game afterward. Confirmed live
+before changing anything: `ipvgo_status.json`'s `ts` hadn't moved at all
+since the last check, meaning nothing had re-written the file, consistent
+with the value being genuinely stale rather than a sync issue.
+
+Fixed: `isFactionMember` is now a `let`, re-checked once per new game
+(right after `ns.go.resetBoardState`, the natural game-boundary this
+script already has) instead of only at process startup. Cheap (0GB call,
+once per game not once per move) and logs a line when membership actually
+changes. Still needs one more restart to pick up this code change itself
+(Bitburner doesn't hot-reload) — but after that, future faction
+join/leave changes will be reflected at the start of the next game
+automatically, no restart needed for that specifically. `node --check`
+clean, full suite 235/235 (no logic-module changes, player-script only).
+
+## 2026-09-05: "not a member" warning confirmed working as intended, not a bug
 
 Ken reported the new HUD/status `isFactionMember: false` warning for The
 Black Hand as incorrect after restarting the HUD. Investigated live rather

@@ -321,6 +321,27 @@ is categorically blocked by Chrome's Private Network Access policy
 (pre-existing, confirmed-unfixable finding, not new); switching to the
 **Steam** app connected immediately.
 
+### 2026-09-05 (much later): membership re-checked per game, not just once ever
+
+`checkFactionMembership` above was only ever called once, at script
+startup. Ken later installed augmentations (dropping Black Hand membership,
+same mechanism as the earlier Netburners case), then rejoined mid-run —
+and the HUD/status kept showing `isFactionMember: false` with no sign of
+updating. Confirmed live before assuming a bug in the display layer:
+`ipvgo_status.json`'s `ts` genuinely hadn't moved since the prior check, so
+the value really was stuck, not a stale read somewhere downstream. Root
+cause: nothing in the running process ever re-evaluated membership after
+startup, so a real membership change mid-run had no way to surface until
+the next full restart.
+
+**Fixed**: `isFactionMember` re-checks once per new game (right after
+`ns.go.resetBoardState`, the natural game-boundary this script already
+has) instead of only at process startup — cheap (0GB, once per game not
+once per move) and logs a line when it actually changes. Needs one more
+restart to pick up this code change itself, same hot-reload limitation as
+always, but after that a future faction join/leave will be reflected at
+the start of the next game with no restart needed for that specifically.
+
 ### Next steps, in order
 
 1. ~~Get `ipvgo_player.js` restarted live.~~ **Done and confirmed live

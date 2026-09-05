@@ -10,6 +10,15 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
 
 ## Pending
 
+- [ ] **Restart `ipvgo_player.js` once more to pick up the per-game
+  faction-membership re-check (2026-09-05).** `run ipvgo_player.js` — no
+  args needed, continues automatically. This is what actually fixes the
+  HUD showing you as "not a member" after rejoining The Black Hand — until
+  this restart, nothing in the running process re-checks membership at
+  all, so rejoining alone can't fix the display. After this restart, a
+  future join/leave will be picked up automatically at the start of the
+  next game, no restart needed for that specifically.
+
 - [ ] **Not urgent — restart `hud_consolidated.js` whenever convenient to
   show the new IPvGO section.** `run hud_consolidated.js` — it
   self-supersedes (kills the old copy automatically), same as before. Pure

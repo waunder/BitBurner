@@ -517,8 +517,13 @@ export async function main(ns) {
 
   // Informational only -- see checkFactionMembership's own header. Doesn't
   // gate play: territory-held stat bonuses accrue either way, only the
-  // win-streak favor conversion specifically needs membership.
-  const isFactionMember = checkFactionMembership(ns, opponent)
+  // win-streak favor conversion specifically needs membership. `let`, not
+  // `const`: re-checked once per new game (see the reset branch below),
+  // not just here at startup -- confirmed live 2026-09-05 that a player
+  // rejoining a faction mid-run (after an augmentation install had
+  // dropped membership) never saw the HUD/status update at all otherwise,
+  // since nothing re-evaluated it until the next full script restart.
+  let isFactionMember = checkFactionMembership(ns, opponent)
 
   ns.tprint(
     `ipvgo_player: starting (RAM ${ns.getScriptRam(ns.getScriptName()).toFixed(2)}GB, ` +
@@ -612,6 +617,17 @@ export async function main(ns) {
         observedActiveGame = false
         openingMove = null
         ns.go.resetBoardState(opponent, size)
+        // Re-check membership for the game about to start, not just once
+        // at process startup (see isFactionMember's own comment above) --
+        // a cheap (0GB) call, and the natural point to refresh it: a
+        // player joining/leaving mid-game wouldn't retroactively change
+        // that game's own reward anyway, so "once per new game" already
+        // matches the game's own real granularity.
+        const wasFactionMember = isFactionMember
+        isFactionMember = checkFactionMembership(ns, opponent)
+        if (isFactionMember !== wasFactionMember) {
+          ns.tprint(`ipvgo_player: faction membership for ${opponent} changed -- now ${isFactionMember === true ? "a member" : "not a member"}.`)
+        }
         ns.tprint(`ipvgo_player: new subnet vs ${opponent}, ${size}x${size}.`)
         await ns.sleep(200)
         continue

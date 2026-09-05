@@ -50,6 +50,8 @@
     "ipvgo_hud.js",
     "hacking/crawler.js",
     "hacking/worm.js",
+    "hacking/backdoor.js",
+    "hacking/findpath.js",
     "share_deploy.js",
     "set_objective.js",
     "cct_audit.js",

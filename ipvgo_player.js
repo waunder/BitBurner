@@ -804,7 +804,14 @@ export async function main(ns) {
       }
 
       const board = ns.go.getBoardState()
-      const validMovesRaw = ns.go.analysis.getValidMoves()
+      const validMovesGrid = ns.go.analysis.getValidMoves()
+      // Convert boolean grid to array of [x, y] coordinates
+      const validMovesRaw = []
+      for (let x = 0; x < size; x++) {
+        for (let y = 0; y < size; y++) {
+          if (validMovesGrid[x]?.[y]) validMovesRaw.push([x, y])
+        }
+      }
       const pieceCount = board.flat().filter(c => c !== ".").length
       const validMoves = prioritizeCenterMoves(validMovesRaw, size, pieceCount, board)
       // Both 0GB. komi: the real game's actual value for *this* game (not

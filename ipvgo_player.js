@@ -613,6 +613,26 @@ export async function main(ns) {
     isFactionMember,
   })
 
+  // Helper: prefer center moves in early game (first 6 moves/side, ~24 pieces)
+  // Opening edges are weak in Go; this biases MCTS to try center plays first.
+  function prioritizeCenterMoves(moves, boardSize, pieceCount) {
+    if (pieceCount > 24) return moves // After early game, don't reorder
+
+    const center = boardSize / 2
+    const centerDist = (x, y) => {
+      const dx = Math.abs(x - center + 0.5)
+      const dy = Math.abs(y - center + 0.5)
+      return dx + dy // Manhattan distance from center (lower = better)
+    }
+
+    // Separate into center-biased and edge moves
+    const centered = moves.filter(([x, y]) => centerDist(x, y) <= boardSize / 3)
+    const edges = moves.filter(([x, y]) => centerDist(x, y) > boardSize / 3)
+
+    // Return centered moves first, then edges
+    return [...centered, ...edges]
+  }
+
   while (true) {
     try {
       // Re-checked every loop iteration (roughly once per move during
@@ -703,7 +723,9 @@ export async function main(ns) {
       }
 
       const board = ns.go.getBoardState()
-      const validMoves = ns.go.analysis.getValidMoves()
+      const validMovesRaw = ns.go.analysis.getValidMoves()
+      const pieceCount = board.flat().filter(c => c !== ".").length
+      const validMoves = prioritizeCenterMoves(validMovesRaw, size, pieceCount)
       // Both 0GB. komi: the real game's actual value for *this* game (not
       // assumed to be the 5.5 default -- see NetscriptDefinitions.d.ts'
       // setTestingBoardState doc comment, which only documents 5.5 as a

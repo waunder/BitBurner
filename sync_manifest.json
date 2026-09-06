@@ -48,6 +48,8 @@
     "ipvgo_player.js",
     "ipvgo_logic.js",
     "ipvgo_hud.js",
+    "ipvgo_experiment.js",
+    "ipvgo_experiment_analyze.js",
     "hacking/crawler.js",
     "hacking/worm.js",
     "hacking/backdoor.js",

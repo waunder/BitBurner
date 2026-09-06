@@ -10,6 +10,10 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
 
 ## Pending
 
+- [ ] **Restart the Remote API daemon to sync the IPvGO experiment scripts (2026-09-06).** The experiment infrastructure (`ipvgo_experiment.js`, `ipvgo_experiment_analyze.js`) was just added to sync_manifest.json. The daemon reads the manifest at startup, so a restart will pick them up and sync them into the game automatically. Once that's done, the three test batches can run (see ipvgo_experiment_guide.md for the test plan).
+
+- [ ] **Run the IPvGO reward-scaling experiment to determine optimal board size / thinking-time tradeoff (2026-09-06).** Three batches, ~45 min total in-game time. See `ipvgo_experiment_guide.md` for exact commands. Experiment measures whether "many weak games" or "fewer strong games" optimize for reputation farming. Once done, run `ipvgo_experiment_analyze.js` to get the recommendation.
+
 - [ ] **Restart `ipvgo_player.js` once more to pick up the real-time
   faction-membership check (2026-09-05, second attempt at this).** `run
   ipvgo_player.js` — no args needed, continues automatically. The first

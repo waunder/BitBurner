@@ -613,6 +613,49 @@ export async function main(ns) {
     isFactionMember,
   })
 
+  // Helper: test if a move would create a group boxed in with too few liberties
+  // Groups with 1 liberty are in immediate atari -- opponent can kill them next move
+  // Groups with 2 liberties on edge/corner are also vulnerable early game
+  function isUnsafeMove(move, board, boardSize) {
+    // Simulate the move locally (simple version: just check liberties after placement)
+    const [x, y] = move
+    const neighbors = []
+    for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+      const nx = x + dx
+      const ny = y + dy
+      if (nx >= 0 && nx < boardSize && ny >= 0 && ny < boardSize) {
+        neighbors.push([nx, ny])
+      }
+    }
+
+    // Count immediate liberties if we place here
+    let liberties = 0
+    for (const [nx, ny] of neighbors) {
+      if (board[nx]?.[ny] === ".") liberties++
+    }
+
+    // Check if we'd connect to friendly stones (adds their liberties too)
+    let wouldConnectToFriendly = false
+    for (const [nx, ny] of neighbors) {
+      if (board[nx]?.[ny] === "X") wouldConnectToFriendly = true
+    }
+
+    // A standalone stone with 0-1 liberties is immediately killable
+    // Even with a friendly connection, 1 total liberty is atari danger
+    if (!wouldConnectToFriendly && liberties <= 1) return true
+
+    // If connecting to friendly, check rough group liberty count
+    // (full chain analysis would need board clone + full chain search)
+    // For now, penalize moves that create immediate 1-liberty atari
+    if (liberties === 0 && wouldConnectToFriendly) {
+      // Could be connecting to a group with liberties, or creating atari
+      // Conservative: penalize heavily
+      return true
+    }
+
+    return false
+  }
+
   // Helper: prefer center moves in early game, avoid dead-node-blocked regions
   // Dead nodes ('#' on board) reduce playable area and wall off territory.
   // Prefer moves with space around them (less likely to be hemmed in).
@@ -641,14 +684,20 @@ export async function main(ns) {
     }
 
     if (pieceCount > 24) {
-      // After early game, just avoid dead-node clusters
-      const good = moves.filter(([x, y]) => deadNodeNearby(x, y) <= 3)
-      const bad = moves.filter(([x, y]) => deadNodeNearby(x, y) > 3)
-      return [...good, ...bad]
+      // After early game, avoid dead-node clusters and unsafe moves
+      const safe = moves.filter(m => !isUnsafeMove(m, board, boardSize))
+      const unsafe = moves.filter(m => isUnsafeMove(m, board, boardSize))
+      const goodDead = safe.filter(([x, y]) => deadNodeNearby(x, y) <= 3)
+      const badDead = safe.filter(([x, y]) => deadNodeNearby(x, y) > 3)
+      // Return: safe + good dead nodes, then unsafe as fallback
+      return [...goodDead, ...badDead, ...unsafe]
     }
 
-    // Early game: prefer center + low dead-node-count
-    const scored = moves.map(([x, y]) => ({
+    // Early game: prefer center + low dead-node-count, penalize unsafe moves
+    const safe = moves.filter(m => !isUnsafeMove(m, board, boardSize))
+    const unsafe = moves.filter(m => isUnsafeMove(m, board, boardSize))
+
+    const scored = safe.map(([x, y]) => ({
       move: [x, y],
       centerScore: centerDist(x, y),
       deadScore: deadNodeNearby(x, y),
@@ -661,7 +710,8 @@ export async function main(ns) {
       return a.deadScore - b.deadScore
     })
 
-    return scored.map(s => s.move)
+    // Return safe moves first, then unsafe as fallback
+    return [...scored.map(s => s.move), ...unsafe]
   }
 
   while (true) {

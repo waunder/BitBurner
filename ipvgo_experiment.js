@@ -43,6 +43,8 @@ export async function main(ns) {
   const maxWaitMs = 120000 * numGames // ~2min per game is conservative
 
   let lastLoggedCount = 0
+  let completionLogged = false
+
   while (Date.now() - startTime < maxWaitMs) {
     await ns.sleep(1000)
 
@@ -50,14 +52,15 @@ export async function main(ns) {
       const status = JSON.parse(ns.read("ipvgo_status.json"))
       const currentCount = status.gamesPlayed || 0
 
-      // Log progress when game count changes
-      if (currentCount > lastLoggedCount) {
+      // Log progress when game count changes (but not after completion)
+      if (currentCount > lastLoggedCount && currentCount < numGames) {
         ns.tprint(`Progress: ${currentCount}/${numGames} games (win rate: ${status.recentWinRate?.toFixed(2) || "N/A"})`)
         lastLoggedCount = currentCount
       }
 
       // Target reached
-      if (currentCount >= numGames) {
+      if (currentCount >= numGames && !completionLogged) {
+        completionLogged = true
         ns.tprint(`Completed ${currentCount} games!`)
 
         // Write results snapshot

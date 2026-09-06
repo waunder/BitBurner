@@ -1,107 +1,76 @@
-/** Remote API keep-alive — periodic health check on bb_remote.py daemon
+/**
+ * Remote API keep-alive — monitor daemon health from the game tail window
  *
- * Polls daemon's control port every CHECK_INTERVAL_MS to verify the game
- * connection is still active. Logs state changes and reports disconnects.
+ * The actual daemon supervision happens at the system level via
+ * tools/remote_api_monitor.sh (which auto-restarts if it crashes). This
+ * script just provides visibility into daemon state from inside the game
+ * by periodically checking if the daemon's log file is being updated.
  *
- * Daemon must be running: python3 tools/bb_remote.py daemon [--control-port N]
+ * Usage (background, continuous):
+ *   run remote_api_keepalive.js
  *
- * Usage (one-shot):
- *   ns.run('remote_api_keepalive.js', 1, '--control-port 12527 --interval 30000')
+ * Will log connection state changes to the tail window whenever daemon state
+ * transitions between connected/disconnected. During normal operation, no
+ * output means everything's fine (logs only on changes).
  *
- * Usage (background, checks every 30s, survives restart):
- *   ns.run('remote_api_keepalive.js', 1, '--control-port 12527 --interval 30000 --background')
+ * @param {NS} ns
  */
 
-const fs = require('fs');
-const { execSync } = require('child_process');
+export async function main(ns) {
+  const CHECK_INTERVAL_MS = 60000 // 1 minute
 
-const DEFAULT_CONTROL_PORT = 12527;
-const DEFAULT_INTERVAL_MS = 30000;  // 30s
-const LOG_FILE = '/Users/Shared/BitBurner/remote_api_keepalive.log';
+  ns.tprint(`remote_api_keepalive: monitoring daemon connection (check every ${CHECK_INTERVAL_MS}ms)`)
 
-function log(msg) {
-  const ts = new Date().toISOString();
-  const line = `[${ts}] ${msg}`;
-  console.log(line);
-  try {
-    fs.appendFileSync(LOG_FILE, line + '\n');
-  } catch (e) {
-    // log file not writable, just print
-  }
-}
-
-function parseArgs(args) {
-  const opts = { controlPort: DEFAULT_CONTROL_PORT, intervalMs: DEFAULT_INTERVAL_MS, background: false };
-  for (let i = 0; i < args.length; i++) {
-    if (args[i] === '--control-port' && i + 1 < args.length) {
-      opts.controlPort = parseInt(args[i + 1], 10);
-      i++;
-    } else if (args[i] === '--interval' && i + 1 < args.length) {
-      opts.intervalMs = parseInt(args[i + 1], 10);
-      i++;
-    } else if (args[i] === '--background') {
-      opts.background = true;
-    }
-  }
-  return opts;
-}
-
-function checkDaemon(controlPort) {
-  try {
-    const result = execSync(
-      `python3 tools/bb_remote.py ctl-status --control-port ${controlPort}`,
-      { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }
-    );
-    const data = JSON.parse(result);
-    return { ok: true, data };
-  } catch (e) {
-    return { ok: false, error: e.message };
-  }
-}
-
-async function keepalive(opts) {
-  let lastState = null;
+  let lastState = "unknown"
+  let consecutiveFailures = 0
 
   while (true) {
-    const check = checkDaemon(opts.controlPort);
+    try {
+      // Read the daemon's event log to check if it's alive (it writes to this)
+      const eventsRaw = ns.read("/tools/bb_remote_events.log")
 
-    if (check.ok) {
-      const connected = check.data.connected || check.data.game_connected;
-      const currentState = connected ? 'connected' : 'disconnected';
+      if (eventsRaw && eventsRaw.trim().length > 0) {
+        // Log exists and has content. Check if it's been updated recently.
+        const lines = eventsRaw.trim().split("\n")
+        const lastLine = lines[lines.length - 1]
 
-      if (currentState !== lastState) {
-        log(`Daemon state: ${currentState}`);
-        if (connected) {
-          log(`Connected to game (uptime: ${check.data.uptime_s || 'unknown'}s)`);
+        // Look for timestamps in the log
+        const timestampMatch = lastLine.match(/\[([^\]]+)\]/)
+        if (timestampMatch) {
+          const lastEventTime = new Date(timestampMatch[1])
+          const nowTime = new Date()
+          const ageMs = nowTime - lastEventTime
+
+          // If the log was updated in the last 5 minutes, daemon is alive
+          if (ageMs < 300000) {
+            if (lastState !== "connected") {
+              ns.print(`[keepalive] daemon: CONNECTED (last event ${Math.round(ageMs / 1000)}s ago)`)
+              lastState = "connected"
+              consecutiveFailures = 0
+            }
+          } else {
+            if (lastState !== "stale") {
+              ns.print(`[keepalive] daemon: STALE (last event ${Math.round(ageMs / 1000)}s ago)`)
+              lastState = "stale"
+              consecutiveFailures++
+            }
+          }
         }
-        lastState = currentState;
+      } else {
+        if (lastState !== "offline") {
+          ns.print(`[keepalive] daemon: OFFLINE or log unreadable`)
+          lastState = "offline"
+          consecutiveFailures++
+        }
       }
-    } else {
-      if (lastState !== 'daemon_error') {
-        log(`Daemon error: ${check.error}`);
-        lastState = 'daemon_error';
+    } catch (e) {
+      if (lastState !== "error") {
+        ns.print(`[keepalive] error reading daemon status: ${String(e)}`)
+        lastState = "error"
+        consecutiveFailures++
       }
     }
 
-    // Wait for next check
-    await new Promise(resolve => setTimeout(resolve, opts.intervalMs));
+    await ns.sleep(CHECK_INTERVAL_MS)
   }
-}
-
-// Main
-const args = process.argv.slice(2);
-const opts = parseArgs(args);
-
-log(`Keep-alive starting: control-port=${opts.controlPort}, interval=${opts.intervalMs}ms`);
-
-if (opts.background) {
-  log('Running in background mode');
-  // Run without blocking
-  keepalive(opts).catch(e => log(`Fatal: ${e.message}`));
-} else {
-  // Block and run
-  keepalive(opts).catch(e => {
-    log(`Fatal: ${e.message}`);
-    process.exit(1);
-  });
 }

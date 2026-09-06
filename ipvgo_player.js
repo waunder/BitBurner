@@ -684,20 +684,14 @@ export async function main(ns) {
     }
 
     if (pieceCount > 24) {
-      // After early game, avoid dead-node clusters and unsafe moves
-      const safe = moves.filter(m => !isUnsafeMove(m, board, boardSize))
-      const unsafe = moves.filter(m => isUnsafeMove(m, board, boardSize))
-      const goodDead = safe.filter(([x, y]) => deadNodeNearby(x, y) <= 3)
-      const badDead = safe.filter(([x, y]) => deadNodeNearby(x, y) > 3)
-      // Return: safe + good dead nodes, then unsafe as fallback
-      return [...goodDead, ...badDead, ...unsafe]
+      // After early game, just avoid dead-node clusters
+      const good = moves.filter(([x, y]) => deadNodeNearby(x, y) <= 3)
+      const bad = moves.filter(([x, y]) => deadNodeNearby(x, y) > 3)
+      return [...good, ...bad]
     }
 
-    // Early game: prefer center + low dead-node-count, penalize unsafe moves
-    const safe = moves.filter(m => !isUnsafeMove(m, board, boardSize))
-    const unsafe = moves.filter(m => isUnsafeMove(m, board, boardSize))
-
-    const scored = safe.map(([x, y]) => ({
+    // Early game: prefer center + low dead-node-count
+    const scored = moves.map(([x, y]) => ({
       move: [x, y],
       centerScore: centerDist(x, y),
       deadScore: deadNodeNearby(x, y),
@@ -710,8 +704,7 @@ export async function main(ns) {
       return a.deadScore - b.deadScore
     })
 
-    // Return safe moves first, then unsafe as fallback
-    return [...scored.map(s => s.move), ...unsafe]
+    return scored.map(s => s.move)
   }
 
   while (true) {

@@ -613,11 +613,10 @@ export async function main(ns) {
     isFactionMember,
   })
 
-  // Helper: prefer center moves in early game (first 6 moves/side, ~24 pieces)
-  // Opening edges are weak in Go; this biases MCTS to try center plays first.
-  function prioritizeCenterMoves(moves, boardSize, pieceCount) {
-    if (pieceCount > 24) return moves // After early game, don't reorder
-
+  // Helper: prefer center moves in early game, avoid dead-node-blocked regions
+  // Dead nodes ('#' on board) reduce playable area and wall off territory.
+  // Prefer moves with space around them (less likely to be hemmed in).
+  function prioritizeCenterMoves(moves, boardSize, pieceCount, board) {
     const center = boardSize / 2
     const centerDist = (x, y) => {
       const dx = Math.abs(x - center + 0.5)
@@ -625,12 +624,44 @@ export async function main(ns) {
       return dx + dy // Manhattan distance from center (lower = better)
     }
 
-    // Separate into center-biased and edge moves
-    const centered = moves.filter(([x, y]) => centerDist(x, y) <= boardSize / 3)
-    const edges = moves.filter(([x, y]) => centerDist(x, y) > boardSize / 3)
+    // Count dead nodes (offline nodes) -- they reduce playable area
+    // and constrain territory. Prefer moves with more space around them.
+    const deadNodeNearby = (x, y) => {
+      let deadCount = 0
+      for (let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+          const nx = x + dx
+          const ny = y + dy
+          if (nx >= 0 && nx < boardSize && ny >= 0 && ny < boardSize) {
+            if (board[nx]?.[ny] === "#") deadCount++
+          }
+        }
+      }
+      return deadCount
+    }
 
-    // Return centered moves first, then edges
-    return [...centered, ...edges]
+    if (pieceCount > 24) {
+      // After early game, just avoid dead-node clusters
+      const good = moves.filter(([x, y]) => deadNodeNearby(x, y) <= 3)
+      const bad = moves.filter(([x, y]) => deadNodeNearby(x, y) > 3)
+      return [...good, ...bad]
+    }
+
+    // Early game: prefer center + low dead-node-count
+    const scored = moves.map(([x, y]) => ({
+      move: [x, y],
+      centerScore: centerDist(x, y),
+      deadScore: deadNodeNearby(x, y),
+    }))
+
+    // Sort by: center first, then by dead-node count
+    scored.sort((a, b) => {
+      const cmp = a.centerScore - b.centerScore
+      if (cmp !== 0) return cmp
+      return a.deadScore - b.deadScore
+    })
+
+    return scored.map(s => s.move)
   }
 
   while (true) {
@@ -725,7 +756,7 @@ export async function main(ns) {
       const board = ns.go.getBoardState()
       const validMovesRaw = ns.go.analysis.getValidMoves()
       const pieceCount = board.flat().filter(c => c !== ".").length
-      const validMoves = prioritizeCenterMoves(validMovesRaw, size, pieceCount)
+      const validMoves = prioritizeCenterMoves(validMovesRaw, size, pieceCount, board)
       // Both 0GB. komi: the real game's actual value for *this* game (not
       // assumed to be the 5.5 default -- see NetscriptDefinitions.d.ts'
       // setTestingBoardState doc comment, which only documents 5.5 as a

@@ -288,6 +288,25 @@ function checkGoApiAvailable(ns) {
   }
 }
 
+// Read experiment config if present and return the override values
+// Returns { boardSize, thinkingMs, targetGames, isExperiment }
+function readExperimentConfig(ns) {
+  try {
+    const config = JSON.parse(ns.read("ipvgo_experiment_config.json"))
+    if (config.experimentMode === true) {
+      return {
+        boardSize: config.boardSize || 9,
+        thinkingMs: config.thinkingMs || TARGET_THINK_MS,
+        targetGames: config.gamesTarget || 0,
+        isExperiment: true,
+      }
+    }
+  } catch (e) {
+    // Config file doesn't exist or is invalid, not an experiment run
+  }
+  return { boardSize: null, thinkingMs: TARGET_THINK_MS, targetGames: 0, isExperiment: false }
+}
+
 // Reads the game's own authoritative per-opponent record via
 // ns.go.analysis.getStats() (0 GB, official doc per NetscriptDefinitions.d.ts
 // -- see the type comments on SimpleOpponentStats): wins, losses, current
@@ -506,6 +525,12 @@ export async function main(ns) {
 
   if (!checkGoApiAvailable(ns)) return
 
+  // Check for experiment mode config (overrides board size and thinking time)
+  const expConfig = readExperimentConfig(ns)
+  let experimentMode = expConfig.isExperiment
+  let experimentTargetGames = expConfig.targetGames
+  let effectiveTargetThinkMs = expConfig.thinkingMs
+
   // ns.args[0]/[1] are an explicit override; omitting them continues
   // whatever faction/size was last actually being played (see
   // readPersistedFactionChoice's own header for why that matters). Only
@@ -513,7 +538,12 @@ export async function main(ns) {
   // neither an arg nor any persisted choice yet (a genuinely fresh setup).
   const persistedChoice = readPersistedFactionChoice(ns)
   const opponent = ns.args[0] ?? persistedChoice?.opponent ?? "Netburners"
-  const size = Number(ns.args[1] ?? persistedChoice?.size ?? 7)
+  let size = Number(ns.args[1] ?? persistedChoice?.size ?? 7)
+
+  // Experiment mode can override board size (but explicit args still win)
+  if (experimentMode && expConfig.boardSize && !ns.args[1]) {
+    size = expConfig.boardSize
+  }
 
   // Informational only -- see checkFactionMembership's own header. Doesn't
   // gate play: territory-held stat bonuses accrue either way, only the
@@ -527,8 +557,10 @@ export async function main(ns) {
 
   ns.tprint(
     `ipvgo_player: starting (RAM ${ns.getScriptRam(ns.getScriptName()).toFixed(2)}GB, ` +
-      `MCTS/UCB1+RAVE, up to ${MAX_SIMULATIONS} sims/move within ${TARGET_THINK_MS}ms (chunked, non-blocking), ` +
-      `algorithm=${ALGORITHM}). ` +
+      `MCTS/UCB1+RAVE, up to ${MAX_SIMULATIONS} sims/move within ${effectiveTargetThinkMs}ms (chunked, non-blocking), ` +
+      `algorithm=${ALGORITHM}` +
+      (experimentMode ? `, EXPERIMENT MODE: ${size}x${size}, ${experimentTargetGames} games target` : "") +
+      `). ` +
       `Target faction: ${opponent} ${size}x${size}` +
       (persistedChoice && ns.args[0] == null ? " (continuing from last run)" : "") +
       ` -- an in-progress game is always continued as-is first.`
@@ -699,7 +731,7 @@ export async function main(ns) {
         openingStats,
       })
       if (search) {
-        const deadline = t0 + TARGET_THINK_MS
+        const deadline = t0 + effectiveTargetThinkMs
         while (search.remaining() > 0 && Date.now() < deadline) {
           search.runIterationsForMs(CHUNK_MS)
           await ns.sleep(0)

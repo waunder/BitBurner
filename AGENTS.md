@@ -166,6 +166,96 @@ reading).
   daemon instead performs a manifest resync/pull on reconnect; verify its
   result rather than applying this legacy workaround by habit.
 
+### Browser test environment and deployment requirements
+
+`docs/rewrite-direction.md` is the concise rewrite direction. An assigned
+agent must treat it as a starting point for evidence-gathering, not a closed
+specification; its detailed requirements below remain project working rules.
+
+Ken uses the Steam Bitburner save only; it is the protected live environment.
+Codex is explicitly authorized to use a separate Bitburner browser
+session/save as a disposable integration-test environment, including through
+computer use. Use that browser environment for real game execution, restart,
+recovery, and failure-injection tests before asking the Steam save to carry a
+new control path. It is not merely a mock: the game APIs, save-file behavior,
+process lifecycle, and UI are part of what must be tested.
+
+For the rewrite, make deployment identity explicit. Generate one content
+fingerprint/manifest for the source release, confirm that same fingerprint in
+the files delivered to the game, and have every long-running process report
+the release/generation it actually started from. The controller must show all
+three values and call any disagreement version drift. Startup/reconciliation
+must retire processes from an old generation where appropriate before starting
+the intended generation; do not make every script indiscriminately kill its
+peers.
+
+Treat the Remote API as an implementation under study, not a black box whose
+documented behavior is enough. Read and test both sides of its protocol and
+lifecycle -- the local daemon, the in-game endpoint, reconnect/resync,
+readback, failure responses, and interaction with Bitburner's own file and
+process semantics -- before preserving or replacing any part of it.
+
+For the rewrite, expose **one event/logging interface** for every message,
+whether it originates in the game or on the local controller. Each event must
+have structured fields (time, source, release/generation, level, event kind,
+correlation/action id, message, and relevant decision inputs) and one stable,
+clean human rendering derived from those fields. The durable event stream is
+the system of record and must be readily readable by both a person and an AI;
+console, dashboard, file, and Remote API views are projections of that same
+stream, not separately authored logs.
+
+The in-game tail is a live projection of this interface: render every
+meaningful event that would otherwise reach the in-game console, but coalesce
+repeated equivalent events into a running count with first/last time and a
+periodic summary. Preserve every occurrence in the durable event stream.
+Define equivalence deliberately (event kind, level, normalized message, and
+relevant context) so a repeated harmless heartbeat is condensed while a
+changed input, warning, error, or decision is still individually visible. A
+tail window is never the sole log or evidence source because its rendered
+history is finite and it can be orphaned by process death.
+
+The rewrite must provide one coherent **operator control surface**. It must
+show the resolved desired state, every active override, who/what set it,
+when it expires, the effective release/generation, and whether the observed
+state conforms. Replace scattered one-off levers such as `set_objective.js`
+with a small typed, validated set of flags/commands that is visible and
+changeable from both the local controller and the game. Configuration changes
+must be durable, audited events and must not be silently overwritten by a
+later source sync.
+
+Use an always-on agentic loop only for bounded stewardship: collect state,
+validate freshness/invariants, reconcile explicitly authorized desired state,
+and produce actionable proposals. It must not invent goals, broaden its own
+authority, spend money, reset progress, or re-enable a restricted subsystem.
+Any recovery action needs a cooldown, an idempotency key, a visible reason,
+and an event recording its result. The dashboard must make clear whether the
+loop is observing, proposing, or acting.
+
+Purchased cloud-worker capacity needs an explicit investment-decision
+process, not a one-off purchase script. For every proposal show the purchase
+cost, current and added RAM/capacity, projected marginal money/XP benefit,
+estimated payback time, assumptions, opportunity cost, budget/cap impact,
+and the evidence after purchase. Start in propose-only mode; its authority to
+purchase is a separately visible policy decision.
+
+Before replacing the present scheduler, assess R1 through R8 as a single
+tracked review: for each, record its plain-language purpose, code location,
+inputs, enabled state, test and live evidence, known limitation, measurable
+benefit, rollback, and next action. Queue only work that follows from that
+review. In particular, R8 is not a target selector: when enabled, it only
+blocks an already-qualified scheduler switch if the candidate's
+Formulas-at-minimum-security score is below its threshold relative to the
+current target; it otherwise fails open. The new control surface must say
+this in plain language rather than expose an unexplained `veto` flag.
+
+Every automation, especially IPvGO, requires an ROI card visible beside its
+health data: resource cost (RAM/CPU/time), output and progress metric,
+measured marginal benefit against a baseline, confidence/sample window,
+opportunity cost, budget/stop rule, and the next review date. High activity
+or a large game count is not evidence of value. IPvGO must demonstrate useful
+faction-reputation/progression gain at an acceptable cost before it consumes
+ongoing capacity.
+
 ## Diagnosis discipline
 
 The hard-won lesson (see `docs/audit-2026-08-07-process.md`): **log decisions,

@@ -154,6 +154,11 @@
 
 import { createMctsSearch, computeOpeningMoveStats } from "ipvgo_logic.js"
 
+// Version stamp for certification (git commit hash)
+// Update this whenever the script changes. Check ipvgo_version.json in-game to verify what's running.
+const VERSION = "d796c33"
+const VERSION_TIMESTAMP = new Date("2026-09-06T00:00:00Z").getTime()
+
 // Hard ceiling on total simulations regardless of board size or elapsed
 // time -- a safety valve, not the primary budget (see TARGET_THINK_MS
 // below). Prevents burning the whole time budget on redundant search once a
@@ -555,8 +560,17 @@ export async function main(ns) {
   // since nothing re-evaluated it until the next full script restart.
   let isFactionMember = checkFactionMembership(ns, opponent)
 
+  // Write version certification file
+  const versionInfo = {
+    version: VERSION,
+    timestamp: VERSION_TIMESTAMP,
+    startedAt: Date.now(),
+    algorithm: ALGORITHM,
+  }
+  ns.write("ipvgo_version.json", JSON.stringify(versionInfo, null, 2), "w")
+
   ns.tprint(
-    `ipvgo_player: starting (RAM ${ns.getScriptRam(ns.getScriptName()).toFixed(2)}GB, ` +
+    `ipvgo_player: starting [version: ${VERSION}] (RAM ${ns.getScriptRam(ns.getScriptName()).toFixed(2)}GB, ` +
       `MCTS/UCB1+RAVE, up to ${MAX_SIMULATIONS} sims/move within ${effectiveTargetThinkMs}ms (chunked, non-blocking), ` +
       `algorithm=${ALGORITHM}` +
       (experimentMode ? `, EXPERIMENT MODE: ${size}x${size}, ${experimentTargetGames} games target` : "") +

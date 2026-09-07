@@ -154,11 +154,6 @@
 
 import { createMctsSearch, computeOpeningMoveStats } from "ipvgo_logic.js"
 
-// Version stamp for certification (git commit hash)
-// Update this whenever the script changes. Check ipvgo_version.json in-game to verify what's running.
-const VERSION = "d796c33"
-const VERSION_TIMESTAMP = new Date("2026-09-06T00:00:00Z").getTime()
-
 // Hard ceiling on total simulations regardless of board size or elapsed
 // time -- a safety valve, not the primary budget (see TARGET_THINK_MS
 // below). Prevents burning the whole time budget on redundant search once a
@@ -560,17 +555,8 @@ export async function main(ns) {
   // since nothing re-evaluated it until the next full script restart.
   let isFactionMember = checkFactionMembership(ns, opponent)
 
-  // Write version certification file
-  const versionInfo = {
-    version: VERSION,
-    timestamp: VERSION_TIMESTAMP,
-    startedAt: Date.now(),
-    algorithm: ALGORITHM,
-  }
-  ns.write("ipvgo_version.json", JSON.stringify(versionInfo, null, 2), "w")
-
   ns.tprint(
-    `ipvgo_player: starting [version: ${VERSION}] (RAM ${ns.getScriptRam(ns.getScriptName()).toFixed(2)}GB, ` +
+    `ipvgo_player: starting (RAM ${ns.getScriptRam(ns.getScriptName()).toFixed(2)}GB, ` +
       `MCTS/UCB1+RAVE, up to ${MAX_SIMULATIONS} sims/move within ${effectiveTargetThinkMs}ms (chunked, non-blocking), ` +
       `algorithm=${ALGORITHM}` +
       (experimentMode ? `, EXPERIMENT MODE: ${size}x${size}, ${experimentTargetGames} games target` : "") +
@@ -627,53 +613,11 @@ export async function main(ns) {
     isFactionMember,
   })
 
-  // Helper: test if a move would create a group boxed in with too few liberties
-  // Groups with 1 liberty are in immediate atari -- opponent can kill them next move
-  // Groups with 2 liberties on edge/corner are also vulnerable early game
-  function isUnsafeMove(move, board, boardSize) {
-    // Simulate the move locally (simple version: just check liberties after placement)
-    const [x, y] = move
-    const neighbors = []
-    for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
-      const nx = x + dx
-      const ny = y + dy
-      if (nx >= 0 && nx < boardSize && ny >= 0 && ny < boardSize) {
-        neighbors.push([nx, ny])
-      }
-    }
+  // Helper: prefer center moves in early game (first 6 moves/side, ~24 pieces)
+  // Opening edges are weak in Go; this biases MCTS to try center plays first.
+  function prioritizeCenterMoves(moves, boardSize, pieceCount) {
+    if (pieceCount > 24) return moves // After early game, don't reorder
 
-    // Count immediate liberties if we place here
-    let liberties = 0
-    for (const [nx, ny] of neighbors) {
-      if (board[nx]?.[ny] === ".") liberties++
-    }
-
-    // Check if we'd connect to friendly stones (adds their liberties too)
-    let wouldConnectToFriendly = false
-    for (const [nx, ny] of neighbors) {
-      if (board[nx]?.[ny] === "X") wouldConnectToFriendly = true
-    }
-
-    // A standalone stone with 0-1 liberties is immediately killable
-    // Even with a friendly connection, 1 total liberty is atari danger
-    if (!wouldConnectToFriendly && liberties <= 1) return true
-
-    // If connecting to friendly, check rough group liberty count
-    // (full chain analysis would need board clone + full chain search)
-    // For now, penalize moves that create immediate 1-liberty atari
-    if (liberties === 0 && wouldConnectToFriendly) {
-      // Could be connecting to a group with liberties, or creating atari
-      // Conservative: penalize heavily
-      return true
-    }
-
-    return false
-  }
-
-  // Helper: prefer center moves in early game, avoid dead-node-blocked regions
-  // Dead nodes ('#' on board) reduce playable area and wall off territory.
-  // Prefer moves with space around them (less likely to be hemmed in).
-  function prioritizeCenterMoves(moves, boardSize, pieceCount, board) {
     const center = boardSize / 2
     const centerDist = (x, y) => {
       const dx = Math.abs(x - center + 0.5)
@@ -681,44 +625,12 @@ export async function main(ns) {
       return dx + dy // Manhattan distance from center (lower = better)
     }
 
-    // Count dead nodes (offline nodes) -- they reduce playable area
-    // and constrain territory. Prefer moves with more space around them.
-    const deadNodeNearby = (x, y) => {
-      let deadCount = 0
-      for (let dx = -1; dx <= 1; dx++) {
-        for (let dy = -1; dy <= 1; dy++) {
-          const nx = x + dx
-          const ny = y + dy
-          if (nx >= 0 && nx < boardSize && ny >= 0 && ny < boardSize) {
-            if (board[nx]?.[ny] === "#") deadCount++
-          }
-        }
-      }
-      return deadCount
-    }
+    // Separate into center-biased and edge moves
+    const centered = moves.filter(([x, y]) => centerDist(x, y) <= boardSize / 3)
+    const edges = moves.filter(([x, y]) => centerDist(x, y) > boardSize / 3)
 
-    if (pieceCount > 24) {
-      // After early game, just avoid dead-node clusters
-      const good = moves.filter(([x, y]) => deadNodeNearby(x, y) <= 3)
-      const bad = moves.filter(([x, y]) => deadNodeNearby(x, y) > 3)
-      return [...good, ...bad]
-    }
-
-    // Early game: prefer center + low dead-node-count
-    const scored = moves.map(([x, y]) => ({
-      move: [x, y],
-      centerScore: centerDist(x, y),
-      deadScore: deadNodeNearby(x, y),
-    }))
-
-    // Sort by: center first, then by dead-node count
-    scored.sort((a, b) => {
-      const cmp = a.centerScore - b.centerScore
-      if (cmp !== 0) return cmp
-      return a.deadScore - b.deadScore
-    })
-
-    return scored.map(s => s.move)
+    // Return centered moves first, then edges
+    return [...centered, ...edges]
   }
 
   while (true) {
@@ -811,16 +723,9 @@ export async function main(ns) {
       }
 
       const board = ns.go.getBoardState()
-      const validMovesGrid = ns.go.analysis.getValidMoves()
-      // Convert boolean grid to array of [x, y] coordinates
-      const validMovesRaw = []
-      for (let x = 0; x < size; x++) {
-        for (let y = 0; y < size; y++) {
-          if (validMovesGrid[x]?.[y]) validMovesRaw.push([x, y])
-        }
-      }
+      const validMovesRaw = ns.go.analysis.getValidMoves()
       const pieceCount = board.flat().filter(c => c !== ".").length
-      const validMoves = prioritizeCenterMoves(validMovesRaw, size, pieceCount, board)
+      const validMoves = prioritizeCenterMoves(validMovesRaw, size, pieceCount)
       // Both 0GB. komi: the real game's actual value for *this* game (not
       // assumed to be the 5.5 default -- see NetscriptDefinitions.d.ts'
       // setTestingBoardState doc comment, which only documents 5.5 as a

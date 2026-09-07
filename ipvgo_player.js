@@ -631,9 +631,27 @@ export async function main(ns) {
     isFactionMember,
   })
 
+  // Helper: check if a move creates a stone/group with atari (1 or 0 immediate liberties)
+  // Atari moves are vulnerable to immediate capture and should be avoided in normal play
+  function hasAtariRisk(move, board) {
+    const [x, y] = move
+    // Count empty neighbors (potential liberties after placement)
+    let liberties = 0
+    const neighbors = [[0, 1], [0, -1], [1, 0], [-1, 0]]
+
+    for (const [dx, dy] of neighbors) {
+      const nx = x + dx, ny = y + dy
+      if (nx >= 0 && nx < board.length && ny >= 0 && ny < board[0].length) {
+        if (board[nx][ny] === ".") liberties++
+      }
+    }
+
+    return liberties <= 1 // 0 liberties = suicide, 1 liberty = immediate capture
+  }
+
   // Helper: prefer center moves in early game (first 6 moves/side, ~24 pieces)
   // Opening edges are weak in Go; this biases MCTS to try center plays first.
-  function prioritizeCenterMoves(moves, boardSize, pieceCount) {
+  function prioritizeCenterMoves(moves, boardSize, pieceCount, board) {
     if (pieceCount > 24) return moves // After early game, don't reorder
 
     const center = boardSize / 2
@@ -647,8 +665,14 @@ export async function main(ns) {
     const centered = moves.filter(([x, y]) => centerDist(x, y) <= boardSize / 3)
     const edges = moves.filter(([x, y]) => centerDist(x, y) > boardSize / 3)
 
-    // Return centered moves first, then edges
-    return [...centered, ...edges]
+    // Within each group, separate safe moves from atari-risk moves
+    const centeredSafe = centered.filter(move => !hasAtariRisk(move, board))
+    const centeredRisky = centered.filter(move => hasAtariRisk(move, board))
+    const edgesSafe = edges.filter(move => !hasAtariRisk(move, board))
+    const edgesRisky = edges.filter(move => hasAtariRisk(move, board))
+
+    // Return safe moves first (centered safe, then edge safe), then risky as fallback
+    return [...centeredSafe, ...edgesSafe, ...centeredRisky, ...edgesRisky]
   }
 
   while (true) {
@@ -743,7 +767,7 @@ export async function main(ns) {
       const board = ns.go.getBoardState()
       const validMovesRaw = ns.go.analysis.getValidMoves()
       const pieceCount = board.flat().filter(c => c !== ".").length
-      const validMoves = prioritizeCenterMoves(validMovesRaw, size, pieceCount)
+      const validMoves = prioritizeCenterMoves(validMovesRaw, size, pieceCount, board)
       // Both 0GB. komi: the real game's actual value for *this* game (not
       // assumed to be the 5.5 default -- see NetscriptDefinitions.d.ts'
       // setTestingBoardState doc comment, which only documents 5.5 as a

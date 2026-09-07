@@ -634,6 +634,9 @@ export async function main(ns) {
   // Helper: check if a move creates a stone/group with atari (1 or 0 immediate liberties)
   // Atari moves are vulnerable to immediate capture and should be avoided in normal play
   function hasAtariRisk(move, board) {
+    // Defensive: ensure board exists and is properly formed
+    if (!board || !Array.isArray(board) || board.length === 0 || !board[0]) return false
+
     const [x, y] = move
     // Count empty neighbors (potential liberties after placement)
     let liberties = 0

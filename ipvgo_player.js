@@ -154,6 +154,9 @@
 
 import { createMctsSearch, computeOpeningMoveStats } from "ipvgo_logic.js"
 
+// VERSION: 9cc30d5 (center-bias + dead-node awareness)
+const SCRIPT_VERSION = "9cc30d5"
+
 // Hard ceiling on total simulations regardless of board size or elapsed
 // time -- a safety valve, not the primary budget (see TARGET_THINK_MS
 // below). Prevents burning the whole time budget on redundant search once a
@@ -555,8 +558,11 @@ export async function main(ns) {
   // since nothing re-evaluated it until the next full script restart.
   let isFactionMember = checkFactionMembership(ns, opponent)
 
+  // Write version to file for inspection
+  ns.write("ipvgo_version.txt", SCRIPT_VERSION, "w")
+
   ns.tprint(
-    `ipvgo_player: starting (RAM ${ns.getScriptRam(ns.getScriptName()).toFixed(2)}GB, ` +
+    `ipvgo_player: starting [v${SCRIPT_VERSION}] (RAM ${ns.getScriptRam(ns.getScriptName()).toFixed(2)}GB, ` +
       `MCTS/UCB1+RAVE, up to ${MAX_SIMULATIONS} sims/move within ${effectiveTargetThinkMs}ms (chunked, non-blocking), ` +
       `algorithm=${ALGORITHM}` +
       (experimentMode ? `, EXPERIMENT MODE: ${size}x${size}, ${experimentTargetGames} games target` : "") +

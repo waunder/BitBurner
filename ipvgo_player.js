@@ -263,11 +263,23 @@ const RECENT_GAMES_WINDOW = 100
 function killDuplicates(ns) {
   const self = ns.getScriptName()
   const here = ns.getHostname()
+  const killedPids = []
   for (const proc of ns.ps(here)) {
     if (proc.filename === self && proc.pid !== ns.pid) {
       ns.tprint(`ipvgo_player: killing duplicate instance (pid ${proc.pid}) -- only one subnet can be active at a time`)
       ns.kill(proc.pid)
+      killedPids.push(proc.pid)
+      // Close the orphaned tail window (ns.kill doesn't close it)
+      try {
+        ns.ui.closeTail(proc.pid)
+      } catch (e) {
+        // closeTail might fail if window already gone, that's ok
+      }
     }
+  }
+  // Brief sleep to ensure killed processes are fully cleaned up
+  if (killedPids.length > 0) {
+    ns.sleep(200)
   }
 }
 

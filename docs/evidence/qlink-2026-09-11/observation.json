@@ -1,0 +1,233 @@
+{
+  "ts": 1789160533226,
+  "player": {
+    "hp": {
+      "current": 318,
+      "max": 318
+    },
+    "skills": {
+      "hacking": 4270,
+      "strength": 2197,
+      "defense": 3080,
+      "dexterity": 1244,
+      "agility": 1230,
+      "charisma": 2074,
+      "intelligence": 80
+    },
+    "exp": {
+      "hacking": 422936055.74478394,
+      "strength": 1008.1711339018914,
+      "defense": 891.1686812246892,
+      "dexterity": 7072.245752754716,
+      "agility": 9594.851133155742,
+      "charisma": 10117975.293623926,
+      "intelligence": 5849.679999942767
+    },
+    "mults": {
+      "hacking_chance": 3.706742621491427,
+      "hacking_speed": 3.172925637507853,
+      "hacking_money": 17.85628056430921,
+      "hacking_grow": 4.257709925862364,
+      "hacking": 9.804379019285518,
+      "hacking_exp": 14.966416683881304,
+      "strength": 62.93443580466269,
+      "strength_exp": 3.250068129922275,
+      "defense": 95.08221561034433,
+      "defense_exp": 3.250068129922275,
+      "dexterity": 14.47805084434756,
+      "dexterity_exp": 3.737578349410615,
+      "agility": 12.928837499497101,
+      "agility_exp": 3.250068129922275,
+      "charisma": 6.560100155198263,
+      "charisma_exp": 8.890595666640097,
+      "hacknet_node_money": 2.3356580164730683,
+      "hacknet_node_purchase_cost": 0.4367077683488256,
+      "hacknet_node_ram_cost": 0.4367077683488256,
+      "hacknet_node_core_cost": 0.4367077683488256,
+      "hacknet_node_level_cost": 0.4367077683488256,
+      "company_rep": 5.117558991786552,
+      "faction_rep": 3.0515062023938038,
+      "work_money": 4.565510724799906,
+      "crime_success": 3.489907849618623,
+      "crime_money": 5.928877539977093,
+      "dnet_money": 1,
+      "bladeburner_max_stamina": 1,
+      "bladeburner_stamina_gain": 1,
+      "bladeburner_analysis": 1,
+      "bladeburner_success_chance": 1
+    },
+    "city": "Sector-12",
+    "numPeopleKilled": 0,
+    "money": 35478544496131.07,
+    "location": "Travel Agency",
+    "totalPlaytime": 3566934000,
+    "jobs": {},
+    "factions": [
+      "Illuminati",
+      "Daedalus"
+    ],
+    "entropy": 0,
+    "karma": -9058.590000000033
+  },
+  "cloudNames": [],
+  "cloudLimit": 25,
+  "costs": {
+    "1024": 116785152,
+    "4096": 672682475.5199999,
+    "16384": 3874651058.9951987,
+    "65536": 22317990099.812344,
+    "1048576": 740457348335.5338
+  },
+  "income": [
+    2401286742.3033504,
+    606263441.3412328
+  ],
+  "moneySources": {
+    "sinceInstall": {
+      "bladeburner": 0,
+      "casino": 0,
+      "class": -19083456,
+      "codingcontract": 675000000,
+      "corporation": 0,
+      "crime": 0,
+      "darknet": 54480132684.39683,
+      "gang": 0,
+      "gang_expenses": 0,
+      "hacking": 35423763145640.6,
+      "hacknet": 0,
+      "hacknet_expenses": 0,
+      "hospitalization": 0,
+      "infiltration": 0,
+      "sleeves": 0,
+      "stock": 0,
+      "total": 35478544494869.07,
+      "work": 0,
+      "servers": 0,
+      "other": -354700000,
+      "augmentations": 0
+    },
+    "sinceStart": {
+      "bladeburner": 0,
+      "casino": 0,
+      "class": -345991192,
+      "codingcontract": 8422222222.22222,
+      "corporation": 0,
+      "crime": 956974242.7198381,
+      "darknet": 246465068226.3466,
+      "gang": 0,
+      "gang_expenses": 0,
+      "hacking": 108391003653251.64,
+      "hacknet": 72212265.31279251,
+      "hacknet_expenses": -709206854.9852235,
+      "hospitalization": 0,
+      "infiltration": 0,
+      "sleeves": 0,
+      "stock": 0,
+      "total": 61179511691858.82,
+      "work": 653385.3700000653,
+      "servers": -14623924326929.88,
+      "other": -4461700000,
+      "augmentations": -32837967866761.906
+    }
+  },
+  "processes": [
+    {
+      "filename": "mcp_supervisor.js",
+      "threads": 1,
+      "args": [],
+      "pid": 1,
+      "temporary": false
+    },
+    {
+      "filename": "hacking/crawler.js",
+      "threads": 1,
+      "args": [],
+      "pid": 2,
+      "temporary": false
+    },
+    {
+      "filename": "hud_consolidated.js",
+      "threads": 1,
+      "args": [],
+      "pid": 6,
+      "temporary": false
+    },
+    {
+      "filename": "dnet_root.js",
+      "threads": 1,
+      "args": [],
+      "pid": 9,
+      "temporary": false
+    },
+    {
+      "filename": "scripts/share.js",
+      "threads": 65481,
+      "args": [],
+      "pid": 10,
+      "temporary": false
+    },
+    {
+      "filename": "mcp_money.js",
+      "threads": 1,
+      "args": [],
+      "pid": 22258,
+      "temporary": false
+    },
+    {
+      "filename": "automation_review.js",
+      "threads": 1,
+      "args": [],
+      "pid": 22636,
+      "temporary": false
+    },
+    {
+      "filename": "cct_watcher.js",
+      "threads": 1,
+      "args": [],
+      "pid": 22642,
+      "temporary": false
+    },
+    {
+      "filename": "maintenance_steward.js",
+      "threads": 1,
+      "args": [],
+      "pid": 22643,
+      "temporary": false
+    },
+    {
+      "filename": "player_activity_controller.js",
+      "threads": 1,
+      "args": [],
+      "pid": 22644,
+      "temporary": false
+    },
+    {
+      "filename": "ops_hud.js",
+      "threads": 1,
+      "args": [],
+      "pid": 22645,
+      "temporary": false
+    },
+    {
+      "filename": "mcp.js",
+      "threads": 1,
+      "args": [],
+      "pid": 22646,
+      "temporary": false
+    },
+    {
+      "filename": "mcp_xp.js",
+      "threads": 1,
+      "args": [],
+      "pid": 22647,
+      "temporary": false
+    },
+    {
+      "filename": "qlink_observe.js",
+      "threads": 1,
+      "args": [],
+      "pid": 23648,
+      "temporary": false
+    }
+  ]
+}

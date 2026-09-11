@@ -1,0 +1,1070 @@
+{
+  "ts": 1789160496486,
+  "runId": "mtx7rqy4-ik04",
+  "scriptVersion": "62f735",
+  "player": {
+    "money": 35302940518895.586,
+    "hp": {
+      "current": 318,
+      "max": 318
+    },
+    "skills": {
+      "hacking": 4270,
+      "strength": 2197,
+      "defense": 3080,
+      "dexterity": 1244,
+      "agility": 1230,
+      "charisma": 2073,
+      "intelligence": 80
+    },
+    "hackingGrowMult": 4.257709925862364
+  },
+  "homeCores": 1,
+  "target": "ecorp",
+  "plan": "work",
+  "debugWorkWeights": {
+    "hackPercentPerThread": 0.002723981297786129,
+    "growLogPerThread": 0.0018944701332868222,
+    "balancedHackShare": 0.16073903020433483,
+    "growPerHack": 4.6011494189103175
+  },
+  "weightBucket": "harvest",
+  "currentSecurity": 66.73400000000008,
+  "moneyPct": 0.9458341046393836,
+  "needWeaken": 15,
+  "maxWeaken": 1457,
+  "tickSeconds": 10.008,
+  "hacked": 0,
+  "rate": 0,
+  "avgRate": 1035932897.3010578,
+  "incomePerSec": 1641535010.6437511,
+  "expPerSec": 1006.573231067021,
+  "totalHacked": 14608248313418.66,
+  "ramUtilization": 0.9906881804043547,
+  "workers": [
+    {
+      "host": "n00dles",
+      "maxRam": 4,
+      "usedRam": 3.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 1
+        },
+        {
+          "script": "grow",
+          "threads": 1
+        }
+      ]
+    },
+    {
+      "host": "foodnstuff",
+      "maxRam": 16,
+      "usedRam": 15.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 1
+        },
+        {
+          "script": "grow",
+          "threads": 8
+        }
+      ]
+    },
+    {
+      "host": "sigma-cosmetics",
+      "maxRam": 16,
+      "usedRam": 15.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 1
+        },
+        {
+          "script": "grow",
+          "threads": 8
+        }
+      ]
+    },
+    {
+      "host": "joesguns",
+      "maxRam": 16,
+      "usedRam": 15.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 1
+        },
+        {
+          "script": "grow",
+          "threads": 8
+        }
+      ]
+    },
+    {
+      "host": "hong-fang-tea",
+      "maxRam": 16,
+      "usedRam": 15.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 1
+        },
+        {
+          "script": "grow",
+          "threads": 8
+        }
+      ]
+    },
+    {
+      "host": "harakiri-sushi",
+      "maxRam": 16,
+      "usedRam": 15.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 1
+        },
+        {
+          "script": "grow",
+          "threads": 8
+        }
+      ]
+    },
+    {
+      "host": "iron-gym",
+      "maxRam": 32,
+      "usedRam": 31.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 2
+        },
+        {
+          "script": "grow",
+          "threads": 16
+        }
+      ]
+    },
+    {
+      "host": "CSEC",
+      "maxRam": 8,
+      "usedRam": 7,
+      "freeRam": 1,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 1
+        },
+        {
+          "script": "grow",
+          "threads": 3
+        }
+      ]
+    },
+    {
+      "host": "nectar-net",
+      "maxRam": 16,
+      "usedRam": 15.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 1
+        },
+        {
+          "script": "grow",
+          "threads": 8
+        }
+      ]
+    },
+    {
+      "host": "zer0",
+      "maxRam": 32,
+      "usedRam": 31.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 2
+        },
+        {
+          "script": "grow",
+          "threads": 16
+        }
+      ]
+    },
+    {
+      "host": "max-hardware",
+      "maxRam": 32,
+      "usedRam": 31.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 2
+        },
+        {
+          "script": "grow",
+          "threads": 16
+        }
+      ]
+    },
+    {
+      "host": "neo-net",
+      "maxRam": 32,
+      "usedRam": 31.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 2
+        },
+        {
+          "script": "grow",
+          "threads": 16
+        }
+      ]
+    },
+    {
+      "host": "silver-helix",
+      "maxRam": 64,
+      "usedRam": 62.9,
+      "freeRam": 1.1000000000000014,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 30
+        },
+        {
+          "script": "hack",
+          "threads": 2
+        },
+        {
+          "script": "weaken",
+          "threads": 4
+        }
+      ]
+    },
+    {
+      "host": "phantasy",
+      "maxRam": 32,
+      "usedRam": 31.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 2
+        },
+        {
+          "script": "grow",
+          "threads": 16
+        }
+      ]
+    },
+    {
+      "host": "omega-net",
+      "maxRam": 32,
+      "usedRam": 31.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 2
+        },
+        {
+          "script": "grow",
+          "threads": 16
+        }
+      ]
+    },
+    {
+      "host": "netlink",
+      "maxRam": 128,
+      "usedRam": 127.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 60
+        },
+        {
+          "script": "hack",
+          "threads": 5
+        },
+        {
+          "script": "weaken",
+          "threads": 8
+        }
+      ]
+    },
+    {
+      "host": "the-hub",
+      "maxRam": 64,
+      "usedRam": 62.9,
+      "freeRam": 1.1000000000000014,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 30
+        },
+        {
+          "script": "hack",
+          "threads": 2
+        },
+        {
+          "script": "weaken",
+          "threads": 4
+        }
+      ]
+    },
+    {
+      "host": "avmnite-02h",
+      "maxRam": 16,
+      "usedRam": 15.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 1
+        },
+        {
+          "script": "grow",
+          "threads": 8
+        }
+      ]
+    },
+    {
+      "host": "zb-institute",
+      "maxRam": 64,
+      "usedRam": 62.9,
+      "freeRam": 1.1000000000000014,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 30
+        },
+        {
+          "script": "hack",
+          "threads": 2
+        },
+        {
+          "script": "weaken",
+          "threads": 4
+        }
+      ]
+    },
+    {
+      "host": "I.I.I.I",
+      "maxRam": 64,
+      "usedRam": 62.9,
+      "freeRam": 1.1000000000000014,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 4
+        },
+        {
+          "script": "grow",
+          "threads": 30
+        },
+        {
+          "script": "hack",
+          "threads": 2
+        }
+      ]
+    },
+    {
+      "host": "rothman-uni",
+      "maxRam": 64,
+      "usedRam": 62.9,
+      "freeRam": 1.1000000000000014,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 30
+        },
+        {
+          "script": "hack",
+          "threads": 2
+        },
+        {
+          "script": "weaken",
+          "threads": 4
+        }
+      ]
+    },
+    {
+      "host": "catalyst",
+      "maxRam": 128,
+      "usedRam": 127.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 60
+        },
+        {
+          "script": "hack",
+          "threads": 5
+        },
+        {
+          "script": "weaken",
+          "threads": 8
+        }
+      ]
+    },
+    {
+      "host": "summit-uni",
+      "maxRam": 16,
+      "usedRam": 15.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 1
+        },
+        {
+          "script": "grow",
+          "threads": 8
+        }
+      ]
+    },
+    {
+      "host": "lexo-corp",
+      "maxRam": 32,
+      "usedRam": 31.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 2
+        },
+        {
+          "script": "grow",
+          "threads": 16
+        }
+      ]
+    },
+    {
+      "host": "rho-construction",
+      "maxRam": 64,
+      "usedRam": 62.9,
+      "freeRam": 1.1000000000000014,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 30
+        },
+        {
+          "script": "hack",
+          "threads": 2
+        },
+        {
+          "script": "weaken",
+          "threads": 4
+        }
+      ]
+    },
+    {
+      "host": "millenium-fitness",
+      "maxRam": 16,
+      "usedRam": 15.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 1
+        },
+        {
+          "script": "grow",
+          "threads": 8
+        }
+      ]
+    },
+    {
+      "host": "alpha-ent",
+      "maxRam": 32,
+      "usedRam": 31.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 2
+        },
+        {
+          "script": "grow",
+          "threads": 16
+        }
+      ]
+    },
+    {
+      "host": "aevum-police",
+      "maxRam": 32,
+      "usedRam": 31.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 2
+        },
+        {
+          "script": "grow",
+          "threads": 16
+        }
+      ]
+    },
+    {
+      "host": "global-pharm",
+      "maxRam": 32,
+      "usedRam": 31.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 2
+        },
+        {
+          "script": "grow",
+          "threads": 16
+        }
+      ]
+    },
+    {
+      "host": "omnia",
+      "maxRam": 16,
+      "usedRam": 15.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 1
+        },
+        {
+          "script": "grow",
+          "threads": 8
+        }
+      ]
+    },
+    {
+      "host": "unitalife",
+      "maxRam": 64,
+      "usedRam": 62.9,
+      "freeRam": 1.1000000000000014,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 30
+        },
+        {
+          "script": "hack",
+          "threads": 2
+        },
+        {
+          "script": "weaken",
+          "threads": 4
+        }
+      ]
+    },
+    {
+      "host": "univ-energy",
+      "maxRam": 64,
+      "usedRam": 62.9,
+      "freeRam": 1.1000000000000014,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 30
+        },
+        {
+          "script": "hack",
+          "threads": 2
+        },
+        {
+          "script": "weaken",
+          "threads": 4
+        }
+      ]
+    },
+    {
+      "host": "solaris",
+      "maxRam": 32,
+      "usedRam": 31.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 2
+        },
+        {
+          "script": "grow",
+          "threads": 16
+        }
+      ]
+    },
+    {
+      "host": "titan-labs",
+      "maxRam": 32,
+      "usedRam": 31.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 2
+        },
+        {
+          "script": "grow",
+          "threads": 16
+        }
+      ]
+    },
+    {
+      "host": "microdyne",
+      "maxRam": 16,
+      "usedRam": 15.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 1
+        },
+        {
+          "script": "grow",
+          "threads": 8
+        }
+      ]
+    },
+    {
+      "host": "run4theh111z",
+      "maxRam": 256,
+      "usedRam": 255,
+      "freeRam": 1,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 16
+        },
+        {
+          "script": "grow",
+          "threads": 120
+        },
+        {
+          "script": "hack",
+          "threads": 10
+        }
+      ]
+    },
+    {
+      "host": "helios",
+      "maxRam": 256,
+      "usedRam": 255.05,
+      "freeRam": 0.9499999999999886,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 16
+        },
+        {
+          "script": "grow",
+          "threads": 121
+        },
+        {
+          "script": "hack",
+          "threads": 9
+        }
+      ]
+    },
+    {
+      "host": "fulcrumtech",
+      "maxRam": 128,
+      "usedRam": 127.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 60
+        },
+        {
+          "script": "hack",
+          "threads": 5
+        },
+        {
+          "script": "weaken",
+          "threads": 8
+        }
+      ]
+    },
+    {
+      "host": "vitalife",
+      "maxRam": 16,
+      "usedRam": 15.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 1
+        },
+        {
+          "script": "grow",
+          "threads": 8
+        }
+      ]
+    },
+    {
+      "host": "omnitek",
+      "maxRam": 512,
+      "usedRam": 511.8,
+      "freeRam": 0.19999999999998863,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 31
+        },
+        {
+          "script": "grow",
+          "threads": 243
+        },
+        {
+          "script": "hack",
+          "threads": 19
+        }
+      ]
+    },
+    {
+      "host": ".",
+      "maxRam": 16,
+      "usedRam": 15.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 1
+        },
+        {
+          "script": "grow",
+          "threads": 8
+        }
+      ]
+    },
+    {
+      "host": "blade",
+      "maxRam": 32,
+      "usedRam": 31.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 2
+        },
+        {
+          "script": "grow",
+          "threads": 16
+        }
+      ]
+    },
+    {
+      "host": "powerhouse-fitness",
+      "maxRam": 16,
+      "usedRam": 15.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 1
+        },
+        {
+          "script": "grow",
+          "threads": 8
+        }
+      ]
+    }
+  ],
+  "cloudWorkers": [],
+  "candidate": "ecorp",
+  "candidateScore": 4608068256.682119,
+  "candidateExpectedIncome": 43015708.92772857,
+  "avgMoneyPct": 0.9202804395639728,
+  "moneyPctSampleCount": 9,
+  "moneyPctSampleTarget": 9,
+  "heldSeconds": 13762,
+  "hackTimeS": 65.78673373039983,
+  "growTimeS": 210.51754793727946,
+  "weakenTimeS": 263.1469349215993,
+  "hackChance": 1,
+  "switchEval": {
+    "basis": "potential",
+    "currentScore": 4608487922.347586,
+    "best": "ecorp",
+    "bestScore": 4608487922.347586,
+    "ratio": 1,
+    "factor": 1.3,
+    "heldSeconds": 13762,
+    "holdSeconds": 600,
+    "committed": true,
+    "outbid": false,
+    "blockedBy": "score"
+  },
+  "formulaSwitchVeto": null,
+  "formulaRankingActive": true,
+  "objectiveOverrideActive": true,
+  "config": {
+    "SECURITY_CAP": 1,
+    "TARGET_MONEY_GOAL": 0.95,
+    "MIN_TARGET_HOLD_MS": 60000,
+    "WORK_SECURITY_MARGIN": 1.5,
+    "RATE_DROP_FACTOR": 0.75,
+    "LOOP_SLEEP_MS": 10000,
+    "RATE_SAMPLE_COUNT": 5,
+    "WEAKEN_STUCK_MS": 60000,
+    "WEAKEN_STUCK_SECURITY_THRESHOLD": 0.05,
+    "SKIP_STUCK_MS": 60000,
+    "DEGRADED_MONEY_PCT": 0.05,
+    "MONEY_PCT_SAMPLE_COUNT": 9,
+    "OPPORTUNITY_SWITCH_FACTOR": 1.3,
+    "R8_SWITCH_VETO_ENABLED": 1,
+    "FORMULA_RANKING_ENABLED": 1,
+    "MIN_TARGET_COMMIT_MS": 600000,
+    "DEGRADED_SKIP_MS": 900000,
+    "HACK_BALANCE_SAFETY": 0.5,
+    "OBJECTIVE": "money",
+    "XP_WEIGHT_HACK": 0.95,
+    "XP_WEIGHT_GROW": 0.05,
+    "REDEPLOY_TOLERANCE_ABSOLUTE": 2,
+    "REDEPLOY_TOLERANCE_RELATIVE": 0.2,
+    "HOME_RAM_RESERVE": 32,
+    "SCORE_HORIZON_SECONDS": 3600
+  },
+  "invariantViolations": {
+    "tickWithinBounds": 24
+  },
+  "recentEvents": [
+    {
+      "t": 1789151799089,
+      "seq": 10,
+      "runId": "mtx7rqy4-ik04",
+      "ver": "62f735",
+      "kind": "invariant_violation",
+      "invariant": "tickWithinBounds",
+      "count": 5,
+      "interval": 236.357,
+      "nominal": 10
+    },
+    {
+      "t": 1789151844353,
+      "seq": 11,
+      "runId": "mtx7rqy4-ik04",
+      "ver": "62f735",
+      "kind": "invariant_violation",
+      "invariant": "tickWithinBounds",
+      "count": 6,
+      "interval": 45.264,
+      "nominal": 10
+    },
+    {
+      "t": 1789151911208,
+      "seq": 12,
+      "runId": "mtx7rqy4-ik04",
+      "ver": "62f735",
+      "kind": "invariant_violation",
+      "invariant": "tickWithinBounds",
+      "count": 7,
+      "interval": 66.855,
+      "nominal": 10
+    },
+    {
+      "t": 1789151946412,
+      "seq": 13,
+      "runId": "mtx7rqy4-ik04",
+      "ver": "62f735",
+      "kind": "invariant_violation",
+      "invariant": "tickWithinBounds",
+      "count": 8,
+      "interval": 35.204,
+      "nominal": 10
+    },
+    {
+      "t": 1789152054106,
+      "seq": 14,
+      "runId": "mtx7rqy4-ik04",
+      "ver": "62f735",
+      "kind": "invariant_violation",
+      "invariant": "tickWithinBounds",
+      "count": 9,
+      "interval": 107.694,
+      "nominal": 10
+    },
+    {
+      "t": 1789153045025,
+      "seq": 15,
+      "runId": "mtx7rqy4-ik04",
+      "ver": "62f735",
+      "kind": "invariant_violation",
+      "invariant": "tickWithinBounds",
+      "count": 10,
+      "interval": 148.218,
+      "nominal": 10
+    },
+    {
+      "t": 1789153134761,
+      "seq": 16,
+      "runId": "mtx7rqy4-ik04",
+      "ver": "62f735",
+      "kind": "invariant_violation",
+      "invariant": "tickWithinBounds",
+      "count": 11,
+      "interval": 31.913,
+      "nominal": 10
+    },
+    {
+      "t": 1789153344103,
+      "seq": 17,
+      "runId": "mtx7rqy4-ik04",
+      "ver": "62f735",
+      "kind": "invariant_violation",
+      "invariant": "tickWithinBounds",
+      "count": 12,
+      "interval": 199.334,
+      "nominal": 10
+    },
+    {
+      "t": 1789153441940,
+      "seq": 18,
+      "runId": "mtx7rqy4-ik04",
+      "ver": "62f735",
+      "kind": "invariant_violation",
+      "invariant": "tickWithinBounds",
+      "count": 13,
+      "interval": 97.836,
+      "nominal": 10
+    },
+    {
+      "t": 1789155681017,
+      "seq": 19,
+      "runId": "mtx7rqy4-ik04",
+      "ver": "62f735",
+      "kind": "invariant_violation",
+      "invariant": "tickWithinBounds",
+      "count": 14,
+      "interval": 123.349,
+      "nominal": 10
+    },
+    {
+      "t": 1789156137543,
+      "seq": 20,
+      "runId": "mtx7rqy4-ik04",
+      "ver": "62f735",
+      "kind": "invariant_violation",
+      "invariant": "tickWithinBounds",
+      "count": 15,
+      "interval": 442.375,
+      "nominal": 10
+    },
+    {
+      "t": 1789156217753,
+      "seq": 21,
+      "runId": "mtx7rqy4-ik04",
+      "ver": "62f735",
+      "kind": "invariant_violation",
+      "invariant": "tickWithinBounds",
+      "count": 16,
+      "interval": 70.203,
+      "nominal": 10
+    },
+    {
+      "t": 1789156947405,
+      "seq": 22,
+      "runId": "mtx7rqy4-ik04",
+      "ver": "62f735",
+      "kind": "invariant_violation",
+      "invariant": "tickWithinBounds",
+      "count": 17,
+      "interval": 729.652,
+      "nominal": 10
+    },
+    {
+      "t": 1789157165731,
+      "seq": 23,
+      "runId": "mtx7rqy4-ik04",
+      "ver": "62f735",
+      "kind": "invariant_violation",
+      "invariant": "tickWithinBounds",
+      "count": 18,
+      "interval": 218.326,
+      "nominal": 10
+    },
+    {
+      "t": 1789157342257,
+      "seq": 24,
+      "runId": "mtx7rqy4-ik04",
+      "ver": "62f735",
+      "kind": "invariant_violation",
+      "invariant": "tickWithinBounds",
+      "count": 19,
+      "interval": 137.304,
+      "nominal": 10
+    },
+    {
+      "t": 1789157533663,
+      "seq": 25,
+      "runId": "mtx7rqy4-ik04",
+      "ver": "62f735",
+      "kind": "invariant_violation",
+      "invariant": "tickWithinBounds",
+      "count": 20,
+      "interval": 161.387,
+      "nominal": 10
+    },
+    {
+      "t": 1789157619117,
+      "seq": 26,
+      "runId": "mtx7rqy4-ik04",
+      "ver": "62f735",
+      "kind": "invariant_violation",
+      "invariant": "tickWithinBounds",
+      "count": 21,
+      "interval": 85.454,
+      "nominal": 10
+    },
+    {
+      "t": 1789158548662,
+      "seq": 27,
+      "runId": "mtx7rqy4-ik04",
+      "ver": "62f735",
+      "kind": "invariant_violation",
+      "invariant": "tickWithinBounds",
+      "count": 22,
+      "interval": 929.545,
+      "nominal": 10
+    },
+    {
+      "t": 1789159136762,
+      "seq": 28,
+      "runId": "mtx7rqy4-ik04",
+      "ver": "62f735",
+      "kind": "invariant_violation",
+      "invariant": "tickWithinBounds",
+      "count": 23,
+      "interval": 568.088,
+      "nominal": 10
+    },
+    {
+      "t": 1789159726041,
+      "seq": 29,
+      "runId": "mtx7rqy4-ik04",
+      "ver": "62f735",
+      "kind": "invariant_violation",
+      "invariant": "tickWithinBounds",
+      "count": 24,
+      "interval": 559.26,
+      "nominal": 10
+    }
+  ]
+}

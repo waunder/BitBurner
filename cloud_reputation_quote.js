@@ -8,6 +8,10 @@ export async function main(ns) {
     sharePower: ns.getSharePower(), reputation: status.reputation,
     currentShareHostCores: status.reputation?.host ? ns.getServer(status.reputation.host).cpuCores : null,
     cloudServers: ns.cloud.getServerNames(),
+    multiple256Gb: [8,16].map(servers => ({servers,totalRamGb:servers*256,
+      threads:servers*Math.floor(256/ns.getScriptRam("mcp_share.js","home")),
+      totalCost:servers*ns.cloud.getServerCost(256),
+      projectedSharePower:ns.formulas.reputation.sharePower(servers*Math.floor(256/ns.getScriptRam("mcp_share.js","home")),1)})),
     uncapped4Tb: {ramGb:4096,threads:Math.floor(4096/ns.getScriptRam("mcp_share.js","home")),
       projectedSharePower:ns.formulas.reputation.sharePower(Math.floor(4096/ns.getScriptRam("mcp_share.js","home")),1)},
     quotes: [128,256,512,1024,4096].map(ramGb => {

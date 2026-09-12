@@ -2357,6 +2357,8 @@ for `ns.singularity` without SF4 — done up front here instead.
 
 ## Reputation (`ns.share`)
 
+`cloud_reputation_quote.js` also reports `multiple256Gb` for eight/sixteen total servers assuming hypothetical multi-host sharing. These are projections only: the current allocator supports one host, so purchases alone cannot realize them.
+
 The consolidated HUD displays the resolved `mcp_status.json.config.OBJECTIVE` in its compact MCP row and as `Objective` in the expanded section, refreshing every five seconds. Missing/invalid values show `unknown`; stale expanded status marks it `last reported`. Restart `hud_consolidated.js` after source changes (it closes/retires its previous instance).
 
 **New capped objective:** `set_objective.js reputation` requests a single

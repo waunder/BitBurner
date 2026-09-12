@@ -1,0 +1,92 @@
+{
+  "ts": 1789241816700,
+  "money": 745137687.7548424,
+  "homeRam": 128,
+  "intelligence": 83,
+  "sharePower": 1.1699901495061649,
+  "reputation": {
+    "ts": 1789241809746,
+    "requested": true,
+    "config": {
+      "enabled": true,
+      "ramGb": 256,
+      "note": "Ken explicitly overrode the historical sharing restriction and authorized Steam activation on 2026-09-12. Disable enabled to stop owned sharing."
+    },
+    "factionWork": "unverified: sharing only benefits active faction work; choose it in the game",
+    "power": 1.1699901495061649,
+    "maxRamGb": 256,
+    "state": "sharing",
+    "host": "mcp-worker-0",
+    "pid": 726,
+    "threads": 62,
+    "ramGb": 254.2,
+    "retryAt": 1789241769707,
+    "startedAt": 1789241709707,
+    "reviewAt": 1789243509707,
+    "reason": "unverified: sharing only benefits active faction work; choose it in the game",
+    "roi": {
+      "baselinePower": 1,
+      "marginalReputation": null,
+      "confidence": "unmeasured",
+      "opportunityCost": "Reserved RAM cannot earn hacking money or XP",
+      "stopRule": "Stop on objective change, disabled policy or owner exit; review after 30 minutes"
+    }
+  },
+  "currentShareHostCores": 1,
+  "cloudServers": [
+    "mcp-worker-0"
+  ],
+  "multiple256Gb": [
+    {
+      "servers": 8,
+      "totalRamGb": 2048,
+      "threads": 496,
+      "totalCost": 112640000,
+      "projectedSharePower": 1.2525929907724158
+    },
+    {
+      "servers": 16,
+      "totalRamGb": 4096,
+      "threads": 992,
+      "totalCost": 225280000,
+      "projectedSharePower": 1.2803188779948136
+    }
+  ],
+  "uncapped4Tb": {
+    "ramGb": 4096,
+    "threads": 999,
+    "projectedSharePower": 1.2806001448493607
+  },
+  "quotes": [
+    {
+      "ramGb": 128,
+      "cost": 7040000,
+      "shareThreads": 31,
+      "projectedSharePower": 1.1416894418828245
+    },
+    {
+      "ramGb": 256,
+      "cost": 14080000,
+      "shareThreads": 62,
+      "projectedSharePower": 1.1694153291052223
+    },
+    {
+      "ramGb": 512,
+      "cost": 28160000,
+      "shareThreads": 62,
+      "projectedSharePower": 1.1694153291052223
+    },
+    {
+      "ramGb": 1024,
+      "cost": 56320000,
+      "shareThreads": 62,
+      "projectedSharePower": 1.1694153291052223
+    },
+    {
+      "ramGb": 4096,
+      "cost": 225280000,
+      "shareThreads": 62,
+      "projectedSharePower": 1.1694153291052223
+    }
+  ]
+}

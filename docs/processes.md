@@ -502,15 +502,15 @@ should not silently undo a deliberate tune. Every change emits a
 `config_change` event with a diff, and the effective config rides in
 `mcp_status.json` so an edit can be confirmed to have taken.
 
-#### `OBJECTIVE` — money vs. XP
+#### `OBJECTIVE` — money, XP, or reputation
 
-`"money"` (default) or `"xp"`, hot-reloadable like everything else. Validated
+`"money"` (default), `"xp"`, or `"reputation"`, hot-reloadable like everything else. Reputation reserves a policy-capped share allocation and uses money logic for remaining RAM; the checked-in share policy is disabled. Validated
 as a string enum separately from the numeric tunables — an invalid value is
 rejected and reported the same way a bad number is, keeping the current
 setting rather than falling back to the default mid-run.
 
 **Self-serve lever: `set_objective.js`** (added 2026-08-14). `run
-set_objective.js money|xp|clear` from the in-game terminal, no Claude session
+set_objective.js money|xp|reputation|clear` from the in-game terminal, no Claude session
 needed — or `run set_objective.js` with no argument to print what's actually
 in effect right now (read straight from `mcp_status.json`'s `config.OBJECTIVE`/
 `objectiveOverrideActive`, not re-derived, so it can't drift out of sync with
@@ -2353,6 +2353,25 @@ for `ns.singularity` without SF4 — done up front here instead.
 
 ## Reputation (`ns.share`)
 
+**New capped objective:** `set_objective.js reputation` requests a single
+owned `mcp_share.js` worker using `mcp_reputation.js`. Remaining RAM follows
+money policy. `reputation_config.json` is a committed policy with `enabled`
+and `ramGb` (hard maximum 256GB); it defaults to disabled under the unresolved
+Steam share restriction. Disabled/invalid commands preserve the prior
+objective. These three files join source sync; `mcp_status.json.reputation`
+and the existing event stream carry state, budgets, results and ROI limits.
+One host's action allocation is reclaimed on share start, owned sharing stops
+on objective/policy change, owner death exits after a ten-second call, and
+failed starts retry after sixty seconds. Copy/launch/kill failures go through
+MCP invariants. The worker measures 4.1GB/thread in v3.0.1; allocation always
+reads actual RAM. A new MCP restart is required to load this code. See
+[usage, limitations and tests](reputation-objective.md).
+
+**Correction to the legacy incident explanation:** game source shows
+`ns.share()` already yields for ten seconds. The historical tight-loop theory
+has not been substantiated; the extra legacy sleep is not a proven freeze
+fix. Historical root cause is still unknown.
+
 **Current state: disabled after the stability/loop incident.** Do not run
 `share_deploy.js` or `scripts/share.js` until the worker has an explicit
 bounded cooldown, focused tests, a bounded canary, and re-enable approval.
@@ -2363,7 +2382,7 @@ Self-contained, not touched by `mcp.js`, not auto-started by anything.
 
 | File | Runs on | RAM | What it does |
 | --- | --- | --- | --- |
-| `scripts/share.js` | any host, spread by `share_deploy.js` | 2.4GB/thread | Repeatedly calls `ns.share()` and then yields for one second. The explicit yield prevents a large share deployment from monopolising the game event loop. All allocation logic remains in the deployer, same division of labor as the weaken/grow/hack workers. |
+| `scripts/share.js` | any host, spread by `share_deploy.js` | 2.4GB/thread | Legacy worker: awaits a ten-second share call, then sleeps one second. The sleep is not a verified incident fix. Allocation belongs to the legacy deployer; the new reputation objective does not manage these workers. |
 | `share_deploy.js` | run once from `home` | ~2.6GB to run itself (exits after launching) | Launches `scripts/share.js` threads idempotently (every start first removes the previous share allocation). Default balanced mode kills only home's MCP action workers, reserves 256GB for 106 share threads at the measured 2.4GB/thread, then exits; MCP sees the occupied RAM and refills the rest of home on its next tick. `home` aliases balanced, `spare` uses only currently free home RAM, and `network` additionally fills currently free rooted ordinary-network RAM. `run share_deploy.js stop` kills all ordinary-network/home share workers, after which MCP automatically reclaims the RAM next tick. Args: `[mode] [shareHomeGb=256] [reserveHomeGb=32] [maxThreads]`. |
 
 **Caveat that matters more than the RAM math:** share power only affects

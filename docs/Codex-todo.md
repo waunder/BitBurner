@@ -10,6 +10,11 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
 
 ## Now
 
+- [x] **Implement reputation objective, 2026-09-12.** Bounded owned sharing, validated disabled policy, objective command, status/HUD and events; 102 local tests pass. Browser test confirms stable single allocation and cleanup on money. Details: `reputation-objective.md`.
+- [ ] **Resolve historical sharing restriction before Steam activation and measure faction-reputation ROI.** No Steam source upload or restart performed. Browser validation does not establish the old incident's root cause.
+- [x] **Review scheduler after the changed September 12 game state.** See `scheduler-review-2026-09-12.md` and the accompanying R1–R8 evidence table. H275, XP mode: R8 live-vetoes a 2.87× XP candidate based on money scores. Two worker replacement defects reproduced locally; 90 existing tests pass. Review complete, fixes not implemented.
+- [ ] **Recommended next scheduler implementation:** repair launch ordering and protect current action completion. R8's money veto now bypasses XP in local source; full MCP integration and Steam restart remain unverified. Reconsider two-target money allocation after a measured single-target baseline.
+
 - [x] **Make player-time guidance cross-skill but evidence-based.** HUDs now
   prioritize the next discovered normal-server Hacking gate; without one,
   they show live Darknet Charisma as passive growth or explicitly state that
@@ -52,10 +57,11 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
   2026-08-18; `R8_SWITCH_VETO_ENABLED` is committed as `1` and synced. The
   fresh post-augmentation manager will evaluate it once it has a qualified
   target-switch candidate.
-- [ ] **Observe R8 with Formulas.exe available.** The five pre-purchase
-  evaluations correctly failed open because the reset had removed the
-  program. Formulas.exe is now repurchased and mcp.js restarted; inspect the
-  first new qualified switch for finite scores and `available:true`.
+- [x] **Observe R8 with Formulas.exe available.** On 2026-09-07, run
+  `mtrh1gm6-ig7p` emitted finite `available:true` scores, vetoed
+  `phantasy → b-and-a` at ratio 0.79943, and allowed it once the ratio reached
+  0.80511 (later adopting `b-and-a` at 1.01298). Both paths are now live
+  evidenced.
 - [x] **Switch to XP mode.** Ken requested it on 2026-08-18; the in-game
   `set_objective.js xp` override is active, hot-reloaded without restart, and
   reports about 1,377 XP/s in the current recovery phase. Use

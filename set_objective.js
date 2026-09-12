@@ -1,12 +1,12 @@
 /**
- * Self-serve lever for mcp.js's OBJECTIVE (money/xp), so switching doesn't
+ * Self-serve lever for mcp.js's OBJECTIVE (money/xp/reputation), so switching doesn't
  * need a Claude session in the loop. Writes mcp_objective_override.txt —
  * deliberately NOT mcp_config.json, which is the git-tracked,
  * disk-authoritative source pushed one-way disk->game; an in-game edit
  * straight to it would silently revert on the next disk resync. This file
  * is only ever written from here and read by mcp.js, so it survives that.
  *
- * Usage: run set_objective.js [money|xp|clear]
+ * Usage: run set_objective.js [money|xp|reputation|clear]
  * No argument: prints the objective actually in effect right now, read
  * straight from mcp_status.json (what mcp.js itself resolved this tick),
  * not re-derived here — avoids this script's own copy of the
@@ -43,13 +43,24 @@ export async function main(ns) {
       ? "mcp_objective_override.txt (this script's override)"
       : "mcp_config.json"
     ns.tprint(`set_objective: current objective is "${objective}" (from ${source})`)
+    if (status.reputation?.requested) ns.tprint(`Sharing: ${status.reputation.state}; ${status.reputation.reason}; power=${status.reputation.power}`)
     return
   }
 
-  const valid = ["money", "xp", "clear"]
+  const valid = ["money", "xp", "reputation", "clear"]
   if (!valid.includes(arg)) {
-    ns.tprint(`set_objective: usage: run set_objective.js [money|xp|clear]`)
+    ns.tprint(`set_objective: usage: run set_objective.js [money|xp|reputation|clear]`)
     return
+  }
+
+  if (arg === "reputation") {
+    let policy
+    try { policy = JSON.parse(ns.read("reputation_config.json") || "{}") } catch { policy = {} }
+    if (policy.enabled !== true || !Number.isFinite(policy.ramGb) || policy.ramGb <= 0 || policy.ramGb > 256) {
+      ns.tprint("set_objective: reputation sharing is disabled or its budget is invalid; objective unchanged. The historical Steam share restriction must be resolved before enabling reputation_config.json.")
+      return
+    }
+    ns.tprint("set_objective: reputation reserves up to 256GB for sharing; remaining workers farm money. Sharing requires active faction work, which you must select in the game.")
   }
 
   const file = "mcp_objective_override.txt"

@@ -22,6 +22,7 @@ import {
   missingActionLaunchPlan,
 } from "mcp_logic.js"
 import { auditTargetModels } from "./formulas_logic.js"
+import { reconcileReputation } from "./mcp_reputation.js"
 
 // Tunables are declared with `let`, not `const`, so loadConfig can reassign
 // them in place from mcp_config.json at the top of every tick. Threading a
@@ -226,7 +227,7 @@ const CONFIG_DEFAULTS = {
 // OBJECTIVE is handled separately from CONFIG_DEFAULTS: it's a string enum,
 // not a number, so it needs its own validation rather than the numeric
 // typeof check every other tunable goes through.
-const OBJECTIVE_VALUES = ["money", "xp"]
+const OBJECTIVE_VALUES = ["money", "xp", "reputation"]
 
 // A manual live lever (set_objective.js), separate from mcp_config.json on
 // purpose. mcp_config.json is the git-tracked, disk-authoritative source
@@ -1270,6 +1271,7 @@ export async function main(ns) {
   let lastPlanType = null
   let lastWeightBucket = null
   let lastLogSignature = null
+  let reputation = {}
 
   events.emit("startup", {
     targetOverride: targetOverride || null,
@@ -1300,6 +1302,15 @@ export async function main(ns) {
 
     const servers = scanNetwork(ns)
     const workers = getWorkerHosts(ns, servers)
+    try {
+      reputation = await reconcileReputation(ns, reputation, {
+        objective: OBJECTIVE, hosts: ["home", ...workers], reserveHomeGb: HOME_RAM_RESERVE,
+        runId, emit: (kind, inputs) => events.emit(kind, inputs),
+      })
+    } catch (error) {
+      reputation = { ...reputation, state: "error", reason: String(error), retryAt: Date.now() + 60_000 }
+      invariants.check("reputationReconciles", false, { objective: OBJECTIVE, error: String(error) })
+    }
     const maxWeaken = getTotalWeakenCapacity(ns, workers)
     expireTargetExclusions(skippedTargets, drainedTargets)
 
@@ -1433,7 +1444,7 @@ export async function main(ns) {
         // its regression test — this exact OBJECTIVE gate is what commit
         // 81814d6 fixed after three restart cycles of live diagnosis.
         const { avgMoneyPct, windowFull, declining, moneyDegraded } = evaluateMoneyDegradation({
-          objective: OBJECTIVE,
+          objective: OBJECTIVE === "reputation" ? "money" : OBJECTIVE,
           moneyPctSamples,
           sampleTarget: MONEY_PCT_SAMPLE_COUNT,
           degradedThreshold: DEGRADED_MONEY_PCT,
@@ -1546,7 +1557,7 @@ export async function main(ns) {
         })
 
         if (switchEval.committed && switchEval.outbid) {
-          const formulaEnabled = R8_SWITCH_VETO_ENABLED > 0
+          const formulaEnabled = OBJECTIVE !== "xp" && R8_SWITCH_VETO_ENABLED > 0
           const formulaCurrentScore = formulaEnabled ? getFormulaMinimumSecurityScore(ns, currentTarget, maxWeaken) : NaN
           const formulaCandidateScore = formulaEnabled ? getFormulaMinimumSecurityScore(ns, switchEval.best, maxWeaken) : NaN
           formulaSwitchVeto = evaluateFormulaSwitchVeto({
@@ -1873,6 +1884,7 @@ export async function main(ns) {
       // comment. True means OBJECTIVE (below) came from
       // mcp_objective_override.txt, not mcp_config.json.
       objectiveOverrideActive: objectiveOverrideActive,
+      reputation,
       // The tunables actually in force, so a reader can confirm a config edit
       // took effect rather than assuming it did.
       config: {

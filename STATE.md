@@ -5,6 +5,12 @@ purpose are defined in `docs/agent-working-agreement.md`.
 
 ## Current objective
 
+2026-09-12 reputation objective: implemented `set_objective.js reputation`, bounded owned sharing (maximum 256GB), status/HUD/events and fail-closed policy. 102 local tests pass. Disposable browser test confirmed two threads at 8.2GB, power 1.043944 across five samples and clean return to money (zero worker RAM, power 1). Evidence: `docs/evidence/reputation-objective/browser-test.json`; usage and limits: `docs/reputation-objective.md`. R8 money veto is bypassed in XP mode. No Steam upload/restart/activation; automatic source sync remains disabled. Historic share incident root cause remains unknown, so Steam policy stays disabled under AGENTS.md. Next action: resolve that restriction before a bounded Steam pilot and measure actual faction reputation against the money/XP opportunity cost.
+
+Latest review (2026-09-12): scheduler review completed in `docs/scheduler-review-2026-09-12.md`, with R1–R8 table and evidence under `docs/evidence/scheduler-review-2026-09-12/`. Current Steam state is H275, ~$680m, NiteSec work, MCP XP on phantasy, 492GB across 16 hosts. Live-confirmed defect: R8 rejects an XP-qualified foodnstuff switch using money scores. Next recommended work is objective-specific R8 handling, followed by completion-aware worker replacement and launch-order repair; multiple targets should be evaluated after those fixes. No scheduler edits or gameplay changes made. September 11 QLink funding recommendations below are historical. Remote API is reconnected, automatic source sync/pulls disabled.
+
+Latest user-directed assessment (2026-09-11): QLink acquisition advice completed; see `docs/qlink-assessment-2026-09-11.md`. Live Steam API reconnected on 12526 with source sync/pull disabled. Cash $35.479t / $50t; Illuminati rep already sufficient. Recommended one measured 4TB cloud-worker trial ($672.682m), not purchased. No reset, purchase, or automation-policy changes made. Older disconnect blocker below is superseded by this verified connection. Next action is Ken deciding whether to pursue the capacity recommendation; no implementation is requested yet.
+
 Persistent maintenance is active: observe health every 30 seconds, refresh
 contract inventory every ten minutes, and sequentially claim only supported,
 fingerprint-guarded contracts with at least ten tries. Pause with a durable
@@ -17,12 +23,11 @@ removes purchased servers. Contract panels distinguish this reset's earnings
 from retained prior-run/lifetime records.
 
 Resume real gameplay-progress work now that the governance deadlock
-(retired 2026-08-18, see `AGENTS.md`) is cleared. R8 has been landed and
-configuration-validated live and enabled for ordinary use, and the purchased
-augmentation reset completed on 2026-08-18. The manager is now intentionally
-in XP mode by a live override; Formulas.exe has been repurchased and mcp.js
-restarted so R8 can acquire its formula API. Next, observe the first
-post-restart qualified switch evaluation.
+(retired 2026-08-18, see `AGENTS.md`) is cleared. R8 is enabled and has now
+been live-observed using Formulas.exe: it vetoed a below-threshold switch and
+later allowed the same candidate once its formula score cleared the 0.8
+threshold. The local Remote API daemon is healthy but the game disconnected
+after the last pulled telemetry; reconnect before making a new live claim.
 
 ## Done
 
@@ -147,6 +152,12 @@ post-restart qualified switch evaluation.
   zero scores, allowing the scheduler's switches. After Ken repurchased
   Formulas.exe, `mcp.js` was restarted as `msz75bg7-bz3o` to acquire the
   API; no post-restart qualified switch has occurred yet.
+- **R8’s Formulas.exe path live-validated**, 2026-09-07: run
+  `mtrh1gm6-ig7p` emitted `available:true` with finite scores. It vetoed
+  `phantasy → b-and-a` at a 0.79943 ratio (below the 0.8 threshold), then
+  failed open at 0.80511 and ultimately adopted `b-and-a` when its ratio
+  reached 1.01298. This confirms both the guarded veto and permissive paths;
+  the event stream recorded no new R8-related invariant failure.
 - **XP objective enabled**, 2026-08-18: Ken requested the shift; the
   supported `set_objective.js xp` override was accepted live without a
   restart. Status confirmed `OBJECTIVE:"xp"`, `objectiveOverrideActive:true`,
@@ -223,17 +234,11 @@ post-restart qualified switch evaluation.
 
 ## Next
 
-1. Restart MCP in XP mode and compare its selected host and sustained
-   `expPerSec` with the pre-change baseline; verify it reports no invariant
-   violations.
-2. At the next qualified target switch, inspect the `r8_switch_veto_eval`
-   event from run `msz75bg7-bz3o`: finite scores and `available:true` prove
-   Formulas.exe is active; a veto is only expected when the candidate is
-   below R8's 0.8 threshold.
+1. Resolve the historical share-automation restriction before a Steam pilot; see the current objective above. Worker replacement repairs remain queued separately.
 
 ## Blockers
 
-None currently open.
+Steam sharing activation is restricted by AGENTS.md while the historical incident's root cause remains unknown. The Remote API reconnect was confirmed September 12; earlier disconnect notes are historical.
 
 ## Changelog
 

@@ -1,0 +1,297 @@
+{
+  "runId": "browser-reputation-1789240447154",
+  "baselinePower": 1,
+  "baselineRam": 0,
+  "events": [
+    {
+      "ts": 1789240447157,
+      "source": "browser-reputation-test",
+      "runId": "browser-reputation-1789240447154",
+      "kind": "reputation_start",
+      "actionId": "browser-reputation-1789240447154:share-start:1789240447155",
+      "host": "foodnstuff",
+      "threads": 2,
+      "ramGb": 8.2,
+      "pid": 3,
+      "config": {
+        "enabled": true,
+        "ramGb": 12
+      },
+      "candidates": [
+        {
+          "host": "foodnstuff",
+          "availableRam": 16
+        }
+      ]
+    },
+    {
+      "ts": 1789240502169,
+      "source": "browser-reputation-test",
+      "runId": "browser-reputation-1789240447154",
+      "kind": "reputation_stop",
+      "actionId": "browser-reputation-1789240447154:share-stop:3",
+      "host": "foodnstuff",
+      "pid": 3,
+      "objective": "money",
+      "config": {
+        "enabled": true,
+        "ramGb": 12
+      }
+    }
+  ],
+  "samples": [
+    {
+      "ts": 1789240447157,
+      "state": {
+        "ts": 1789240447155,
+        "requested": true,
+        "config": {
+          "enabled": true,
+          "ramGb": 12
+        },
+        "factionWork": "unverified: sharing only benefits active faction work; choose it in the game",
+        "power": 1,
+        "maxRamGb": 256,
+        "state": "sharing",
+        "host": "foodnstuff",
+        "pid": 3,
+        "threads": 2,
+        "ramGb": 8.2,
+        "retryAt": 1789240507155,
+        "startedAt": 1789240447155,
+        "reviewAt": 1789242247155,
+        "reason": "unverified: sharing only benefits active faction work; choose it in the game",
+        "roi": {
+          "baselinePower": 1,
+          "marginalReputation": null,
+          "confidence": "unmeasured",
+          "opportunityCost": "Reserved RAM cannot earn hacking money or XP",
+          "stopRule": "Stop on objective change, disabled policy or owner exit; review after 30 minutes"
+        }
+      },
+      "power": 1,
+      "ram": 8.2,
+      "processes": [
+        {
+          "filename": "mcp_share.js",
+          "threads": 2,
+          "args": [
+            2,
+            "browser-reputation-1789240447154:12"
+          ],
+          "pid": 3,
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "ts": 1789240458159,
+      "state": {
+        "ts": 1789240458158,
+        "requested": true,
+        "config": {
+          "enabled": true,
+          "ramGb": 12
+        },
+        "factionWork": "unverified: sharing only benefits active faction work; choose it in the game",
+        "power": 1.0439444915467244,
+        "maxRamGb": 256,
+        "state": "sharing",
+        "host": "foodnstuff",
+        "pid": 3,
+        "threads": 2,
+        "ramGb": 8.2,
+        "retryAt": 1789240507155,
+        "startedAt": 1789240447155,
+        "reviewAt": 1789242247155,
+        "reason": "unverified: sharing only benefits active faction work; choose it in the game",
+        "roi": {
+          "baselinePower": 1,
+          "marginalReputation": null,
+          "confidence": "unmeasured",
+          "opportunityCost": "Reserved RAM cannot earn hacking money or XP",
+          "stopRule": "Stop on objective change, disabled policy or owner exit; review after 30 minutes"
+        }
+      },
+      "power": 1.0439444915467244,
+      "ram": 8.2,
+      "processes": [
+        {
+          "filename": "mcp_share.js",
+          "threads": 2,
+          "args": [
+            2,
+            "browser-reputation-1789240447154:12"
+          ],
+          "pid": 3,
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "ts": 1789240469162,
+      "state": {
+        "ts": 1789240469161,
+        "requested": true,
+        "config": {
+          "enabled": true,
+          "ramGb": 12
+        },
+        "factionWork": "unverified: sharing only benefits active faction work; choose it in the game",
+        "power": 1.0439444915467244,
+        "maxRamGb": 256,
+        "state": "sharing",
+        "host": "foodnstuff",
+        "pid": 3,
+        "threads": 2,
+        "ramGb": 8.2,
+        "retryAt": 1789240507155,
+        "startedAt": 1789240447155,
+        "reviewAt": 1789242247155,
+        "reason": "unverified: sharing only benefits active faction work; choose it in the game",
+        "roi": {
+          "baselinePower": 1,
+          "marginalReputation": null,
+          "confidence": "unmeasured",
+          "opportunityCost": "Reserved RAM cannot earn hacking money or XP",
+          "stopRule": "Stop on objective change, disabled policy or owner exit; review after 30 minutes"
+        }
+      },
+      "power": 1.0439444915467244,
+      "ram": 8.2,
+      "processes": [
+        {
+          "filename": "mcp_share.js",
+          "threads": 2,
+          "args": [
+            2,
+            "browser-reputation-1789240447154:12"
+          ],
+          "pid": 3,
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "ts": 1789240480164,
+      "state": {
+        "ts": 1789240480164,
+        "requested": true,
+        "config": {
+          "enabled": true,
+          "ramGb": 12
+        },
+        "factionWork": "unverified: sharing only benefits active faction work; choose it in the game",
+        "power": 1.0439444915467244,
+        "maxRamGb": 256,
+        "state": "sharing",
+        "host": "foodnstuff",
+        "pid": 3,
+        "threads": 2,
+        "ramGb": 8.2,
+        "retryAt": 1789240507155,
+        "startedAt": 1789240447155,
+        "reviewAt": 1789242247155,
+        "reason": "unverified: sharing only benefits active faction work; choose it in the game",
+        "roi": {
+          "baselinePower": 1,
+          "marginalReputation": null,
+          "confidence": "unmeasured",
+          "opportunityCost": "Reserved RAM cannot earn hacking money or XP",
+          "stopRule": "Stop on objective change, disabled policy or owner exit; review after 30 minutes"
+        }
+      },
+      "power": 1.0439444915467244,
+      "ram": 8.2,
+      "processes": [
+        {
+          "filename": "mcp_share.js",
+          "threads": 2,
+          "args": [
+            2,
+            "browser-reputation-1789240447154:12"
+          ],
+          "pid": 3,
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "ts": 1789240491166,
+      "state": {
+        "ts": 1789240491166,
+        "requested": true,
+        "config": {
+          "enabled": true,
+          "ramGb": 12
+        },
+        "factionWork": "unverified: sharing only benefits active faction work; choose it in the game",
+        "power": 1.0439444915467244,
+        "maxRamGb": 256,
+        "state": "sharing",
+        "host": "foodnstuff",
+        "pid": 3,
+        "threads": 2,
+        "ramGb": 8.2,
+        "retryAt": 1789240507155,
+        "startedAt": 1789240447155,
+        "reviewAt": 1789242247155,
+        "reason": "unverified: sharing only benefits active faction work; choose it in the game",
+        "roi": {
+          "baselinePower": 1,
+          "marginalReputation": null,
+          "confidence": "unmeasured",
+          "opportunityCost": "Reserved RAM cannot earn hacking money or XP",
+          "stopRule": "Stop on objective change, disabled policy or owner exit; review after 30 minutes"
+        }
+      },
+      "power": 1.0439444915467244,
+      "ram": 8.2,
+      "processes": [
+        {
+          "filename": "mcp_share.js",
+          "threads": 2,
+          "args": [
+            2,
+            "browser-reputation-1789240447154:12"
+          ],
+          "pid": 3,
+          "temporary": false
+        }
+      ]
+    }
+  ],
+  "stopped": {
+    "state": {
+      "ts": 1789240502167,
+      "requested": false,
+      "config": {
+        "enabled": true,
+        "ramGb": 12
+      },
+      "factionWork": "unverified: sharing only benefits active faction work; choose it in the game",
+      "power": 1.0439444915467244,
+      "maxRamGb": 256,
+      "state": "off",
+      "host": "foodnstuff",
+      "pid": null,
+      "threads": 0,
+      "ramGb": 0,
+      "retryAt": 0,
+      "startedAt": 1789240447155,
+      "reviewAt": 1789242247155,
+      "reason": "Objective is not reputation",
+      "roi": {
+        "baselinePower": 1,
+        "marginalReputation": null,
+        "confidence": "unmeasured",
+        "opportunityCost": "Reserved RAM cannot earn hacking money or XP",
+        "stopRule": "Stop on objective change, disabled policy or owner exit; review after 30 minutes"
+      }
+    },
+    "power": 1,
+    "ram": 0,
+    "processes": []
+  },
+  "complete": true
+}

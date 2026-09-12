@@ -1,0 +1,5 @@
+{
+  "enabled": false,
+  "ramGb": 256,
+  "note": "Steam sharing remains disabled pending resolution of the historical stability restriction. Enable only for an authorized environment."
+}

@@ -1,0 +1,764 @@
+{
+  "ts": 1789237801803,
+  "runId": "mtykyflb-dcj3",
+  "scriptVersion": "62f735",
+  "player": {
+    "money": 680000398.6581709,
+    "hp": {
+      "current": 10,
+      "max": 10
+    },
+    "skills": {
+      "hacking": 275,
+      "strength": 1,
+      "defense": 1,
+      "dexterity": 43,
+      "agility": 43,
+      "charisma": 1,
+      "intelligence": 83
+    },
+    "hackingGrowMult": 1.2653312823360001
+  },
+  "homeCores": 1,
+  "target": "phantasy",
+  "plan": "work",
+  "debugWorkWeights": {
+    "hackPercentPerThread": 0.003136604409157064,
+    "growLogPerThread": 0.0015473245796496032
+  },
+  "weightBucket": "xp",
+  "currentSecurity": 7.041999999999999,
+  "moneyPct": 2.3484657723880794e-08,
+  "needWeaken": 1,
+  "maxWeaken": 277,
+  "tickSeconds": 10.003,
+  "hacked": 1.283339830269151,
+  "rate": 0.12829549437860152,
+  "avgRate": 0.08481392803710322,
+  "incomePerSec": 446033.80894248985,
+  "expPerSec": 119.80025577652329,
+  "totalHacked": 777815850.00096,
+  "ramUtilization": 0.9709349593495936,
+  "workers": [
+    {
+      "host": "n00dles",
+      "maxRam": 4,
+      "usedRam": 3.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 2
+        }
+      ]
+    },
+    {
+      "host": "foodnstuff",
+      "maxRam": 16,
+      "usedRam": 15.45,
+      "freeRam": 0.5500000000000007,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 1
+        },
+        {
+          "script": "hack",
+          "threads": 6
+        },
+        {
+          "script": "weaken",
+          "threads": 2
+        }
+      ]
+    },
+    {
+      "host": "sigma-cosmetics",
+      "maxRam": 16,
+      "usedRam": 15.45,
+      "freeRam": 0.5500000000000007,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 1
+        },
+        {
+          "script": "hack",
+          "threads": 6
+        },
+        {
+          "script": "weaken",
+          "threads": 2
+        }
+      ]
+    },
+    {
+      "host": "joesguns",
+      "maxRam": 16,
+      "usedRam": 15.45,
+      "freeRam": 0.5500000000000007,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 1
+        },
+        {
+          "script": "hack",
+          "threads": 6
+        },
+        {
+          "script": "weaken",
+          "threads": 2
+        }
+      ]
+    },
+    {
+      "host": "hong-fang-tea",
+      "maxRam": 16,
+      "usedRam": 15.45,
+      "freeRam": 0.5500000000000007,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 1
+        },
+        {
+          "script": "hack",
+          "threads": 6
+        },
+        {
+          "script": "weaken",
+          "threads": 2
+        }
+      ]
+    },
+    {
+      "host": "harakiri-sushi",
+      "maxRam": 16,
+      "usedRam": 15.45,
+      "freeRam": 0.5500000000000007,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 1
+        },
+        {
+          "script": "hack",
+          "threads": 6
+        },
+        {
+          "script": "weaken",
+          "threads": 2
+        }
+      ]
+    },
+    {
+      "host": "iron-gym",
+      "maxRam": 32,
+      "usedRam": 30.8,
+      "freeRam": 1.1999999999999993,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 1
+        },
+        {
+          "script": "hack",
+          "threads": 14
+        },
+        {
+          "script": "weaken",
+          "threads": 3
+        }
+      ]
+    },
+    {
+      "host": "nectar-net",
+      "maxRam": 16,
+      "usedRam": 15.45,
+      "freeRam": 0.5500000000000007,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 1
+        },
+        {
+          "script": "hack",
+          "threads": 6
+        },
+        {
+          "script": "weaken",
+          "threads": 2
+        }
+      ]
+    },
+    {
+      "host": "max-hardware",
+      "maxRam": 32,
+      "usedRam": 30.8,
+      "freeRam": 1.1999999999999993,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 1
+        },
+        {
+          "script": "hack",
+          "threads": 14
+        },
+        {
+          "script": "weaken",
+          "threads": 3
+        }
+      ]
+    },
+    {
+      "host": "zer0",
+      "maxRam": 32,
+      "usedRam": 30.8,
+      "freeRam": 1.1999999999999993,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 1
+        },
+        {
+          "script": "hack",
+          "threads": 14
+        },
+        {
+          "script": "weaken",
+          "threads": 3
+        }
+      ]
+    },
+    {
+      "host": "CSEC",
+      "maxRam": 8,
+      "usedRam": 6.85,
+      "freeRam": 1.1500000000000004,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 1
+        },
+        {
+          "script": "hack",
+          "threads": 3
+        }
+      ]
+    },
+    {
+      "host": "neo-net",
+      "maxRam": 32,
+      "usedRam": 30.8,
+      "freeRam": 1.1999999999999993,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 1
+        },
+        {
+          "script": "hack",
+          "threads": 14
+        },
+        {
+          "script": "weaken",
+          "threads": 3
+        }
+      ]
+    },
+    {
+      "host": "silver-helix",
+      "maxRam": 64,
+      "usedRam": 63.3,
+      "freeRam": 0.7000000000000028,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 2
+        },
+        {
+          "script": "hack",
+          "threads": 29
+        },
+        {
+          "script": "weaken",
+          "threads": 6
+        }
+      ]
+    },
+    {
+      "host": "phantasy",
+      "maxRam": 32,
+      "usedRam": 30.8,
+      "freeRam": 1.1999999999999993,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 1
+        },
+        {
+          "script": "hack",
+          "threads": 14
+        },
+        {
+          "script": "weaken",
+          "threads": 3
+        }
+      ]
+    },
+    {
+      "host": "omega-net",
+      "maxRam": 32,
+      "usedRam": 30.8,
+      "freeRam": 1.1999999999999993,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 1
+        },
+        {
+          "script": "hack",
+          "threads": 14
+        },
+        {
+          "script": "weaken",
+          "threads": 3
+        }
+      ]
+    },
+    {
+      "host": "avmnite-02h",
+      "maxRam": 128,
+      "usedRam": 126.55,
+      "freeRam": 1.4500000000000028,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 3
+        },
+        {
+          "script": "hack",
+          "threads": 59
+        },
+        {
+          "script": "weaken",
+          "threads": 12
+        }
+      ]
+    }
+  ],
+  "cloudWorkers": [],
+  "candidate": "foodnstuff",
+  "candidateScore": 1.0439716254811582,
+  "candidateExpectedIncome": 1651.2124444905905,
+  "avgMoneyPct": 1.5078573017896686e-08,
+  "moneyPctSampleCount": 9,
+  "moneyPctSampleTarget": 9,
+  "heldSeconds": 4669,
+  "hackTimeS": 24.74615696799125,
+  "growTimeS": 79.187702297572,
+  "weakenTimeS": 98.984627871965,
+  "hackChance": 1,
+  "switchEval": {
+    "basis": "effective",
+    "currentScore": 0.3636928356852077,
+    "best": "foodnstuff",
+    "bestScore": 1.0439716254811582,
+    "ratio": 2.8704761904761904,
+    "factor": 1.3,
+    "heldSeconds": 4669,
+    "holdSeconds": 60,
+    "committed": true,
+    "outbid": true,
+    "blockedBy": null
+  },
+  "formulaSwitchVeto": {
+    "enabled": true,
+    "currentTarget": "phantasy",
+    "candidateTarget": "foodnstuff",
+    "currentScore": 1144169.9971791825,
+    "candidateScore": 119629.17024122343,
+    "threshold": 0.8,
+    "available": true,
+    "ratio": 0.1045554161847935,
+    "veto": true,
+    "reason": "candidate-below-threshold"
+  },
+  "formulaRankingActive": true,
+  "objectiveOverrideActive": true,
+  "config": {
+    "SECURITY_CAP": 1,
+    "TARGET_MONEY_GOAL": 0.95,
+    "MIN_TARGET_HOLD_MS": 60000,
+    "WORK_SECURITY_MARGIN": 1.5,
+    "RATE_DROP_FACTOR": 0.75,
+    "LOOP_SLEEP_MS": 10000,
+    "RATE_SAMPLE_COUNT": 5,
+    "WEAKEN_STUCK_MS": 60000,
+    "WEAKEN_STUCK_SECURITY_THRESHOLD": 0.05,
+    "SKIP_STUCK_MS": 60000,
+    "DEGRADED_MONEY_PCT": 0.05,
+    "MONEY_PCT_SAMPLE_COUNT": 9,
+    "OPPORTUNITY_SWITCH_FACTOR": 1.3,
+    "R8_SWITCH_VETO_ENABLED": 1,
+    "FORMULA_RANKING_ENABLED": 1,
+    "MIN_TARGET_COMMIT_MS": 600000,
+    "DEGRADED_SKIP_MS": 900000,
+    "HACK_BALANCE_SAFETY": 0.5,
+    "OBJECTIVE": "xp",
+    "XP_WEIGHT_HACK": 0.95,
+    "XP_WEIGHT_GROW": 0.05,
+    "REDEPLOY_TOLERANCE_ABSOLUTE": 2,
+    "REDEPLOY_TOLERANCE_RELATIVE": 0.2,
+    "HOME_RAM_RESERVE": 32,
+    "SCORE_HORIZON_SECONDS": 3600
+  },
+  "invariantViolations": {
+    "poolNotIdle": 2,
+    "tickWithinBounds": 4
+  },
+  "recentEvents": [
+    {
+      "t": 1789237711772,
+      "seq": 313,
+      "runId": "mtykyflb-dcj3",
+      "ver": "62f735",
+      "kind": "r8_switch_veto_eval",
+      "enabled": true,
+      "currentTarget": "phantasy",
+      "candidateTarget": "foodnstuff",
+      "currentScore": 1140638.6354554612,
+      "candidateScore": 119186.22495398948,
+      "threshold": 0.8,
+      "available": true,
+      "ratio": 0.10449078371468452,
+      "veto": true,
+      "reason": "candidate-below-threshold"
+    },
+    {
+      "t": 1789237711772,
+      "seq": 314,
+      "runId": "mtykyflb-dcj3",
+      "ver": "62f735",
+      "kind": "r8_switch_veto",
+      "enabled": true,
+      "currentTarget": "phantasy",
+      "candidateTarget": "foodnstuff",
+      "currentScore": 1140638.6354554612,
+      "candidateScore": 119186.22495398948,
+      "threshold": 0.8,
+      "available": true,
+      "ratio": 0.10449078371468452,
+      "veto": true,
+      "reason": "candidate-below-threshold"
+    },
+    {
+      "t": 1789237721774,
+      "seq": 315,
+      "runId": "mtykyflb-dcj3",
+      "ver": "62f735",
+      "kind": "r8_switch_veto_eval",
+      "enabled": true,
+      "currentTarget": "phantasy",
+      "candidateTarget": "foodnstuff",
+      "currentScore": 1137324.87350788,
+      "candidateScore": 119186.22495398948,
+      "threshold": 0.8,
+      "available": true,
+      "ratio": 0.10479523285759186,
+      "veto": true,
+      "reason": "candidate-below-threshold"
+    },
+    {
+      "t": 1789237721774,
+      "seq": 316,
+      "runId": "mtykyflb-dcj3",
+      "ver": "62f735",
+      "kind": "r8_switch_veto",
+      "enabled": true,
+      "currentTarget": "phantasy",
+      "candidateTarget": "foodnstuff",
+      "currentScore": 1137324.87350788,
+      "candidateScore": 119186.22495398948,
+      "threshold": 0.8,
+      "available": true,
+      "ratio": 0.10479523285759186,
+      "veto": true,
+      "reason": "candidate-below-threshold"
+    },
+    {
+      "t": 1789237731776,
+      "seq": 317,
+      "runId": "mtykyflb-dcj3",
+      "ver": "62f735",
+      "kind": "r8_switch_veto_eval",
+      "enabled": true,
+      "currentTarget": "phantasy",
+      "candidateTarget": "foodnstuff",
+      "currentScore": 1130563.7214122822,
+      "candidateScore": 119186.22495398948,
+      "threshold": 0.8,
+      "available": true,
+      "ratio": 0.10542194366992773,
+      "veto": true,
+      "reason": "candidate-below-threshold"
+    },
+    {
+      "t": 1789237731776,
+      "seq": 318,
+      "runId": "mtykyflb-dcj3",
+      "ver": "62f735",
+      "kind": "r8_switch_veto",
+      "enabled": true,
+      "currentTarget": "phantasy",
+      "candidateTarget": "foodnstuff",
+      "currentScore": 1130563.7214122822,
+      "candidateScore": 119186.22495398948,
+      "threshold": 0.8,
+      "available": true,
+      "ratio": 0.10542194366992773,
+      "veto": true,
+      "reason": "candidate-below-threshold"
+    },
+    {
+      "t": 1789237741779,
+      "seq": 319,
+      "runId": "mtykyflb-dcj3",
+      "ver": "62f735",
+      "kind": "r8_switch_veto_eval",
+      "enabled": true,
+      "currentTarget": "phantasy",
+      "candidateTarget": "foodnstuff",
+      "currentScore": 1127868.3686275438,
+      "candidateScore": 119186.22495398948,
+      "threshold": 0.8,
+      "available": true,
+      "ratio": 0.1056738785032355,
+      "veto": true,
+      "reason": "candidate-below-threshold"
+    },
+    {
+      "t": 1789237741779,
+      "seq": 320,
+      "runId": "mtykyflb-dcj3",
+      "ver": "62f735",
+      "kind": "r8_switch_veto",
+      "enabled": true,
+      "currentTarget": "phantasy",
+      "candidateTarget": "foodnstuff",
+      "currentScore": 1127868.3686275438,
+      "candidateScore": 119186.22495398948,
+      "threshold": 0.8,
+      "available": true,
+      "ratio": 0.1056738785032355,
+      "veto": true,
+      "reason": "candidate-below-threshold"
+    },
+    {
+      "t": 1789237751783,
+      "seq": 321,
+      "runId": "mtykyflb-dcj3",
+      "ver": "62f735",
+      "kind": "r8_switch_veto_eval",
+      "enabled": true,
+      "currentTarget": "phantasy",
+      "candidateTarget": "foodnstuff",
+      "currentScore": 1118243.4739140396,
+      "candidateScore": 119629.17024122343,
+      "threshold": 0.8,
+      "available": true,
+      "ratio": 0.10697953802717157,
+      "veto": true,
+      "reason": "candidate-below-threshold"
+    },
+    {
+      "t": 1789237751783,
+      "seq": 322,
+      "runId": "mtykyflb-dcj3",
+      "ver": "62f735",
+      "kind": "r8_switch_veto",
+      "enabled": true,
+      "currentTarget": "phantasy",
+      "candidateTarget": "foodnstuff",
+      "currentScore": 1118243.4739140396,
+      "candidateScore": 119629.17024122343,
+      "threshold": 0.8,
+      "available": true,
+      "ratio": 0.10697953802717157,
+      "veto": true,
+      "reason": "candidate-below-threshold"
+    },
+    {
+      "t": 1789237761786,
+      "seq": 323,
+      "runId": "mtykyflb-dcj3",
+      "ver": "62f735",
+      "kind": "r8_switch_veto_eval",
+      "enabled": true,
+      "currentTarget": "phantasy",
+      "candidateTarget": "foodnstuff",
+      "currentScore": 1112860.620871849,
+      "candidateScore": 119629.17024122343,
+      "threshold": 0.8,
+      "available": true,
+      "ratio": 0.10749699288263277,
+      "veto": true,
+      "reason": "candidate-below-threshold"
+    },
+    {
+      "t": 1789237761786,
+      "seq": 324,
+      "runId": "mtykyflb-dcj3",
+      "ver": "62f735",
+      "kind": "r8_switch_veto",
+      "enabled": true,
+      "currentTarget": "phantasy",
+      "candidateTarget": "foodnstuff",
+      "currentScore": 1112860.620871849,
+      "candidateScore": 119629.17024122343,
+      "threshold": 0.8,
+      "available": true,
+      "ratio": 0.10749699288263277,
+      "veto": true,
+      "reason": "candidate-below-threshold"
+    },
+    {
+      "t": 1789237771791,
+      "seq": 325,
+      "runId": "mtykyflb-dcj3",
+      "ver": "62f735",
+      "kind": "r8_switch_veto_eval",
+      "enabled": true,
+      "currentTarget": "phantasy",
+      "candidateTarget": "foodnstuff",
+      "currentScore": 1105896.972821807,
+      "candidateScore": 119629.17024122343,
+      "threshold": 0.8,
+      "available": true,
+      "ratio": 0.10817388344592137,
+      "veto": true,
+      "reason": "candidate-below-threshold"
+    },
+    {
+      "t": 1789237771791,
+      "seq": 326,
+      "runId": "mtykyflb-dcj3",
+      "ver": "62f735",
+      "kind": "r8_switch_veto",
+      "enabled": true,
+      "currentTarget": "phantasy",
+      "candidateTarget": "foodnstuff",
+      "currentScore": 1105896.972821807,
+      "candidateScore": 119629.17024122343,
+      "threshold": 0.8,
+      "available": true,
+      "ratio": 0.10817388344592137,
+      "veto": true,
+      "reason": "candidate-below-threshold"
+    },
+    {
+      "t": 1789237781795,
+      "seq": 327,
+      "runId": "mtykyflb-dcj3",
+      "ver": "62f735",
+      "kind": "r8_switch_veto_eval",
+      "enabled": true,
+      "currentTarget": "phantasy",
+      "candidateTarget": "foodnstuff",
+      "currentScore": 1098399.0559623656,
+      "candidateScore": 119629.17024122343,
+      "threshold": 0.8,
+      "available": true,
+      "ratio": 0.10891230249320451,
+      "veto": true,
+      "reason": "candidate-below-threshold"
+    },
+    {
+      "t": 1789237781796,
+      "seq": 328,
+      "runId": "mtykyflb-dcj3",
+      "ver": "62f735",
+      "kind": "r8_switch_veto",
+      "enabled": true,
+      "currentTarget": "phantasy",
+      "candidateTarget": "foodnstuff",
+      "currentScore": 1098399.0559623656,
+      "candidateScore": 119629.17024122343,
+      "threshold": 0.8,
+      "available": true,
+      "ratio": 0.10891230249320451,
+      "veto": true,
+      "reason": "candidate-below-threshold"
+    },
+    {
+      "t": 1789237791799,
+      "seq": 329,
+      "runId": "mtykyflb-dcj3",
+      "ver": "62f735",
+      "kind": "r8_switch_veto_eval",
+      "enabled": true,
+      "currentTarget": "phantasy",
+      "candidateTarget": "foodnstuff",
+      "currentScore": 1146865.1009146713,
+      "candidateScore": 119629.17024122343,
+      "threshold": 0.8,
+      "available": true,
+      "ratio": 0.10430971362352409,
+      "veto": true,
+      "reason": "candidate-below-threshold"
+    },
+    {
+      "t": 1789237791799,
+      "seq": 330,
+      "runId": "mtykyflb-dcj3",
+      "ver": "62f735",
+      "kind": "r8_switch_veto",
+      "enabled": true,
+      "currentTarget": "phantasy",
+      "candidateTarget": "foodnstuff",
+      "currentScore": 1146865.1009146713,
+      "candidateScore": 119629.17024122343,
+      "threshold": 0.8,
+      "available": true,
+      "ratio": 0.10430971362352409,
+      "veto": true,
+      "reason": "candidate-below-threshold"
+    },
+    {
+      "t": 1789237801802,
+      "seq": 331,
+      "runId": "mtykyflb-dcj3",
+      "ver": "62f735",
+      "kind": "r8_switch_veto_eval",
+      "enabled": true,
+      "currentTarget": "phantasy",
+      "candidateTarget": "foodnstuff",
+      "currentScore": 1144169.9971791825,
+      "candidateScore": 119629.17024122343,
+      "threshold": 0.8,
+      "available": true,
+      "ratio": 0.1045554161847935,
+      "veto": true,
+      "reason": "candidate-below-threshold"
+    },
+    {
+      "t": 1789237801802,
+      "seq": 332,
+      "runId": "mtykyflb-dcj3",
+      "ver": "62f735",
+      "kind": "r8_switch_veto",
+      "enabled": true,
+      "currentTarget": "phantasy",
+      "candidateTarget": "foodnstuff",
+      "currentScore": 1144169.9971791825,
+      "candidateScore": 119629.17024122343,
+      "threshold": 0.8,
+      "available": true,
+      "ratio": 0.1045554161847935,
+      "veto": true,
+      "reason": "candidate-below-threshold"
+    }
+  ]
+}

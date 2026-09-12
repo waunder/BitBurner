@@ -5,6 +5,8 @@ purpose are defined in `docs/agent-working-agreement.md`.
 
 ## Current objective
 
+Approved 256GB cloud purchase completed September 12: mcp-worker-0 cost $14.08m; MCP restarted as mtysbeyw-7ja7 with reputation retained. Sharing moved to cloud, PID726, 62 threads/254.2GB; power1.169990, no invariant violations. NiteSec UI shows3.365rep/sec at H304 (prior measurement3.297 at H303; level growth contributes to difference). Old share host released for hacking. Evidence `docs/evidence/reputation-objective/cloud-purchased.json`. Next action is observe sustained money/XP opportunity cost before any further sharing investment.
+
 Cloud reputation quote September 12: recommend one 256GB server ($14.08m), then MCP restart to relocate existing share worker. Live Formulas project +1.73% beyond current sharing (~205 extra NiteSec rep/hour); current host has four cores, cloud one. Larger servers have no further reputation benefit under the 256GB cap. Purchase script delivered; no purchase executed. Details and commands: `docs/reputation-objective.md`; quotes: `docs/evidence/reputation-objective/cloud-quote.json`.
 
 Consolidated HUD objective display added and Steam-confirmed September 12: compact MCP row and expanded `Objective: reputation` read the resolved manager status. HUD restarted; syntax check passed.

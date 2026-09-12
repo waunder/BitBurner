@@ -10,6 +10,8 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
 
 ## Now
 
+- [x] **Execute approved 256GB cloud investment:** $14.08m mcp-worker-0 purchased; sharing moved to62threads/254.2GB, reputation preserved, NiteSec3.365rep/sec at H304. Evidence `evidence/reputation-objective/cloud-purchased.json`.
+
 - [x] **Implement reputation objective, 2026-09-12.** Bounded owned sharing, validated disabled policy, objective command, status/HUD and events; 102 local tests pass. Browser test confirms stable single allocation and cleanup on money. Details: `reputation-objective.md`.
 - [x] **Steam sharing activation explicitly authorized by Ken, 2026-09-12.** Restriction overridden; source verified, policy enabled, reputation selected, MCP restarted. Explicit-host liveness fix included; 102 tests pass.
 - [x] **Measure faction-reputation benefit.** Controlled NiteSec on/off/on at H303: 3.297/2.868/3.297 rep/sec, +14.96%, ~1,544 extra rep/hour; sharing restored. Evidence: `evidence/reputation-objective/steam-impact.json`.

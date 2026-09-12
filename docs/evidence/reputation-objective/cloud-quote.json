@@ -1,0 +1,69 @@
+{
+  "ts": 1789241388622,
+  "money": 744271930.8694954,
+  "homeRam": 128,
+  "intelligence": 83,
+  "sharePower": 1.149526864596156,
+  "reputation": {
+    "ts": 1789241388365,
+    "requested": true,
+    "config": {
+      "enabled": true,
+      "ramGb": 256,
+      "note": "Ken explicitly overrode the historical sharing restriction and authorized Steam activation on 2026-09-12. Disable enabled to stop owned sharing."
+    },
+    "factionWork": "unverified: sharing only benefits active faction work; choose it in the game",
+    "power": 1.149526864596156,
+    "maxRamGb": 256,
+    "state": "sharing",
+    "host": "avmnite-02h",
+    "pid": 691,
+    "threads": 31,
+    "ramGb": 127.1,
+    "retryAt": 1789241128264,
+    "startedAt": 1789241068264,
+    "reviewAt": 1789242868264,
+    "reason": "unverified: sharing only benefits active faction work; choose it in the game",
+    "roi": {
+      "baselinePower": 1,
+      "marginalReputation": null,
+      "confidence": "unmeasured",
+      "opportunityCost": "Reserved RAM cannot earn hacking money or XP",
+      "stopRule": "Stop on objective change, disabled policy or owner exit; review after 30 minutes"
+    }
+  },
+  "currentShareHostCores": 4,
+  "cloudServers": [],
+  "quotes": [
+    {
+      "ramGb": 128,
+      "cost": 7040000,
+      "shareThreads": 31,
+      "projectedSharePower": 1.1416894418828245
+    },
+    {
+      "ramGb": 256,
+      "cost": 14080000,
+      "shareThreads": 62,
+      "projectedSharePower": 1.1694153291052223
+    },
+    {
+      "ramGb": 512,
+      "cost": 28160000,
+      "shareThreads": 62,
+      "projectedSharePower": 1.1694153291052223
+    },
+    {
+      "ramGb": 1024,
+      "cost": 56320000,
+      "shareThreads": 62,
+      "projectedSharePower": 1.1694153291052223
+    },
+    {
+      "ramGb": 4096,
+      "cost": 225280000,
+      "shareThreads": 62,
+      "projectedSharePower": 1.1694153291052223
+    }
+  ]
+}

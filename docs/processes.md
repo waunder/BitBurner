@@ -1470,12 +1470,16 @@ before trusting it in the automatic watcher pathway.
 
 ### `purchase_worker_server.js`
 
+For the capped reputation allocation, `run purchase_worker_server.js 256`, then `run restart_mcp.js`: restarting lets sharing choose the newly available larger host; an existing healthy share worker is otherwise retained. The objective override survives restart. September 12 quote: $14.08m for 256GB, 62 share threads at 254.2GB on a one-core cloud server. Larger purchases do not increase reputation under the 256GB cap; surplus RAM can farm money/XP.
+
 One-shot provisioner for a purchased 2^n-GB worker server. It performs no
 manual script copying: MCP discovers the new rooted server and deploys its
 workers on the next tick. Writes `purchased_worker_status.json` with the cost
 and result; the remote restart path accepts `--buy-worker=<GB>`.
 
 ### `mcp_status.js`
+
+`cloud_reputation_quote.js` is a one-shot read-only quote helper: `run cloud_reputation_quote.js`. Reads MCP status/player/current share-host cores and cloud cost/Formulas share-power APIs; writes `cloud_reputation_quote.json` and prints quotes for 128–4096GB. Requires Formulas.exe. It never purchases capacity. Projected power assumes a one-core cloud host and the current 256GB sharing ceiling.
 
 Mirrors `mcp.js`'s tail output into its own window, so the orchestrator's
 `ns.print` lines stay visible without hunting for its tail.

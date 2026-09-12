@@ -5,6 +5,8 @@ purpose are defined in `docs/agent-working-agreement.md`.
 
 ## Current objective
 
+Cloud reputation quote September 12: recommend one 256GB server ($14.08m), then MCP restart to relocate existing share worker. Live Formulas project +1.73% beyond current sharing (~205 extra NiteSec rep/hour); current host has four cores, cloud one. Larger servers have no further reputation benefit under the 256GB cap. Purchase script delivered; no purchase executed. Details and commands: `docs/reputation-objective.md`; quotes: `docs/evidence/reputation-objective/cloud-quote.json`.
+
 Consolidated HUD objective display added and Steam-confirmed September 12: compact MCP row and expanded `Objective: reputation` read the resolved manager status. HUD restarted; syntax check passed.
 
 Measured Steam reputation impact September 12: controlled NiteSec on/off/on rates 3.297/2.868/3.297 rep/sec at H303, +14.96% or ~1,544 rep/hour for 127.1GB sharing. Enabled sharing restored, reputation override preserved. Evidence `docs/evidence/reputation-objective/steam-impact.json`. Next action is sustained money/XP opportunity-cost measurement if deciding whether to allocate more capacity; current short preparation-phase sample cannot establish that cost.

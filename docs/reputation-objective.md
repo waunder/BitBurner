@@ -1,5 +1,12 @@
 # Reputation objective
 
+**Cloud recommendation, September 12:** buy one 256GB server for $14.08m (1.89% of the quoted $744.27m balance), then restart MCP so sharing relocates. Capacity adds 256GB; sharing grows from 31 threads/127.1GB on four-core avmnite-02h to 62 threads/254.2GB on a one-core cloud host, freeing the old host for hacking. Live Formulas quotes project power 1.169415 versus current 1.149527: about +1.73% reputation relative to current sharing, or 3.354 versus 3.297 NiteSec rep/sec (~205 extra rep/hour), assuming unchanged work, skills, multipliers and no other sharers. Monetary payback remains unmeasured because the worker pool is preparing its target. Opportunity cost is $14.08m plus 127.1GB more RAM reserved for sharing; approximately 128.9GB net additional capacity remains available to hacking. This small purchase is affordable, but 512GB ($28.16m), 1TB ($56.32m), and 4TB ($225.28m) produce the same capped reputation benefit. Do not buy those sizes solely for reputation. No purchase made by Codex. Evidence: `evidence/reputation-objective/cloud-quote.json`.
+
+```text
+run purchase_worker_server.js 256
+run restart_mcp.js
+```
+
 **Measured Steam benefit, September 12:** a controlled on/off/on observation of NiteSec work at H303 showed 3.297 → 2.868 → 3.297 reputation/sec. Sharing adds 0.429 rep/sec (14.96%, about 1,544 rep/hour) and reduces time for a fixed remaining reputation requirement by about 13.0%. Each policy transition settled for approximately 22 seconds; reputation objective stayed selected and sharing was restored. Rates are UI-rounded and this is a short faction-work sample. Cost: 31 threads/127.1GB that cannot simultaneously hack. Script money was zero during server preparation, so this sample cannot quantify sustained money opportunity cost. Keep reputation mode while faction reputation is the bottleneck; return to XP for the hacking-level objective. Evidence: `evidence/reputation-objective/steam-impact.json`.
 
 MCP now supports `money`, `xp`, and `reputation`. Reputation mode reserves up to 256GB on one host for a single share worker, with the remaining ordinary/cloud worker RAM following the existing money policy. Sharing increases faction-work reputation; it neither selects a faction nor starts player work and it does not boost company-work reputation. Choose faction work in the game before selecting reputation.

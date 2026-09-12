@@ -5,6 +5,8 @@ purpose are defined in `docs/agent-working-agreement.md`.
 
 ## Current objective
 
+September 12 reconnected full-money diagnosis completed: MCP repeatedly returns from work to weaken; phantasy is full but security remains above minimum 7. All three 4TB hosts fill with grow during recovery. See `docs/scheduler-review-2026-09-12.md` follow-up and durable `full-money-weaken.json`. Recommended next action: repair completion-aware replacement, RAM release/launch ordering, and full-money recovery growth together; browser-test before deployment. No scheduler or game changes made in this check.
+
 Ken revised the stats formatting preference to compact decimal amounts such as `24.8G`; `get_stats.js` now uses K/M/G/T/P with one decimal place, replacing the comma-separated dollar display.
 
 Stats readability September 12: `get_stats.js` available/maximum money now use comma-separated whole dollars without truncating larger figures. Syntax check passed; Steam source delivered and existing phantasy-only panel restarted/verified (`283,052,797 / 600,000,000`). Remote API reconnected. User had independently switched to money mode and Algorithms study; preserved those choices.

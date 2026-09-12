@@ -63,3 +63,11 @@ Proposed sequence: (1) fix the demonstrated XP guard error; (2) fix launch order
 The existing mcp_logic and mcpMulti_logic suites pass: 90 tests, zero failures. Two additional diagnostic reproductions demonstrate the launch-order and mid-cycle replacement weaknesses outside that test coverage. These passing suites do not certify the full scheduler lifecycle.
 
 Source reference for grow completion behavior: https://github.com/bitburner-official/bitburner-src/blob/v3.0.1/src/NetscriptFunctions.ts . Local evidence is retained in `/tmp/bb-scheduler-review/` and `/tmp/bb-allocation-review.mjs`; durable copies accompany this report in `docs/evidence/scheduler-review-2026-09-12/`.
+
+## Reconnected full-money check, September 12
+
+Live run `mtyv8r9p-2kkn`, release `14acevk`: phantasy money is 100%, minimum security 7, observed security 8.192 and then 9.32. The scheduler therefore correctly suppresses hacks while in its strict recovery phase; it is not observing minimum security. It did reach work at event time 1789256366413, then returned to weaken at 1789256396430, about 30 seconds later. This is repeated recovery, rather than a phase that never changes.
+
+The recovery allocation unconditionally fills spare RAM with grow, including three 4096GB cloud hosts with 2340 grow threads each and no hacks in the earlier snapshot. Full money makes this capacity ineffective for money production (XP can still accrue). Near-100% RAM utilization is consequently not evidence of productive hacking. The previously reproduced replacement and launch-order defects remain present; live evidence does not identify their individual contribution to this recovery loop. `describeRunningActions` also omits the worker host in its running-script lookup and defaults unknown ages to Infinity, weakening its protection further.
+
+Recommendation: repair completion-aware worker replacement and RAM release/launch ordering together, stop money-mode recovery growth when the target is full, and verify sustained recovery/work cycles in the browser before Steam deployment. More purchased RAM or concurrent targets would mask rather than establish a fix. No game settings, source deployment, restarts, or purchases were performed for this check. Snapshot: `evidence/scheduler-review-2026-09-12/full-money-weaken.json`.

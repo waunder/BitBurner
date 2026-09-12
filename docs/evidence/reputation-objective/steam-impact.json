@@ -1,0 +1,633 @@
+{
+  "measurement": {
+    "faction": "NiteSec",
+    "offRepPerSec": 2.868,
+    "onRepPerSec": 3.297,
+    "relativeGain": 0.14958158995815918,
+    "additionalRepPerHour": 1544.400000000001,
+    "method": "UI rate observed on/off/on, ~22 seconds settling each transition; same H303; reputation objective preserved and enabled policy restored"
+  },
+  "restoredStatus": {
+    "ts": 1789241108275,
+    "runId": "mtyrug98-hky",
+    "scriptVersion": "14acevk",
+    "player": {
+      "money": 744176948.0975816,
+      "hp": {
+        "current": 10,
+        "max": 10
+      },
+      "skills": {
+        "hacking": 303,
+        "strength": 1,
+        "defense": 1,
+        "dexterity": 43,
+        "agility": 43,
+        "charisma": 1,
+        "intelligence": 83
+      },
+      "hackingGrowMult": 1.2653312823360001
+    },
+    "homeCores": 1,
+    "target": "max-hardware",
+    "plan": "work",
+    "debugWorkWeights": {
+      "hackPercentPerThread": 0.0037027296050756433,
+      "growLogPerThread": 0.0013262782111282312,
+      "balancedHackShare": 0.09101495571669709,
+      "growPerHack": 8.93382296174695
+    },
+    "weightBucket": "harvest",
+    "currentSecurity": 5,
+    "moneyPct": 0.08508519910952936,
+    "needWeaken": 0,
+    "maxWeaken": 204,
+    "tickSeconds": 10.003,
+    "hacked": 0,
+    "rate": 0,
+    "avgRate": 0,
+    "incomePerSec": 0,
+    "expPerSec": 32.09443774126847,
+    "totalHacked": 0,
+    "ramUtilization": 0.9839430894308944,
+    "workers": [
+      {
+        "host": "n00dles",
+        "maxRam": 4,
+        "usedRam": 3.5,
+        "freeRam": 0.5,
+        "actions": [
+          {
+            "script": "weaken",
+            "threads": 1
+          },
+          {
+            "script": "grow",
+            "threads": 1
+          }
+        ]
+      },
+      {
+        "host": "foodnstuff",
+        "maxRam": 16,
+        "usedRam": 15.75,
+        "freeRam": 0.25,
+        "actions": [
+          {
+            "script": "weaken",
+            "threads": 1
+          },
+          {
+            "script": "grow",
+            "threads": 8
+          }
+        ]
+      },
+      {
+        "host": "sigma-cosmetics",
+        "maxRam": 16,
+        "usedRam": 15.75,
+        "freeRam": 0.25,
+        "actions": [
+          {
+            "script": "weaken",
+            "threads": 1
+          },
+          {
+            "script": "grow",
+            "threads": 8
+          }
+        ]
+      },
+      {
+        "host": "joesguns",
+        "maxRam": 16,
+        "usedRam": 15.75,
+        "freeRam": 0.25,
+        "actions": [
+          {
+            "script": "weaken",
+            "threads": 1
+          },
+          {
+            "script": "grow",
+            "threads": 8
+          }
+        ]
+      },
+      {
+        "host": "hong-fang-tea",
+        "maxRam": 16,
+        "usedRam": 15.75,
+        "freeRam": 0.25,
+        "actions": [
+          {
+            "script": "weaken",
+            "threads": 1
+          },
+          {
+            "script": "grow",
+            "threads": 8
+          }
+        ]
+      },
+      {
+        "host": "harakiri-sushi",
+        "maxRam": 16,
+        "usedRam": 15.75,
+        "freeRam": 0.25,
+        "actions": [
+          {
+            "script": "weaken",
+            "threads": 1
+          },
+          {
+            "script": "grow",
+            "threads": 8
+          }
+        ]
+      },
+      {
+        "host": "iron-gym",
+        "maxRam": 32,
+        "usedRam": 31.5,
+        "freeRam": 0.5,
+        "actions": [
+          {
+            "script": "weaken",
+            "threads": 2
+          },
+          {
+            "script": "grow",
+            "threads": 16
+          }
+        ]
+      },
+      {
+        "host": "nectar-net",
+        "maxRam": 16,
+        "usedRam": 15.75,
+        "freeRam": 0.25,
+        "actions": [
+          {
+            "script": "weaken",
+            "threads": 1
+          },
+          {
+            "script": "grow",
+            "threads": 8
+          }
+        ]
+      },
+      {
+        "host": "max-hardware",
+        "maxRam": 32,
+        "usedRam": 31.5,
+        "freeRam": 0.5,
+        "actions": [
+          {
+            "script": "weaken",
+            "threads": 2
+          },
+          {
+            "script": "grow",
+            "threads": 16
+          }
+        ]
+      },
+      {
+        "host": "zer0",
+        "maxRam": 32,
+        "usedRam": 31.5,
+        "freeRam": 0.5,
+        "actions": [
+          {
+            "script": "weaken",
+            "threads": 2
+          },
+          {
+            "script": "grow",
+            "threads": 16
+          }
+        ]
+      },
+      {
+        "host": "CSEC",
+        "maxRam": 8,
+        "usedRam": 7,
+        "freeRam": 1,
+        "actions": [
+          {
+            "script": "weaken",
+            "threads": 1
+          },
+          {
+            "script": "grow",
+            "threads": 3
+          }
+        ]
+      },
+      {
+        "host": "neo-net",
+        "maxRam": 32,
+        "usedRam": 31.5,
+        "freeRam": 0.5,
+        "actions": [
+          {
+            "script": "weaken",
+            "threads": 2
+          },
+          {
+            "script": "grow",
+            "threads": 16
+          }
+        ]
+      },
+      {
+        "host": "silver-helix",
+        "maxRam": 64,
+        "usedRam": 63,
+        "freeRam": 1,
+        "actions": [
+          {
+            "script": "weaken",
+            "threads": 4
+          },
+          {
+            "script": "grow",
+            "threads": 32
+          }
+        ]
+      },
+      {
+        "host": "phantasy",
+        "maxRam": 32,
+        "usedRam": 31.5,
+        "freeRam": 0.5,
+        "actions": [
+          {
+            "script": "weaken",
+            "threads": 2
+          },
+          {
+            "script": "grow",
+            "threads": 16
+          }
+        ]
+      },
+      {
+        "host": "omega-net",
+        "maxRam": 32,
+        "usedRam": 31.5,
+        "freeRam": 0.5,
+        "actions": [
+          {
+            "script": "weaken",
+            "threads": 2
+          },
+          {
+            "script": "grow",
+            "threads": 16
+          }
+        ]
+      },
+      {
+        "host": "avmnite-02h",
+        "maxRam": 128,
+        "usedRam": 127.1,
+        "freeRam": 0.9000000000000057,
+        "actions": []
+      }
+    ],
+    "cloudWorkers": [],
+    "candidate": "max-hardware",
+    "candidateScore": 911273.9457386415,
+    "candidateExpectedIncome": 5209.701736727296,
+    "avgMoneyPct": 0.07542081834231168,
+    "moneyPctSampleCount": 9,
+    "moneyPctSampleTarget": 9,
+    "heldSeconds": 190,
+    "hackTimeS": 15.118307228396205,
+    "growTimeS": 48.37858313086786,
+    "weakenTimeS": 60.47322891358482,
+    "hackChance": 1,
+    "switchEval": {
+      "basis": "effective",
+      "currentScore": 911273.9457386415,
+      "best": "max-hardware",
+      "bestScore": 911273.9457386415,
+      "ratio": 1,
+      "factor": 1.3,
+      "heldSeconds": 190,
+      "holdSeconds": 60,
+      "committed": true,
+      "outbid": false,
+      "blockedBy": "score"
+    },
+    "formulaSwitchVeto": null,
+    "formulaRankingActive": true,
+    "objectiveOverrideActive": true,
+    "reputation": {
+      "ts": 1789241108273,
+      "requested": true,
+      "config": {
+        "enabled": true,
+        "ramGb": 256,
+        "note": "Ken explicitly overrode the historical sharing restriction and authorized Steam activation on 2026-09-12. Disable enabled to stop owned sharing."
+      },
+      "factionWork": "unverified: sharing only benefits active faction work; choose it in the game",
+      "power": 1.149526864596156,
+      "maxRamGb": 256,
+      "state": "sharing",
+      "host": "avmnite-02h",
+      "pid": 691,
+      "threads": 31,
+      "ramGb": 127.1,
+      "retryAt": 1789241128264,
+      "startedAt": 1789241068264,
+      "reviewAt": 1789242868264,
+      "reason": "unverified: sharing only benefits active faction work; choose it in the game",
+      "roi": {
+        "baselinePower": 1,
+        "marginalReputation": null,
+        "confidence": "unmeasured",
+        "opportunityCost": "Reserved RAM cannot earn hacking money or XP",
+        "stopRule": "Stop on objective change, disabled policy or owner exit; review after 30 minutes"
+      }
+    },
+    "config": {
+      "SECURITY_CAP": 1,
+      "TARGET_MONEY_GOAL": 0.95,
+      "MIN_TARGET_HOLD_MS": 60000,
+      "WORK_SECURITY_MARGIN": 1.5,
+      "RATE_DROP_FACTOR": 0.75,
+      "LOOP_SLEEP_MS": 10000,
+      "RATE_SAMPLE_COUNT": 5,
+      "WEAKEN_STUCK_MS": 60000,
+      "WEAKEN_STUCK_SECURITY_THRESHOLD": 0.05,
+      "SKIP_STUCK_MS": 60000,
+      "DEGRADED_MONEY_PCT": 0.05,
+      "MONEY_PCT_SAMPLE_COUNT": 9,
+      "OPPORTUNITY_SWITCH_FACTOR": 1.3,
+      "R8_SWITCH_VETO_ENABLED": 1,
+      "FORMULA_RANKING_ENABLED": 1,
+      "MIN_TARGET_COMMIT_MS": 600000,
+      "DEGRADED_SKIP_MS": 900000,
+      "HACK_BALANCE_SAFETY": 0.5,
+      "OBJECTIVE": "reputation",
+      "XP_WEIGHT_HACK": 0.95,
+      "XP_WEIGHT_GROW": 0.05,
+      "REDEPLOY_TOLERANCE_ABSOLUTE": 2,
+      "REDEPLOY_TOLERANCE_RELATIVE": 0.2,
+      "HOME_RAM_RESERVE": 32,
+      "SCORE_HORIZON_SECONDS": 3600
+    },
+    "invariantViolations": {},
+    "recentEvents": [
+      {
+        "t": 1789240918221,
+        "seq": 1,
+        "runId": "mtyrug98-hky",
+        "ver": "14acevk",
+        "kind": "startup",
+        "targetOverride": null,
+        "restoredSkipped": 0,
+        "restoredDrained": 0,
+        "hackingLevel": 302
+      },
+      {
+        "t": 1789240918222,
+        "seq": 2,
+        "runId": "mtyrug98-hky",
+        "ver": "14acevk",
+        "kind": "config_change",
+        "changes": {
+          "R8_SWITCH_VETO_ENABLED": {
+            "from": 0,
+            "to": 1
+          },
+          "FORMULA_RANKING_ENABLED": {
+            "from": 0,
+            "to": 1
+          },
+          "OBJECTIVE": {
+            "from": "money",
+            "to": "reputation"
+          },
+          "OBJECTIVE_OVERRIDE_ACTIVE": {
+            "from": false,
+            "to": true
+          }
+        },
+        "rejected": []
+      },
+      {
+        "t": 1789240918222,
+        "seq": 3,
+        "runId": "mtyrug98-hky",
+        "ver": "14acevk",
+        "kind": "reputation_start",
+        "actionId": "mtyrug98-hky:share-start:1789240918222",
+        "host": "avmnite-02h",
+        "threads": 31,
+        "ramGb": 127.1,
+        "pid": 657,
+        "config": {
+          "enabled": true,
+          "ramGb": 256,
+          "note": "Ken explicitly overrode the historical sharing restriction and authorized Steam activation on 2026-09-12. Disable enabled to stop owned sharing."
+        },
+        "candidates": [
+          {
+            "host": "home",
+            "availableRam": 53.25
+          },
+          {
+            "host": "n00dles",
+            "availableRam": 4
+          },
+          {
+            "host": "foodnstuff",
+            "availableRam": 16
+          },
+          {
+            "host": "sigma-cosmetics",
+            "availableRam": 16
+          },
+          {
+            "host": "joesguns",
+            "availableRam": 16
+          },
+          {
+            "host": "hong-fang-tea",
+            "availableRam": 16
+          },
+          {
+            "host": "harakiri-sushi",
+            "availableRam": 16
+          },
+          {
+            "host": "iron-gym",
+            "availableRam": 32
+          },
+          {
+            "host": "nectar-net",
+            "availableRam": 16
+          },
+          {
+            "host": "max-hardware",
+            "availableRam": 32
+          },
+          {
+            "host": "zer0",
+            "availableRam": 32
+          },
+          {
+            "host": "CSEC",
+            "availableRam": 8
+          },
+          {
+            "host": "neo-net",
+            "availableRam": 32
+          },
+          {
+            "host": "silver-helix",
+            "availableRam": 64
+          },
+          {
+            "host": "phantasy",
+            "availableRam": 32
+          },
+          {
+            "host": "omega-net",
+            "availableRam": 32
+          },
+          {
+            "host": "avmnite-02h",
+            "availableRam": 128
+          }
+        ]
+      },
+      {
+        "t": 1789240918222,
+        "seq": 4,
+        "runId": "mtyrug98-hky",
+        "ver": "14acevk",
+        "kind": "target_adopt",
+        "target": "max-hardware",
+        "expectedIncome": 2439.379221385003,
+        "score": 878821.1497239039,
+        "requiredWeaken": 0,
+        "maxWeaken": 204,
+        "moneyPct": 0.04,
+        "security": 5,
+        "minSecurity": 5,
+        "skipped": 0,
+        "drained": 0
+      },
+      {
+        "t": 1789241028252,
+        "seq": 5,
+        "runId": "mtyrug98-hky",
+        "ver": "14acevk",
+        "kind": "reputation_stop",
+        "actionId": "mtyrug98-hky:share-stop:657",
+        "host": "avmnite-02h",
+        "pid": 657,
+        "objective": "reputation",
+        "config": {
+          "enabled": false,
+          "ramGb": 256,
+          "note": "Ken explicitly overrode the historical sharing restriction and authorized Steam activation on 2026-09-12. Disable enabled to stop owned sharing."
+        }
+      },
+      {
+        "t": 1789241068264,
+        "seq": 6,
+        "runId": "mtyrug98-hky",
+        "ver": "14acevk",
+        "kind": "reputation_start",
+        "actionId": "mtyrug98-hky:share-start:1789241068264",
+        "host": "avmnite-02h",
+        "threads": 31,
+        "ramGb": 127.1,
+        "pid": 691,
+        "config": {
+          "enabled": true,
+          "ramGb": 256,
+          "note": "Ken explicitly overrode the historical sharing restriction and authorized Steam activation on 2026-09-12. Disable enabled to stop owned sharing."
+        },
+        "candidates": [
+          {
+            "host": "home",
+            "availableRam": 49.7
+          },
+          {
+            "host": "n00dles",
+            "availableRam": 4
+          },
+          {
+            "host": "foodnstuff",
+            "availableRam": 16
+          },
+          {
+            "host": "sigma-cosmetics",
+            "availableRam": 16
+          },
+          {
+            "host": "joesguns",
+            "availableRam": 16
+          },
+          {
+            "host": "hong-fang-tea",
+            "availableRam": 16
+          },
+          {
+            "host": "harakiri-sushi",
+            "availableRam": 16
+          },
+          {
+            "host": "iron-gym",
+            "availableRam": 32
+          },
+          {
+            "host": "nectar-net",
+            "availableRam": 16
+          },
+          {
+            "host": "max-hardware",
+            "availableRam": 32
+          },
+          {
+            "host": "zer0",
+            "availableRam": 32
+          },
+          {
+            "host": "CSEC",
+            "availableRam": 8
+          },
+          {
+            "host": "neo-net",
+            "availableRam": 32
+          },
+          {
+            "host": "silver-helix",
+            "availableRam": 64
+          },
+          {
+            "host": "phantasy",
+            "availableRam": 32
+          },
+          {
+            "host": "omega-net",
+            "availableRam": 32
+          },
+          {
+            "host": "avmnite-02h",
+            "availableRam": 128
+          }
+        ]
+      }
+    ]
+  }
+}

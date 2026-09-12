@@ -12,7 +12,8 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
 
 - [x] **Implement reputation objective, 2026-09-12.** Bounded owned sharing, validated disabled policy, objective command, status/HUD and events; 102 local tests pass. Browser test confirms stable single allocation and cleanup on money. Details: `reputation-objective.md`.
 - [x] **Steam sharing activation explicitly authorized by Ken, 2026-09-12.** Restriction overridden; source verified, policy enabled, reputation selected, MCP restarted. Explicit-host liveness fix included; 102 tests pass.
-- [ ] **Measure actual faction-reputation ROI.** The old incident remains unexplained; switching money/XP stops owned sharing. Evidence: `evidence/reputation-objective/steam-active.json`.
+- [x] **Measure faction-reputation benefit.** Controlled NiteSec on/off/on at H303: 3.297/2.868/3.297 rep/sec, +14.96%, ~1,544 extra rep/hour; sharing restored. Evidence: `evidence/reputation-objective/steam-impact.json`.
+- [ ] **Measure sustained money/XP opportunity cost before expanding sharing.** Current short preparation-phase sample has zero hacking income and is not a fair money baseline.
 - [x] **Review scheduler after the changed September 12 game state.** See `scheduler-review-2026-09-12.md` and the accompanying R1–R8 evidence table. H275, XP mode: R8 live-vetoes a 2.87× XP candidate based on money scores. Two worker replacement defects reproduced locally; 90 existing tests pass. Review complete, fixes not implemented.
 - [ ] **Recommended next scheduler implementation:** repair launch ordering and protect current action completion. R8's money veto now bypasses XP in local source; full MCP integration and Steam restart remain unverified. Reconsider two-target money allocation after a measured single-target baseline.
 

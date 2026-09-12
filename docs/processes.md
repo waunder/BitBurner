@@ -1155,6 +1155,7 @@ live for as long as it's open.
 The wide view: one line per rooted money server and every purchased worker,
 with money, security, RAM and what it is currently running. This makes MCP's
 cloud-worker activity visible even though purchased servers have no money.
+Available/maximum money use comma-separated whole dollars, with at least 16-character columns that expand rather than truncate larger values.
 Auto-sizes its tail window to the text using real font metrics from
 `ns.ui.getStyles()`, and parks itself beside the sidebar by default.
 

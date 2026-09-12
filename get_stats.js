@@ -87,7 +87,7 @@ function get_server_data(ns, server) {
 	var ram = ns.getServerMaxRam(server)
 	var activity = get_activity(ns, server)
 	return `${pad_str(server, 17)}`+
-			` money:${pad_str(parseInt(moneyAvailable), 12)}/${pad_str(parseInt(moneyMax), 12)}(${pad_str((moneyAvailable / moneyMax).toFixed(2), 4)})` +
+			` money:${Math.trunc(moneyAvailable).toLocaleString("en-US").padStart(16)}/${Math.trunc(moneyMax).toLocaleString("en-US").padStart(16)}(${pad_str((moneyAvailable / moneyMax).toFixed(2), 4)})` +
 			` security:${pad_str(securityLvl.toFixed(2), 6)}(${pad_str(securityMin, 2)})` +
 			` RAM:${pad_str(parseInt(ram), 4)}` +
 			` Action:${activity.action} ${activity.target}`

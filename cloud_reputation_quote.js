@@ -8,6 +8,8 @@ export async function main(ns) {
     sharePower: ns.getSharePower(), reputation: status.reputation,
     currentShareHostCores: status.reputation?.host ? ns.getServer(status.reputation.host).cpuCores : null,
     cloudServers: ns.cloud.getServerNames(),
+    uncapped4Tb: {ramGb:4096,threads:Math.floor(4096/ns.getScriptRam("mcp_share.js","home")),
+      projectedSharePower:ns.formulas.reputation.sharePower(Math.floor(4096/ns.getScriptRam("mcp_share.js","home")),1)},
     quotes: [128,256,512,1024,4096].map(ramGb => {
       const shareThreads = Math.floor(Math.min(ramGb,256)/ns.getScriptRam("mcp_share.js","home"))
       return {ramGb,cost:ns.cloud.getServerCost(ramGb),shareThreads,

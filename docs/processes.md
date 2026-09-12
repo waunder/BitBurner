@@ -1479,7 +1479,7 @@ and result; the remote restart path accepts `--buy-worker=<GB>`.
 
 ### `mcp_status.js`
 
-`cloud_reputation_quote.js` is a one-shot read-only quote helper: `run cloud_reputation_quote.js`. Reads MCP status/player/current share-host cores and cloud cost/Formulas share-power APIs; writes `cloud_reputation_quote.json` and prints quotes for 128–4096GB. Requires Formulas.exe. It never purchases capacity. Projected power assumes a one-core cloud host and the current 256GB sharing ceiling.
+`cloud_reputation_quote.js` is a one-shot read-only quote helper: `run cloud_reputation_quote.js`. Reads MCP status/player/current share-host cores and cloud cost/Formulas share-power APIs; writes `cloud_reputation_quote.json` and prints quotes for 128–4096GB plus an `uncapped4Tb` hypothetical projection. Requires Formulas.exe. It never purchases capacity. Projected power assumes a one-core cloud host; regular quotes apply the 256GB ceiling, while `uncapped4Tb` assumes that ceiling were raised.
 
 Mirrors `mcp.js`'s tail output into its own window, so the orchestrator's
 `ns.print` lines stay visible without hunting for its tail.

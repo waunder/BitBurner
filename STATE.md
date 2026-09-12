@@ -5,6 +5,8 @@ purpose are defined in `docs/agent-working-agreement.md`.
 
 ## Current objective
 
+Consolidated HUD objective display added and Steam-confirmed September 12: compact MCP row and expanded `Objective: reputation` read the resolved manager status. HUD restarted; syntax check passed.
+
 Measured Steam reputation impact September 12: controlled NiteSec on/off/on rates 3.297/2.868/3.297 rep/sec at H303, +14.96% or ~1,544 rep/hour for 127.1GB sharing. Enabled sharing restored, reputation override preserved. Evidence `docs/evidence/reputation-objective/steam-impact.json`. Next action is sustained money/XP opportunity-cost measurement if deciding whether to allocate more capacity; current short preparation-phase sample cannot establish that cost.
 
 Steam activation authorized explicitly by Ken overriding the historical share restriction, 2026-09-12. Policy enabled, exact release source delivered/readback-verified, reputation override selected and MCP restarted. Remote liveness checks corrected to explicitly name home/worker hosts; regression fixture now enforces host semantics (102 tests pass). Evidence: `docs/evidence/reputation-objective/steam-active.json`. Ken upgraded home RAM during deployment. To deactivate: `run set_objective.js xp` or `money`, or disable `reputation_config.json`. Earlier disabled-policy notes below describe the pre-authorization implementation boundary.

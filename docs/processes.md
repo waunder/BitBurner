@@ -2353,6 +2353,8 @@ for `ns.singularity` without SF4 — done up front here instead.
 
 ## Reputation (`ns.share`)
 
+The consolidated HUD displays the resolved `mcp_status.json.config.OBJECTIVE` in its compact MCP row and as `Objective` in the expanded section, refreshing every five seconds. Missing/invalid values show `unknown`; stale expanded status marks it `last reported`. Restart `hud_consolidated.js` after source changes (it closes/retires its previous instance).
+
 **New capped objective:** `set_objective.js reputation` requests a single
 owned `mcp_share.js` worker using `mcp_reputation.js`. Remaining RAM follows
 money policy. `reputation_config.json` is a committed policy with `enabled`

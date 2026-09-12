@@ -71,6 +71,8 @@ function mcpStatus(ns, now) {
   const running = ageMs < STALE_MS
 
   const target = status.target || "--"
+  const objective = ["money", "xp", "reputation"].includes(status.config?.OBJECTIVE)
+    ? status.config.OBJECTIVE : "unknown"
   const money = status.totalHacked || 0
   const rate = status.rate || 0  // Current rate
   const avgRate = status.avgRate || 0  // Average rate
@@ -96,9 +98,10 @@ function mcpStatus(ns, now) {
   const deployment = `${workerCount}h ${threadTotal}t (${actionSummary})`
 
   return {
-    compact: `${running ? "✓" : "⊘"} ${compact(moneyPerMin, 1)}/m ${actionSummary}`,
+    compact: `${running ? "✓" : "⊘"} ${objective} ${compact(moneyPerMin, 1)}/m ${actionSummary}`,
     expanded: [
       `Status: ${running ? "RUNNING" : "STOPPED"}`,
+      `Objective: ${objective}${running ? "" : " (last reported)"}`,
       `Target: ${target}`,
       `Rate: ${compact(rate, 2)}/s (avg ${compact(avgRate, 2)}/s)`,
       `Total hacked: ${compact(money)}`,

@@ -10,8 +10,8 @@ function fixture({ enabled = true, ramGb = 256, procs = [], scp = true, exec = t
   const ns = {
     pid: 42, args: [], read: f => files[f] || '', getSharePower: () => 1,
     ps: host => processes.filter(p => p.host === host),
-    isRunning: pid => processes.some(p => p.pid === pid),
-    kill(pid) { calls.push(['kill', pid]); processes = processes.filter(p => p.pid !== pid); return true },
+    isRunning: (pid, host = 'home') => processes.some(p => p.pid === pid && p.host === host),
+    kill(pid, host = 'home') { const found = processes.some(p => p.pid === pid && p.host === host); calls.push(['kill', pid]); processes = processes.filter(p => !(p.pid === pid && p.host === host)); return found },
     getScriptRam: f => f.includes('mcp_share') ? 4 : 2,
     getServerMaxRam: () => 512,
     getServerUsedRam: host => processes.filter(p => p.host === host).reduce((n,p) => n + p.threads * ns.getScriptRam(p.filename),0),
@@ -96,6 +96,6 @@ test('share worker exits after owner stops, and invalid ownership never shares',
     assert.equal(calls,0)
   }
   let calls=0, running=true
-  await main({args:[42,'generation'],disableLog(){},isRunning:pid=>pid===42&&running,share:async()=>{calls++;running=false}})
+  await main({args:[42,'generation'],disableLog(){},isRunning:(pid,host)=>pid===42&&host==='home'&&running,share:async()=>{calls++;running=false}})
   assert.equal(calls,1)
 })

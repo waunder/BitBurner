@@ -5,5 +5,5 @@ export async function main(ns) {
   const source = String(ns.args[1] || "")
   if (!Number.isInteger(owner) || owner <= 0 || !source) return
   // share already awaits a ten-second game delay; no tight polling loop.
-  while (ns.isRunning(owner)) await ns.share()
+  while (ns.isRunning(owner, "home")) await ns.share()
 }

@@ -5,6 +5,8 @@ purpose are defined in `docs/agent-working-agreement.md`.
 
 ## Current objective
 
+Steam activation authorized explicitly by Ken overriding the historical share restriction, 2026-09-12. Policy enabled, exact release source delivered/readback-verified, reputation override selected and MCP restarted. Remote liveness checks corrected to explicitly name home/worker hosts; regression fixture now enforces host semantics (102 tests pass). Evidence: `docs/evidence/reputation-objective/steam-active.json`. Ken upgraded home RAM during deployment. To deactivate: `run set_objective.js xp` or `money`, or disable `reputation_config.json`. Earlier disabled-policy notes below describe the pre-authorization implementation boundary.
+
 2026-09-12 reputation objective: implemented `set_objective.js reputation`, bounded owned sharing (maximum 256GB), status/HUD/events and fail-closed policy. 102 local tests pass. Disposable browser test confirmed two threads at 8.2GB, power 1.043944 across five samples and clean return to money (zero worker RAM, power 1). Evidence: `docs/evidence/reputation-objective/browser-test.json`; usage and limits: `docs/reputation-objective.md`. R8 money veto is bypassed in XP mode. No Steam upload/restart/activation; automatic source sync remains disabled. Historic share incident root cause remains unknown, so Steam policy stays disabled under AGENTS.md. Next action: resolve that restriction before a bounded Steam pilot and measure actual faction reputation against the money/XP opportunity cost.
 
 Latest review (2026-09-12): scheduler review completed in `docs/scheduler-review-2026-09-12.md`, with R1–R8 table and evidence under `docs/evidence/scheduler-review-2026-09-12/`. Current Steam state is H275, ~$680m, NiteSec work, MCP XP on phantasy, 492GB across 16 hosts. Live-confirmed defect: R8 rejects an XP-qualified foodnstuff switch using money scores. Next recommended work is objective-specific R8 handling, followed by completion-aware worker replacement and launch-order repair; multiple targets should be evaluated after those fixes. No scheduler edits or gameplay changes made. September 11 QLink funding recommendations below are historical. Remote API is reconnected, automatic source sync/pulls disabled.
@@ -234,11 +236,11 @@ after the last pulled telemetry; reconnect before making a new live claim.
 
 ## Next
 
-1. Resolve the historical share-automation restriction before a Steam pilot; see the current objective above. Worker replacement repairs remain queued separately.
+1. Measure actual faction-reputation gain against the money/XP opportunity cost of the active share allocation. Worker replacement repairs remain queued separately.
 
 ## Blockers
 
-Steam sharing activation is restricted by AGENTS.md while the historical incident's root cause remains unknown. The Remote API reconnect was confirmed September 12; earlier disconnect notes are historical.
+No activation blocker: Ken explicitly overrode the sharing restriction. Steam worker PID 657 remained stable over 30 seconds, 31 threads/127.1GB on avmnite-02h, share power 1.149527, no reported invariant violations. Historical incident cause and actual faction-reputation ROI remain unmeasured.
 
 ## Changelog
 

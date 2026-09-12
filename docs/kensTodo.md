@@ -10,7 +10,7 @@ hand and check it off once confirmed—same rule as `docs/processes.md`.
 
 ## Pending
 
-- [ ] **Steam reputation mode remains restricted (2026-09-12).** Implementation and disposable-browser verification are complete; the historical share incident remains unexplained. Explicit authorization is required before re-enabling Steam sharing under AGENTS.md. When activated, choose faction work in the game; sharing does not start work automatically. See `reputation-objective.md`.
+- [x] **Steam reputation mode authorized and activated (2026-09-12).** Ken explicitly overrode the historical restriction. NiteSec work was visible during deployment; sharing does not start work automatically. See `reputation-objective.md`.
 - [x] **Reconnect the live Bitburner session to the Remote API daemon (2026-09-08).** Confirmed reconnected on port 12526 September 12; automatic source sync/pull disabled for assessment and development.
 
 - [ ] **Restart the Remote API daemon to sync the IPvGO experiment scripts (2026-09-06).** The experiment infrastructure (`ipvgo_experiment.js`, `ipvgo_experiment_analyze.js`) was just added to sync_manifest.json. The daemon reads the manifest at startup, so a restart will pick them up and sync them into the game automatically. Once that's done, the three test batches can run (see ipvgo_experiment_guide.md for the test plan).

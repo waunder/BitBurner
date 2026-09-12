@@ -2,7 +2,7 @@
 
 MCP now supports `money`, `xp`, and `reputation`. Reputation mode reserves up to 256GB on one host for a single share worker, with the remaining ordinary/cloud worker RAM following the existing money policy. Sharing increases faction-work reputation; it neither selects a faction nor starts player work and it does not boost company-work reputation. Choose faction work in the game before selecting reputation.
 
-Once the protected Steam share restriction has been resolved and its policy explicitly enabled, use:
+Ken explicitly overrode the historical sharing restriction on 2026-09-12. The policy is enabled and the new release is deployed to Steam. Use:
 
 ```text
 run set_objective.js reputation
@@ -11,7 +11,7 @@ run set_objective.js xp
 run set_objective.js clear
 ```
 
-No argument prints the resolved objective and sharing state. `clear` returns to the source configuration. A disabled or invalid reputation policy rejects the reputation command without changing the previous objective. The checked-in policy is disabled.
+No argument prints the resolved objective and sharing state. `clear` returns to the source configuration. A disabled or invalid reputation policy rejects the reputation command without changing the previous objective. The checked-in policy is enabled with a 256GB ceiling.
 
 ## Allocation and controls
 
@@ -33,10 +33,12 @@ The ROI record includes baseline share power, reserved RAM, the opportunity cost
 
 The project stop-list still restricts re-enabling Steam share automation after its stability incident until its root cause is sufficiently understood. The prior claim that `ns.share()` did not yield and needed a sleep is unsupported: official v3.0.1 implementation awaits a ten-second delay, with one process representing all its threads. The additional sleep in the legacy worker introduces downtime; it is not evidence of a resolved freeze mechanism. That historical root cause remains unknown.
 
-Source: [v3.0.1 sharing implementation](https://github.com/bitburner-official/bitburner-src/blob/v3.0.1/src/NetscriptFunctions.ts#L377). The bounded new implementation was tested in a separate browser save; that test is not proof that the old Steam incident cannot recur. Steam sharing remains disabled, and the legacy worker is unchanged as evidence. A running MCP must restart to load these source changes before the new objective is available; no Steam restart or activation was performed during implementation.
+Source: [v3.0.1 sharing implementation](https://github.com/bitburner-official/bitburner-src/blob/v3.0.1/src/NetscriptFunctions.ts#L377). The bounded new implementation was tested in a separate browser save; that test is not proof that the old Steam incident cannot recur. Ken subsequently overrode the restriction and authorized Steam activation. The legacy worker is unchanged as evidence. Steam source was readback-verified and MCP restarted. During Steam verification, remote worker liveness required explicit host arguments; owner checks now query home and controller checks/kills query the worker host. The local fixture now enforces that distinction.
 
 ## Validation
 
 Twelve focused local tests cover physical/configured/hard RAM caps, invalid policies, blocked-command preservation, owned-only retirement, duplicate-generation handling, idempotence, copy/exec failures, retry cooldown and worker owner exit. Existing MCP logic and multi-target tests are also checked. Browser evidence accompanies this document under `docs/evidence/reputation-objective/`; it exercises the actual game sharing API, multiple ten-second cycles and cleanup on returning to money. It does not measure faction-reputation ROI or certify the full MCP suite under Steam load.
 
 All 102 focused/existing tests passed. The browser run used two threads consuming 8.2GB: share power settled at 1.043944 and the same worker survived five reconciliation samples without duplication. Returning to money removed the worker, released all 8.2GB, and restored power to 1 after settlement. This is a sharing-power measurement, not a measured 4.4% increase in actual faction reputation.
+
+Steam activation: final run `mtyrug98-hky`, worker PID 657 on avmnite-02h, 31 threads and 127.1GB. After thirty seconds the same PID remained active, share power reached 1.149527, and MCP reported no invariant violations. NiteSec faction work was visible in the UI. This short observation establishes operation, not long-term stability or actual reputation ROI. The large MCP transfer exceeded the daemon's default 64KiB control-request limit; temporary text chunks were assembled in-game and the complete source readback matched the local file exactly. The transfer limit remains a separate tooling issue.

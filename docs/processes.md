@@ -504,7 +504,7 @@ should not silently undo a deliberate tune. Every change emits a
 
 #### `OBJECTIVE` — money, XP, or reputation
 
-`"money"` (default), `"xp"`, or `"reputation"`, hot-reloadable like everything else. Reputation reserves a policy-capped share allocation and uses money logic for remaining RAM; the checked-in share policy is disabled. Validated
+`"money"` (default), `"xp"`, or `"reputation"`, hot-reloadable like everything else. Reputation reserves a policy-capped share allocation and uses money logic for remaining RAM; Ken authorized the enabled 256GB share policy on September 12. Validated
 as a string enum separately from the numeric tunables — an invalid value is
 rejected and reported the same way a bad number is, keeping the current
 setting rather than falling back to the default mid-run.
@@ -2356,14 +2356,14 @@ for `ns.singularity` without SF4 — done up front here instead.
 **New capped objective:** `set_objective.js reputation` requests a single
 owned `mcp_share.js` worker using `mcp_reputation.js`. Remaining RAM follows
 money policy. `reputation_config.json` is a committed policy with `enabled`
-and `ramGb` (hard maximum 256GB); it defaults to disabled under the unresolved
-Steam share restriction. Disabled/invalid commands preserve the prior
+and `ramGb` (hard maximum 256GB); Ken explicitly overrode the historical
+restriction and enabled it on September 12. Disabled/invalid commands preserve the prior
 objective. These three files join source sync; `mcp_status.json.reputation`
 and the existing event stream carry state, budgets, results and ROI limits.
 One host's action allocation is reclaimed on share start, owned sharing stops
 on objective/policy change, owner death exits after a ten-second call, and
 failed starts retry after sixty seconds. Copy/launch/kill failures go through
-MCP invariants. The worker measures 4.1GB/thread in v3.0.1; allocation always
+MCP invariants. Remote worker checks/kills explicitly name its host; worker owner checks explicitly name home. The worker measures 4.1GB/thread in v3.0.1; allocation always
 reads actual RAM. A new MCP restart is required to load this code. See
 [usage, limitations and tests](reputation-objective.md).
 

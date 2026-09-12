@@ -1,5 +1,5 @@
 {
-  "enabled": false,
+  "enabled": true,
   "ramGb": 256,
-  "note": "Steam sharing remains disabled pending resolution of the historical stability restriction. Enable only for an authorized environment."
+  "note": "Ken explicitly overrode the historical sharing restriction and authorized Steam activation on 2026-09-12. Disable enabled to stop owned sharing."
 }

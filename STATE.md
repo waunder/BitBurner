@@ -5,6 +5,8 @@ purpose are defined in `docs/agent-working-agreement.md`.
 
 ## Current objective
 
+Ken revised the stats formatting preference to compact decimal amounts such as `24.8G`; `get_stats.js` now uses K/M/G/T/P with one decimal place, replacing the comma-separated dollar display.
+
 Stats readability September 12: `get_stats.js` available/maximum money now use comma-separated whole dollars without truncating larger figures. Syntax check passed; Steam source delivered and existing phantasy-only panel restarted/verified (`283,052,797 / 600,000,000`). Remote API reconnected. User had independently switched to money mode and Algorithms study; preserved those choices.
 
 Approved 256GB cloud purchase completed September 12: mcp-worker-0 cost $14.08m; MCP restarted as mtysbeyw-7ja7 with reputation retained. Sharing moved to cloud, PID726, 62 threads/254.2GB; power1.169990, no invariant violations. NiteSec UI shows3.365rep/sec at H304 (prior measurement3.297 at H303; level growth contributes to difference). Old share host released for hacking. Evidence `docs/evidence/reputation-objective/cloud-purchased.json`. Next action is observe sustained money/XP opportunity cost before any further sharing investment.

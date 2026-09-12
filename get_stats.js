@@ -74,6 +74,13 @@ function pad_str(string, len) {
 	return String(pad + string).slice(-len)
 }
 
+function compactMoney(value) {
+	for (const [scale, suffix] of [[1e15, "P"], [1e12, "T"], [1e9, "G"], [1e6, "M"], [1e3, "K"]]) {
+		if (Math.abs(value) >= scale) return (value / scale).toFixed(1) + suffix
+	}
+	return String(Math.trunc(value))
+}
+
 function get_server_data(ns, server) {
 	/*
 	Creates the info text for each server. Currently gets money, security, and ram.
@@ -87,7 +94,7 @@ function get_server_data(ns, server) {
 	var ram = ns.getServerMaxRam(server)
 	var activity = get_activity(ns, server)
 	return `${pad_str(server, 17)}`+
-			` money:${Math.trunc(moneyAvailable).toLocaleString("en-US").padStart(16)}/${Math.trunc(moneyMax).toLocaleString("en-US").padStart(16)}(${pad_str((moneyAvailable / moneyMax).toFixed(2), 4)})` +
+			` money:${compactMoney(moneyAvailable).padStart(7)}/${compactMoney(moneyMax).padStart(7)}(${pad_str((moneyAvailable / moneyMax).toFixed(2), 4)})` +
 			` security:${pad_str(securityLvl.toFixed(2), 6)}(${pad_str(securityMin, 2)})` +
 			` RAM:${pad_str(parseInt(ram), 4)}` +
 			` Action:${activity.action} ${activity.target}`

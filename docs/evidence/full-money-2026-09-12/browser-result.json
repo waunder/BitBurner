@@ -1,0 +1,197 @@
+{
+  "started": 1789258459306,
+  "samples": [
+    {
+      "cycle": 0,
+      "before": {
+        "money": 106464.72298424241,
+        "security": 1.016
+      },
+      "after": {
+        "money": 106464.72298424241,
+        "security": 1.016
+      },
+      "remaining": [
+        {
+          "filename": "scripts/weaken.js",
+          "threads": 1,
+          "args": [
+            "n00dles",
+            "once"
+          ],
+          "pid": 5,
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "cycle": 1,
+      "before": {
+        "money": 106464.72298424241,
+        "security": 1.016
+      },
+      "after": {
+        "money": 106464.72298424241,
+        "security": 1.016
+      },
+      "remaining": [
+        {
+          "filename": "scripts/weaken.js",
+          "threads": 1,
+          "args": [
+            "n00dles",
+            "once"
+          ],
+          "pid": 5,
+          "temporary": false
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "full RAM grow started",
+      "ok": true,
+      "inputs": {
+        "pid": 4,
+        "ram": 3.5
+      }
+    },
+    {
+      "name": "remote process age available",
+      "ok": true,
+      "inputs": [
+        {
+          "script": "grow",
+          "target": "n00dles",
+          "threads": 2,
+          "elapsedS": 0.01,
+          "finite": true
+        }
+      ]
+    },
+    {
+      "name": "finite grow survives changed allocation",
+      "ok": true,
+      "inputs": {
+        "host": "n00dles",
+        "maxRam": 4,
+        "usedRam": 3.5,
+        "freeRam": 0.5,
+        "actions": [
+          {
+            "script": "grow",
+            "threads": 2
+          }
+        ],
+        "launchFailures": [],
+        "desired": {
+          "hack": 0,
+          "grow": 0,
+          "weaken": 2
+        }
+      }
+    },
+    {
+      "name": "weaken replaces completed grow on full host",
+      "ok": true,
+      "inputs": {
+        "host": "n00dles",
+        "maxRam": 4,
+        "usedRam": 1.75,
+        "freeRam": 2.25,
+        "actions": [
+          {
+            "script": "weaken",
+            "threads": 1
+          }
+        ],
+        "launchFailures": [],
+        "desired": {
+          "hack": 0,
+          "grow": 0,
+          "weaken": 1
+        }
+      }
+    },
+    {
+      "name": "replacement is finite",
+      "ok": true,
+      "inputs": [
+        {
+          "filename": "scripts/weaken.js",
+          "threads": 1,
+          "args": [
+            "n00dles",
+            "once"
+          ],
+          "pid": 5,
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "name": "hack exits after one call 0",
+      "ok": true,
+      "inputs": {
+        "cycle": 0,
+        "before": {
+          "money": 106464.72298424241,
+          "security": 1.016
+        },
+        "after": {
+          "money": 106464.72298424241,
+          "security": 1.016
+        },
+        "remaining": [
+          {
+            "filename": "scripts/weaken.js",
+            "threads": 1,
+            "args": [
+              "n00dles",
+              "once"
+            ],
+            "pid": 5,
+            "temporary": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "hack exits after one call 1",
+      "ok": true,
+      "inputs": {
+        "cycle": 1,
+        "before": {
+          "money": 106464.72298424241,
+          "security": 1.016
+        },
+        "after": {
+          "money": 106464.72298424241,
+          "security": 1.016
+        },
+        "remaining": [
+          {
+            "filename": "scripts/weaken.js",
+            "threads": 1,
+            "args": [
+              "n00dles",
+              "once"
+            ],
+            "pid": 5,
+            "temporary": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "worker RAM released after completion",
+      "ok": true,
+      "inputs": {
+        "ram": 0
+      }
+    }
+  ],
+  "complete": true,
+  "ended": 1789258815602
+}

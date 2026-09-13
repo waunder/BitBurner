@@ -968,7 +968,7 @@ function buildPlan(ns, target, wasWorking) {
   const requiredWeaken = getTargetWeakenThreads(ns, target, wasWorking ? WORK_SECURITY_MARGIN : 0)
 
   if (requiredWeaken > 0) {
-    return { type: "weaken", currentSecurity, moneyPct }
+    return { type: "weaken", currentSecurity, moneyPct, objective: OBJECTIVE }
   }
 
   // ns.growthAnalyze(target, 2) is numCycleForGrowth = log(2)/growthLog
@@ -977,6 +977,11 @@ function buildPlan(ns, target, wasWorking) {
   // formula (and computeWorkWeights's balance-point math) rests on.
   const hackPercentPerThread = ns.hackAnalyze(target)
   const growLogPerThread = Math.LN2 / ns.growthAnalyze(target, 2)
+  if (OBJECTIVE !== "xp" && moneyPct >= 1 - SECURITY_EPSILON && hackPercentPerThread > 0) {
+    return {type: "work", currentSecurity, moneyPct, weightBucket: "full-money-harvest",
+      weights: {hack: 1, grow: 0}, harvestOnly: true, hackBudget: Math.max(1, Math.floor(0.10 / hackPercentPerThread)),
+      debugWorkWeights: {hackPercentPerThread, harvestFraction: 0.10}}
+  }
   const { weightBucket, weights, balancedHackShare, growPerHack } = computeWorkWeights({
     objective: OBJECTIVE,
     hackPercentPerThread,
@@ -994,6 +999,7 @@ function buildPlan(ns, target, wasWorking) {
     moneyPct,
     weightBucket,
     weights,
+    hackBudget: OBJECTIVE === "xp" || !(hackPercentPerThread > 0) ? undefined : Math.max(1, Math.floor(0.10 / hackPercentPerThread)),
     // Added 2026-08-14 chasing why incomePerSec sat at 0 with 0 hack
     // threads network-wide despite moneyPct=1 shortly after R1 shipped —
     // turned out correct, not a bug (foodnstuff's growPerHack ~117 means a
@@ -1024,16 +1030,17 @@ function getRunningActions(ns, host) {
 // seconds) the process has actually been running — the last of which is
 // what lets a mismatch-only redeploy wait for an in-flight call to finish
 // instead of cutting it short.
-function describeRunningActions(ns, running) {
+function describeRunningActions(ns, running, host) {
   return running.map(({ proc, normalized }) => {
-    let elapsedS = Infinity
-    const runningScript = ns.getRunningScript(proc.pid)
+    let elapsedS = 0
+    const runningScript = ns.getRunningScript(proc.pid, host)
     if (runningScript) elapsedS = runningScript.onlineRunningTime
     return {
       script: normalized.replace("/scripts/", "").replace(".js", ""),
       target: proc.args[0],
       threads: proc.threads,
       elapsedS,
+      finite: proc.args[1] === "once",
     }
   })
 }
@@ -1050,14 +1057,10 @@ function describeRunningActions(ns, running) {
 // script(s) whose desired count actually changed. weakenThreadsToOffset
 // moved with pass 1 since its only callers did.
 //
-// R5's fix: a mismatch used to kill and re-exec all three action scripts,
-// even when e.g. only `hack`'s count had drifted. Weaken has by far the
-// longest cycle (4x hackTime), so every such redeploy opened a full
-// weaken-cycle window during which hack/grow kept landing and fortifying
-// security with nothing counteracting it — consistent with the observed
-// security ratchet (see hacking-strategy.md R5). Now only scripts whose
-// desired count actually differs from what's running get killed/re-exec'd,
-// in the order weaken/grow/hack so weaken's long cycle starts earliest.
+// MCP launches finite ("once") jobs. A matching-target call completes and
+// exits before resizing; missing complementary jobs may start in free RAM.
+// Legacy looping jobs retain the old tolerance/age rule during migration.
+// Release all changed jobs before launching weaken/grow/hack replacements.
 function allocateThreads(ns, host, target, plan, desired, tolerance, actionDurationsS) {
   /** @type {{script: string, threads: number}[]} */
   const actions = []
@@ -1067,10 +1070,12 @@ function allocateThreads(ns, host, target, plan, desired, tolerance, actionDurat
     usedRam: 0,
     freeRam: 0,
     actions,
+    launchFailures: [],
+    desired: {...desired},
   }
 
   const running = getRunningActions(ns, host)
-  const describedRunning = describeRunningActions(ns, running)
+  const describedRunning = describeRunningActions(ns, running, host)
   const needsRedeploy = hostNeedsRedeploy({
     target,
     plan,
@@ -1095,8 +1100,10 @@ function allocateThreads(ns, host, target, plan, desired, tolerance, actionDurat
         allocation.actions.push({ script, threads: proc.threads })
       }
       for (const { script, threads } of missingLaunches) {
-        if (ns.exec(`/scripts/${script}.js`, host, threads, target) !== 0) {
+        if (ns.exec(`/scripts/${script}.js`, host, threads, target, "once") !== 0) {
           allocation.actions.push({ script, threads })
+        } else {
+          allocation.launchFailures.push({host, script, threads, target, freeRam: getHostFreeRam(ns, host)})
         }
       }
       allocation.usedRam = ns.getServerUsedRam(host)
@@ -1124,16 +1131,25 @@ function allocateThreads(ns, host, target, plan, desired, tolerance, actionDurat
     const script = normalized.replace("/scripts/", "").replace(".js", "")
     runningByScript[script] = proc
   }
+  // Free every changed job before launching any replacement. Otherwise a
+  // full grow host can reject weaken before grow releases its old RAM.
+  const changed = new Set(["weaken", "grow", "hack"].filter(script =>
+    (desired[script] || 0) !== have[script] || (runningByScript[script] && runningByScript[script].args[0] !== target)))
+  for (const script of changed) {
+    if (runningByScript[script]) ns.kill(runningByScript[script].pid, host)
+  }
   for (const script of ["weaken", "grow", "hack"]) {
     const want = desired[script] || 0
-    if (want === have[script]) {
+    if (!changed.has(script)) {
       if (want > 0) allocation.actions.push({ script, threads: want })
       continue
     }
-    const proc = runningByScript[script]
-    if (proc) ns.kill(proc.pid, host)
-    if (want > 0 && ns.exec(`/scripts/${script}.js`, host, want, target) !== 0) {
-      allocation.actions.push({ script, threads: want })
+    if (want > 0) {
+      if (ns.exec(`/scripts/${script}.js`, host, want, target, "once") !== 0) {
+        allocation.actions.push({ script, threads: want })
+      } else {
+        allocation.launchFailures.push({host, script, threads: want, target, freeRam: getHostFreeRam(ns, host)})
+      }
     }
   }
 
@@ -1685,6 +1701,9 @@ export async function main(ns) {
         to: plan.weightBucket,
         moneyPct: plan.moneyPct,
         moneyGoal: TARGET_MONEY_GOAL,
+        currentSecurity: plan.currentSecurity,
+        hackBudget: plan.hackBudget ?? null,
+        workInputs: plan.debugWorkWeights,
       })
     }
     const hackRam = ns.getScriptRam("/scripts/hack.js")
@@ -1717,6 +1736,9 @@ export async function main(ns) {
     const hostReclaimable = workers.map((host) => ({
       host,
       reclaimableRam: getHostReclaimableRam(ns, host, ramInfoByScript),
+      runningHack: getRunningActions(ns, host).filter(({proc, normalized}) =>
+        normalized === "/scripts/hack.js" && proc.args[0] === currentTarget)
+        .reduce((total, {proc}) => total + proc.threads, 0),
     }))
     // weakenBudgetRemaining is what weakenBudgetNonNegative now asserts on:
     // pass 1's own primary-draw arithmetic never hands out more than the
@@ -1768,6 +1790,12 @@ export async function main(ns) {
     rateSamples.push(rate)
     if (rateSamples.length > RATE_SAMPLE_COUNT) rateSamples.shift()
     const avgRate = rateSamples.reduce((sum, value) => sum + value, 0) / rateSamples.length
+    const workerLaunchFailures = allocations.flatMap(a => a.launchFailures)
+    invariants.check("workerLaunchSucceeded", workerLaunchFailures.length === 0, {
+      target: currentTarget, plan: plan.type, moneyPct: plan.moneyPct,
+      currentSecurity: plan.currentSecurity, failures: workerLaunchFailures,
+    })
+
     const heldSeconds = Math.max(0, Math.floor((Date.now() - lastSwitchTime) / 1000))
     const avgMoneyPct =
       moneyPctSamples.length > 0
@@ -1826,6 +1854,9 @@ export async function main(ns) {
       ts: Date.now(),
       runId: runId,
       scriptVersion: scriptVersion,
+      workerMode: "finite",
+      harvestHackBudget: plan.hackBudget ?? null,
+      workerLaunchFailures,
       player: {
         money: player.money,
         hp: player.hp,

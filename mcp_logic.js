@@ -542,8 +542,10 @@ export function computeDesiredAllocation({
 }) {
   const allocations = []
   let remaining = weakenBudget
+  let remainingHack = plan.hackBudget === undefined ? Infinity : Math.max(0,
+    plan.hackBudget - hosts.reduce((total, host) => total + (host.runningHack || 0), 0))
 
-  for (const { host, reclaimableRam } of hosts) {
+  for (const { host, reclaimableRam, runningHack = 0 } of hosts) {
     if (plan.type === "weaken") {
       const hostMaxWeaken = Math.floor(reclaimableRam / ramInfo.weakenRam)
       let weaken = Math.max(0, Math.min(hostMaxWeaken, remaining))
@@ -553,7 +555,7 @@ export function computeDesiredAllocation({
       // often the large majority of the network. Grow is always useful and
       // doesn't require the target to be at its security floor first.
       const leftoverRam = reclaimableRam - weaken * ramInfo.weakenRam
-      let grow = Math.floor(leftoverRam / ramInfo.growRam)
+      let grow = plan.objective !== "xp" && plan.moneyPct >= 1 - SECURITY_EPSILON ? 0 : Math.floor(leftoverRam / ramInfo.growRam)
       // Growing adds security too, so it has to pay for its own offset out
       // of the same leftover rather than undermining the weaken it runs
       // beside. hacking-strategy.md R7: sized from ns.growthAnalyzeSecurity
@@ -570,9 +572,24 @@ export function computeDesiredAllocation({
       continue
     }
 
+    // At full money, harvest a bounded amount without spending RAM on grow.
+    // Keep maintenance weaken; growth resumes once money drops below full.
+    if (plan.hackBudget !== undefined && (plan.harvestOnly || !plan.weights)) {
+      const offset = securityConstants.hackSecIncrease * securityConstants.weakenPerHackRatio / securityConstants.weakenSecDecrease
+      let hack = runningHack || Math.max(0, Math.min(remainingHack, Math.floor(reclaimableRam / (ramInfo.hackRam + offset * ramInfo.weakenRam))))
+      let weaken = Math.ceil(hack * offset)
+      while (hack > 0 && hack * ramInfo.hackRam + weaken * ramInfo.weakenRam > reclaimableRam) {
+        hack--
+        weaken = Math.ceil(hack * offset)
+      }
+      if (!runningHack) remainingHack -= hack
+      allocations.push({host, hack, grow: 0, weaken})
+      continue
+    }
+
     const weights = plan.weights
     const maxWeakenThreads = Math.floor(reclaimableRam / ramInfo.weakenRam)
-    const provisionalHack = Math.floor((reclaimableRam * weights.hack) / ramInfo.hackRam)
+    const provisionalHack = runningHack || Math.min(remainingHack, Math.floor((reclaimableRam * weights.hack) / ramInfo.hackRam))
     const provisionalGrow = Math.floor((reclaimableRam - provisionalHack * ramInfo.hackRam) / ramInfo.growRam)
     const maintenanceThreads = weakenThreadsToOffset(provisionalHack, provisionalGrow, securityConstants)
 
@@ -585,13 +602,14 @@ export function computeDesiredAllocation({
       weaken = maintenanceThreads
       const actionRam = reclaimableRam - weaken * ramInfo.weakenRam
       if (actionRam >= ramInfo.minRam) {
-        hack = Math.floor((actionRam * weights.hack) / ramInfo.hackRam)
+        hack = Math.min(Math.floor(actionRam / ramInfo.hackRam), runningHack || Math.min(remainingHack, Math.floor((actionRam * weights.hack) / ramInfo.hackRam)))
         grow = Math.floor((actionRam - hack * ramInfo.hackRam) / ramInfo.growRam)
       } else {
         hack = 0
         grow = 0
       }
     }
+    if (!runningHack) remainingHack -= hack
     allocations.push({ host, hack, grow, weaken })
   }
 
@@ -701,6 +719,9 @@ export function missingActionLaunchPlan(running, desired, freeRam, ramByScript) 
 export function hostNeedsRedeploy({ target, plan, running, desired, tolerance, actionDurationsS }) {
   if (running.length === 0) return true
   if (running.some((r) => r.target !== target)) return true
+  // MCP finite jobs retire themselves after their current call. Never resize
+  // or cancel one mid-call; missing complementary jobs can use free RAM.
+  if (running.every((r) => r.finite)) return false
   // Hack fights an active weaken phase (adds security while stealing from a
   // server we're trying to stabilize) — urgent regardless of quantity.
   if (plan.type === "weaken" && running.some((r) => r.script === "hack")) return true

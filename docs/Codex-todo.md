@@ -10,6 +10,8 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
 
 ## Now
 
+- [x] **Full-money scheduler repair deployed:** 119 local/eight browser checks passed; exact five-file Steam readback; `1f5usex` finite workers, reputation retained. Phantasy recovery reached minimum security, then 24 hack threads and maintenance weaken with zero grow/failures. Evidence and limitations: `full-money-harvest.md`.
+
 - [x] **Execute approved 256GB cloud investment:** $14.08m mcp-worker-0 purchased; sharing moved to62threads/254.2GB, reputation preserved, NiteSec3.365rep/sec at H304. Evidence `evidence/reputation-objective/cloud-purchased.json`.
 
 - [x] **Implement reputation objective, 2026-09-12.** Bounded owned sharing, validated disabled policy, objective command, status/HUD and events; 102 local tests pass. Browser test confirms stable single allocation and cleanup on money. Details: `reputation-objective.md`.
@@ -17,7 +19,7 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
 - [x] **Measure faction-reputation benefit.** Controlled NiteSec on/off/on at H303: 3.297/2.868/3.297 rep/sec, +14.96%, ~1,544 extra rep/hour; sharing restored. Evidence: `evidence/reputation-objective/steam-impact.json`.
 - [ ] **Measure sustained money/XP opportunity cost before expanding sharing.** Current short preparation-phase sample has zero hacking income and is not a fair money baseline.
 - [x] **Review scheduler after the changed September 12 game state.** See `scheduler-review-2026-09-12.md` and the accompanying R1–R8 evidence table. H275, XP mode: R8 live-vetoes a 2.87× XP candidate based on money scores. Two worker replacement defects reproduced locally; 90 existing tests pass. Review complete, fixes not implemented.
-- [ ] **Recommended next scheduler implementation:** repair launch ordering and protect current action completion. R8's money veto now bypasses XP in local source; full MCP integration and Steam restart remain unverified. Reconsider two-target money allocation after a measured single-target baseline.
+- [ ] **Next scheduler work:** measured single-target baseline, then two-target pilot using current cloud capacity. Repair mcpMulti lifecycle, host lookups, per-target caps and ownership before launch; update target ranking to model capped harvesting. Read-only assessment: `cloud-multitarget-2026-09-12.md`. R8 XP bypass and worker repairs are now deployed.
 
 - [x] **Make player-time guidance cross-skill but evidence-based.** HUDs now
   prioritize the next discovered normal-server Hacking gate; without one,

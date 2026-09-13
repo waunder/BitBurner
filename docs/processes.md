@@ -322,28 +322,11 @@ selection reruns ignoring exclusions. Without that fallback the bot livelocked
 after an augmentation: it drained its only reachable target, excluded it, and
 then sat idle killing scripts every 60 seconds.
 
-**Redeploy is conditional.** Hack, grow and weaken take 60–240 seconds; the
-tick is 10. Killing and re-execing every tick meant no action ever completed.
-`hostNeedsRedeploy` is what stops that. **2026-08-14 (R5, shipped, not yet
-confirmed live):** when a redeploy *does* fire, `allocateThreads` now kills
-and re-execs only the script(s) whose desired thread count actually changed
-(`weaken`/`grow`/`hack`, in that order — weaken first since it has the
-longest cycle and should start earliest), instead of killing and
-re-execing all three unconditionally. The old all-three teardown reopened a
-full weaken-cycle window (the longest of the three) on every redeploy, during
-which hack/grow kept landing and fortifying security with nothing
-counteracting it — consistent with the observed security ratchet. The
-have-side counting (`countRunningByScript`, `mcp_logic.js`) is now shared
-between `hostNeedsRedeploy`'s mismatch check and `allocateThreads`'s
-per-script decision, rather than two independent tallies.
-The missing-action escape hatch starts the portion of a newly desired action
-that fits in *currently free* RAM while preserving an immature, unrelated
-action; without it, a long weaken loop can leave the rest of a host idle while
-the next weaken plan also needs grow capacity. `killActionScripts`
-(kills all three unconditionally) is unchanged and still used for its other
-two purposes — sweeping orphaned scripts from a previous `mcp.js` run at
-startup, and releasing the whole network when no target is found — both of
-which genuinely want a full teardown, not a diff.
+**Workers complete before resizing (September 12).** MCP launches each action with `once`; matching-target jobs finish their current call and exit before replacement. Missing complementary jobs may start in currently free RAM while another job runs. Legacy looping jobs keep the tolerance/age rule until a clean manager restart retires them. When replacement is required, all changed jobs release RAM first, then weaken/grow/hack launch in that order. A failed launch is recorded in `workerLaunchFailures` and raises the durable `workerLaunchSucceeded` invariant; it is retried through normal reconciliation. Remote running-script lookups name the worker host explicitly. Status exposes `workerMode: finite` and `harvestHackBudget`.
+
+**Full-money handling (September 12).** Money and reputation objectives request zero new grow threads at full target money. Above the recovery security threshold, only the needed weaken is requested; at acceptable security, `full-money-harvest` uses hack plus maintenance weaken. Its network-wide hack budget is `max(1, floor(0.10 / hackAnalyze(target)))`: approximately 10% of current money per allocation, with a one-thread minimum if one thread already exceeds that fraction. Retained hacks consume that budget before new hacks launch; already-started excess hacks finish without additions. Growth resumes after money falls below full. XP retains its separate hack/grow weights and recovery grow for experience. Unused RAM is intentional when the target's immediate useful demand is small; this first conservative policy is not claimed to maximize sustained dollars per second.
+
+The same hack budget remains active during regrowth, avoiding a cloud-sized hack burst while slower growth is pending. Target scores still assume older balanced-pool behavior and are approximate ranking inputs rather than achieved capped income. Deployment evidence and rollback are in `full-money-harvest.md`; the read-only cloud/multitarget assessment is in `cloud-multitarget-2026-09-12.md`.
 
 #### The work-weight calculation
 
@@ -740,9 +723,7 @@ large enough to matter for multi-target's own numbers too.
 
 ### `scripts/weaken.js`, `scripts/grow.js`, `scripts/hack.js`
 
-Three lines each: loop forever calling the one NS function on `ns.args[0]`.
-All the intelligence is in how many threads `mcp.js` starts and when it kills
-them. Keeping them dumb is what makes thread count the only control surface.
+Call the action on `ns.args[0]`. Optional second argument `once` makes a worker exit after exactly one completed call; without it, the historical infinite loop remains for manual/other callers. MCP now always supplies `once`, observes process exit, and lets matching-target calls finish before resizing. A target switch or manager restart can still retire workers immediately. Process arguments expose the worker mode.
 
 `mcp.js` copies these to each worker itself; it does not use the helpers in
 `scripts/`.

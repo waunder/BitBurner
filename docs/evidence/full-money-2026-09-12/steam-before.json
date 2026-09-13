@@ -1,0 +1,817 @@
+{
+  "ts": 1789258475076,
+  "runId": "mtz1g36i-nxee",
+  "scriptVersion": "14acevk",
+  "player": {
+    "money": 7949695949.610708,
+    "hp": {
+      "current": 10,
+      "max": 10
+    },
+    "skills": {
+      "hacking": 485,
+      "strength": 1,
+      "defense": 1,
+      "dexterity": 1,
+      "agility": 1,
+      "charisma": 106,
+      "intelligence": 83
+    },
+    "hackingGrowMult": 1.3298931434159103
+  },
+  "homeCores": 1,
+  "target": "phantasy",
+  "plan": "weaken",
+  "debugWorkWeights": null,
+  "weightBucket": null,
+  "currentSecurity": 7.044125000000006,
+  "moneyPct": 1,
+  "needWeaken": 1,
+  "maxWeaken": 7319,
+  "tickSeconds": 10.005,
+  "hacked": 0,
+  "rate": 0,
+  "avgRate": 0,
+  "incomePerSec": 2231410.040868959,
+  "expPerSec": 2042.4043122045603,
+  "totalHacked": 2505803512.9505863,
+  "ramUtilization": 0.99896375038238,
+  "workers": [
+    {
+      "host": "n00dles",
+      "maxRam": 4,
+      "usedRam": 3.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 2
+        }
+      ]
+    },
+    {
+      "host": "foodnstuff",
+      "maxRam": 16,
+      "usedRam": 15.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 9
+        }
+      ]
+    },
+    {
+      "host": "sigma-cosmetics",
+      "maxRam": 16,
+      "usedRam": 15.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 9
+        }
+      ]
+    },
+    {
+      "host": "joesguns",
+      "maxRam": 16,
+      "usedRam": 15.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 4
+        },
+        {
+          "script": "grow",
+          "threads": 5
+        }
+      ]
+    },
+    {
+      "host": "hong-fang-tea",
+      "maxRam": 16,
+      "usedRam": 15.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 9
+        }
+      ]
+    },
+    {
+      "host": "harakiri-sushi",
+      "maxRam": 16,
+      "usedRam": 15.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 9
+        }
+      ]
+    },
+    {
+      "host": "iron-gym",
+      "maxRam": 32,
+      "usedRam": 31.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 18
+        }
+      ]
+    },
+    {
+      "host": "mcp-worker-0",
+      "maxRam": 4096,
+      "usedRam": 4095.45,
+      "freeRam": 0.5500000000001819,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 2195
+        }
+      ]
+    },
+    {
+      "host": "mcp-worker-1",
+      "maxRam": 4096,
+      "usedRam": 4095,
+      "freeRam": 1,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 2340
+        }
+      ]
+    },
+    {
+      "host": "mcp-worker-2",
+      "maxRam": 4096,
+      "usedRam": 4095,
+      "freeRam": 1,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 2340
+        }
+      ]
+    },
+    {
+      "host": "zer0",
+      "maxRam": 32,
+      "usedRam": 31.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 2
+        },
+        {
+          "script": "grow",
+          "threads": 16
+        }
+      ]
+    },
+    {
+      "host": "CSEC",
+      "maxRam": 8,
+      "usedRam": 7,
+      "freeRam": 1,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 1
+        },
+        {
+          "script": "grow",
+          "threads": 3
+        }
+      ]
+    },
+    {
+      "host": "max-hardware",
+      "maxRam": 32,
+      "usedRam": 31.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 2
+        },
+        {
+          "script": "grow",
+          "threads": 16
+        }
+      ]
+    },
+    {
+      "host": "nectar-net",
+      "maxRam": 16,
+      "usedRam": 15.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 1
+        },
+        {
+          "script": "grow",
+          "threads": 8
+        }
+      ]
+    },
+    {
+      "host": "phantasy",
+      "maxRam": 32,
+      "usedRam": 31.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 2
+        },
+        {
+          "script": "grow",
+          "threads": 16
+        }
+      ]
+    },
+    {
+      "host": "neo-net",
+      "maxRam": 32,
+      "usedRam": 31.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 2
+        },
+        {
+          "script": "grow",
+          "threads": 16
+        }
+      ]
+    },
+    {
+      "host": "silver-helix",
+      "maxRam": 64,
+      "usedRam": 63,
+      "freeRam": 1,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 36
+        }
+      ]
+    },
+    {
+      "host": "omega-net",
+      "maxRam": 32,
+      "usedRam": 31.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 2
+        },
+        {
+          "script": "grow",
+          "threads": 16
+        }
+      ]
+    },
+    {
+      "host": "avmnite-02h",
+      "maxRam": 128,
+      "usedRam": 127.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 73
+        }
+      ]
+    },
+    {
+      "host": "the-hub",
+      "maxRam": 8,
+      "usedRam": 7,
+      "freeRam": 1,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 1
+        },
+        {
+          "script": "grow",
+          "threads": 3
+        }
+      ]
+    },
+    {
+      "host": "netlink",
+      "maxRam": 128,
+      "usedRam": 127.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 73
+        }
+      ]
+    },
+    {
+      "host": "catalyst",
+      "maxRam": 32,
+      "usedRam": 31.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 2
+        },
+        {
+          "script": "grow",
+          "threads": 16
+        }
+      ]
+    },
+    {
+      "host": "rothman-uni",
+      "maxRam": 32,
+      "usedRam": 31.5,
+      "freeRam": 0.5,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 2
+        },
+        {
+          "script": "grow",
+          "threads": 16
+        }
+      ]
+    },
+    {
+      "host": "summit-uni",
+      "maxRam": 64,
+      "usedRam": 63,
+      "freeRam": 1,
+      "actions": [
+        {
+          "script": "grow",
+          "threads": 36
+        }
+      ]
+    },
+    {
+      "host": "I.I.I.I",
+      "maxRam": 16,
+      "usedRam": 15.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 1
+        },
+        {
+          "script": "grow",
+          "threads": 8
+        }
+      ]
+    },
+    {
+      "host": "aevum-police",
+      "maxRam": 16,
+      "usedRam": 15.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 1
+        },
+        {
+          "script": "grow",
+          "threads": 8
+        }
+      ]
+    }
+  ],
+  "cloudWorkers": [
+    {
+      "host": "mcp-worker-0",
+      "rooted": true,
+      "maxRam": 4096,
+      "usedRam": 4095.45
+    },
+    {
+      "host": "mcp-worker-1",
+      "rooted": true,
+      "maxRam": 4096,
+      "usedRam": 4095
+    },
+    {
+      "host": "mcp-worker-2",
+      "rooted": true,
+      "maxRam": 4096,
+      "usedRam": 4095
+    }
+  ],
+  "candidate": "computek",
+  "candidateScore": 14101005.328408455,
+  "candidateExpectedIncome": 245.7799211173207,
+  "avgMoneyPct": 1,
+  "moneyPctSampleCount": 9,
+  "moneyPctSampleTarget": 9,
+  "heldSeconds": 1430,
+  "hackTimeS": 13.886901287732798,
+  "growTimeS": 44.43808412074495,
+  "weakenTimeS": 55.54760515093119,
+  "hackChance": 1,
+  "switchEval": {
+    "basis": "potential",
+    "currentScore": 13567182.36929772,
+    "best": "computek",
+    "bestScore": 14565257.691217313,
+    "ratio": 1.0735654091433324,
+    "factor": 1.3,
+    "heldSeconds": 1430,
+    "holdSeconds": 600,
+    "committed": true,
+    "outbid": false,
+    "blockedBy": "score"
+  },
+  "formulaSwitchVeto": null,
+  "formulaRankingActive": true,
+  "objectiveOverrideActive": true,
+  "reputation": {
+    "ts": 1789258475073,
+    "requested": true,
+    "config": {
+      "enabled": true,
+      "ramGb": 256,
+      "note": "Ken explicitly overrode the historical sharing restriction and authorized Steam activation on 2026-09-12. Disable enabled to stop owned sharing."
+    },
+    "factionWork": "unverified: sharing only benefits active faction work; choose it in the game",
+    "power": 1.1699901495061649,
+    "maxRamGb": 256,
+    "state": "sharing",
+    "host": "mcp-worker-0",
+    "pid": 608,
+    "threads": 62,
+    "ramGb": 254.2,
+    "retryAt": 1789257104253,
+    "startedAt": 1789257044253,
+    "reviewAt": 1789258844253,
+    "reason": "unverified: sharing only benefits active faction work; choose it in the game",
+    "roi": {
+      "baselinePower": 1.1474170243167285,
+      "marginalReputation": null,
+      "confidence": "unmeasured",
+      "opportunityCost": "Reserved RAM cannot earn hacking money or XP",
+      "stopRule": "Stop on objective change, disabled policy or owner exit; review after 30 minutes"
+    }
+  },
+  "config": {
+    "SECURITY_CAP": 1,
+    "TARGET_MONEY_GOAL": 0.95,
+    "MIN_TARGET_HOLD_MS": 60000,
+    "WORK_SECURITY_MARGIN": 1.5,
+    "RATE_DROP_FACTOR": 0.75,
+    "LOOP_SLEEP_MS": 10000,
+    "RATE_SAMPLE_COUNT": 5,
+    "WEAKEN_STUCK_MS": 60000,
+    "WEAKEN_STUCK_SECURITY_THRESHOLD": 0.05,
+    "SKIP_STUCK_MS": 60000,
+    "DEGRADED_MONEY_PCT": 0.05,
+    "MONEY_PCT_SAMPLE_COUNT": 9,
+    "OPPORTUNITY_SWITCH_FACTOR": 1.3,
+    "R8_SWITCH_VETO_ENABLED": 1,
+    "FORMULA_RANKING_ENABLED": 1,
+    "MIN_TARGET_COMMIT_MS": 600000,
+    "DEGRADED_SKIP_MS": 900000,
+    "HACK_BALANCE_SAFETY": 0.5,
+    "OBJECTIVE": "reputation",
+    "XP_WEIGHT_HACK": 0.95,
+    "XP_WEIGHT_GROW": 0.05,
+    "REDEPLOY_TOLERANCE_ABSOLUTE": 2,
+    "REDEPLOY_TOLERANCE_RELATIVE": 0.2,
+    "HOME_RAM_RESERVE": 32,
+    "SCORE_HORIZON_SECONDS": 3600
+  },
+  "invariantViolations": {},
+  "recentEvents": [
+    {
+      "t": 1789257044252,
+      "seq": 1,
+      "runId": "mtz1g36i-nxee",
+      "ver": "14acevk",
+      "kind": "startup",
+      "targetOverride": null,
+      "restoredSkipped": 0,
+      "restoredDrained": 0,
+      "hackingLevel": 456
+    },
+    {
+      "t": 1789257044253,
+      "seq": 2,
+      "runId": "mtz1g36i-nxee",
+      "ver": "14acevk",
+      "kind": "reputation_stop",
+      "actionId": "mtz1g36i-nxee:share-stop:230",
+      "host": "avmnite-02h",
+      "pid": 230,
+      "objective": "reputation",
+      "config": {
+        "enabled": true,
+        "ramGb": 256,
+        "note": "Ken explicitly overrode the historical sharing restriction and authorized Steam activation on 2026-09-12. Disable enabled to stop owned sharing."
+      }
+    },
+    {
+      "t": 1789257044269,
+      "seq": 3,
+      "runId": "mtz1g36i-nxee",
+      "ver": "14acevk",
+      "kind": "reputation_start",
+      "actionId": "mtz1g36i-nxee:share-start:1789257044253",
+      "host": "mcp-worker-0",
+      "threads": 62,
+      "ramGb": 254.2,
+      "pid": 608,
+      "config": {
+        "enabled": true,
+        "ramGb": 256,
+        "note": "Ken explicitly overrode the historical sharing restriction and authorized Steam activation on 2026-09-12. Disable enabled to stop owned sharing."
+      },
+      "candidates": [
+        {
+          "host": "home",
+          "availableRam": 41.45
+        },
+        {
+          "host": "n00dles",
+          "availableRam": 4
+        },
+        {
+          "host": "foodnstuff",
+          "availableRam": 16
+        },
+        {
+          "host": "sigma-cosmetics",
+          "availableRam": 16
+        },
+        {
+          "host": "joesguns",
+          "availableRam": 16
+        },
+        {
+          "host": "hong-fang-tea",
+          "availableRam": 16
+        },
+        {
+          "host": "harakiri-sushi",
+          "availableRam": 16
+        },
+        {
+          "host": "iron-gym",
+          "availableRam": 32
+        },
+        {
+          "host": "mcp-worker-0",
+          "availableRam": 4096
+        },
+        {
+          "host": "mcp-worker-1",
+          "availableRam": 4096
+        },
+        {
+          "host": "mcp-worker-2",
+          "availableRam": 4096
+        },
+        {
+          "host": "zer0",
+          "availableRam": 32
+        },
+        {
+          "host": "CSEC",
+          "availableRam": 8
+        },
+        {
+          "host": "max-hardware",
+          "availableRam": 32
+        },
+        {
+          "host": "nectar-net",
+          "availableRam": 16
+        },
+        {
+          "host": "phantasy",
+          "availableRam": 32
+        },
+        {
+          "host": "neo-net",
+          "availableRam": 32
+        },
+        {
+          "host": "silver-helix",
+          "availableRam": 64
+        },
+        {
+          "host": "omega-net",
+          "availableRam": 32
+        },
+        {
+          "host": "avmnite-02h",
+          "availableRam": 128
+        },
+        {
+          "host": "the-hub",
+          "availableRam": 8
+        },
+        {
+          "host": "netlink",
+          "availableRam": 128
+        },
+        {
+          "host": "catalyst",
+          "availableRam": 32
+        },
+        {
+          "host": "rothman-uni",
+          "availableRam": 32
+        },
+        {
+          "host": "I.I.I.I",
+          "availableRam": 16
+        },
+        {
+          "host": "aevum-police",
+          "availableRam": 16
+        }
+      ]
+    },
+    {
+      "t": 1789257044270,
+      "seq": 4,
+      "runId": "mtz1g36i-nxee",
+      "ver": "14acevk",
+      "kind": "target_adopt",
+      "target": "phantasy",
+      "expectedIncome": 4645.162822307217,
+      "score": 12784693.854954518,
+      "requiredWeaken": 30,
+      "maxWeaken": 7283,
+      "moneyPct": 0.033218658374618466,
+      "security": 8.492,
+      "minSecurity": 7,
+      "skipped": 0,
+      "drained": 0
+    },
+    {
+      "t": 1789257114299,
+      "seq": 5,
+      "runId": "mtz1g36i-nxee",
+      "ver": "14acevk",
+      "kind": "plan_flip",
+      "target": "phantasy",
+      "from": "weaken",
+      "to": "work",
+      "security": 7,
+      "securityCap": 1,
+      "workMargin": 1.5,
+      "moneyPct": 1
+    },
+    {
+      "t": 1789257164317,
+      "seq": 6,
+      "runId": "mtz1g36i-nxee",
+      "ver": "14acevk",
+      "kind": "plan_flip",
+      "target": "phantasy",
+      "from": "work",
+      "to": "weaken",
+      "security": 16.756,
+      "securityCap": 1,
+      "workMargin": 1.5,
+      "moneyPct": 1
+    },
+    {
+      "t": 1789257464447,
+      "seq": 7,
+      "runId": "mtz1g36i-nxee",
+      "ver": "14acevk",
+      "kind": "plan_flip",
+      "target": "phantasy",
+      "from": "weaken",
+      "to": "work",
+      "security": 7,
+      "securityCap": 1,
+      "workMargin": 1.5,
+      "moneyPct": 1
+    },
+    {
+      "t": 1789257494468,
+      "seq": 8,
+      "runId": "mtz1g36i-nxee",
+      "ver": "14acevk",
+      "kind": "plan_flip",
+      "target": "phantasy",
+      "from": "work",
+      "to": "weaken",
+      "security": 8.904,
+      "securityCap": 1,
+      "workMargin": 1.5,
+      "moneyPct": 0.5508905210394144
+    },
+    {
+      "t": 1789257564506,
+      "seq": 9,
+      "runId": "mtz1g36i-nxee",
+      "ver": "14acevk",
+      "kind": "plan_flip",
+      "target": "phantasy",
+      "from": "weaken",
+      "to": "work",
+      "security": 7,
+      "securityCap": 1,
+      "workMargin": 1.5,
+      "moneyPct": 1
+    },
+    {
+      "t": 1789257614531,
+      "seq": 10,
+      "runId": "mtz1g36i-nxee",
+      "ver": "14acevk",
+      "kind": "plan_flip",
+      "target": "phantasy",
+      "from": "work",
+      "to": "weaken",
+      "security": 20.990000000000002,
+      "securityCap": 1,
+      "workMargin": 1.5,
+      "moneyPct": 1
+    },
+    {
+      "t": 1789257854655,
+      "seq": 11,
+      "runId": "mtz1g36i-nxee",
+      "ver": "14acevk",
+      "kind": "plan_flip",
+      "target": "phantasy",
+      "from": "weaken",
+      "to": "work",
+      "security": 7,
+      "securityCap": 1,
+      "workMargin": 1.5,
+      "moneyPct": 1
+    },
+    {
+      "t": 1789257904681,
+      "seq": 12,
+      "runId": "mtz1g36i-nxee",
+      "ver": "14acevk",
+      "kind": "plan_flip",
+      "target": "phantasy",
+      "from": "work",
+      "to": "weaken",
+      "security": 24.13,
+      "securityCap": 1,
+      "workMargin": 1.5,
+      "moneyPct": 0.6798857167420956
+    },
+    {
+      "t": 1789258074777,
+      "seq": 13,
+      "runId": "mtz1g36i-nxee",
+      "ver": "14acevk",
+      "kind": "plan_flip",
+      "target": "phantasy",
+      "from": "weaken",
+      "to": "work",
+      "security": 7,
+      "securityCap": 1,
+      "workMargin": 1.5,
+      "moneyPct": 1
+    },
+    {
+      "t": 1789258124875,
+      "seq": 14,
+      "runId": "mtz1g36i-nxee",
+      "ver": "14acevk",
+      "kind": "plan_flip",
+      "target": "phantasy",
+      "from": "work",
+      "to": "weaken",
+      "security": 17.408000000000005,
+      "securityCap": 1,
+      "workMargin": 1.5,
+      "moneyPct": 0.9563951643877218
+    }
+  ]
+}

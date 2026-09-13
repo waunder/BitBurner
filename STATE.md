@@ -5,6 +5,10 @@ purpose are defined in `docs/agent-working-agreement.md`.
 
 ## Current objective
 
+Latest steering: Ken requests aggressive multi-target use of available resources, skipping the conservative pilot. Single-target deployment is complete: two restoration-to-full transitions, $378.5M hacked, security 7, no invariant/launch failures. Next implement precise per-target restoration sizing and aggressive multi-target allocation with finite-worker ownership, browser-test and deploy; preserve reputation/share reserve. No additional purchase or reset requested.
+
+Full-money scheduler correction deployed on Steam September 12: all five source files SHA256 verified, manager `1f5usex`, finite workers, reputation/share preserved. 119 local and eight real-browser checks passed. Phantasy explicitly pinned for acceptance after automatic selection chose unprepared computek. Live recovery reached security 7 and full-money harvest launched 24 hacks plus maintenance weaken, zero grow and zero launch failures. Next: capture completed harvest/regrowth evidence, finish commit/push, then two-target pilot design. Ken requested cloud multiserver assessment; read-only Formulas results and recommendation in `docs/cloud-multitarget-2026-09-12.md`. Existing mcpMulti needs lifecycle/cap/ownership repairs before activation. Remote APIs connected with automatic sync/pull disabled.
+
 September 12 reconnected full-money diagnosis completed: MCP repeatedly returns from work to weaken; phantasy is full but security remains above minimum 7. All three 4TB hosts fill with grow during recovery. See `docs/scheduler-review-2026-09-12.md` follow-up and durable `full-money-weaken.json`. Recommended next action: repair completion-aware replacement, RAM release/launch ordering, and full-money recovery growth together; browser-test before deployment. No scheduler or game changes made in this check.
 
 Ken revised the stats formatting preference to compact decimal amounts such as `24.8G`; `get_stats.js` now uses K/M/G/T/P with one decimal place, replacing the comma-separated dollar display.

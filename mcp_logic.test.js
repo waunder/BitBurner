@@ -1213,3 +1213,45 @@ describe("computeTickInvariantChecks", () => {
     assert.ok(threadsFitHostChecks.every((c) => c.ok))
   })
 })
+
+describe('full-money finite harvesting', () => {
+  test('regrowth also caps network hacks on a large cloud pool', () => {
+    const r = computeDesiredAllocation({hosts:[{host:'one',reclaimableRam:4096},{host:'two',reclaimableRam:4096}],plan:{type:'work',moneyPct:.9,hackBudget:50,weights:{hack:.08,grow:.92}},weakenBudget:0,ramInfo:RAM_INFO,securityConstants:SECURITY_CONSTANTS})
+    assert.equal(r.allocations.reduce((n,a)=>n+a.hack,0),50)
+    assert.ok(r.allocations.every(a=>a.grow>0))
+    for(const a of r.allocations) assert.ok(a.hack*1.7+(a.grow+a.weaken)*1.75<=4096)
+  })
+  test('full-money XP recovery retains growth for experience', () => {
+    const r = computeDesiredAllocation({hosts:[{host:'cloud',reclaimableRam:4096}],plan:{type:'weaken',moneyPct:1,objective:'xp'},weakenBudget:47,ramInfo:RAM_INFO,securityConstants:SECURITY_CONSTANTS})
+    assert.ok(r.allocations[0].grow > 0)
+  })
+  test('retained hacks consume the harvest budget before new launches', () => {
+    const r = computeDesiredAllocation({hosts:[{host:'first',reclaimableRam:4096},{host:'later',reclaimableRam:4096,runningHack:40}],plan:{type:'work',moneyPct:1,hackBudget:50},weakenBudget:0,ramInfo:RAM_INFO,securityConstants:SECURITY_CONSTANTS})
+    assert.equal(r.allocations[0].hack,10)
+    assert.equal(r.allocations[1].hack,40)
+  })
+  test('oversized retained hacks prevent additional harvesting', () => {
+    const r = computeDesiredAllocation({hosts:[{host:'first',reclaimableRam:4096},{host:'later',reclaimableRam:4096,runningHack:70}],plan:{type:'work',moneyPct:1,hackBudget:50},weakenBudget:0,ramInfo:RAM_INFO,securityConstants:SECURITY_CONSTANTS})
+    assert.equal(r.allocations[0].hack,0)
+    assert.equal(r.allocations[1].hack,70)
+  })
+  test('full-money recovery does not fill 4TB servers with grow', () => {
+    const result = computeDesiredAllocation({hosts:[{host:'cloud',reclaimableRam:4096}],plan:{type:'weaken',moneyPct:1},weakenBudget:47,ramInfo:RAM_INFO,securityConstants:SECURITY_CONSTANTS})
+    assert.deepEqual(result.allocations,[{host:'cloud',hack:0,grow:0,weaken:47}])
+  })
+  test('hack budget is shared across hosts with maintenance security offset', () => {
+    const result=computeDesiredAllocation({hosts:[{host:'small',reclaimableRam:16},{host:'cloud',reclaimableRam:4096},{host:'cloud2',reclaimableRam:4096}],plan:{type:'work',moneyPct:1,hackBudget:50},weakenBudget:0,ramInfo:RAM_INFO,securityConstants:SECURITY_CONSTANTS})
+    assert.equal(result.allocations.reduce((n,r)=>n+r.hack,0),50)
+    for(const r of result.allocations) {
+      assert.equal(r.grow,0)
+      assert.ok(r.weaken>=r.hack*.16)
+      assert.ok(r.hack*RAM_INFO.hackRam+r.weaken*RAM_INFO.weakenRam<= (r.host==='small'?16:4096))
+    }
+  })
+  test('finite jobs survive a phase change after several action durations', () => {
+    assert.equal(hostNeedsRedeploy({target:'target',plan:{type:'weaken'},running:[{script:'hack',target:'target',threads:5,elapsedS:1000,finite:true}],desired:{hack:0,grow:0,weaken:50},tolerance:{absolute:0,relative:0},actionDurationsS:{hack:10}}),false)
+  })
+  test('a wrong target is still retired',()=> {
+    assert.equal(hostNeedsRedeploy({target:'new',plan:{type:'work'},running:[{script:'grow',target:'old',threads:1,finite:true}],desired:{hack:1},tolerance:{absolute:0,relative:0},actionDurationsS:{}}),true)
+  })
+})

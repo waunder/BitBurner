@@ -23,6 +23,7 @@ import {
 } from "mcp_logic.js"
 import { auditTargetModels } from "./formulas_logic.js"
 import { reconcileReputation } from "./mcp_reputation.js"
+import { cloudTick } from "./mcp_cloud.js"
 
 // Tunables are declared with `let`, not `const`, so loadConfig can reassign
 // them in place from mcp_config.json at the top of every tick. Threading a
@@ -1288,6 +1289,7 @@ export async function main(ns) {
   let lastWeightBucket = null
   let lastLogSignature = null
   let reputation = {}
+  const cloudState = {}
 
   events.emit("startup", {
     targetOverride: targetOverride || null,
@@ -1326,6 +1328,24 @@ export async function main(ns) {
     } catch (error) {
       reputation = { ...reputation, state: "error", reason: String(error), retryAt: Date.now() + 60_000 }
       invariants.check("reputationReconciles", false, { objective: OBJECTIVE, error: String(error) })
+    }
+    try {
+      const cloud = await cloudTick(ns, cloudState, { servers, workers, runId, objective: OBJECTIVE, emit: (kind,inputs)=>events.emit(kind,inputs) })
+      if (cloud) {
+        invariants.check('workerLaunchSucceeded',cloud.workerLaunchFailures.length===0,{failures:cloud.workerLaunchFailures})
+        const status={...cloud,scriptVersion,reputation,player:ns.getPlayer(),config:{OBJECTIVE},objectiveOverrideActive,invariantViolations:invariants.counts,recentEvents:events.recent}
+        await ns.write('mcp_status.json',JSON.stringify(status),'w')
+        await ns.write('mcp_cloud_status.json',JSON.stringify(status),'w')
+        await ns.sleep(LOOP_SLEEP_MS)
+        continue
+      }
+    } catch(error) {
+      invariants.check('cloudSchedulerHealthy',false,{error:String(error)})
+      if(cloudState.active) {
+        await ns.write('mcp_cloud_control.json',JSON.stringify({enabled:false,reason:String(error),ts:Date.now()}),'w')
+        await ns.sleep(LOOP_SLEEP_MS)
+        continue
+      }
     }
     const maxWeaken = getTotalWeakenCapacity(ns, workers)
     expireTargetExclusions(skippedTargets, drainedTargets)

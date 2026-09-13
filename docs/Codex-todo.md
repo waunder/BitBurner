@@ -10,6 +10,12 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
 
 ## Now
 
+- [ ] Refresh idle cct_watcher.js to load finite-worker protection; Steam terminal was actively in Ken's use during the final attempt. Maintenance already restarted successfully.
+
+- [x] Deploy aggressive multiserver scheduler directly on Steam as Ken requested, preserving sharing; target-only display and consolidated HUD running.
+- [x] Diagnose maintenance cancelling finite cohorts: recent logs identify maintenance_steward; protect finite workers in cct_worker_pool and restart maintenance.
+- [ ] Measure sustained multi-target income after long security preparations complete; bounded activation expires 7:31 PM, with single-target fallback.
+
 - [x] **Full-money scheduler repair deployed:** 119 local/eight browser checks passed; exact five-file Steam readback; `1f5usex` finite workers, reputation retained. Phantasy recovery reached minimum security, then 24 hack threads and maintenance weaken with zero grow/failures. Evidence and limitations: `full-money-harvest.md`.
 
 - [x] **Execute approved 256GB cloud investment:** $14.08m mcp-worker-0 purchased; sharing moved to62threads/254.2GB, reputation preserved, NiteSec3.365rep/sec at H304. Evidence `evidence/reputation-objective/cloud-purchased.json`.

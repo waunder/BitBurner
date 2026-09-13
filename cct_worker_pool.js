@@ -20,7 +20,7 @@ function allServers(ns) {
 }
 
 function isActionProcess(proc) {
-  return ACTION_SCRIPTS.has(String(proc.filename).replace(/^\//, ""))
+  return ACTION_SCRIPTS.has(String(proc.filename).replace(/^\//, "")) && proc.args?.[1] !== "once"
 }
 
 /** Return a preferred, rooted non-home host that can safely be preempted. */
@@ -50,6 +50,10 @@ export async function prepareContractWorker(ns, candidate, requiredRam) {
   if (!candidate) return { ok: false, reason: "no safe rooted worker" }
   const blockers = ns.ps(candidate.host).filter((proc) => !isActionProcess(proc))
   if (blockers.length) return { ok: false, reason: `worker has non-MCP process: ${blockers[0].filename}` }
+  // Completed finite cohorts cannot be safely reconstructed after preemption.
+  // Use already-free capacity without disturbing any running process.
+  if (ns.getServerMaxRam(candidate.host) - ns.getServerUsedRam(candidate.host) >= requiredRam)
+    return { ok: true, worker: candidate.host, source: candidate.cloud ? "cloud" : "rooted-fallback", freeRam: ns.getServerMaxRam(candidate.host) - ns.getServerUsedRam(candidate.host) }
   for (const proc of ns.ps(candidate.host)) if (isActionProcess(proc)) ns.kill(proc.pid)
   const deadline = Date.now() + 2000
   while (Date.now() < deadline && ns.getServerMaxRam(candidate.host) - ns.getServerUsedRam(candidate.host) < requiredRam) await ns.sleep(50)

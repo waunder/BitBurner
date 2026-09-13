@@ -1,0 +1,1676 @@
+{
+  "ts": 1789260230742,
+  "runId": "mtz34vp4-si6o",
+  "cloudSourceFingerprint": "r1llaw",
+  "workerMode": "finite",
+  "plan": "multi",
+  "weightBucket": "cloud-batches",
+  "target": "omega-net",
+  "targets": [
+    {
+      "target": "omega-net",
+      "phase": "prepare-security",
+      "counts": {
+        "hack": 0,
+        "grow": 0,
+        "weaken": 420
+      },
+      "ram": 735,
+      "durations": {
+        "hack": 100.60051233758803,
+        "grow": 321.9216394802818,
+        "weaken": 402.4020493503521
+      },
+      "security": 32,
+      "moneyPct": 0.04,
+      "projectedMoneyPerSecond": 5106113.434636432,
+      "rank": 6947.093108348887,
+      "id": "mtz34vp4-si6o:cloud:5",
+      "jobs": [
+        {
+          "host": "mcp-worker-0",
+          "action": "weaken",
+          "threads": 420,
+          "pid": 1851
+        }
+      ],
+      "startedAt": 1789259880571,
+      "currentSecurity": 32
+    },
+    {
+      "target": "the-hub",
+      "phase": "prepare-security",
+      "counts": {
+        "hack": 0,
+        "grow": 0,
+        "weaken": 580
+      },
+      "ram": 1015,
+      "durations": {
+        "hack": 213.82073391515755,
+        "grow": 684.2263485285042,
+        "weaken": 855.2829356606302
+      },
+      "security": 44,
+      "moneyPct": 0.04,
+      "projectedMoneyPerSecond": 5244285.630086549,
+      "rank": 5166.783872006452,
+      "id": "mtz34vp4-si6o:cloud:7",
+      "jobs": [
+        {
+          "host": "mcp-worker-0",
+          "action": "weaken",
+          "threads": 580,
+          "pid": 1853
+        }
+      ],
+      "startedAt": 1789259880571,
+      "currentSecurity": 44
+    },
+    {
+      "target": "crush-fitness",
+      "phase": "prepare-security",
+      "counts": {
+        "hack": 0,
+        "grow": 0,
+        "weaken": 480
+      },
+      "ram": 840,
+      "durations": {
+        "hack": 127.8043195200009,
+        "grow": 408.9738224640029,
+        "weaken": 511.2172780800036
+      },
+      "security": 36,
+      "moneyPct": 0.04,
+      "projectedMoneyPerSecond": 3520794.452924959,
+      "rank": 4191.421967767808,
+      "id": "mtz34vp4-si6o:cloud:10",
+      "jobs": [
+        {
+          "host": "mcp-worker-0",
+          "action": "weaken",
+          "threads": 480,
+          "pid": 1856
+        }
+      ],
+      "startedAt": 1789259880571,
+      "currentSecurity": 36
+    },
+    {
+      "target": "netlink",
+      "phase": "prepare-security",
+      "counts": {
+        "hack": 0,
+        "grow": 0,
+        "weaken": 860
+      },
+      "ram": 1505,
+      "durations": {
+        "hack": 380.13897738925283,
+        "grow": 1216.4447276456092,
+        "weaken": 1520.5559095570113
+      },
+      "security": 64,
+      "moneyPct": 0.04,
+      "projectedMoneyPerSecond": 4472286.144301381,
+      "rank": 2971.618700532479,
+      "id": "mtz34vp4-si6o:cloud:12",
+      "jobs": [
+        {
+          "host": "mcp-worker-0",
+          "action": "weaken",
+          "threads": 715,
+          "pid": 1858
+        },
+        {
+          "host": "mcp-worker-1",
+          "action": "weaken",
+          "threads": 145,
+          "pid": 1859
+        }
+      ],
+      "startedAt": 1789259880571,
+      "currentSecurity": 64
+    },
+    {
+      "target": "catalyst",
+      "phase": "prepare-security",
+      "counts": {
+        "hack": 0,
+        "grow": 0,
+        "weaken": 920
+      },
+      "ram": 1610,
+      "durations": {
+        "hack": 460.9467853763983,
+        "grow": 1475.0297132044745,
+        "weaken": 1843.7871415055931
+      },
+      "security": 69,
+      "moneyPct": 0.04,
+      "projectedMoneyPerSecond": 3990966.9821529323,
+      "rank": 2478.861479598095,
+      "id": "mtz34vp4-si6o:cloud:13",
+      "jobs": [
+        {
+          "host": "mcp-worker-2",
+          "action": "weaken",
+          "threads": 457,
+          "pid": 1860
+        },
+        {
+          "host": "mcp-worker-1",
+          "action": "weaken",
+          "threads": 329,
+          "pid": 1861
+        },
+        {
+          "host": "avmnite-02h",
+          "action": "weaken",
+          "threads": 73,
+          "pid": 1862
+        },
+        {
+          "host": "netlink",
+          "action": "weaken",
+          "threads": 61,
+          "pid": 1863
+        }
+      ],
+      "startedAt": 1789259880571,
+      "currentSecurity": 69
+    },
+    {
+      "target": "summit-uni",
+      "phase": "prepare-security",
+      "counts": {
+        "hack": 0,
+        "grow": 0,
+        "weaken": 620
+      },
+      "ram": 1085,
+      "durations": {
+        "hack": 323.3205223441476,
+        "grow": 1034.6256715012723,
+        "weaken": 1293.2820893765904
+      },
+      "security": 47,
+      "moneyPct": 0.04,
+      "projectedMoneyPerSecond": 4846664.887809349,
+      "rank": 4466.972246828894,
+      "id": "mtz34vp4-si6o:cloud:17",
+      "jobs": [
+        {
+          "host": "mcp-worker-1",
+          "action": "weaken",
+          "threads": 620,
+          "pid": 1871
+        }
+      ],
+      "startedAt": 1789259910581,
+      "currentSecurity": 47
+    },
+    {
+      "target": "johnson-ortho",
+      "phase": "prepare-security",
+      "counts": {
+        "hack": 0,
+        "grow": 0,
+        "weaken": 600
+      },
+      "ram": 1050,
+      "durations": {
+        "hack": 189.14682127377873,
+        "grow": 605.2698280760919,
+        "weaken": 756.5872850951149
+      },
+      "security": 45,
+      "moneyPct": 0.04,
+      "projectedMoneyPerSecond": 3185759.9731484614,
+      "rank": 3034.0571172842488,
+      "id": "mtz34vp4-si6o:cloud:18",
+      "jobs": [
+        {
+          "host": "mcp-worker-1",
+          "action": "weaken",
+          "threads": 600,
+          "pid": 1872
+        }
+      ],
+      "startedAt": 1789259910581,
+      "currentSecurity": 45
+    },
+    {
+      "target": "aevum-police",
+      "phase": "prepare-security",
+      "counts": {
+        "hack": 0,
+        "grow": 0,
+        "weaken": 1060
+      },
+      "ram": 1855,
+      "durations": {
+        "hack": 506.1574889979356,
+        "grow": 1619.703964793394,
+        "weaken": 2024.6299559917425
+      },
+      "security": 79,
+      "moneyPct": 0.04,
+      "projectedMoneyPerSecond": 2314437.2596086175,
+      "rank": 1247.6750725652926,
+      "id": "mtz34vp4-si6o:cloud:19",
+      "jobs": [
+        {
+          "host": "mcp-worker-1",
+          "action": "weaken",
+          "threads": 1060,
+          "pid": 1873
+        }
+      ],
+      "startedAt": 1789259910581,
+      "currentSecurity": 79
+    },
+    {
+      "target": "silver-helix",
+      "phase": "prepare-security",
+      "counts": {
+        "hack": 0,
+        "grow": 0,
+        "weaken": 400
+      },
+      "ram": 700,
+      "durations": {
+        "hack": 69.8176619216962,
+        "grow": 223.41651814942784,
+        "weaken": 279.2706476867848
+      },
+      "security": 30,
+      "moneyPct": 0.04,
+      "projectedMoneyPerSecond": 5066983.839106942,
+      "rank": 7238.548341581345,
+      "id": "mtz34vp4-si6o:cloud:41",
+      "jobs": [
+        {
+          "host": "mcp-worker-2",
+          "action": "weaken",
+          "threads": 400,
+          "pid": 1970
+        }
+      ],
+      "startedAt": 1789260160704,
+      "currentSecurity": 30
+    },
+    {
+      "target": "rothman-uni",
+      "phase": "prepare-security",
+      "counts": {
+        "hack": 0,
+        "grow": 0,
+        "weaken": 600
+      },
+      "ram": 1050,
+      "durations": {
+        "hack": 265.67848584458216,
+        "grow": 850.171154702663,
+        "weaken": 1062.7139433783286
+      },
+      "security": 45,
+      "moneyPct": 0.04,
+      "projectedMoneyPerSecond": 5588281.015953176,
+      "rank": 5322.172396145882,
+      "id": "mtz34vp4-si6o:cloud:42",
+      "jobs": [
+        {
+          "host": "mcp-worker-2",
+          "action": "weaken",
+          "threads": 600,
+          "pid": 1971
+        }
+      ],
+      "startedAt": 1789260160704,
+      "currentSecurity": 45
+    },
+    {
+      "target": "computek",
+      "phase": "prepare-security",
+      "counts": {
+        "hack": 0,
+        "grow": 0,
+        "weaken": 780
+      },
+      "ram": 1365,
+      "durations": {
+        "hack": 285.56909208142287,
+        "grow": 913.8210946605532,
+        "weaken": 1142.2763683256915
+      },
+      "security": 58,
+      "moneyPct": 0.04,
+      "projectedMoneyPerSecond": 6014422.485475174,
+      "rank": 4406.170319029432,
+      "id": "mtz34vp4-si6o:cloud:44",
+      "jobs": [
+        {
+          "host": "mcp-worker-2",
+          "action": "weaken",
+          "threads": 684,
+          "pid": 1973
+        },
+        {
+          "host": "mcp-worker-1",
+          "action": "weaken",
+          "threads": 60,
+          "pid": 1974
+        },
+        {
+          "host": "silver-helix",
+          "action": "weaken",
+          "threads": 36,
+          "pid": 1975
+        }
+      ],
+      "startedAt": 1789260160704,
+      "currentSecurity": 58
+    },
+    {
+      "target": "max-hardware",
+      "phase": "harvest",
+      "counts": {
+        "hack": 112,
+        "grow": 493,
+        "weaken": 44
+      },
+      "ram": 1130.15,
+      "durations": {
+        "hack": 8.912893011280364,
+        "grow": 28.52125763609717,
+        "weaken": 35.651572045121455
+      },
+      "security": 5,
+      "moneyPct": 1,
+      "projectedMoneyPerSecond": 2738131.3369986806,
+      "rank": 2422.803465910437,
+      "id": "mtz34vp4-si6o:cloud:46",
+      "jobs": [
+        {
+          "host": "mcp-worker-2",
+          "action": "weaken",
+          "threads": 44,
+          "pid": 1981
+        },
+        {
+          "host": "mcp-worker-2",
+          "action": "grow",
+          "threads": 493,
+          "pid": 1982
+        },
+        {
+          "host": "mcp-worker-2",
+          "action": "hack",
+          "threads": 112,
+          "pid": 1983
+        }
+      ],
+      "startedAt": 1789260200720,
+      "currentSecurity": 7.196
+    },
+    {
+      "target": "n00dles",
+      "phase": "harvest",
+      "counts": {
+        "hack": 91,
+        "grow": 5,
+        "weaken": 5
+      },
+      "ram": 172.2,
+      "durations": {
+        "hack": 2.9858191587789222,
+        "grow": 9.554621308092552,
+        "weaken": 11.943276635115689
+      },
+      "security": 1,
+      "moneyPct": 1,
+      "projectedMoneyPerSecond": 39875.5397632705,
+      "rank": 231.5652715637079,
+      "id": "mtz34vp4-si6o:cloud:48",
+      "jobs": [
+        {
+          "host": "mcp-worker-2",
+          "action": "weaken",
+          "threads": 5,
+          "pid": 1992
+        },
+        {
+          "host": "mcp-worker-2",
+          "action": "grow",
+          "threads": 5,
+          "pid": 1993
+        },
+        {
+          "host": "mcp-worker-2",
+          "action": "hack",
+          "threads": 91,
+          "pid": 1994
+        }
+      ],
+      "startedAt": 1789260220734,
+      "currentSecurity": 1.202
+    },
+    {
+      "target": "phantasy",
+      "phase": "prepare-money",
+      "counts": {
+        "hack": 0,
+        "grow": 350,
+        "weaken": 28
+      },
+      "ram": 661.5,
+      "durations": {
+        "hack": 13.369339516920547,
+        "grow": 42.781886454145756,
+        "weaken": 53.47735806768219
+      },
+      "security": 7,
+      "moneyPct": 0.566592540090472,
+      "projectedMoneyPerSecond": 4726094.612824427,
+      "rank": 7144.511886355898,
+      "id": "mtz34vp4-si6o:cloud:49",
+      "jobs": [
+        {
+          "host": "mcp-worker-2",
+          "action": "weaken",
+          "threads": 28,
+          "pid": 1995
+        },
+        {
+          "host": "mcp-worker-2",
+          "action": "grow",
+          "threads": 350,
+          "pid": 1996
+        }
+      ],
+      "startedAt": 1789260230741,
+      "currentSecurity": 7
+    }
+  ],
+  "workers": [
+    {
+      "host": "n00dles",
+      "maxRam": 4,
+      "usedRam": 0,
+      "freeRam": 4,
+      "actions": []
+    },
+    {
+      "host": "foodnstuff",
+      "maxRam": 16,
+      "usedRam": 0,
+      "freeRam": 16,
+      "actions": []
+    },
+    {
+      "host": "sigma-cosmetics",
+      "maxRam": 16,
+      "usedRam": 0,
+      "freeRam": 16,
+      "actions": []
+    },
+    {
+      "host": "joesguns",
+      "maxRam": 16,
+      "usedRam": 0,
+      "freeRam": 16,
+      "actions": []
+    },
+    {
+      "host": "hong-fang-tea",
+      "maxRam": 16,
+      "usedRam": 0,
+      "freeRam": 16,
+      "actions": []
+    },
+    {
+      "host": "harakiri-sushi",
+      "maxRam": 16,
+      "usedRam": 0,
+      "freeRam": 16,
+      "actions": []
+    },
+    {
+      "host": "iron-gym",
+      "maxRam": 32,
+      "usedRam": 0,
+      "freeRam": 32,
+      "actions": []
+    },
+    {
+      "host": "mcp-worker-0",
+      "maxRam": 4096,
+      "usedRam": 4095.45,
+      "freeRam": 0.5500000000001819,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 420,
+          "target": "omega-net"
+        },
+        {
+          "script": "weaken",
+          "threads": 580,
+          "target": "the-hub"
+        },
+        {
+          "script": "weaken",
+          "threads": 480,
+          "target": "crush-fitness"
+        },
+        {
+          "script": "weaken",
+          "threads": 715,
+          "target": "netlink"
+        }
+      ]
+    },
+    {
+      "host": "mcp-worker-1",
+      "maxRam": 4096,
+      "usedRam": 4095,
+      "freeRam": 1,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 620,
+          "target": "summit-uni"
+        },
+        {
+          "script": "weaken",
+          "threads": 600,
+          "target": "johnson-ortho"
+        },
+        {
+          "script": "weaken",
+          "threads": 1060,
+          "target": "aevum-police"
+        },
+        {
+          "script": "weaken",
+          "threads": 60,
+          "target": "computek"
+        }
+      ]
+    },
+    {
+      "host": "mcp-worker-2",
+      "maxRam": 4096,
+      "usedRam": 3694.25,
+      "freeRam": 401.75,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 400,
+          "target": "silver-helix"
+        },
+        {
+          "script": "weaken",
+          "threads": 600,
+          "target": "rothman-uni"
+        },
+        {
+          "script": "weaken",
+          "threads": 684,
+          "target": "computek"
+        },
+        {
+          "script": "weaken",
+          "threads": 44,
+          "target": "max-hardware"
+        },
+        {
+          "script": "weaken",
+          "threads": 5,
+          "target": "n00dles"
+        },
+        {
+          "script": "weaken",
+          "threads": 28,
+          "target": "phantasy"
+        },
+        {
+          "script": "grow",
+          "threads": 350,
+          "target": "phantasy"
+        }
+      ]
+    },
+    {
+      "host": "zer0",
+      "maxRam": 32,
+      "usedRam": 0,
+      "freeRam": 32,
+      "actions": []
+    },
+    {
+      "host": "CSEC",
+      "maxRam": 8,
+      "usedRam": 0,
+      "freeRam": 8,
+      "actions": []
+    },
+    {
+      "host": "max-hardware",
+      "maxRam": 32,
+      "usedRam": 0,
+      "freeRam": 32,
+      "actions": []
+    },
+    {
+      "host": "nectar-net",
+      "maxRam": 16,
+      "usedRam": 0,
+      "freeRam": 16,
+      "actions": []
+    },
+    {
+      "host": "phantasy",
+      "maxRam": 32,
+      "usedRam": 0,
+      "freeRam": 32,
+      "actions": []
+    },
+    {
+      "host": "neo-net",
+      "maxRam": 32,
+      "usedRam": 0,
+      "freeRam": 32,
+      "actions": []
+    },
+    {
+      "host": "silver-helix",
+      "maxRam": 64,
+      "usedRam": 63,
+      "freeRam": 1,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 36,
+          "target": "computek"
+        }
+      ]
+    },
+    {
+      "host": "omega-net",
+      "maxRam": 32,
+      "usedRam": 0,
+      "freeRam": 32,
+      "actions": []
+    },
+    {
+      "host": "avmnite-02h",
+      "maxRam": 128,
+      "usedRam": 127.75,
+      "freeRam": 0.25,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 73,
+          "target": "catalyst"
+        }
+      ]
+    },
+    {
+      "host": "the-hub",
+      "maxRam": 8,
+      "usedRam": 0,
+      "freeRam": 8,
+      "actions": []
+    },
+    {
+      "host": "netlink",
+      "maxRam": 128,
+      "usedRam": 106.75,
+      "freeRam": 21.25,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 61,
+          "target": "catalyst"
+        }
+      ]
+    },
+    {
+      "host": "catalyst",
+      "maxRam": 32,
+      "usedRam": 0,
+      "freeRam": 32,
+      "actions": []
+    },
+    {
+      "host": "rothman-uni",
+      "maxRam": 32,
+      "usedRam": 0,
+      "freeRam": 32,
+      "actions": []
+    },
+    {
+      "host": "summit-uni",
+      "maxRam": 64,
+      "usedRam": 0,
+      "freeRam": 64,
+      "actions": []
+    },
+    {
+      "host": "I.I.I.I",
+      "maxRam": 16,
+      "usedRam": 0,
+      "freeRam": 16,
+      "actions": []
+    },
+    {
+      "host": "aevum-police",
+      "maxRam": 16,
+      "usedRam": 0,
+      "freeRam": 16,
+      "actions": []
+    }
+  ],
+  "cloudWorkers": [
+    {
+      "host": "mcp-worker-0",
+      "maxRam": 4096,
+      "usedRam": 4095.45,
+      "freeRam": 0.5500000000001819,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 420,
+          "target": "omega-net"
+        },
+        {
+          "script": "weaken",
+          "threads": 580,
+          "target": "the-hub"
+        },
+        {
+          "script": "weaken",
+          "threads": 480,
+          "target": "crush-fitness"
+        },
+        {
+          "script": "weaken",
+          "threads": 715,
+          "target": "netlink"
+        }
+      ]
+    },
+    {
+      "host": "mcp-worker-1",
+      "maxRam": 4096,
+      "usedRam": 4095,
+      "freeRam": 1,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 620,
+          "target": "summit-uni"
+        },
+        {
+          "script": "weaken",
+          "threads": 600,
+          "target": "johnson-ortho"
+        },
+        {
+          "script": "weaken",
+          "threads": 1060,
+          "target": "aevum-police"
+        },
+        {
+          "script": "weaken",
+          "threads": 60,
+          "target": "computek"
+        }
+      ]
+    },
+    {
+      "host": "mcp-worker-2",
+      "maxRam": 4096,
+      "usedRam": 3694.25,
+      "freeRam": 401.75,
+      "actions": [
+        {
+          "script": "weaken",
+          "threads": 400,
+          "target": "silver-helix"
+        },
+        {
+          "script": "weaken",
+          "threads": 600,
+          "target": "rothman-uni"
+        },
+        {
+          "script": "weaken",
+          "threads": 684,
+          "target": "computek"
+        },
+        {
+          "script": "weaken",
+          "threads": 44,
+          "target": "max-hardware"
+        },
+        {
+          "script": "weaken",
+          "threads": 5,
+          "target": "n00dles"
+        },
+        {
+          "script": "weaken",
+          "threads": 28,
+          "target": "phantasy"
+        },
+        {
+          "script": "grow",
+          "threads": 350,
+          "target": "phantasy"
+        }
+      ]
+    }
+  ],
+  "rate": 87309.12629847476,
+  "avgRate": 3346626.1489899,
+  "incomePerSec": 87309.12629847476,
+  "totalHacked": 1171894771.8440914,
+  "currentSecurity": 0,
+  "moneyPct": 0,
+  "expPerSec": 0,
+  "ramUtilization": 0.9316457632303458,
+  "workerLaunchFailures": [],
+  "cloudControl": {
+    "enabled": true,
+    "harvestFraction": 0.5,
+    "maxTargets": 32,
+    "expiresAt": 1789266681459,
+    "setBy": "Ken via Codex",
+    "reason": "Aggressive multi-target Steam test explicitly authorized September 12",
+    "effectiveFraction": 0.5,
+    "effectiveMaxTargets": 32
+  },
+  "completedBatches": 35,
+  "waiting": [
+    {
+      "target": "zer0",
+      "phase": "prepare-money",
+      "neededRam": 890.75
+    },
+    {
+      "target": "harakiri-sushi",
+      "phase": "prepare-money",
+      "neededRam": 890.75
+    },
+    {
+      "target": "iron-gym",
+      "phase": "prepare-money",
+      "neededRam": 890.75
+    },
+    {
+      "target": "neo-net",
+      "phase": "prepare-money",
+      "neededRam": 890.75
+    },
+    {
+      "target": "nectar-net",
+      "phase": "prepare-money",
+      "neededRam": 890.75
+    },
+    {
+      "target": "joesguns",
+      "phase": "prepare-money",
+      "neededRam": 890.75
+    },
+    {
+      "target": "hong-fang-tea",
+      "phase": "prepare-money",
+      "neededRam": 890.75
+    },
+    {
+      "target": "sigma-cosmetics",
+      "phase": "prepare-money",
+      "neededRam": 890.75
+    },
+    {
+      "target": "foodnstuff",
+      "phase": "prepare-money",
+      "neededRam": 890.75
+    }
+  ],
+  "scriptVersion": "1dgd52i",
+  "reputation": {
+    "ts": 1789260230740,
+    "requested": true,
+    "config": {
+      "enabled": true,
+      "ramGb": 256,
+      "note": "Ken explicitly overrode the historical sharing restriction and authorized Steam activation on 2026-09-12. Disable enabled to stop owned sharing."
+    },
+    "factionWork": "unverified: sharing only benefits active faction work; choose it in the game",
+    "power": 1.1699901495061649,
+    "maxRamGb": 256,
+    "state": "sharing",
+    "host": "mcp-worker-0",
+    "pid": 1842,
+    "threads": 62,
+    "ramGb": 254.2,
+    "retryAt": 1789259940569,
+    "startedAt": 1789259880569,
+    "reviewAt": 1789261680569,
+    "reason": "unverified: sharing only benefits active faction work; choose it in the game",
+    "roi": {
+      "baselinePower": 1,
+      "marginalReputation": null,
+      "confidence": "unmeasured",
+      "opportunityCost": "Reserved RAM cannot earn hacking money or XP",
+      "stopRule": "Stop on objective change, disabled policy or owner exit; review after 30 minutes"
+    }
+  },
+  "player": {
+    "hp": {
+      "current": 10,
+      "max": 10
+    },
+    "skills": {
+      "hacking": 503,
+      "strength": 1,
+      "defense": 1,
+      "dexterity": 1,
+      "agility": 1,
+      "charisma": 137,
+      "intelligence": 83
+    },
+    "exp": {
+      "hacking": 5563529.084532208,
+      "strength": 0,
+      "defense": 0,
+      "dexterity": 0,
+      "agility": 0,
+      "charisma": 16319.882220031275,
+      "intelligence": 6513.187999936893
+    },
+    "mults": {
+      "hacking_chance": 1.466207190616041,
+      "hacking_speed": 1.439380745714232,
+      "hacking_money": 1.3298931434159103,
+      "hacking_grow": 1.3298931434159103,
+      "hacking": 1.6943490294758974,
+      "hacking_exp": 1.745484750733382,
+      "strength": 1.2313825401999168,
+      "strength_exp": 1.2313825401999168,
+      "defense": 1.2313825401999168,
+      "defense_exp": 1.2313825401999168,
+      "dexterity": 1.2313825401999168,
+      "dexterity_exp": 1.2313825401999168,
+      "agility": 1.2313825401999168,
+      "agility_exp": 1.2313825401999168,
+      "charisma": 1.2313825401999168,
+      "charisma_exp": 1.2313825401999168,
+      "hacknet_node_money": 1.2313825401999168,
+      "hacknet_node_purchase_cost": 0.8120953216030238,
+      "hacknet_node_ram_cost": 0.8120953216030238,
+      "hacknet_node_core_cost": 0.8120953216030238,
+      "hacknet_node_level_cost": 0.8120953216030238,
+      "company_rep": 1.2313825401999168,
+      "faction_rep": 1.2313825401999168,
+      "work_money": 1.2313825401999168,
+      "crime_success": 1.2313825401999168,
+      "crime_money": 1.2313825401999168,
+      "dnet_money": 1,
+      "bladeburner_max_stamina": 1,
+      "bladeburner_stamina_gain": 1,
+      "bladeburner_analysis": 1,
+      "bladeburner_success_chance": 1
+    },
+    "city": "Sector-12",
+    "numPeopleKilled": 0,
+    "money": 13056822500.709091,
+    "location": "Alpha Enterprises",
+    "totalPlaytime": 3666631400,
+    "jobs": {},
+    "factions": [
+      "The Black Hand",
+      "NiteSec",
+      "CyberSec"
+    ],
+    "entropy": 0,
+    "karma": -364.13499999999783
+  },
+  "config": {
+    "OBJECTIVE": "reputation"
+  },
+  "objectiveOverrideActive": true,
+  "invariantViolations": {},
+  "recentEvents": [
+    {
+      "t": 1789260160703,
+      "seq": 69,
+      "runId": "mtz34vp4-si6o",
+      "ver": "1dgd52i",
+      "kind": "cloud_batch_complete",
+      "target": "rothman-uni",
+      "phase": "prepare-security",
+      "counts": {
+        "hack": 0,
+        "grow": 0,
+        "weaken": 600
+      },
+      "startedAt": 1789260040637,
+      "elapsedSeconds": 120.066,
+      "moneyPct": 0.04,
+      "security": 45,
+      "minSecurity": 15
+    },
+    {
+      "t": 1789260160703,
+      "seq": 70,
+      "runId": "mtz34vp4-si6o",
+      "ver": "1dgd52i",
+      "kind": "cloud_batch_complete",
+      "target": "computek",
+      "phase": "prepare-security",
+      "counts": {
+        "hack": 0,
+        "grow": 0,
+        "weaken": 780
+      },
+      "startedAt": 1789260070649,
+      "elapsedSeconds": 90.054,
+      "moneyPct": 0.04,
+      "security": 58,
+      "minSecurity": 19
+    },
+    {
+      "t": 1789260160703,
+      "seq": 71,
+      "runId": "mtz34vp4-si6o",
+      "ver": "1dgd52i",
+      "kind": "cloud_batch_complete",
+      "target": "phantasy",
+      "phase": "harvest",
+      "counts": {
+        "hack": 120,
+        "grow": 423,
+        "weaken": 39
+      },
+      "startedAt": 1789260120679,
+      "elapsedSeconds": 40.024,
+      "moneyPct": 0.566592540090472,
+      "security": 7.239999999999999,
+      "minSecurity": 7
+    },
+    {
+      "t": 1789260160703,
+      "seq": 72,
+      "runId": "mtz34vp4-si6o",
+      "ver": "1dgd52i",
+      "kind": "cloud_batch_complete",
+      "target": "n00dles",
+      "phase": "harvest",
+      "counts": {
+        "hack": 91,
+        "grow": 5,
+        "weaken": 5
+      },
+      "startedAt": 1789260140695,
+      "elapsedSeconds": 20.008,
+      "moneyPct": 1,
+      "security": 1.202,
+      "minSecurity": 1
+    },
+    {
+      "t": 1789260160703,
+      "seq": 73,
+      "runId": "mtz34vp4-si6o",
+      "ver": "1dgd52i",
+      "kind": "cloud_batch_start",
+      "id": "mtz34vp4-si6o:cloud:39",
+      "target": "max-hardware",
+      "phase": "harvest",
+      "counts": {
+        "hack": 112,
+        "grow": 493,
+        "weaken": 44
+      },
+      "ram": 1130.15,
+      "partialPreparation": false,
+      "durations": {
+        "hack": 8.912893011280364,
+        "grow": 28.52125763609717,
+        "weaken": 35.651572045121455
+      },
+      "security": 5,
+      "moneyPct": 1,
+      "jobs": [
+        {
+          "host": "mcp-worker-2",
+          "action": "weaken",
+          "threads": 44,
+          "pid": 1966
+        },
+        {
+          "host": "mcp-worker-2",
+          "action": "grow",
+          "threads": 493,
+          "pid": 1967
+        },
+        {
+          "host": "mcp-worker-2",
+          "action": "hack",
+          "threads": 112,
+          "pid": 1968
+        }
+      ]
+    },
+    {
+      "t": 1789260160704,
+      "seq": 74,
+      "runId": "mtz34vp4-si6o",
+      "ver": "1dgd52i",
+      "kind": "cloud_batch_start",
+      "id": "mtz34vp4-si6o:cloud:40",
+      "target": "phantasy",
+      "phase": "prepare-security",
+      "counts": {
+        "hack": 0,
+        "grow": 0,
+        "weaken": 5
+      },
+      "ram": 8.75,
+      "partialPreparation": false,
+      "durations": {
+        "hack": 13.725855237371762,
+        "grow": 43.92273675958964,
+        "weaken": 54.90342094948705
+      },
+      "security": 7.239999999999999,
+      "moneyPct": 0.566592540090472,
+      "jobs": [
+        {
+          "host": "mcp-worker-2",
+          "action": "weaken",
+          "threads": 5,
+          "pid": 1969
+        }
+      ]
+    },
+    {
+      "t": 1789260160704,
+      "seq": 75,
+      "runId": "mtz34vp4-si6o",
+      "ver": "1dgd52i",
+      "kind": "cloud_batch_start",
+      "id": "mtz34vp4-si6o:cloud:41",
+      "target": "silver-helix",
+      "phase": "prepare-security",
+      "counts": {
+        "hack": 0,
+        "grow": 0,
+        "weaken": 400
+      },
+      "ram": 700,
+      "partialPreparation": false,
+      "durations": {
+        "hack": 69.8176619216962,
+        "grow": 223.41651814942784,
+        "weaken": 279.2706476867848
+      },
+      "security": 30,
+      "moneyPct": 0.04,
+      "jobs": [
+        {
+          "host": "mcp-worker-2",
+          "action": "weaken",
+          "threads": 400,
+          "pid": 1970
+        }
+      ]
+    },
+    {
+      "t": 1789260160704,
+      "seq": 76,
+      "runId": "mtz34vp4-si6o",
+      "ver": "1dgd52i",
+      "kind": "cloud_batch_start",
+      "id": "mtz34vp4-si6o:cloud:42",
+      "target": "rothman-uni",
+      "phase": "prepare-security",
+      "counts": {
+        "hack": 0,
+        "grow": 0,
+        "weaken": 600
+      },
+      "ram": 1050,
+      "partialPreparation": false,
+      "durations": {
+        "hack": 265.67848584458216,
+        "grow": 850.171154702663,
+        "weaken": 1062.7139433783286
+      },
+      "security": 45,
+      "moneyPct": 0.04,
+      "jobs": [
+        {
+          "host": "mcp-worker-2",
+          "action": "weaken",
+          "threads": 600,
+          "pid": 1971
+        }
+      ]
+    },
+    {
+      "t": 1789260160704,
+      "seq": 77,
+      "runId": "mtz34vp4-si6o",
+      "ver": "1dgd52i",
+      "kind": "cloud_batch_start",
+      "id": "mtz34vp4-si6o:cloud:43",
+      "target": "n00dles",
+      "phase": "prepare-security",
+      "counts": {
+        "hack": 0,
+        "grow": 0,
+        "weaken": 5
+      },
+      "ram": 8.75,
+      "partialPreparation": false,
+      "durations": {
+        "hack": 2.9888198327593867,
+        "grow": 9.564223464830038,
+        "weaken": 11.955279331037547
+      },
+      "security": 1.202,
+      "moneyPct": 1,
+      "jobs": [
+        {
+          "host": "mcp-worker-2",
+          "action": "weaken",
+          "threads": 5,
+          "pid": 1972
+        }
+      ]
+    },
+    {
+      "t": 1789260160704,
+      "seq": 78,
+      "runId": "mtz34vp4-si6o",
+      "ver": "1dgd52i",
+      "kind": "cloud_batch_start",
+      "id": "mtz34vp4-si6o:cloud:44",
+      "target": "computek",
+      "phase": "prepare-security",
+      "counts": {
+        "hack": 0,
+        "grow": 0,
+        "weaken": 780
+      },
+      "ram": 1365,
+      "partialPreparation": false,
+      "durations": {
+        "hack": 285.56909208142287,
+        "grow": 913.8210946605532,
+        "weaken": 1142.2763683256915
+      },
+      "security": 58,
+      "moneyPct": 0.04,
+      "jobs": [
+        {
+          "host": "mcp-worker-2",
+          "action": "weaken",
+          "threads": 684,
+          "pid": 1973
+        },
+        {
+          "host": "mcp-worker-1",
+          "action": "weaken",
+          "threads": 60,
+          "pid": 1974
+        },
+        {
+          "host": "silver-helix",
+          "action": "weaken",
+          "threads": 36,
+          "pid": 1975
+        }
+      ]
+    },
+    {
+      "t": 1789260180711,
+      "seq": 79,
+      "runId": "mtz34vp4-si6o",
+      "ver": "1dgd52i",
+      "kind": "cloud_batch_complete",
+      "target": "n00dles",
+      "phase": "prepare-security",
+      "counts": {
+        "hack": 0,
+        "grow": 0,
+        "weaken": 5
+      },
+      "startedAt": 1789260160704,
+      "elapsedSeconds": 20.007,
+      "moneyPct": 1,
+      "security": 1,
+      "minSecurity": 1
+    },
+    {
+      "t": 1789260180712,
+      "seq": 80,
+      "runId": "mtz34vp4-si6o",
+      "ver": "1dgd52i",
+      "kind": "cloud_batch_start",
+      "id": "mtz34vp4-si6o:cloud:45",
+      "target": "n00dles",
+      "phase": "harvest",
+      "counts": {
+        "hack": 91,
+        "grow": 5,
+        "weaken": 5
+      },
+      "ram": 172.2,
+      "partialPreparation": false,
+      "durations": {
+        "hack": 2.9858191587789222,
+        "grow": 9.554621308092552,
+        "weaken": 11.943276635115689
+      },
+      "security": 1,
+      "moneyPct": 1,
+      "jobs": [
+        {
+          "host": "mcp-worker-2",
+          "action": "weaken",
+          "threads": 5,
+          "pid": 1976
+        },
+        {
+          "host": "mcp-worker-2",
+          "action": "grow",
+          "threads": 5,
+          "pid": 1977
+        },
+        {
+          "host": "mcp-worker-2",
+          "action": "hack",
+          "threads": 91,
+          "pid": 1978
+        }
+      ]
+    },
+    {
+      "t": 1789260200719,
+      "seq": 81,
+      "runId": "mtz34vp4-si6o",
+      "ver": "1dgd52i",
+      "kind": "cloud_batch_complete",
+      "target": "max-hardware",
+      "phase": "harvest",
+      "counts": {
+        "hack": 112,
+        "grow": 493,
+        "weaken": 44
+      },
+      "startedAt": 1789260160703,
+      "elapsedSeconds": 40.016,
+      "moneyPct": 1,
+      "security": 5,
+      "minSecurity": 5
+    },
+    {
+      "t": 1789260200719,
+      "seq": 82,
+      "runId": "mtz34vp4-si6o",
+      "ver": "1dgd52i",
+      "kind": "cloud_batch_complete",
+      "target": "n00dles",
+      "phase": "harvest",
+      "counts": {
+        "hack": 91,
+        "grow": 5,
+        "weaken": 5
+      },
+      "startedAt": 1789260180712,
+      "elapsedSeconds": 20.007,
+      "moneyPct": 1,
+      "security": 1,
+      "minSecurity": 1
+    },
+    {
+      "t": 1789260200720,
+      "seq": 83,
+      "runId": "mtz34vp4-si6o",
+      "ver": "1dgd52i",
+      "kind": "cloud_batch_start",
+      "id": "mtz34vp4-si6o:cloud:46",
+      "target": "max-hardware",
+      "phase": "harvest",
+      "counts": {
+        "hack": 112,
+        "grow": 493,
+        "weaken": 44
+      },
+      "ram": 1130.15,
+      "partialPreparation": false,
+      "durations": {
+        "hack": 8.912893011280364,
+        "grow": 28.52125763609717,
+        "weaken": 35.651572045121455
+      },
+      "security": 5,
+      "moneyPct": 1,
+      "jobs": [
+        {
+          "host": "mcp-worker-2",
+          "action": "weaken",
+          "threads": 44,
+          "pid": 1981
+        },
+        {
+          "host": "mcp-worker-2",
+          "action": "grow",
+          "threads": 493,
+          "pid": 1982
+        },
+        {
+          "host": "mcp-worker-2",
+          "action": "hack",
+          "threads": 112,
+          "pid": 1983
+        }
+      ]
+    },
+    {
+      "t": 1789260200727,
+      "seq": 84,
+      "runId": "mtz34vp4-si6o",
+      "ver": "1dgd52i",
+      "kind": "cloud_batch_start",
+      "id": "mtz34vp4-si6o:cloud:47",
+      "target": "n00dles",
+      "phase": "harvest",
+      "counts": {
+        "hack": 91,
+        "grow": 5,
+        "weaken": 5
+      },
+      "ram": 172.2,
+      "partialPreparation": false,
+      "durations": {
+        "hack": 2.9858191587789222,
+        "grow": 9.554621308092552,
+        "weaken": 11.943276635115689
+      },
+      "security": 1,
+      "moneyPct": 1,
+      "jobs": [
+        {
+          "host": "summit-uni",
+          "action": "weaken",
+          "threads": 5,
+          "pid": 1984
+        },
+        {
+          "host": "summit-uni",
+          "action": "grow",
+          "threads": 5,
+          "pid": 1985
+        },
+        {
+          "host": "summit-uni",
+          "action": "hack",
+          "threads": 27,
+          "pid": 1986
+        },
+        {
+          "host": "iron-gym",
+          "action": "hack",
+          "threads": 18,
+          "pid": 1987
+        },
+        {
+          "host": "zer0",
+          "action": "hack",
+          "threads": 18,
+          "pid": 1988
+        },
+        {
+          "host": "max-hardware",
+          "action": "hack",
+          "threads": 18,
+          "pid": 1989
+        },
+        {
+          "host": "phantasy",
+          "action": "hack",
+          "threads": 10,
+          "pid": 1990
+        }
+      ]
+    },
+    {
+      "t": 1789260220733,
+      "seq": 85,
+      "runId": "mtz34vp4-si6o",
+      "ver": "1dgd52i",
+      "kind": "cloud_batch_complete",
+      "target": "phantasy",
+      "phase": "prepare-security",
+      "counts": {
+        "hack": 0,
+        "grow": 0,
+        "weaken": 5
+      },
+      "startedAt": 1789260160704,
+      "elapsedSeconds": 60.029,
+      "moneyPct": 0.566592540090472,
+      "security": 7,
+      "minSecurity": 7
+    },
+    {
+      "t": 1789260220733,
+      "seq": 86,
+      "runId": "mtz34vp4-si6o",
+      "ver": "1dgd52i",
+      "kind": "cloud_batch_complete",
+      "target": "n00dles",
+      "phase": "harvest",
+      "counts": {
+        "hack": 91,
+        "grow": 5,
+        "weaken": 5
+      },
+      "startedAt": 1789260200727,
+      "elapsedSeconds": 20.006,
+      "moneyPct": 1,
+      "security": 1,
+      "minSecurity": 1
+    },
+    {
+      "t": 1789260220734,
+      "seq": 87,
+      "runId": "mtz34vp4-si6o",
+      "ver": "1dgd52i",
+      "kind": "cloud_batch_start",
+      "id": "mtz34vp4-si6o:cloud:48",
+      "target": "n00dles",
+      "phase": "harvest",
+      "counts": {
+        "hack": 91,
+        "grow": 5,
+        "weaken": 5
+      },
+      "ram": 172.2,
+      "partialPreparation": false,
+      "durations": {
+        "hack": 2.9858191587789222,
+        "grow": 9.554621308092552,
+        "weaken": 11.943276635115689
+      },
+      "security": 1,
+      "moneyPct": 1,
+      "jobs": [
+        {
+          "host": "mcp-worker-2",
+          "action": "weaken",
+          "threads": 5,
+          "pid": 1992
+        },
+        {
+          "host": "mcp-worker-2",
+          "action": "grow",
+          "threads": 5,
+          "pid": 1993
+        },
+        {
+          "host": "mcp-worker-2",
+          "action": "hack",
+          "threads": 91,
+          "pid": 1994
+        }
+      ]
+    },
+    {
+      "t": 1789260230741,
+      "seq": 88,
+      "runId": "mtz34vp4-si6o",
+      "ver": "1dgd52i",
+      "kind": "cloud_batch_start",
+      "id": "mtz34vp4-si6o:cloud:49",
+      "target": "phantasy",
+      "phase": "prepare-money",
+      "counts": {
+        "hack": 0,
+        "grow": 350,
+        "weaken": 28
+      },
+      "ram": 661.5,
+      "partialPreparation": false,
+      "durations": {
+        "hack": 13.369339516920547,
+        "grow": 42.781886454145756,
+        "weaken": 53.47735806768219
+      },
+      "security": 7,
+      "moneyPct": 0.566592540090472,
+      "jobs": [
+        {
+          "host": "mcp-worker-2",
+          "action": "weaken",
+          "threads": 28,
+          "pid": 1995
+        },
+        {
+          "host": "mcp-worker-2",
+          "action": "grow",
+          "threads": 350,
+          "pid": 1996
+        }
+      ]
+    }
+  ]
+}

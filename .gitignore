@@ -58,3 +58,7 @@ docs/darknet-canary-phase2-log.md
 # Bitburner save-file snapshots synced from the game (saves/tsconfig.json
 # stays tracked regardless — it's hand-authored, not game output)
 saves/*.json.gz
+
+# Durable in-game cloud control and generated multi-target observations
+mcp_cloud_control.json
+mcp_cloud_status.json

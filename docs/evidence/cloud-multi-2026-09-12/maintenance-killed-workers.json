@@ -1,0 +1,1156 @@
+[
+  {
+    "timeOfDeath": "2026-09-13T00:40:30.661Z",
+    "args": [
+      "catalyst",
+      "once",
+      "mtz34vp4-si6o:cloud:13",
+      0
+    ],
+    "filename": "scripts/weaken.js",
+    "logs": [
+      "weaken: Executing on 'catalyst' in 30 minutes 43.787 seconds (t=457)",
+      "Script killed by script maintenance_steward.js with PID 1838",
+      "main() terminated."
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 0,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 150.21,
+    "pid": 1860,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "mcp-worker-2",
+    "tailProperties": null,
+    "title": "scripts/weaken.js catalyst once mtz34vp4-si6o:cloud:13 0",
+    "threads": 457,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:40:30.661Z",
+    "args": [
+      "computek",
+      "once",
+      "mtz34vp4-si6o:cloud:9",
+      0
+    ],
+    "filename": "scripts/weaken.js",
+    "logs": [
+      "weaken: Executing on 'computek' in 19 minutes 4.345 seconds (t=780)",
+      "Script killed by script maintenance_steward.js with PID 1838",
+      "main() terminated."
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 0,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 150.21,
+    "pid": 1855,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "mcp-worker-2",
+    "tailProperties": null,
+    "title": "scripts/weaken.js computek once mtz34vp4-si6o:cloud:9 0",
+    "threads": 780,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:40:30.661Z",
+    "args": [
+      "rothman-uni",
+      "once",
+      "mtz34vp4-si6o:cloud:6",
+      0
+    ],
+    "filename": "scripts/weaken.js",
+    "logs": [
+      "weaken: Executing on 'rothman-uni' in 17 minutes 44.639 seconds (t=600)",
+      "Script killed by script maintenance_steward.js with PID 1838",
+      "main() terminated."
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 0,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 150.21,
+    "pid": 1852,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "mcp-worker-2",
+    "tailProperties": null,
+    "title": "scripts/weaken.js rothman-uni once mtz34vp4-si6o:cloud:6 0",
+    "threads": 600,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:40:30.661Z",
+    "args": [
+      "silver-helix",
+      "once",
+      "mtz34vp4-si6o:cloud:4",
+      0
+    ],
+    "filename": "scripts/weaken.js",
+    "logs": [
+      "weaken: Executing on 'silver-helix' in 4 minutes 39.776 seconds (t=400)",
+      "Script killed by script maintenance_steward.js with PID 1838",
+      "main() terminated."
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 0,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 150.21,
+    "pid": 1850,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "mcp-worker-2",
+    "tailProperties": null,
+    "title": "scripts/weaken.js silver-helix once mtz34vp4-si6o:cloud:4 0",
+    "threads": 400,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:40:30.199Z",
+    "args": [
+      "n00dles",
+      "once",
+      "mtz34vp4-si6o:cloud:25",
+      1
+    ],
+    "filename": "scripts/grow.js",
+    "logs": [
+      "grow: Executing on 'n00dles' in 9.571 seconds (t=5).",
+      "grow: Available money on 'n00dles' grown by 99.683956%. Gained 28.800 hacking exp (t=5).",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 28.800498387100802,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 9.61,
+    "pid": 1917,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "mcp-worker-2",
+    "tailProperties": null,
+    "title": "scripts/grow.js n00dles once mtz34vp4-si6o:cloud:25 1",
+    "threads": 5,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:40:23.620Z",
+    "args": [
+      "n00dles",
+      "once",
+      "mtz34vp4-si6o:cloud:25",
+      2
+    ],
+    "filename": "scripts/hack.js",
+    "logs": [
+      "hack: Executing on 'n00dles' in 2.991 seconds (t=91)",
+      "hack: Successfully hacked 'n00dles' for $873.615k and 524.169 exp (t=91)",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 524.1690706452346,
+    "onlineMoneyMade": 873615.1177420578,
+    "onlineRunningTime": 3.0100000000000007,
+    "pid": 1918,
+    "parent": 1839,
+    "ramUsage": 1.7,
+    "server": "mcp-worker-2",
+    "tailProperties": null,
+    "title": "scripts/hack.js n00dles once mtz34vp4-si6o:cloud:25 2",
+    "threads": 91,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:40:12.582Z",
+    "args": [
+      "n00dles",
+      "once",
+      "mtz34vp4-si6o:cloud:24",
+      0
+    ],
+    "filename": "scripts/weaken.js",
+    "logs": [
+      "weaken: Executing on 'n00dles' in 11.964 seconds (t=5)",
+      "weaken: 'n00dles' security level weakened to 1. Gained 28.800 hacking exp (t=5)",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 28.800498387100802,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 12.009999999999991,
+    "pid": 1913,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "mcp-worker-2",
+    "tailProperties": null,
+    "title": "scripts/weaken.js n00dles once mtz34vp4-si6o:cloud:24 0",
+    "threads": 5,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:40:10.189Z",
+    "args": [
+      "n00dles",
+      "once",
+      "mtz34vp4-si6o:cloud:24",
+      1
+    ],
+    "filename": "scripts/grow.js",
+    "logs": [
+      "grow: Executing on 'n00dles' in 9.571 seconds (t=5).",
+      "grow: Available money on 'n00dles' grown by 99.683956%. Gained 28.800 hacking exp (t=5).",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 28.800498387100802,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 9.61,
+    "pid": 1914,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "mcp-worker-2",
+    "tailProperties": null,
+    "title": "scripts/grow.js n00dles once mtz34vp4-si6o:cloud:24 1",
+    "threads": 5,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:40:03.609Z",
+    "args": [
+      "n00dles",
+      "once",
+      "mtz34vp4-si6o:cloud:24",
+      2
+    ],
+    "filename": "scripts/hack.js",
+    "logs": [
+      "hack: Executing on 'n00dles' in 2.991 seconds (t=91)",
+      "hack: Successfully hacked 'n00dles' for $873.615k and 524.169 exp (t=91)",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 524.1690706452346,
+    "onlineMoneyMade": 873615.1177420578,
+    "onlineRunningTime": 3.0100000000000007,
+    "pid": 1915,
+    "parent": 1839,
+    "ramUsage": 1.7,
+    "server": "mcp-worker-2",
+    "tailProperties": null,
+    "title": "scripts/hack.js n00dles once mtz34vp4-si6o:cloud:24 2",
+    "threads": 91,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:58.269Z",
+    "args": [
+      "--until",
+      1789259993058.7969
+    ],
+    "filename": "dnet_phish.js",
+    "logs": [],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 0,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 105.01000000000096,
+    "pid": 1864,
+    "parent": 659,
+    "ramUsage": 3.6,
+    "server": "darkweb",
+    "tailProperties": null,
+    "title": "dnet_phish.js --until 1789259993058.7969",
+    "threads": 1,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:54.169Z",
+    "args": [
+      "phantasy",
+      "once",
+      "mtz34vp4-si6o:cloud:21",
+      0
+    ],
+    "filename": "scripts/weaken.js",
+    "logs": [
+      "weaken: Executing on 'phantasy' in 53.574 seconds (t=26)",
+      "weaken: 'phantasy' security level weakened to 7. Gained 408.443 hacking exp (t=26)",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 408.4434316716114,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 53.410000000000224,
+    "pid": 1877,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "mcp-worker-2",
+    "tailProperties": null,
+    "title": "scripts/weaken.js phantasy once mtz34vp4-si6o:cloud:21 0",
+    "threads": 26,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:52.574Z",
+    "args": [
+      "n00dles",
+      "once",
+      "mtz34vp4-si6o:cloud:23",
+      0
+    ],
+    "filename": "scripts/weaken.js",
+    "logs": [
+      "weaken: Executing on 'n00dles' in 11.964 seconds (t=5)",
+      "weaken: 'n00dles' security level weakened to 1. Gained 28.800 hacking exp (t=5)",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 28.800498387100802,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 12.009999999999991,
+    "pid": 1902,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "mcp-worker-1",
+    "tailProperties": null,
+    "title": "scripts/weaken.js n00dles once mtz34vp4-si6o:cloud:23 0",
+    "threads": 5,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:50.181Z",
+    "args": [
+      "n00dles",
+      "once",
+      "mtz34vp4-si6o:cloud:23",
+      1
+    ],
+    "filename": "scripts/grow.js",
+    "logs": [
+      "grow: Executing on 'n00dles' in 9.571 seconds (t=5).",
+      "grow: Available money on 'n00dles' grown by 69.493470%. Gained 28.800 hacking exp (t=5).",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 28.800498387100802,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 9.61,
+    "pid": 1903,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "mcp-worker-1",
+    "tailProperties": null,
+    "title": "scripts/grow.js n00dles once mtz34vp4-si6o:cloud:23 1",
+    "threads": 5,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:43.601Z",
+    "args": [
+      "n00dles",
+      "once",
+      "mtz34vp4-si6o:cloud:23",
+      9
+    ],
+    "filename": "scripts/hack.js",
+    "logs": [
+      "hack: Executing on 'n00dles' in 2.991 seconds (t=2)",
+      "hack: Successfully hacked 'n00dles' for $11.433k and 11.520 exp (t=2)",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 11.52019935484032,
+    "onlineMoneyMade": 11432.910433899915,
+    "onlineRunningTime": 3.0100000000000007,
+    "pid": 1911,
+    "parent": 1839,
+    "ramUsage": 1.7,
+    "server": "I.I.I.I",
+    "tailProperties": null,
+    "title": "scripts/hack.js n00dles once mtz34vp4-si6o:cloud:23 9",
+    "threads": 2,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:43.601Z",
+    "args": [
+      "n00dles",
+      "once",
+      "mtz34vp4-si6o:cloud:23",
+      8
+    ],
+    "filename": "scripts/hack.js",
+    "logs": [
+      "hack: Executing on 'n00dles' in 2.991 seconds (t=9)",
+      "hack: Successfully hacked 'n00dles' for $54.125k and 51.841 exp (t=9)",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 51.84089709678144,
+    "onlineMoneyMade": 54125.44597060081,
+    "onlineRunningTime": 3.0100000000000007,
+    "pid": 1910,
+    "parent": 1839,
+    "ramUsage": 1.7,
+    "server": "nectar-net",
+    "tailProperties": null,
+    "title": "scripts/hack.js n00dles once mtz34vp4-si6o:cloud:23 8",
+    "threads": 9,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:43.601Z",
+    "args": [
+      "n00dles",
+      "once",
+      "mtz34vp4-si6o:cloud:23",
+      7
+    ],
+    "filename": "scripts/hack.js",
+    "logs": [
+      "hack: Executing on 'n00dles' in 2.991 seconds (t=9)",
+      "hack: Successfully hacked 'n00dles' for $56.943k and 51.841 exp (t=9)",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 51.84089709678144,
+    "onlineMoneyMade": 56942.65948988344,
+    "onlineRunningTime": 3.0100000000000007,
+    "pid": 1909,
+    "parent": 1839,
+    "ramUsage": 1.7,
+    "server": "harakiri-sushi",
+    "tailProperties": null,
+    "title": "scripts/hack.js n00dles once mtz34vp4-si6o:cloud:23 7",
+    "threads": 9,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:43.601Z",
+    "args": [
+      "n00dles",
+      "once",
+      "mtz34vp4-si6o:cloud:23",
+      6
+    ],
+    "filename": "scripts/hack.js",
+    "logs": [
+      "hack: Executing on 'n00dles' in 2.991 seconds (t=9)",
+      "hack: Successfully hacked 'n00dles' for $59.907k and 51.841 exp (t=9)",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 51.84089709678144,
+    "onlineMoneyMade": 59907.07181733232,
+    "onlineRunningTime": 3.0100000000000007,
+    "pid": 1908,
+    "parent": 1839,
+    "ramUsage": 1.7,
+    "server": "hong-fang-tea",
+    "tailProperties": null,
+    "title": "scripts/hack.js n00dles once mtz34vp4-si6o:cloud:23 6",
+    "threads": 9,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:43.601Z",
+    "args": [
+      "n00dles",
+      "once",
+      "mtz34vp4-si6o:cloud:23",
+      5
+    ],
+    "filename": "scripts/hack.js",
+    "logs": [
+      "hack: Executing on 'n00dles' in 2.991 seconds (t=9)",
+      "hack: Successfully hacked 'n00dles' for $63.026k and 51.841 exp (t=9)",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 51.84089709678144,
+    "onlineMoneyMade": 63026.403308839166,
+    "onlineRunningTime": 3.0100000000000007,
+    "pid": 1907,
+    "parent": 1839,
+    "ramUsage": 1.7,
+    "server": "joesguns",
+    "tailProperties": null,
+    "title": "scripts/hack.js n00dles once mtz34vp4-si6o:cloud:23 5",
+    "threads": 9,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:43.601Z",
+    "args": [
+      "n00dles",
+      "once",
+      "mtz34vp4-si6o:cloud:23",
+      4
+    ],
+    "filename": "scripts/hack.js",
+    "logs": [
+      "hack: Executing on 'n00dles' in 2.991 seconds (t=9)",
+      "hack: Successfully hacked 'n00dles' for $66.309k and 51.841 exp (t=9)",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 51.84089709678144,
+    "onlineMoneyMade": 66308.78076503979,
+    "onlineRunningTime": 3.0100000000000007,
+    "pid": 1906,
+    "parent": 1839,
+    "ramUsage": 1.7,
+    "server": "sigma-cosmetics",
+    "tailProperties": null,
+    "title": "scripts/hack.js n00dles once mtz34vp4-si6o:cloud:23 4",
+    "threads": 9,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:43.601Z",
+    "args": [
+      "n00dles",
+      "once",
+      "mtz34vp4-si6o:cloud:23",
+      3
+    ],
+    "filename": "scripts/hack.js",
+    "logs": [
+      "hack: Executing on 'n00dles' in 2.991 seconds (t=9)",
+      "hack: Successfully hacked 'n00dles' for $69.763k and 51.841 exp (t=9)",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 51.84089709678144,
+    "onlineMoneyMade": 69762.75890862675,
+    "onlineRunningTime": 3.0100000000000007,
+    "pid": 1905,
+    "parent": 1839,
+    "ramUsage": 1.7,
+    "server": "foodnstuff",
+    "tailProperties": null,
+    "title": "scripts/hack.js n00dles once mtz34vp4-si6o:cloud:23 3",
+    "threads": 9,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:43.601Z",
+    "args": [
+      "n00dles",
+      "once",
+      "mtz34vp4-si6o:cloud:23",
+      2
+    ],
+    "filename": "scripts/hack.js",
+    "logs": [
+      "hack: Executing on 'n00dles' in 2.991 seconds (t=35)",
+      "hack: Successfully hacked 'n00dles' for $336.006k and 201.603 exp (t=35)",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 201.6034887097056,
+    "onlineMoneyMade": 336005.81451617606,
+    "onlineRunningTime": 3.0100000000000007,
+    "pid": 1904,
+    "parent": 1839,
+    "ramUsage": 1.7,
+    "server": "mcp-worker-1",
+    "tailProperties": null,
+    "title": "scripts/hack.js n00dles once mtz34vp4-si6o:cloud:23 2",
+    "threads": 35,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:43.455Z",
+    "args": [
+      "phantasy",
+      "once",
+      "mtz34vp4-si6o:cloud:21",
+      13
+    ],
+    "filename": "scripts/grow.js",
+    "logs": [
+      "grow: Executing on 'phantasy' in 42.859 seconds (t=10).",
+      "grow: Available money on 'phantasy' grown by 0.000000%. Gained 157.094 hacking exp (t=10).",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 157.0936275660044,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 42.81000000000007,
+    "pid": 1890,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "netlink",
+    "tailProperties": null,
+    "title": "scripts/grow.js phantasy once mtz34vp4-si6o:cloud:21 13",
+    "threads": 10,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:43.455Z",
+    "args": [
+      "phantasy",
+      "once",
+      "mtz34vp4-si6o:cloud:21",
+      12
+    ],
+    "filename": "scripts/grow.js",
+    "logs": [
+      "grow: Executing on 'phantasy' in 42.859 seconds (t=16).",
+      "grow: Available money on 'phantasy' grown by 0.358842%. Gained 251.350 hacking exp (t=16).",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 251.349804105607,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 42.81000000000007,
+    "pid": 1889,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "mcp-worker-1",
+    "tailProperties": null,
+    "title": "scripts/grow.js phantasy once mtz34vp4-si6o:cloud:21 12",
+    "threads": 16,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:43.455Z",
+    "args": [
+      "phantasy",
+      "once",
+      "mtz34vp4-si6o:cloud:21",
+      11
+    ],
+    "filename": "scripts/grow.js",
+    "logs": [
+      "grow: Executing on 'phantasy' in 42.859 seconds (t=18).",
+      "grow: Available money on 'phantasy' grown by 3.537290%. Gained 282.769 hacking exp (t=18).",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 282.76852961880786,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 42.81000000000007,
+    "pid": 1888,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "rothman-uni",
+    "tailProperties": null,
+    "title": "scripts/grow.js phantasy once mtz34vp4-si6o:cloud:21 11",
+    "threads": 18,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:43.454Z",
+    "args": [
+      "phantasy",
+      "once",
+      "mtz34vp4-si6o:cloud:21",
+      10
+    ],
+    "filename": "scripts/grow.js",
+    "logs": [
+      "grow: Executing on 'phantasy' in 42.859 seconds (t=18).",
+      "grow: Available money on 'phantasy' grown by 3.348036%. Gained 282.769 hacking exp (t=18).",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 282.76852961880786,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 42.81000000000007,
+    "pid": 1887,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "catalyst",
+    "tailProperties": null,
+    "title": "scripts/grow.js phantasy once mtz34vp4-si6o:cloud:21 10",
+    "threads": 18,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:43.454Z",
+    "args": [
+      "phantasy",
+      "once",
+      "mtz34vp4-si6o:cloud:21",
+      9
+    ],
+    "filename": "scripts/grow.js",
+    "logs": [
+      "grow: Executing on 'phantasy' in 42.859 seconds (t=18).",
+      "grow: Available money on 'phantasy' grown by 3.159128%. Gained 282.769 hacking exp (t=18).",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 282.76852961880786,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 42.81000000000007,
+    "pid": 1886,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "omega-net",
+    "tailProperties": null,
+    "title": "scripts/grow.js phantasy once mtz34vp4-si6o:cloud:21 9",
+    "threads": 18,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:43.454Z",
+    "args": [
+      "phantasy",
+      "once",
+      "mtz34vp4-si6o:cloud:21",
+      8
+    ],
+    "filename": "scripts/grow.js",
+    "logs": [
+      "grow: Executing on 'phantasy' in 42.859 seconds (t=18).",
+      "grow: Available money on 'phantasy' grown by 3.348036%. Gained 282.769 hacking exp (t=18).",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 282.76852961880786,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 42.81000000000007,
+    "pid": 1885,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "neo-net",
+    "tailProperties": null,
+    "title": "scripts/grow.js phantasy once mtz34vp4-si6o:cloud:21 8",
+    "threads": 18,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:43.454Z",
+    "args": [
+      "phantasy",
+      "once",
+      "mtz34vp4-si6o:cloud:21",
+      7
+    ],
+    "filename": "scripts/grow.js",
+    "logs": [
+      "grow: Executing on 'phantasy' in 42.859 seconds (t=18).",
+      "grow: Available money on 'phantasy' grown by 3.348036%. Gained 282.769 hacking exp (t=18).",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 282.76852961880786,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 42.81000000000007,
+    "pid": 1884,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "phantasy",
+    "tailProperties": null,
+    "title": "scripts/grow.js phantasy once mtz34vp4-si6o:cloud:21 7",
+    "threads": 18,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:43.454Z",
+    "args": [
+      "phantasy",
+      "once",
+      "mtz34vp4-si6o:cloud:21",
+      6
+    ],
+    "filename": "scripts/grow.js",
+    "logs": [
+      "grow: Executing on 'phantasy' in 42.859 seconds (t=18).",
+      "grow: Available money on 'phantasy' grown by 2.970565%. Gained 282.769 hacking exp (t=18).",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 282.76852961880786,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 42.81000000000007,
+    "pid": 1883,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "max-hardware",
+    "tailProperties": null,
+    "title": "scripts/grow.js phantasy once mtz34vp4-si6o:cloud:21 6",
+    "threads": 18,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:43.454Z",
+    "args": [
+      "phantasy",
+      "once",
+      "mtz34vp4-si6o:cloud:21",
+      5
+    ],
+    "filename": "scripts/grow.js",
+    "logs": [
+      "grow: Executing on 'phantasy' in 42.859 seconds (t=18).",
+      "grow: Available money on 'phantasy' grown by 3.159128%. Gained 282.769 hacking exp (t=18).",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 282.76852961880786,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 42.81000000000007,
+    "pid": 1882,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "zer0",
+    "tailProperties": null,
+    "title": "scripts/grow.js phantasy once mtz34vp4-si6o:cloud:21 5",
+    "threads": 18,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:43.454Z",
+    "args": [
+      "phantasy",
+      "once",
+      "mtz34vp4-si6o:cloud:21",
+      4
+    ],
+    "filename": "scripts/grow.js",
+    "logs": [
+      "grow: Executing on 'phantasy' in 42.859 seconds (t=18).",
+      "grow: Available money on 'phantasy' grown by 2.970565%. Gained 282.769 hacking exp (t=18).",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 282.76852961880786,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 42.81000000000007,
+    "pid": 1881,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "iron-gym",
+    "tailProperties": null,
+    "title": "scripts/grow.js phantasy once mtz34vp4-si6o:cloud:21 4",
+    "threads": 18,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:43.454Z",
+    "args": [
+      "phantasy",
+      "once",
+      "mtz34vp4-si6o:cloud:21",
+      3
+    ],
+    "filename": "scripts/grow.js",
+    "logs": [
+      "grow: Executing on 'phantasy' in 42.859 seconds (t=36).",
+      "grow: Available money on 'phantasy' grown by 7.199707%. Gained 565.537 hacking exp (t=36).",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 565.5370592376157,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 42.81000000000007,
+    "pid": 1880,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "summit-uni",
+    "tailProperties": null,
+    "title": "scripts/grow.js phantasy once mtz34vp4-si6o:cloud:21 3",
+    "threads": 36,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:43.454Z",
+    "args": [
+      "phantasy",
+      "once",
+      "mtz34vp4-si6o:cloud:21",
+      2
+    ],
+    "filename": "scripts/grow.js",
+    "logs": [
+      "grow: Executing on 'phantasy' in 42.859 seconds (t=36).",
+      "grow: Available money on 'phantasy' grown by 6.808168%. Gained 565.537 hacking exp (t=36).",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 565.5370592376157,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 42.81000000000007,
+    "pid": 1879,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "silver-helix",
+    "tailProperties": null,
+    "title": "scripts/grow.js phantasy once mtz34vp4-si6o:cloud:21 2",
+    "threads": 36,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:43.454Z",
+    "args": [
+      "phantasy",
+      "once",
+      "mtz34vp4-si6o:cloud:21",
+      1
+    ],
+    "filename": "scripts/grow.js",
+    "logs": [
+      "grow: Executing on 'phantasy' in 42.859 seconds (t=72).",
+      "grow: Available money on 'phantasy' grown by 12.422284%. Gained 1.131k hacking exp (t=72).",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 1131.0741184752314,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 42.81000000000007,
+    "pid": 1878,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "mcp-worker-2",
+    "tailProperties": null,
+    "title": "scripts/grow.js phantasy once mtz34vp4-si6o:cloud:21 1",
+    "threads": 72,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:32.568Z",
+    "args": [
+      "n00dles",
+      "once",
+      "mtz34vp4-si6o:cloud:22",
+      0
+    ],
+    "filename": "scripts/weaken.js",
+    "logs": [
+      "weaken: Executing on 'n00dles' in 11.964 seconds (t=5)",
+      "weaken: 'n00dles' security level weakened to 1. Gained 28.800 hacking exp (t=5)",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 28.800498387100802,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 11.809999999999992,
+    "pid": 1892,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "mcp-worker-1",
+    "tailProperties": null,
+    "title": "scripts/weaken.js n00dles once mtz34vp4-si6o:cloud:22 0",
+    "threads": 5,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:30.175Z",
+    "args": [
+      "n00dles",
+      "once",
+      "mtz34vp4-si6o:cloud:22",
+      1
+    ],
+    "filename": "scripts/grow.js",
+    "logs": [
+      "grow: Executing on 'n00dles' in 9.571 seconds (t=5).",
+      "grow: Available money on 'n00dles' grown by 69.493470%. Gained 28.800 hacking exp (t=5).",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 28.800498387100802,
+    "onlineMoneyMade": 0,
+    "onlineRunningTime": 9.61,
+    "pid": 1893,
+    "parent": 1839,
+    "ramUsage": 1.75,
+    "server": "mcp-worker-1",
+    "tailProperties": null,
+    "title": "scripts/grow.js n00dles once mtz34vp4-si6o:cloud:22 1",
+    "threads": 5,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:23.594Z",
+    "args": [
+      "n00dles",
+      "once",
+      "mtz34vp4-si6o:cloud:22",
+      9
+    ],
+    "filename": "scripts/hack.js",
+    "logs": [
+      "hack: Executing on 'n00dles' in 2.991 seconds (t=2)",
+      "hack: Successfully hacked 'n00dles' for $11.433k and 11.520 exp (t=2)",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 11.52019935484032,
+    "onlineMoneyMade": 11432.910433899915,
+    "onlineRunningTime": 3.0100000000000007,
+    "pid": 1901,
+    "parent": 1839,
+    "ramUsage": 1.7,
+    "server": "I.I.I.I",
+    "tailProperties": null,
+    "title": "scripts/hack.js n00dles once mtz34vp4-si6o:cloud:22 9",
+    "threads": 2,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:23.594Z",
+    "args": [
+      "n00dles",
+      "once",
+      "mtz34vp4-si6o:cloud:22",
+      8
+    ],
+    "filename": "scripts/hack.js",
+    "logs": [
+      "hack: Executing on 'n00dles' in 2.991 seconds (t=9)",
+      "hack: Successfully hacked 'n00dles' for $54.125k and 51.841 exp (t=9)",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 51.84089709678144,
+    "onlineMoneyMade": 54125.44597060081,
+    "onlineRunningTime": 3.0100000000000007,
+    "pid": 1900,
+    "parent": 1839,
+    "ramUsage": 1.7,
+    "server": "nectar-net",
+    "tailProperties": null,
+    "title": "scripts/hack.js n00dles once mtz34vp4-si6o:cloud:22 8",
+    "threads": 9,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:23.594Z",
+    "args": [
+      "n00dles",
+      "once",
+      "mtz34vp4-si6o:cloud:22",
+      7
+    ],
+    "filename": "scripts/hack.js",
+    "logs": [
+      "hack: Executing on 'n00dles' in 2.991 seconds (t=9)",
+      "hack: Successfully hacked 'n00dles' for $56.943k and 51.841 exp (t=9)",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 51.84089709678144,
+    "onlineMoneyMade": 56942.65948988344,
+    "onlineRunningTime": 3.0100000000000007,
+    "pid": 1899,
+    "parent": 1839,
+    "ramUsage": 1.7,
+    "server": "harakiri-sushi",
+    "tailProperties": null,
+    "title": "scripts/hack.js n00dles once mtz34vp4-si6o:cloud:22 7",
+    "threads": 9,
+    "temporary": false
+  },
+  {
+    "timeOfDeath": "2026-09-13T00:39:23.594Z",
+    "args": [
+      "n00dles",
+      "once",
+      "mtz34vp4-si6o:cloud:22",
+      6
+    ],
+    "filename": "scripts/hack.js",
+    "logs": [
+      "hack: Executing on 'n00dles' in 2.991 seconds (t=9)",
+      "hack: Successfully hacked 'n00dles' for $59.907k and 51.841 exp (t=9)",
+      "Script finished running"
+    ],
+    "offlineExpGained": 0,
+    "offlineMoneyMade": 0,
+    "offlineRunningTime": 0.01,
+    "onlineExpGained": 51.84089709678144,
+    "onlineMoneyMade": 59907.07181733232,
+    "onlineRunningTime": 3.0100000000000007,
+    "pid": 1898,
+    "parent": 1839,
+    "ramUsage": 1.7,
+    "server": "hong-fang-tea",
+    "tailProperties": null,
+    "title": "scripts/hack.js n00dles once mtz34vp4-si6o:cloud:22 6",
+    "threads": 9,
+    "temporary": false
+  }
+]

@@ -1,5 +1,7 @@
 # Processes
 
+September 12 finite-worker compatibility: `cct_worker_pool.js` treats action workers whose second argument is `once` as protected processes. Maintenance augmentation assessments and contract work can no longer reclaim their hosts mid-cohort; they may report no safe worker until capacity becomes available. Legacy action loops are reclaimed only when free RAM is insufficient. Running maintenance and contract callers must restart to load this module change.
+
 What each script is, what it reads and writes, and how they fit together —
 from rooting a server through to restarting the bot without a keystroke.
 
@@ -329,6 +331,14 @@ then sat idle killing scripts every 60 seconds.
 The same hack budget remains active during regrowth, avoiding a cloud-sized hack burst while slower growth is pending. Target scores still assume older balanced-pool behavior and are approximate ranking inputs rather than achieved capped income. Deployment evidence and rollback are in `full-money-harvest.md`; the read-only cloud/multitarget assessment is in `cloud-multitarget-2026-09-12.md`.
 
 #### The work-weight calculation
+
+`get_target_stats.js` is an opt-in five-second live panel for only the targets in current `mcp_status.json` (multi-target cohorts or the single selected target). It reads live money/security and aggregates current hack/grow/weaken processes across status worker hosts, so cloud work appears against its target rather than the execution host. Compact K/M/G/T/P money, phase, target count and objective are shown; stale manager data is flagged after 30 seconds. No args; `run get_target_stats.js`. It supersedes only prior copies of itself, closes their tails and sizes the window for every target line; it does not replace `get_stats.js`.
+
+**Cloud multi-target batches (`mcp_cloud.js`, September 12).** The existing MCP remains the sole controller and share owner. It reads durable `mcp_cloud_control.json`: `enabled` boolean, required finite `expiresAt` timestamp, `harvestFraction` (effective 0.1–0.75, default 0.5), `maxTargets` (effective 1–32, default 16), and operator metadata. Money/reputation enter this mode; XP bypasses it. Initial transition retires the single-target action allocation once. Targets prepare security, then actual money deficit, then harvest/restore/compensate in finite cohorts. All grow/weaken RAM is reserved before hack; incomplete placement launches nothing, failed execution rolls back that cohort. Slow calls finish before another cohort on the same target. Multiple targets may share cloud hosts under unique batch arguments. One-core sizing is conservative for workers with extra cores. Disabled/expired control releases owned cohorts and returns to the single-target fallback. No purchase/reset/player-activity calls.
+
+It writes both `mcp_status.json` (HUD/maintenance compatibility) and `mcp_cloud_status.json`, recording effective control, target phases/counts/observed balances, process IDs/hosts, waiting demand, launch failures and completed cohorts. Batch start/completion/stop/failure decisions use the existing MCP event stream. Income derives from the game's cumulative hacking money-source delta, including any other hacking scripts; XP rate is currently unavailable in this mode. This is a simultaneous cohort scheduler, not a tightly timed overlapping batch scheduler. Source requires `Formulas.exe`. Ken explicitly requested direct Steam testing rather than the proposed browser/pilot sequence.
+
+If full preparation cannot fit, `fitCloudPreparation` requests the grow/weaken or security-only portion that fits free RAM; it never partially funds a harvest. Events mark `partialPreparation`, and later cohorts remeasure the actual remaining deficit. `set_cloud_mode.js [on|off|status] [minutes=120]` writes durable control, with 50% withdrawal, 32 slots and validated 1–1440 minute expiry. Control changes take effect on the next MCP tick; the game-owned control/status files are ignored by Git and never enter the source sync manifest. The module reports its started source fingerprint alongside MCP's manager version.
 
 **2026-08-14 (R1):** `buildPlan` no longer picks a hack/grow split off a
 fixed RAM-fraction table keyed by which `moneyPct` tier the target sits in.

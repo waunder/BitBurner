@@ -1,0 +1,11 @@
+{
+  "mcp.js": "6107228f4d3a4c136e1a6900a9a2998d32e6011ec5d1f179c80653a4b0e4499c",
+  "mcp_cloud.js": "7cf8b2ca2b7840c05d3a5f7b612dd62ca3034f4bf6b4610e456059e5fe6a07c5",
+  "mcp_logic.js": "e8965f1df1bcd7ebcc9a81e9b7dfd45313f3ffbd18ad2af67185e69a063d1b0b",
+  "scripts/hack.js": "1e8617ec106a042350b0b6e2a80eafb4eee11ffe0e8263d98af2b47ebb916842",
+  "scripts/grow.js": "70e36d4c604535ee948f43a0ecd277d1f850b04cec70de89b4a0e98e33194122",
+  "scripts/weaken.js": "960655dd600b3727822ef358367a9e67ae74a6157fd693ce7b28e4ecc43c54a8",
+  "hud_consolidated.js": "a20b54e82d2966712e3a09c498bb6a28b2d82a8ee036631766646aa29a6ba1d7",
+  "get_target_stats.js": "5c673eda8e93525c35646f7178692232add2e27fe90ef1da50f85a33372870d5",
+  "set_cloud_mode.js": "a901fe2554e1db90e6685d6df0cb66a4e1466ed7e57ae5ef4f4ce7142300ae6d"
+}

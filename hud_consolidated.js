@@ -102,7 +102,9 @@ function mcpStatus(ns, now) {
     expanded: [
       `Status: ${running ? "RUNNING" : "STOPPED"}`,
       `Objective: ${objective}${running ? "" : " (last reported)"}`,
-      `Target: ${target}`,
+      ...(status.targets ? [`Targets: ${status.targets.length} (${status.targets.filter(t=>t.phase==='harvest').length} harvesting)`,
+        ...status.targets.map(t=>`  ${t.target}: ${t.phase} ${(t.moneyPct*100).toFixed(0)}%`),
+        `Cloud: ${Math.round(status.cloudControl?.effectiveFraction*100)}% withdrawal; expires ${new Date(status.cloudControl?.expiresAt).toLocaleTimeString()}`] : [`Target: ${target}`]),
       `Rate: ${compact(rate, 2)}/s (avg ${compact(avgRate, 2)}/s)`,
       `Total hacked: ${compact(money)}`,
       `Deployment: ${deployment}`,

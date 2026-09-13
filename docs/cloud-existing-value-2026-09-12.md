@@ -1,0 +1,15 @@
+# Value of the five existing 4TB workers
+
+Read-only assessment requested by Ken: assess existing capacity for money, XP and reputation, not additional purchases. Snapshot 1789261681500, same manager run mtz34vp4-si6o as the start snapshot 1789259880571.
+
+Five cloud hosts supply 20,480GB of the 21,412GB MCP worker pool (95.65%). Cloud RAM in use is 18,679.15GB (91.21%), including the 254.2GB share worker. There are 22 active target cohorts, 363 completed cohorts, no current launch failures or invariant violations. Some early completions were maintenance cancellations, so cohort count is not a successful-harvest count. Large initial security/money preparations remain in progress.
+
+| Objective | Observed value | Limit on interpretation |
+|---|---|---|
+| Money | $26.4789B accumulated over 1,800.929 seconds: $14.7023M/sec average, $52.93B/hour equivalent; latest sample $34.3425M/sec. Existing cloud capacity supports simultaneous target restoration/harvest instead of saturating a single target. | Combined scheduler output, not isolated cloud income or a matched five-versus-one experiment. Startup, changing hacking level and additional servers during the run affect the rate. |
+| XP | H502→527; player hacking XP 5,495,438→8,651,367: +3,155,929, about 1,752/sec over the same window, despite reputation mode. | Player XP includes faction work and other scripts. Cloud status expPerSec=0 is an unimplemented telemetry field, not zero earned XP. Dedicated XP mode was not tested in this window. |
+| Reputation | One cloud host runs 62 share threads/254.2GB, power 1.169990: about +17% to hacking faction-work reputation versus no sharing at identical skills/work. The other cloud RAM supplies money/XP. | The 256GB policy cap and one-host allocator mean the other four servers add zero direct sharing benefit. Earlier actual NiteSec on/off test measured +14.96% at a different allocation; it is not today's controlled rate. Hacking gains can indirectly improve faction work. |
+
+Recommendation: existing multiple large servers are valuable for money and XP; use them across targets for money and concentrate on the best measured thread-second XP target in XP mode. More simultaneous targets are not intrinsically better for XP, and additional threads do not reduce individual action time. Maintain bounded security compensation. Keep the current small sharing reserve in reputation mode unless reputation is the overriding bottleneck; repointing the remaining ~20TB to sharing requires policy/allocator changes and sacrifices their money/XP output for sharply diminishing returns.
+
+Game primary sources: https://github.com/bitburner-official/bitburner-src/blob/dev/src/Hacking.ts (experience and durations), https://github.com/bitburner-official/bitburner-src/blob/dev/src/PersonObjects/formulas/skill.ts (logarithmic skill progression), https://github.com/bitburner-official/bitburner-src/blob/dev/markdown/bitburner.ns.getsharepower.md (decreasing share returns). Local live evidence: existing-value-live.json and steam-final-start.json in evidence/cloud-multi-2026-09-12.

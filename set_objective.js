@@ -56,11 +56,11 @@ export async function main(ns) {
   if (arg === "reputation") {
     let policy
     try { policy = JSON.parse(ns.read("reputation_config.json") || "{}") } catch { policy = {} }
-    if (policy.enabled !== true || !Number.isFinite(policy.ramGb) || policy.ramGb <= 0 || policy.ramGb > 256) {
+    if (policy.enabled !== true || (policy.allocation !== 'all' && (!Number.isFinite(policy.ramGb) || policy.ramGb <= 0 || policy.ramGb > 256))) {
       ns.tprint("set_objective: reputation sharing is disabled or its budget is invalid; objective unchanged. The historical Steam share restriction must be resolved before enabling reputation_config.json.")
       return
     }
-    ns.tprint("set_objective: reputation reserves up to 256GB for sharing; remaining workers farm money. Sharing requires active faction work, which you must select in the game.")
+    ns.tprint("set_objective: reputation maximizes sharing across available workers when allocation=all. Select active faction work in the game. Money or xp restores hacking.")
   }
 
   const file = "mcp_objective_override.txt"

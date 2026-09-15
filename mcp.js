@@ -22,7 +22,7 @@ import {
   missingActionLaunchPlan,
 } from "mcp_logic.js"
 import { auditTargetModels } from "./formulas_logic.js"
-import { reconcileReputation } from "./mcp_reputation.js"
+import { reconcileReputation, readReputationConfig } from "./mcp_reputation.js"
 import { cloudTick } from "./mcp_cloud.js"
 
 // Tunables are declared with `let`, not `const`, so loadConfig can reassign
@@ -1330,6 +1330,14 @@ export async function main(ns) {
       invariants.check("reputationReconciles", false, { objective: OBJECTIVE, error: String(error) })
     }
     try {
+      if(OBJECTIVE==='reputation' && readReputationConfig(ns).allocation==='all') {
+        await cloudTick(ns,cloudState,{servers,workers,runId,objective:'xp',emit:(kind,inputs)=>events.emit(kind,inputs)})
+        const sharingHosts=workers.map(host=>({host,maxRam:ns.getServerMaxRam(host),usedRam:ns.getServerUsedRam(host),freeRam:ns.getServerMaxRam(host)-ns.getServerUsedRam(host),actions:[]}))
+        const status={ts:Date.now(),runId,scriptVersion,workerMode:'share',target:null,targets:[],workers:sharingHosts,cloudWorkers:sharingHosts.filter(h=>ns.getServer(h.host).purchasedByPlayer),rate:0,avgRate:0,incomePerSec:0,expPerSec:ns.getTotalScriptExpGain(),reputation,player:ns.getPlayer(),config:{OBJECTIVE},objectiveOverrideActive,invariantViolations:invariants.counts,recentEvents:events.recent,workerLaunchFailures:[],ramUtilization:sharingHosts.reduce((n,h)=>n+h.usedRam,0)/Math.max(1,sharingHosts.reduce((n,h)=>n+h.maxRam,0))}
+        await ns.write('mcp_status.json',JSON.stringify(status),'w')
+        await ns.sleep(LOOP_SLEEP_MS)
+        continue
+      }
       const cloud = await cloudTick(ns, cloudState, { servers, workers, runId, objective: OBJECTIVE, emit: (kind,inputs)=>events.emit(kind,inputs) })
       if (cloud) {
         invariants.check('workerLaunchSucceeded',cloud.workerLaunchFailures.length===0,{failures:cloud.workerLaunchFailures})

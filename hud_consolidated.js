@@ -97,6 +97,12 @@ function mcpStatus(ns, now) {
   const actionSummary = `${weakenTotal}w ${growTotal}g ${hackTotal}h`
   const deployment = `${workerCount}h ${threadTotal}t (${actionSummary})`
 
+  if(status.reputation?.allocation==='all' && objective==='reputation') {
+    const rep=status.reputation
+    return {compact:`${running?'✓':'⊘'} reputation ${compact(rep.ramGb)}GB share ×${Number(rep.power||1).toFixed(3)}`,
+      expanded:[`Status: ${rep.state}`,`Objective: reputation — maximum sharing`,`Sharing: ${rep.hostCount} hosts, ${rep.threads} threads, ${compact(rep.ramGb)}GB`,`Power: ×${Number(rep.power||1).toFixed(4)}`,rep.reason,`Money or XP restores hacking`]}
+  }
+
   return {
     compact: `${running ? "✓" : "⊘"} ${objective} ${compact(moneyPerMin, 1)}/m ${actionSummary}`,
     expanded: [

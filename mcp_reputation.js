@@ -8,7 +8,7 @@ const ACTIONS = new Set(["scripts/hack.js", "scripts/grow.js", "scripts/weaken.j
 export function readReputationConfig(ns) {
   try {
     const x = JSON.parse(ns.read(REPUTATION_CONFIG) || "{}")
-    if (typeof x.enabled !== "boolean" || !Number.isFinite(x.ramGb) || x.ramGb <= 0 || x.ramGb > MAX_SHARE_RAM_GB) {
+    if (typeof x.enabled !== "boolean" || (x.allocation !== "all" && (!Number.isFinite(x.ramGb) || x.ramGb <= 0 || x.ramGb > MAX_SHARE_RAM_GB))) {
       return { enabled: false, ramGb: 0, error: "Invalid reputation configuration" }
     }
     return x
@@ -25,6 +25,7 @@ export function chooseShareHost(hosts, scriptRam, budget) {
 export async function reconcileReputation(ns, prior, { objective, hosts, reserveHomeGb, runId, emit }) {
   const now = Date.now()
   const config = readReputationConfig(ns)
+  if (config.allocation === "all") return reconcileAllReputation(ns, prior, {objective,hosts,reserveHomeGb,runId,emit}, config)
   const desired = objective === "reputation" && config.enabled
   const state = { ...prior, ts: now, requested: objective === "reputation", config,
     factionWork: "unverified: sharing only benefits active faction work; choose it in the game",
@@ -65,4 +66,42 @@ export async function reconcileReputation(ns, prior, { objective, hosts, reserve
   return { ...state, state: "sharing", host: choice.host, pid, threads: choice.threads, ramGb: choice.threads * scriptRam,
     retryAt: now + RETRY_MS, startedAt: now, reviewAt: now + 30 * 60_000, reason: state.factionWork,
     roi: { baselinePower: state.power, marginalReputation: null, confidence: "unmeasured", opportunityCost: "Reserved RAM cannot earn hacking money or XP", stopRule: "Stop on objective change, disabled policy or owner exit; review after 30 minutes" } }
+}
+
+async function reconcileAllReputation(ns, prior, {objective,hosts,reserveHomeGb,runId,emit}, config) {
+  const now=Date.now(), signature=`${runId}:all`, ram=ns.getScriptRam(SHARE_FILE,'home')
+  const desired=objective==='reputation' && config.enabled
+  const allocations=[], failures=[]
+  for(const host of new Set(hosts)) {
+    let owned=ns.ps(host).filter(p=>p.filename.replace(/^\//,'')===SHARE_FILE)
+    for(const p of owned) if(!desired || Number(p.args[0])!==ns.pid || p.args[1]!==signature || owned.length>1) {
+      if(!ns.kill(p.pid,host))throw Error(`Could not retire reputation worker ${p.pid}`)
+      emit('reputation_stop',{host,pid:p.pid,objective,signature})
+    }
+    if(!desired)continue
+    if(!(ram>0))throw Error('Missing reputation worker source')
+    const processes=ns.ps(host)
+    const live=processes.find(p=>p.filename.replace(/^\//,'')===SHARE_FILE && Number(p.args[0])===ns.pid && p.args[1]===signature)
+    const actions=processes.filter(p=>ACTIONS.has(p.filename.replace(/^\//,'')))
+    const reclaim=actions.reduce((n,p)=>n+p.threads*ns.getScriptRam(p.filename,host),0)
+    const available=Math.max(0,ns.getServerMaxRam(host)-ns.getServerUsedRam(host)+reclaim+(live?.threads||0)*ram-(host==='home'?reserveHomeGb:0))
+    const threads=Math.floor((available+1e-9)/ram)
+    if(live && live.threads===threads && !actions.length) {allocations.push({host,pid:live.pid,threads,ramGb:threads*ram});continue}
+    if(now<(prior.retryAt||0)) {if(live)allocations.push({host,pid:live.pid,threads:live.threads,ramGb:live.threads*ram});continue}
+    if(threads && host!=='home' && !(await ns.scp(SHARE_FILE,host,'home')))throw Error(`Share source copy failed: ${host}`)
+    if(live && !ns.kill(live.pid,host))throw Error(`Could not resize reputation worker ${live.pid}`)
+    for(const p of actions) if(!ns.kill(p.pid,host))throw Error(`Could not release worker ${p.pid}`)
+    if(!threads)continue
+    const pid=ns.exec(SHARE_FILE,host,threads,ns.pid,signature)
+    emit('reputation_start',{actionId:`${runId}:share:${host}:${now}`,host,pid,threads,ramGb:threads*ram,available,reserveHomeGb,allocation:'all'})
+    if(!pid) {failures.push({host,threads});continue}
+    allocations.push({host,pid,threads,ramGb:threads*ram})
+  }
+  if(failures.length)throw Error(`Share launch failed: ${JSON.stringify(failures)}`)
+  return {ts:now,requested:objective==='reputation',config,state:desired?(allocations.length?'sharing':'waiting'):'off',
+    reason:desired?'Maximum sharing; requires active faction work':'Objective is not reputation',
+    factionWork:'Select active faction work in the game',power:ns.getSharePower(),allocations,
+    host:allocations[0]?.host,pid:allocations[0]?.pid,hostCount:allocations.length,
+    threads:allocations.reduce((n,a)=>n+a.threads,0),ramGb:allocations.reduce((n,a)=>n+a.ramGb,0),
+    allocation:'all',retryAt:0,roi:{opportunityCost:'All available worker RAM shares instead of earning hacking money/XP',confidence:'Measure reputation with unchanged faction work',stopRule:'Objective change or disabled policy'}}
 }

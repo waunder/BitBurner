@@ -1,5 +1,5 @@
 {
   "enabled": true,
-  "ramGb": 256,
-  "note": "Ken explicitly overrode the historical sharing restriction and authorized Steam activation on 2026-09-12. Disable enabled to stop owned sharing."
+  "allocation": "all",
+  "note": "Ken directs reputation mode to maximize sharing across available worker RAM. Disable enabled or select money/xp to stop owned sharing."
 }

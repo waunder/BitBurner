@@ -1058,9 +1058,11 @@ function describeRunningActions(ns, running, host) {
 // script(s) whose desired count actually changed. weakenThreadsToOffset
 // moved with pass 1 since its only callers did.
 //
-// MCP launches finite ("once") jobs. A matching-target call completes and
-// exits before resizing; missing complementary jobs may start in free RAM.
-// Legacy looping jobs retain the old tolerance/age rule during migration.
+// MCP keeps its normal single-target workers running continuously. Planning
+// stays on home and can reassess every tick without creating an idle gap on
+// every completed action. A material target or allocation change still uses
+// the established tolerance/age rule before replacing the affected worker.
+// The separately controlled cloud multi-target scheduler owns finite cohorts.
 // Release all changed jobs before launching weaken/grow/hack replacements.
 function allocateThreads(ns, host, target, plan, desired, tolerance, actionDurationsS) {
   /** @type {{script: string, threads: number}[]} */
@@ -1101,7 +1103,7 @@ function allocateThreads(ns, host, target, plan, desired, tolerance, actionDurat
         allocation.actions.push({ script, threads: proc.threads })
       }
       for (const { script, threads } of missingLaunches) {
-        if (ns.exec(`/scripts/${script}.js`, host, threads, target, "once") !== 0) {
+        if (ns.exec(`/scripts/${script}.js`, host, threads, target) !== 0) {
           allocation.actions.push({ script, threads })
         } else {
           allocation.launchFailures.push({host, script, threads, target, freeRam: getHostFreeRam(ns, host)})
@@ -1146,7 +1148,7 @@ function allocateThreads(ns, host, target, plan, desired, tolerance, actionDurat
       continue
     }
     if (want > 0) {
-      if (ns.exec(`/scripts/${script}.js`, host, want, target, "once") !== 0) {
+      if (ns.exec(`/scripts/${script}.js`, host, want, target) !== 0) {
         allocation.actions.push({ script, threads: want })
       } else {
         allocation.launchFailures.push({host, script, threads: want, target, freeRam: getHostFreeRam(ns, host)})
@@ -1882,7 +1884,7 @@ export async function main(ns) {
       ts: Date.now(),
       runId: runId,
       scriptVersion: scriptVersion,
-      workerMode: "finite",
+      workerMode: "continuous",
       harvestHackBudget: plan.hackBudget ?? null,
       workerLaunchFailures,
       player: {

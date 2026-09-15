@@ -18,7 +18,11 @@ const run=(ns,desired,target='target')=>allocate(ns,'cloud',target,{type:'weaken
 test('full grow host releases RAM before new weaken launch',()=>{
  const ns=fixture();const r=run(ns,{grow:90,weaken:10,hack:0})
  assert.deepEqual(r.actions,[{script:'weaken',threads:10},{script:'grow',threads:90}]);assert.deepEqual(r.launchFailures,[])
- assert.equal(ns.procs[0].args[1],'once')
+ assert.equal(ns.procs[0].args[1],undefined)
+})
+test('normal MCP workers launch continuously',()=>{
+ const ns=fixture();run(ns,{grow:90,weaken:10,hack:0})
+ assert.ok(ns.procs.every(p=>p.args.length===1))
 })
 test('finite calls are preserved despite a complete allocation change',()=>{
  const ns=fixture(['target','once']);run(ns,{grow:0,weaken:100,hack:0});assert.deepEqual(ns.calls,[])

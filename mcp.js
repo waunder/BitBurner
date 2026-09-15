@@ -978,11 +978,6 @@ function buildPlan(ns, target, wasWorking) {
   // formula (and computeWorkWeights's balance-point math) rests on.
   const hackPercentPerThread = ns.hackAnalyze(target)
   const growLogPerThread = Math.LN2 / ns.growthAnalyze(target, 2)
-  if (OBJECTIVE !== "xp" && moneyPct >= 1 - SECURITY_EPSILON && hackPercentPerThread > 0) {
-    return {type: "work", currentSecurity, moneyPct, weightBucket: "full-money-harvest",
-      weights: {hack: 1, grow: 0}, harvestOnly: true, hackBudget: Math.max(1, Math.floor(0.10 / hackPercentPerThread)),
-      debugWorkWeights: {hackPercentPerThread, harvestFraction: 0.10}}
-  }
   const { weightBucket, weights, balancedHackShare, growPerHack } = computeWorkWeights({
     objective: OBJECTIVE,
     hackPercentPerThread,

@@ -806,6 +806,10 @@ PULL_FILES = [
 ]
 
 PULL_POLL_S = 2.0  # mirrors SYNC_POLL_S / mcp_supervisor.js's POLL_MS
+# `ctl-push` transports a complete source file as one local JSON line. MCP is
+# already larger than asyncio's default 64 KiB stream limit, so keep a bounded
+# release-sized allowance on both ends of this loopback-only protocol.
+CONTROL_MESSAGE_LIMIT = 1_048_576
 
 
 def _remote_name(relpath: str) -> str:
@@ -1143,7 +1147,8 @@ async def cmd_daemon(args):
     daemon = TriggerDaemon(rpc, server=args.server, sync_enabled=sync_enabled, pull_enabled=pull_enabled)
     try:
         control_server = await asyncio.start_server(
-            daemon.handle_control_connection, "127.0.0.1", args.control_port
+            daemon.handle_control_connection, "127.0.0.1", args.control_port,
+            limit=CONTROL_MESSAGE_LIMIT,
         )
     except OSError as e:
         _log(f"Could not bind control port 127.0.0.1:{args.control_port}: {e}")
@@ -1195,7 +1200,7 @@ async def cmd_daemon(args):
 async def _ctl_call(control_port: int, req: dict, timeout: float = 15.0) -> dict:
     try:
         reader, writer = await asyncio.wait_for(
-            asyncio.open_connection("127.0.0.1", control_port), timeout=5
+            asyncio.open_connection("127.0.0.1", control_port, limit=CONTROL_MESSAGE_LIMIT), timeout=5
         )
     except (ConnectionRefusedError, OSError, asyncio.TimeoutError) as e:
         return {

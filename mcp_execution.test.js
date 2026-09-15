@@ -49,9 +49,9 @@ ${extract('buildPlan')}
 return buildPlan;
 `)
 const targetNs=(moneyPct=1,security=7)=>({getServerSecurityLevel:()=>security,getServerMinSecurityLevel:()=>7,getServerMoneyAvailable:()=>600e6*moneyPct,getServerMaxMoney:()=>600e6,hackAnalyze:()=>.002,growthAnalyze:()=>100})
-test('actual planner selects bounded hack/weaken at full money and minimum security',()=>{
+test('actual planner keeps a balanced full-pool allocation at full money and minimum security',()=>{
  const p=planFor(computeWorkWeights,SECURITY_EPSILON,'reputation')(targetNs(),'phantasy',false)
- assert.equal(p.type,'work');assert.equal(p.weights.grow,0);assert.equal(p.hackBudget,50)
+ assert.equal(p.type,'work');assert.ok(p.weights.hack>0);assert.ok(p.weights.grow>0);assert.equal(p.hackBudget,50)
 })
 test('actual planner stabilizes excess security before harvesting',()=>{
  const p=planFor(computeWorkWeights,SECURITY_EPSILON,'money')(targetNs(1,9),'phantasy',false)

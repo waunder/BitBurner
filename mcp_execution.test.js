@@ -42,16 +42,16 @@ test('unknown remote age does not cancel a legacy action',()=>{
 // Execute the real planning wrapper against a readable target fixture.
 import {computeWorkWeights,SECURITY_EPSILON} from './mcp_logic.js'
 const planFor=new Function('computeWorkWeights','SECURITY_EPSILON','OBJECTIVE',`
-const SECURITY_CAP=1,WORK_SECURITY_MARGIN=1.5,WEAKEN_SEC_DECREASE=.05,TARGET_MONEY_GOAL=.95,HACK_BALANCE_SAFETY=.5,XP_WEIGHT_HACK=.95,XP_WEIGHT_GROW=.05;
+const SECURITY_CAP=1,WORK_SECURITY_MARGIN=1.5,WEAKEN_SEC_DECREASE=.05,TARGET_MONEY_GOAL=.95,HACK_BALANCE_SAFETY=.5,HACK_WITHDRAWAL_FRACTION=.25,XP_WEIGHT_HACK=.95,XP_WEIGHT_GROW=.05;
 const SECURITY_CONSTANTS={hackSecIncrease:.002,growSecIncrease:.004,weakenSecDecrease:.05,weakenPerHackRatio:4,weakenPerGrowRatio:1.25};
 ${extract('getTargetWeakenThreads')}
 ${extract('buildPlan')}
 return buildPlan;
 `)
 const targetNs=(moneyPct=1,security=7)=>({getServerSecurityLevel:()=>security,getServerMinSecurityLevel:()=>7,getServerMoneyAvailable:()=>600e6*moneyPct,getServerMaxMoney:()=>600e6,hackAnalyze:()=>.002,growthAnalyze:()=>100})
-test('actual planner keeps a balanced full-pool allocation at full money and minimum security',()=>{
+test('actual planner uses bounded harvesting at full money and minimum security',()=>{
  const p=planFor(computeWorkWeights,SECURITY_EPSILON,'reputation')(targetNs(),'phantasy',false)
- assert.equal(p.type,'work');assert.ok(p.weights.hack>0);assert.ok(p.weights.grow>0);assert.equal(p.hackBudget,50)
+ assert.equal(p.type,'work');assert.equal(p.harvestOnly,true);assert.equal(p.hackBudget,125)
 })
 test('actual planner stabilizes excess security before harvesting',()=>{
  const p=planFor(computeWorkWeights,SECURITY_EPSILON,'money')(targetNs(1,9),'phantasy',false)
@@ -59,7 +59,7 @@ test('actual planner stabilizes excess security before harvesting',()=>{
 })
 test('actual planner restores growth after a harvest',()=>{
  const p=planFor(computeWorkWeights,SECURITY_EPSILON,'money')(targetNs(.9),'phantasy',true)
- assert.ok(p.weights.grow>0);assert.equal(p.hackBudget,50)
+ assert.ok(p.weights.grow>0);assert.equal(p.harvestOnly,false);assert.equal(p.hackBudget,125)
 })
 test('XP objective retains its own work weights at full money',()=>{
  const p=planFor(computeWorkWeights,SECURITY_EPSILON,'xp')(targetNs(),'phantasy',true)

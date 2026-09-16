@@ -111,6 +111,10 @@ let DEGRADED_SKIP_MS = 900000
 // starting value (0.7 is explicitly speculative there) — raise it while
 // watching avgMoneyPct in the status file hold near max over ~15 minutes.
 let HACK_BALANCE_SAFETY = 0.5
+// Maximum fraction of target money a completed harvest can withdraw across
+// the entire worker pool. This bounds a large cloud host to a recoverable
+// landing while allowing money mode to use capacity meaningfully.
+let HACK_WITHDRAWAL_FRACTION = 0.25
 // hostNeedsRedeploy's slack, per action type, before a desired-vs-running
 // thread-count difference counts as a real mismatch worth killing and
 // redeploying for: max(REDEPLOY_TOLERANCE_ABSOLUTE, want * REDEPLOY_TOLERANCE_RELATIVE).
@@ -217,6 +221,7 @@ const CONFIG_DEFAULTS = {
   MIN_TARGET_COMMIT_MS,
   DEGRADED_SKIP_MS,
   HACK_BALANCE_SAFETY,
+  HACK_WITHDRAWAL_FRACTION,
   XP_WEIGHT_HACK,
   XP_WEIGHT_GROW,
   REDEPLOY_TOLERANCE_ABSOLUTE,
@@ -331,6 +336,7 @@ function loadConfig(ns, state) {
     MIN_TARGET_COMMIT_MS,
     DEGRADED_SKIP_MS,
     HACK_BALANCE_SAFETY,
+    HACK_WITHDRAWAL_FRACTION,
     XP_WEIGHT_HACK,
     XP_WEIGHT_GROW,
     REDEPLOY_TOLERANCE_ABSOLUTE,
@@ -364,6 +370,7 @@ function loadConfig(ns, state) {
   MIN_TARGET_COMMIT_MS = resolved.MIN_TARGET_COMMIT_MS
   DEGRADED_SKIP_MS = resolved.DEGRADED_SKIP_MS
   HACK_BALANCE_SAFETY = resolved.HACK_BALANCE_SAFETY
+  HACK_WITHDRAWAL_FRACTION = resolved.HACK_WITHDRAWAL_FRACTION
   XP_WEIGHT_HACK = resolved.XP_WEIGHT_HACK
   XP_WEIGHT_GROW = resolved.XP_WEIGHT_GROW
   REDEPLOY_TOLERANCE_ABSOLUTE = resolved.REDEPLOY_TOLERANCE_ABSOLUTE
@@ -995,7 +1002,10 @@ function buildPlan(ns, target, wasWorking) {
     moneyPct,
     weightBucket,
     weights,
-    hackBudget: OBJECTIVE === "xp" || !(hackPercentPerThread > 0) ? undefined : Math.max(1, Math.floor(0.10 / hackPercentPerThread)),
+    hackBudget: OBJECTIVE === "xp" || !(hackPercentPerThread > 0) ? undefined : Math.max(1, Math.floor(HACK_WITHDRAWAL_FRACTION / hackPercentPerThread)),
+    // A full target has no useful grow work. Select the harvest allocator
+    // explicitly so surplus capacity is not spent on no-op grows.
+    harvestOnly: OBJECTIVE !== "xp" && moneyPct >= 1 - SECURITY_EPSILON,
     // Added 2026-08-14 chasing why incomePerSec sat at 0 with 0 hack
     // threads network-wide despite moneyPct=1 shortly after R1 shipped —
     // turned out correct, not a bug (foodnstuff's growPerHack ~117 means a
@@ -1962,6 +1972,7 @@ export async function main(ns) {
         MIN_TARGET_COMMIT_MS,
         DEGRADED_SKIP_MS,
         HACK_BALANCE_SAFETY,
+        HACK_WITHDRAWAL_FRACTION,
         OBJECTIVE,
         XP_WEIGHT_HACK,
         XP_WEIGHT_GROW,

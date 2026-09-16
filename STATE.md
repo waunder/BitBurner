@@ -5,6 +5,22 @@ purpose are defined in `docs/agent-working-agreement.md`.
 
 ## Current objective
 
+September 15 post-augmentation reset: Ken installed the queued ten
+augmentations and explicitly authorized normal capital deployment. Fresh
+Steam run is bootstrapped with `startup.js`, MCP money mode, crawler and
+Rothman Algorithms active. TOR and every currently affordable hacking
+program are purchased; keep buying hacking programs first. Darknet is
+intentionally paused until after all hacking programs, per Ken's direction.
+The first pre-reset 4TB cloud-worker experiment was decisively positive;
+do not buy another yet because the current single-target continuous scheduler
+is action-duration limited once its bounded harvest fires. Latest scheduler
+release is `5c14a7c`: full-money harvest fixes no-op growth, adds a visible
+`HACK_WITHDRAWAL_FRACTION` of 0.25, and was live-verified through an 18-thread
+harvest ($211b hacked) followed by clean regrowth. Local suite: 106 passing.
+Next: resume ordinary early-run observation, purchase the remaining hacking
+programs as cash permits, then reconsider Darknet and prepare Covenant
+reputation preflight when the invitation is available.
+
 Existing cloud value assessed read-only September 12: five 4TB workers provide 95.65% of MCP RAM; same-run 30-minute result $26.48B and +3.156M player hacking XP (H502→527). These are combined outputs, not isolated marginal cloud gains. Direct sharing remains capped at254.2GB, power1.169990; four additional hosts give zero direct sharing gain. Assessment: docs/cloud-existing-value-2026-09-12.md. No purchases, objective changes or resets requested/performed.
 
 September 12 aggressive multi-target scheduler is deployed on Steam at Ken's explicit direction, with reputation and the 254.2GB share reserve retained. Manager 1dgd52i/module r1llaw; 50% harvest cohorts and partial preparation, current control expires 7:31 PM Vancouver. Target-only display `run get_target_stats.js` is running and Ken confirmed it looks positive. Recent script logs exposed maintenance augmentation assessments killing finite cohorts through cct_worker_pool; fixed by protecting `once` workers and avoiding unnecessary preemption, then restarted maintenance. Next: measure sustained income after long security preparations complete; current rates remain startup samples. Evidence: docs/evidence/cloud-multi-2026-09-12. Stop with `run set_cloud_mode.js off`.

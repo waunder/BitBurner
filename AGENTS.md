@@ -1,346 +1,86 @@
 # BitBurner — Working Guide
 
-Operational notes for Codex. Deliberately short; process weight here should
-match a solo hobby project. See `README.md` for the workflow, and in `docs/`:
-`processes.md` for what every script does and how they connect,
-`kensTodo.md` for actions that need Ken's hand specifically, and the audit
-reports for why the current design is what it is.
+This is a one-person hobby farm. Keep this file to live, non-negotiable
+operating facts; detailed design, incidents, and history belong in `docs/`.
+Git history preserves the previous long-form guide (retired 2026-09-20).
 
-## Working method — replaces the 2026-08-15/16 governance overlay
+## Authority and cadence
 
-**2026-08-18: the tiered governance spine (standing-orders.md, the
-directive ledger, promotion-state machine, the auditor tool, the
-independent-review/controller/canary apparatus) is retired.** It produced a
-genuine deadlock — no reachable stopping condition, a Tier-3 "independent
-review" gate with no real independent party to perform it, a persistent
-controller role that required exactly the kind of always-on automation the
-same rules classified as forbidden, and a watched-file carve-out that taxed
-ordinary edits. The result was measured directly: weeks where nearly every
-logged "failure" was a process-compliance failure about the governance
-system itself, and real, tested, working code (the R8 switch-veto patch)
-sitting unlanded for two days for lack of a reviewer who didn't exist. Full
-diagnosis is in the session history that produced this rewrite; it isn't
-duplicated here.
+Everything is Codex's call unless it installs an augmentation, resets the
+game, or permanently forfeits progress. Stop for Ken's explicit approval for
+that one category only.
 
-**The working method is `docs/agent-working-agreement.md`.** It is
-deliberately generic — written to be portable to any project, not just this
-one — so this section only adds what's specific to *this* project: the
-concrete list of things that still need Ken directly, and where session
-continuity lives.
+For everything else, proceed without asking: deploy capital (including stock
+capital), change automation, commit/push, restart scripts, and use reversible
+feature flags when their risk and ROI justify it. Record decision inputs and
+observed results. Keep working while useful work remains, report material
+progress periodically, and say plainly when there is nothing left to do.
 
-### The stop-list (this project's version of the agreement's fixed category 1)
+## Current authority
 
-Everything else is Codex's call: proceed without asking until there is
-nothing more to do. When work remains, continue it and periodically report
-what is underway; when nothing remains, say so plainly. Consider risk and
-ROI in every capital or automation decision.
+`STATE.md` is the durable current objective, next action, and blocker. Read
+it first. `docs/Codex-todo.md` adds working detail. Historical audit reports
+and `docs/claude-todo.md` are evidence, not current authority.
 
-Stop and get Ken's explicit go-ahead only for **an augmentation install, or
-another in-game action that resets or permanently forfeits progress.**
+Keep `docs/processes.md` current when a script gains an argument, an input or
+output file, or a failure mode. Add an item to `docs/kensTodo.md` only when a
+real in-game/manual action requires Ken; check it off after confirmation.
 
-Codex is authorized to deploy capital, including stock-market capital, and
-to enable or adjust faction sharing when its expected ROI justifies the
-risk. Record the decision inputs and observed outcome so that a loss-making
-or unstable choice can be reversed promptly.
+## Operating facts worth keeping in working memory
 
-**Darknet is no longer on this list — resolved 2026-09-04, Ken's call.**
-Four live freezes 2026-08-30 (`docs/darknet-strategy.md`'s status banner)
-never pinned an exact mechanism; the working theory was `ns.dnet.probe()`/
-`getServerDetails()`/`authenticate()` cost against the save's darknet graph.
-2026-09-03 turned up a real, independently-motivated bug on the exact same
-code path: `dnet_root.js` was missing `authenticate()`/`connectToSession()`
-calls and brute-force wasn't enabled, so `acquireSession` could fail and
-retry rather than succeed once — a coherent, plausible driver for exactly
-the kind of runaway per-tick cost the freeze theory pointed at, found and
-fixed without originally chasing the freeze itself. Since that fix: two
-independent clean restarts (browser save, Steam save) plus one sustained
-75+ minute live run under real load (mcp.js, HUD, maintenance all running
-concurrently — more load than the isolated single-freeze test that failed
-in under 90 seconds pre-fix), no freeze, no sluggishness. Not a controlled
-isolated-root-cause experiment (the original incident's own suggested next
-step — reading the game's bundled source for what those three calls cost
-internally — was never done), but enough real-world evidence to close this
-out as a practical matter for a solo hobby project. `startup.js` and
-`startup_browser.js` both launch `dnet_root.js` by default now.
+- The Steam save is the live environment; use the disposable browser save for
+  new or destructive-path testing whenever practical.
+- Netscript does not hot-reload. Source changes require the relevant restart
+  before claiming live behaviour.
+- A killed script leaves its tail window behind. New self-superseding scripts
+  must close their prior tail with `ns.ui.closeTail(pid)`.
+- `ns.write` accepts only `.txt`, `.json`, `.css`, or script extensions.
+- Generated game telemetry is not source. Never broadly download game files
+  over local source; the exact safe pull sets live in `tools/bb_remote.py`.
+- The Remote API sync is authoritative when connected. It can drop; inspect
+  daemon status and use the legacy watcher only as a recovery path. A
+  reconnect resync must be verified before relying on it.
+- `sync_manifest.json` is the single source of truth for scripts delivered to
+  the game. Add a new live script there in the same commit.
+- Tail windows are finite DOM views, not durable logs. Durable state/events
+  are the evidence source; logs should record decision inputs as well as
+  outcomes.
 
-That's the whole list. It replaces the old risk-tier system; don't
-reintroduce a parallel one. Landing tested, flag-gated, reversible code
-(committing it, restarting `mcp.js` to pick it up, even flipping a new
-feature flag on for a bounded live check) is ordinary work, not a stop
-condition — the flag and the restart *are* the rollback.
+## Project shape and current direction
 
-### Session continuity
+`mcp.js` is the money/XP scheduler. `hacking/crawler.js` →
+`hacking/worm.js` grows its worker pool. `restart_mcp.js` is the routine
+restart entry point; the HUDs are projections, not separate truth.
 
-`STATE.md` at the repo root is the one durable file — current objective,
-what's done, the next concrete action, and any real blocker. Read it at the
-start of a session and resume from it. `docs/Codex-todo.md` is the same
-information in slightly more detail; `docs/claude-todo.md` and the various
-historical audit reports are history, not current authority.
+Current priority is `STATE.md`'s named work. Capital purchases must show
+their expected payoff, cost, opportunity cost, and actual outcome. Darknet,
+stock, sharing, cloud capacity, IPvGO, and every persistent automation need a
+measurable ROI case beside their health data. Darknet is additive to MCP, not
+a substitute unless evidence says otherwise.
 
-**Keep `docs/processes.md` and `docs/kensTodo.md` current.** If a script
-gains an argument, a file it reads or writes, or a failure mode, update
-`processes.md` in the same commit. The moment something needs Ken's hand —
-a download, an in-game click, anything Codex structurally cannot do — add
-it to `kensTodo.md` right then, and check it off once confirmed done rather
-than assuming. A stale doc is worse than none, because it gets trusted.
+The rewrite's technical requirements live in `docs/rewrite-direction.md`;
+the current implementation plan lives in `docs/rewrite-plan-consolidated.md`.
+Read those only when doing rewrite work. Do not recreate retired governance
+gates or a parallel approval process.
 
-## What this is
+## Communication and git
 
-Netscript automation for the game Bitburner. `mcp.js` is an orchestrator that
-runs on `home`, scans the network, picks a target server, and deploys
-`weaken`/`grow`/`hack` worker threads across rooted hosts to farm money from
-it. Everything else is support: `get_stats.js` (live display),
-`restart_mcp.js` (kill + relaunch), `mcp_status_parser.py|js` (local log
-reading).
+Ken directs from the counter. Lead with the recommendation and outcome,
+avoid tool narration, and put durable detail in the project docs/dashboard.
+For a task that needs his physical action, make only the initial request and
+the final result visible in chat.
 
-## The environment constraints that shape everything
+Commit and push non-force changes at Codex's discretion. Preserve unrelated
+dirty-worktree changes. Never use destructive git commands without explicit
+direction. `mcp_config.json` is committed source; generated status/event
+files are gitignored.
 
-- **Scripts run inside the game, not on this machine.** `node` can syntax-check
-  them but cannot execute them meaningfully. Every behavioural claim is
-  unverified until it has actually run in Bitburner.
-- **Bitburner does not hot-reload.** A running script keeps executing the
-  version it started with. Edits require a restart (`run restart_mcp.js`).
-  This burned a full hour once — fixes appeared not to work because the old
-  process was still running.
-- **A tail window only keeps in the DOM what fits its configured height —
-  it is not a scrollable div with everything present underneath.** Found via
-  the dump feature: a 100-line request rendered only ~45 lines over CDP
-  (always the tail end); a 45-line request rendered completely. Undersizing
-  the window for "visual tidiness" silently drops content a reader outside
-  the game can retrieve, even though `ns.print` genuinely wrote all of it.
-  Size tall enough for the actual content, uncapped, whenever a window's
-  purpose is being read over CDP rather than looked at directly.
-- **`ns.kill`/`ns.killall` do not close the killed script's tail window.**
-  The window is orphaned, frozen showing whatever it last rendered, and
-  stays open indefinitely — found because two `startup.js` runs left two
-  differently-stated "mcp" panels visible while `ps` showed only one live
-  process. `ns.ui.closeTail(pid)` closes it (0GB, takes an optional PID
-  specifically so another script can close a window that isn't its own);
-  `mcp_hud.js`/`get_stats.js`/`mcp_supervisor.js`'s self-supersede logic
-  calls it now. Only fixes it going forward — a window already orphaned by a
-  now-dead process has no PID left in `ns.ps` to target, so it needs one
-  manual close.
-- **`ns.write` only accepts `.txt`, `.json`, `.css`, or a script extension.**
-  Anything else throws `File path should be a text file or script` at the
-  call site. `.log` hit this first; `.jsonl` hit it again for
-  `mcp_events.txt` — every write threw for the file's entire first day,
-  caught by a try/catch and printed only to `ns.print`, so the file never
-  existed in the game and nothing visible said so. If a new generated file
-  needs a "this is structured/line-delimited" hint, put it in the content or
-  the filename stem, not the extension.
-- **The legacy VS Code file-sync extension auto-pushes, and its broad download
-  reverses and re-affirms source.** If it is enabled, the extension watches the filesystem (not just editor saves), so edits written
-  by tooling *do* auto-push — but only while the server is running and the
-  game is connected. **"Download Files from Server" overwrites local source
-  with the game's copies, and the watcher then pushes those straight back**,
-  making the stale version authoritative on both sides. Observed 2026-08-08:
-  `Downloaded: mcp.js` immediately followed by `Pushed: /mcp.js`.
-  - Use **"Download Files Matching Pattern..."** with the pattern in
-    `docs/kensTodo.md` — pulls only generated telemetry, never source. Kept
-    in one place rather than duplicated here, so it can't drift out of sync
-    with itself. The extension remembers the last pattern, so it pre-fills
-    after the first use.
-  - It is **one** minimatch pattern, not a list: `**/*.txt **/*.json`
-    silently matches zero files. Use brace expansion instead. Patterns are
-    matched against names without a leading slash (`mcp_status.json`,
-    `scripts/hack.js`). Avoid `mcp_status*` — it also catches the
-    `mcp_status.js` *source* file. `mcp_config.json` must never be in the
-    pattern — it's a hand-authored, committed file now, not generated
-    output.
-  - Keep the tree committed regardless, so a bad pull costs a `git checkout`
-    (and the restore itself auto-pushes the correct version back).
-- **Codex can trigger routine source sync and telemetry pulls through the
-  Remote API daemon.** The extension's UI-only command still cannot be clicked
-  by Codex, but it is now a recovery path, not the normal workflow. The exact
-  watched/pulled sets are `tools/bb_remote.py::WATCHED_FILES`/`PULL_FILES` —
-  editing a `WATCHED_FILES` path in this connected checkout can push it into
-  the running game (and, on restart, make it live), so know which file a
-  given edit is before assuming it's purely local.
-- **A dropped legacy extension session doesn't replay what it missed on reconnect.**
-  `startup.js` was created and committed while the session had silently
-  dropped (a known recurring issue — see the note above); reconnecting alone
-  did not push it, even after confirming the connection was back. The
-  watcher reacts to *new* filesystem events going forward, it doesn't diff
-  local against remote on reconnect. Fix: force a fresh event —
-  `touch <file>` from Codex's side (no content change needed) or a manual
-  save in the editor from Ken's — and it pushes normally. The Remote API
-  daemon instead performs a manifest resync/pull on reconnect; verify its
-  result rather than applying this legacy workaround by habit.
+## Read on demand
 
-### Browser test environment and deployment requirements
-
-`docs/rewrite-direction.md` is the concise rewrite direction. An assigned
-agent must treat it as a starting point for evidence-gathering, not a closed
-specification; its detailed requirements below remain project working rules.
-
-Ken uses the Steam Bitburner save only; it is the protected live environment.
-Codex is explicitly authorized to use a separate Bitburner browser
-session/save as a disposable integration-test environment, including through
-computer use. Use that browser environment for real game execution, restart,
-recovery, and failure-injection tests before asking the Steam save to carry a
-new control path. It is not merely a mock: the game APIs, save-file behavior,
-process lifecycle, and UI are part of what must be tested.
-
-For the rewrite, make deployment identity explicit. Generate one content
-fingerprint/manifest for the source release, confirm that same fingerprint in
-the files delivered to the game, and have every long-running process report
-the release/generation it actually started from. The controller must show all
-three values and call any disagreement version drift. Startup/reconciliation
-must retire processes from an old generation where appropriate before starting
-the intended generation; do not make every script indiscriminately kill its
-peers.
-
-Treat the Remote API as an implementation under study, not a black box whose
-documented behavior is enough. Read and test both sides of its protocol and
-lifecycle -- the local daemon, the in-game endpoint, reconnect/resync,
-readback, failure responses, and interaction with Bitburner's own file and
-process semantics -- before preserving or replacing any part of it.
-
-For the rewrite, expose **one event/logging interface** for every message,
-whether it originates in the game or on the local controller. Each event must
-have structured fields (time, source, release/generation, level, event kind,
-correlation/action id, message, and relevant decision inputs) and one stable,
-clean human rendering derived from those fields. The durable event stream is
-the system of record and must be readily readable by both a person and an AI;
-console, dashboard, file, and Remote API views are projections of that same
-stream, not separately authored logs.
-
-The in-game tail is a live projection of this interface: render every
-meaningful event that would otherwise reach the in-game console, but coalesce
-repeated equivalent events into a running count with first/last time and a
-periodic summary. Preserve every occurrence in the durable event stream.
-Define equivalence deliberately (event kind, level, normalized message, and
-relevant context) so a repeated harmless heartbeat is condensed while a
-changed input, warning, error, or decision is still individually visible. A
-tail window is never the sole log or evidence source because its rendered
-history is finite and it can be orphaned by process death.
-
-The rewrite must provide one coherent **operator control surface**. It must
-show the resolved desired state, every active override, who/what set it,
-when it expires, the effective release/generation, and whether the observed
-state conforms. Replace scattered one-off levers such as `set_objective.js`
-with a small typed, validated set of flags/commands that is visible and
-changeable from both the local controller and the game. Configuration changes
-must be durable, audited events and must not be silently overwritten by a
-later source sync.
-
-Use an always-on agentic loop only for bounded stewardship: collect state,
-validate freshness/invariants, reconcile explicitly authorized desired state,
-and produce actionable proposals. It must not invent goals, broaden its own
-authority, spend money, reset progress, or re-enable a restricted subsystem.
-Any recovery action needs a cooldown, an idempotency key, a visible reason,
-and an event recording its result. The dashboard must make clear whether the
-loop is observing, proposing, or acting.
-
-Purchased cloud-worker capacity needs an explicit investment-decision
-process, not a one-off purchase script. For every proposal show the purchase
-cost, current and added RAM/capacity, projected marginal money/XP benefit,
-estimated payback time, assumptions, opportunity cost, budget/cap impact,
-and the evidence after purchase. Start in propose-only mode; its authority to
-purchase is a separately visible policy decision.
-
-Before replacing the present scheduler, assess R1 through R8 as a single
-tracked review: for each, record its plain-language purpose, code location,
-inputs, enabled state, test and live evidence, known limitation, measurable
-benefit, rollback, and next action. Queue only work that follows from that
-review. In particular, R8 is not a target selector: when enabled, it only
-blocks an already-qualified scheduler switch if the candidate's
-Formulas-at-minimum-security score is below its threshold relative to the
-current target; it otherwise fails open. The new control surface must say
-this in plain language rather than expose an unexplained `veto` flag.
-
-Every automation, especially IPvGO, requires an ROI card visible beside its
-health data: resource cost (RAM/CPU/time), output and progress metric,
-measured marginal benefit against a baseline, confidence/sample window,
-opportunity cost, budget/stop rule, and the next review date. High activity
-or a large game count is not evidence of value. IPvGO must demonstrate useful
-faction-reputation/progression gain at an acceptable cost before it consumes
-ongoing capacity.
-
-## Diagnosis discipline
-
-The hard-won lesson (see `docs/audit-2026-08-07-process.md`): **log decisions,
-not just state.** Recording outcomes without the inputs to the decision that
-produced them forces backward inference, which is exactly the guessable step.
-Several bugs took 3–5 restart cycles because the value that would have
-falsified a wrong theory was never written anywhere.
-
-Practical rules:
-
-- An event should record every variable that appeared in the predicate that
-  fired it.
-- Build the status object first, derive log lines *from* it. Maintaining
-  parallel hand-written field lists is how a diagnostic field ends up in the
-  wrong channel and stays invisible.
-- Restarts wipe in-memory history (`rateSamples`, `moneyPctSamples`,
-  `totalHacked`). The test cycle is also an evidence-destruction cycle — keep
-  what matters in files.
-- `ns.print` goes to the tail window; only `ns.tprint` reaches the terminal;
-  neither reaches the JSON/log files. Know which channel the reader is using.
-- A caught exception silently `ns.print`'d is the same failure mode as an
-  unrecorded decision: `mcp_events.txt` (originally `.jsonl`, see the
-  `ns.write` constraint above) threw on every write for its entire first day
-  and nothing surfaced it, because the in-memory data that fed the status
-  file kept working regardless of whether the disk write succeeded. Route
-  failures the code didn't expect through the invariant system
-  (`ns.toast` + a status-file counter), not a print statement — see
-  `checkTickInvariants` in `mcp.js`.
-
-## Communication channels
-
-Ken works from the counter, not the bench — he directs and confirms, he
-doesn't want the mechanics narrated at him. Practical rules:
-
-- **Default to background agents** for anything past a single trivial read.
-  Don't narrate tool calls in chat; that noise is exactly what he's opted
-  out of.
-- **A background agent's final report to Ken is one plain sentence** — no
-  code, no commit hashes, no jargon. Full detail goes to a file
-  (`docs/kensTodo.md`, `docs/Codex-todo.md`, a doc, `docs/status-dashboard.html`),
-  never pasted into chat.
-- **Lead with a recommendation, not a menu**, whenever Ken has to decide
-  something. He wants to confirm or override, not analyze from scratch.
-- **Three lists, three jobs:** `docs/kensTodo.md` is only things Ken must
-  physically do; `docs/Codex-todo.md` is Codex's own granular working
-  list, read first every session; `docs/status-dashboard.html` (published
-  as a Codex Artifact — URL in `docs/processes.md`) is the standing
-  at-a-glance view Ken checks on his own schedule, redeployed in place
-  rather than re-sent over chat.
-- **A live coordination task that needs Ken's hand and hits repeated
-  retries or corrections only puts the first ask and the final outcome in
-  chat** — intermediate retry/failure updates go to the dashboard instead.
-  Learned from the port-12526 saga (2026-08-09/10), where several failed
-  rounds got narrated in chat before Ken asked for this fix himself.
-
-## Git
-
-Standing approval: commit and push non-force changes at Codex's discretion;
-a task-specific protected-branch or no-push instruction overrides this
-default. Repo is private at github.com/waunder/BitBurner. Ken is
-habit-averse and has explicitly assigned version-control hygiene to Codex —
-do not hand him routines to remember, just keep the tree committed.
-
-Generated files (`mcp_status.json`, `mcp_status_log.txt`,
-`mcp_target_state.json`, `mcp_events.txt`) are gitignored — they're game
-output, and the log lives inside the save file, so it must not grow without
-bound. `mcp_config.json` is the one exception: it's hand-authored and must
-stay committed and out of the ignore list, or it can't sync into the game.
-
-## Open work
-
-`STATE.md` and `docs/Codex-todo.md` carry the current backlog. The Remote
-API replacement for routine push/pull is built and live-confirmed; current
-priority is `STATE.md`'s named next action.
-
-**Capital deployment is authorized.** `mcp_stocks.js` remains a display
-panel; any trading automation must make its risk, expected ROI, downside and
-rollback visible before it acts, then record the result. The prior
-`mcp_stock_trader.js` incident is historical evidence, not a continuing
-prohibition.
-
-Rooting is handled by `hacking/crawler.js` → `hacking/worm.js` (not by
-`mcp.js`), so the worker pool only grows while the crawler is running and
-you own enough port-opener `.exe`s for each server's requirement. Known bug:
-`crawler.js` does `Array(servers)` where it means `Array.from(servers)`, so
-`serv_set` nests the seed list one level down and home's immediate
-neighbours get re-queued on rediscovery. Wasteful, not fatal.
+- System map and arguments/files/failures: `docs/processes.md`
+- Remote API protocol and recovery: `docs/remote-api-migration.md`
+- Darknet tactics and prior incidents: `docs/darknet-strategy.md`
+- Scheduler rationale and evidence: `docs/scheduler-review-2026-09-12.md`
+- Working-method background: `docs/agent-working-agreement.md`
+- Retired long-form AGENTS context: Git revision immediately before this
+  reduction, plus the dated audit and strategy documents above.

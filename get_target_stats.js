@@ -1,5 +1,6 @@
 /** Live stats for MCP's selected targets, including cloud-hosted actions. */
 function money(n) {for(const [scale,suffix]of [[1e15,'P'],[1e12,'T'],[1e9,'G'],[1e6,'M'],[1e3,'K']])if(Math.abs(n)>=scale)return(n/scale).toFixed(1)+suffix;return String(Math.trunc(n))}
+const WHITE='\u001b[37m', RESET='\u001b[0m'
 export async function main(ns) {
   ns.disableLog('ALL')
   for(const p of ns.ps('home'))if(p.pid!==ns.pid && p.filename.replace(/^\//,'')==='get_target_stats.js'){ns.ui.closeTail(p.pid);ns.kill(p.pid,'home')}
@@ -18,7 +19,7 @@ export async function main(ns) {
       lines.push(`${target.padEnd(17)} ${money(available).padStart(7)}/${money(max).padStart(7)} ${(available/max*100).toFixed(0).padStart(3)}%  sec ${ns.getServerSecurityLevel(target).toFixed(2)}/${ns.getServerMinSecurityLevel(target)}  ${c.weaken}w ${c.grow}g ${c.hack}h  ${phase}`)
     }
     if(!selected.length)lines.push('No selected targets')
-    ns.clearLog();for(const line of lines)ns.print(line)
+    ns.clearLog();for(const line of lines)ns.print(`${WHITE}${line}${RESET}`)
     const style=ns.ui.getStyles();ns.ui.resizeTail(Math.ceil(Math.max(...lines.map(l=>l.length))*style.tailFontSize*.6)+60,Math.ceil((lines.length+1)*style.tailFontSize*style.lineHeight)+50)
     ns.ui.renderTail();await ns.sleep(5000)
   }

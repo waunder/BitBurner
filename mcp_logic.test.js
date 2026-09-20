@@ -1236,7 +1236,11 @@ describe('full-money finite harvesting', () => {
     assert.equal(r.allocations[1].hack,70)
   })
   test('full-money recovery does not fill 4TB servers with grow', () => {
-    const result = computeDesiredAllocation({hosts:[{host:'cloud',reclaimableRam:4096}],plan:{type:'weaken',moneyPct:1},weakenBudget:47,ramInfo:RAM_INFO,securityConstants:SECURITY_CONSTANTS})
+    const result = computeDesiredAllocation({hosts:[{host:'cloud',reclaimableRam:4096}],plan:{type:'weaken',moneyPct:1,holdGrowth:true},weakenBudget:47,ramInfo:RAM_INFO,securityConstants:SECURITY_CONSTANTS})
+    assert.deepEqual(result.allocations,[{host:'cloud',hack:0,grow:0,weaken:47}])
+  })
+  test('near-full security recovery honors the growth hold', () => {
+    const result = computeDesiredAllocation({hosts:[{host:'cloud',reclaimableRam:4096}],plan:{type:'weaken',moneyPct:.94,holdGrowth:true},weakenBudget:47,ramInfo:RAM_INFO,securityConstants:SECURITY_CONSTANTS})
     assert.deepEqual(result.allocations,[{host:'cloud',hack:0,grow:0,weaken:47}])
   })
   test('hack budget is shared across hosts with maintenance security offset', () => {

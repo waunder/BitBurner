@@ -42,7 +42,7 @@ test('unknown remote age does not cancel a legacy action',()=>{
 // Execute the real planning wrapper against a readable target fixture.
 import {computeWorkWeights,SECURITY_EPSILON} from './mcp_logic.js'
 const planFor=new Function('computeWorkWeights','SECURITY_EPSILON','OBJECTIVE',`
-const SECURITY_CAP=1,WORK_SECURITY_MARGIN=1.5,WEAKEN_SEC_DECREASE=.05,TARGET_MONEY_GOAL=.95,HACK_BALANCE_SAFETY=.5,HACK_WITHDRAWAL_FRACTION=.25,XP_WEIGHT_HACK=.95,XP_WEIGHT_GROW=.05;
+const SECURITY_CAP=1,WORK_SECURITY_MARGIN=1.5,WEAKEN_SEC_DECREASE=.05,TARGET_MONEY_GOAL=.95,HACK_BALANCE_SAFETY=.5,HACK_WITHDRAWAL_FRACTION=.25,GROW_HOLD_MONEY_PCT=.9,GROW_RESUME_MONEY_PCT=.75,XP_WEIGHT_HACK=.95,XP_WEIGHT_GROW=.05;
 const SECURITY_CONSTANTS={hackSecIncrease:.002,growSecIncrease:.004,weakenSecDecrease:.05,weakenPerHackRatio:4,weakenPerGrowRatio:1.25};
 ${extract('getTargetWeakenThreads')}
 ${extract('buildPlan')}
@@ -57,9 +57,13 @@ test('actual planner stabilizes excess security before harvesting',()=>{
  const p=planFor(computeWorkWeights,SECURITY_EPSILON,'money')(targetNs(1,9),'phantasy',false)
  assert.equal(p.type,'weaken');assert.equal(p.moneyPct,1)
 })
-test('actual planner restores growth after a harvest',()=>{
- const p=planFor(computeWorkWeights,SECURITY_EPSILON,'money')(targetNs(.9),'phantasy',true)
+test('actual planner restores growth only below the hysteresis resume bound',()=>{
+ const p=planFor(computeWorkWeights,SECURITY_EPSILON,'money')(targetNs(.74),'phantasy',true,true)
  assert.ok(p.weights.grow>0);assert.equal(p.harvestOnly,false);assert.equal(p.hackBudget,125)
+})
+test('actual planner holds growth while money remains close to maximum',()=>{
+ const p=planFor(computeWorkWeights,SECURITY_EPSILON,'money')(targetNs(.85),'phantasy',true,true)
+ assert.equal(p.harvestOnly,true);assert.equal(p.holdGrowth,true)
 })
 test('XP objective retains its own work weights at full money',()=>{
  const p=planFor(computeWorkWeights,SECURITY_EPSILON,'xp')(targetNs(),'phantasy',true)

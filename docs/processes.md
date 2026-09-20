@@ -472,6 +472,8 @@ The ones that actually get retuned:
 | `SECURITY_CAP` | 1 | Above this, the plan is pure weaken |
 | `WORK_SECURITY_MARGIN` | 1.5 | Absolute headroom kept during `work` |
 | `TARGET_MONEY_GOAL` | 0.95 | Money fraction `readiness` (see the work-weight calculation above) treats as "full" |
+| `GROW_HOLD_MONEY_PCT` | 0.90 | Money fraction at which money-mode stops launching new grow work |
+| `GROW_RESUME_MONEY_PCT` | 0.75 | Lower hysteresis bound; grow resumes only after a real withdrawal below it |
 | `DEGRADED_MONEY_PCT` | 0.05 | Drain threshold — **must** stay below the idle-regime cutoff of 0.1, and an invariant enforces it |
 | `OPPORTUNITY_SWITCH_FACTOR` | 1.3 | Margin required to abandon a working target |
 | `R8_SWITCH_VETO_ENABLED` | 0 | Enables the attested formulas veto only after its named canary/production gate; `0` preserves existing switching exactly |

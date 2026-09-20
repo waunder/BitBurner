@@ -115,6 +115,10 @@ let HACK_BALANCE_SAFETY = 0.5
 // the entire worker pool. This bounds a large cloud host to a recoverable
 // landing while allowing money mode to use capacity meaningfully.
 let HACK_WITHDRAWAL_FRACTION = 0.25
+// Money-mode restoration hysteresis. Once a target is sufficiently full,
+// growth is held until a real withdrawal crosses the lower bound.
+let GROW_HOLD_MONEY_PCT = 0.9
+let GROW_RESUME_MONEY_PCT = 0.75
 // hostNeedsRedeploy's slack, per action type, before a desired-vs-running
 // thread-count difference counts as a real mismatch worth killing and
 // redeploying for: max(REDEPLOY_TOLERANCE_ABSOLUTE, want * REDEPLOY_TOLERANCE_RELATIVE).
@@ -222,6 +226,8 @@ const CONFIG_DEFAULTS = {
   DEGRADED_SKIP_MS,
   HACK_BALANCE_SAFETY,
   HACK_WITHDRAWAL_FRACTION,
+  GROW_HOLD_MONEY_PCT,
+  GROW_RESUME_MONEY_PCT,
   XP_WEIGHT_HACK,
   XP_WEIGHT_GROW,
   REDEPLOY_TOLERANCE_ABSOLUTE,
@@ -337,6 +343,8 @@ function loadConfig(ns, state) {
     DEGRADED_SKIP_MS,
     HACK_BALANCE_SAFETY,
     HACK_WITHDRAWAL_FRACTION,
+    GROW_HOLD_MONEY_PCT,
+    GROW_RESUME_MONEY_PCT,
     XP_WEIGHT_HACK,
     XP_WEIGHT_GROW,
     REDEPLOY_TOLERANCE_ABSOLUTE,
@@ -371,6 +379,8 @@ function loadConfig(ns, state) {
   DEGRADED_SKIP_MS = resolved.DEGRADED_SKIP_MS
   HACK_BALANCE_SAFETY = resolved.HACK_BALANCE_SAFETY
   HACK_WITHDRAWAL_FRACTION = resolved.HACK_WITHDRAWAL_FRACTION
+  GROW_HOLD_MONEY_PCT = Math.max(0, Math.min(1, resolved.GROW_HOLD_MONEY_PCT))
+  GROW_RESUME_MONEY_PCT = Math.max(0, Math.min(GROW_HOLD_MONEY_PCT, resolved.GROW_RESUME_MONEY_PCT))
   XP_WEIGHT_HACK = resolved.XP_WEIGHT_HACK
   XP_WEIGHT_GROW = resolved.XP_WEIGHT_GROW
   REDEPLOY_TOLERANCE_ABSOLUTE = resolved.REDEPLOY_TOLERANCE_ABSOLUTE
@@ -966,7 +976,7 @@ function formatMoney(value) {
 // each, no Formulas.exe needed (§3.1) — they carry every player/BitNode
 // multiplier the game itself applies, so the weights track reality without
 // hardcoding any of them.
-function buildPlan(ns, target, wasWorking) {
+function buildPlan(ns, target, wasWorking, wasGrowHeld = false) {
   const currentSecurity = ns.getServerSecurityLevel(target)
   const moneyPct = ns.getServerMoneyAvailable(target) / ns.getServerMaxMoney(target)
   // Only apply the extra margin when coming FROM a work phase, so a target
@@ -975,8 +985,12 @@ function buildPlan(ns, target, wasWorking) {
   // killing grow/hack threads every loop.
   const requiredWeaken = getTargetWeakenThreads(ns, target, wasWorking ? WORK_SECURITY_MARGIN : 0)
 
+  // Keep the hold active through security recovery: near-full money needs
+  // weaken, not surplus grow that immediately recreates the security debt.
+  const holdGrowth = OBJECTIVE !== "xp" && (moneyPct >= GROW_HOLD_MONEY_PCT ||
+    (wasGrowHeld && moneyPct > GROW_RESUME_MONEY_PCT))
   if (requiredWeaken > 0) {
-    return { type: "weaken", currentSecurity, moneyPct, objective: OBJECTIVE }
+    return { type: "weaken", currentSecurity, moneyPct, objective: OBJECTIVE, holdGrowth }
   }
 
   // ns.growthAnalyze(target, 2) is numCycleForGrowth = log(2)/growthLog
@@ -1005,7 +1019,8 @@ function buildPlan(ns, target, wasWorking) {
     hackBudget: OBJECTIVE === "xp" || !(hackPercentPerThread > 0) ? undefined : Math.max(1, Math.floor(HACK_WITHDRAWAL_FRACTION / hackPercentPerThread)),
     // A full target has no useful grow work. Select the harvest allocator
     // explicitly so surplus capacity is not spent on no-op grows.
-    harvestOnly: OBJECTIVE !== "xp" && moneyPct >= 1 - SECURITY_EPSILON,
+    harvestOnly: holdGrowth,
+    holdGrowth,
     // Added 2026-08-14 chasing why incomePerSec sat at 0 with 0 hack
     // threads network-wide despite moneyPct=1 shortly after R1 shipped —
     // turned out correct, not a bug (foodnstuff's growPerHack ~117 means a
@@ -1293,6 +1308,7 @@ export async function main(ns) {
   }
   let lastAvgRate = null
   let lastPlanType = null
+  let lastGrowHold = false
   let lastWeightBucket = null
   let lastLogSignature = null
   let reputation = {}
@@ -1650,6 +1666,7 @@ export async function main(ns) {
       securityProgressTime = 0
       bestSecuritySeen = Infinity
       lastPlanType = null
+      lastGrowHold = false
       lastWeightBucket = null
       moneyPctSamples.length = 0
       rateSamples.length = 0
@@ -1704,8 +1721,9 @@ export async function main(ns) {
 
     const previousPlanType = lastPlanType
     const previousWeightBucket = lastWeightBucket
-    const plan = buildPlan(ns, currentTarget, lastPlanType === "work")
+    const plan = buildPlan(ns, currentTarget, lastPlanType === "work", lastGrowHold)
     lastPlanType = plan.type
+    lastGrowHold = plan.holdGrowth === true
     if (plan.type === "work") lastWeightBucket = plan.weightBucket
 
     // Plan oscillation was previously noticed by eyeballing a wall of
@@ -1973,6 +1991,8 @@ export async function main(ns) {
         DEGRADED_SKIP_MS,
         HACK_BALANCE_SAFETY,
         HACK_WITHDRAWAL_FRACTION,
+        GROW_HOLD_MONEY_PCT,
+        GROW_RESUME_MONEY_PCT,
         OBJECTIVE,
         XP_WEIGHT_HACK,
         XP_WEIGHT_GROW,

@@ -555,7 +555,7 @@ export function computeDesiredAllocation({
       // often the large majority of the network. Grow is always useful and
       // doesn't require the target to be at its security floor first.
       const leftoverRam = reclaimableRam - weaken * ramInfo.weakenRam
-      let grow = plan.objective !== "xp" && plan.moneyPct >= 1 - SECURITY_EPSILON ? 0 : Math.floor(leftoverRam / ramInfo.growRam)
+      let grow = plan.objective !== "xp" && plan.holdGrowth ? 0 : Math.floor(leftoverRam / ramInfo.growRam)
       // Growing adds security too, so it has to pay for its own offset out
       // of the same leftover rather than undermining the weaken it runs
       // beside. hacking-strategy.md R7: sized from ns.growthAnalyzeSecurity

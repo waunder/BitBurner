@@ -5,6 +5,14 @@ purpose are defined in `docs/agent-working-agreement.md`.
 
 ## Current objective
 
+September 20 live `the-hub` correction: money-mode grow now uses a tested
+hysteresis band. It stops launching new grow at 90% money and resumes only
+below 75%, including during a weaken phase. This addresses the observed
+near-full-money / near-minimum-security grow allocation; the Steam Remote
+API was restored and the updated MCP run is pinned to `the-hub`. Local suite:
+284 passing. Next: observe one complete restore → hold → bounded-hack cycle
+and compare income/security transitions against the prior work/weaken loop.
+
 September 15 post-augmentation reset: Ken installed the queued ten
 augmentations and explicitly authorized normal capital deployment. Fresh
 Steam run is bootstrapped with `startup.js`, MCP money mode, crawler and

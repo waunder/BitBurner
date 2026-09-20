@@ -10,6 +10,10 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
 
 ## Now
 
+- [ ] Observe the live `the-hub` money-mode hysteresis cycle: grow resumes
+  below 75% money, is held at/above 90%, and security recovery does not add
+  new grow. Deployed September 20; baseline suite 284/284.
+
 - [ ] Refresh idle cct_watcher.js to load finite-worker protection; Steam terminal was actively in Ken's use during the final attempt. Maintenance already restarted successfully.
 
 - [x] Deploy aggressive multiserver scheduler directly on Steam as Ken requested, preserving sharing; target-only display and consolidated HUD running.

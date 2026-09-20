@@ -189,12 +189,9 @@ experiment mode, ports as a telemetry ring buffer, `mcp_doctor.js` (no
 longer RAM-gated — home is 128GB as of 2026-08-09, build if independent
 network measurement turns out to be wanted).
 
-**Stock trading stays read-only until Ken explicitly approves capital
-deployment.** `mcp_stocks.js` (built 2026-08-09) never references
-`buyStock`/`sellStock`/`buyShort`/`sellShort`/`placeOrder`/`cancelOrder`
-anywhere, by design — it's a display panel, not a trader. Don't add a call to
-any of those functions in this repo without Ken saying so directly first,
-even in draft/experimental code.
+**Capital deployment is authorized.** `mcp_stocks.js` remains a display
+panel; any trading automation must make its risk, expected ROI, downside and
+rollback visible before it acts, then record the result.
 
 Rooting is handled by `hacking/crawler.js` → `hacking/worm.js` (not by
 `mcp.js`), so the worker pool only grows while the crawler is running and

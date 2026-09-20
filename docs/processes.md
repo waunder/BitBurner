@@ -946,7 +946,7 @@ Dark Net money category.
 - **Start:** `run dnet_scorecard.js`; optional `x= y= w= h=` use the same
   positioning convention and echo row as the other panels. A remote start is
   available through `restart_mcp.js --dnet-scorecard`.
-- **Refresh:** every 2 seconds. A crawler shard is considered fresh for 120
+- **Refresh:** every 30 seconds. A crawler shard is considered fresh for 120
   seconds, making churn visible without declaring a healthy mutation pause
   dead immediately.
 - **Shows:** live/stale state; charisma and gain/rate since the panel opened;
@@ -961,6 +961,18 @@ Dark Net money category.
   and credentials from the newest record per hostname, so the display does
   not inherit the stale merged-scoreboard problem found on 2026-08-14.
 - Opt-in, like `mcp_money.js`; it is not added to `startup.js`.
+
+### `dnet_roi.js`
+
+One-shot matched-interval measurement for Darknet's marginal value against
+MCP. Run `run dnet_roi.js start [label]`, allow a 30–60 minute Darknet-on or
+Darknet-off interval with the MCP objective unchanged, then run
+`run dnet_roi.js finish [label]`. It starts or stops nothing. The report
+records elapsed time, Darknet and hacking money-source deltas/rates, cash,
+Charisma and Hacking gains, fresh manager count, and MCP income/XP/RAM/target
+state at both endpoints. It writes a durable, pulled
+`dnet_roi_current.json` plus an interval-specific `dnet_roi_*.json`; compare
+paired like-for-like windows before deciding whether Darknet challenges MCP.
 
 ```
 +----------------------------------+

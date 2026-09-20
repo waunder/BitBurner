@@ -40,7 +40,7 @@ rules (the stop-list, session continuity) are in `AGENTS.md`.
 - [x] **Build persistent maintenance stewardship.** The 30-second steward
   keeps a bounded health record, starts the ten-minute cloud contract cycle,
   requests only one cooled-down MCP recovery after sustained staleness, and
-  leaves stock, resets, and Darknet untouched. The queue submits one guarded
+  leaves resets and Darknet untouched. The queue submits one guarded
   supported contract at a time and durably pauses on a rejection or unknown
   type.
 

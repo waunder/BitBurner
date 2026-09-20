@@ -788,6 +788,7 @@ PULL_FILES = [
     "mcp_formulas_shadow.txt",
     "ipvgo_status.json",
     "dnet_status.json",
+    "dnet_roi_current.json",
     "mcp_objective_override.txt",
     "cct_inventory.json",
     "cct_dry_run.json",

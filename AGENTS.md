@@ -30,17 +30,18 @@ continuity lives.
 
 ### The stop-list (this project's version of the agreement's fixed category 1)
 
-Everything else is Codex's call, proceed without asking. Stop and get Ken's
-explicit go-ahead first for:
+Everything else is Codex's call: proceed without asking until there is
+nothing more to do. When work remains, continue it and periodically report
+what is underway; when nothing remains, say so plainly. Consider risk and
+ROI in every capital or automation decision.
 
-- **Deploying real stock-market capital.** See "Stock trading" below —
-  this one has already been crossed once and needs a clean bill before it's
-  revisited.
-- **Re-enabling faction-share automation** after its stability incident
-  (2026-08-18, `share_deploy.js`, a separate incident from darknet's below),
-  until the root cause is understood well enough to say why it won't recur.
-- **An augmentation install, or any other in-game action that resets or
-  permanently forfeits progress.**
+Stop and get Ken's explicit go-ahead only for **an augmentation install, or
+another in-game action that resets or permanently forfeits progress.**
+
+Codex is authorized to deploy capital, including stock-market capital, and
+to enable or adjust faction sharing when its expected ROI justifies the
+risk. Record the decision inputs and observed outcome so that a loss-making
+or unstable choice can be reversed promptly.
 
 **Darknet is no longer on this list — resolved 2026-09-04, Ken's call.**
 Four live freezes 2026-08-30 (`docs/darknet-strategy.md`'s status banner)
@@ -331,19 +332,11 @@ stay committed and out of the ignore list, or it can't sync into the game.
 API replacement for routine push/pull is built and live-confirmed; current
 priority is `STATE.md`'s named next action.
 
-**Stock trading stays read-only until Ken explicitly approves capital
-deployment.** `mcp_stocks.js` (built 2026-08-09) never references
-`buyStock`/`sellStock`/`buyShort`/`sellShort`/`placeOrder`/`cancelOrder`
-anywhere, by design — it's a display panel, not a trader. Don't add a call to
-any of those functions in this repo without Ken saying so directly first,
-even in draft/experimental code. **This has already been violated once:**
-`mcp_stock_trader.js` (untracked, present in the working tree) does call
-`buyStock`/`sellStock` behind a `trade=1` flag, and a process list once
-showed it actually running with that flag live before a restart (no
-confirmed order execution). Leave the file as-is — it's evidence, not just
-draft code — but do not run it, sync it, or add it to any watched/startup
-path under any argument until Ken gives an explicit go-ahead on capital
-deployment.
+**Capital deployment is authorized.** `mcp_stocks.js` remains a display
+panel; any trading automation must make its risk, expected ROI, downside and
+rollback visible before it acts, then record the result. The prior
+`mcp_stock_trader.js` incident is historical evidence, not a continuing
+prohibition.
 
 Rooting is handled by `hacking/crawler.js` → `hacking/worm.js` (not by
 `mcp.js`), so the worker pool only grows while the crawler is running and

@@ -5,6 +5,19 @@ purpose are defined in `docs/agent-working-agreement.md`.
 
 ## Current objective
 
+September 20 direction: the only action requiring Ken's explicit approval is
+an augmentation install/reset. Capital deployment (including stocks) and
+faction sharing are ordinary Codex decisions, with risk/ROI and observed
+outcome recorded. Darknet work has restarted with the goal of demonstrating
+ROI that can challenge MCP. `dnet_roi.js` now creates matched Darknet-on/off
+interval reports from money sources, player progression, active managers and
+MCP status; local syntax/manifest checks pass. The Steam game is currently
+disconnected from the Remote API, so the new script cannot yet be delivered:
+the local daemon is healthy but reports `connected:false`. Next: reconnect
+the game's Remote API, start a 30–60 minute Darknet-on baseline with
+`run dnet_roi.js start dnet-on`, finish it, then repeat Darknet-off under a
+similar MCP state and compare the durable reports.
+
 September 20 live `the-hub` correction: money-mode grow now uses a tested
 hysteresis band. It stops launching new grow at 90% money and resumes only
 below 75%, including during a weaken phase. This addresses the observed

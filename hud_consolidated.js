@@ -94,8 +94,24 @@ function mcpStatus(ns, now) {
     }
   }
 
+  const activeWorkerCount = workers.filter((worker) =>
+    (worker.actions || []).some((action) => Number(action.threads) > 0)
+  ).length
+  const activeWorkerPct = workerCount > 0 ? (activeWorkerCount / workerCount) * 100 : 0
+  const totalRam = workers.reduce((total, worker) => total + Math.max(0, Number(worker.maxRam) || 0), 0)
+  const actionRam = workers.reduce((total, worker) => total + (worker.actions || []).reduce((used, action) => {
+    const script = action.script === "hack" ? "/scripts/hack.js"
+      : action.script === "grow" ? "/scripts/grow.js"
+        : action.script === "weaken" ? "/scripts/weaken.js" : null
+    return used + (script ? Math.max(0, Number(action.threads) || 0) * ns.getScriptRam(script, "home") : 0)
+  }, 0), 0)
+  const actionRamPct = totalRam > 0 ? (actionRam / totalRam) * 100 : 0
   const actionSummary = `${weakenTotal}w ${growTotal}g ${hackTotal}h`
-  const deployment = `${workerCount}h ${threadTotal}t (${actionSummary})`
+  // `workers` is the available pool, not necessarily the part MCP has
+  // actually deployed. Keep both numbers visible: a small active count is
+  // the signal for spare-capacity investigation, while the thread total says
+  // whether the active hosts are doing material work.
+  const deployment = `${activeWorkerCount}/${workerCount} servers ${activeWorkerPct.toFixed(0)}%; ${threadTotal}t ${actionRamPct.toFixed(0)}% RAM (${actionSummary})`
 
   if(status.reputation?.allocation==='all' && objective==='reputation') {
     const rep=status.reputation

@@ -124,8 +124,7 @@ function mcpStatus(ns, now) {
     expanded: [
       `Status: ${running ? "RUNNING" : "STOPPED"}`,
       `Objective: ${objective}${running ? "" : " (last reported)"}`,
-      ...(status.targets ? [`Targets: ${status.targets.length} (${status.targets.filter(t=>t.phase==='harvest').length} harvesting)`,
-        ...status.targets.map(t=>`  ${t.target}: ${t.phase} ${(t.moneyPct*100).toFixed(0)}%`),
+      ...(status.targets ? [`Targets: ${status.targets.length} (${status.targets.filter(t=>t.phase==='harvest').length} harvesting, ${status.targets.filter(t=>t.phase!=='harvest').length} preparing) — see MCP target stats`,
         `Cloud: ${Math.round(status.cloudControl?.effectiveFraction*100)}% withdrawal; expires ${new Date(status.cloudControl?.expiresAt).toLocaleTimeString()}`] : [`Target: ${target}`]),
       `Rate: ${compact(rate, 2)}/s (avg ${compact(avgRate, 2)}/s)`,
       `Total hacked: ${compact(money)}`,
@@ -372,15 +371,15 @@ function buildDisplay(ns, state, pos) {
     const isExpanded = state.expanded === section.key
     const indicator = isExpanded ? "▼" : "▶"
     const keyHint = { mcp: "hm", darknet: "hd", cct: "hc", ipvgo: "hg", aug: "ha", system: "hs" }[section.key]
-    const hint = COLORS.DIMMED + `[${keyHint}]` + COLORS.RESET
-    const sectionHeader = COLORS.SECTION + `${indicator} ${section.label}` + COLORS.RESET
+    const hint = COLORS.HEADER + `[${keyHint}]` + COLORS.RESET
+    const sectionHeader = COLORS.HEADER + `${indicator} ${section.label}` + COLORS.RESET
     const compactLine = sectionHeader + " " + section.data.compact + " " + hint
 
     lines.push(compactLine)
     lineNum++
 
     if (isExpanded) {
-      lines.push(COLORS.DIMMED + "  " + "─".repeat(30) + COLORS.RESET)
+      lines.push(COLORS.HEADER + "  " + "─".repeat(30) + COLORS.RESET)
       lineNum++
       for (const detail of section.data.expanded) {
         lines.push("  " + detail)
@@ -391,7 +390,7 @@ function buildDisplay(ns, state, pos) {
     }
   }
 
-  lines.push(COLORS.DIMMED + `Updated: ${new Date().toLocaleTimeString()}` + COLORS.RESET)
+  lines.push(COLORS.HEADER + `Updated: ${new Date().toLocaleTimeString()}` + COLORS.RESET)
 
   return lines
 }
@@ -429,9 +428,15 @@ function resizeTail(ns, lines, size) {
     // Fallback to 16px if styles unavailable
   }
 
+  const styles = ns.ui.getStyles?.() || {}
+  const charWidth = styles.tailFontSize ? styles.tailFontSize * 0.6 : 8
+  const widestLine = Math.max(0, ...lines.map((line) =>
+    String(line).replace(/\x1b\[[0-9;]*m/g, "").length
+  ))
+  const calculatedWidth = Math.ceil(widestLine * charWidth) + 60
   const calculatedHeight = Math.ceil((lines.length + 1) * lineHeight) + 40
 
-  ns.ui.resizeTail(size.w, calculatedHeight)
+  ns.ui.resizeTail(Math.max(size.w, calculatedWidth), calculatedHeight)
 }
 
 export async function main(ns) {
@@ -476,7 +481,7 @@ export async function main(ns) {
 
       ns.clearLog()
       for (const line of lines) {
-        ns.print(line)
+        ns.print(COLORS.HEADER + line + COLORS.RESET)
       }
 
       if (!placed && ns.ui) {
@@ -489,7 +494,7 @@ export async function main(ns) {
         ns.ui.renderTail()
       }
     } catch (err) {
-      ns.print("ERROR: " + err.message)
+      ns.print(COLORS.HEADER + "ERROR: " + err.message + COLORS.RESET)
     }
 
     await ns.sleep(POLL_MS)

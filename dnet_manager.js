@@ -84,8 +84,13 @@ function projectedThreads(ns, script) {
 
 async function loot(ns) {
   const pid = ns.run(LOOT, { preventDuplicates: true })
-  if (pid === 0) throw new Error(`${LOOT} did not start`)
+  // Loot/cache handling is an opportunistic secondary action. A transient
+  // duplicate or launch refusal must not turn the resident manager into a
+  // five-second retry loop that also suppresses its revenue-producing
+  // phishing worker. Leave `needsLoot` set so a later pass retries it.
+  if (pid === 0) return false
   await waitPid(ns, pid)
+  return true
 }
 
 async function writeStatus(ns, state, failures, nextCrawl, lastError = null) {
@@ -109,8 +114,7 @@ export async function main(ns) {
       await refreshManagerActiveShard(ns, flags.generation)
       if (needsLoot) {
         await writeStatus(ns, "looting", failures, nextCrawl)
-        await loot(ns)
-        needsLoot = false
+        needsLoot = !(await loot(ns))
       }
       const cachePresent = ns.ls(ns.getHostname(), ".cache").length > 0
       if (cachePresent) {

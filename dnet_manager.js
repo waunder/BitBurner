@@ -16,10 +16,11 @@ const RETRY_MS = 5000
 const STATUS_FILE = "dnet_manager_status.json"
 const HEARTBEAT_MS = 15 * 1000
 
-// A manager must not turn every spare GB into an independent 200ms API loop.
-// Keep the initial post-incident experiment to exactly one worker; a future
-// controlled policy can raise this only with measured headroom.
-export const MAX_PHISH_THREADS = 1
+// Keep per-manager work bounded. The live darkweb gateway has 8.5GB free
+// after its resident manager, enough for two 3.6GB phish workers; this is a
+// measured 1→2-thread ROI experiment, not a broad concurrency increase.
+// The manager/spread caps remain unchanged.
+export const MAX_PHISH_THREADS = 2
 
 // Concurrency-cap heartbeat (2026-08-30) — dnet_crawl.js reserves this
 // host's slot once, right before spawning this process; this file's job is

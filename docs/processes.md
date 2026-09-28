@@ -965,14 +965,19 @@ Dark Net money category.
 ### `dnet_roi.js`
 
 One-shot matched-interval measurement for Darknet's marginal value against
-MCP. Run `run dnet_roi.js start [label]`, allow a 30–60 minute Darknet-on or
+MCP. Run `run dnet_roi.js start <label>`, allow a 30–60 minute Darknet-on or
 Darknet-off interval with the MCP objective unchanged, then run
-`run dnet_roi.js finish [label]`. It starts or stops nothing. The report
-records elapsed time, Darknet and hacking money-source deltas/rates, cash,
-Charisma and Hacking gains, fresh manager count, and MCP income/XP/RAM/target
-state at both endpoints. It writes a durable, pulled
+`run dnet_roi.js finish <label>`. Labels are required: each stores a separate
+`dnet_roi_baseline_<label>.json`, and finish refuses another label's baseline.
+It starts or stops nothing. The report records elapsed time, Darknet and
+hacking money-source deltas/rates, cash, Charisma and Hacking gains, manager
+count/heartbeat ages, root and worker/cloud RAM capacity, and MCP target,
+plan, money/security readiness, income and XP state at both endpoints. It
+marks results inconclusive when a manager/root heartbeat is stale, the MCP
+plan phase changes, or the target changes. It writes a durable, pulled
 `dnet_roi_current.json` plus an interval-specific `dnet_roi_*.json`; compare
-paired like-for-like windows before deciding whether Darknet challenges MCP.
+only matched, conclusive windows before deciding whether Darknet challenges
+MCP.
 
 ```
 +----------------------------------+
@@ -2325,6 +2330,7 @@ play) — corrected 2026-09-05 alongside that day's freeze fix; see
 | `ipvgo_logic.js` | local only + pushed to the game as an import target for `ipvgo_player.js` | n/a (pure logic, no `ns` calls) | A from-scratch local Go rules engine (flood-fill chains/liberties, capture, suicide prevention with the game's own "except when it captures" exception, a simplified single-capture ko rule, area scoring, a diagonal-based simple-eye heuristic) plus Monte Carlo Tree Search with UCB1 (`chooseBestMove`, opening-move prior via `computeOpeningMoveStats`) built on top of it. As of 2026-09-05, the search is also exposed as a resumable handle (`createMctsSearch`: `runIterations(n)`/`runIterationsForMs(ms)`/`getResult()`) — `chooseBestMove` is now a thin synchronous wrapper around it for tests/one-shot use; `ipvgo_player.js` drives the handle directly in small time-boxed chunks instead, which is the actual fix for the browser-freeze incident (see "2026-09-05" below). Full citations and design rationale are in the file's own header and `docs/ipvgo-strategy.md`. |
 | `ipvgo_logic.test.js` | local only, `node --test ipvgo_logic.test.js` | n/a | 39 tests (as of 2026-09-05) against small hand-built boards (real `board[x][y]` convention): rules-engine correctness (capture, suicide/its capture exception, simplified ko, simple-eye detection, area scoring), the UCB1 formula itself, MCTS move selection (capture-over-self-atari, root-level eye safety, komi), the opening-move prior, and (new 2026-09-05) that chunked `createMctsSearch` calls produce results identical to one uninterrupted `chooseBestMove` call given the same seed — the regression guard for the freeze fix. |
 | `ipvgo_hud.js` | `home`, self-superseding | small, reads `ipvgo_status.json` only | In-game panel (added 2026-08-12), same shape as `mcp_hud.js`: current record, rolling win rate, last game's score/move-timing, streak/favor/bonus fields. Started once by hand (`kensTodo.md`), not auto-launched by `startup.js`. |
+| `ipvgo_experiment.js` + `ipvgo_experiment_analyze.js` | manual, finite | experiment player RAM only | A controlled, explicitly started IPvGO trial. The orchestrator snapshots the player's lifetime counters and reward fields before launch, then writes schema-v2 JSONL results as deltas for exactly the requested number of completed games. It supplies an absolute stop boundary so `ipvgo_player.js` exits after writing the final result and before opening an extra game. The analyzer ignores legacy schema-v1/cumulative rows rather than mixing them with per-run evidence. Inputs: board size, thinking ms, game count. Outputs: `ipvgo_experiment_config.json` and append-only `ipvgo_experiment_results.jsonl`. Failure: on timeout it disables experiment mode and logs no partial result; inspect the status/config before any manual restart. |
 
 **2026-09-05: browser-freeze root-caused and fixed.** `ipvgo_status.json`'s
 `lastResult` showed `avgMoveMs` ~11,721 / `maxMoveMs` 13,591 once

@@ -304,7 +304,7 @@ function checkGoApiAvailable(ns) {
 }
 
 // Read experiment config if present and return the override values
-// Returns { boardSize, thinkingMs, targetGames, isExperiment }
+// Returns { boardSize, thinkingMs, targetGames, stopAfterGamesPlayed, isExperiment }
 function readExperimentConfig(ns) {
   try {
     const config = JSON.parse(ns.read("ipvgo_experiment_config.json"))
@@ -313,13 +313,14 @@ function readExperimentConfig(ns) {
         boardSize: config.boardSize || 9,
         thinkingMs: config.thinkingMs || TARGET_THINK_MS,
         targetGames: config.gamesTarget || 0,
+        stopAfterGamesPlayed: Number.isFinite(config.stopAfterGamesPlayed) ? config.stopAfterGamesPlayed : null,
         isExperiment: true,
       }
     }
   } catch (e) {
     // Config file doesn't exist or is invalid, not an experiment run
   }
-  return { boardSize: null, thinkingMs: TARGET_THINK_MS, targetGames: 0, isExperiment: false }
+  return { boardSize: null, thinkingMs: TARGET_THINK_MS, targetGames: 0, stopAfterGamesPlayed: null, isExperiment: false }
 }
 
 // Reads the game's own authoritative per-opponent record via
@@ -544,6 +545,7 @@ export async function main(ns) {
   const expConfig = readExperimentConfig(ns)
   let experimentMode = expConfig.isExperiment
   let experimentTargetGames = expConfig.targetGames
+  let experimentStopAfterGamesPlayed = expConfig.stopAfterGamesPlayed
   let effectiveTargetThinkMs = expConfig.thinkingMs
 
   // ns.args[0]/[1] are an explicit override; omitting them continues
@@ -743,6 +745,14 @@ export async function main(ns) {
             opponentLifetime: readOpponentStats(ns, opponent),
             isFactionMember,
           })
+          // The experiment orchestrator gives us an absolute lifetime-count
+          // boundary. Stop only after persisting the final scored game, before
+          // resetBoardState can begin an unmeasured game. Normal unattended
+          // play never takes this branch.
+          if (experimentMode && experimentStopAfterGamesPlayed != null && gamesPlayed >= experimentStopAfterGamesPlayed) {
+            ns.tprint(`ipvgo_player: experiment target reached at ${gamesPlayed}; stopping at the completed-game boundary.`)
+            return
+          }
         }
         moveMsSum = 0
         moveMsCount = 0

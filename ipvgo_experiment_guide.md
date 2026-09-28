@@ -2,7 +2,7 @@
 
 ## Quick Start
 
-This experiment measures how reward and win rate scale across board sizes and thinking times.
+This experiment measures how reward and win rate scale across board sizes and thinking times. Each invocation is one finite, schema-v2 trial: it snapshots the existing lifetime record, waits for exactly the requested number of newly completed games, and records only the deltas. Historical lifetime/rolling values are not trial results.
 
 ### Test Plan
 
@@ -25,8 +25,8 @@ run ipvgo_experiment_analyze.js
 ```
 
 This will show:
-- Win rates for each configuration
-- Bonus percentages
+- Per-trial win rates for each configuration
+- Faction-reputation deltas when the target faction is joined
 - Back-to-back win odds (needed for favor conversion)
 - A recommendation on which configuration optimizes reputation farming
 
@@ -51,7 +51,7 @@ The bigger question: does bonus % scale enough with board size (13x13 gives much
 - `ipvgo_experiment.js` — orchestrator (you run this)
 - `ipvgo_experiment_analyze.js` — analysis (run after experiments)
 - `ipvgo_experiment_config.json` — config (read by ipvgo_player.js during experiment)
-- `ipvgo_experiment_results.jsonl` — results log (appended to by each batch)
+- `ipvgo_experiment_results.jsonl` — append-only schema-v2 result log; the analyzer ignores older cumulative-result rows
 
 The modified `ipvgo_player.js` checks for experiment config at startup and respects board size / thinking time overrides when in experiment mode.
 

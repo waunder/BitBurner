@@ -1,0 +1,28 @@
+BN2.1 ROADMAP
+
+Current objective
+- Complete BitNode 2 to earn Source-File 2.1 (Gang access outside BN2).
+- Keep MCP in money mode except for deliberate, measured XP pushes.
+
+Capital order
+1. Buy TOR ($200k).
+2. Buy each affordable port-opening/hacking program as soon as it unlocks
+   additional rooted-worker capacity.
+3. Buy a 128GB cloud server (about $7.04m at the current early-run price)
+   for the SF4.1 Singularity controller and remaining MCP work.
+4. Upgrade home RAM only after that cloud controller is established.
+
+Singularity plan (SF4.1)
+- Singularity works in BN2, but calls cost 16x normal RAM.
+- Run small, single-purpose controller scripts on the controller cloud.
+- Safe automation: programs, travel, study, faction work, and ROI-qualified
+  capacity purchases.
+- Never auto-install augmentations, reset, or enter a BitNode.
+
+Gang
+- In BN2, a gang has no karma requirement. Do not form it immediately:
+  establish income and hacking capacity first.
+- Do not enable territory warfare until the gang is ready.
+
+Later Source-File order
+- BN5.2, then BN4.2 and BN4.3, with SF1.3 deferred until after BN2.1.

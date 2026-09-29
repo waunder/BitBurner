@@ -2,6 +2,7 @@
   "_comment": "Single source of truth for every file that actually loads into the game. Consumed by two independent sync paths: tools/bb_remote.py's WATCHED_FILES (Steam, pushed over the Remote API) and sync_from_github.js (browser, pulled via ns.wget from raw.githubusercontent.com -- see CLAUDE.md's Remote API / Chrome PNA note for why the browser can't use the Remote API at all). If a new live script is added to the repo, add it here in the same commit -- same rule docs/processes.md itself follows. Repo-relative, POSIX separators, no leading slash (each consumer adds whatever prefix its own target filesystem needs). Deliberately excludes: generated game-output files (mcp_status.json, mcp_status_log.txt, mcp_target_state.json, mcp_events.txt, mcp_restart.txt, mcp_dump_request.txt -- these flow game-to-disk; pushing them back would overwrite live game state with a stale local copy), *.test.js (node --test files, never loaded by the game), mcp_status_parser.py/js (local out-of-game tooling), and NetscriptDefinitions.d.ts/NetscriptGlobals.d.ts/tsconfig.json/README.md (editor support, not netscript).",
   "files": [
     "sync_manifest.json",
+    "BN2-roadmap.txt",
     "mcp.js",
     "mcp_launch.js",
     "mcp_logic.js",

@@ -18,7 +18,8 @@ const DNET_LIVE_MS = 30_000
 const WIDTH_CHARS = 34
 const DEFAULT_Y = 570
 const RIGHT_MARGIN = 8
-const WHITE = "\u001b[37m"
+const WHITE = "\u001b[1;37m"
+const GREEN = "\u001b[1;32m"
 const RESET = "\u001b[0m"
 
 let gateCache = { refreshedAt: 0, gates: [], ok: false }
@@ -164,7 +165,7 @@ export async function main(ns) {
   while (true) {
     const lines = buildLines(ns)
     ns.clearLog()
-    for (const line of lines) ns.print(WHITE + line + RESET)
+    for (const [i, line] of lines.entries()) ns.print((i === 0 ? WHITE : GREEN) + line + RESET)
     if (!placed) {
       placeTail(ns, args, lines)
       placed = true

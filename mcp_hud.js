@@ -27,7 +27,8 @@ const POLL_MS = 2000
 // demonstrate it). White separates our panels from the game's green at a
 // glance. Basic codes only — this build has no 256-colour support, so
 // \u001b[38;5;15m would render as literal text.
-const WHITE = "\u001b[37m"
+const WHITE = "\u001b[1;37m"
+const GREEN = "\u001b[1;32m"
 const RESET = "\u001b[0m"
 
 // A status file older than this means mcp.js is wedged or dead. Its own loop
@@ -350,7 +351,7 @@ export async function main(ns) {
     }
 
     ns.clearLog()
-    for (const line of lines) ns.print(WHITE + line + RESET)
+    for (const [i, line] of lines.entries()) ns.print((i === 0 ? WHITE : GREEN) + line + RESET)
 
     // Placed once rather than every tick: repositioning on a loop makes the
     // window impossible to drag somewhere else.

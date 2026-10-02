@@ -17,7 +17,8 @@ const MANAGER_REGISTRY = "dnet_manager_registry.json"
 const WIDTH_CHARS = 34
 const DEFAULT_Y = 700
 const RIGHT_MARGIN = 8
-const WHITE = "\u001b[37m"
+const WHITE = "\u001b[1;37m"
+const GREEN = "\u001b[1;32m"
 const RESET = "\u001b[0m"
 
 function parseArgs(ns) {
@@ -119,7 +120,7 @@ export async function main(ns) {
   while (true) {
     const lines = buildLines(ns)
     ns.clearLog()
-    for (const line of lines) ns.print(WHITE + line + RESET)
+    for (const [i, line] of lines.entries()) ns.print((i === 0 ? WHITE : GREEN) + line + RESET)
     if (!placed) {
       placeTail(ns, args, lines)
       placed = true

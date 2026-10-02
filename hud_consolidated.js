@@ -23,10 +23,10 @@ const POSITION_FILE = "hud_consolidated_position.json"
 
 const COLORS = {
   HEADER: "[1;37m",    // Bright white
-  SECTION: "[1;36m",   // Bright cyan (for clickable sections)
+  SECTION: "[1;37m",   // White section headers preserve monochrome context
   HEALTHY: "[1;32m",   // Bright green
-  WARNING: "[1;33m",   // Bright yellow
-  CRITICAL: "[1;31m",  // Bright red
+  WARNING: "[1;37m",   // Avoid low-contrast colour warnings
+  CRITICAL: "[1;37m",  // Avoid low-contrast colour errors
   DIMMED: "[90m",      // Dark gray
   RESET: "[0m",
 }

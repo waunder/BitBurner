@@ -14,7 +14,8 @@
 // low cadence avoids turning an informational tail into a competing workload.
 const POLL_MS = 30000
 const FRESH_MS = 120000
-const WHITE = "\u001b[37m"
+const WHITE = "\u001b[1;37m"
+const GREEN = "\u001b[1;32m"
 const RESET = "\u001b[0m"
 const DEFAULT_Y = 700
 const RIGHT_MARGIN = 8
@@ -200,7 +201,7 @@ export async function main(ns) {
       lines = [row("DARK NET", "ERROR"), String(err).slice(0, WIDTH_CHARS), row("x=" + pos.x, "y=" + pos.y)]
     }
     ns.clearLog()
-    for (const line of lines) ns.print(WHITE + line + RESET)
+    for (const [i, line] of lines.entries()) ns.print((i === 0 ? WHITE : GREEN) + line + RESET)
     ns.write(STATUS_FILE, JSON.stringify({ ts: Date.now(), ok: lines[0]?.includes("ERROR") !== true, lines }, null, 2), "w")
     if (!placed) {
       placeTail(ns, args, lines, pos)

@@ -347,6 +347,22 @@ function ipvgoStatus(ns, now) {
   }
 }
 
+function gangStatus(ns, now) {
+  if (!ns.gang.inGang()) return { compact: "-- no gang", expanded: [] }
+  const g = ns.gang.getGangInformation()
+  const members = ns.gang.getMemberNames()
+  const territory = (g.territory * 100).toFixed(1)
+  const wanted = (g.wantedPenalty * 100).toFixed(1)
+  return {
+    compact: `${members.length}/12 ${territory}% terr ${wanted}% wanted ${compact(g.moneyGainRate)}/s`,
+    expanded: [
+      `Faction: ${g.faction} (${g.isHacking ? "hacking" : "combat"})`,
+      `Respect: ${compact(g.respect)} (${compact(g.respectGainRate)}/s)`,
+      `Warfare: ${g.territoryWarfareEngaged ? "engaged" : "off"}`,
+    ],
+  }
+}
+
 function buildDisplay(ns, state, pos) {
   const now = Date.now()
 
@@ -355,6 +371,7 @@ function buildDisplay(ns, state, pos) {
     { key: "darknet", label: "Darknet", data: darknetStatus(ns, now) },
     { key: "cct", label: "Contracts", data: cctStatus(ns, now) },
     { key: "ipvgo", label: "IPvGO", data: ipvgoStatus(ns, now) },
+    { key: "gang", label: "Gang", data: gangStatus(ns, now) },
     { key: "aug", label: "Augmentation", data: augmentationStatus(ns, now) },
     { key: "system", label: "System", data: systemStatus(ns, now) },
   ]
@@ -370,7 +387,7 @@ function buildDisplay(ns, state, pos) {
   for (const section of sections) {
     const isExpanded = state.expanded === section.key
     const indicator = isExpanded ? "▼" : "▶"
-    const keyHint = { mcp: "hm", darknet: "hd", cct: "hc", ipvgo: "hg", aug: "ha", system: "hs" }[section.key]
+    const keyHint = { mcp: "hm", darknet: "hd", cct: "hc", ipvgo: "hg", gang: "--", aug: "ha", system: "hs" }[section.key]
     const hint = COLORS.HEADER + `[${keyHint}]` + COLORS.RESET
     const sectionHeader = COLORS.HEADER + `${indicator} ${section.label}` + COLORS.RESET
     const compactLine = sectionHeader + " " + section.data.compact + " " + hint

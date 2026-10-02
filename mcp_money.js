@@ -33,6 +33,8 @@
  */
 const POLL_MS = 2000
 
+const GREEN = "\x1b[1;32m"
+
 const WHITE = "[37m"
 const RESET = "[0m"
 
@@ -182,7 +184,7 @@ export async function main(ns) {
     }
 
     ns.clearLog()
-    for (const line of lines) ns.print(WHITE + line + RESET)
+    for (const [i, line] of lines.entries()) ns.print((i === 0 ? WHITE : GREEN) + line + RESET)
 
     if (!placed) {
       placeTail(ns, args, lines, pos)

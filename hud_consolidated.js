@@ -390,7 +390,7 @@ function buildDisplay(ns, state, pos) {
     const keyHint = { mcp: "hm", darknet: "hd", cct: "hc", ipvgo: "hg", gang: "--", aug: "ha", system: "hs" }[section.key]
     const hint = COLORS.HEADER + `[${keyHint}]` + COLORS.RESET
     const sectionHeader = COLORS.HEADER + `${indicator} ${section.label}` + COLORS.RESET
-    const compactLine = sectionHeader + " " + section.data.compact + " " + hint
+    const compactLine = sectionHeader + COLORS.HEALTHY + " " + section.data.compact + " " + hint
 
     lines.push(compactLine)
     lineNum++
@@ -399,7 +399,7 @@ function buildDisplay(ns, state, pos) {
       lines.push(COLORS.HEADER + "  " + "─".repeat(30) + COLORS.RESET)
       lineNum++
       for (const detail of section.data.expanded) {
-        lines.push("  " + detail)
+        lines.push(COLORS.HEALTHY + "  " + detail + COLORS.RESET)
         lineNum++
       }
       lines.push("")
@@ -497,9 +497,7 @@ export async function main(ns) {
       const lines = buildDisplay(ns, state, pos)
 
       ns.clearLog()
-      for (const line of lines) {
-        ns.print(COLORS.HEADER + line + COLORS.RESET)
-      }
+      for (const line of lines) ns.print(line)
 
       if (!placed && ns.ui) {
         placeTail(ns, pos, size)

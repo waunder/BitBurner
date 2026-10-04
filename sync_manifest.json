@@ -19,6 +19,8 @@
     "skim_probe.js",
     "mcp_hud.js",
     "mcp_money.js",
+    "gang-controller.js",
+    "gang-status.js",
     "mcp_xp.js",
     "progression_guidance_logic.js",
     "mcp_stock_trader.js",

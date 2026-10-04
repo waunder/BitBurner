@@ -353,11 +353,16 @@ function gangStatus(ns, now) {
   const members = ns.gang.getMemberNames()
   const territory = (g.territory * 100).toFixed(1)
   const wanted = (g.wantedPenalty * 100).toFixed(1)
+  const status = json(ns, "gang_status.json")
+  const sources = ns.getMoneySources?.().sinceInstall || {}
+  const net = (Number(sources.gang) || 0) + (Number(sources.gang_expenses) || 0)
   return {
     compact: `${members.length}/12 ${territory}% terr ${wanted}% wanted ${compact(g.moneyGainRate)}/s`,
     expanded: [
       `Faction: ${g.faction} (${g.isHacking ? "hacking" : "combat"})`,
       `Respect: ${compact(g.respect)} (${compact(g.respectGainRate)}/s)`,
+      `Cash: earned ${compact(sources.gang || 0)}, gear ${compact(sources.gang_expenses || 0)}, net ${compact(net)}`,
+      `Mode: ${status?.mode || "--"}; projected ${compact(status?.projectedMoneyRate || 0)}/s`,
       `Warfare: ${g.territoryWarfareEngaged ? "engaged" : "off"}`,
     ],
   }

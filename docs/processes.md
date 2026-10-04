@@ -864,6 +864,25 @@ orchestrator-disagreement risk to design around).
 +------------------------------+
 ```
 
+### `gang-controller.js` and `gang-status.js`
+
+Gang v2 is the formula-driven gang control loop. It requires `Formulas.exe`,
+recruits immediately, scores every valid productive task with
+`ns.formulas.gang`, and allocates trained members to the best money task
+unless respect growth or wanted recovery is active. Wanted uses hysteresis
+(enter below 99.5%, return to cash at 99.9%); recovery chooses the least
+expensive cleaners by projected money forgone per wanted removed. Territory
+warfare is a weighted expected-win decision rather than an all-rivals gate.
+
+`equipmentEnabled` is deliberately false in the initial v2 deployment. The
+controller records the next unowned item and its cost in `gang_status.json`,
+but cannot spend until an ROI policy is explicitly added and validated.
+`gang-status.js` is the companion tail: it displays gross rate, gang earned,
+gear expenditure, net since the last augmentation install, wanted, territory,
+and whether capital is only being observed. Both scripts are launched by
+`startup.js`; if Formulas.exe is missing, the controller exits with a terminal
+message and leaves the gang untouched.
+
 ### `mcp_xp.js`
 
 A focused, low-noise XP/progression panel in the same small-tail family as

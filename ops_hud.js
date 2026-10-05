@@ -216,6 +216,7 @@ function buildLines(ns) {
   const cctQueue = readJson(ns, "cct_queue_status.json", {})
   const augmentation = readJson(ns, "augmentation_readiness.json", {})
   const playerActivity = readJson(ns, "player_activity_status.json", {})
+  const capitalPolicy = readJson(ns, "gang_capital_policy.json", {})
   const cloudNames = ns.cloud.getServerNames()
   const cloudRam = workerRam(mcp, cloudNames)
   const mcpAge = Number.isFinite(mcp?.ts) ? now - mcp.ts : Infinity
@@ -237,6 +238,7 @@ function buildLines(ns) {
   const activityText = !playerActivity?.decision ? "controller awaiting first check"
     : playerActivity.decision.action === "hold" ? `hold: ${playerActivity.decision.reason}`
       : `${playerActivity.decision.action}: ${playerActivity.decision.reason}`
+  const capitalPhase = capitalPolicy.phase ? `${capitalPolicy.phase}: ${capitalPolicy.objective || ""}` : "not configured"
   const augText = !augmentation?.ok
     ? playerActivity?.apiUnavailable
       ? "requires Source-File 4"
@@ -251,12 +253,13 @@ function buildLines(ns) {
     row(`MCP ${mcpState}`, `${mcp?.target || "--"} / ${mcp?.OBJECTIVE || mcp?.objective || "--"}`),
     row(`rate ${compact(mcp?.rate)}/s`, `avg ${compact(mcp?.avgRate)}/s`),
     row(`workers ${threadCount} threads`, `${(mcp?.workers || []).length} hosts / ${age(now, mcp?.ts)}`),
+    row("capital phase", capitalPhase.slice(0, WIDTH_CHARS - 14)),
     row(playerTime.stats, manualAdvice.recommendation),
     row("gate", manualAdvice.gate.slice(0, WIDTH_CHARS - 6)),
     row("best now", manualAdvice.best),
     row("script XP", playerTime.detail),
     row("guidance basis", manualAdvice.basis.slice(0, 25)),
-    row("player action", playerActivity?.apiUnavailable ? "manual: SF4 required" : activityText.slice(0, WIDTH_CHARS - 14)),
+    row("player action", playerActivity?.apiUnavailable ? `API blocked: ${playerActivity.capability?.currentNode === 4 ? "BitNode 4 expected" : `SF4 level ${playerActivity.capability?.sf4Level ?? "unknown"}`}` : activityText.slice(0, WIDTH_CHARS - 14)),
     row("augmentation runway", augText),
     row(currentContracts.known ? `contracts ${currentContracts.accepted} this reset` : `contracts ${totals.accepted} recorded`, `$${compact(currentContracts.known ? currentContracts.cash : totals.cash)}`),
     // Inventory is an independently durable *successful* scan. A later

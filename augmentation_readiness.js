@@ -45,6 +45,8 @@ function assess(ns) {
     const owned = new Set(includingQueued)
     const queued = includingQueued.filter((name) => !installed.includes(name))
     const factions = Array.isArray(player?.factions) ? player.factions : []
+    let gangFaction = null
+    try { if (ns.gang.inGang()) gangFaction = ns.gang.getGangInformation().faction } catch {}
     const candidates = []
     for (const faction of factions) {
       const rep = Number(ns.singularity.getFactionRep(faction)) || 0
@@ -57,6 +59,7 @@ function assess(ns) {
         candidates.push({
           name, faction, rep, repRequired, repGap: Math.max(0, repRequired - rep),
           price, cashReady: Number(player?.money) >= price, prerequisites,
+          canWorkForRep: faction !== gangFaction,
         })
       }
     }
@@ -69,11 +72,13 @@ function assess(ns) {
       a.repGap - b.repGap || Number(b.cashReady) - Number(a.cashReady) ||
       a.price - b.price || a.name.localeCompare(b.name) || a.faction.localeCompare(b.faction))
     const candidate = candidates[0] || null
+    const workCandidate = candidates.find((item) => item.canWorkForRep) || null
     return {
       ts: now, ok: true, resetAt: resetAt(ns), money: Number(player?.money) || 0,
       installedCount: installed.length, queuedCount: queued.length, queued,
-      factionCount: factions.length, candidate,
-      candidatesConsidered: candidates.length,
+      factionCount: factions.length, candidate, workCandidate,
+      workCandidates: candidates.filter((item) => item.canWorkForRep),
+      gangFaction, candidatesConsidered: candidates.length,
     }
   } catch (error) {
     return { ts: now, ok: false, reason: String(error?.message || error), resetAt: resetAt(ns) }

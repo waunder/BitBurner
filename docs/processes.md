@@ -873,15 +873,38 @@ unless respect growth or wanted recovery is active. Wanted uses hysteresis
 (enter below 99.5%, return to cash at 99.9%); recovery chooses the least
 expensive cleaners by projected money forgone per wanted removed. Territory
 warfare is a weighted expected-win decision rather than an all-rivals gate.
+After the gang reaches twelve members, an otherwise low-value bounded cohort
+trains combat until every active member reaches a 300 combat floor; this gives
+hacking gangs a viable territory path instead of permanently losing clashes.
+Recruitment respect growth and wanted recovery take priority over territory
+training; the latter only runs while the task planner is otherwise in cash
+mode.
 
-`equipmentEnabled` is deliberately false in the initial v2 deployment. The
-controller records the next unowned item and its cost in `gang_status.json`,
-but cannot spend until an ROI policy is explicitly added and validated.
-`gang-status.js` is the companion tail: it displays gross rate, gang earned,
-gear expenditure, net since the last augmentation install, wanted, territory,
-and whether capital is only being observed. Both scripts are launched by
-`startup.js`; if Formulas.exe is missing, the controller exits with a terminal
-message and leaves the gang untouched.
+Capital policy is shared through `gang_capital_policy.json`, which both the
+controller and HUD read. Its current phase is `augmentation`: accumulate cash
+for the final augmentation purchase review. The file also names the phase
+objective, says whether policy permits equipment purchases, and may set a cash
+target; a separate source-level master gate remains off for this run. The
+controller evaluates the best unowned equipment candidate even while spending
+is disabled, using exact gang formulas to report cost, projected incremental
+gang income, projected payback, a rolling observed net player-cash rate, and
+estimated cost-recovery time (`phaseDelaySeconds`) in `gang_status.json`. The
+cash rate is an observed whole-player net rate over a 60-second window, not a
+causal attribution to the gang purchase. Only `earning-capacity` can buy
+anything, and then only if the policy and source master gates are enabled,
+payback is at most 30 minutes, cost is at most 1% of current cash, and the
+configured augmentation cash target remains intact. Progression and
+augmentation phases never buy gang equipment. The controller does not infer
+when a reset is imminent.
+
+`hud_consolidated.js` is the default operator view: the Gang summary shows the
+current capital phase even when `gang-controller.js` is stopped, and its
+expanded section includes the objective, policy state, latest ROI candidate,
+report age, and gang income/territory details. `gang-status.js` remains an
+optional focused diagnostic and is no longer started automatically, avoiding a
+duplicate gang panel. `startup.js` starts the gang controller only when
+explicitly configured in its suite; if Formulas.exe is missing, the controller
+exits with a terminal message and leaves the gang untouched.
 
 ### `mcp_xp.js`
 
@@ -935,24 +958,31 @@ It evaluates once per minute, records its decision and reason in
 evidence-backed goal changes. A ten-minute hysteresis prevents churn.
 
 - **Start:** automatic before MCP via `mcp_launch.js` and `startup.js`.
-- **Policy:** the configured physical baseline comes first (default: train the
-  weakest of Strength, Defense, Dexterity, Agility to 30—the known Slum Snakes
-  gate); then the next normal-server Hack gate uses Rothman Algorithms; then a
-  cash-ready, live augmentation reputation gap can select faction hacking
-  work. It does not claim hidden augmentation requirements that the API cannot
-  expose.
+- **Policy:** after the configured physical baseline, a discovered normal
+  server Hack gate selects Rothman Algorithms. Otherwise, the controller
+  builds faction reputation toward the nearest prerequisite-ready augmentation
+  whose faction accepts work; it may start rep before cash is ready when its
+  price is within `repInvestmentMaxPriceMultiple` of current cash. The gang's
+  own faction is excluded because the player cannot perform faction work for
+  the gang they lead. If neither applies and karma is above
+  `crimeKarmaTarget`, it commits the crime with the highest expected karma
+  reduction per second. If no measurable gate applies, it holds the current
+  activity instead of inventing a goal.
 - **Control:** `player_activity_config.json` is committed and synced. Set
   `"override": "manual"` or `"enabled": false` to stop changes at the next
-  minute; `"algorithms"` and `"physical"` are explicit overrides. Set
-  `physicalTarget` to `0` to remove gym training from automatic selection.
-- **Scope:** never buys/installs augmentations, trades, allocates share RAM,
-  or controls Darknet. Operations makes this the `best now` recommendation:
-  it names the gym/stat and physical target before an otherwise-visible Hack
-  gate, so manual play has one unambiguous instruction.
-- **Capability check:** changing player work through this script requires
-  Source-File 4. Without it, the controller remains a durable, read-only
-  planner: it names the next activity but records the capability block once
-  and leaves the player's current work untouched.
+  minute; `"algorithms"`, `"physical"`, and `"crime"` are explicit overrides.
+  Set `physicalTarget` to `0` to remove gym training from automatic selection.
+  The controller checks the current BitNode and active Source-File 4 level on
+  every pass; it does not retain a stale capability failure across resets.
+  When the requested activity is already active, it leaves that work in place
+  and preserves accumulated progress.
+- **Scope:** selects only player work (gym, Algorithms, faction hacking, or
+  crime). It never buys/installs augmentations, trades, allocates share RAM,
+  or controls Darknet. The consolidated HUD shows both the capital phase and
+  the selected/current player activity.
+- **Capability check:** player-work selection requires Source-File 4 outside
+  BitNode 4. Without it, the controller records the current node/level and
+  leaves the player's current work untouched.
 
 ### `dnet_scorecard.js`
 

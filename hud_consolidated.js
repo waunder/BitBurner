@@ -348,21 +348,40 @@ function ipvgoStatus(ns, now) {
 }
 
 function gangStatus(ns, now) {
-  if (!ns.gang.inGang()) return { compact: "-- no gang", expanded: [] }
+  const policy = json(ns, "gang_capital_policy.json")
+  const phase = ["progression", "earning-capacity", "augmentation"].includes(policy?.phase)
+    ? policy.phase : "unknown"
+  const controllerRunning = ns.isRunning("gang-controller.js", "home")
+  const status = json(ns, "gang_status.json")
+  const reportAge = status?.ts ? age(now, status.ts) : "missing"
+  const policyPurchase = policy?.allowEquipmentPurchases === true
+  const phaseLabel = phase === "augmentation" ? "AUG CASH" : phase.toUpperCase()
+  if (!ns.gang.inGang()) return {
+    compact: `${phaseLabel} · gear ${policyPurchase ? "policy on" : "off"}`,
+    expanded: [`Capital phase: ${phase}`, `Objective: ${policy?.objective || "not specified"}`],
+  }
   const g = ns.gang.getGangInformation()
   const members = ns.gang.getMemberNames()
   const territory = (g.territory * 100).toFixed(1)
   const wanted = (g.wantedPenalty * 100).toFixed(1)
-  const status = json(ns, "gang_status.json")
   const sources = ns.getMoneySources?.().sinceInstall || {}
   const net = (Number(sources.gang) || 0) + (Number(sources.gang_expenses) || 0)
+  const candidate = status?.capital?.candidate
+  const rate = Number(status?.capital?.observedCashRate)
+  const delay = Number(candidate?.phaseDelaySeconds)
+  const enabled = policyPurchase && policy?.phase === "earning-capacity"
   return {
-    compact: `${members.length}/12 ${territory}% terr ${wanted}% wanted ${compact(g.moneyGainRate)}/s`,
+    compact: `${phaseLabel} · gear ${enabled ? "eligible" : "off"} · ${members.length}/12 ${territory}% terr ${wanted}% wanted`,
     expanded: [
-      `Faction: ${g.faction} (${g.isHacking ? "hacking" : "combat"})`,
-      `Respect: ${compact(g.respect)} (${compact(g.respectGainRate)}/s)`,
-      `Cash: earned ${compact(sources.gang || 0)}, gear ${compact(sources.gang_expenses || 0)}, net ${compact(net)}`,
-      `Mode: ${status?.mode || "--"}; projected ${compact(status?.projectedMoneyRate || 0)}/s`,
+      `Capital phase: ${phase}${controllerRunning ? "" : " (controller stopped)"}`,
+      `Objective: ${policy?.objective || "not specified"}`,
+      `Gear policy: ${enabled ? "eligible; ROI and budget gates still apply" : "disabled in this phase/policy"}`,
+      `Gang report: ${reportAge}${controllerRunning ? "" : " (last report)"}`,
+      `Candidate: ${candidate ? `${candidate.item} ${compact(candidate.cost)} → +${compact(candidate.gain)}/s; payback ${Number.isFinite(candidate.paybackSeconds) ? `${Math.round(candidate.paybackSeconds)}s` : "no projected return"}` : "none reported"}`,
+      `Cash rate: ${Number.isFinite(rate) ? `${compact(rate)}/s net observed` : "sampling"}${Number.isFinite(delay) ? `; cost recovery ${Math.round(delay)}s` : ""}`,
+      `Gang cash: earned ${compact(sources.gang || 0)}, gear ${compact(sources.gang_expenses || 0)}, net ${compact(net)}`,
+      `Gang: ${g.faction} (${g.isHacking ? "hacking" : "combat"}); ${members.length}/12; ${territory}% territory; ${wanted}% wanted`,
+      `Task mode: ${status?.mode || "--"}; projected ${compact(status?.projectedMoneyRate || 0)}/s`,
       `Warfare: ${g.territoryWarfareEngaged ? "engaged" : "off"}`,
     ],
   }

@@ -5,5 +5,7 @@
   "gym": "Powerhouse Gym",
   "university": "Rothman University",
   "factionWorkType": "hacking",
-  "cooldownMs": 600000
+  "cooldownMs": 600000,
+  "repInvestmentMaxPriceMultiple": 250,
+  "crimeKarmaTarget": -54000
 }

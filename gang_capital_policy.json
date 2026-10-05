@@ -1,0 +1,7 @@
+{
+  "phase": "augmentation",
+  "objective": "Accumulate cash for the final augmentation purchase review",
+  "allowEquipmentPurchases": false,
+  "augmentationCashTarget": null,
+  "updatedAt": "2026-10-05"
+}

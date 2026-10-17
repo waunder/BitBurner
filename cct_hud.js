@@ -1,3 +1,4 @@
+import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./tail_geometry.js"
 /**
  * Quiet Coding Contract reward panel. It only reads the bounded durable
  * reward ledger and latest submit status; it never scans, submits, or writes.
@@ -145,8 +146,10 @@ function placeTail(ns, args, lines) {
 
 export async function main(ns) {
   ns.disableLog("ALL")
+  await capturePriorTailPosition(ns, "cct_hud.js")
   closePrior(ns)
-  const args = parseArgs(ns)
+  const parsedArgs = parseArgs(ns)
+  const args = { ...parsedArgs, ...loadTailPosition(ns, "cct_hud.js", parsedArgs) }
   let placed = false
   while (true) {
     const lines = buildLines(ns)
@@ -154,6 +157,7 @@ export async function main(ns) {
     for (const [i, line] of lines.entries()) ns.print((i === 0 ? WHITE : GREEN) + line + RESET)
     if (!placed) { placeTail(ns, args, lines); placed = true }
     ns.ui?.renderTail()
+    await saveTailPosition(ns, "cct_hud.js")
     await ns.sleep(POLL_MS)
   }
 }

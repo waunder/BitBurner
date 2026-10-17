@@ -728,6 +728,14 @@ export function hostNeedsRedeploy({ target, plan, running, desired, tolerance, a
 
   const have = countRunningByScript(running)
 
+  // When the planner has admitted a work/harvest phase inside its security
+  // margin, stale excess weaken loops must not occupy the RAM needed for the
+  // newly desired hack allocation until their long call duration elapses.
+  // Replacing only mismatched script types is safe here: the current target
+  // is within the work security envelope, and the desired maintenance weaken
+  // is relaunched alongside hack by allocateThreads.
+  if (plan.type === "work" && desired.hack > have.hack && have.weaken > desired.weaken) return true
+
   let mismatched = false
   for (const script of ["hack", "grow", "weaken"]) {
     const want = desired[script] || 0

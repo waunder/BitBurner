@@ -710,7 +710,112 @@ R4 is adequate.
 
 ### 3.2 Single-target vs. concurrent multi-target
 
-**No, not now — but the reason is quantitative, not "it depends".**
+**Updated allocation direction — 2026-10-05 (Ken).** This supersedes the
+earlier preference below for staying single-target until a modeled saturation
+threshold. The next scheduler iteration should maximize useful hack capacity
+on the best-ranked target, reserve only the capacity needed to keep its
+security controlled and its money within a 10% band of maximum (at least
+90%), then assign remaining capacity to the next target. Repeat in ranked
+order until no useful hack capacity remains. Do not apply a fixed 25% cash
+withdrawal cap as a proxy for RAM demand.
+
+**Critique and refinement.** The direction fixes a real opportunity-cost
+problem: one target should not monopolize the worker pool after its next safe
+harvest is bounded. Two parts need stronger definitions before implementation:
+
+- Hack capacity is not automatically productive capacity. Hack lowers the
+  target's money and raises its security; grow and weaken consume RAM and time
+  to restore it. More hack threads can lower total cash per second once the
+  target's recovery becomes the bottleneck. Allocate against *marginal net
+  return after recovery cost*, not raw hack-thread count.
+- "Within 10%" should be treated as a hard lower money bound (90% of
+  `moneyMax`) only after a safety margin for concurrent cohort completion.
+  The actual harvest size must be computed from current money, hack percent,
+  chance, thread count and simultaneous processes. A thread cap per manager
+  pass is not a batch cap when each `hack.js` process loops indefinitely.
+  The 2026-10-05 live probe demonstrated this: 17 hack threads were allowed
+  to repeat, and ecorp fell from full money to about 46% while reporting
+  roughly $240M/s script income. This confirms activity, but violates the
+  intended 90% floor and shows why the next policy needs finite cohorts.
+- Spillover should depend on diminishing marginal value, not only on whether
+  a target's nominal hack need is "filled." Rank the next RAM increment by
+  expected marginal cash per RAM-second after its security debt, grow-back
+  time and target readiness are charged. A second target is useful when that
+  value exceeds the next increment on the first target; otherwise reserve
+  capacity for recovery or leave it idle rather than manufacture a worse
+  return.
+
+The proposed 90% boundary is a useful initial operating constraint, not a
+proven optimum. The dry-run comparison should include nearby floors (for
+example 90%, 93%, and 95%) and report realized net income, time below floor,
+security overshoot, recovery time, and idle RAM. This will establish whether
+the higher harvest headroom repays its longer restoration interval.
+
+Implementation requirements:
+
+1. **Use a per-target finite-cohort state machine.** A target is in
+   `prepare-security`, `prepare-money`, `harvest`, or `restore`. Run at most
+   one finite hack cohort per target at a time; each hack worker exits after
+   one call, and the scheduler measures the result before issuing another.
+   Continuous looping hack workers cannot enforce a money floor.
+2. **Bound each harvest against the 90% money floor.** Estimate the combined
+   cohort's withdrawal against current money, including chance and every
+   worker assigned to that cohort. Leave a calibrated safety margin for
+   concurrent completion order; if projected money would cross 90%, reduce
+   the cohort. If a target is below the floor, restore it before another
+   harvest.
+3. **Budget security per target.** Include both existing security debt and
+   the hack cohort's added security. Reserve the minimum weaken work that
+   keeps that target inside its security limit; do not make a small residual
+   debt force the entire network into a pure-weaken phase when the target is
+   still inside the existing 1.5-point work margin.
+4. **Grow only to restore the floor.** When money is below 90%, spend enough
+   grow and its security offset to bring it back to the band. Stop restorative
+   growth at the target; surplus capacity goes to the next ranked target
+   rather than overgrowing the first one toward 100%.
+5. **Spill capacity to another target.** Rank targets by expected marginal
+   money per RAM-second after each target's security and restoration reserve.
+   Allocate the best target first, then the next target with usable residual
+   capacity. Split host RAM by target where that improves packing; whole-host
+   partitions can strand most of a large worker. Recompute after a finite
+   cohort completes or the observed money, security, or available RAM changes
+   materially.
+6. **Expose per-target phase and budget.** Status/HUD must show each target's
+   allocated hack/grow/weaken threads, money band, security debt, and whether
+   it is harvesting, restoring, or security-limited. Report aggregate
+   realized income and idle RAM so a capped first target cannot look like a
+   stalled whole-network manager.
+
+**Validation gate:** first compare the plan in dry-run against the current
+single-target baseline on the same live state. Then use a bounded live window
+that covers several complete hack/restore cycles. Stop the trial on any
+unexplained money-floor breach, failed launch, stale manager status, or lower
+realized net cash rate than baseline. Only after that should the framework
+replace the live default.
+
+**Live first-pass policy (2026-10-05).** The existing MCP-owned finite
+multi-target path is now the intended live implementation. It protects 92%
+in the all-success hack case, restores a target to 95% before another harvest,
+uses one-shot workers, includes hack-added security in grow sizing, and ranks
+harvest cohorts by expected cash per action GB-second. Persistent control is
+the default; an optional lease can be requested explicitly. MCP errors stay in
+finite-error and retry instead of falling through to looping money workers.
+This is a conservative operational first pass, not a claim that adaptive
+marginal sizing has been proven optimal. Live confirmation still requires
+observing completed finite cohorts, no floor breach, and usable spillover to
+additional targets; report realized cash, money/security lows, prep cost, and
+idle capacity before tuning the 92%/95% thresholds.
+
+This is a bounded harvest/restore multi-target policy, not the current
+continuous balanced split in `mcp.js`, the whole-host steady-state partition
+in `mcpMulti.js`, or the cloud-only capped batch controller in `mcp_cloud.js`.
+The first target's priority is to use as much hack allocation as is useful
+while satisfying its 90% money floor and security budget; a second target
+receives the remainder. The live single-target manager remains the safe
+fallback until the multi-target implementation has a dry-run comparison and
+bounded live validation.
+
+**Previous assessment (superseded by the 2026-10-05 allocation direction above).**
 
 Income is concave in the thread budget (`1 − exp(−G·k)`), so splitting the
 pool across targets does beat single-target once the best target starts
@@ -724,7 +829,7 @@ saturating. Optimising the split numerically over the whole modelled network
 | best 3 (+ phantasy) | $28.3 M/s | **1.22×** |
 | unconstrained | $28.4 M/s | 1.22× |
 
-So the entire prize is **+22 %**, and 80 % of it comes from just adding a
+The old steady-state model estimated the entire prize at **+22 %**, and 80 % of it comes from just adding a
 second target. Against that: per-target weaken budgets, per-target eviction
 and hold timers, a RAM partition policy, a much larger `mcp_status.json`
 schema, and the loss of the single-`currentTarget` invariant that most of

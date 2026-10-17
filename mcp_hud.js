@@ -1,3 +1,4 @@
+import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./tail_geometry.js"
 /**
  * Terse status panel for mcp.js, sized to sit under the game's Overview.
  *
@@ -256,12 +257,8 @@ function switchRow(status) {
  * out from placeTail so the position can be known (and shown on the panel
  * itself, per Ken's request) before the first paint, not just applied.
  *
- * Bitburner exposes no getter for a tail window's current position or size —
- * checked against the ui cost table, not assumed: moveTail/resizeTail have
- * no read-side counterpart. So a manual drag can never be read back; this is
- * the closest substitute — show what was actually applied (args, or the
- * computed default), so dialing in a position is "adjust the number, see
- * where it lands, read the confirmation" instead of "drag, then capture".
+ * Saved per-panel coordinates are the default, while explicit x=/y= args
+ * still win. The x/y echo shows the resolved placement before first paint.
  *
  * width is approximate here (WIDTH_CHARS-derived, not the post-content-fit
  * value) — fine for x's right-edge anchor, which only needs to be close, and
@@ -333,8 +330,10 @@ function killPriorInstances(ns) {
 
 export async function main(ns) {
   ns.disableLog("ALL")
+  await capturePriorTailPosition(ns, "mcp_hud.js")
   killPriorInstances(ns)
-  const args = parseArgs(ns)
+  const parsedArgs = parseArgs(ns)
+  const args = { ...parsedArgs, ...loadTailPosition(ns, "mcp_hud.js", parsedArgs) }
   const pos = resolvePosition(ns, args)
   let placed = false
 
@@ -361,6 +360,7 @@ export async function main(ns) {
     }
     if (ns.ui && typeof ns.ui.renderTail === "function") ns.ui.renderTail()
 
+    await saveTailPosition(ns, "mcp_hud.js")
     await ns.sleep(POLL_MS)
   }
 }

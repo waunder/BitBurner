@@ -1,3 +1,9 @@
+> **Historical session log only — reviewed 2026-10-16.** This file contains
+> old task notes and instructions from another workflow. Do not read it as a
+> current to-do list or operating guide. Current authority is `AGENTS.md`,
+> `STATE.md`, and `docs/Codex-todo.md`; old entries require revalidation.
+> Preserved because other historical incident notes link here.
+
 # Claude's working list
 
 ## 2026-09-05 (latest): the "8% cct success rate" was a HUD math bug, not a solver problem

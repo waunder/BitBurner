@@ -1,3 +1,4 @@
+import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./tail_geometry.js"
 /**
  * Read-only stock market panel — groundwork for trading, not trading itself.
  * Never calls buyStock/sellStock/buyShort/sellShort/placeOrder/cancelOrder;
@@ -34,8 +35,9 @@
  */
 const POLL_MS = 4000
 
-const WHITE = "[37m"
-const RESET = "[0m"
+const WHITE = "\u001b[1;37m"
+const GREEN = "\u001b[1;32m"
+const RESET = "\u001b[0m"
 
 const DEFAULT_Y = 640
 const RIGHT_MARGIN = 8
@@ -203,8 +205,10 @@ function killPriorInstances(ns) {
 
 export async function main(ns) {
   ns.disableLog("ALL")
+  await capturePriorTailPosition(ns, "mcp_stocks.js")
   killPriorInstances(ns)
-  const args = parseArgs(ns)
+  const parsedArgs = parseArgs(ns)
+  const args = { ...parsedArgs, ...loadTailPosition(ns, "mcp_stocks.js", parsedArgs) }
   const pos = resolvePosition(ns, args)
   // Line count varies a lot here (0 positions vs several, 4S locked vs a
   // full watchlist) — re-placing whenever it changes avoids the truncation
@@ -231,7 +235,7 @@ export async function main(ns) {
     }
 
     ns.clearLog()
-    for (const line of lines) ns.print(WHITE + line + RESET)
+    for (const [i, line] of lines.entries()) ns.print((i === 0 ? WHITE : GREEN) + line + RESET)
 
     if (lines.length !== placedLineCount) {
       placeTail(ns, args, lines, pos)
@@ -239,6 +243,7 @@ export async function main(ns) {
     }
     if (ns.ui && typeof ns.ui.renderTail === "function") ns.ui.renderTail()
 
+    await saveTailPosition(ns, "mcp_stocks.js")
     await ns.sleep(POLL_MS)
   }
 }

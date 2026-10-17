@@ -1,3 +1,4 @@
+import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./tail_geometry.js"
 /**
  * Compact XP/progression panel.  It deliberately consumes MCP's already
  * durable status record, so a twenty-second refresh creates no additional
@@ -159,8 +160,10 @@ function placeTail(ns, args, lines) {
 
 export async function main(ns) {
   ns.disableLog("ALL")
+  await capturePriorTailPosition(ns, "mcp_xp.js")
   closePrior(ns)
-  const args = parseArgs(ns)
+  const parsedArgs = parseArgs(ns)
+  const args = { ...parsedArgs, ...loadTailPosition(ns, "mcp_xp.js", parsedArgs) }
   let placed = false
   while (true) {
     const lines = buildLines(ns)
@@ -171,6 +174,7 @@ export async function main(ns) {
       placed = true
     }
     ns.ui?.renderTail()
+    await saveTailPosition(ns, "mcp_xp.js")
     await ns.sleep(POLL_MS)
   }
 }

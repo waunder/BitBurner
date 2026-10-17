@@ -1,3 +1,4 @@
+import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./tail_geometry.js"
 /**
  * Compact live Dark Net scorecard, visually and operationally parallel to
  * mcp_money.js. It reads the durable home-side shards directly so the panel
@@ -188,8 +189,10 @@ function killPriorInstances(ns) {
 
 export async function main(ns) {
   ns.disableLog("ALL")
+  await capturePriorTailPosition(ns, "dnet_scorecard.js")
   killPriorInstances(ns)
-  const args = parseArgs(ns)
+  const parsedArgs = parseArgs(ns)
+  const args = { ...parsedArgs, ...loadTailPosition(ns, "dnet_scorecard.js", parsedArgs) }
   const pos = resolvePosition(ns, args)
   const state = { startedAt: Date.now(), baseCharisma: null }
   let placed = false
@@ -208,6 +211,7 @@ export async function main(ns) {
       placed = true
     }
     ns.ui.renderTail()
+    await saveTailPosition(ns, "dnet_scorecard.js")
     await ns.sleep(POLL_MS)
   }
 }

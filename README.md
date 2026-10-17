@@ -62,5 +62,10 @@ That prints a summary of the latest manager status, including per-host allocatio
 - `mcp.js` writes `mcp_status.json` every loop, overwriting the previous status.
 - `mcp_status_log.txt` is appended each loop for historical review.
 - The parser is written in Python for local execution without Node.
-- Current objective/status lives in `STATE.md`; the short list of things
-  that need Ken's explicit go-ahead is in `AGENTS.md`.
+- Start a work session with `AGENTS.md` and `STATE.md`; both are deliberately
+  short current context. Read the dated archive only when historical evidence
+  is relevant.
+- Current objective/status lives in `STATE.md`; routine Remote API checks,
+  reconnects and source-sync verification are in
+  [`docs/remote-api-keepalive.md`](docs/remote-api-keepalive.md). The limited
+  explicit-approval cases are in `AGENTS.md`.

@@ -1,3 +1,4 @@
+import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./tail_geometry.js"
 /**
  * Watches two files for requests from outside the game, so neither a code
  * change nor a question about game state needs a human hand once this is
@@ -112,6 +113,8 @@ function formatDump(ns, filename, requestedLines) {
 function showDump(ns, lines) {
   if (!ns.ui) return
   if (typeof ns.ui.openTail === "function") ns.ui.openTail()
+  const position = loadTailPosition(ns, "mcp_supervisor.js")
+  if (Number.isFinite(position.x) && Number.isFinite(position.y)) ns.ui.moveTail(position.x, position.y)
   if (typeof ns.ui.setTailTitle === "function") ns.ui.setTailTitle(DUMP_TITLE)
 
   ns.clearLog()
@@ -187,6 +190,7 @@ function killPriorInstances(ns) {
 
 export async function main(ns) {
   ns.disableLog("ALL")
+  await capturePriorTailPosition(ns, "mcp_supervisor.js")
   killPriorInstances(ns)
   // Seed both from whatever is already on disk so a supervisor restart
   // doesn't immediately re-trigger on a stale token.
@@ -216,6 +220,7 @@ export async function main(ns) {
       handleDumpRequest(ns, dumpContents)
     }
 
+    await saveTailPosition(ns, "mcp_supervisor.js")
     await ns.sleep(POLL_MS)
   }
 }

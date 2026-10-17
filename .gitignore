@@ -36,6 +36,7 @@ node_modules/
 mcp_restart.txt
 mcp_dump_request.txt
 mcp_objective_override.txt
+gang_objective_override.txt
 
 # tools/bb_remote.py's connection-event diagnostic log (generated, local),
 # and the nohup stdout/log redirects used to run `daemon`/the monitor
@@ -62,3 +63,9 @@ saves/*.json.gz
 # Durable in-game cloud control and generated multi-target observations
 mcp_cloud_control.json
 mcp_cloud_status.json
+
+# Bounded Remote API logs and recovery lock (generated)
+tools/bb_remote_events.log.*
+tools/bb_remote_daemon.log.*
+tools/bb_remote_daemon.out.*
+tools/.remote_api_recovery.lock

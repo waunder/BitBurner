@@ -1,5 +1,7 @@
+import { planMoneyTasks, planReputationTasks } from "./gang_logic.js";
+
 /**
- * Gang v2: formula-driven cash, respect, wanted, and territory control.
+ * Gang v2: formula-driven money or faction-reputation, wanted, and territory control.
  *
  * It deliberately starts with equipment purchasing disabled.  The prior
  * controller spent through a fixed cash reserve; v2 records a per-item
@@ -12,7 +14,8 @@ const C = {
   ascendAt: 1.25,
   wantedEnter: 0.995,
   wantedExit: 0.999,
-  maxCleanerShare: 0.50,
+  wantedReductionFraction: 0.001,
+  wantedUpdateCycles: 10,
   territoryMinWin: 0.58,
   territoryWeightedWin: 0.65,
   // A hacking gang still needs combat stats to win territory clashes. Train a
@@ -24,7 +27,8 @@ const C = {
   // this optional controller is stopped. A source-level master gate still
   // prevents accidental spending during this run.
   policyFile: "gang_capital_policy.json",
-  equipmentMasterEnabled: false,
+  objectiveOverrideFile: "gang_objective_override.txt",
+  equipmentMasterEnabled: true,
   equipmentCashFraction: 0.01,
   equipmentMaxPaybackSeconds: 30 * 60,
   cashRateWindowMs: 60_000,
@@ -78,9 +82,19 @@ function readCapitalPolicy(ns) {
   }
 }
 
+function readGangObjective(ns) {
+  const value = String(ns.read(C.objectiveOverrideFile) || "money").trim().toLowerCase()
+  return value === "reputation" ? "reputation" : "money"
+}
+
 /** @param {NS} ns */
 export async function main(ns) {
   ns.disableLog("ALL");
+  // Re-running this controller is the in-game update/restart path. Retire
+  // prior copies before they can keep assigning tasks or writing status.
+  for (const process of ns.ps("home")) {
+    if (process.filename === "gang-controller.js" && process.pid !== ns.pid) ns.kill(process.pid);
+  }
   if (!ns.gang.inGang()) return ns.tprint("gang v2: no gang");
   if (!ns.fileExists("Formulas.exe", "home")) return ns.tprint("gang v2: Formulas.exe required");
 
@@ -88,17 +102,22 @@ export async function main(ns) {
   let mode = "cash";
   let cashWindow = { at: Date.now(), money: ns.getServerMoneyAvailable("home") };
   let observedCashRate = null;
+  let factionRepSample = { at: 0, rep: null };
+  let observedFactionRepRate = null;
+  let factionRep = null;
+  let factionRepReadAt = 0;
   while (true) {
     while (ns.gang.canRecruitMember()) ns.gang.recruitMember(`operator-${Date.now()}`);
 
     const gang = ns.gang.getGangInformation();
+    const gangObjective = readGangObjective(ns);
     const members = ns.gang.getMemberNames().map((name) => ns.gang.getMemberInformation(name));
     const tasks = ns.gang.getTaskNames().map((name) => ns.gang.getTaskStats(name));
     const training = tasks.find((t) => t.name === (gang.isHacking ? "Train Hacking" : "Train Combat"));
     const combatTraining = tasks.find((t) => t.name === "Train Combat");
     const clean = tasks.find((t) => t.name === (gang.isHacking ? "Ethical Hacking" : "Vigilante Justice"));
     const productive = tasks.filter((t) => t.baseMoney > 0);
-    const respectTasks = tasks.filter((t) => t.baseRespect > 0 && t.baseWanted >= 0);
+    const respectTasks = tasks.filter((t) => t.baseRespect > 0);
 
     if (gang.wantedPenalty < C.wantedEnter) cleanupMode = true;
     else if (gang.wantedPenalty >= C.wantedExit) cleanupMode = false;
@@ -108,27 +127,40 @@ export async function main(ns) {
       if (stat < C.trainStat) return { member, choice: { task: training?.name || member.task, money: 0, respect: 0, wanted: 0 }, trained: false };
       const projections = productive.map((task) => projected(ns, gang, member, task));
       const respect = respectTasks.map((task) => projected(ns, gang, member, task));
-      return { member, choice: bestBy(projections, "money"), respect: bestBy(respect, "respect"), trained: true, projections };
+      return { member, choice: bestBy(projections, "money"), respect: bestBy(respect, "respect"),
+        clean: clean ? projected(ns, gang, member, clean) : null, trained: true, projections };
     });
+    let reputationPlan = null;
+    let moneyPlan = null;
 
     // Before twelve members, respect is capital: devote the best candidates to
     // recruitment only when a recruit remains unavailable.
     const recruitGrowth = members.length < 12 && !ns.gang.canRecruitMember();
-    if (recruitGrowth) {
+    if (recruitGrowth && gangObjective !== "reputation") {
       mode = "respect";
       for (const plan of plans.filter((p) => p.trained)) plan.choice = plan.respect || plan.choice;
+    } else if (gangObjective === "reputation") {
+      if (cleanupMode && clean) {
+        reputationPlan = planReputationTasks(plans, gang.wantedLevel, C.wantedReductionFraction, C.wantedUpdateCycles);
+        for (let i = 0; i < plans.length; i++) {
+          plans[i].choice = reputationPlan.assignments[i].choice;
+          plans[i].role = reputationPlan.assignments[i].role;
+        }
+        mode = reputationPlan.cleanerCount ? "wanted-recovery" : "reputation";
+      } else {
+        mode = "reputation";
+        for (const plan of plans) {
+          plan.choice = plan.trained ? (plan.respect || plan.choice) : plan.choice;
+          plan.role = plan.trained ? "respect" : "training";
+        }
+      }
     } else if (cleanupMode && clean) {
-      mode = "wanted-recovery";
-      const cleaners = plans.filter((p) => p.trained)
-        .map((p) => ({ ...p, clean: projected(ns, gang, p.member, clean) }))
-        .filter((p) => p.clean.wanted < 0)
-        .sort((a, b) => {
-          const aCost = Math.max(0, (a.choice?.money || 0) - a.clean.money) / Math.max(1e-12, -a.clean.wanted);
-          const bCost = Math.max(0, (b.choice?.money || 0) - b.clean.money) / Math.max(1e-12, -b.clean.wanted);
-          return aCost - bCost;
-        });
-      const count = Math.min(cleaners.length, Math.max(1, Math.ceil(cleaners.length * C.maxCleanerShare)));
-      for (const plan of cleaners.slice(0, count)) plan.choice = plan.clean;
+      moneyPlan = planMoneyTasks(plans, gang.wantedLevel, C.wantedReductionFraction, C.wantedUpdateCycles);
+      for (let i = 0; i < plans.length; i++) {
+        plans[i].choice = moneyPlan.assignments[i].choice;
+        plans[i].role = moneyPlan.assignments[i].role;
+      }
+      mode = moneyPlan.cleanerCount ? "wanted-recovery" : "cash";
     } else {
       mode = "cash";
     }
@@ -149,7 +181,9 @@ export async function main(ns) {
       const count = Math.min(trainees.length, Math.max(1, Math.ceil(plans.length * C.territoryTraineeShare)));
       for (const plan of trainees.slice(0, count)) {
         plan.choice = { task: combatTraining.name, money: 0, respect: 0, wanted: 0 };
+        plan.role = "territory-training";
       }
+      if (gangObjective === "money") moneyPlan = null;
       mode = "territory-training";
     }
 
@@ -157,7 +191,9 @@ export async function main(ns) {
       if (plan.choice?.task && plan.member.task !== plan.choice.task) ns.gang.setMemberTask(plan.member.name, plan.choice.task);
       const asc = ns.gang.getAscensionResult(plan.member.name);
       const mult = asc && (gang.isHacking ? asc.hack : asc.str);
-      if (mult && mult >= C.ascendAt) ns.gang.ascendMember(plan.member.name);
+      // Ascension removes this member's earned respect from Gang Faction
+      // reputation. Preserve the faction-reputation balance while farming it.
+      if (gangObjective !== "reputation" && mult && mult >= C.ascendAt) ns.gang.ascendMember(plan.member.name);
     }
 
     const rivals = Object.entries(ns.gang.getAllGangInformation()).filter(([name, info]) => name !== gang.faction && info.territory > 0);
@@ -174,6 +210,18 @@ export async function main(ns) {
     const nextItem = equipment.find((x) => members.some((m) => !isOwned(m, x.item))) || null;
     const cash = ns.getServerMoneyAvailable("home");
     const capitalPolicy = readCapitalPolicy(ns);
+    const statusNow = Date.now();
+    if (statusNow - factionRepReadAt >= 5000) {
+      factionRepReadAt = statusNow;
+      try { factionRep = Number(ns.singularity.getFactionRep(gang.faction)); }
+      catch { factionRep = null; }
+      if (Number.isFinite(factionRep)) {
+        if (factionRepSample.rep !== null && statusNow > factionRepSample.at) {
+          observedFactionRepRate = (factionRep - factionRepSample.rep) / ((statusNow - factionRepSample.at) / 1000);
+        }
+        factionRepSample = { at: statusNow, rep: factionRep };
+      }
+    }
     const cashElapsed = Date.now() - cashWindow.at;
     if (cashElapsed >= C.cashRateWindowMs) {
       observedCashRate = (cash - cashWindow.money) / (cashElapsed / 1000);
@@ -206,7 +254,21 @@ export async function main(ns) {
           : !bestEquipment ? "no unowned equipment candidate"
             : !roiQualified ? "candidate fails payback, cash-slice, or reserve limit" : null;
     const bought = purchaseAllowed && ns.gang.purchaseEquipment(bestEquipment.member, bestEquipment.item) ? bestEquipment : null;
-    const status = { ts: Date.now(), mode, members: members.length, gang, projectedMoneyRate: gross, projectedWantedRate: wanted,
+    const status = { ts: statusNow, mode, gangObjective, factionRep: Number.isFinite(factionRep) ? factionRep : null,
+      observedFactionRepRate, projectedRespectPerCycle: plans.reduce((sum, p) => sum + (p.choice?.respect || 0), 0),
+      projectedWantedRate: wanted, reputationPlan: reputationPlan && {
+        targetWantedRate: reputationPlan.targetWantedRate, projectedWantedRate: reputationPlan.projectedWantedRate,
+        projectedRespectRate: reputationPlan.projectedRespectRate, cleanerCount: reputationPlan.cleanerCount,
+        targetMet: reputationPlan.targetMet, cyclesPerUpdate: C.wantedUpdateCycles,
+      },
+      assignments: plans.map((p) => ({ member: p.member.name, task: p.choice?.task || p.member.task,
+        role: p.role || (p.trained ? mode : "training"), respect: p.choice?.respect || 0, wanted: p.choice?.wanted || 0 })),
+      members: members.length, gang, projectedMoneyRate: gross,
+      projectedWantedRate: reputationPlan?.projectedWantedRate ?? moneyPlan?.projectedWantedRate ?? wanted,
+      moneyPlan: moneyPlan && { targetWantedRate: moneyPlan.targetWantedRate,
+        projectedMoneyRate: moneyPlan.projectedMoneyRate, projectedWantedRate: moneyPlan.projectedWantedRate,
+        cleanerCount: moneyPlan.cleanerCount, targetMet: moneyPlan.targetMet,
+        cyclesPerUpdate: C.wantedUpdateCycles },
       cleanupMode, territory: { fight, weightedChance, rivals: clashes.length, lowestCombat: Math.min(...members.map(combatFloor)) },
       capital: { phase: capitalPolicy.phase, objective: capitalPolicy.objective, cash, observedCashRate,
         augmentationCashTarget: augmentationTarget, policyAllowsPurchases: capitalPolicy.allowEquipmentPurchases,

@@ -428,12 +428,15 @@ function hashSource(text) {
 // attempted), which is why mcp_status.json's recentEvents looked fine the
 // whole time and hid the problem.
 const EVENT_FILE = "mcp_events.txt"
-// Events are transitions only — roughly 40 in a long session, not 1353 — so
-// the file stays small. Trimmed once at startup rather than rewritten per
-// event, which bounds growth inside the save game while still letting the
-// record survive the restarts that wipe every in-memory sample.
-const EVENT_FILE_KEEP = 300
+// Keep a recent diagnostic window, not an unbounded archive, in the save.
+const LOG_FILE_KEEP = 300
 const STATUS_EVENT_COUNT = 20
+
+function appendBoundedLog(ns, filename, line) {
+  const lines = ns.read(filename).split("\n").filter((entry) => entry.trim())
+  lines.push(line)
+  ns.write(filename, lines.slice(-LOG_FILE_KEEP).join("\n") + "\n", "w")
+}
 
 /**
  * Transition log. The rule, which is the whole point of it:
@@ -451,8 +454,8 @@ function makeEventLog(ns, runId, scriptVersion) {
   const raw = ns.read(EVENT_FILE)
   if (raw) {
     const lines = raw.split("\n").filter((l) => l.trim())
-    if (lines.length > EVENT_FILE_KEEP) {
-      ns.write(EVENT_FILE, lines.slice(-EVENT_FILE_KEEP).join("\n") + "\n", "w")
+    if (lines.length > LOG_FILE_KEEP) {
+      ns.write(EVENT_FILE, lines.slice(-LOG_FILE_KEEP).join("\n") + "\n", "w")
     }
   }
 
@@ -471,7 +474,7 @@ function makeEventLog(ns, runId, scriptVersion) {
       recent.push(event)
       if (recent.length > STATUS_EVENT_COUNT) recent.shift()
       try {
-        ns.write(EVENT_FILE, JSON.stringify(event) + "\n", "a")
+        appendBoundedLog(ns, EVENT_FILE, JSON.stringify(event))
         log.lastWriteError = null
       } catch (e) {
         log.lastWriteError = String(e)
@@ -554,6 +557,7 @@ function formatStatus(status) {
   const parts = [
     `mcp target=${status.target}`,
     `plan=${status.plan}${status.weightBucket ? "/" + status.weightBucket : ""}`,
+    `phase=${status.phase}`,
     `held=${status.heldSeconds}s`,
     `tick=${status.tickSeconds.toFixed(1)}s`,
     `sec=${status.currentSecurity.toFixed(2)}`,
@@ -989,7 +993,14 @@ function buildPlan(ns, target, wasWorking, wasGrowHeld = false) {
   // weaken, not surplus grow that immediately recreates the security debt.
   const holdGrowth = OBJECTIVE !== "xp" && (moneyPct >= GROW_HOLD_MONEY_PCT ||
     (wasGrowHeld && moneyPct > GROW_RESUME_MONEY_PCT))
-  if (requiredWeaken > 0) {
+  // At full money, a small existing security debt should not idle the entire
+  // network until a long weaken call finishes. The work plan's bounded
+  // harvest-only allocator pairs hack with its maintenance weaken, and the
+  // existing work margin already permits this much drift. Above that margin
+  // (or while money needs regrowth), keep the dedicated weaken/grow phase.
+  const securityWithinWorkMargin =
+    currentSecurity <= ns.getServerMinSecurityLevel(target) + WORK_SECURITY_MARGIN
+  if (requiredWeaken > 0 && !(holdGrowth && securityWithinWorkMargin)) {
     return { type: "weaken", currentSecurity, moneyPct, objective: OBJECTIVE, holdGrowth }
   }
 
@@ -1363,7 +1374,11 @@ export async function main(ns) {
       }
       const cloud = await cloudTick(ns, cloudState, { servers, workers, runId, objective: OBJECTIVE, emit: (kind,inputs)=>events.emit(kind,inputs) })
       if (cloud) {
-        invariants.check('workerLaunchSucceeded',cloud.workerLaunchFailures.length===0,{failures:cloud.workerLaunchFailures})
+        // Draining/orphan finite batches deliberately launch nothing and omit
+        // workerLaunchFailures. Treat that as an empty failure list so the
+        // finite cohort can settle before the continuous XP planner resumes.
+        const workerLaunchFailures = cloud.workerLaunchFailures || []
+        invariants.check('workerLaunchSucceeded',workerLaunchFailures.length===0,{failures:workerLaunchFailures})
         const status={...cloud,scriptVersion,reputation,player:ns.getPlayer(),config:{OBJECTIVE},objectiveOverrideActive,invariantViolations:invariants.counts,recentEvents:events.recent}
         await ns.write('mcp_status.json',JSON.stringify(status),'w')
         await ns.write('mcp_cloud_status.json',JSON.stringify(status),'w')
@@ -1372,11 +1387,16 @@ export async function main(ns) {
       }
     } catch(error) {
       invariants.check('cloudSchedulerHealthy',false,{error:String(error)})
-      if(cloudState.active) {
-        await ns.write('mcp_cloud_control.json',JSON.stringify({enabled:false,reason:String(error),ts:Date.now()}),'w')
-        await ns.sleep(LOOP_SLEEP_MS)
-        continue
-      }
+      // Never fall through from an MCP/cloud error into the looping money
+      // planner: that would bypass finite cohort withdrawal limits.
+      const failure={ts:Date.now(),runId,scriptVersion,workerMode:'finite-error',plan:'multi',phase:'error',error:String(error),
+        target:[...(cloudState.batches?.keys?.()||[])][0]||null,targets:[...(cloudState.batches?.keys?.()||[])],
+        reputation,player:ns.getPlayer(),config:{OBJECTIVE},objectiveOverrideActive,invariantViolations:invariants.counts,
+        recentEvents:events.recent,workerLaunchFailures:[]}
+      await ns.write('mcp_status.json',JSON.stringify(failure),'w')
+      await ns.write('mcp_cloud_status.json',JSON.stringify(failure),'w')
+      await ns.sleep(LOOP_SLEEP_MS)
+      continue
     }
     const maxWeaken = getTotalWeakenCapacity(ns, workers)
     expireTargetExclusions(skippedTargets, drainedTargets)
@@ -1436,14 +1456,23 @@ export async function main(ns) {
         // window expired. ×2 leaves room for one full cycle plus slack
         // against tick-boundary timing, rather than exactly one cycle with
         // no margin.
+        // Don't evict merely because a long weaken call hasn't completed yet.
+        // Netscript's onlineRunningTime is the reliable signal for whether a
+        // worker is still actively executing a weaken; browser background
+        // throttling can stretch wall-clock ticks beyond the call duration.
         const stuckWindowMs = Math.max(WEAKEN_STUCK_MS, ns.getWeakenTime(currentTarget) * 2)
+        const hasActiveWeaken = workers.some((host) =>
+          getRunningActions(ns, host).some(({ proc, normalized }) =>
+            normalized === "/scripts/weaken.js" && proc.args[0] === currentTarget
+          )
+        )
         const stuckEval = evaluateStuckTarget({
           currentSecurity,
           bestSecuritySeen,
           securityProgressTime,
           requiredWeaken: currentRequiredWeaken,
           now: Date.now(),
-          stuckWindowMs,
+          stuckWindowMs: hasActiveWeaken ? Infinity : stuckWindowMs,
           progressThreshold: WEAKEN_STUCK_SECURITY_THRESHOLD,
         })
         securityProgressTime = stuckEval.securityProgressTime
@@ -1930,6 +1959,13 @@ export async function main(ns) {
       homeCores: ns.getServer("home").cpuCores,
       target: currentTarget,
       plan: plan.type,
+      phase: plan.type === "weaken"
+        ? (plan.holdGrowth ? "security-recovery" : "security-and-growth")
+        : (plan.weightBucket || "work"),
+      holdGrowth: plan.holdGrowth === true,
+      activeTargetWeaken: workers.reduce((total, host) => total + getRunningActions(ns, host)
+        .filter(({ proc, normalized }) => normalized === "/scripts/weaken.js" && proc.args[0] === currentTarget)
+        .reduce((threads, { proc }) => threads + proc.threads, 0), 0),
       debugWorkWeights: plan.debugWorkWeights || null,
       weightBucket: plan.weightBucket || null,
       currentSecurity: plan.currentSecurity,
@@ -2018,7 +2054,7 @@ export async function main(ns) {
       // buried the handful of transitions that actually explain behaviour.
       const signature = `${currentTarget}|${plan.type}|${plan.weightBucket || ""}`
       if (signature !== lastLogSignature) {
-        ns.write("mcp_status_log.txt", `[${new Date(status.ts).toISOString()}] ${line}\n`, "a")
+        appendBoundedLog(ns, "mcp_status_log.txt", `[${new Date(status.ts).toISOString()}] ${line}`)
         lastLogSignature = signature
       }
     } catch (e) {

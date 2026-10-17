@@ -449,6 +449,21 @@ describe("hostNeedsRedeploy — 2026-08-13 rewrite: allocation-quantity diff, no
 })
 
 describe("evaluateStuckTarget — the 2026-08-13 floor-eviction bug", () => {
+  test("a target with an active weaken worker is not considered stuck before the caller's grace expires", () => {
+    // An active game action may outlive several delayed manager ticks; the
+    // caller passes Infinity while a matching weaken process is still live.
+    const result = evaluateStuckTarget({
+      currentSecurity: 52.18675,
+      bestSecuritySeen: 52.18675,
+      securityProgressTime: 1_000,
+      requiredWeaken: 384,
+      now: 1_200_000,
+      stuckWindowMs: Infinity,
+      progressThreshold: 0.05,
+    })
+    assert.equal(result.stuck, false)
+  })
+
   test("regression: a target sitting at its security floor is never stuck, no matter how long it's been there", () => {
     // The exact live shape: bestSecuritySeen frozen at the floor from a long
     // time ago, stalledMs already far past the window — the case that used

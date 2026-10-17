@@ -1,3 +1,4 @@
+import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./tail_geometry.js"
 /** Consolidated Interactive HUD - Clickable Sections
  *
  * Single summary window showing MCP, Darknet, Augmentation, System status.
@@ -51,6 +52,15 @@ function json(ns, file) {
   }
 }
 
+function age(now, ts) {
+  if (!Number.isFinite(ts) || ts <= 0) return "missing"
+  const seconds = Math.max(0, Math.floor((now - ts) / 1000))
+  if (seconds < 60) return `${seconds}s`
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `${minutes}m`
+  return `${Math.floor(minutes / 60)}h ${minutes % 60}m`
+}
+
 function compact(value, digits = 1) {
   const n = Number(value) || 0
   const sign = n < 0 ? "-" : ""
@@ -71,6 +81,9 @@ function mcpStatus(ns, now) {
   const running = ageMs < STALE_MS
 
   const target = status.target || "--"
+  const plan = status.plan || "unknown"
+  const phase = plan === "weaken" ? (status.holdGrowth ? "security recovery" : "security + growth")
+    : plan === "work" ? (status.weightBucket || "money work") : plan
   const objective = ["money", "xp", "reputation"].includes(status.config?.OBJECTIVE)
     ? status.config.OBJECTIVE : "unknown"
   const money = status.totalHacked || 0
@@ -120,12 +133,13 @@ function mcpStatus(ns, now) {
   }
 
   return {
-    compact: `${running ? "✓" : "⊘"} ${objective} ${compact(moneyPerMin, 1)}/m ${actionSummary}`,
+    compact: `${running ? "✓" : "⊘"} ${objective}:${phase}${status.holdGrowth ? "+hold" : ""} ${compact(moneyPerMin, 1)}/m ${Math.round(actionRamPct)}%RAM ${actionSummary}`,
     expanded: [
       `Status: ${running ? "RUNNING" : "STOPPED"}`,
       `Objective: ${objective}${running ? "" : " (last reported)"}`,
       ...(status.targets ? [`Targets: ${status.targets.length} (${status.targets.filter(t=>t.phase==='harvest').length} harvesting, ${status.targets.filter(t=>t.phase!=='harvest').length} preparing) — see MCP target stats`,
         `Cloud: ${Math.round(status.cloudControl?.effectiveFraction*100)}% withdrawal; expires ${new Date(status.cloudControl?.expiresAt).toLocaleTimeString()}`] : [`Target: ${target}`]),
+      `Phase: ${phase}${status.holdGrowth ? " (growth held at money threshold)" : ""}${plan === "weaken" ? `; ${status.activeTargetWeaken || 0} weaken threads` : ""}`,
       `Rate: ${compact(rate, 2)}/s (avg ${compact(avgRate, 2)}/s)`,
       `Total hacked: ${compact(money)}`,
       `Deployment: ${deployment}`,
@@ -196,27 +210,31 @@ function darknetStatus(ns, now) {
 }
 
 function augmentationStatus(ns, now) {
-  const mcp = json(ns, "mcp_status.json")
-  if (!mcp) return { compact: "-- unavailable", expanded: [] }
+  const readiness = json(ns, "augmentation_readiness.json")
+  const readinessFresh = Boolean(readiness?.ok && Number.isFinite(readiness.ts) && now - readiness.ts <= 180_000)
+  let sourceFiles = null
+  try {
+    const owned = ns.singularity.getOwnedSourceFiles()
+    if (Array.isArray(owned)) sourceFiles = owned.slice().sort((a, b) => a.n - b.n)
+  } catch { /* Source Files need Singularity access; keep their status explicit. */ }
+  const sourceFileSummary = sourceFiles === null ? "unknown" : `${sourceFiles.length} owned`
+  let karma = null
+  try { karma = Number(ns.heart.break()) } catch { /* Preserve an unavailable marker. */ }
 
-  const charisma = mcp.player?.skills?.charisma || 0
-  const xpRate = mcp.xpPerMinute?.xp || 0
-  const nextAugMs = mcp.augmentation?.nextAugmentationMs || 0
-  const nextAugMin = Math.max(0, Math.floor(nextAugMs / 60000))
-
-  let detail = `+${compact(xpRate)}/m`
-  if (nextAugMin > 0) {
-    const h = Math.floor(nextAugMin / 60)
-    const m = nextAugMin % 60
-    detail += ` → ${h}h ${m}m`
-  }
+  const augCompact = readinessFresh
+    ? `${readiness.queuedCount || 0} queued`
+    : readiness?.ok ? `stale ${readiness.queuedCount || 0} queued` : "readiness unavailable"
+  const ageLabel = readiness?.ok ? age(now, readiness.ts) : "missing"
 
   return {
-    compact: detail,
+    compact: `${augCompact} · SF ${sourceFileSummary.replace(" owned", "")} · K ${karma === null || !Number.isFinite(karma) ? "unknown" : compact(karma, 0)}`,
     expanded: [
-      `Charisma: ${charisma}`,
-      `XP/min: ${compact(xpRate, 1)}`,
-      `Next aug: ${nextAugMin > 0 ? `${nextAugMin}m` : "unknown"}`,
+      `Augmentations: ${readinessFresh ? `${readiness.installedCount} installed, ${readiness.queuedCount} queued` : readiness?.ok ? `${readiness.installedCount} installed, ${readiness.queuedCount} queued (stale)` : "readiness unavailable"}`,
+      `Next candidate: ${readinessFresh ? (readiness.candidate?.name || "none available") : "unknown (stale status)"}`,
+      `Readiness age: ${ageLabel}`,
+      `Source Files: ${sourceFileSummary}`,
+      ...(sourceFiles?.length ? sourceFiles.map((sf) => `  SF${sf.n}.${sf.lvl}`) : []),
+      `Karma: ${karma === null || !Number.isFinite(karma) ? "unknown" : compact(karma, 2)}`,
     ],
   }
 }
@@ -355,10 +373,10 @@ function gangStatus(ns, now) {
   const status = json(ns, "gang_status.json")
   const reportAge = status?.ts ? age(now, status.ts) : "missing"
   const policyPurchase = policy?.allowEquipmentPurchases === true
-  const phaseLabel = phase === "augmentation" ? "AUG CASH" : phase.toUpperCase()
+  const phaseLabel = `CAP ${phase.toUpperCase()}`
   if (!ns.gang.inGang()) return {
-    compact: `${phaseLabel} · gear ${policyPurchase ? "policy on" : "off"}`,
-    expanded: [`Capital phase: ${phase}`, `Objective: ${policy?.objective || "not specified"}`],
+    compact: `${phaseLabel} · controller ${controllerRunning ? "on" : "stopped"} · gear ${policyPurchase ? "policy on" : "off"}`,
+    expanded: [`Capital phase: ${phase}`, `Controller: ${controllerRunning ? "running" : "stopped"}`, `Objective: ${policy?.objective || "not specified"}`],
   }
   const g = ns.gang.getGangInformation()
   const members = ns.gang.getMemberNames()
@@ -371,16 +389,19 @@ function gangStatus(ns, now) {
   const delay = Number(candidate?.phaseDelaySeconds)
   const enabled = policyPurchase && policy?.phase === "earning-capacity"
   return {
-    compact: `${phaseLabel} · gear ${enabled ? "eligible" : "off"} · ${members.length}/12 ${territory}% terr ${wanted}% wanted`,
+    compact: `${phaseLabel} · controller ${controllerRunning ? "on" : "stopped"} · gear ${enabled ? "eligible" : "off"} · ${members.length}/12 ${territory}% terr ${wanted}% wanted`,
     expanded: [
       `Capital phase: ${phase}${controllerRunning ? "" : " (controller stopped)"}`,
-      `Objective: ${policy?.objective || "not specified"}`,
+      `Capital policy objective: ${policy?.objective || "not specified"}`,
       `Gear policy: ${enabled ? "eligible; ROI and budget gates still apply" : "disabled in this phase/policy"}`,
       `Gang report: ${reportAge}${controllerRunning ? "" : " (last report)"}`,
       `Candidate: ${candidate ? `${candidate.item} ${compact(candidate.cost)} → +${compact(candidate.gain)}/s; payback ${Number.isFinite(candidate.paybackSeconds) ? `${Math.round(candidate.paybackSeconds)}s` : "no projected return"}` : "none reported"}`,
       `Cash rate: ${Number.isFinite(rate) ? `${compact(rate)}/s net observed` : "sampling"}${Number.isFinite(delay) ? `; cost recovery ${Math.round(delay)}s` : ""}`,
       `Gang cash: earned ${compact(sources.gang || 0)}, gear ${compact(sources.gang_expenses || 0)}, net ${compact(net)}`,
       `Gang: ${g.faction} (${g.isHacking ? "hacking" : "combat"}); ${members.length}/12; ${territory}% territory; ${wanted}% wanted`,
+      `Gang task objective: ${status?.gangObjective || "not reported"}`,
+      `Faction rep: ${status?.factionRep == null ? "unavailable" : compact(status.factionRep)}${Number.isFinite(Number(status?.observedFactionRepRate)) ? `; +${compact(Number(status.observedFactionRepRate))}/s` : "; rate sampling"}`,
+      `Projected respect/cycle: ${Number.isFinite(Number(status?.projectedRespectPerCycle)) ? Number(status.projectedRespectPerCycle).toFixed(2) : "--"}`,
       `Task mode: ${status?.mode || "--"}; projected ${compact(status?.projectedMoneyRate || 0)}/s`,
       `Warfare: ${g.territoryWarfareEngaged ? "engaged" : "off"}`,
     ],
@@ -411,7 +432,7 @@ function buildDisplay(ns, state, pos) {
   for (const section of sections) {
     const isExpanded = state.expanded === section.key
     const indicator = isExpanded ? "▼" : "▶"
-    const keyHint = { mcp: "hm", darknet: "hd", cct: "hc", ipvgo: "hg", gang: "--", aug: "ha", system: "hs" }[section.key]
+    const keyHint = { mcp: "hm", darknet: "hd", cct: "hc", gang: "hg", ipvgo: "hi", aug: "ha", system: "hs" }[section.key]
     const hint = COLORS.HEADER + `[${keyHint}]` + COLORS.RESET
     const sectionHeader = COLORS.HEADER + `${indicator} ${section.label}` + COLORS.RESET
     const compactLine = sectionHeader + COLORS.HEALTHY + " " + section.data.compact + " " + hint
@@ -482,9 +503,11 @@ function resizeTail(ns, lines, size) {
 
 export async function main(ns) {
   ns.disableLog("ALL")
+  await capturePriorTailPosition(ns, "hud_consolidated.js")
   killPriorInstances(ns)
 
-  const args = parseArgs(ns)
+  const parsedArgs = parseArgs(ns)
+  const args = { ...parsedArgs, ...loadTailPosition(ns, "hud_consolidated.js", parsedArgs) }
   const pos = {
     x: args.x ?? DEFAULT_X,
     y: args.y ?? DEFAULT_Y,
@@ -536,6 +559,7 @@ export async function main(ns) {
       ns.print(COLORS.HEADER + "ERROR: " + err.message + COLORS.RESET)
     }
 
+    await saveTailPosition(ns, "hud_consolidated.js")
     await ns.sleep(POLL_MS)
   }
 }

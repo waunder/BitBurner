@@ -1,11 +1,12 @@
 # Moving off the VS Code extension's file sync
 
-> **Historical plan status, 2026-08-15 (updated 2026-08-18):** the Remote API
-> daemon now provides routine watched-source push and generated-artifact
-> pull, with reconnect resync and local self-tests passing. Prototype-era
-> "not live" language below is chronology; current status lives in
-> `STATE.md`, and the watched/pulled file sets are
-> `tools/bb_remote.py::WATCHED_FILES`/`PULL_FILES` directly.
+> **Historical research, current status updated 2026-10-16:** this document
+> preserves the original design and staged validation record. The direct
+> Remote API is live and has been round-tripped against Bitburner; its routine
+> recovery and sync instructions are in `docs/remote-api-keepalive.md`.
+> Prototype-era blockers below describe the earlier investigation, not the
+> present deployment. Current live state is recorded in `STATE.md`; file sets
+> remain defined in `tools/bb_remote.py::WATCHED_FILES` and `PULL_FILES`.
 
 Research + prototype for the decision made 2026-08-09 (see
 `docs/kensTodo.md` and the session memory it was logged from): stop

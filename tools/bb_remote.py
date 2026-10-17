@@ -186,8 +186,7 @@ in the opposite direction:
   "get_file on deleted file raises" check) — caught per-file and reported
   as `missing`, not raised, exactly like a missing `WATCHED_FILES` entry is
   handled on the push side.
-- **Incremental pull every `PULL_POLL_S` (2s, same cadence as the push
-  side's `SYNC_POLL_S`) while connected** — only files whose fetched
+  - **Incremental pull every `PULL_POLL_S` while connected** — only files whose fetched
   content differs from what was last written locally get re-written, so an
   idle daemon does not rewrite disk every 2 seconds.
 - New CLI: `ctl-pull` forces an immediate full pull pass on demand (the
@@ -245,7 +244,10 @@ from __future__ import annotations
 import argparse
 import asyncio
 import datetime
+import errno
 import json
+import logging
+from logging.handlers import RotatingFileHandler
 import os
 import sys
 import tempfile
@@ -296,18 +298,43 @@ DEFAULT_WATCH_DURATION_S = 180.0
 # --------------------------------------------------------------------------
 
 _log_file_path: Path | None = DEFAULT_LOG_FILE
+_log_stdout = True
+_log_handler = None
+_log_handler_path = None
+_LOG_MAX_BYTES = 5 * 1024 * 1024
+_LOG_BACKUPS = 2
 
 
 def _log(msg: str) -> None:
+    global _log_handler, _log_handler_path
+    # RPC payloads used to duplicate complete scripts and telemetry several
+    # times per second into both files and stdout (>1GB observed 2026-10-05).
+    # Lifecycle, timeout, errors and full sync outcomes remain on by default.
+    trace = os.environ.get("BB_REMOTE_TRACE") == "1"
+    routine = (msg.startswith(("SEND:", "RECV:", "OK:", "PULL: incremental pull done"))
+               or (msg.startswith("CTL:") and "-> status " in msg)
+               or (msg.startswith("ERROR:") and "File does not exist" in msg))
+    if routine and not trace:
+        return
+    if len(msg) > 2000:
+        msg = msg[:2000] + "... [truncated]"
     ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
     line = f"[{ts}] {msg}"
-    print(line, flush=True)
+    if _log_stdout:
+        print(line, flush=True)
     if _log_file_path is not None:
         try:
-            with open(_log_file_path, "a") as f:
-                f.write(line + "\n")
+            if _log_handler is None or _log_handler_path != _log_file_path:
+                if _log_handler is not None:
+                    _log_handler.close()
+                _log_handler = RotatingFileHandler(
+                    _log_file_path, maxBytes=_LOG_MAX_BYTES, backupCount=_LOG_BACKUPS,
+                    encoding="utf-8", delay=True,
+                )
+                _log_handler_path = _log_file_path
+            _log_handler.emit(logging.LogRecord("bb_remote", logging.INFO, "", 0, line, (), None))
         except OSError as e:
-            print(f"[{ts}] (log file write failed: {e})", flush=True)
+            print(f"[{ts}] (log file write failed: {e})", file=sys.stderr, flush=True)
 
 
 class JsonRpcError(RuntimeError):
@@ -331,6 +358,11 @@ class RemoteApiServer:
         self._client = None
         self._connected_event = asyncio.Event()
         self._next_id = 1
+        self.last_connected_at_ms = None
+        self.last_disconnected_at_ms = None
+        self.last_response_at_ms = None
+        self.last_disconnect = None
+        self.connection_count = 0
         self._pending: dict[int, asyncio.Future] = {}
         # Set by TriggerDaemon (see "Routine script sync" below) so a fresh
         # game connection — first connect OR a reconnect after a drop — can
@@ -397,6 +429,9 @@ class RemoteApiServer:
         _log(f"CONNECTED from {remote}; headers={request_headers}")
         connect_started = time.monotonic()
         self._client = ws
+        self.connection_count += 1
+        self.last_connected_at_ms = int(time.time() * 1000)
+        self.last_response_at_ms = None
         self._connected_event.set()
         if self._on_connect_hook is not None:
             asyncio.create_task(self._run_on_connect_hook())
@@ -417,6 +452,8 @@ class RemoteApiServer:
                 f"(close_code={close_code}, close_reason={close_reason!r}){exc_info}"
             )
             if self._client is ws:
+                self.last_disconnected_at_ms = int(time.time() * 1000)
+                self.last_disconnect = {"code": close_code, "reason": close_reason, "detail": exc_info.strip()}
                 self._client = None
                 self._connected_event.clear()
             self._reject_all_pending("Bitburner disconnected")
@@ -443,6 +480,7 @@ class RemoteApiServer:
         if fut is None or fut.done():
             _log(f"DROPPED: response for unknown/already-resolved id={msg_id}: {raw[:300]!r}")
             return
+        self.last_response_at_ms = int(time.time() * 1000)
         if "error" in msg and msg["error"] is not None:
             err = msg["error"]
             message = err if isinstance(err, str) else json.dumps(err)
@@ -806,7 +844,9 @@ PULL_FILES = [
     "automation_review.txt",
 ]
 
-PULL_POLL_S = 2.0  # mirrors SYNC_POLL_S / mcp_supervisor.js's POLL_MS
+PULL_POLL_S = 2.0
+LOG_PULL_POLL_S = 60.0
+SLOW_PULL_FILES = {"mcp_status_log.txt", "mcp_events.txt", "mcp_multi_status_log.txt", "mcp_multi_events.txt"}
 # `ctl-push` transports a complete source file as one local JSON line. MCP is
 # already larger than asyncio's default 64 KiB stream limit, so keep a bounded
 # release-sized allowance on both ends of this loopback-only protocol.
@@ -890,6 +930,12 @@ class TriggerDaemon:
         self.pull_files = pull_files if pull_files is not None else PULL_FILES
         self._last_pulled: dict[str, str] = {}
         self._pull_missing_warned: set[str] = set()
+        self._last_log_pull_at = 0.0
+        self.last_sync_pass = None
+        self.last_pull_pass = None
+        self.last_full_sync_ok_at_ms = None
+        self.last_full_pull_ok_at_ms = None
+        self.last_pull_read_at_ms = None
         if sync_enabled or pull_enabled:
             rpc.set_on_connect_hook(self.on_game_connected)
 
@@ -952,6 +998,10 @@ class TriggerDaemon:
                 f"missing {len(missing)}"
                 + (f" pushed={pushed}" if pushed and len(pushed) <= 12 else "")
             )
+        self.last_sync_pass = {"at_ms": int(time.time() * 1000), "full": full,
+                               "pushed": len(pushed), "failed": failed, "missing": missing}
+        if full and not failed and not missing:
+            self.last_full_sync_ok_at_ms = self.last_sync_pass["at_ms"]
         return {"pushed": pushed, "failed": failed, "missing": missing}
 
     async def on_game_connected(self):
@@ -962,6 +1012,11 @@ class TriggerDaemon:
         pass right after, for the exact same reason in the other
         direction: a drop must not leave stale telemetry on disk either.
         """
+        self._last_pushed.clear()
+        self._last_pulled.clear()
+        self.last_full_sync_ok_at_ms = None
+        self.last_full_pull_ok_at_ms = None
+        self.last_pull_read_at_ms = None
         if self.sync_enabled:
             _log("SYNC: game (re)connected — running full resync pass of all watched files")
             await self._resync(full=True)
@@ -982,7 +1037,7 @@ class TriggerDaemon:
             except Exception as e:
                 _log(f"SYNC: poll loop error: {type(e).__name__}: {e}")
 
-    async def _pull(self, full: bool) -> dict:
+    async def _pull(self, full: bool, include_logs: bool = True) -> dict:
         """Game -> disk counterpart to `_resync`. Fetches every
         `pull_files` entry via `getFile` and writes it to its matching
         local path (full=True) or only the ones whose fetched content
@@ -992,16 +1047,27 @@ class TriggerDaemon:
         skipped-and-reported via `missing`, never raised, mirroring exactly
         how `_resync` treats a watched file that's missing on disk.
         """
-        pulled, failed, missing = [], [], []
-        for relpath in self.pull_files:
+        pulled, failed, missing, write_failed = [], [], [], []
+        files = self.pull_files if include_logs else [
+            path for path in self.pull_files if path not in SLOW_PULL_FILES
+        ]
+        for relpath in files:
             try:
                 content = await self.api.get_file(_remote_name(relpath))
-            except JsonRpcError:
-                missing.append(relpath)
-                if relpath not in self._pull_missing_warned:
-                    _log(f"PULL: remote file not found (yet), skipping: {relpath}")
-                    self._pull_missing_warned.add(relpath)
+            except JsonRpcError as exc:
+                if "File does not exist" in str(exc):
+                    missing.append(relpath)
+                    if relpath not in self._pull_missing_warned:
+                        _log(f"PULL: remote file not found (yet), skipping: {relpath}")
+                        self._pull_missing_warned.add(relpath)
+                else:
+                    failed.append(relpath)
+                    _log(f"PULL: RPC failed for {relpath}: {exc}")
+                    # A lost game connection cannot serve the rest of this pass.
+                    if not self.rpc.is_connected:
+                        break
                 continue
+            self.last_pull_read_at_ms = int(time.time() * 1000)
             self._pull_missing_warned.discard(relpath)
             if not full and self._last_pulled.get(relpath) == content:
                 continue
@@ -1011,6 +1077,7 @@ class TriggerDaemon:
                 pulled.append(relpath)
             except OSError as e:
                 failed.append(relpath)
+                write_failed.append(relpath)
                 _log(f"PULL: write failed for {relpath}: {e}")
         # Unlike _resync's "missing" (a local-read problem, so all-missing
         # signals a bad repo_root), pull's "missing" means the *remote* file
@@ -1018,7 +1085,7 @@ class TriggerDaemon:
         # bad repo_root shows up here as "failed" (the local write raising)
         # instead, so that's what gets the all-of-them alarm check.
         attempted = len(self.pull_files) - len(missing)
-        if attempted > 0 and len(failed) == attempted:
+        if attempted > 0 and len(write_failed) == attempted:
             self.pull_root_alarm = (
                 f"every pull write failed under repo_root={self._resolve_repo_root()} -- "
                 f"this almost always means the daemon's working directory moved out from "
@@ -1035,6 +1102,10 @@ class TriggerDaemon:
                 f"missing {len(missing)}"
                 + (f" pulled={pulled}" if pulled and len(pulled) <= 12 else "")
             )
+        self.last_pull_pass = {"at_ms": int(time.time() * 1000), "full": full,
+                               "pulled": len(pulled), "failed": failed, "missing": missing}
+        if full and not failed:
+            self.last_full_pull_ok_at_ms = self.last_pull_pass["at_ms"]
         return {"pulled": pulled, "failed": failed, "missing": missing}
 
     async def pull_poll_loop(self):
@@ -1049,7 +1120,11 @@ class TriggerDaemon:
             if not self.pull_enabled or not self.rpc.is_connected:
                 continue
             try:
-                await self._pull(full=False)
+                now = time.monotonic()
+                include_logs = now - self._last_log_pull_at >= LOG_PULL_POLL_S
+                await self._pull(full=False, include_logs=include_logs)
+                if include_logs:
+                    self._last_log_pull_at = now
             except Exception as e:
                 _log(f"PULL: poll loop error: {type(e).__name__}: {e}")
 
@@ -1075,15 +1150,27 @@ class TriggerDaemon:
     async def _do_status(self):
         return {
             "connected": self.rpc.is_connected,
+            "health": "connected" if self.rpc.is_connected else "game_disconnected",
+            "checked_at_ms": int(time.time() * 1000),
+            "connection_count": self.rpc.connection_count,
+            "last_connected_at_ms": self.rpc.last_connected_at_ms,
+            "last_disconnected_at_ms": self.rpc.last_disconnected_at_ms,
+            "last_disconnect": self.rpc.last_disconnect,
+            "last_response_at_ms": self.rpc.last_response_at_ms,
+            "last_sync_pass": self.last_sync_pass,
+            "last_pull_pass": self.last_pull_pass,
+            "last_full_sync_ok_at_ms": self.last_full_sync_ok_at_ms,
+            "last_full_pull_ok_at_ms": self.last_full_pull_ok_at_ms,
+            "last_pull_read_at_ms": self.last_pull_read_at_ms,
             "daemon_uptime_s": round(time.monotonic() - self.started_at, 1),
             "repo_root": str(self._resolve_repo_root()),
             "sync_enabled": self.sync_enabled,
             "watched_files": len(self.watched_files),
-            "files_synced_this_connection": len(self._last_pushed),
+            "files_synced_this_connection": len(self._last_pushed) if self.rpc.is_connected else 0,
             "sync_root_alarm": self.sync_root_alarm,
             "pull_enabled": self.pull_enabled,
             "pull_files": len(self.pull_files),
-            "files_pulled_this_connection": len(self._last_pulled),
+            "files_pulled_this_connection": len(self._last_pulled) if self.rpc.is_connected else 0,
             "pull_root_alarm": self.pull_root_alarm,
         }
 
@@ -1136,11 +1223,11 @@ class TriggerDaemon:
 
 
 async def cmd_daemon(args):
-    rpc = RemoteApiServer(port=args.port)
+    rpc = RemoteApiServer(port=args.port, host=args.host)
     try:
         await rpc.start()
     except OSError as e:
-        _log(f"Could not bind game-facing port 127.0.0.1:{args.port}: {e}")
+        _log(f"Could not bind game-facing port {args.host}:{args.port}: {e}")
         return 1
 
     sync_enabled = not args.no_sync
@@ -1203,23 +1290,33 @@ async def _ctl_call(control_port: int, req: dict, timeout: float = 15.0) -> dict
         reader, writer = await asyncio.wait_for(
             asyncio.open_connection("127.0.0.1", control_port, limit=CONTROL_MESSAGE_LIMIT), timeout=5
         )
-    except (ConnectionRefusedError, OSError, asyncio.TimeoutError) as e:
+    except (OSError, asyncio.TimeoutError) as e:
+        if isinstance(e, PermissionError) or getattr(e, "errno", None) in (errno.EPERM, errno.EACCES):
+            return {
+                "ok": False, "error_code": "permission_denied",
+                "error": (
+                    f"Access to local daemon control port 127.0.0.1:{control_port} was denied: {e}. "
+                    "The caller's sandbox or network policy blocked this check; daemon health is unknown. "
+                    "Retry from an authorized local terminal or with approved network access. "
+                    "Do not restart the daemon based on this error."
+                ),
+            }
+        code = "connection_refused" if isinstance(e, ConnectionRefusedError) else "control_unreachable"
         return {
-            "ok": False,
-            "error": (
-                f"could not reach daemon control port 127.0.0.1:{control_port}: {e}. "
-                f"Is `bb_remote.py daemon --control-port {control_port}` running?"
-            ),
+            "ok": False, "error_code": code,
+            "error": f"Could not reach daemon control port 127.0.0.1:{control_port}: {type(e).__name__}: {e}",
         }
     try:
         writer.write((json.dumps(req) + "\n").encode())
         await writer.drain()
         raw = await asyncio.wait_for(reader.readline(), timeout=timeout)
         if not raw:
-            return {"ok": False, "error": "daemon closed the connection with no response"}
+            return {"ok": False, "error_code": "control_closed", "error": "daemon closed the connection with no response"}
         return json.loads(raw.decode())
     except asyncio.TimeoutError:
-        return {"ok": False, "error": f"daemon did not respond within {timeout}s"}
+        return {"ok": False, "error_code": "control_timeout", "error": f"daemon did not respond within {timeout}s"}
+    except (OSError, ValueError, UnicodeError) as exc:
+        return {"ok": False, "error_code": "control_protocol_error", "error": f"Invalid or interrupted control response: {type(exc).__name__}: {exc}"}
     finally:
         writer.close()
 
@@ -1227,7 +1324,12 @@ async def _ctl_call(control_port: int, req: dict, timeout: float = 15.0) -> dict
 async def cmd_ctl_status(args):
     result = await _ctl_call(args.control_port, {"cmd": "status"})
     print(json.dumps(result, indent=2))
-    return 0 if result.get("ok") else 1
+    # Status reaching a disconnected daemon remains exit 0 for compatibility.
+    # Supervisors must read result.connected before claiming game health.
+    if result.get("ok"):
+        return 0
+    return {"permission_denied": 3, "connection_refused": 4,
+            "control_timeout": 5}.get(result.get("error_code"), 1)
 
 
 async def cmd_ctl_restart(args):
@@ -1405,13 +1507,13 @@ async def _mock_game_client(uri: str, files: dict):
                     result = "OK"
                 elif method == "getFile":
                     if params["filename"] not in files:
-                        raise KeyError(params["filename"])
+                        raise JsonRpcError(f"File does not exist. Filename: {params['filename']}")
                     result = files[params["filename"]]
                 elif method == "getFileNames":
                     result = sorted(files.keys())
                 elif method == "deleteFile":
                     if params["filename"] not in files:
-                        raise KeyError(params["filename"])
+                        raise JsonRpcError(f"File does not exist. Filename: {params['filename']}")
                     del files[params["filename"]]
                     result = "OK"
                 elif method == "getAllFiles":
@@ -1635,6 +1737,33 @@ async def run_selftest():
     await rpc.stop()
     mock_task.cancel()
 
+    # Regression: stale caches and a dead connection are not a successful
+    # current sync or a set of missing remote files.
+    disconnected = await daemon._do_status()
+    checks.append(("disconnected status clears current connection counts",
+                   disconnected["health"] == "game_disconnected" and
+                   disconnected["files_synced_this_connection"] == 0 and
+                   disconnected["files_pulled_this_connection"] == 0))
+    checks.append(("disconnect reason and time remain available",
+                   disconnected["last_disconnected_at_ms"] is not None and
+                   disconnected["last_disconnect"]["code"] == 1000))
+    disconnected_pull = await daemon._pull(full=True)
+    checks.append(("disconnected pull reports failed RPC, not missing files",
+                   bool(disconnected_pull["failed"]) and not disconnected_pull["missing"]))
+    checks.append(("RPC failure does not masquerade as local pull root failure",
+                   daemon.pull_root_alarm is None))
+
+    original_open_connection = asyncio.open_connection
+    try:
+        async def deny_connection(*_args, **_kwargs):
+            raise PermissionError(errno.EPERM, "sandbox denied")
+        asyncio.open_connection = deny_connection
+        denied = await _ctl_call(12527, {"cmd": "status"})
+        checks.append(("sandbox denied control check is explicit and not a missing daemon",
+                       denied.get("error_code") == "permission_denied"))
+    finally:
+        asyncio.open_connection = original_open_connection
+
     ok = True
     for name, passed in checks:
         print(f"{'PASS' if passed else 'FAIL'}: {name}")
@@ -1786,6 +1915,11 @@ def build_parser():
         ),
     )
     sp.add_argument(
+        "--host",
+        default="127.0.0.1",
+        help="Interface/address for the game-facing Remote API listener. Keep the default unless the browser runs outside this host's loopback namespace.",
+    )
+    sp.add_argument(
         "--no-sync", action="store_true",
         help="Disable the watched-file push/resync loop; daemon still serves restart/dump/ctl-* as before this feature existed.",
     )
@@ -1818,9 +1952,12 @@ def build_parser():
 
 
 def main():
-    global _log_file_path
+    global _log_file_path, _log_stdout
     args = build_parser().parse_args(_normalize_argv(sys.argv[1:]))
     _log_file_path = Path(args.log_file) if args.log_file else None
+    # Daemon stdout belongs to launchd/nohup and cannot rotate itself. Keep
+    # routine diagnostics in the bounded event file; preserve stderr crashes.
+    _log_stdout = args.cmd != "daemon" or _log_file_path is None
     dispatch = {
         "probe": cmd_probe,
         "push": cmd_push,

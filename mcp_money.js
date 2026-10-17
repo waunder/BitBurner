@@ -1,3 +1,4 @@
+import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./tail_geometry.js"
 /**
  * Terse money sources/sinks panel — a second small log window alongside
  * mcp_hud.js, independently startable/closeable/rollup-able like any tail
@@ -35,8 +36,8 @@ const POLL_MS = 2000
 
 const GREEN = "\x1b[1;32m"
 
-const WHITE = "[37m"
-const RESET = "[0m"
+const WHITE = "\u001b[1;37m"
+const RESET = "\u001b[0m"
 
 // Positioned below where mcp_hud.js typically sits by default, so the two
 // don't overlap out of the box; x=/y= override either independently.
@@ -107,16 +108,8 @@ function buildLines(ns, pos) {
   return lines
 }
 
-/**
- * Resolves where the window will land, independent of rendering it. No
- * getter for a tail window's actual position/size exists anywhere in the
- * ui cost table — checked, not assumed — so a manual drag can never be read
- * back. This is the substitute: show what was actually applied (args, or
- * the computed default), so dialing in a position is "adjust the number,
- * see where it lands, read the confirmation" rather than "drag, then
- * capture". width here is approximate (WIDTH_CHARS-derived, not the
- * post-content-fit value) — fine for the right-edge anchor, and it means
- * position doesn't have to wait on line count to resolve.
+/** Resolves saved or explicit placement before rendering; width here is an
+ * estimate used only for the right-edge anchor, so it needn't wait on lines.
  */
 function resolvePosition(ns, args) {
   const styles = ns.ui && typeof ns.ui.getStyles === "function" ? ns.ui.getStyles() : null
@@ -170,8 +163,10 @@ function killPriorInstances(ns) {
 
 export async function main(ns) {
   ns.disableLog("ALL")
+  await capturePriorTailPosition(ns, "mcp_money.js")
   killPriorInstances(ns)
-  const args = parseArgs(ns)
+  const parsedArgs = parseArgs(ns)
+  const args = { ...parsedArgs, ...loadTailPosition(ns, "mcp_money.js", parsedArgs) }
   const pos = resolvePosition(ns, args)
   let placed = false
 
@@ -192,6 +187,7 @@ export async function main(ns) {
     }
     if (ns.ui && typeof ns.ui.renderTail === "function") ns.ui.renderTail()
 
+    await saveTailPosition(ns, "mcp_money.js")
     await ns.sleep(POLL_MS)
   }
 }

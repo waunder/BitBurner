@@ -1,6 +1,6 @@
 {
   "enabled": true,
-  "override": "auto",
+  "override": "manual",
   "physicalTarget": 30,
   "gym": "Powerhouse Gym",
   "university": "Rothman University",

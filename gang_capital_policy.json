@@ -1,7 +1,7 @@
 {
   "phase": "augmentation",
-  "objective": "Accumulate cash for the final augmentation purchase review",
+  "objective": "Accumulate cash toward optional QLink while prioritizing BN2 hacking progression; stop gang equipment purchases",
   "allowEquipmentPurchases": false,
   "augmentationCashTarget": null,
-  "updatedAt": "2026-10-05"
+  "updatedAt": "2026-10-07"
 }

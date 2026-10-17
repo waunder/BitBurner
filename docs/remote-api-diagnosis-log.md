@@ -430,3 +430,55 @@ than just the intended script set — venv/tooling cruft, not only
 Bitburner scripts. Not investigated or fixed here, just flagged: worth
 understanding the scope of what's exposed (and why) before the trigger-file
 replacement starts writing/reading through this connection routinely.
+
+
+## 2026-10-05 — distinguish local access failure from game disconnection
+
+Confirmed two independent problems in this session. A sandboxed `ctl-status`
+returned `[Errno 1] Operation not permitted`, while the same command with
+approved loopback access reached the existing daemon (uptime 9373s) and
+reported `connected: false`. The previous message incorrectly implied every
+unreachable check meant no daemon. Event evidence records the actual Steam
+connection drop at 15:15:49: close code 1006, no close frame received/sent.
+That close reason alone does not identify the underlying cause.
+
+Historical daemon logs also record EPERM on attempted binds on September 21.
+The old shell monitor reacted to every control failure by killing a saved
+PID and launching a replacement, with no lock or sandbox distinction.
+`force_sync.sh` deliberately killed the daemon before every full refresh,
+then claimed success if any sync counter was positive. The old keepalive
+documentation promised automatic game reconnection, although the earlier
+live diagnosis did not establish that guarantee. The in-game keepalive
+reads a host `.log` file that the sync manifest never supplies, so it cannot
+actually supervise the host daemon.
+
+Implemented explicit control error codes and safe recovery states;
+serialized start-if-missing recovery; no saved-PID kills; full resync on the
+existing socket; connection/close/freshness diagnostics; and genuine RPC
+pull failures separate from missing game files. The server remains a
+listener: if Steam does not reconnect, Connect in its Remote API settings
+is still required. No UI retry loop was added.
+
+Event logging had reached about 1.2GB, with duplicated daemon stdout about
+406MB. New daemon logging uses a 5MiB event file plus two backups, bounded
+payload previews and opt-in routine RPC trace. Daemon stdout no longer
+duplicates events; crash stderr remains available. Historical oversized logs
+are to be retained as dated evidence before replacing the old process.
+
+Validation: all 39 isolated Remote API selftest checks pass (port 21212;
+no live game use). Focused recovery checks confirm game-disconnected,
+permission-denied and occupied-port states never spawn/kill a process;
+rotation retained exactly three bounded test files. Shell/Python syntax and
+diff whitespace checks pass. Live safe recovery subsequently returned
+`connected`, `action: none`, 96 synced and 29 pulled files against the old
+running daemon. Activating the new daemon requires the supervisor handoff.
+
+
+Integration also reproduced a recovery-probe defect after the old daemon
+stopped: `bind()` without `SO_REUSEADDR` returned EADDRINUSE despite no
+listener, because old TCP connections remained in TIME_WAIT. The recovery
+probe now matches asyncio's POSIX listener (`SO_REUSEADDR`, no
+`SO_REUSEPORT`) and tests `listen()` as well as bind. An isolated ephemeral
+TCP-port reproduction confirmed all three cases: active listener rejected,
+old plain bind fails after close/TIME_WAIT, new probe permits immediate
+reuse. The real daemon still performs its own bind under the recovery lock.

@@ -1,3 +1,4 @@
+import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./tail_geometry.js"
 /**
  * Terse status panel for ipvgo_player.js, same shape and reasoning as
  * mcp_hud.js (see that file's own header) — stacks below it and
@@ -37,7 +38,8 @@ const POLL_MS = 2000
 
 // Matches mcp_hud.js's WHITE/RESET choice for the same reason: separates
 // our panels from the game's green at a glance.
-const WHITE = "\u001b[37m"
+const WHITE = "\u001b[1;37m"
+const GREEN = "\u001b[1;32m"
 const RESET = "\u001b[0m"
 
 // ipvgo_player.js plays continuously once a game is active, but a single
@@ -171,8 +173,10 @@ function killPriorInstances(ns) {
 
 export async function main(ns) {
   ns.disableLog("ALL")
+  await capturePriorTailPosition(ns, "ipvgo_hud.js")
   killPriorInstances(ns)
-  const args = parseArgs(ns)
+  const parsedArgs = parseArgs(ns)
+  const args = { ...parsedArgs, ...loadTailPosition(ns, "ipvgo_hud.js", parsedArgs) }
   const pos = resolvePosition(ns, args)
   let placed = false
 
@@ -187,7 +191,7 @@ export async function main(ns) {
     }
 
     ns.clearLog()
-    for (const line of lines) ns.print(WHITE + line + RESET)
+    for (const [i, line] of lines.entries()) ns.print((i === 0 ? WHITE : GREEN) + line + RESET)
 
     if (!placed) {
       placeTail(ns, args, lines, pos)
@@ -195,6 +199,7 @@ export async function main(ns) {
     }
     if (ns.ui && typeof ns.ui.renderTail === "function") ns.ui.renderTail()
 
+    await saveTailPosition(ns, "ipvgo_hud.js")
     await ns.sleep(POLL_MS)
   }
 }

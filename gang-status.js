@@ -1,3 +1,4 @@
+import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./tail_geometry.js"
 /** Optional focused gang diagnostics; the default summary is in hud_consolidated.js. */
 const POLL_MS = 5000;
 const GREEN = "\u001b[1;32m";
@@ -14,8 +15,16 @@ function money(n) {
 /** @param {NS} ns */
 export async function main(ns) {
   ns.disableLog("ALL");
+  await capturePriorTailPosition(ns, "gang-status.js");
+  for (const process of ns.ps(ns.getHostname())) {
+    if (process.pid === ns.pid || process.filename.replace(/^\//, "") !== "gang-status.js") continue;
+    ns.ui.closeTail(process.pid);
+    ns.kill(process.pid);
+  }
   ns.ui.openTail();
   ns.ui.setTailTitle("gang_detail");
+  const position = loadTailPosition(ns, "gang-status.js");
+  if (Number.isFinite(position.x) && Number.isFinite(position.y)) ns.ui.moveTail(position.x, position.y);
   while (true) {
     let status = {}, policy = {};
     try { status = JSON.parse(ns.read("gang_status.json")); } catch {}
@@ -25,16 +34,19 @@ export async function main(ns) {
     const phase = policy.phase || "unknown";
     const candidate = status.capital?.candidate;
     const lines = [
-      `GANG ${status.mode || "--"}  members ${status.members ?? "--"}`,
+      `GANG task ${status.gangObjective || "--"} / ${status.mode || "--"}  members ${status.members ?? "--"}`,
       `CAPITAL PHASE ${phase.toUpperCase()}  ${running ? "controller running" : "controller stopped"}`,
-      `objective ${policy.objective || "not specified"}`,
+      `capital policy ${policy.objective || "not specified"}`,
       `earned ${money(source.gang || 0)}  gear ${money(source.gang_expenses || 0)}  net ${money((source.gang || 0) + (source.gang_expenses || 0))}`,
       `territory ${((status.gang?.territory || 0) * 100).toFixed(2)}%  warfare ${status.gang?.territoryWarfareEngaged ? "ON" : "off"}`,
+      `faction rep ${status.factionRep == null ? "unavailable" : money(status.factionRep)}${Number.isFinite(status.observedFactionRepRate) ? `  +${money(status.observedFactionRepRate)}/s` : "  sampling"}`,
+      `objective ${status.gangObjective || "not reported"}  projected respect/cycle ${status.projectedRespectPerCycle == null ? "--" : Number(status.projectedRespectPerCycle).toFixed(2)}`,
       candidate ? `ROI ${candidate.item} ${money(candidate.cost)} → +${money(candidate.gain)}/s; payback ${Number.isFinite(candidate.paybackSeconds) ? `${candidate.paybackSeconds.toFixed(0)}s` : "none"}` : "ROI candidate --",
       `purchase ${status.capital?.purchaseAllowed ? "allowed by current gates" : status.capital?.blockedReason || "disabled"}`,
     ];
     ns.clearLog();
     for (const [index, line] of lines.entries()) ns.print(`${index < 2 ? WHITE : GREEN}${line}${RESET}`);
+    await saveTailPosition(ns, "gang-status.js");
     await ns.sleep(POLL_MS);
   }
 }

@@ -1,3 +1,4 @@
+import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./tail_geometry.js"
 /** 
  * @param {NS} ns 
  **/
@@ -143,7 +144,7 @@ const DEFAULT_Y = 0
 // Bitburner renders ANSI escapes in tail windows. White separates our panels
 // from the game's green. Basic codes only — this build has no 256-colour
 // support, so \u001b[38;5;15m would render as literal text.
-const WHITE = "\u001b[37m"
+const WHITE = "\u001b[1;37m"
 const RESET = "\u001b[0m"
 
 /**
@@ -171,14 +172,7 @@ function killPriorInstances(ns) {
 	}
 }
 
-/**
- * No getter for a tail window's actual position exists anywhere in the ui
- * cost table — checked, not assumed — so a manual drag can never be read
- * back. x=/y= let you specify where it lands; the panel echoes back
- * whatever was actually applied (args, or these defaults), so dialing in a
- * position is "adjust the number, see where it lands, read the
- * confirmation" rather than "drag, then capture".
- */
+/** Saved per-panel coordinates are defaults; explicit x=/y= still win. */
 function resolvePosition(placementArgs) {
 	var x = placementArgs.x === undefined ? SIDEBAR_WIDTH : placementArgs.x
 	var y = placementArgs.y === undefined ? DEFAULT_Y : placementArgs.y
@@ -242,8 +236,10 @@ function disableLogs(ns) {
 
 export async function main(ns) {
 	disableLogs(ns)
+	await capturePriorTailPosition(ns, "get_stats.js")
 	killPriorInstances(ns)
 	var placementArgs = parsePlacementArgs(ns)
+	Object.assign(placementArgs, loadTailPosition(ns, "get_stats.js", placementArgs))
 	var pos = resolvePosition(placementArgs)
 	openTail(ns, pos)
 
@@ -264,6 +260,7 @@ export async function main(ns) {
 		var posLine = `x=${pos.x} y=${pos.y}`
 		ns.print(WHITE + posLine + RESET)
 		resizeTailToFit(ns, stats.map((item) => item.line).concat([posLine]), placementArgs)
+		await saveTailPosition(ns, "get_stats.js")
 		await ns.sleep(5000)
 	}
 }

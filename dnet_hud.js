@@ -1,3 +1,4 @@
+import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./tail_geometry.js"
 /**
  * Low-impact Darknet health panel.
  *
@@ -114,8 +115,10 @@ function placeTail(ns, args, lines) {
 
 export async function main(ns) {
   ns.disableLog("ALL")
+  await capturePriorTailPosition(ns, "dnet_hud.js")
   closePrior(ns)
-  const args = parseArgs(ns)
+  const parsedArgs = parseArgs(ns)
+  const args = { ...parsedArgs, ...loadTailPosition(ns, "dnet_hud.js", parsedArgs) }
   let placed = false
   while (true) {
     const lines = buildLines(ns)
@@ -126,6 +129,7 @@ export async function main(ns) {
       placed = true
     }
     ns.ui?.renderTail()
+    await saveTailPosition(ns, "dnet_hud.js")
     await ns.sleep(POLL_MS)
   }
 }

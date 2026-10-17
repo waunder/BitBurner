@@ -1,126 +1,99 @@
-# Remote API Keep-Alive Setup
+# Remote API recovery and supervision
 
-The BitBurner Remote API daemon (`python3 tools/bb_remote.py daemon`) holds the WebSocket connection to the game and must stay running for file sync, restart triggers, and status dumps to work.
+Steam's native Bitburner save is the live environment. The game connects to
+our WebSocket listener at `127.0.0.1:12526`; local control clients talk to
+`127.0.0.1:12527`. The daemon cannot initiate the game's connection.
 
-Two keep-alive mechanisms are provided:
+## Routine recovery
 
-## Option 1: System-Level Monitor (Recommended for Production)
+Run this from an authorized local terminal (a sandbox may deny loopback):
 
-**File:** `tools/remote_api_monitor.sh`
-
-Monitors the daemon health at system level and auto-restarts if it crashes. Suitable for running via cron or as a background process.
-
-### Single Check (for cron)
 ```bash
-# Run every minute to check/restart if needed
-*/1 * * * * /Users/Shared/BitBurner/tools/remote_api_monitor.sh
+/Users/Shared/BitBurner/tools/remote_api_monitor.sh
 ```
 
-### Background Continuous Monitoring
+This is safe to repeat. It reads daemon health first, takes a kernel-managed
+lock if recovery is needed, and starts a detached daemon only when the
+control connection is refused and both ports are free. It never kills a
+process from a saved PID or restarts a listener merely because Steam is
+offline. The shell wrapper selects `.venv/bin/python3` and absolute paths.
+`BB_PYTHON`, `DAEMON_PORT` and `CONTROL_PORT` can override the defaults.
+
+For a read-only check without recovery:
+
 ```bash
-# Start in background (checks every 60s)
-nohup /Users/Shared/BitBurner/tools/remote_api_monitor.sh --daemon &
-
-# Stop the monitor
-/Users/Shared/BitBurner/tools/remote_api_monitor.sh --stop
+/Users/Shared/BitBurner/.venv/bin/python3 /Users/Shared/BitBurner/tools/remote_api_monitor.py
 ```
 
-### Environment Variables
+The JSON result distinguishes these states:
+
+| State | Meaning and action |
+|---|---|
+| `connected` | Daemon and game are connected. Read freshness and pass results before trusting telemetry. |
+| `game_disconnected` | Daemon is alive. In Steam, Options → Remote API: plain WebSocket, host `127.0.0.1`, port `12526`, then Connect. A listener restart will not fix this state. |
+| `sync_degraded` | Connected, but a sync/pull pass or filesystem root has an error; inspect returned details. |
+| `health_unknown` with `permission_denied` | The caller's sandbox/network policy blocked the check. Retry with authorized local network access; do not restart anything based on this error. |
+| `daemon_missing` | Read-only probe found no listener; run the shell recovery command. |
+| `listener_or_permission_conflict` | Recovery could not safely bind both ports; inspect the error, without killing another listener. |
+| `start_failed` | New process failed; inspect the bounded events log and daemon stderr. |
+
+One-shot monitor exit status is 0 for `connected` or a complete `synced`
+result, and 2 otherwise. `bb_remote.py ctl-status` preserves exit 0 when the
+daemon responds, even if the game is disconnected; always inspect
+`result.connected`. Its specific nonzero codes are 3 for permission denial,
+4 for connection refused, 5 for response timeout, or 1 for another failure.
+
+`--daemon` checks every 60 seconds and reports state changes. The macOS
+LaunchAgent `com.bitburner.remote-api-monitor` is installed and loaded for the
+current user; it runs `tools/remote_api_monitor.sh --daemon` at login and
+restarts it if it exits. Inspect it with
+`launchctl print gui/$(id -u)/com.bitburner.remote-api-monitor`. Do not run
+competing supervisors. The old `--stop` PID-file kill is intentionally
+disabled; use `launchctl bootout gui/$(id -u) tools/com.bitburner.remote-api-monitor.plist`
+to stop supervision, and `launchctl bootstrap gui/$(id -u) tools/com.bitburner.remote-api-monitor.plist`
+to load it again.
+
+## Complete source sync without a disconnect
+
 ```bash
-DAEMON_PORT=12526          # Game-facing port (default 12526)
-CONTROL_PORT=12527        # Local control channel (default 12527)
-LOG_FILE=...log_path...   # Monitor log (default tools/bb_remote_monitor.log)
+/Users/Shared/BitBurner/tools/force_sync.sh
 ```
 
-### Logs
-- **Daemon log:** `tools/bb_remote_daemon.log` (daemon's own output)
-- **Monitor log:** `tools/bb_remote_monitor.log` (health checks and restarts)
+This now uses the existing connection and asks for a full manifest push. It
+returns success only when at least one file was pushed and no file failed or
+was missing. It no longer kills/restarts the daemon, and does not claim
+success merely because one old sync counter is nonzero. Netscript source
+changes still require restarting the affected in-game scripts separately.
 
----
+## Connection and telemetry evidence
 
-## Option 2: In-Game Keep-Alive (For Visibility During Play)
+`ctl-status` reports connection/disconnect times, the last close reason,
+last RPC response time, sync/pull pass outcomes, last successful full sync,
+and last successful telemetry read. Times ending in `_ms` are Unix
+milliseconds. The current-connection counts are zero when disconnected;
+previous timestamps remain as historical evidence. A freshly read game file
+may itself contain stale telemetry, so also inspect its embedded timestamp.
 
-**File:** `remote_api_keepalive.js`
+A missing remote file is recorded as `missing`. A transport timeout or
+connection failure is recorded as `failed`; neither is a successful pull.
+No game reconnection guarantee is made for a nonzero delay setting. If the
+game remains disconnected, click Connect and verify a fresh full sync/pull.
 
-Runs inside the Bitburner game as a background script, periodically checks the daemon via `ctl-status`, and logs state to a local file.
+## Bounded diagnostics
 
-### Usage
-```bash
-# One-shot check every 30 seconds (exits on first failure)
-ns.run('remote_api_keepalive.js', 1, '--control-port 12527 --interval 30000')
+`tools/bb_remote_events.log` retains lifecycle events, errors and full pass
+outcomes, with 5 MiB per file and two rotated backups (about 15 MiB total).
+Payloads are capped at 2,000 characters. Set `BB_REMOTE_TRACE=1` before
+starting the daemon to include routine RPC trace; rotation still applies.
+Daemon logging is not duplicated into unbounded stdout. Unhandled process
+crashes still appear in the service's stderr/daemon log.
 
-# Background (continuous, survives restart)
-ns.run('remote_api_keepalive.js', 1, '--control-port 12527 --interval 30000 --background')
-```
+If replacing a running daemon, first stop the identified process and preserve
+its oversized legacy logs as dated evidence; never truncate an active
+process's file. Historical backups are outside the rolling retention set and
+may be deleted after diagnosis is complete.
 
-### Output
-Logs to `remote_api_keepalive.log` with timestamps:
-```
-[2026-09-02T13:25:00.123Z] Keep-alive starting: control-port=12527, interval=30000ms
-[2026-09-02T13:25:00.456Z] Daemon state: connected
-[2026-09-02T13:25:00.456Z] Connected to game (uptime: 3600s)
-```
-
----
-
-## Recommended Setup
-
-For a production game session:
-
-1. **Start the daemon** (one-time, from terminal or scripts):
-   ```bash
-   nohup python3 tools/bb_remote.py daemon --port 12526 --control-port 12527 \
-     >> tools/bb_remote_daemon.log 2>&1 &
-   ```
-
-2. **Start system monitor** (cron or background):
-   ```bash
-   # Either via cron (checks every minute):
-   */1 * * * * /Users/Shared/BitBurner/tools/remote_api_monitor.sh
-   
-   # Or continuous background (checks every 60s):
-   nohup /Users/Shared/BitBurner/tools/remote_api_monitor.sh --daemon &
-   ```
-
-3. **Optional: In-game visibility** (from game console):
-   ```javascript
-   ns.run('remote_api_keepalive.js', 1, '--control-port 12527 --interval 60000 --background')
-   ```
-
----
-
-## Troubleshooting
-
-### Daemon won't start
-- Check port 12526 isn't already in use: `lsof -i :12526`
-- Verify `tools/bb_remote.py` exists and is executable
-- Check `tools/bb_remote_daemon.log` for error output
-
-### Monitor reports "Daemon error" repeatedly
-- Ensure daemon is running: `python3 tools/bb_remote.py ctl-status --control-port 12527`
-- If daemon crashed, monitor will auto-restart it (check `tools/bb_remote_monitor.log`)
-- Verify game hasn't disconnected from the daemon (check game's Options → Remote API)
-
-### Game connection dropped but daemon still running
-- The daemon will hold the connection open and reconnect when the game comes back
-- Monitor logs will show `disconnected` state during the gap
-- No action needed — reconnect happens automatically
-
-### File sync not working despite daemon running
-- Verify `ctl-status` shows `connected: true`
-- Check `tools/bb_remote_events.log` for push/pull errors
-- Ensure watched files exist and are readable (see `docs/processes.md` for file list)
-
----
-
-## Files
-
-| File | Purpose |
-|------|---------|
-| `tools/remote_api_monitor.sh` | System-level daemon supervision |
-| `remote_api_keepalive.js` | In-game keep-alive polling |
-| `tools/bb_remote.py` | WebSocket server (unchanged) |
-| `tools/bb_remote_daemon.log` | Daemon's own output log |
-| `tools/bb_remote_events.log` | Detailed daemon events (connect/disconnect/messages) |
-| `tools/bb_remote_monitor.log` | Monitor's health checks and restarts |
-| `remote_api_keepalive.log` | In-game keep-alive status log |
+`remote_api_keepalive.js` is an old in-game display that reads a presumed
+copy of a host `.log` file. Netscript cannot inspect the host filesystem,
+and that log is not delivered by the manifest. It is not a health probe or
+recovery mechanism; use the local status/recovery tools above.

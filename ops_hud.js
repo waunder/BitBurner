@@ -1,3 +1,4 @@
+import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./tail_geometry.js"
 /**
  * Consolidated, low-impact operations HUD.
  *
@@ -299,11 +300,13 @@ function placeTail(ns, args, lines) {
 
 export async function main(ns) {
   ns.disableLog("ALL")
+  await capturePriorTailPosition(ns, "ops_hud.js")
   closePrior(ns)
   // A tiny generation marker lets the launcher refresh this panel once after
   // a real HUD upgrade, while routine MCP restarts leave its tail untouched.
   ns.write("ops_hud_version.txt", OPS_HUD_VERSION, "w")
-  const args = parseArgs(ns)
+  const parsedArgs = parseArgs(ns)
+  const args = { ...parsedArgs, ...loadTailPosition(ns, "ops_hud.js", parsedArgs) }
   let placed = false
   while (true) {
     const lines = buildLines(ns)
@@ -311,6 +314,7 @@ export async function main(ns) {
     for (const [i, line] of lines.entries()) ns.print((i === 0 ? WHITE : GREEN) + line + RESET)
     if (!placed) { placeTail(ns, args, lines); placed = true }
     ns.ui?.renderTail()
+    await saveTailPosition(ns, "ops_hud.js")
     await ns.sleep(POLL_MS)
   }
 }

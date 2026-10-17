@@ -4,6 +4,7 @@ export const REPUTATION_CONFIG = "reputation_config.json"
 export const MAX_SHARE_RAM_GB = 256
 const RETRY_MS = 60_000
 const ACTIONS = new Set(["scripts/hack.js", "scripts/grow.js", "scripts/weaken.js"])
+const isLegacyLoopAction = p => ACTIONS.has(p.filename.replace(/^\//, "")) && p.args[1] !== "once"
 
 export function readReputationConfig(ns) {
   try {
@@ -47,7 +48,7 @@ export async function reconcileReputation(ns, prior, { objective, hosts, reserve
     ramGb: live.threads * ns.getScriptRam(SHARE_FILE, "home"), reason: state.factionWork }
   if (now < (prior.retryAt || 0)) return { ...state, state: "waiting", pid: null, threads: 0, ramGb: 0 }
   const candidates = hosts.map(host => {
-    const reclaim = ns.ps(host).filter(p => ACTIONS.has(p.filename.replace(/^\//, "")))
+    const reclaim = ns.ps(host).filter(isLegacyLoopAction)
       .reduce((n, p) => n + p.threads * ns.getScriptRam(p.filename, host), 0)
     return { host, availableRam: Math.max(0, ns.getServerMaxRam(host) - ns.getServerUsedRam(host) + reclaim - (host === "home" ? reserveHomeGb : 0)) }
   })
@@ -59,7 +60,7 @@ export async function reconcileReputation(ns, prior, { objective, hosts, reserve
   }
   if (choice.host !== "home" && !(await ns.scp(SHARE_FILE, choice.host, "home"))) throw new Error(`Share source copy failed: ${choice.host}`)
   // Free only this host's MCP action allocation; MCP replans the remainder.
-  for (const p of ns.ps(choice.host)) if (ACTIONS.has(p.filename.replace(/^\//, "")) && !ns.kill(p.pid, choice.host)) throw new Error(`Could not release worker ${p.pid}`)
+  for (const p of ns.ps(choice.host)) if (isLegacyLoopAction(p) && !ns.kill(p.pid, choice.host)) throw new Error(`Could not release worker ${p.pid}`)
   const pid = ns.exec(SHARE_FILE, choice.host, choice.threads, ns.pid, signature)
   emit("reputation_start", { actionId, host: choice.host, threads: choice.threads, ramGb: choice.threads * scriptRam, pid, config, candidates })
   if (!pid) throw new Error(`Share launch failed: ${choice.host}`)
@@ -82,7 +83,7 @@ async function reconcileAllReputation(ns, prior, {objective,hosts,reserveHomeGb,
     if(!(ram>0))throw Error('Missing reputation worker source')
     const processes=ns.ps(host)
     const live=processes.find(p=>p.filename.replace(/^\//,'')===SHARE_FILE && Number(p.args[0])===ns.pid && p.args[1]===signature)
-    const actions=processes.filter(p=>ACTIONS.has(p.filename.replace(/^\//,'')))
+    const actions=processes.filter(isLegacyLoopAction)
     const reclaim=actions.reduce((n,p)=>n+p.threads*ns.getScriptRam(p.filename,host),0)
     const available=Math.max(0,ns.getServerMaxRam(host)-ns.getServerUsedRam(host)+reclaim+(live?.threads||0)*ram-(host==='home'?reserveHomeGb:0))
     const threads=Math.floor((available+1e-9)/ram)

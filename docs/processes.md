@@ -39,6 +39,14 @@ short stop-list for the few things that still need Ken directly.
 
 ## The map
 
+`select_gang_policy.js` is the in-game selector for `gang_capital_policy.json`.
+Run `run select_gang_policy.js` on home and choose progression, earning
+capacity, augmentation, or cancel. Progression and augmentation disable
+equipment purchases; earning capacity enables them subject to the controller's
+source master gate and ROI/cash limits. The controller reads the JSON during
+its normal loop, so the policy change does not require a restart. The script
+is delivered through `sync_manifest.json`.
+
 ```mermaid
 flowchart TB
     subgraph root["Rooting — grows the worker pool"]
@@ -332,11 +340,17 @@ The same hack budget remains active during regrowth, avoiding a cloud-sized hack
 
 #### The work-weight calculation
 
-`get_target_stats.js` is an opt-in five-second live panel for only the targets in current `mcp_status.json` (multi-target cohorts or the single selected target). It reads live money/security and aggregates current hack/grow/weaken processes across status worker hosts, so cloud work appears against its target rather than the execution host. Compact K/M/G/T/P money, phase, target count and objective are shown; stale manager data is flagged after 30 seconds. No args; `run get_target_stats.js`. It supersedes only prior copies of itself, closes their tails and sizes the window for every target line; it does not replace `get_stats.js`.
+`get_target_stats.js` is an opt-in five-second live panel for only the targets in current `mcp_status.json` (multi-target cohorts or the single selected target). It reads live money/security and aggregates current hack/grow/weaken process threads by target across every scanned network server plus all purchased/cloud servers, so counts include every execution host even if it is temporarily absent from the manager's worker list. The compact aligned table labels `READY%` as target money fullness and `SHARE%` as each target's portion of all active action threads; shares sum to 100% (rounding corrected). `#T` is the row's total threads and `W/G/H` gives its weaken/grow/hack breakdown. A final `TOTAL` row gives aggregate thread count and action totals. Compact K/M/G/T/P money, phase, target count and objective are shown; stale manager data is flagged after 30 seconds. It displays 12 targets per page, with white title/header/page/total rows and green detail rows so headers remain visible in the finite tail log. Start with `run get_target_stats.js` (or `gts`); navigate with `gts next`, `gts prev`, `gts first`, `gts last`, or `gts <page>`. Page commands update a small game-side page file, and the existing panel refreshes without restarting or moving/resizing its tail. After source sync, use `gts restart` once to load new code; this closes the old tail and opens the updated one at its saved position. Resize it manually and scroll within it as needed. It does not replace `get_stats.js`.
 
-**Cloud multi-target batches (`mcp_cloud.js`, September 12).** The existing MCP remains the sole controller and share owner. It reads durable `mcp_cloud_control.json`: `enabled` boolean, required finite `expiresAt` timestamp, `harvestFraction` (effective 0.1–0.75, default 0.5), `maxTargets` (effective 1–32, default 16), and operator metadata. Money/reputation enter this mode; XP bypasses it. Initial transition retires the single-target action allocation once. Targets prepare security, then actual money deficit, then harvest/restore/compensate in finite cohorts. All grow/weaken RAM is reserved before hack; incomplete placement launches nothing, failed execution rolls back that cohort. Slow calls finish before another cohort on the same target. Multiple targets may share cloud hosts under unique batch arguments. One-core sizing is conservative for workers with extra cores. Disabled/expired control releases owned cohorts and returns to the single-target fallback. No purchase/reset/player-activity calls.
+**Cloud multi-target batches (`mcp_cloud.js`).** MCP is the sole scheduler. `set_cloud_mode.js on` writes persistent `mcp_cloud_control.json` by default; optional `minutes` creates a lease. Current aggressive policy allows a 25% all-success money floor, restores harvest-ready targets to 95%, permits preparation to use 65% of worker RAM, and requests up to 128 target cohorts, bounded by `min(192, max(64, 2 × workerHosts))`. The former 91% floor excluded most of the 63 money servers because one hack thread would cross it; hack thread sizing now admits those servers and caps each planned withdrawal at 75%. Preparation share is configurable with the optional prep-fraction argument (0.05–0.85) or control JSON; harvest cohorts can use the rest. Hack thread sizing uses current money and the floor. Grow sizing includes hack-added security; hack, grow, and weaken workers run with `once`. All grow/weaken RAM is reserved before hack and incomplete placement launches nothing. If a full safe harvest cohort will not pack, hack threads are reduced and grow/weaken are recomputed before trying again. A target with an existing finite cohort is not scheduled again; finite jobs survive an MCP restart and block conflicting admissions. New activation retires and verifies removal of legacy looping actions. On disable/expiry, active cohorts drain without being killed before the legacy planner resumes. A cloud exception publishes `finite-error` and retries without falling through to the continuous planner. Status reports the executed policy version, actual cloud RAM capacity and current max-server quote. Harvest ranks use expected withdrawal per action GB-second; preparation ranks forecast the harvest they unlock and charge security/money preparation GB-seconds, preventing phase priority and scan order from monopolizing residual RAM. `cloud_pool_audit.js` reports every money server and the reason it is or is not schedulable. No purchase/reset/player-activity calls.
 
 It writes both `mcp_status.json` (HUD/maintenance compatibility) and `mcp_cloud_status.json`, recording effective control, target phases/counts/observed balances, process IDs/hosts, waiting demand, launch failures and completed cohorts. Batch start/completion/stop/failure decisions use the existing MCP event stream. Income derives from the game's cumulative hacking money-source delta, including any other hacking scripts; XP rate is currently unavailable in this mode. This is a simultaneous cohort scheduler, not a tightly timed overlapping batch scheduler. Source requires `Formulas.exe`. Ken explicitly requested direct Steam testing rather than the proposed browser/pilot sequence.
+
+When switching from finite cloud batches to XP, active finite cohorts finish before
+the continuous XP planner takes ownership. A draining status has no
+`workerLaunchFailures` field because it launches no jobs; `mcp.js` treats that
+missing field as an empty list. Without this guard, the manager repeatedly
+throws while reading `.length`, writes `finite-error`, and XP work never resumes.
 
 If full preparation cannot fit, `fitCloudPreparation` requests the grow/weaken or security-only portion that fits free RAM; it never partially funds a harvest. Events mark `partialPreparation`, and later cohorts remeasure the actual remaining deficit. `set_cloud_mode.js [on|off|status] [minutes=120]` writes durable control, with 50% withdrawal, 32 slots and validated 1–1440 minute expiry. Control changes take effect on the next MCP tick; the game-owned control/status files are ignored by Git and never enter the source sync manifest. The module reports its started source fingerprint alongside MCP's manager version.
 
@@ -823,14 +837,13 @@ Hacknet spending became routine — see the out-of-game watcher section below.
 "Since install," not "since start," so it survives script and game restarts
 and only resets on an actual augmentation install.
 
-The `x=`/`y=` row echoes back whatever position was actually applied — the
-args passed in, or the computed default if none were. Bitburner exposes no
-getter for a tail window's current position or size anywhere in the `ns.ui`
-cost table (checked directly, not assumed), so a manual drag can never be
-read back by a script. This is the substitute: dialing in a position is
-"adjust the number, see where it lands, read the confirmation," not "drag,
-then capture." Every panel in this project that supports `x=`/`y=` carries
-this same row for the same reason.
+Tail position is saved independently for each scripted panel in its own
+`tail_position_<script>.json` file. A panel reads that saved location as its
+default on the next launch; explicit `x=`/`y=` arguments take priority. When
+replacing a live copy, the launcher captures its current `tailProperties`
+before closing it. This preserves manual moves across reruns without coupling
+one panel's location to another. Position files are game-side runtime state
+and are excluded from source sync.
 
 ### `mcp_money.js`
 
@@ -870,8 +883,9 @@ Gang v2 is the formula-driven gang control loop. It requires `Formulas.exe`,
 recruits immediately, scores every valid productive task with
 `ns.formulas.gang`, and allocates trained members to the best money task
 unless respect growth or wanted recovery is active. Wanted uses hysteresis
-(enter below 99.5%, return to cash at 99.9%); recovery chooses the least
-expensive cleaners by projected money forgone per wanted removed. Territory
+(enter below 99.5%, return to cash at 99.9%); recovery searches cleaner subsets
+and chooses the highest-money assignment meeting a 0.1%-per-update wanted
+reduction target, with maximum wanted reduction as the fallback. Territory
 warfare is a weighted expected-win decision rather than an all-rivals gate.
 After the gang reaches twelve members, an otherwise low-value bounded cohort
 trains combat until every active member reaches a 300 combat floor; this gives
@@ -896,6 +910,34 @@ payback is at most 30 minutes, cost is at most 1% of current cash, and the
 configured augmentation cash target remains intact. Progression and
 augmentation phases never buy gang equipment. The controller does not infer
 when a reset is imminent.
+
+Faction reputation mode is available separately from the capital phase (the
+capital phase governs gang gear/cash policy; it does not choose member tasks):
+`run set_gang_objective.js reputation` makes trained members work on the
+highest projected respect task, which earns reputation with the gang's faction.
+During wanted recovery, it searches all cleaner subsets (at most 4096 for a
+12-member gang), assigning every non-cleaner to its best respect task and
+choosing the highest-respect assignment that meets a wanted-reduction target
+of 0.1% of current wanted per normal ten-cycle gang update (reported as a
+per-cycle average to match `wantedLevelGainRate`; the game can coalesce longer
+batches, so the projection assumes the normal cadence). If no assignment reaches the target,
+it maximizes wanted reduction and reports that the target was missed. The
+allocation logic lives in `gang_logic.js`; `gang_status.json` records each
+member's assigned task/role and the projected respect/wanted rates for
+live-versus-projected review. The controller keeps its existing Train Hacking
+floor for a hacking gang. It suppresses ascensions in this mode:
+the game removes a member's respect earned since its last ascension from Gang
+Faction reputation when it ascends. Switch back with
+`run set_gang_objective.js money`; no restart is required. The default is
+money when no in-game override exists. This is independent of the player's
+activity and MCP objective. The controller reports current gang-faction
+reputation, its observed rate when available, and projected respect per game
+cycle in `gang_status.json`; the consolidated HUD and focused gang diagnostic
+show the same progress indicators. Reputation-rate sampling requires the
+Singularity API; if it is unavailable, respect projections remain visible.
+Running `gang-controller.js` again now kills older copies on home before
+continuing, preventing duplicate controllers from assigning tasks or
+overwriting status.
 
 `hud_consolidated.js` is the default operator view: the Gang summary shows the
 current capital phase even when `gang-controller.js` is stopped, and its
@@ -928,6 +970,27 @@ level gate.
   it. It intentionally does not claim a player XP-per-second delta, because
   that rate is not durably measured across sessions.
 
+### `crime_returns.js`
+
+A manually launched, read-only crime comparison window. It estimates expected
+money and Hacking, Strength, Defense, Dexterity, Agility, and Charisma XP per
+minute for all crimes, using the current player skills and multipliers. It
+includes the game’s quarter-rate XP on failed attempts, sorts by expected
+money/minute by default, and refreshes every five seconds. Every displayed
+column can be sorted ascending or descending. It excludes the focus bonus;
+BitNode-specific modifiers are included when `getBitNodeMultipliers()` is
+available and otherwise assumed neutral.
+
+- **Start:** `run crime_returns.js [column] [h|l]` (opens its tail window).
+  Columns: `crime`, `chance`, `money`, `hack`, `str`, `def`, `dex`, `agi`,
+  or `cha`. `h` sorts high to low and is the default; `l` sorts low to high.
+  Examples: `run crime_returns.js str l` or `run crime_returns.js hack`.
+  Re-run the command to change sort; the new process replaces the old table
+  and carries its tail window position and size forward automatically.
+- **Stop:** use the Stop Script button in the tail.
+- **Shows:** success chance and expected return/minute for money and the six
+  non-Intelligence stats from Hacking through Charisma.
+
 ### `augmentation_readiness.js`
 
 A quiet, read-only augmentation runway assessor. Every two minutes it records
@@ -949,6 +1012,11 @@ and never changes player work.
   a live, affordable faction-reputation gap names the faction and augmentation
   to work toward. If Singularity is unavailable, it explicitly says so rather
   than guessing.
+- **Consolidated HUD:** The Augmentation section reads installed and queued
+  counts and the next candidate from this status file, and shows its age. It
+  also displays owned Source Files and live karma using the same APIs as the
+  `sourceFiles.js` and `karma.js` diagnostic scripts. XP rate remains in the
+  XP panel, which owns XP-rate and progression guidance.
 
 ### `player_activity_controller.js`
 
@@ -1225,8 +1293,8 @@ Auto-sizes its tail window to the text using real font metrics from
   e.g. `xylophone` is never mistaken for a stray `x=` — verified before
   shipping, not just assumed safe.
 - **Reads:** the live game. This one *does* measure independently.
-- Carries the same `x=`/`y=` echo row as `mcp_hud.js`, for the same reason —
-  no way to read a window's position back after a manual drag.
+- Carries the same `x=`/`y=` echo row as `mcp_hud.js`; the panel now remembers
+  its last location across runs and still accepts explicit position args.
 
 ### `lsf.js`
 
@@ -1777,29 +1845,30 @@ If future sessions run outside Cowork again, the original claude.ai URL
 above may still be the one in front of Ken; don't assume the Cowork
 artifact replaced it for him, ask if unsure which he's checking.
 
-### `docs/claude-todo.md`
+### Historical context files
 
-Claude's own granular, session-spanning working list — distinct from
-`docs/kensTodo.md` (Ken's-hand-only actions) and this file (what the code
-does). Read first at the start of every session, updated as work happens.
-Not part of the script map above; noted here only so it doesn't get missed
-alongside the other two standing docs.
+`docs/claude-todo.md` and archived `docs/kensTodo.md` are historical session
+records only. They are not current task queues or instructions. Current
+session state is in `STATE.md`, current implementation work in
+`docs/Codex-todo.md`, and current manual actions (if any) in `docs/kensTodo.md`.
+Revalidate any historical item before restoring it to an active list.
 
-### `tools/bb_remote.py` — direct Remote API client (prototype, not yet cut over)
+### `tools/bb_remote.py` — direct Remote API daemon (live)
 
-Built 2026-08-09 to replace the VS Code extension's file-sync as the write
-path into the game, after two same-day incidents where writes to
-`mcp_dump_request.txt`/`mcp_restart.txt` never reached it (dropped sync
-session, no replay on reconnect — see the `CLAUDE.md` note this traces to).
-Full protocol writeup, citations, and validation status:
-`docs/remote-api-migration.md`. Short version: the game dials **out** as a
-WebSocket client to an external server (Options → Remote API → hostname
-`localhost`, port `12525`, Connect); `tools/bb_remote.py` is a second
-implementation of that server, alongside the extension's own. Protocol
-self-tests pass against a spec-accurate mock; **not yet round-tripped
-against the live game** — that needs one supervised, reversible action from
-Ken (see the doc). Not wired into `mcp_supervisor.js` or anything
-live-running yet; this is groundwork, not the cutover.
+The Steam game is the WebSocket client; the local daemon is the listener. The
+current routine listener uses `127.0.0.1:12526`, with local control on
+`127.0.0.1:12527`. Live end-to-end push/readback was confirmed on 2026-08-10;
+the safer recovery, sync, and verification workflow is documented in
+`docs/remote-api-keepalive.md`. That guide is current for commands and failure
+handling. The migration report below records the original implementation and
+historical findings; its prototype-era status statements are not current.
+
+For routine work, use `tools/remote_api_monitor.sh` to inspect/recover the
+local daemon, reconnect Steam through Options → Remote API if the game is
+disconnected, and run `tools/force_sync.sh` after source changes. Verify
+connection status, push counts, and the specific in-game file before claiming
+deployment. Restart affected running Netscripts separately; they do not
+hot-reload.
 
 **2026-08-10: found and fixed a confirmed connect-then-drop bug, added
 logging.** A first live attempt (port 12526) connected then dropped within
@@ -2502,3 +2571,30 @@ so it must not grow without bound.
 
 `mcp_config.json` is **not** generated and **is** committed — it is an input we
 author, and it needs to be in the repo to sync into the game.
+
+
+### Remote API recovery revision — 2026-10-05
+
+`tools/remote_api_monitor.sh` now invokes `remote_api_monitor.py --ensure`.
+The helper serializes recovery with `tools/.remote_api_recovery.lock`, starts
+only after a refused control connection and free ports, and never kills a
+saved PID. A game disconnection, sandbox denial, timeout, or occupied port
+is reported distinctly without replacing the daemon. `--daemon` repeats
+checks every 60s; `--resync` uses the existing connection and checks all
+reported failures/missing files. `tools/force_sync.sh` is this safe resync
+entry point. The old `--stop` PID kill is disabled; stop supervision through
+the installed service manager.
+
+`ctl-status` now includes connection times/reason and sync/pull freshness;
+current-connection counts reset to zero while disconnected. Transport/RPC
+pull errors are `failed`, separately from actual missing remote files.
+Control permission denial returns `error_code: permission_denied` (status
+exit 3), connection refused exit 4, and response timeout exit 5. The monitor
+exits 0 only for connected/complete sync, otherwise 2. A responding daemon
+still makes raw `ctl-status` exit 0 even when its game is disconnected.
+
+Event logs rotate at 5 MiB with two backups. Routine RPC payload traces are
+opt-in via `BB_REMOTE_TRACE=1`; daemon stdout no longer duplicates every
+record. Host-side `.log` files are not Netscript-readable: the old
+`remote_api_keepalive.js` cannot determine daemon health. Full usage and
+recovery states: `docs/remote-api-keepalive.md`.

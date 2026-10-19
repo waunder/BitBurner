@@ -11,8 +11,7 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
 
 ## Active work
 
-None carried forward from the cleanup. Add a task only when it is a current,
-user-authorized commitment or a verified necessary follow-up.
+None.
 
 ## Completed — 2026-10-19
 
@@ -21,3 +20,9 @@ user-authorized commitment or a verified necessary follow-up.
   Updated stale cloud fixtures and added transition regressions; 11 cloud and
   89 scheduler tests pass. Steam deployment and live result recorded in
   `docs/mcp-status-2026-10-19.md`.
+
+- Added and activated the independent MCP progress watchdog in the existing
+  maintenance steward; objective-aware alerts feed the Operations HUD. Repairs
+  require fresh process/batch evidence and share a 15-minute cooldown. All 122
+  focused regression tests pass; live activation/readback verified. Details:
+  `docs/mcp-watchdog-2026-10-19.md`.

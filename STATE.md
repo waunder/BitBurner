@@ -1,35 +1,39 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-10-19 12:31:05 PDT. Source: Steam UI and direct Remote API.
-Prior handoff archived at `docs/archive/mcp-check-2026-10-19/STATE-before-check.md`.
+Last refreshed: 2026-10-19 12:46 PDT. Sources: Steam UI and direct Remote API.
+Prior handoff: `docs/archive/mcp-watchdog-2026-10-19/STATE-before-watchdog.md`.
 
-## Current objective
+## Objective and outcome
 
-Ken asked whether MCP works effectively. Live objective is `xp` through the
-in-game override. Preserve his Algorithms coursework and manual player-work
-control. Augmentation installs/resets still require explicit approval.
+Ken requested a watchdog for sustained low utilization without progress,
+with safe repair. Implemented, tested (122 tests), deployed and activated.
+Detailed behavior/evidence: `docs/mcp-watchdog-2026-10-19.md`.
 
 ## Verified live state
 
-- Steam Remote API connected at 127.0.0.1:12526; control 12527. Full sync
-  delivered 103 manifest files without errors; mcp_cloud.js readback matched.
-- Found XP globally blocked by tiny, long security-only finite cohorts. Fixed
-  tracked cohort cancellation on XP selection; harvest/grow restoration still
-  drains. Recovered live via stopping the remaining preparation PID 547 and
-  restart_mcp.js; MCP PID 950, run mvfng9ud-r688.
-- 20 eligible hosts, 384 threads, 672/684 GB in use (98.25%); foodnstuff
-  security/growth preparation, 339.5 script XP/s, H439.
-  No worker launch failures/invariant violations in the sampled status.
-- The target display's 3.40 TB includes home; MCP reserves home and excludes
-  it from worker capacity. Do not interpret that display as all eligible RAM.
-- Current reset has no gang per Steam startup output; old Black Hand gang
-  snapshot is historical. Steam showed Algorithms coursework and ~$42.5m.
-- Darknet HUD stale/zero managers. Player activity controller failed to start
-  during startup/restart; player work remains manually controlled.
+- Remote API connected at 127.0.0.1:12526, control 12527. Existing 103-file
+  sync plus explicit new module push; manifest now lists 104 files. Final
+  watchdog/steward readbacks exactly matched local source.
+- Maintenance steward PID 2693, automation reviewer PID 2488. Healthy MCP
+  manager retained. Progress assessment is now in maintenance_status.json;
+  alerts feed the existing HUD. Three-minute no-progress grace and shared
+  15-minute repair cooldown; uncertain restoration work is preserved.
+- At 12:45:35 PDT, progress-v1 observed three money-mode action processes,
+  96.25/1484 GB usable worker capacity, no alert or repair. Prior sample
+  showed 1039.5 GB active RAM; finite-cohort fluctuations are expected.
+  At 12:46:05, the next poll reset its grace on observed progress; no repair.
+  Existing recovery count 179/lastAt 1792436444013 remained unchanged.
+- Ken switched objective from XP to money through his terminal during this
+  work. Preserve that live override. Steam showed Algorithms coursework,
+  H634 and ~$271m around 12:45; recheck before further decisions.
+- Home remains excluded from MCP worker capacity. No gang in this reset per
+  earlier startup evidence; Darknet stale/zero managers. Player activity
+  controller previously failed to start; manual coursework remains observed.
 
-## Outcome and follow-up
+## Remaining work and limits
 
-MCP is producing XP again. 100 tests pass. Detailed evidence, tradeoff and
-limits: `docs/mcp-status-2026-10-19.md`. No pending action for Ken.
-Recheck fresh live telemetry before further gameplay decisions; reported XP
-rate is a short sample, not a sustained efficiency benchmark.
+No pending action for Ken. The prior XP-transition prevention fix remains live
+(commit 50cadbe). Watchdog repair paths passed mocked runtime tests; no artificial
+stall was injected into Steam. It alerts when active work cannot be safely
+classified, and does not optimize busy allocations. Revalidate fresh game state
+before any later gameplay action. Augmentation installs/resets require approval.

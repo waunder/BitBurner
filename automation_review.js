@@ -58,6 +58,7 @@ export async function main(ns) {
     const result = evaluateAutomationHealth({
       now,
       mcp: readJson(ns, "mcp_status.json"),
+      maintenance: readJson(ns, "maintenance_status.json"),
       dnetRoot: readJson(ns, "dnet_deployer_home.json"),
       managerRegistry: readJson(ns, "dnet_manager_registry.json", {}),
       managerErrors: managerErrors(ns),

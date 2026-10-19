@@ -1538,6 +1538,35 @@ persist for 60 seconds before it asks the existing supervisor for one normal
 restart; further recovery requests are cooled down for 15 minutes. It never
 trades, resets/installs, or starts/stops/expands Darknet.
 
+As of 2026-10-19 it also imports `mcp_watchdog.js` and independently inspects
+rooted/cloud worker processes every 30 seconds. Home and RAM used by unrelated
+processes are excluded. With a fresh money/XP status, at least 32 GB usable
+capacity, at least 16 GB spare, and less than 25% action utilization, three
+minutes without changes in per-process XP/money, job membership, batch
+completions, or target security/money triggers a progress alert. Run/objective/
+mode/target changes and sampling gaps over 90 seconds reset the observation.
+Player/course XP and lifetime average script rates do not conceal a stall.
+
+Recovery revalidates current manager context and processes. No action jobs plus
+a selected target permits the normal supervisor restart. XP `finite-draining`
+may cancel jobs only when durable `mcp_events.txt` batch-start records prove
+all remaining processes are security-only preparation (matching PID, host,
+batch ID, action and zero hack/grow counts). Unknown jobs, harvest restoration,
+no-target states, and other active work are alert-only. Missing/truncated batch
+evidence therefore prevents cancellation. The shared 15-minute recovery cooldown
+also applies after unsuccessful attempts. The monitor does not restart a
+healthy, fully occupied long-running weaken just because its counter is flat.
+
+`maintenance_status.json.progress` records observation inputs, grace start,
+action/reason and repair result; bounded `maintenance_history.txt` records
+health transitions and repair evidence. `automation_review.js` reads the fresh
+maintenance assessment and exposes no-progress alerts through the existing HUD.
+Inspection errors become alerts rather than disabling the steward. The ongoing
+cost is one network/process inspection per 30 seconds within the existing
+steward; its payoff is recovered otherwise-idle worker time. Live activation
+and healthy/no-repair observations are recorded in the session report.
+
+
 The cloud-first watcher runs a finite audit every ten minutes and then
 processes **at most one** contract. After an accepted submission it immediately
 re-audits so an already-known queue advances sequentially; it returns to the

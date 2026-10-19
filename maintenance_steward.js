@@ -1,8 +1,9 @@
 /**
  * Low-frequency operations steward. It observes every 30 seconds and only
- * performs one bounded MCP recovery after a sustained stale status. Contract
+ * performs bounded stale-status or no-progress recovery. Contract
  * discovery/submission remains in cct_watcher.js on a cloud worker.
  */
+import { inspectMcpWorkers, evaluateMcpProgress, repairMcpProgress } from "mcp_watchdog.js"
 import { shouldRequestMcpRecovery } from "maintenance_logic.js"
 import { prepareContractWorker, selectContractWorker } from "cct_worker_pool.js"
 
@@ -55,13 +56,20 @@ export async function main(ns) {
     const now = Date.now()
     const mcp = readJson(ns, "mcp_status.json")
     const stale = !Number.isFinite(mcp?.ts) || now - mcp.ts > 90_000
+    let progress
+    try {
+      progress = evaluateMcpProgress({ now, mcp, sample: inspectMcpWorkers(ns, mcp),
+        previous: prior.progress, lastRecoveryAt: prior.recovery?.lastAt })
+    } catch (error) {
+      progress = { ts: now, action: "alert", alert: "MCP progress inspection failed", reason: String(error) }
+    }
     const augmentation = await refreshAugmentationReadiness(ns)
     const state = {
       ts: now, pollMs: POLL_MS, mcp: { stale, ageMs: Number.isFinite(mcp?.ts) ? now - mcp.ts : null },
       contracts: readJson(ns, "cct_queue_status.json", { action: "waiting" }),
       recovery: prior.recovery || { count: 0, lastAt: null },
       watcherPid: startWatcher(ns),
-      augmentation,
+      augmentation, progress,
     }
     if (stale) state.mcpStaleSince = prior.mcpStaleSince || now
     if (shouldRequestMcpRecovery({ now, mcp, previous: { ...prior, mcpStaleSince: state.mcpStaleSince, lastRecoveryAt: state.recovery.lastAt } })) {
@@ -71,6 +79,19 @@ export async function main(ns) {
       state.recoveryRequested = true
       appendHistory(ns, { ts: now, event: "mcp-recovery-requested", ...state.recovery })
     }
+    if (["restart", "cancel-security"].includes(progress.action) && !state.recoveryRequested) {
+      let result
+      try { result = repairMcpProgress(ns, progress, mcp) }
+      catch (error) { result = { ok: false, reason: String(error) } }
+      state.progress.repair = result
+      // Cool down even failed repairs: repeated unsuccessful kills/restarts
+      // should be evidence to inspect, never an uncontrolled recovery loop.
+      state.recovery = { count: Number(state.recovery.count || 0) + 1, lastAt: now, reason: progress.reason }
+      appendHistory(ns, { ts: now, event: "mcp-progress-repair", assessment: progress, result })
+    }
+    const progressKey = progress.alert ? `${progress.action}:${progress.reason}` : "healthy"
+    if (progressKey !== prior.progressKey) appendHistory(ns, { ts: now, event: "mcp-progress-health", action: progress.action, alert: progress.alert, reason: progress.reason })
+    state.progressKey = progressKey
     if (!stale && prior.mcpStaleSince) appendHistory(ns, { ts: now, event: "mcp-status-recovered" })
     ns.write(STATUS, JSON.stringify(state, null, 2), "w")
     prior = state

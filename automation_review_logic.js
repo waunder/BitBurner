@@ -1,5 +1,5 @@
 /** Pure health rules for automation_review.js. */
-export function evaluateAutomationHealth({ now, mcp, dnetRoot, managerRegistry, managerErrors = [], dnetRootRunning, limits = {} }) {
+export function evaluateAutomationHealth({ now, mcp, maintenance, dnetRoot, managerRegistry, managerErrors = [], dnetRootRunning, limits = {} }) {
   const alerts = []
   const mcpStaleMs = limits.mcpStaleMs ?? 45_000
   const dnetRootStaleMs = limits.dnetRootStaleMs ?? 20_000
@@ -9,6 +9,10 @@ export function evaluateAutomationHealth({ now, mcp, dnetRoot, managerRegistry, 
     alerts.push({ key: "mcp-status-missing", severity: "warning", message: "MCP status is missing or invalid" })
   } else if (now - mcp.ts > mcpStaleMs) {
     alerts.push({ key: "mcp-status-stale", severity: "warning", message: `MCP status is stale (${Math.floor((now - mcp.ts) / 1000)}s)` })
+  }
+
+  if (Number.isFinite(maintenance?.ts) && now - maintenance.ts < 90_000 && maintenance.progress?.alert) {
+    alerts.push({ key: "mcp-no-progress", severity: "warning", message: maintenance.progress.alert })
   }
 
   const violations = mcp?.invariantViolations ?? {}

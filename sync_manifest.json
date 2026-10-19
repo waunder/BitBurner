@@ -82,6 +82,7 @@
     "cct_worker_pool.js",
     "maintenance_steward.js",
     "maintenance_logic.js",
+    "mcp_watchdog.js",
     "augmentation_readiness.js",
     "player_activity_controller.js",
     "player_activity_logic.js",

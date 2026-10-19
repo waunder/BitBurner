@@ -227,7 +227,8 @@ so the pool shrinks to what needs no ports. Rebuilding it means Create Program
 ### `mcp.js`
 
 The orchestrator, and where nearly all the complexity lives. Each tick
-(`LOOP_SLEEP_MS`, 10s) it scans the network, decides on a target, decides on a
+(`LOOP_SLEEP_MS`, normally 10s; finite harvest completion wake described below)
+it scans the network, decides on a target, decides on a
 plan, and allocates worker threads across every rooted normal host plus every
 owned cloud server. Cloud servers are worker-only: they never enter target
 selection because they have no money; unlike ordinary servers, they are
@@ -377,6 +378,32 @@ replace `get_stats.js`.
 **Cloud multi-target batches (`mcp_cloud.js`).** MCP is the sole scheduler. `set_cloud_mode.js on` writes persistent `mcp_cloud_control.json` by default; optional `minutes` creates a lease. Current aggressive policy allows a 25% all-success money floor, restores harvest-ready targets to 95%, permits preparation to use 65% of worker RAM, and requests up to 128 target cohorts, bounded by `min(192, max(64, 2 × workerHosts))`. The former 91% floor excluded most of the 63 money servers because one hack thread would cross it; hack thread sizing now admits those servers and caps each planned withdrawal at 75%. Preparation share is configurable with the optional prep-fraction argument (0.05–0.85) or control JSON; harvest cohorts can use the rest. Hack thread sizing uses current money and the floor. Grow sizing includes hack-added security; hack, grow, and weaken workers run with `once`. All grow/weaken RAM is reserved before hack and incomplete placement launches nothing. If a full safe harvest cohort will not pack, hack threads are reduced and grow/weaken are recomputed before trying again. A target with an existing finite cohort is not scheduled again; finite jobs survive an MCP restart and block conflicting admissions. New activation retires and verifies removal of legacy looping actions. On disable/expiry, active cohorts drain without being killed before the legacy planner resumes. A cloud exception publishes `finite-error` and retries without falling through to the continuous planner. Status reports the executed policy version, actual cloud RAM capacity and current max-server quote. Harvest ranks use expected withdrawal per action GB-second; preparation ranks forecast the harvest they unlock and charge security/money preparation GB-seconds, preventing phase priority and scan order from monopolizing residual RAM. `cloud_pool_audit.js` reports every money server and the reason it is or is not schedulable. No purchase/reset/player-activity calls.
 
 It writes both `mcp_status.json` (HUD/maintenance compatibility) and `mcp_cloud_status.json`, recording effective control, target phases/counts/observed balances, process IDs/hosts, waiting demand, launch failures and completed cohorts. Batch start/completion/stop/failure decisions use the existing MCP event stream. Income derives from the game's cumulative hacking money-source delta, including any other hacking scripts; XP rate is currently unavailable in this mode. This is a simultaneous cohort scheduler, not a tightly timed overlapping batch scheduler. Source requires `Formulas.exe`. Ken explicitly requested direct Steam testing rather than the proposed browser/pilot sequence.
+
+`CLOUD_COMPLETION_WAKE_ENABLED` is a numeric, hot-reloaded opt-in flag in
+`mcp_config.json` (source fallback 0; production configuration 1 after the
+2026-10-19 A/B/A cash comparison measured +11.63%). When positive, finite mode sleeps until
+an active harvest cohort's predicted final completion plus 100ms, bounded by
+`LOOP_SLEEP_MS`, with a 200ms retry floor. Preparation-only, share, XP drain,
+error and continuous-loop paths retain their normal cadence. It does not repeat
+hack/grow before the cohort's restoration finishes. Turning the flag to zero
+restores fixed cadence without killing workers.
+
+While enabled, admission reserves each active harvest cohort's RAM released by
+early-finished jobs until its last job settles; otherwise long preparation work
+could take those slots and starve the next harvest. Startup cleanup preserves finite actions and retires only legacy loops.
+Manager restart validates and adopts prior finite cohort records from `mcp_cloud_status.json` only when
+live host/PID/filename/thread/target/batch identity matches. Unproven orphan jobs
+remain protected by normal finite-target exclusion; missing history can prevent
+slot reservation. Deadline prediction is advisory: actual `ns.isRunning` checks
+still decide completion, and delayed completions cause bounded retries.
+
+Finite status adds `pollPolicy` (`fixed` or `harvest-completion`), `nextPollMs`,
+and `reservedRestorationRam`. Target stats displays the latter as `COHORT HELD`
+from the manager snapshot, distinct from actual free RAM. It is physically free RAM temporarily held
+from admission, rather than extra RAM consumed by jobs. Adoption emits
+`cloud_batch_adopt`. Cash impact and dispatch intervals must be measured rather
+than inferred from launch-time utilization. See `docs/scheduler-efficiency-2026-10-19.md`
+for the controlled trial and measured production decision.
 
 When switching from finite cloud batches to XP, hack/grow restoration cohorts finish
 before the continuous XP planner takes ownership. As of 2026-10-19, tracked

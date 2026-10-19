@@ -1,6 +1,6 @@
 /** Finite multi-target batches, owned and observed by the existing MCP. */
 export const CLOUD_CONTROL = 'mcp_cloud_control.json'
-export const CLOUD_VERSION = 'finite-floor25-recovery95-prep65-v5'
+export const CLOUD_VERSION = 'finite-completion-reserve-v6'
 const SCRIPTS = {hack:'scripts/hack.js',grow:'scripts/grow.js',weaken:'scripts/weaken.js'}
 
 export function planCloudBatch(ns, target, { protectedFloor = 0.25, recoveryTarget = 0.95 } = {}) {
@@ -136,7 +136,64 @@ export function fitCloudHarvest(ns, plan, hosts, ram) {
   return null
 }
 
-export async function cloudTick(ns, state, {servers,workers,runId,objective,emit}) {
+/** Poll only near a cohort's final completion; other modes keep their cadence. */
+export function cloudWakeDelay(status, now, nominalMs, enabled) {
+  if(!enabled || status.workerMode!=='finite') return nominalMs
+  const deadlines=(status.targets||[]).filter(b=>b.phase==='harvest' && Number.isFinite(b.startedAt))
+    .map(b=>b.startedAt+Math.max(...Object.entries(b.counts||{}).filter(([,n])=>n>0).map(([a])=>b.durations?.[a]*1000))+100)
+    .filter(Number.isFinite)
+  if(!deadlines.length)return nominalMs
+  return Math.max(200,Math.min(nominalMs,Math.min(...deadlines)-now))
+}
+
+/** Hold finished harvest slots until its final restoration job completes. */
+export function cloudAdmissionHosts(ns, workers, batches, ram, reserveHarvestRam) {
+  const held=new Map()
+  if(reserveHarvestRam)for(const batch of batches.values()) {
+    if(batch.phase!=='harvest')continue
+    for(const job of batch.jobs)if(!ns.isRunning(job.pid,job.host)) {
+      held.set(job.host,(held.get(job.host)||0)+job.threads*ram[job.action])
+    }
+  }
+  return workers.map(host=>({host,reservedRam:held.get(host)||0,
+    freeRam:Math.max(0,ns.getServerMaxRam(host)-ns.getServerUsedRam(host)-(held.get(host)||0))}))
+    .sort((a,b)=>b.freeRam-a.freeRam)
+}
+
+/** Reuse a prior manager's exact finite cohort evidence across a restart. */
+export function adoptCloudCohorts(ns, workers) {
+  let previous
+  try {previous=JSON.parse(ns.read('mcp_cloud_status.json'))} catch {return []}
+  const hosts=new Set(workers),adopted=[]
+  if(!Array.isArray(previous?.targets))return adopted
+  for(const batch of previous.targets) {
+    if(!batch || typeof batch!=='object' || typeof batch.target!=='string' || typeof batch.id!=='string' || !Array.isArray(batch.jobs) || !batch.counts || !batch.durations || !Number.isFinite(batch.startedAt))continue
+    if(!batch.jobs.every(j=>j && typeof j.host==='string' && Number.isInteger(j.pid) && j.pid>0 && Number.isInteger(j.threads) && j.threads>0 && j.action in SCRIPTS))continue
+    const live=batch.jobs.filter(j=>hosts.has(j.host)&&ns.isRunning(j.pid,j.host))
+    if(!live.length)continue
+    const valid=live.every(j=>ns.ps(j.host).some(p=>p.pid===j.pid && p.filename.replace(/^\//,'')===SCRIPTS[j.action] && p.threads===j.threads &&
+      p.args[0]===batch.target && p.args[1]==='once' && p.args[2]===batch.id))
+    if(valid)adopted.push(batch)
+  }
+  return adopted
+}
+
+/** Startup must retire legacy loops without interrupting finite restoration. */
+export function retireLegacyActionWorkers(ns, hosts) {
+  let killedHosts=0
+  for(const host of new Set(hosts)) {
+    let killed=false
+    for(const process of ns.ps(host)) {
+      if(Object.values(SCRIPTS).includes(process.filename.replace(/^\//,'')) && process.args[1]!=='once') {
+        killed=ns.kill(process.pid,host)||killed
+      }
+    }
+    if(killed)killedHosts++
+  }
+  return killedHosts
+}
+
+export async function cloudTick(ns, state, {servers,workers,runId,objective,emit,reserveHarvestRam=false}) {
   let control
   try {control=JSON.parse(ns.read(CLOUD_CONTROL)||'{}')} catch {control={}}
   const enabled=control.enabled===true && objective!=='xp' && (control.expiresAt==null || (Number.isFinite(control.expiresAt) && Date.now()<control.expiresAt))
@@ -192,6 +249,10 @@ export async function cloudTick(ns, state, {servers,workers,runId,objective,emit
       if(Object.values(SCRIPTS).includes(p.filename.replace(/^\//,'')) && p.args[1] !== 'once') ns.kill(p.pid,host)
     const staleLoops=workers.flatMap(host=>ns.ps(host).filter(p=>Object.values(SCRIPTS).includes(p.filename.replace(/^\//,'')) && p.args[1] !== 'once').map(p=>({host,pid:p.pid})))
     if(staleLoops.length) throw Error(`Could not retire looping action workers: ${JSON.stringify(staleLoops)}`)
+    if(reserveHarvestRam)for(const batch of adoptCloudCohorts(ns,workers)) {
+      state.batches.set(batch.target,batch)
+      emit('cloud_batch_adopt',{target:batch.target,id:batch.id,phase:batch.phase,reason:'Validated prior cohort; preserve restoration slots across manager restart'})
+    }
     state.sourceFingerprint=CLOUD_VERSION
     state.active=true;state.startedAt=Date.now();state.baseMoney=ns.getMoneySources().sinceInstall.hacking;state.lastMoney=state.baseMoney;state.lastAt=Date.now()
     emit('cloud_start',{control,protectedFloor,recoveryTarget,limit,objective,workers,policyVersion:CLOUD_VERSION})
@@ -218,7 +279,7 @@ export async function cloudTick(ns, state, {servers,workers,runId,objective,emit
     .map(h=>planCloudBatch(ns,h,{protectedFloor,recoveryTarget})).filter(Boolean).sort((a,b)=>b.rank-a.rank)
   for(let plan of candidates) {
     if(state.batches.size>=limit)break
-    const hosts=workers.map(host=>({host,freeRam:Math.max(0,ns.getServerMaxRam(host)-ns.getServerUsedRam(host))})).sort((a,b)=>b.freeRam-a.freeRam)
+    const hosts=cloudAdmissionHosts(ns,workers,state.batches,ram,reserveHarvestRam)
     let placementHosts=hosts
     if(plan.phase.startsWith('prepare-')) {
       if(preparationRamRemaining<1){waiting.push({target:plan.target,phase:plan.phase,reason:'preparation RAM share is in use'});continue}
@@ -261,5 +322,5 @@ export async function cloudTick(ns, state, {servers,workers,runId,objective,emit
     targets:[...state.batches.values()].map(b=>({...b,moneyPct:ns.getServerMoneyAvailable(b.target)/ns.getServerMaxMoney(b.target),currentSecurity:ns.getServerSecurityLevel(b.target)})),
     workers:allocations,cloudWorkers:allocations.filter(h=>ns.getServer(h.host).purchasedByPlayer),rate,avgRate:(money-state.baseMoney)/Math.max(1,(now-state.startedAt)/1000),incomePerSec:rate,totalHacked:money-state.baseMoney,
     currentSecurity:primary?ns.getServerSecurityLevel(primaryTarget):0,moneyPct:primary?ns.getServerMoneyAvailable(primaryTarget)/ns.getServerMaxMoney(primaryTarget):0,expPerSec:0,ramUtilization:allocations.reduce((n,h)=>n+h.usedRam,0)/Math.max(1,allocations.reduce((n,h)=>n+h.maxRam,0)),
-    workerLaunchFailures:failures,cloudCapacity,cloudControl:{...control,effectiveProtectedFloor:protectedFloor,effectiveRecoveryTarget:recoveryTarget,effectivePreparationRamFraction:preparationRamFraction,effectivePreparationRamRemaining:preparationRamRemaining,effectiveMaxTargets:limit},completedBatches:state.completed,waiting}
+    reservedRestorationRam:cloudAdmissionHosts(ns,workers,state.batches,ram,reserveHarvestRam).reduce((n,h)=>n+h.reservedRam,0),workerLaunchFailures:failures,cloudCapacity,cloudControl:{...control,effectiveProtectedFloor:protectedFloor,effectiveRecoveryTarget:recoveryTarget,effectivePreparationRamFraction:preparationRamFraction,effectivePreparationRamRemaining:preparationRamRemaining,effectiveMaxTargets:limit},completedBatches:state.completed,waiting}
 }

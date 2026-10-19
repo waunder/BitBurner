@@ -23,7 +23,7 @@ import {
 } from "mcp_logic.js"
 import { auditTargetModels } from "./formulas_logic.js"
 import { reconcileReputation, readReputationConfig } from "./mcp_reputation.js"
-import { cloudTick } from "./mcp_cloud.js"
+import { cloudTick, cloudWakeDelay, retireLegacyActionWorkers } from "./mcp_cloud.js"
 
 // Tunables are declared with `let`, not `const`, so loadConfig can reassign
 // them in place from mcp_config.json at the top of every tick. Threading a
@@ -49,6 +49,8 @@ let MIN_TARGET_HOLD_MS = 60000
 let WORK_SECURITY_MARGIN = 1.5
 let RATE_DROP_FACTOR = 0.75
 let LOOP_SLEEP_MS = 10000
+// Opt-in finite-cohort completion wake; never speeds up looping XP/share work.
+let CLOUD_COMPLETION_WAKE_ENABLED = 0
 let RATE_SAMPLE_COUNT = 5
 let WEAKEN_STUCK_MS = 60000
 let WEAKEN_STUCK_SECURITY_THRESHOLD = 0.05
@@ -213,6 +215,7 @@ const CONFIG_DEFAULTS = {
   WORK_SECURITY_MARGIN,
   RATE_DROP_FACTOR,
   LOOP_SLEEP_MS,
+  CLOUD_COMPLETION_WAKE_ENABLED,
   RATE_SAMPLE_COUNT,
   WEAKEN_STUCK_MS,
   WEAKEN_STUCK_SECURITY_THRESHOLD,
@@ -330,6 +333,7 @@ function loadConfig(ns, state) {
     WORK_SECURITY_MARGIN,
     RATE_DROP_FACTOR,
     LOOP_SLEEP_MS,
+    CLOUD_COMPLETION_WAKE_ENABLED,
     RATE_SAMPLE_COUNT,
     WEAKEN_STUCK_MS,
     WEAKEN_STUCK_SECURITY_THRESHOLD,
@@ -365,6 +369,7 @@ function loadConfig(ns, state) {
   MIN_TARGET_HOLD_MS = resolved.MIN_TARGET_HOLD_MS
   WORK_SECURITY_MARGIN = resolved.WORK_SECURITY_MARGIN
   RATE_DROP_FACTOR = resolved.RATE_DROP_FACTOR
+  CLOUD_COMPLETION_WAKE_ENABLED = resolved.CLOUD_COMPLETION_WAKE_ENABLED
   LOOP_SLEEP_MS = resolved.LOOP_SLEEP_MS
   RATE_SAMPLE_COUNT = resolved.RATE_SAMPLE_COUNT
   WEAKEN_STUCK_MS = resolved.WEAKEN_STUCK_MS
@@ -1210,27 +1215,11 @@ function getTargetOverride(ns) {
 }
 
 function cleanupOrphanedActionScripts(ns) {
-  // Orphaned weaken/grow/hack threads from a previous mcp.js run (killed
-  // without this loop ever getting a chance to redeploy them) hold RAM
-  // forever otherwise — that starves getTotalWeakenCapacity() down to 0,
-  // which then blocks every candidate in chooseTarget() and the bot can
-  // never recover on its own. Sweep them all before doing anything else.
-  let killedHosts = 0
-  // Home was a worker historically. Sweep it explicitly even though it no
-  // longer appears in getWorkerHosts(), so a restart releases old workers.
-  if (getRunningActions(ns, "home").length > 0) {
-    killActionScripts(ns, "home")
-    killedHosts++
-  }
-  for (const host of getWorkerHosts(ns)) {
-    const before = getRunningActions(ns, host).length
-    if (before === 0) continue
-    killActionScripts(ns, host)
-    killedHosts++
-  }
-  if (killedHosts > 0) {
-    ns.tprint(`mcp: cleaned up orphaned action scripts on ${killedHosts} host(s)`)
-  }
+  // Finite workers settle naturally and may still owe grow/weaken recovery.
+  // Keep them for cohort adoption or conservative draining; retire only old
+  // looping allocations, including historical home-side workers.
+  const killedHosts=retireLegacyActionWorkers(ns,["home",...getWorkerHosts(ns)])
+  if(killedHosts>0)ns.tprint(`mcp: retired legacy action loops on ${killedHosts} host(s); finite workers preserved`)
 }
 
 const TARGET_STATE_FILE = "mcp_target_state.json"
@@ -1372,17 +1361,18 @@ export async function main(ns) {
         await ns.sleep(LOOP_SLEEP_MS)
         continue
       }
-      const cloud = await cloudTick(ns, cloudState, { servers, workers, runId, objective: OBJECTIVE, emit: (kind,inputs)=>events.emit(kind,inputs) })
+      const cloud = await cloudTick(ns, cloudState, { servers, workers, runId, objective: OBJECTIVE, emit: (kind,inputs)=>events.emit(kind,inputs), reserveHarvestRam:CLOUD_COMPLETION_WAKE_ENABLED>0 })
       if (cloud) {
         // Draining/orphan finite batches deliberately launch nothing and omit
         // workerLaunchFailures. Treat that as an empty failure list so the
         // finite cohort can settle before the continuous XP planner resumes.
         const workerLaunchFailures = cloud.workerLaunchFailures || []
         invariants.check('workerLaunchSucceeded',workerLaunchFailures.length===0,{failures:workerLaunchFailures})
-        const status={...cloud,scriptVersion,reputation,player:ns.getPlayer(),config:{OBJECTIVE},objectiveOverrideActive,invariantViolations:invariants.counts,recentEvents:events.recent}
+        const nextPollMs=cloudWakeDelay(cloud,Date.now(),LOOP_SLEEP_MS,CLOUD_COMPLETION_WAKE_ENABLED>0)
+        const status={...cloud,nextPollMs,pollPolicy:CLOUD_COMPLETION_WAKE_ENABLED>0?'harvest-completion':'fixed',scriptVersion,reputation,player:ns.getPlayer(),config:{OBJECTIVE},objectiveOverrideActive,invariantViolations:invariants.counts,recentEvents:events.recent}
         await ns.write('mcp_status.json',JSON.stringify(status),'w')
         await ns.write('mcp_cloud_status.json',JSON.stringify(status),'w')
-        await ns.sleep(LOOP_SLEEP_MS)
+        await ns.sleep(nextPollMs)
         continue
       }
     } catch(error) {
@@ -2014,6 +2004,7 @@ export async function main(ns) {
         WORK_SECURITY_MARGIN,
         RATE_DROP_FACTOR,
         LOOP_SLEEP_MS,
+        CLOUD_COMPLETION_WAKE_ENABLED,
         RATE_SAMPLE_COUNT,
         WEAKEN_STUCK_MS,
         WEAKEN_STUCK_SECURITY_THRESHOLD,

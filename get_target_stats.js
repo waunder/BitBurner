@@ -111,7 +111,7 @@ export async function main(ns) {
     const lines=[`MCP TARGETS (${ordered.length})  ${status.config?.OBJECTIVE||'?'}  | manager ${statusAge(now,status.ts)} / ${status.workerMode||'unknown'}`]
     const pool=report.pool
     lines.push(`WORKER RAM ${ram(pool.max)} (${pool.hosts} hosts) | ACTION ${ram(pool.actions)} | OTHER ${ram(pool.other)} | FREE ${ram(pool.free)}`)
-    lines.push(`HOME ${ram(report.home.max)} reserved; ${ram(report.home.used)} used${report.outsideActions?` | ACTION OUTSIDE POOL ${ram(report.outsideActions)}`:''}`)
+    lines.push(`HOME ${ram(report.home.max)} reserved; ${ram(report.home.used)} used${report.outsideActions?` | ACTION OUTSIDE POOL ${ram(report.outsideActions)}`:''}${Number.isFinite(status.reservedRestorationRam)?` | COHORT HELD ${ram(status.reservedRestorationRam)} (manager snapshot)`:''}`)
     lines.push(income.rate===null?'HACK INCOME collecting first sample...':`HACK INCOME $${money(income.rate)}/s | +$${money(income.gained)} over ${income.elapsed.toFixed(0)}s observed (up to ~60s)`)
     const lastHarvest=(status.recentEvents||[]).filter(e=>e.kind==='cloud_batch_complete'&&e.phase==='harvest').at(-1)
     lines.push(`LIVE = threads running now; BATCH = planned W/G/H at manager snapshot${lastHarvest?` | last harvest ended ${Math.max(0,Math.floor((now-lastHarvest.t)/1000))}s ago`:''}`)

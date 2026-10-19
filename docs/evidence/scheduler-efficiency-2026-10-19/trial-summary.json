@@ -1,0 +1,99 @@
+{
+  "windows": [
+    {
+      "phase": "baseline1",
+      "startMs": 1792444023377,
+      "endMs": 1792444203550,
+      "runId": "mvfng9ud-r688",
+      "seconds": 180.173,
+      "hackingReceipts": 366242222.8086643,
+      "incomePerSecond": 2032725.3406929136,
+      "mainHarvestStarts": 18,
+      "mainCycleMeanSeconds": 10.009647058823528,
+      "mainCycleMedianSeconds": 10.01,
+      "mainCycleRangeSeconds": [
+        10.008,
+        10.011
+      ],
+      "hackingLevelRange": [
+        705,
+        709
+      ],
+      "capacityGb": [
+        1612
+      ],
+      "anyLaunchFailures": false,
+      "anyInvariantViolations": false,
+      "eventKinds": {
+        "cloud_batch_complete": 19,
+        "cloud_batch_start": 19
+      }
+    },
+    {
+      "phase": "completion",
+      "startMs": 1792444333327,
+      "endMs": 1792444557530,
+      "runId": "mvfr1yzq-t81m",
+      "seconds": 224.203,
+      "hackingReceipts": 508765338.70091057,
+      "incomePerSecond": 2269217.355258005,
+      "mainHarvestStarts": 26,
+      "mainCycleMeanSeconds": 8.7248,
+      "mainCycleMedianSeconds": 8.483,
+      "mainCycleRangeSeconds": [
+        8.457,
+        14.474
+      ],
+      "hackingLevelRange": [
+        712,
+        717
+      ],
+      "capacityGb": [
+        1612
+      ],
+      "anyLaunchFailures": false,
+      "anyInvariantViolations": false,
+      "eventKinds": {
+        "cloud_batch_complete": 50,
+        "cloud_batch_start": 50
+      }
+    },
+    {
+      "phase": "baseline2",
+      "startMs": 1792444582895,
+      "endMs": 1792444763074,
+      "runId": "mvfr1yzq-t81m",
+      "seconds": 180.179,
+      "hackingReceipts": 366270522.4659052,
+      "incomePerSecond": 2032814.7146221546,
+      "mainHarvestStarts": 18,
+      "mainCycleMeanSeconds": 10.009882352941176,
+      "mainCycleMedianSeconds": 10.01,
+      "mainCycleRangeSeconds": [
+        10.009,
+        10.012
+      ],
+      "hackingLevelRange": [
+        718,
+        721
+      ],
+      "capacityGb": [
+        1612
+      ],
+      "anyLaunchFailures": false,
+      "anyInvariantViolations": false,
+      "eventKinds": {
+        "cloud_batch_complete": 19,
+        "cloud_batch_start": 19
+      }
+    }
+  ],
+  "controlMeanIncomePerSecond": 2032770.027657534,
+  "treatmentGainFraction": 0.11631779511868423,
+  "additionalIncomePerSecond": 236447.3276004712,
+  "notes": [
+    "Completion capture briefly disconnected; unchanged manager cumulative counters bridge the missing samples. The full wall-clock window and its 14.474s cycle are included.",
+    "Baseline1 used the previous manager; treatment and baseline2 shared the same manager run. Final production additionally fixes startup finite-worker cleanup; normal dispatch logic matches the treatment.",
+    "Capacity and main batch counts stayed constant; hacking skill rose gradually; no cash gain is inferred from wallet balance."
+  ]
+}

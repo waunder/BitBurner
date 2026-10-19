@@ -74,3 +74,62 @@ test('XP resumes in the same tick when only security preparation remains',async(
  assert.equal(await cloudTick(ns,state,{...context,objective:'xp'}),null)
  assert.equal(state.batches.size,0)
 })
+
+import {cloudWakeDelay,cloudAdmissionHosts} from './mcp_cloud.js'
+test('completion wake targets final harvest action with margin, preserving other modes',()=>{
+ const status={workerMode:'finite',targets:[{phase:'harvest',startedAt:1000,counts:{hack:5,grow:10,weaken:1},durations:{hack:2,grow:6.4,weaken:8}}]}
+ assert.equal(cloudWakeDelay(status,1000,10000,true),8100)
+ assert.equal(cloudWakeDelay(status,9200,10000,true),200)
+ assert.equal(cloudWakeDelay(status,1000,10000,false),10000)
+ assert.equal(cloudWakeDelay({...status,workerMode:'finite-draining'},1000,10000,true),10000)
+ assert.equal(cloudWakeDelay({workerMode:'finite',targets:[{phase:'prepare-security'}]},1000,10000,true),10000)
+})
+test('finished hack slots stay reserved until the harvest cohort is settled',()=>{
+ const ns={getServerMaxRam:()=>100,getServerUsedRam:()=>35,isRunning:pid=>pid===2}
+ const batches=new Map([['a',{phase:'harvest',jobs:[{pid:1,host:'w',action:'hack',threads:20},{pid:2,host:'w',action:'grow',threads:20}]}]])
+ const ram={hack:1.7,grow:1.75,weaken:1.75}
+ assert.equal(cloudAdmissionHosts(ns,['w'],batches,ram,true)[0].freeRam,31)
+ assert.equal(cloudAdmissionHosts(ns,['w'],batches,ram,false)[0].freeRam,65)
+ batches.clear();assert.equal(cloudAdmissionHosts(ns,['w'],batches,ram,true)[0].freeRam,65)
+})
+test('completion admission retains in-flight work and does not borrow its released slots for preparation',async()=>{
+ const {ns,context,servers,processes}=fixture(),state={}
+ servers.b.hackDifficulty=3
+ await cloudTick(ns,state,{...context,servers:['a'],reserveHarvestRam:true})
+ const aJobs=state.batches.get('a').jobs
+ for(let i=processes.length-1;i>=0;i--)if(processes[i].filename.includes('hack'))processes.splice(i,1)
+ const running=aJobs.filter(j=>ns.isRunning(j.pid,j.host)).map(j=>j.pid)
+ const before=cloudAdmissionHosts(ns,['worker'],state.batches,{hack:1.7,grow:1.75,weaken:1.75},true)[0]
+ const status=await cloudTick(ns,state,{...context,reserveHarvestRam:true})
+ assert.ok(running.every(pid=>processes.some(p=>p.pid===pid)))
+ assert.ok(status.reservedRestorationRam>0)
+ const prep=state.batches.get('b')
+ assert.ok(!prep||prep.ram<=before.freeRam+1e-9)
+})
+
+import {adoptCloudCohorts} from './mcp_cloud.js'
+test('restart adopts only cohorts with exact live process identity',async()=>{
+ const {ns,context,files,state,processes}=fixture(),prior={}
+ await cloudTick(ns,prior,context)
+ const batches=[...prior.batches.values()]
+ files.set('mcp_cloud_status.json',JSON.stringify({targets:batches}))
+ assert.equal(adoptCloudCohorts(ns,['worker']).length,2)
+ processes[0].args[2]='different-cohort'
+ assert.equal(adoptCloudCohorts(ns,['worker']).length,1)
+ assert.equal(adoptCloudCohorts(ns,[]).length,0)
+})
+
+import {retireLegacyActionWorkers} from './mcp_cloud.js'
+test('manager startup retires old loops but preserves finite jobs and unrelated work',()=>{
+ const killed=[]
+ const ns={ps:host=>[{pid:1,filename:'/scripts/grow.js',args:['a','once','batch']},{pid:2,filename:'scripts/hack.js',args:['a']},{pid:3,filename:'other.js',args:[]}],kill:(pid,host)=>{killed.push([pid,host]);return true}}
+ assert.equal(retireLegacyActionWorkers(ns,['home','w','w']),2)
+ assert.deepEqual(killed,[[2,'home'],[2,'w']])
+})
+
+test('malformed prior cohort status is ignored without process inspection',()=>{
+ for(const previous of [{targets:{}},{targets:[{target:'a',id:'x',counts:{},durations:{},startedAt:0,jobs:[{}]}]}]) {
+  const ns={read:()=>JSON.stringify(previous),isRunning:()=>{throw Error('must not inspect invalid process identity')}}
+  assert.deepEqual(adoptCloudCohorts(ns,['worker']),[])
+ }
+})

@@ -1,0 +1,794 @@
+{
+  "observedAtMs": 1792443783164,
+  "runId": "mvfng9ud-r688",
+  "source": "Steam Remote API mcp_status.json and mcp_events.txt; recorded 2026-10-19 14:03 PDT",
+  "capacityGb": 1612,
+  "currentIncomePerSecond": 2033737.7372574017,
+  "sinceCloudStartIncome": 4013214973.9943485,
+  "sampleCount": 43,
+  "cycles": [
+    {
+      "startMs": 1792443352774,
+      "nextMs": 1792443362781,
+      "cycleSeconds": 10.007,
+      "maxActionSeconds": 8.671413656032836,
+      "busyGbSeconds": 8982.934191625816,
+      "counts": {
+        "hack": 265,
+        "grow": 587,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.167853414008209,
+        "grow": 6.93713092482627,
+        "weaken": 8.671413656032836
+      },
+      "ram": 1579.25
+    },
+    {
+      "startMs": 1792443362781,
+      "nextMs": 1792443372787,
+      "cycleSeconds": 10.006,
+      "maxActionSeconds": 8.671413656032836,
+      "busyGbSeconds": 8982.934191625816,
+      "counts": {
+        "hack": 265,
+        "grow": 587,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.167853414008209,
+        "grow": 6.93713092482627,
+        "weaken": 8.671413656032836
+      },
+      "ram": 1579.25
+    },
+    {
+      "startMs": 1792443372787,
+      "nextMs": 1792443382794,
+      "cycleSeconds": 10.007,
+      "maxActionSeconds": 8.671413656032836,
+      "busyGbSeconds": 8982.934191625816,
+      "counts": {
+        "hack": 265,
+        "grow": 587,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.167853414008209,
+        "grow": 6.93713092482627,
+        "weaken": 8.671413656032836
+      },
+      "ram": 1579.25
+    },
+    {
+      "startMs": 1792443382794,
+      "nextMs": 1792443392802,
+      "cycleSeconds": 10.008,
+      "maxActionSeconds": 8.659695529470628,
+      "busyGbSeconds": 8970.795091366861,
+      "counts": {
+        "hack": 265,
+        "grow": 587,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.164923882367657,
+        "grow": 6.927756423576503,
+        "weaken": 8.659695529470628
+      },
+      "ram": 1579.25
+    },
+    {
+      "startMs": 1792443392802,
+      "nextMs": 1792443402811,
+      "cycleSeconds": 10.009,
+      "maxActionSeconds": 8.659695529470628,
+      "busyGbSeconds": 8970.795091366861,
+      "counts": {
+        "hack": 265,
+        "grow": 587,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.164923882367657,
+        "grow": 6.927756423576503,
+        "weaken": 8.659695529470628
+      },
+      "ram": 1579.25
+    },
+    {
+      "startMs": 1792443402811,
+      "nextMs": 1792443412818,
+      "cycleSeconds": 10.007,
+      "maxActionSeconds": 8.659695529470628,
+      "busyGbSeconds": 8970.795091366861,
+      "counts": {
+        "hack": 265,
+        "grow": 587,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.164923882367657,
+        "grow": 6.927756423576503,
+        "weaken": 8.659695529470628
+      },
+      "ram": 1579.25
+    },
+    {
+      "startMs": 1792443412818,
+      "nextMs": 1792443422823,
+      "cycleSeconds": 10.005,
+      "maxActionSeconds": 8.659695529470628,
+      "busyGbSeconds": 8970.795091366861,
+      "counts": {
+        "hack": 265,
+        "grow": 587,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.164923882367657,
+        "grow": 6.927756423576503,
+        "weaken": 8.659695529470628
+      },
+      "ram": 1579.25
+    },
+    {
+      "startMs": 1792443422823,
+      "nextMs": 1792443432832,
+      "cycleSeconds": 10.009,
+      "maxActionSeconds": 8.648009030780385,
+      "busyGbSeconds": 8958.688755211171,
+      "counts": {
+        "hack": 265,
+        "grow": 587,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.162002257695096,
+        "grow": 6.918407224624308,
+        "weaken": 8.648009030780385
+      },
+      "ram": 1579.25
+    },
+    {
+      "startMs": 1792443432832,
+      "nextMs": 1792443442842,
+      "cycleSeconds": 10.01,
+      "maxActionSeconds": 8.648009030780385,
+      "busyGbSeconds": 8958.688755211171,
+      "counts": {
+        "hack": 265,
+        "grow": 587,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.162002257695096,
+        "grow": 6.918407224624308,
+        "weaken": 8.648009030780385
+      },
+      "ram": 1579.25
+    },
+    {
+      "startMs": 1792443442842,
+      "nextMs": 1792443452851,
+      "cycleSeconds": 10.009,
+      "maxActionSeconds": 8.648009030780385,
+      "busyGbSeconds": 8958.688755211171,
+      "counts": {
+        "hack": 265,
+        "grow": 587,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.162002257695096,
+        "grow": 6.918407224624308,
+        "weaken": 8.648009030780385
+      },
+      "ram": 1579.25
+    },
+    {
+      "startMs": 1792443452851,
+      "nextMs": 1792443462862,
+      "cycleSeconds": 10.011,
+      "maxActionSeconds": 8.63635403208661,
+      "busyGbSeconds": 8946.615050689321,
+      "counts": {
+        "hack": 265,
+        "grow": 587,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1590885080216524,
+        "grow": 6.9090832256692885,
+        "weaken": 8.63635403208661
+      },
+      "ram": 1579.25
+    },
+    {
+      "startMs": 1792443462862,
+      "nextMs": 1792443472871,
+      "cycleSeconds": 10.009,
+      "maxActionSeconds": 8.63635403208661,
+      "busyGbSeconds": 8946.615050689321,
+      "counts": {
+        "hack": 265,
+        "grow": 587,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1590885080216524,
+        "grow": 6.9090832256692885,
+        "weaken": 8.63635403208661
+      },
+      "ram": 1579.25
+    },
+    {
+      "startMs": 1792443472871,
+      "nextMs": 1792443482882,
+      "cycleSeconds": 10.011,
+      "maxActionSeconds": 8.63635403208661,
+      "busyGbSeconds": 8946.615050689321,
+      "counts": {
+        "hack": 265,
+        "grow": 587,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1590885080216524,
+        "grow": 6.9090832256692885,
+        "weaken": 8.63635403208661
+      },
+      "ram": 1579.25
+    },
+    {
+      "startMs": 1792443482882,
+      "nextMs": 1792443492891,
+      "cycleSeconds": 10.009,
+      "maxActionSeconds": 8.63635403208661,
+      "busyGbSeconds": 8946.615050689321,
+      "counts": {
+        "hack": 265,
+        "grow": 587,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1590885080216524,
+        "grow": 6.9090832256692885,
+        "weaken": 8.63635403208661
+      },
+      "ram": 1579.25
+    },
+    {
+      "startMs": 1792443492891,
+      "nextMs": 1792443502903,
+      "cycleSeconds": 10.012,
+      "maxActionSeconds": 8.624730406202241,
+      "busyGbSeconds": 8906.759090485053,
+      "counts": {
+        "hack": 264,
+        "grow": 585,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1561826015505603,
+        "grow": 6.899784324961793,
+        "weaken": 8.624730406202241
+      },
+      "ram": 1574.05
+    },
+    {
+      "startMs": 1792443502903,
+      "nextMs": 1792443512916,
+      "cycleSeconds": 10.013,
+      "maxActionSeconds": 8.624730406202241,
+      "busyGbSeconds": 8906.759090485053,
+      "counts": {
+        "hack": 264,
+        "grow": 585,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1561826015505603,
+        "grow": 6.899784324961793,
+        "weaken": 8.624730406202241
+      },
+      "ram": 1574.05
+    },
+    {
+      "startMs": 1792443512916,
+      "nextMs": 1792443522929,
+      "cycleSeconds": 10.013,
+      "maxActionSeconds": 8.624730406202241,
+      "busyGbSeconds": 8906.759090485053,
+      "counts": {
+        "hack": 264,
+        "grow": 585,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1561826015505603,
+        "grow": 6.899784324961793,
+        "weaken": 8.624730406202241
+      },
+      "ram": 1574.05
+    },
+    {
+      "startMs": 1792443522929,
+      "nextMs": 1792443532938,
+      "cycleSeconds": 10.009,
+      "maxActionSeconds": 8.624730406202241,
+      "busyGbSeconds": 8906.759090485053,
+      "counts": {
+        "hack": 264,
+        "grow": 585,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1561826015505603,
+        "grow": 6.899784324961793,
+        "weaken": 8.624730406202241
+      },
+      "ram": 1574.05
+    },
+    {
+      "startMs": 1792443532938,
+      "nextMs": 1792443542948,
+      "cycleSeconds": 10.01,
+      "maxActionSeconds": 8.613138026624013,
+      "busyGbSeconds": 8894.787640094619,
+      "counts": {
+        "hack": 264,
+        "grow": 585,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.153284506656003,
+        "grow": 6.8905104212992105,
+        "weaken": 8.613138026624013
+      },
+      "ram": 1574.05
+    },
+    {
+      "startMs": 1792443542948,
+      "nextMs": 1792443552957,
+      "cycleSeconds": 10.009,
+      "maxActionSeconds": 8.613138026624013,
+      "busyGbSeconds": 8894.787640094619,
+      "counts": {
+        "hack": 264,
+        "grow": 585,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.153284506656003,
+        "grow": 6.8905104212992105,
+        "weaken": 8.613138026624013
+      },
+      "ram": 1574.05
+    },
+    {
+      "startMs": 1792443552957,
+      "nextMs": 1792443562967,
+      "cycleSeconds": 10.01,
+      "maxActionSeconds": 8.613138026624013,
+      "busyGbSeconds": 8894.787640094619,
+      "counts": {
+        "hack": 264,
+        "grow": 585,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.153284506656003,
+        "grow": 6.8905104212992105,
+        "weaken": 8.613138026624013
+      },
+      "ram": 1574.05
+    },
+    {
+      "startMs": 1792443562967,
+      "nextMs": 1792443572988,
+      "cycleSeconds": 10.021,
+      "maxActionSeconds": 8.613138026624013,
+      "busyGbSeconds": 8894.787640094619,
+      "counts": {
+        "hack": 264,
+        "grow": 585,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.153284506656003,
+        "grow": 6.8905104212992105,
+        "weaken": 8.613138026624013
+      },
+      "ram": 1574.05
+    },
+    {
+      "startMs": 1792443572988,
+      "nextMs": 1792443582993,
+      "cycleSeconds": 10.005,
+      "maxActionSeconds": 8.601576767527872,
+      "busyGbSeconds": 8882.848327826034,
+      "counts": {
+        "hack": 264,
+        "grow": 585,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.150394191881968,
+        "grow": 6.881261414022298,
+        "weaken": 8.601576767527872
+      },
+      "ram": 1574.05
+    },
+    {
+      "startMs": 1792443582993,
+      "nextMs": 1792443593000,
+      "cycleSeconds": 10.007,
+      "maxActionSeconds": 8.601576767527872,
+      "busyGbSeconds": 8882.848327826034,
+      "counts": {
+        "hack": 264,
+        "grow": 585,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.150394191881968,
+        "grow": 6.881261414022298,
+        "weaken": 8.601576767527872
+      },
+      "ram": 1574.05
+    },
+    {
+      "startMs": 1792443593000,
+      "nextMs": 1792443603006,
+      "cycleSeconds": 10.006,
+      "maxActionSeconds": 8.601576767527872,
+      "busyGbSeconds": 8882.848327826034,
+      "counts": {
+        "hack": 264,
+        "grow": 585,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.150394191881968,
+        "grow": 6.881261414022298,
+        "weaken": 8.601576767527872
+      },
+      "ram": 1574.05
+    },
+    {
+      "startMs": 1792443603006,
+      "nextMs": 1792443613013,
+      "cycleSeconds": 10.007,
+      "maxActionSeconds": 8.601576767527872,
+      "busyGbSeconds": 8882.848327826034,
+      "counts": {
+        "hack": 264,
+        "grow": 585,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.150394191881968,
+        "grow": 6.881261414022298,
+        "weaken": 8.601576767527872
+      },
+      "ram": 1574.05
+    },
+    {
+      "startMs": 1792443613013,
+      "nextMs": 1792443623022,
+      "cycleSeconds": 10.009,
+      "maxActionSeconds": 8.59004650376443,
+      "busyGbSeconds": 8870.941024437529,
+      "counts": {
+        "hack": 264,
+        "grow": 585,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1475116259411076,
+        "grow": 6.872037203011544,
+        "weaken": 8.59004650376443
+      },
+      "ram": 1574.05
+    },
+    {
+      "startMs": 1792443623022,
+      "nextMs": 1792443633029,
+      "cycleSeconds": 10.007,
+      "maxActionSeconds": 8.59004650376443,
+      "busyGbSeconds": 8870.941024437529,
+      "counts": {
+        "hack": 264,
+        "grow": 585,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1475116259411076,
+        "grow": 6.872037203011544,
+        "weaken": 8.59004650376443
+      },
+      "ram": 1574.05
+    },
+    {
+      "startMs": 1792443633029,
+      "nextMs": 1792443643038,
+      "cycleSeconds": 10.009,
+      "maxActionSeconds": 8.59004650376443,
+      "busyGbSeconds": 8870.941024437529,
+      "counts": {
+        "hack": 264,
+        "grow": 585,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1475116259411076,
+        "grow": 6.872037203011544,
+        "weaken": 8.59004650376443
+      },
+      "ram": 1574.05
+    },
+    {
+      "startMs": 1792443643038,
+      "nextMs": 1792443653048,
+      "cycleSeconds": 10.01,
+      "maxActionSeconds": 8.59004650376443,
+      "busyGbSeconds": 8870.941024437529,
+      "counts": {
+        "hack": 264,
+        "grow": 585,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1475116259411076,
+        "grow": 6.872037203011544,
+        "weaken": 8.59004650376443
+      },
+      "ram": 1574.05
+    },
+    {
+      "startMs": 1792443653048,
+      "nextMs": 1792443663055,
+      "cycleSeconds": 10.007,
+      "maxActionSeconds": 8.578547110854437,
+      "busyGbSeconds": 8859.065601379378,
+      "counts": {
+        "hack": 264,
+        "grow": 585,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1446367777136093,
+        "grow": 6.86283768868355,
+        "weaken": 8.578547110854437
+      },
+      "ram": 1574.05
+    },
+    {
+      "startMs": 1792443663055,
+      "nextMs": 1792443673064,
+      "cycleSeconds": 10.009,
+      "maxActionSeconds": 8.578547110854437,
+      "busyGbSeconds": 8859.065601379378,
+      "counts": {
+        "hack": 264,
+        "grow": 585,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1446367777136093,
+        "grow": 6.86283768868355,
+        "weaken": 8.578547110854437
+      },
+      "ram": 1574.05
+    },
+    {
+      "startMs": 1792443673064,
+      "nextMs": 1792443683076,
+      "cycleSeconds": 10.012,
+      "maxActionSeconds": 8.578547110854437,
+      "busyGbSeconds": 8859.065601379378,
+      "counts": {
+        "hack": 264,
+        "grow": 585,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1446367777136093,
+        "grow": 6.86283768868355,
+        "weaken": 8.578547110854437
+      },
+      "ram": 1574.05
+    },
+    {
+      "startMs": 1792443683076,
+      "nextMs": 1792443693086,
+      "cycleSeconds": 10.01,
+      "maxActionSeconds": 8.578547110854437,
+      "busyGbSeconds": 8859.065601379378,
+      "counts": {
+        "hack": 264,
+        "grow": 585,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1446367777136093,
+        "grow": 6.86283768868355,
+        "weaken": 8.578547110854437
+      },
+      "ram": 1574.05
+    },
+    {
+      "startMs": 1792443693086,
+      "nextMs": 1792443703097,
+      "cycleSeconds": 10.011,
+      "maxActionSeconds": 8.567078464984311,
+      "busyGbSeconds": 8847.2219307893,
+      "counts": {
+        "hack": 264,
+        "grow": 585,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1417696162460778,
+        "grow": 6.853662771987449,
+        "weaken": 8.567078464984311
+      },
+      "ram": 1574.05
+    },
+    {
+      "startMs": 1792443703097,
+      "nextMs": 1792443713108,
+      "cycleSeconds": 10.011,
+      "maxActionSeconds": 8.567078464984311,
+      "busyGbSeconds": 8847.2219307893,
+      "counts": {
+        "hack": 264,
+        "grow": 585,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1417696162460778,
+        "grow": 6.853662771987449,
+        "weaken": 8.567078464984311
+      },
+      "ram": 1574.05
+    },
+    {
+      "startMs": 1792443713108,
+      "nextMs": 1792443723117,
+      "cycleSeconds": 10.009,
+      "maxActionSeconds": 8.567078464984311,
+      "busyGbSeconds": 8886.84466868985,
+      "counts": {
+        "hack": 265,
+        "grow": 588,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1417696162460778,
+        "grow": 6.853662771987449,
+        "weaken": 8.567078464984311
+      },
+      "ram": 1581
+    },
+    {
+      "startMs": 1792443723117,
+      "nextMs": 1792443733127,
+      "cycleSeconds": 10.01,
+      "maxActionSeconds": 8.567078464984311,
+      "busyGbSeconds": 8886.84466868985,
+      "counts": {
+        "hack": 265,
+        "grow": 588,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1417696162460778,
+        "grow": 6.853662771987449,
+        "weaken": 8.567078464984311
+      },
+      "ram": 1581
+    },
+    {
+      "startMs": 1792443733127,
+      "nextMs": 1792443743137,
+      "cycleSeconds": 10.01,
+      "maxActionSeconds": 8.555640443001689,
+      "busyGbSeconds": 8874.979722536727,
+      "counts": {
+        "hack": 265,
+        "grow": 588,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1389101107504223,
+        "grow": 6.844512354401352,
+        "weaken": 8.555640443001689
+      },
+      "ram": 1581
+    },
+    {
+      "startMs": 1792443743137,
+      "nextMs": 1792443753146,
+      "cycleSeconds": 10.009,
+      "maxActionSeconds": 8.555640443001689,
+      "busyGbSeconds": 8874.979722536727,
+      "counts": {
+        "hack": 265,
+        "grow": 588,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1389101107504223,
+        "grow": 6.844512354401352,
+        "weaken": 8.555640443001689
+      },
+      "ram": 1581
+    },
+    {
+      "startMs": 1792443753146,
+      "nextMs": 1792443763152,
+      "cycleSeconds": 10.006,
+      "maxActionSeconds": 8.555640443001689,
+      "busyGbSeconds": 8874.979722536727,
+      "counts": {
+        "hack": 265,
+        "grow": 588,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1389101107504223,
+        "grow": 6.844512354401352,
+        "weaken": 8.555640443001689
+      },
+      "ram": 1581
+    },
+    {
+      "startMs": 1792443763152,
+      "nextMs": 1792443773157,
+      "cycleSeconds": 10.005,
+      "maxActionSeconds": 8.555640443001689,
+      "busyGbSeconds": 8874.979722536727,
+      "counts": {
+        "hack": 265,
+        "grow": 588,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.1389101107504223,
+        "grow": 6.844512354401352,
+        "weaken": 8.555640443001689
+      },
+      "ram": 1581
+    },
+    {
+      "startMs": 1792443773157,
+      "nextMs": 1792443783163,
+      "cycleSeconds": 10.006,
+      "maxActionSeconds": 8.54423292241102,
+      "busyGbSeconds": 8863.146416240012,
+      "counts": {
+        "hack": 265,
+        "grow": 588,
+        "weaken": 58
+      },
+      "durations": {
+        "hack": 2.136058230602755,
+        "grow": 6.835386337928816,
+        "weaken": 8.54423292241102
+      },
+      "ram": 1581
+    }
+  ],
+  "latestDurationWeightedRamFractions": {
+    "hack": 0.10857253030631672,
+    "grow": 0.793579639939267,
+    "weaken": 0.0978478297544164
+  },
+  "allRetainedEventKinds": {
+    "cloud_batch_complete": 149,
+    "cloud_batch_start": 151
+  }
+}

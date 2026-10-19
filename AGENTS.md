@@ -12,7 +12,10 @@ that one category only.
 
 For everything else, proceed without asking: deploy capital (including stock
 capital), change automation, commit/push, restart scripts, and use reversible
-feature flags when their risk and ROI justify it. Record decision inputs and
+feature flags when their risk and ROI justify it. Complete authorized
+investigations, controlled trials, implementation, deployment, and verification
+autonomously;
+Ken need not be present for intermediate decisions. Record decision inputs and
 observed results. Keep working while useful work remains, report material
 progress periodically, and say plainly when there is nothing left to do.
 

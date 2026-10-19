@@ -1,0 +1,23 @@
+{
+  "ts": 1792444863271,
+  "runId": "mvfrd7nr-g7zh",
+  "scriptVersion": "1ep5kgh",
+  "cloudSourceFingerprint": "finite-completion-reserve-v6",
+  "workerMode": "finite",
+  "pollPolicy": "harvest-completion",
+  "nextPollMs": 8385.006103515625,
+  "reservedRestorationRam": 0,
+  "rate": 2423920.675034151,
+  "avgRate": 2421719.392295305,
+  "invariantViolations": {},
+  "workerLaunchFailures": [],
+  "verifiedPreservedPid": 11957,
+  "managerPid": 11994,
+  "panelPid": 12057,
+  "sourceReadbackMatched": [
+    "mcp.js",
+    "mcp_cloud.js",
+    "mcp_config.json",
+    "get_target_stats.js"
+  ]
+}

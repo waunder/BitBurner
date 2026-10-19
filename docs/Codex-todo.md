@@ -31,3 +31,10 @@ None.
   batch threads, unlisted targets, and rolling realized hacking income. Seven
   focused tests pass; deployed/readback verified and Steam layout checked.
   Evidence: `docs/target-stats-2026-10-19.md`.
+
+- Assessed scheduler churn and ran a fixed/completion-aware/fixed cash trial:
+  $2.033m/s / $2.269m/s / $2.033m/s, +11.63% versus mean control. Retained
+  completion-aware wake and cohort RAM reservation, preserving finite jobs at
+  startup and validating adoption across restart. Final short production check
+  ~$2.425m/s; 135 tests pass. Evidence: `docs/scheduler-efficiency-2026-10-19.md`.
+  Ken's explicit standing autonomy instruction is recorded in AGENTS.md.

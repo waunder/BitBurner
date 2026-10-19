@@ -26,3 +26,8 @@ None.
   require fresh process/batch evidence and share a 15-minute cooldown. All 122
   focused regression tests pass; live activation/readback verified. Details:
   `docs/mcp-watchdog-2026-10-19.md`.
+
+- Corrected target-stats reporting: eligible worker RAM, actual versus planned
+  batch threads, unlisted targets, and rolling realized hacking income. Seven
+  focused tests pass; deployed/readback verified and Steam layout checked.
+  Evidence: `docs/target-stats-2026-10-19.md`.

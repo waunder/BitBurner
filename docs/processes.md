@@ -340,7 +340,39 @@ The same hack budget remains active during regrowth, avoiding a cloud-sized hack
 
 #### The work-weight calculation
 
-`get_target_stats.js` is an opt-in five-second live panel for only the targets in current `mcp_status.json` (multi-target cohorts or the single selected target). It reads live money/security and aggregates current hack/grow/weaken process threads by target across every scanned network server plus all purchased/cloud servers, so counts include every execution host even if it is temporarily absent from the manager's worker list. The compact aligned table labels `READY%` as target money fullness and `SHARE%` as each target's portion of all active action threads; shares sum to 100% (rounding corrected). `#T` is the row's total threads and `W/G/H` gives its weaken/grow/hack breakdown. A final `TOTAL` row gives aggregate thread count and action totals. Compact K/M/G/T/P money, phase, target count and objective are shown; stale manager data is flagged after 30 seconds. It displays 12 targets per page, with white title/header/page/total rows and green detail rows so headers remain visible in the finite tail log. Start with `run get_target_stats.js` (or `gts`); navigate with `gts next`, `gts prev`, `gts first`, `gts last`, or `gts <page>`. Page commands update a small game-side page file, and the existing panel refreshes without restarting or moving/resizing its tail. After source sync, use `gts restart` once to load new code; this closes the old tail and opens the updated one at its saved position. Resize it manually and scroll within it as needed. It does not replace `get_stats.js`.
+`get_target_stats.js` is an opt-in five-second live panel. It unions the targets
+in `mcp_status.json` with every observed `/scripts/{weaken,grow,hack}.js` target,
+including jobs missing from the manager snapshot. `WORKER RAM` counts only
+MCP-eligible rooted/cloud hosts over 2.5 GB, excluding home. It separates action
+RAM, other workloads and free RAM; home reservation/use is shown separately.
+`LIVE W/G/H` is measured from actual processes; `BATCH W/G/H` is the original
+finite cohort plan from the manager snapshot, never presented as running threads.
+The phase column is explicitly `BATCH / LIVE STATE`; a finished fast cohort can
+show `harvest / no live jobs` until the next manager tick. Header displays manager
+age/mode, with missing or >30-second-old status flagged. Money/security and
+`FULL` percentage are direct server readings; fullness is not job readiness.
+
+`HACK INCOME` measures changes in the game's cumulative hacking receipts over
+an in-memory rolling window of up to about 60 seconds. It shows the actual
+observed interval, payout sum and rate, so completed sub-refresh hack jobs still
+have visible results. It covers all hacking income, not just individually
+attributed MCP targets, and is independent of spending or cash balance. It
+warms up after panel restart and resets if the counter/clock goes backwards.
+The latest harvest completion age comes from durable manager event projection.
+A total row reports all observed action threads; short jobs can finish between
+five-second process snapshots.
+
+It displays 12 targets per page with white headers/totals and green detail rows.
+Start with `run get_target_stats.js` (or `gts`); navigate with `gts next`, `gts prev`,
+`gts first`, `gts last`, or `gts <page>`. Page commands calculate the same union
+of selected/observed targets and update `get_target_stats_page.txt` without
+restarting or moving the panel. After source sync, `gts restart` closes the old
+tail and restores its saved position. On opening it fits its width/height to the
+rendered lines and clamps the position to the screen; subsequent manual resizing
+is retained until the next restart. Resize/scroll as needed. The panel remains
+read-only with respect to gameplay; income history is not persisted. It does not
+replace `get_stats.js`.
+
 
 **Cloud multi-target batches (`mcp_cloud.js`).** MCP is the sole scheduler. `set_cloud_mode.js on` writes persistent `mcp_cloud_control.json` by default; optional `minutes` creates a lease. Current aggressive policy allows a 25% all-success money floor, restores harvest-ready targets to 95%, permits preparation to use 65% of worker RAM, and requests up to 128 target cohorts, bounded by `min(192, max(64, 2 × workerHosts))`. The former 91% floor excluded most of the 63 money servers because one hack thread would cross it; hack thread sizing now admits those servers and caps each planned withdrawal at 75%. Preparation share is configurable with the optional prep-fraction argument (0.05–0.85) or control JSON; harvest cohorts can use the rest. Hack thread sizing uses current money and the floor. Grow sizing includes hack-added security; hack, grow, and weaken workers run with `once`. All grow/weaken RAM is reserved before hack and incomplete placement launches nothing. If a full safe harvest cohort will not pack, hack threads are reduced and grow/weaken are recomputed before trying again. A target with an existing finite cohort is not scheduled again; finite jobs survive an MCP restart and block conflicting admissions. New activation retires and verifies removal of legacy looping actions. On disable/expiry, active cohorts drain without being killed before the legacy planner resumes. A cloud exception publishes `finite-error` and retries without falling through to the continuous planner. Status reports the executed policy version, actual cloud RAM capacity and current max-server quote. Harvest ranks use expected withdrawal per action GB-second; preparation ranks forecast the harvest they unlock and charge security/money preparation GB-seconds, preventing phase priority and scan order from monopolizing residual RAM. `cloud_pool_audit.js` reports every money server and the reason it is or is not schedulable. No purchase/reset/player-activity calls.
 

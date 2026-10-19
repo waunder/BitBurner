@@ -1,6 +1,6 @@
 /** Finite multi-target batches, owned and observed by the existing MCP. */
 export const CLOUD_CONTROL = 'mcp_cloud_control.json'
-export const CLOUD_VERSION = 'finite-floor25-recovery95-prep65-v4'
+export const CLOUD_VERSION = 'finite-floor25-recovery95-prep65-v5'
 const SCRIPTS = {hack:'scripts/hack.js',grow:'scripts/grow.js',weaken:'scripts/weaken.js'}
 
 export function planCloudBatch(ns, target, { protectedFloor = 0.25, recoveryTarget = 0.95 } = {}) {
@@ -150,6 +150,17 @@ export async function cloudTick(ns, state, {servers,workers,runId,objective,emit
       // Stop admitting work, but let finite restoration jobs settle before
       // relinquishing target ownership to the continuous scheduler.
       for(const [target,batch] of state.batches) {
+        // Security-only preparation has no hack/grow restoration debt. Do
+        // not idle the whole XP pool behind a tiny, long-running weaken.
+        if(objective==='xp' && batch.phase==='prepare-security') {
+          for(const job of batch.jobs) if(ns.isRunning(job.pid,job.host)) ns.kill(job.pid)
+          if(!batch.jobs.some(j=>ns.isRunning(j.pid,j.host))) {
+            emit('cloud_batch_cancel',{target,phase:batch.phase,counts:batch.counts,
+              reason:'XP selected; security-only preparation has no restoration debt'})
+            state.batches.delete(target)
+            continue
+          }
+        }
         if(batch.jobs.some(j=>ns.isRunning(j.pid,j.host)))continue
         emit('cloud_batch_complete',{target,phase:batch.phase,counts:batch.counts,draining:true,
           moneyPct:ns.getServerMoneyAvailable(target)/ns.getServerMaxMoney(target),security:ns.getServerSecurityLevel(target)})

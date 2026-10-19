@@ -7,7 +7,7 @@ function fixture() {
  const files=new Map([['mcp_cloud_control.json',JSON.stringify({enabled:true,expiresAt:Date.now()+60000,harvestFraction:.5,maxTargets:16})]])
  const servers={a:{hostname:'a',moneyMax:1000,moneyAvailable:1000,hackDifficulty:1,minDifficulty:1,purchasedByPlayer:false},b:{hostname:'b',moneyMax:1000,moneyAvailable:1000,hackDifficulty:1,minDifficulty:1,purchasedByPlayer:false},worker:{moneyMax:0,purchasedByPlayer:true}}
  const processes=[], launches=[],events=[]
- const ns={read:f=>files.get(f)||'',getServer:h=>({...servers[h]}),getPlayer:()=>({skills:{hacking:100}}),weakenAnalyze:()=>.05,
+ const ns={cloud:{getServerNames:()=>[],getRamLimit:()=>1024,getServerLimit:()=>25,getServerCost:()=>1},read:f=>files.get(f)||'',getServer:h=>({...servers[h]}),getPlayer:()=>({skills:{hacking:100}}),weakenAnalyze:()=>.05,
   formulas:{hacking:{hackPercent:()=>.01,hackChance:()=>1,weakenTime:()=>4000,growThreads:(s,p,max)=>Math.log2(max/Math.max(1,s.moneyAvailable))*10}},
   getHackTime:()=>1000,getGrowTime:()=>3200,getWeakenTime:()=>4000,getScriptRam:f=>f.includes('hack')?1.7:1.75,
   getServerSecurityLevel:h=>servers[h].hackDifficulty,getServerMinSecurityLevel:h=>servers[h].minDifficulty,
@@ -19,11 +19,11 @@ function fixture() {
  const context={servers:['a','b','worker'],workers:['worker'],runId:'test',objective:'reputation',emit:(kind,data)=>events.push({kind,...data})}
  return {ns,context,servers,processes,launches,events,files}
 }
-test('full target 50% batch reserves restoration and security compensation',()=>{
- const {ns}=fixture(),p=planCloudBatch(ns,'a');assert.equal(p.phase,'harvest');assert.deepEqual(p.counts,{hack:50,grow:10,weaken:3})
+test('full target 75% batch reserves restoration and security compensation',()=>{
+ const {ns}=fixture(),p=planCloudBatch(ns,'a');assert.equal(p.phase,'harvest');assert.deepEqual(p.counts,{hack:75,grow:11,weaken:4})
 })
 test('security preparation contains no hack or grow',()=>{
- const {ns,servers}=fixture();servers.a.hackDifficulty=2;assert.deepEqual(planCloudBatch(ns,'a').counts,{hack:0,grow:0,weaken:20})
+ const {ns,servers}=fixture();servers.a.hackDifficulty=3;assert.deepEqual(planCloudBatch(ns,'a').counts,{hack:0,grow:0,weaken:40})
 })
 test('depleted money restores actual deficit without hacking',()=>{
  const {ns,servers}=fixture();servers.a.moneyAvailable=250;assert.deepEqual(planCloudBatch(ns,'a').counts,{hack:0,grow:20,weaken:2})
@@ -42,8 +42,8 @@ test('launch failure rolls back only started batch jobs',async()=>{
  const {ns,context,processes}=fixture();const original=ns.exec;ns.exec=(file,...args)=>file.includes('grow')?0:original(file,...args)
  const s=await cloudTick(ns,{},context);assert.equal(s.workerLaunchFailures.length,1);assert.equal(processes.length,0);assert.equal(s.targets.length,0)
 })
-test('disabled control releases owned jobs and returns single-target control',async()=>{
- const {ns,context,files,processes}=fixture(),state={};await cloudTick(ns,state,context);files.set('mcp_cloud_control.json','{"enabled":false}');assert.equal(await cloudTick(ns,state,context),null);assert.equal(processes.length,0)
+test('disabled control drains owned jobs before returning single-target control',async()=>{
+ const {ns,context,files,processes}=fixture(),state={};await cloudTick(ns,state,context);files.set('mcp_cloud_control.json','{"enabled":false}');assert.equal((await cloudTick(ns,state,context)).phase,'draining');processes.length=0;assert.equal(await cloudTick(ns,state,context),null);assert.equal(processes.length,0)
 })
 test('XP objective does not enable cloud money batches',async()=>{
  const {ns,context,launches}=fixture();assert.equal(await cloudTick(ns,{}, {...context,objective:'xp'}),null);assert.equal(launches.length,0)
@@ -51,4 +51,26 @@ test('XP objective does not enable cloud money batches',async()=>{
 test('oversized money preparation progresses within available RAM with compensation',()=>{
  const ram={hack:1.7,grow:1.75,weaken:1.75},p=fitCloudPreparation({phase:'prepare-money',counts:{hack:0,grow:50000,weaken:4000}},4096,ram,.05)
  assert.ok(p.ram<=4096);assert.ok(p.counts.grow>0);assert.equal(p.counts.weaken,Math.ceil(p.counts.grow*.004/.05));assert.ok(placeCloudBatch(p.counts,[{host:'w',freeRam:4096}],ram))
+})
+
+test('XP transition cancels long security preparation but drains restoration',async()=>{
+ const {ns,context,servers,processes,events}=fixture(),state={}
+ servers.a.hackDifficulty=3
+ await cloudTick(ns,state,context)
+ const securityJobs=state.batches.get('a').jobs.map(j=>j.pid)
+ const restorationJobs=state.batches.get('b').jobs.map(j=>j.pid)
+ const draining=await cloudTick(ns,state,{...context,objective:'xp'})
+ assert.equal(draining.phase,'draining')
+ assert.ok(securityJobs.every(pid=>!processes.some(p=>p.pid===pid)))
+ assert.ok(restorationJobs.every(pid=>processes.some(p=>p.pid===pid)))
+ assert.ok(events.some(e=>e.kind==='cloud_batch_cancel'&&e.target==='a'))
+ processes.length=0
+ assert.equal(await cloudTick(ns,state,{...context,objective:'xp'}),null)
+})
+test('XP resumes in the same tick when only security preparation remains',async()=>{
+ const {ns,context,servers}=fixture(),state={}
+ servers.a.hackDifficulty=3;servers.b.hackDifficulty=3
+ await cloudTick(ns,state,context)
+ assert.equal(await cloudTick(ns,state,{...context,objective:'xp'}),null)
+ assert.equal(state.batches.size,0)
 })

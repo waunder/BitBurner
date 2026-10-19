@@ -1,66 +1,35 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-10-16. This file is a compact handoff, not a substitute
-for checking the live game. The detailed prior checkpoint stream is preserved
-in `docs/archive/context-cleanup-2026-10-16/STATE-before-cleanup.md` and is
-historical evidence only.
+Last refreshed: 2026-10-19 12:31:05 PDT. Source: Steam UI and direct Remote API.
+Prior handoff archived at `docs/archive/mcp-check-2026-10-19/STATE-before-check.md`.
 
-## Current goal and preferences
+## Current objective
 
-- Ken is pursuing Black Hand progression. The latest verified gang task
-  objective was `reputation`, to build faction reputation for Black Hand
-  augmentations. Karma/Homicide and player-work choices are user-directed;
-  do not infer the current player activity from old notes.
-- Gang task objective and gang capital phase are separate settings. The latest
-  confirmed configuration was gang task `reputation`; capital phase
-  `augmentation`, with equipment purchases disabled while accumulating cash
-  toward optional QLink.
-- Ken said he will pursue Covenant augmentations after reaching the necessary
-  physical XP. Recheck live stats and requirements before recommending a
-  change.
-- Respect explicit requests to set the player's work through the game UI;
-  script objectives do not automatically grant permission to change player
-  work, install augmentations, or reset.
+Ken asked whether MCP works effectively. Live objective is `xp` through the
+in-game override. Preserve his Algorithms coursework and manual player-work
+control. Augmentation installs/resets still require explicit approval.
 
-## Last verified live snapshot — 2026-10-16, 11:14 PDT
+## Verified live state
 
-Verified through the Steam Bitburner UI after direct Remote API connection and
-source sync:
+- Steam Remote API connected at 127.0.0.1:12526; control 12527. Full sync
+  delivered 103 manifest files without errors; mcp_cloud.js readback matched.
+- Found XP globally blocked by tiny, long security-only finite cohorts. Fixed
+  tracked cohort cancellation on XP selection; harvest/grow restoration still
+  drains. Recovered live via stopping the remaining preparation PID 547 and
+  restart_mcp.js; MCP PID 950, run mvfng9ud-r688.
+- 20 eligible hosts, 384 threads, 672/684 GB in use (98.25%); foodnstuff
+  security/growth preparation, 339.5 script XP/s, H439.
+  No worker launch failures/invariant violations in the sampled status.
+- The target display's 3.40 TB includes home; MCP reserves home and excludes
+  it from worker capacity. Do not interpret that display as all eligible RAM.
+- Current reset has no gang per Steam startup output; old Black Hand gang
+  snapshot is historical. Steam showed Algorithms coursework and ~$42.5m.
+- Darknet HUD stale/zero managers. Player activity controller failed to start
+  during startup/restart; player work remains manually controlled.
 
-- Remote API connected to plain WebSocket `127.0.0.1:12526`; control port is
-  `12527`. The full manifest sync reported 99 files pushed without failures.
-- Exactly one `gang-controller.js` process was running (PID 109469) and the
-  consolidated HUD was running (PID 109470). `gang-status.js` was relaunched
-  (PID 109472); the old frozen tail was closed.
-- Gang detail showed 12 members, task objective `reputation / wanted-recovery`,
-  Black Hand faction reputation about `624.68k` and rising about `+21/s`, and
-  projected respect/cycle about `49.88`.
-- Capital policy separately showed phase `AUGMENTATION`, QLink cash
-  accumulation, and gang equipment purchases disabled. The HUD's
-  `CAP AUGMENTATION` label refers to that capital policy, not gang tasks.
-- The compact MCP HUD showed objective `xp` but `0/m` at that instant. Treat
-  MCP's XP objective and the gang's reputation objective as distinct. Current
-  player work, current XP rate, process IDs, and all game values must be
-  refreshed before acting.
+## Outcome and follow-up
 
-## Next session start
-
-1. Read `AGENTS.md`, then this file, then `docs/Codex-todo.md` if the task is
-   implementation work. `docs/processes.md` is the script map. Treat archived
-   checkpoints, `docs/claude-todo.md`, old audits, and migration reports as
-   history unless a current source explicitly points to them.
-2. For live BitBurner work, refresh Steam UI and Remote API state before using
-   telemetry or changing scripts. Follow `docs/remote-api-keepalive.md` for
-   the exact check, connect, sync, and verification sequence.
-3. Confirm which save and objective are live. Never assume the player's
-   current activity or that an old HUD snapshot remains valid.
-4. After source edits, sync the explicit manifest and verify the game copy;
-   restart affected Netscripts because they do not hot-reload. Preserve
-   unrelated dirty changes.
-
-## Open work
-
-No implementation task is carried forward from the context cleanup itself.
-On the next gameplay request, inspect the live state and take the user's
-stated goal as current direction; do not revive old backlog items without
-checking whether they still apply.
+MCP is producing XP again. 100 tests pass. Detailed evidence, tradeoff and
+limits: `docs/mcp-status-2026-10-19.md`. No pending action for Ken.
+Recheck fresh live telemetry before further gameplay decisions; reported XP
+rate is a short sample, not a sustained efficiency benchmark.

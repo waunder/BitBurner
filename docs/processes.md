@@ -346,8 +346,12 @@ The same hack budget remains active during regrowth, avoiding a cloud-sized hack
 
 It writes both `mcp_status.json` (HUD/maintenance compatibility) and `mcp_cloud_status.json`, recording effective control, target phases/counts/observed balances, process IDs/hosts, waiting demand, launch failures and completed cohorts. Batch start/completion/stop/failure decisions use the existing MCP event stream. Income derives from the game's cumulative hacking money-source delta, including any other hacking scripts; XP rate is currently unavailable in this mode. This is a simultaneous cohort scheduler, not a tightly timed overlapping batch scheduler. Source requires `Formulas.exe`. Ken explicitly requested direct Steam testing rather than the proposed browser/pilot sequence.
 
-When switching from finite cloud batches to XP, active finite cohorts finish before
-the continuous XP planner takes ownership. A draining status has no
+When switching from finite cloud batches to XP, hack/grow restoration cohorts finish
+before the continuous XP planner takes ownership. As of 2026-10-19, tracked
+security-only preparation cohorts are cancelled on XP selection: they have no
+restoration debt and must not block the entire pool behind a few long weaken
+calls. Cancellation emits `cloud_batch_cancel` with target, counts and reason.
+Untracked finite jobs after a manager restart still drain conservatively. A draining status has no
 `workerLaunchFailures` field because it launches no jobs; `mcp.js` treats that
 missing field as an empty list. Without this guard, the manager repeatedly
 throws while reading `.length`, writes `finite-error`, and XP work never resumes.

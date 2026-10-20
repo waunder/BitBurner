@@ -93,7 +93,7 @@ function buildLines(ns, pos) {
   const entries = Object.keys(since)
     .filter((key) => !SKIP.has(key) && since[key])
     .map((key) => ({ key, value: since[key] }))
-    .sort((a, b) => Math.abs(b.value) - Math.abs(a.value))
+    .sort((a, b) => b.value - a.value)
 
   // "since install" was genuinely ambiguous — reads easily as "since the
   // game was installed" (i.e. ever) rather than its actual meaning, "since
@@ -102,7 +102,7 @@ function buildLines(ns, pos) {
   if (entries.length === 0) {
     lines.push(row("(nothing yet)", ""))
   } else {
-    for (const { key, value } of entries) lines.push(row(key, money(value)))
+    for (const { key, value } of entries) lines.push(row(key === "other" ? "hacking costs" : key, money(value)))
   }
   lines.push(row("x=" + pos.x, "y=" + pos.y))
   return lines

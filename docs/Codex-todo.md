@@ -1,6 +1,6 @@
 # Codex current work ledger
 
-Last reviewed: 2026-10-19. No prior implementation item was verified as a
+Last reviewed: 2026-10-20. No prior implementation item was verified as a
 current commitment during the context cleanup. Do not resume an old unchecked
 task without checking the live game, repository, and Ken's current goal.
 
@@ -38,3 +38,10 @@ None.
   startup and validating adoption across restart. Final short production check
   ~$2.425m/s; 135 tests pass. Evidence: `docs/scheduler-efficiency-2026-10-19.md`.
   Ken's explicit standing autonomy instruction is recorded in AGENTS.md.
+
+## Completed — 2026-10-20
+
+- Money panel labels `other` as `hacking costs` (distinct from hacking income)
+  and sorts signed amounts descending. Syntax/readback verified; Steam panel
+  PID 1994 shows the negative cost below all income rows. Focused BitRunners
+  work restored after routine Remote API reconnect and panel reload.

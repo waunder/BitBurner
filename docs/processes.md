@@ -921,7 +921,9 @@ orchestrator-disagreement risk to design around).
   same echo-row substitute for the missing position getter
 - **Cost:** 3.3GB (1.6GB baseline + `ns.getMoneySources` 1.0GB + `ns.ps`
   0.2GB + `ns.kill` 0.5GB)
-- Shows every non-zero category, sorted by magnitude, plus a `total` line.
+- Shows every non-zero category, sorted by signed amount descending (income
+  above expenses), plus a `total` line. The game’s `other` category is labeled
+  `hacking costs` to distinguish TOR/program spending from `hacking` income.
   Expense categories (`hacknet_expenses`, `gang_expenses`) render as negative
   numbers with no special-casing needed — confirmed against the game's own
   code, not assumed: `loseMoney()` calls

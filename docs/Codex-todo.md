@@ -11,7 +11,9 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
 
 ## Active work
 
-None.
+- Fix money-mode recruitment overriding wanted recovery in gang-controller.js.
+  Verified 2026-10-23: four members, cleanupMode=true, wanted multiplier
+  ~0.0000357. Reputation override now activates recovery; preserve this objective.
 
 ## Completed — 2026-10-19
 

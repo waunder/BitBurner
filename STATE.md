@@ -1,30 +1,27 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-10-20 08:52 PDT. Sources: Steam UI and direct Remote API.
-Prior handoff: `docs/archive/money-panel-2026-10-20/STATE-before-money-panel.md`.
+Last refreshed: 2026-10-23 09:26 PDT. Sources: Steam UI and direct Remote API.
+Prior handoff: `docs/archive/gang-objective-2026-10-23/STATE-before-gang-objective.md`.
 
-## Current objective and outcome
+## Gang objective
 
-Ken requested renaming the money panel's `other` spending category and putting
-negative entries below income. Deployed `hacking costs` to distinguish it from
-existing `hacking` income, with signed descending sort. Syntax and exact game
-source readback verified; panel PID 1994 visibly shows costs last. No pending
-work or action for Ken.
+Changed live override from money to reputation; application verified by Remote
+API at 2026-10-23 16:25:47 UTC. Four-member Black Hand gang, faction rep ~5,836.
+Readiness showed NutriGen Implant requiring 6,250 rep and $235m, versus ~$61.5t
+cash. Default remains money; live override is reputation.
 
-## Live verification — October 20
+Money objective was running recruitment respect tasks, ignoring cleanupMode
+because recruitment takes precedence. Wanted ~41.7k versus respect ~1.49
+collapsed the wanted multiplier to ~0.0000357. Reputation mode activated two
+Ethical Hacking cleaners and two Cyberterrorism workers. Observed wanted rate
+changed from +3.66 to -5.07 per cycle, meeting recovery target. Ascensions are
+suppressed in reputation mode. Recovery is underway, not complete.
 
-Remote API reconnected through Steam Options and full sync/pull verified:
-103 watched files, no failures. Restarted only the self-superseding money panel;
-prior tail closed and saved position retained. Restored focused BitRunners
-hacking faction work after navigation. Steam showed ~H631 and money objective;
-these are new-reset observations, not yesterday's benchmark state.
+Remote API reconnected through Steam; full sync of 104 files and telemetry pull
+of 29 files succeeded. Player remained at agility gym work.
 
-## Prior measured scheduler work
+## Follow-up
 
-Completion-aware finite dispatch remains committed with configuration flag 1;
-this task did not change scheduler behavior. Yesterday's A/B/A comparison
-measured +11.63% cash, with finite-worker preservation across restart. Details:
-`docs/scheduler-efficiency-2026-10-19.md`. Treat its PIDs, rates, capacities and
-progression snapshot as dated history; refresh before further gameplay work.
-
+Fix recruitment overriding wanted recovery before returning to money mode.
+Reputation override avoids that branch now. No installation or reset performed.
 Standing autonomy and augmentation/reset approval boundaries remain in AGENTS.md.

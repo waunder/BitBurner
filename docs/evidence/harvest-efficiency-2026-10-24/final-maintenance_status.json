@@ -1,0 +1,597 @@
+{
+  "observedAt": "2026-10-24T18:57:22.281981+00:00",
+  "source": "Steam Remote API ctl-get",
+  "value": {
+    "ts": 1792868213237,
+    "pollMs": 30000,
+    "mcp": {
+      "stale": false,
+      "ageMs": 7609
+    },
+    "contracts": {
+      "ts": 1792865278245,
+      "minTries": 1,
+      "action": "paused",
+      "reason": "unsupported contract type: Largest Rectangle in a Matrix",
+      "contract": {
+        "host": "omega-net",
+        "file": "contract-pkMOvQ.cct",
+        "type": "Largest Rectangle in a Matrix",
+        "data": [
+          [
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "fingerprint": "fnv1a-0006b7cd",
+        "description": "You are given a binary matrix consisting only of 0s and 1s:\n\n[\n  [0,0,1,0,0,0,0,0,0],\n  [0,0,0,0,0,0,0,1,0],\n  [0,0,0,1,0,0,0,0,1],\n  [0,0,0,0,0,0,0,1,0],\n  [0,0,0,0,1,0,1,1,0],\n  [0,0,0,0,0,0,1,0,0],\n  [0,0,1,0,1,0,0,0,0],\n  [1,0,0,1,0,0,0,0,1],\n  [0,0,0,0,0,0,0,0,0],\n  [0,1,0,0,0,0,0,0,0],\n  [0,0,0,0,0,0,0,0,0],\n  [0,0,0,0,0,0,0,1,0],\n  [0,0,0,0,0,0,0,0,0],\n  [0,0,0,0,0,1,0,0,0],\n  [0,0,0,0,1,0,0,0,0]\n]\n\nYour task is to find the two corners of the largest rectangle ([[r1,c1],[r2,c2]]) that does not contain any 1s.\n\nExample 1:\nData:\n[\n  [1,0,0],\n  [0,0,0]\n]\n\nAnswer:[[0,1],[1,2]]\n\nExample 2:\nData:\n[\n  [0,0,0,1],\n  [0,0,0,0],\n  [0,0,1,0],\n  [0,0,0,1]\n]\n\nAnswer: [[0,0],[3,1]]\n",
+        "triesRemaining": 10,
+        "supported": false
+      },
+      "worker": "avmnite-02h",
+      "workerSource": "rooted-fallback",
+      "inventoryTs": 1792865278144
+    },
+    "recovery": {
+      "count": 187,
+      "lastAt": 1792584273212,
+      "reason": "MCP status stale for at least 60s"
+    },
+    "watcherPid": -1,
+    "augmentation": {
+      "refreshed": false,
+      "status": {
+        "ts": 1792868153131,
+        "ok": true,
+        "resetAt": 1792820913169,
+        "money": 486165943.3107927,
+        "installedCount": 0,
+        "queuedCount": 0,
+        "queued": [],
+        "factionCount": 3,
+        "candidate": {
+          "name": "Wired Reflexes",
+          "faction": "Slum Snakes",
+          "rep": 385.04999999999205,
+          "repRequired": 1250,
+          "repGap": 864.950000000008,
+          "price": 2500000,
+          "cashReady": true,
+          "prerequisites": [],
+          "canWorkForRep": true
+        },
+        "workCandidate": {
+          "name": "Wired Reflexes",
+          "faction": "Slum Snakes",
+          "rep": 385.04999999999205,
+          "repRequired": 1250,
+          "repGap": 864.950000000008,
+          "price": 2500000,
+          "cashReady": true,
+          "prerequisites": [],
+          "canWorkForRep": true
+        },
+        "workCandidates": [
+          {
+            "name": "Wired Reflexes",
+            "faction": "Slum Snakes",
+            "rep": 385.04999999999205,
+            "repRequired": 1250,
+            "repGap": 864.950000000008,
+            "price": 2500000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "LuminCloaking-V1 Skin Implant",
+            "faction": "Slum Snakes",
+            "rep": 385.04999999999205,
+            "repRequired": 1500,
+            "repGap": 1114.950000000008,
+            "price": 5000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Neural Wit Amplifier",
+            "faction": "Slum Snakes",
+            "rep": 385.04999999999205,
+            "repRequired": 5000,
+            "repGap": 4614.950000000008,
+            "price": 10000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Augmented Targeting I",
+            "faction": "Slum Snakes",
+            "rep": 385.04999999999205,
+            "repRequired": 5000,
+            "repGap": 4614.950000000008,
+            "price": 15000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Neural-Retention Enhancement",
+            "faction": "NiteSec",
+            "rep": 15131.616623692744,
+            "repRequired": 20000,
+            "repGap": 4868.383376307256,
+            "price": 250000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Artificial Synaptic Potentiation",
+            "faction": "The Black Hand",
+            "rep": 278.2166666666691,
+            "repRequired": 6250,
+            "repGap": 5971.783333333331,
+            "price": 80000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Combat Rib I",
+            "faction": "Slum Snakes",
+            "rep": 385.04999999999205,
+            "repRequired": 7500,
+            "repGap": 7114.950000000008,
+            "price": 23750000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Embedded Netburner Module",
+            "faction": "The Black Hand",
+            "rep": 278.2166666666691,
+            "repRequired": 15000,
+            "repGap": 14721.783333333331,
+            "price": 250000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Magnetism Amplifier",
+            "faction": "The Black Hand",
+            "rep": 278.2166666666691,
+            "repRequired": 15000,
+            "repGap": 14721.783333333331,
+            "price": 250000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "SmartSonar Implant",
+            "faction": "Slum Snakes",
+            "rep": 385.04999999999205,
+            "repRequired": 22500,
+            "repGap": 22114.950000000008,
+            "price": 75000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "CRTX42-AA Gene Modification",
+            "faction": "NiteSec",
+            "rep": 15131.616623692744,
+            "repRequired": 45000,
+            "repGap": 29868.383376307254,
+            "price": 225000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Neuralstimulator",
+            "faction": "The Black Hand",
+            "rep": 278.2166666666691,
+            "repRequired": 50000,
+            "repGap": 49721.78333333333,
+            "price": 3000000000,
+            "cashReady": false,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "DataJack",
+            "faction": "NiteSec",
+            "rep": 15131.616623692744,
+            "repRequired": 112500,
+            "repGap": 97368.38337630726,
+            "price": 450000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "The Black Hand",
+            "faction": "The Black Hand",
+            "rep": 278.2166666666691,
+            "repRequired": 100000,
+            "repGap": 99721.78333333333,
+            "price": 550000000,
+            "cashReady": false,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Enhanced Myelin Sheathing",
+            "faction": "The Black Hand",
+            "rep": 278.2166666666691,
+            "repRequired": 100000,
+            "repGap": 99721.78333333333,
+            "price": 1375000000,
+            "cashReady": false,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "DataJack",
+            "faction": "The Black Hand",
+            "rep": 278.2166666666691,
+            "repRequired": 112500,
+            "repGap": 112221.78333333333,
+            "price": 450000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "BitWire",
+            "faction": "NiteSec",
+            "rep": 15131.616623692744,
+            "repRequired": 3750,
+            "repGap": 0,
+            "price": 10000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Neurotrainer II",
+            "faction": "NiteSec",
+            "rep": 15131.616623692744,
+            "repRequired": 10000,
+            "repGap": 0,
+            "price": 45000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Cranial Signal Processors - Gen I",
+            "faction": "NiteSec",
+            "rep": 15131.616623692744,
+            "repRequired": 10000,
+            "repGap": 0,
+            "price": 70000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Artificial Synaptic Potentiation",
+            "faction": "NiteSec",
+            "rep": 15131.616623692744,
+            "repRequired": 6250,
+            "repGap": 0,
+            "price": 80000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Embedded Netburner Module",
+            "faction": "NiteSec",
+            "rep": 15131.616623692744,
+            "repRequired": 15000,
+            "repGap": 0,
+            "price": 250000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          }
+        ],
+        "gangFaction": null,
+        "candidatesConsidered": 21
+      }
+    },
+    "progress": {
+      "version": "progress-v1",
+      "ts": 1792868213237,
+      "context": "[\"mvmpbyhp-sunw\",\"money\",\"finite\",\"max-hardware\"]",
+      "sample": {
+        "capacityRam": 540,
+        "actionRam": 133,
+        "jobs": [
+          {
+            "host": "max-hardware",
+            "pid": 5994,
+            "filename": "scripts/grow.js",
+            "args": [
+              "phantasy",
+              "once",
+              "mvmpbyhp-sunw:cloud:138",
+              2
+            ],
+            "threads": 14,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "zer0",
+            "pid": 5971,
+            "filename": "scripts/weaken.js",
+            "args": [
+              "max-hardware",
+              "once",
+              "mvmpbyhp-sunw:cloud:134",
+              0
+            ],
+            "threads": 5,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "neo-net",
+            "pid": 6008,
+            "filename": "scripts/weaken.js",
+            "args": [
+              "n00dles",
+              "once",
+              "mvmpbyhp-sunw:cloud:139",
+              0
+            ],
+            "threads": 1,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "silver-helix",
+            "pid": 5992,
+            "filename": "scripts/weaken.js",
+            "args": [
+              "phantasy",
+              "once",
+              "mvmpbyhp-sunw:cloud:138",
+              0
+            ],
+            "threads": 7,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "silver-helix",
+            "pid": 5993,
+            "filename": "scripts/grow.js",
+            "args": [
+              "phantasy",
+              "once",
+              "mvmpbyhp-sunw:cloud:138",
+              1
+            ],
+            "threads": 26,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "I.I.I.I",
+            "pid": 5989,
+            "filename": "scripts/weaken.js",
+            "args": [
+              "harakiri-sushi",
+              "once",
+              "mvmpbyhp-sunw:cloud:137",
+              0
+            ],
+            "threads": 4,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "I.I.I.I",
+            "pid": 5990,
+            "filename": "scripts/grow.js",
+            "args": [
+              "harakiri-sushi",
+              "once",
+              "mvmpbyhp-sunw:cloud:137",
+              1
+            ],
+            "threads": 19,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          }
+        ],
+        "completedBatches": 139,
+        "totalHacked": 96144493.20268402,
+        "security": 5.217999999999998,
+        "moneyPct": 0.9511796310688282
+      },
+      "since": 1792868213237,
+      "action": "none",
+      "reason": "low utilization; observing action progress"
+    },
+    "progressKey": "healthy"
+  }
+}

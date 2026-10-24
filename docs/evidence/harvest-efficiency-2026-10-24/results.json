@@ -1,0 +1,30 @@
+[
+  {
+    "phase": "B",
+    "seconds": 121.562,
+    "cashPerSec": 77372.01918239328,
+    "batches": 16,
+    "hackingStart": 350,
+    "hackingEnd": 350,
+    "fleetStart": 540,
+    "fleetEnd": 540,
+    "runStart": "mvmofit5-yebn",
+    "runEnd": "mvmofit5-yebn",
+    "failures": [],
+    "invariants": {}
+  },
+  {
+    "phase": "A",
+    "seconds": 128.807,
+    "cashPerSec": 79835.2347278479,
+    "batches": 6,
+    "hackingStart": 350,
+    "hackingEnd": 350,
+    "fleetStart": 540,
+    "fleetEnd": 540,
+    "runStart": "mvmofit5-yebn",
+    "runEnd": "mvmofit5-yebn",
+    "failures": [],
+    "invariants": {}
+  }
+]

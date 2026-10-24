@@ -1,6 +1,6 @@
 /** Finite multi-target batches, owned and observed by the existing MCP. */
 export const CLOUD_CONTROL = 'mcp_cloud_control.json'
-export const CLOUD_VERSION = 'finite-preparation-chunks-v7'
+export const CLOUD_VERSION = 'finite-weighted-harvest-v9'
 const SCRIPTS = {hack:'scripts/hack.js',grow:'scripts/grow.js',weaken:'scripts/weaken.js'}
 
 export function planCloudBatch(ns, target, { protectedFloor = 0.25, recoveryTarget = 0.95 } = {}) {
@@ -120,13 +120,14 @@ export function fitCloudHarvest(ns, plan, hosts, ram) {
   if(plan.phase!=='harvest')return null
   const source=ns.getServer(plan.target), player=ns.getPlayer(), f=ns.formulas.hacking
   const percent=f.hackPercent(source,player), weakenPower=ns.weakenAnalyze(1,1)
-  for(let hack=plan.counts.hack-1;hack>=1;hack--) {
+  const availableRam=hosts.reduce((n,h)=>n+h.freeRam,0)
+  for(let hack=Math.min(plan.counts.hack-1,Math.floor(availableRam/ram.hack));hack>=1;hack--) {
     const afterHack={...source,moneyAvailable:source.moneyAvailable*Math.pow(1-percent,hack),hackDifficulty:source.hackDifficulty+hack*.002}
     if(afterHack.moneyAvailable<source.moneyMax*plan.protectedFloor)continue
     const grow=Math.ceil(f.growThreads(afterHack,player,source.moneyMax*plan.recoveryTarget,1))
     const weaken=Math.ceil((hack*.002+grow*.004)/weakenPower)
     const counts={hack,grow,weaken},needed=Object.entries(counts).reduce((n,[a,t])=>n+t*ram[a],0)
-    if(needed>hosts.reduce((n,h)=>n+h.freeRam,0)+1e-9)continue
+    if(needed>availableRam+1e-9)continue
     const placements=placeCloudBatch(counts,hosts,ram)
     if(!placements)continue
     const durations={hack:ns.getHackTime(plan.target)/1000,grow:ns.getGrowTime(plan.target)/1000,weaken:ns.getWeakenTime(plan.target)/1000}
@@ -135,6 +136,26 @@ export function fitCloudHarvest(ns, plan, hosts, ram) {
     return {...plan,counts,ram:needed,durations,expectedWithdrawal,ramSeconds,rank:expectedWithdrawal/Math.max(ramSeconds,1),partialHarvest:true,placements}
   }
   return null
+}
+
+/** Compare what can actually run, charging occupied slots through restoration. */
+export function rankAffordableHarvests(ns, plans, hosts, ram, reserveHarvestRam) {
+  return plans.filter(p=>p.phase==='harvest').map(original=>{
+    const placements=placeCloudBatch(original.counts,hosts,ram)
+    const plan=placements?{...original,placements}:fitCloudHarvest(ns,original,hosts,ram)
+    if(!plan)return null
+    const duration=Math.max(...Object.entries(plan.counts).filter(([,n])=>n>0).map(([a])=>plan.durations[a]))
+    const chargedRamSeconds=reserveHarvestRam?plan.ram*duration:plan.ramSeconds
+    return {...plan,admissionScore:plan.expectedWithdrawal/Math.max(1,chargedRamSeconds),chargedRamSeconds}
+  }).filter(Boolean).sort((a,b)=>b.admissionScore-a.admissionScore || a.target.localeCompare(b.target))
+}
+
+/** Reserve shares in proportion to demonstrated/fitted return, not equal headcount. */
+export function weightedHarvestCaps(entries, fleetRam) {
+  const best=entries.filter(p=>Number.isFinite(p.score)&&p.score>0)
+    .sort((a,b)=>b.score-a.score || a.target.localeCompare(b.target)).slice(0,4)
+  const total=best.reduce((sum,p)=>sum+p.score,0)
+  return Object.fromEntries(best.map(p=>[p.target,fleetRam*p.score/total]))
 }
 
 /** Poll only near a cohort's final completion; other modes keep their cadence. */
@@ -241,6 +262,8 @@ export async function cloudTick(ns, state, {servers,workers,runId,objective,emit
   // A quarter of the preparation allowance funds a useful chunk instead of
   // locking a target behind a one-thread call. Small complete plans still fit.
   // Explicit zero restores legacy admission for a reversible comparison.
+  const efficientHarvestAdmission=control.efficientHarvestAdmission===true
+  const weightedHarvestShares=efficientHarvestAdmission && control.weightedHarvestShares===true
   const minimumPreparationFraction=Number.isFinite(control.minimumPreparationFraction)
     ? Math.max(0,Math.min(1,control.minimumPreparationFraction)) : 0.25
   // Bound scheduler/pid overhead relative to the actual worker fleet instead
@@ -284,18 +307,46 @@ export async function cloudTick(ns, state, {servers,workers,runId,objective,emit
     .map(p=>String(p.args[0]))))
   const candidates=servers.filter(h=>h!=='home' && !ns.getServer(h).purchasedByPlayer && ns.hasRootAccess(h) && ns.getServerMaxMoney(h)>0 && ns.getServerRequiredHackingLevel(h)<=ns.getHackingLevel() && !state.batches.has(h) && !finiteTargets.has(h))
     .map(h=>planCloudBatch(ns,h,{protectedFloor,recoveryTarget})).filter(Boolean).sort((a,b)=>b.rank-a.rank)
-  for(let plan of candidates) {
+  const harvestCompetitors=candidates.filter(p=>p.phase==='harvest').length+
+    [...state.batches.values()].filter(p=>p.phase==='harvest').length
+  const harvestRamCap=efficientHarvestAdmission?fleetRam/Math.max(1,Math.min(4,harvestCompetitors)):fleetRam
+  let harvestRamCaps=null
+  if(weightedHarvestShares) {
+    const referenceHosts=limitHostsToRam(workers.map(host=>({host,freeRam:ns.getServerMaxRam(host)})).sort((a,b)=>b.freeRam-a.freeRam),harvestRamCap)
+    const entries=rankAffordableHarvests(ns,candidates,referenceHosts,ram,reserveHarvestRam)
+      .map(p=>({target:p.target,score:p.admissionScore}))
+    for(const batch of state.batches.values())if(batch.phase==='harvest') {
+      const duration=Math.max(...Object.entries(batch.counts).filter(([,n])=>n>0).map(([a])=>batch.durations[a]))
+      entries.push({target:batch.target,score:batch.expectedWithdrawal/Math.max(1,reserveHarvestRam?batch.ram*duration:batch.ramSeconds)})
+    }
+    harvestRamCaps=weightedHarvestCaps(entries,fleetRam)
+  }
+  while(candidates.length) {
     if(state.batches.size>=limit)break
     const hosts=cloudAdmissionHosts(ns,workers,state.batches,ram,reserveHarvestRam)
-    let placementHosts=hosts
+    const harvestHosts=efficientHarvestAdmission?limitHostsToRam(hosts,harvestRamCap):hosts
+    let plan
+    if(efficientHarvestAdmission) {
+      const ranked=weightedHarvestShares
+        ? candidates.filter(p=>p.phase==='harvest').flatMap(p=>rankAffordableHarvests(ns,[p],limitHostsToRam(hosts,harvestRamCaps[p.target]||0),ram,reserveHarvestRam)).sort((a,b)=>b.admissionScore-a.admissionScore || a.target.localeCompare(b.target))
+        : rankAffordableHarvests(ns,candidates,harvestHosts,ram,reserveHarvestRam)
+      if(ranked.length) {
+        plan=ranked[0]
+        plan.admissionAlternatives=ranked.slice(0,4).map(p=>({target:p.target,ram:p.ram,expectedWithdrawal:p.expectedWithdrawal,score:p.admissionScore}))
+        candidates.splice(candidates.findIndex(p=>p.target===plan.target),1)
+      }
+    }
+    plan ||= candidates.shift()
+    const targetHarvestHosts=weightedHarvestShares?limitHostsToRam(hosts,harvestRamCaps[plan.target]||0):harvestHosts
+    let placementHosts=plan.phase==='harvest'?targetHarvestHosts:hosts
     const minimumRam=plan.phase.startsWith('prepare-')?Math.min(plan.ram,minimumPreparationRam):0
     if(plan.phase.startsWith('prepare-')) {
       if(preparationRamRemaining<1){waiting.push({target:plan.target,phase:plan.phase,reason:'preparation RAM share is in use'});continue}
       placementHosts=limitHostsToRam(hosts,preparationRamRemaining)
     }
-    let placements=placeCloudBatch(plan.counts,placementHosts,ram)
+    let placements=plan.placements||placeCloudBatch(plan.counts,placementHosts,ram)
     if(!placements && plan.phase==='harvest') {
-      const fitted=fitCloudHarvest(ns,plan,hosts,ram)
+      const fitted=fitCloudHarvest(ns,plan,targetHarvestHosts,ram)
       if(fitted) {plan=fitted;placements=fitted.placements}
     }
     if(!placements && plan.phase.startsWith('prepare-')) {
@@ -320,7 +371,7 @@ export async function cloudTick(ns, state, {servers,workers,runId,objective,emit
     if(failed) {for(const j of jobs)ns.kill(j.pid,j.host);emit('cloud_launch_failed',{id,plan,failures});break}
     const batch={...plan,id,jobs,startedAt:Date.now()};state.batches.set(plan.target,batch)
     if(plan.phase.startsWith('prepare-'))preparationRamRemaining=Math.max(0,preparationRamRemaining-plan.ram)
-    emit('cloud_batch_start',{id,target:plan.target,phase:plan.phase,counts:plan.counts,ram:plan.ram,partialPreparation:plan.partialPreparation||false,partialHarvest:plan.partialHarvest||false,durations:plan.durations,security:plan.security,moneyPct:plan.moneyPct,jobs})
+    emit('cloud_batch_start',{id,target:plan.target,phase:plan.phase,counts:plan.counts,ram:plan.ram,partialPreparation:plan.partialPreparation||false,partialHarvest:plan.partialHarvest||false,durations:plan.durations,security:plan.security,moneyPct:plan.moneyPct,admissionScore:plan.admissionScore,admissionAlternatives:plan.admissionAlternatives,jobs})
   }
   const now=Date.now(),money=ns.getMoneySources().sinceInstall.hacking,rate=(money-state.lastMoney)/Math.max(.001,(now-state.lastAt)/1000)
   state.lastMoney=money;state.lastAt=now
@@ -334,5 +385,5 @@ export async function cloudTick(ns, state, {servers,workers,runId,objective,emit
     targets:[...state.batches.values()].map(b=>({...b,moneyPct:ns.getServerMoneyAvailable(b.target)/ns.getServerMaxMoney(b.target),currentSecurity:ns.getServerSecurityLevel(b.target)})),
     workers:allocations,cloudWorkers:allocations.filter(h=>ns.getServer(h.host).purchasedByPlayer),rate,avgRate:(money-state.baseMoney)/Math.max(1,(now-state.startedAt)/1000),incomePerSec:rate,totalHacked:money-state.baseMoney,
     currentSecurity:primary?ns.getServerSecurityLevel(primaryTarget):0,moneyPct:primary?ns.getServerMoneyAvailable(primaryTarget)/ns.getServerMaxMoney(primaryTarget):0,expPerSec:0,ramUtilization:allocations.reduce((n,h)=>n+h.usedRam,0)/Math.max(1,allocations.reduce((n,h)=>n+h.maxRam,0)),
-    reservedRestorationRam:cloudAdmissionHosts(ns,workers,state.batches,ram,reserveHarvestRam).reduce((n,h)=>n+h.reservedRam,0),workerLaunchFailures:failures,cloudCapacity,cloudControl:{...control,effectiveProtectedFloor:protectedFloor,effectiveRecoveryTarget:recoveryTarget,effectivePreparationRamFraction:preparationRamFraction,effectivePreparationRamRemaining:preparationRamRemaining,effectiveMinimumPreparationFraction:minimumPreparationFraction,effectiveMinimumPreparationRam:minimumPreparationRam,effectiveMaxTargets:limit},completedBatches:state.completed,waiting}
+    reservedRestorationRam:cloudAdmissionHosts(ns,workers,state.batches,ram,reserveHarvestRam).reduce((n,h)=>n+h.reservedRam,0),workerLaunchFailures:failures,cloudCapacity,cloudControl:{...control,effectiveProtectedFloor:protectedFloor,effectiveRecoveryTarget:recoveryTarget,effectivePreparationRamFraction:preparationRamFraction,effectivePreparationRamRemaining:preparationRamRemaining,efficientHarvestAdmission,weightedHarvestShares,effectiveHarvestRamCaps:harvestRamCaps,effectiveHarvestRamCap:harvestRamCap,effectiveHarvestCompetitors:harvestCompetitors,effectiveMinimumPreparationFraction:minimumPreparationFraction,effectiveMinimumPreparationRam:minimumPreparationRam,effectiveMaxTargets:limit},completedBatches:state.completed,waiting}
 }

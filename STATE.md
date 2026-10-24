@@ -1,33 +1,53 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-10-24 10:03 PDT. Sources: Steam UI and direct Remote API.
-Prior handoff: `docs/archive/target-preparation-2026-10-24/STATE-before-deployment.md`.
+Last refreshed: 2026-10-24 11:57 PDT. Sources: Steam UI and timestamped direct
+Remote API reads. Prior handoff is preserved in
+`docs/archive/harvest-efficiency-2026-10-24/STATE-before-assessment.md`.
 
-## Current objective and verified outcome
+## Current objective and outcome
 
-Ken authorized fewer, meaningfully funded preparation allocations. Implemented,
-tested and deployed `finite-preparation-chunks-v7` in mcp_cloud.js. Partial prep
-now needs 25% of the total preparation allowance, capped at full-plan RAM;
-87.55GB minimum on the observed 412GB fleet. Complete smaller plans still run.
-Existing finite cohorts are preserved, so old tiny weaken rows drain naturally.
-Rollback: game cloud control `minimumPreparationFraction: 0` (hot-read).
+Keep improving scheduler cash efficiency through bounded, reversible trials.
+The `bitburner-efficiency-assessment` heartbeat is active every 30 minutes;
+workflow: `docs/scheduler-assessment-loop.md`. It reports material changes,
+failures or a real decision and otherwise stays quiet. Older unrelated campaign
+and SQLInject automations remain paused.
 
-New MCP run mvmnbfr3-j118 verified ~10:01 PDT. Over 66.8 seconds, eight cohorts
-completed and hacking earned $2.02m; Phantasy received 287GB prep and Sigma
-Cosmetics its complete 68.25GB security plan. No launch failures/invariant faults;
-maintenance healthy. 128 focused tests pass. Not a controlled income comparison.
-Deployment evidence and tradeoffs: `docs/preparation-chunks-2026-10-24.md`.
+Deployed/tested module `finite-weighted-harvest-v9` adds affordable fitted-harvest
+ranking and equal/weighted competing-cohort caps. Both experimental game-owned
+flags are now **false**: `efficientHarvestAdmission`, `weightedHarvestShares`.
+Equal caps measured $77.4k/s, earlier legacy $79.8k/s and weighted caps $69.5k/s
+in short evolving-workload windows. No improvement was established; retain the
+tested options dormant. Existing finite restoration was preserved throughout.
+Inputs, interrupted attempts, caveats and next hypothesis:
+`docs/harvest-efficiency-2026-10-24.md`.
 
-Steam H346, ~$212m, focused NiteSec work restored. Prior day's Daedalus/$71t
-snapshot is historical; current BitNode has not been freshly queried.
-Routine restart required temporarily freeing diagnostic RAM; crime_returns.js
-money restored (PID2142), temporary ops HUD stopped and obsolete tails closed.
-104-file source sync and exact game module readback verified. No reset or
-augmentation installation performed.
+The earlier useful-preparation-chunk policy remains active (minimum fraction
+0.25, observed minimum 114.75GB at current fleet/prep settings). Completion-aware
+wake and cohort RAM reservation remain active. No purchase, installation or
+reset was performed. Player work remains focused NiteSec.
+
+## Latest verified live state
+
+At 11:57:18 PDT, Remote API status: H351, 540GB worker fleet, run
+`mvmpbyhp-sunw`, fingerprint `finite-weighted-harvest-v9`, four harvest cohorts,
+no launch failures or invariant faults. Phantasy 243.75GB, Max Hardware 144.5GB,
+Harakiri Sushi 118.5GB, n00dles 17.05GB. Fresh post-recovery verification earned
+$119,513/s over 66.53 seconds with eight completions; this is a health check,
+not a controlled policy improvement claim. Maintenance reported MCP fresh.
+
+Remote transport disconnected during the legacy recheck; its 63.152-second
+partial observation was retained and excluded from completed comparisons.
+Reconnect verified 104-file source sync and 29-file telemetry pull; focused
+NiteSec work was restored. No cash delta spans the disconnected wall-clock gap.
+Exact source readback matched local source. All 134 focused tests and
+`git diff --check` pass.
 
 ## Outstanding
 
-Earlier gang recruitment/wanted issue remains unvalidated in this new progression
-state; do not infer a live gang from yesterday. No remaining implementation or
-deployment work for this preparation change. Longer cash ROI remains unmeasured.
-Standing autonomy and augmentation/reset approval boundaries remain in AGENTS.md.
+Next useful assessment: match preparation occupancy and player skill before
+testing whether preparation takes capacity a superior running harvest needs on
+its next admission. Do not equate allocation fairness or cohort count with ROI.
+No further source iteration is justified by this completed trial alone.
+Earlier gang recruitment/wanted issue remains unvalidated in current
+progression. Standing autonomy and augmentation/reset approval boundaries
+remain in AGENTS.md.

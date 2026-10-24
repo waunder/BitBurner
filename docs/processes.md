@@ -375,7 +375,7 @@ read-only with respect to gameplay; income history is not persisted. It does not
 replace `get_stats.js`.
 
 
-**Cloud multi-target batches (`mcp_cloud.js`).** MCP is the sole scheduler. `set_cloud_mode.js on` writes persistent `mcp_cloud_control.json` by default; optional `minutes` creates a lease. Current aggressive policy allows a 25% all-success money floor, restores harvest-ready targets to 95%, permits preparation to use 65% of worker RAM, and requests up to 128 target cohorts, bounded by `min(192, max(64, 2 × workerHosts))`. The former 91% floor excluded most of the 63 money servers because one hack thread would cross it; hack thread sizing now admits those servers and caps each planned withdrawal at 75%. Preparation share is configurable with the optional prep-fraction argument (0.05–0.85) or control JSON; harvest cohorts can use the rest. Hack thread sizing uses current money and the floor. Grow sizing includes hack-added security; hack, grow, and weaken workers run with `once`. All grow/weaken RAM is reserved before hack and incomplete placement launches nothing. If a full safe harvest cohort will not pack, hack threads are reduced and grow/weaken are recomputed before trying again. A target with an existing finite cohort is not scheduled again; finite jobs survive an MCP restart and block conflicting admissions. New activation retires and verifies removal of legacy looping actions. On disable/expiry, active cohorts drain without being killed before the legacy planner resumes. A cloud exception publishes `finite-error` and retries without falling through to the continuous planner. Status reports the executed policy version, actual cloud RAM capacity and current max-server quote. Harvest ranks use expected withdrawal per action GB-second; preparation ranks forecast the harvest they unlock and charge security/money preparation GB-seconds, preventing phase priority and scan order from monopolizing residual RAM. `cloud_pool_audit.js` reports every money server and the reason it is or is not schedulable. No purchase/reset/player-activity calls.
+**Cloud multi-target batches (`mcp_cloud.js`).** MCP is the sole scheduler. `set_cloud_mode.js on` writes persistent `mcp_cloud_control.json` by default; optional `minutes` creates a lease. Current aggressive policy allows a 25% all-success money floor, restores harvest-ready targets to 95%, defaults preparation to 65% of worker RAM (the 2026-10-24 live control uses 85%), and requests up to 128 target cohorts, bounded by `min(192, max(64, 2 × workerHosts))`. The former 91% floor excluded most of the 63 money servers because one hack thread would cross it; hack thread sizing now admits those servers and caps each planned withdrawal at 75%. Preparation share is configurable with the optional prep-fraction argument (0.05–0.85) or control JSON; harvest cohorts can use the rest. Hack thread sizing uses current money and the floor. Grow sizing includes hack-added security; hack, grow, and weaken workers run with `once`. All grow/weaken RAM is reserved before hack and incomplete placement launches nothing. If a full safe harvest cohort will not pack, hack threads are reduced and grow/weaken are recomputed before trying again. A target with an existing finite cohort is not scheduled again; finite jobs survive an MCP restart and block conflicting admissions. New activation retires and verifies removal of legacy looping actions. On disable/expiry, active cohorts drain without being killed before the legacy planner resumes. A cloud exception publishes `finite-error` and retries without falling through to the continuous planner. Status reports the executed policy version, actual cloud RAM capacity and current max-server quote. Harvest ranks use expected withdrawal per action GB-second; preparation ranks forecast the harvest they unlock and charge security/money preparation GB-seconds, preventing phase priority and scan order from monopolizing residual RAM. `cloud_pool_audit.js` reports every money server and the reason it is or is not schedulable. No purchase/reset/player-activity calls.
 
 It writes both `mcp_status.json` (HUD/maintenance compatibility) and `mcp_cloud_status.json`, recording effective control, target phases/counts/observed balances, process IDs/hosts, waiting demand, launch failures and completed cohorts. Batch start/completion/stop/failure decisions use the existing MCP event stream. Income derives from the game's cumulative hacking money-source delta, including any other hacking scripts; XP rate is currently unavailable in this mode. This is a simultaneous cohort scheduler, not a tightly timed overlapping batch scheduler. Source requires `Formulas.exe`. Ken explicitly requested direct Steam testing rather than the proposed browser/pilot sequence.
 
@@ -430,6 +430,38 @@ Status reports `effectiveMinimumPreparationFraction` and
 preparations, drain normally across restart; harvest RAM reservations are unchanged.
 This may deliberately leave a remainder idle until enough preparation RAM returns,
 avoiding long one-thread calls that lock targets for negligible progress.
+
+`efficientHarvestAdmission: true` in the same game-owned control file enables
+the opt-in affordable-harvest trial (`finite-affordable-harvest-v8`). Each
+admission compares fitted, placeable harvest plans, rather than sorting only
+their unfunded full-size versions. With completion reservations enabled, its
+score charges the whole cohort's RAM until its final action ends; otherwise
+it charges action RAM-seconds. A ready harvest precedes new preparation.
+When several targets are ready or already harvesting, each new cohort is capped
+at fleet RAM divided by the competitor count (up to four shares); one target
+alone can use the whole fleet. This prevents one old cohort repeatedly capturing
+the entire pool. Existing jobs/reservations remain intact across flag changes.
+The opportunity cost is possibly smaller withdrawals and unused shares until
+competitors finish; retain the option only on measured income/progression evidence.
+Omitting the flag or setting it false restores legacy harvest admission.
+Status includes `effectiveHarvestRamCap`/`effectiveHarvestCompetitors`, and
+selected batches/start events record `admissionScore`, `chargedRamSeconds`
+(on batches), and up to four `admissionAlternatives` with fitted RAM, expected
+withdrawal and score. This trial does not change action scripts or the Wanted/gang
+controller. The candidate count is refreshed each manager tick; cohorts already
+running at older sizes finish normally.
+
+The follow-up opt-in `weightedHarvestShares: true` (requires efficient admission)
+uses return-weighted caps instead of equal shares. Placeable candidate plans are
+scored against a common reference budget; active cohorts contribute their recorded
+expected withdrawal and occupied RAM-time. The four highest positive scores split
+the fleet proportionally. `effectiveHarvestRamCaps` records each target's cap;
+targets outside those four wait, without cancelling their existing jobs. This
+avoids granting low-yield targets an equal claim solely because they are ready.
+Caps are advisory admission limits, not additional physical RAM reservations.
+Omit/set the weighted flag false to return to equal caps; set efficient admission
+false to return to the prior allocator. Fingerprint `finite-weighted-harvest-v9`
+includes both trial paths, with both flags off by default.
 
 **2026-08-14 (R1):** `buildPlan` no longer picks a hack/grow split off a
 fixed RAM-fraction table keyed by which `moneyPct` tier the target sits in.

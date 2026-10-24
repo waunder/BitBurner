@@ -1,0 +1,852 @@
+{
+  "observedAt": "2026-10-24T18:04:10.886344+00:00",
+  "source": "Steam Remote API ctl-get",
+  "value": {
+    "ts": 1792865038170,
+    "pollMs": 30000,
+    "mcp": {
+      "stale": false,
+      "ageMs": 5383
+    },
+    "contracts": {
+      "ts": 1792864666813,
+      "minTries": 1,
+      "action": "paused",
+      "reason": "unsupported contract type: Largest Rectangle in a Matrix",
+      "contract": {
+        "host": "omega-net",
+        "file": "contract-pkMOvQ.cct",
+        "type": "Largest Rectangle in a Matrix",
+        "data": [
+          [
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "fingerprint": "fnv1a-0006b7cd",
+        "description": "You are given a binary matrix consisting only of 0s and 1s:\n\n[\n  [0,0,1,0,0,0,0,0,0],\n  [0,0,0,0,0,0,0,1,0],\n  [0,0,0,1,0,0,0,0,1],\n  [0,0,0,0,0,0,0,1,0],\n  [0,0,0,0,1,0,1,1,0],\n  [0,0,0,0,0,0,1,0,0],\n  [0,0,1,0,1,0,0,0,0],\n  [1,0,0,1,0,0,0,0,1],\n  [0,0,0,0,0,0,0,0,0],\n  [0,1,0,0,0,0,0,0,0],\n  [0,0,0,0,0,0,0,0,0],\n  [0,0,0,0,0,0,0,1,0],\n  [0,0,0,0,0,0,0,0,0],\n  [0,0,0,0,0,1,0,0,0],\n  [0,0,0,0,1,0,0,0,0]\n]\n\nYour task is to find the two corners of the largest rectangle ([[r1,c1],[r2,c2]]) that does not contain any 1s.\n\nExample 1:\nData:\n[\n  [1,0,0],\n  [0,0,0]\n]\n\nAnswer:[[0,1],[1,2]]\n\nExample 2:\nData:\n[\n  [0,0,0,1],\n  [0,0,0,0],\n  [0,0,1,0],\n  [0,0,0,1]\n]\n\nAnswer: [[0,0],[3,1]]\n",
+        "triesRemaining": 10,
+        "supported": false
+      },
+      "worker": "I.I.I.I",
+      "workerSource": "rooted-fallback",
+      "inventoryTs": 1792864666713
+    },
+    "recovery": {
+      "count": 187,
+      "lastAt": 1792584273212,
+      "reason": "MCP status stale for at least 60s"
+    },
+    "watcherPid": -1,
+    "augmentation": {
+      "refreshed": false,
+      "status": {
+        "ts": 1792864978018,
+        "ok": true,
+        "resetAt": 1792820913169,
+        "money": 401036789.38446724,
+        "installedCount": 0,
+        "queuedCount": 0,
+        "queued": [],
+        "factionCount": 3,
+        "candidate": {
+          "name": "Wired Reflexes",
+          "faction": "Slum Snakes",
+          "rep": 252.77499999998022,
+          "repRequired": 1250,
+          "repGap": 997.2250000000198,
+          "price": 2500000,
+          "cashReady": true,
+          "prerequisites": [],
+          "canWorkForRep": true
+        },
+        "workCandidate": {
+          "name": "Wired Reflexes",
+          "faction": "Slum Snakes",
+          "rep": 252.77499999998022,
+          "repRequired": 1250,
+          "repGap": 997.2250000000198,
+          "price": 2500000,
+          "cashReady": true,
+          "prerequisites": [],
+          "canWorkForRep": true
+        },
+        "workCandidates": [
+          {
+            "name": "Wired Reflexes",
+            "faction": "Slum Snakes",
+            "rep": 252.77499999998022,
+            "repRequired": 1250,
+            "repGap": 997.2250000000198,
+            "price": 2500000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Neurotrainer II",
+            "faction": "NiteSec",
+            "rep": 8825.650557476643,
+            "repRequired": 10000,
+            "repGap": 1174.3494425233566,
+            "price": 45000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Cranial Signal Processors - Gen I",
+            "faction": "NiteSec",
+            "rep": 8825.650557476643,
+            "repRequired": 10000,
+            "repGap": 1174.3494425233566,
+            "price": 70000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "LuminCloaking-V1 Skin Implant",
+            "faction": "Slum Snakes",
+            "rep": 252.77499999998022,
+            "repRequired": 1500,
+            "repGap": 1247.2250000000197,
+            "price": 5000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Neural Wit Amplifier",
+            "faction": "Slum Snakes",
+            "rep": 252.77499999998022,
+            "repRequired": 5000,
+            "repGap": 4747.2250000000195,
+            "price": 10000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Augmented Targeting I",
+            "faction": "Slum Snakes",
+            "rep": 252.77499999998022,
+            "repRequired": 5000,
+            "repGap": 4747.2250000000195,
+            "price": 15000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Artificial Synaptic Potentiation",
+            "faction": "The Black Hand",
+            "rep": 145.94166666666715,
+            "repRequired": 6250,
+            "repGap": 6104.0583333333325,
+            "price": 80000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Embedded Netburner Module",
+            "faction": "NiteSec",
+            "rep": 8825.650557476643,
+            "repRequired": 15000,
+            "repGap": 6174.349442523357,
+            "price": 250000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Combat Rib I",
+            "faction": "Slum Snakes",
+            "rep": 252.77499999998022,
+            "repRequired": 7500,
+            "repGap": 7247.2250000000195,
+            "price": 23750000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Neural-Retention Enhancement",
+            "faction": "NiteSec",
+            "rep": 8825.650557476643,
+            "repRequired": 20000,
+            "repGap": 11174.349442523357,
+            "price": 250000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Embedded Netburner Module",
+            "faction": "The Black Hand",
+            "rep": 145.94166666666715,
+            "repRequired": 15000,
+            "repGap": 14854.058333333332,
+            "price": 250000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Magnetism Amplifier",
+            "faction": "The Black Hand",
+            "rep": 145.94166666666715,
+            "repRequired": 15000,
+            "repGap": 14854.058333333332,
+            "price": 250000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "SmartSonar Implant",
+            "faction": "Slum Snakes",
+            "rep": 252.77499999998022,
+            "repRequired": 22500,
+            "repGap": 22247.22500000002,
+            "price": 75000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "CRTX42-AA Gene Modification",
+            "faction": "NiteSec",
+            "rep": 8825.650557476643,
+            "repRequired": 45000,
+            "repGap": 36174.34944252336,
+            "price": 225000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Neuralstimulator",
+            "faction": "The Black Hand",
+            "rep": 145.94166666666715,
+            "repRequired": 50000,
+            "repGap": 49854.058333333334,
+            "price": 3000000000,
+            "cashReady": false,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "The Black Hand",
+            "faction": "The Black Hand",
+            "rep": 145.94166666666715,
+            "repRequired": 100000,
+            "repGap": 99854.05833333333,
+            "price": 550000000,
+            "cashReady": false,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Enhanced Myelin Sheathing",
+            "faction": "The Black Hand",
+            "rep": 145.94166666666715,
+            "repRequired": 100000,
+            "repGap": 99854.05833333333,
+            "price": 1375000000,
+            "cashReady": false,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "DataJack",
+            "faction": "NiteSec",
+            "rep": 8825.650557476643,
+            "repRequired": 112500,
+            "repGap": 103674.34944252335,
+            "price": 450000000,
+            "cashReady": false,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "DataJack",
+            "faction": "The Black Hand",
+            "rep": 145.94166666666715,
+            "repRequired": 112500,
+            "repGap": 112354.05833333333,
+            "price": 450000000,
+            "cashReady": false,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "BitWire",
+            "faction": "NiteSec",
+            "rep": 8825.650557476643,
+            "repRequired": 3750,
+            "repGap": 0,
+            "price": 10000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          },
+          {
+            "name": "Artificial Synaptic Potentiation",
+            "faction": "NiteSec",
+            "rep": 8825.650557476643,
+            "repRequired": 6250,
+            "repGap": 0,
+            "price": 80000000,
+            "cashReady": true,
+            "prerequisites": [],
+            "canWorkForRep": true
+          }
+        ],
+        "gangFaction": null,
+        "candidatesConsidered": 21
+      }
+    },
+    "progress": {
+      "version": "progress-v1",
+      "ts": 1792865038170,
+      "context": "[\"mvmpbyhp-sunw\",\"money\",\"finite\",\"omega-net\"]",
+      "sample": {
+        "capacityRam": 540,
+        "actionRam": 322.79999999999995,
+        "jobs": [
+          {
+            "host": "n00dles",
+            "pid": 5404,
+            "filename": "scripts/grow.js",
+            "args": [
+              "omega-net",
+              "once",
+              "mvmpbyhp-sunw:cloud:40",
+              6
+            ],
+            "threads": 2,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "foodnstuff",
+            "pid": 5428,
+            "filename": "scripts/hack.js",
+            "args": [
+              "phantasy",
+              "once",
+              "mvmpbyhp-sunw:cloud:45",
+              3
+            ],
+            "threads": 9,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "hong-fang-tea",
+            "pid": 5429,
+            "filename": "scripts/hack.js",
+            "args": [
+              "phantasy",
+              "once",
+              "mvmpbyhp-sunw:cloud:45",
+              4
+            ],
+            "threads": 9,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "harakiri-sushi",
+            "pid": 5430,
+            "filename": "scripts/hack.js",
+            "args": [
+              "phantasy",
+              "once",
+              "mvmpbyhp-sunw:cloud:45",
+              5
+            ],
+            "threads": 9,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "iron-gym",
+            "pid": 5402,
+            "filename": "scripts/grow.js",
+            "args": [
+              "omega-net",
+              "once",
+              "mvmpbyhp-sunw:cloud:40",
+              4
+            ],
+            "threads": 12,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "iron-gym",
+            "pid": 5434,
+            "filename": "scripts/hack.js",
+            "args": [
+              "phantasy",
+              "once",
+              "mvmpbyhp-sunw:cloud:45",
+              9
+            ],
+            "threads": 1,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "iron-gym",
+            "pid": 5436,
+            "filename": "scripts/weaken.js",
+            "args": [
+              "n00dles",
+              "once",
+              "mvmpbyhp-sunw:cloud:46",
+              0
+            ],
+            "threads": 1,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "max-hardware",
+            "pid": 5405,
+            "filename": "scripts/grow.js",
+            "args": [
+              "omega-net",
+              "once",
+              "mvmpbyhp-sunw:cloud:40",
+              7
+            ],
+            "threads": 1,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "max-hardware",
+            "pid": 5427,
+            "filename": "scripts/hack.js",
+            "args": [
+              "phantasy",
+              "once",
+              "mvmpbyhp-sunw:cloud:45",
+              2
+            ],
+            "threads": 13,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "CSEC",
+            "pid": 5432,
+            "filename": "scripts/hack.js",
+            "args": [
+              "phantasy",
+              "once",
+              "mvmpbyhp-sunw:cloud:45",
+              7
+            ],
+            "threads": 2,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "nectar-net",
+            "pid": 5431,
+            "filename": "scripts/hack.js",
+            "args": [
+              "phantasy",
+              "once",
+              "mvmpbyhp-sunw:cloud:45",
+              6
+            ],
+            "threads": 9,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "zer0",
+            "pid": 5401,
+            "filename": "scripts/grow.js",
+            "args": [
+              "omega-net",
+              "once",
+              "mvmpbyhp-sunw:cloud:40",
+              3
+            ],
+            "threads": 12,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "neo-net",
+            "pid": 5398,
+            "filename": "scripts/weaken.js",
+            "args": [
+              "omega-net",
+              "once",
+              "mvmpbyhp-sunw:cloud:40",
+              0
+            ],
+            "threads": 5,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "neo-net",
+            "pid": 5399,
+            "filename": "scripts/grow.js",
+            "args": [
+              "omega-net",
+              "once",
+              "mvmpbyhp-sunw:cloud:40",
+              1
+            ],
+            "threads": 13,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "silver-helix",
+            "pid": 5409,
+            "filename": "scripts/grow.js",
+            "args": [
+              "max-hardware",
+              "once",
+              "mvmpbyhp-sunw:cloud:41",
+              3
+            ],
+            "threads": 2,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "silver-helix",
+            "pid": 5425,
+            "filename": "scripts/weaken.js",
+            "args": [
+              "phantasy",
+              "once",
+              "mvmpbyhp-sunw:cloud:45",
+              0
+            ],
+            "threads": 4,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "silver-helix",
+            "pid": 5426,
+            "filename": "scripts/grow.js",
+            "args": [
+              "phantasy",
+              "once",
+              "mvmpbyhp-sunw:cloud:45",
+              1
+            ],
+            "threads": 22,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "omega-net",
+            "pid": 5403,
+            "filename": "scripts/grow.js",
+            "args": [
+              "omega-net",
+              "once",
+              "mvmpbyhp-sunw:cloud:40",
+              5
+            ],
+            "threads": 4,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "omega-net",
+            "pid": 5408,
+            "filename": "scripts/grow.js",
+            "args": [
+              "max-hardware",
+              "once",
+              "mvmpbyhp-sunw:cloud:41",
+              2
+            ],
+            "threads": 14,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "phantasy",
+            "pid": 5400,
+            "filename": "scripts/grow.js",
+            "args": [
+              "omega-net",
+              "once",
+              "mvmpbyhp-sunw:cloud:40",
+              2
+            ],
+            "threads": 18,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "avmnite-02h",
+            "pid": 5406,
+            "filename": "scripts/weaken.js",
+            "args": [
+              "max-hardware",
+              "once",
+              "mvmpbyhp-sunw:cloud:41",
+              0
+            ],
+            "threads": 5,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "avmnite-02h",
+            "pid": 5407,
+            "filename": "scripts/grow.js",
+            "args": [
+              "max-hardware",
+              "once",
+              "mvmpbyhp-sunw:cloud:41",
+              1
+            ],
+            "threads": 13,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "I.I.I.I",
+            "pid": 5420,
+            "filename": "scripts/weaken.js",
+            "args": [
+              "harakiri-sushi",
+              "once",
+              "mvmpbyhp-sunw:cloud:43",
+              0
+            ],
+            "threads": 4,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          },
+          {
+            "host": "I.I.I.I",
+            "pid": 5433,
+            "filename": "scripts/hack.js",
+            "args": [
+              "phantasy",
+              "once",
+              "mvmpbyhp-sunw:cloud:45",
+              8
+            ],
+            "threads": 2,
+            "xp": 0,
+            "money": 0,
+            "securityOnly": false
+          }
+        ],
+        "completedBatches": 45,
+        "totalHacked": 24315539.983824253,
+        "security": 10,
+        "moneyPct": 0.39993072215900205
+      },
+      "since": null,
+      "action": "none",
+      "reason": "healthy or intentionally occupied"
+    },
+    "progressKey": "healthy"
+  }
+}

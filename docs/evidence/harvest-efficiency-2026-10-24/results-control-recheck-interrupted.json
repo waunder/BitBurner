@@ -1,0 +1,11 @@
+{
+  "phase": "A2 legacy recheck; interrupted, not a completed comparison",
+  "complete": false,
+  "reason": "Steam Remote API disconnected; sampler exited at ctl-get. Subsequent long wall-clock gap excluded.",
+  "secondsObserved": 63.152,
+  "cashPerSecObserved": 109289.78847228142,
+  "runStart": "mvmpbyhp-sunw",
+  "runEnd": "mvmpbyhp-sunw",
+  "startSnapshot": "A2-start-1792865232372.json",
+  "lastSnapshot": "A2-measure-1792865295524.json"
+}

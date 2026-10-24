@@ -1,0 +1,4 @@
+{
+  "ok": true,
+  "result": "{\n  \"enabled\": true,\n  \"protectedFloor\": 0.25,\n  \"recoveryTarget\": 0.95,\n  \"preparationRamFraction\": 0.85,\n  \"maxTargets\": 128,\n  \"setBy\": \"MCP operator\",\n  \"ts\": 1791426391359,\n  \"reason\": \"Use the full rooted worker pool aggressively; raise prep capacity to 85%\"\n}"
+}

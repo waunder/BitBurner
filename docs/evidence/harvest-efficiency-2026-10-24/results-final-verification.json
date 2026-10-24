@@ -1,0 +1,14 @@
+{
+  "phase": "Final legacy health verification after reconnect; not controlled efficacy comparison",
+  "seconds": 66.53,
+  "cashPerSec": 119513.36988674758,
+  "batches": 8,
+  "hackingStart": 351,
+  "hackingEnd": 351,
+  "fleetStart": 540,
+  "fleetEnd": 540,
+  "runStart": "mvmpbyhp-sunw",
+  "runEnd": "mvmpbyhp-sunw",
+  "failures": [],
+  "invariants": {}
+}

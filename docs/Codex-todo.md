@@ -1,8 +1,7 @@
 # Codex current work ledger
 
-Last reviewed: 2026-10-20. No prior implementation item was verified as a
-current commitment during the context cleanup. Do not resume an old unchecked
-task without checking the live game, repository, and Ken's current goal.
+Last reviewed: 2026-10-24. Revalidate old unchecked items against the live game,
+repository and Ken's current goal; historical snapshots are not current authority.
 
 The previous backlog is preserved in
 `docs/archive/context-cleanup-2026-10-16/Codex-todo-before-cleanup.md` for
@@ -10,6 +9,15 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
 `AGENTS.md`; script behavior is in `docs/processes.md`.
 
 ## Active work
+
+- Ongoing scheduler assessment/improvement loop authorized 2026-10-24.
+  Assess realized cash and safe restoration, trial bounded changes, retain or
+  revert on evidence, commit/push coherent changes. Thread heartbeat
+  bitburner-efficiency-assessment is active every 30 minutes. Affordable harvest
+  ranking and equal/weighted cohort caps were trialed; both flags are off after
+  no measured cash improvement. Measurements and caveats are in
+  docs/harvest-efficiency-2026-10-24.md. See
+  docs/scheduler-assessment-loop.md. Installation/reset approval still required.
 
 - Fix money-mode recruitment overriding wanted recovery in gang-controller.js.
   Verified 2026-10-23: four members, cleanupMode=true, wanted multiplier
@@ -57,3 +65,11 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
   new cohorts. 128 focused tests pass; functional live check earned $2.02m in
   66.8s with eight completed cohorts and no faults. Sustained cash uplift is not
   claimed. See docs/preparation-chunks-2026-10-24.md.
+
+- Assessed affordable harvest ranking with equal and weighted cohort caps.
+  Deployed/tested fingerprint finite-weighted-harvest-v9; both flags default off.
+  Equal caps measured $77.4k/s, earlier legacy $79.8k/s, weighted $69.5k/s in
+  short evolving-workload windows. Both trial flags reverted without killing
+  finite restoration; 134 focused tests pass. Same-run legacy recheck and
+  limitations: docs/harvest-efficiency-2026-10-24.md. Ongoing assessment remains
+  active, with no augmentation/reset authorization implied.

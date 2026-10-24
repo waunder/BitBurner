@@ -169,3 +169,79 @@ test('fragmented grow preparation cannot fall below its useful minimum',()=>{
  assert.equal(fitted.ram,0)
  assert.equal(fitted.counts.grow,0)
 })
+
+import {rankAffordableHarvests} from './mcp_cloud.js'
+test('affordable harvest ranking ignores misleading full-plan ranks and charges reservations',()=>{
+ const {ns,servers}=fixture()
+ servers.b.moneyAvailable=servers.b.moneyMax=10000
+ const a={...planCloudBatch(ns,'a'),rank:1e9},b={...planCloudBatch(ns,'b'),rank:0}
+ const ram={hack:1.7,grow:1.75,weaken:1.75}
+ const ranked=rankAffordableHarvests(ns,[a,b],[{host:'worker',freeRam:80}],ram,true)
+ assert.equal(ranked[0].target,'b')
+ for(const p of ranked) {
+  assert.ok(p.ram<=80)
+  assert.ok(p.counts.hack>0 && p.counts.weaken>0)
+  assert.equal(p.chargedRamSeconds,p.ram*4)
+  assert.equal(p.admissionScore,p.expectedWithdrawal/p.chargedRamSeconds)
+ }
+})
+
+test('competing ready harvests receive bounded cohorts and preserve their jobs',async()=>{
+ const {ns,context,files,processes}=fixture(),state={}
+ ns.getServerMaxRam=()=>160
+ files.set('mcp_cloud_control.json',JSON.stringify({enabled:true,efficientHarvestAdmission:true}))
+ let s=await cloudTick(ns,state,{...context,reserveHarvestRam:true})
+ assert.equal(s.targets.length,2)
+ assert.equal(s.cloudControl.effectiveHarvestRamCap,80)
+ assert.ok(s.targets.every(p=>p.ram<=80 && p.counts.hack>0))
+ assert.ok(s.targets.every(p=>p.admissionAlternatives?.length && p.admissionScore>0))
+ const pids=processes.map(p=>p.pid)
+ s=await cloudTick(ns,state,{...context,reserveHarvestRam:true})
+ assert.deepEqual(processes.map(p=>p.pid),pids)
+ assert.equal(s.workerLaunchFailures.length,0)
+})
+
+test('single ready target can use the whole fleet under efficient admission',async()=>{
+ const {ns,context,files}=fixture()
+ ns.getServerMaxRam=()=>160
+ files.set('mcp_cloud_control.json',JSON.stringify({enabled:true,efficientHarvestAdmission:true}))
+ const s=await cloudTick(ns,{}, {...context,servers:['a','worker']})
+ assert.equal(s.cloudControl.effectiveHarvestRamCap,160)
+ assert.ok(s.targets[0].ram>80)
+})
+
+test('disabled efficient admission keeps legacy large cohorts and switching never kills active jobs',async()=>{
+ const {ns,context,files,processes}=fixture(),state={}
+ ns.getServerMaxRam=()=>160
+ files.set('mcp_cloud_control.json',JSON.stringify({enabled:true,efficientHarvestAdmission:false}))
+ let s=await cloudTick(ns,state,{...context,reserveHarvestRam:true})
+ assert.ok(s.targets.some(p=>p.ram>80))
+ const pids=processes.map(p=>p.pid)
+ files.set('mcp_cloud_control.json',JSON.stringify({enabled:true,efficientHarvestAdmission:true}))
+ s=await cloudTick(ns,state,{...context,reserveHarvestRam:true})
+ assert.deepEqual(processes.map(p=>p.pid),pids)
+ assert.equal(s.workerLaunchFailures.length,0)
+})
+
+import {weightedHarvestCaps} from './mcp_cloud.js'
+test('weighted shares do not give a low-yield target an equal claim on fleet RAM',()=>{
+ const caps=weightedHarvestCaps([{target:'phantasy',score:265},{target:'max',score:163},{target:'sushi',score:122},{target:'n00dles',score:7}],540)
+ assert.ok(caps.phantasy>250)
+ assert.ok(caps.n00dles<7)
+ assert.ok(Math.abs(Object.values(caps).reduce((a,b)=>a+b,0)-540)<1e-9)
+ assert.deepEqual(weightedHarvestCaps([{target:'only',score:1}],540),{only:540})
+ assert.deepEqual(weightedHarvestCaps([{target:'bad',score:NaN}],540),{})
+})
+
+test('weighted admission gives more RAM to a more profitable ready target',async()=>{
+ const {ns,context,servers,files}=fixture()
+ ns.getServerMaxRam=()=>160
+ servers.b.moneyAvailable=servers.b.moneyMax=10000
+ files.set('mcp_cloud_control.json',JSON.stringify({enabled:true,efficientHarvestAdmission:true,weightedHarvestShares:true}))
+ const s=await cloudTick(ns,{}, {...context,reserveHarvestRam:true})
+ const caps=s.cloudControl.effectiveHarvestRamCaps
+ assert.ok(caps.b>caps.a*9)
+ assert.ok(s.targets.find(p=>p.target==='b').ram>s.targets.find(p=>p.target==='a').ram)
+ assert.ok(s.targets.every(p=>p.ram<=caps[p.target]+1e-9))
+ assert.equal(s.workerLaunchFailures.length,0)
+})

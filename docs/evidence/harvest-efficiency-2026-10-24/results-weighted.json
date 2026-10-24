@@ -1,0 +1,14 @@
+{
+  "phase": "C weighted, inherited security drained",
+  "seconds": 180.883,
+  "cashPerSec": 69481.91461005503,
+  "batches": 24,
+  "hackingStart": 351,
+  "hackingEnd": 351,
+  "fleetStart": 540,
+  "fleetEnd": 540,
+  "runStart": "mvmpbyhp-sunw",
+  "runEnd": "mvmpbyhp-sunw",
+  "failures": [],
+  "invariants": {}
+}

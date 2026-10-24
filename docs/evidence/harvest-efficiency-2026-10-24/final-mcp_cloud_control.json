@@ -1,0 +1,16 @@
+{
+  "observedAt": "2026-10-24T18:57:22.339373+00:00",
+  "source": "Steam Remote API ctl-get",
+  "value": {
+    "enabled": true,
+    "protectedFloor": 0.25,
+    "recoveryTarget": 0.95,
+    "preparationRamFraction": 0.85,
+    "maxTargets": 128,
+    "setBy": "MCP operator",
+    "ts": 1791426391359,
+    "reason": "Use the full rooted worker pool aggressively; raise prep capacity to 85%",
+    "efficientHarvestAdmission": false,
+    "weightedHarvestShares": false
+  }
+}

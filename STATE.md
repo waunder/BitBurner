@@ -1,27 +1,31 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-10-23 09:26 PDT. Sources: Steam UI and direct Remote API.
+Last refreshed: 2026-10-23 18:43 PDT. Sources: Steam UI and direct Remote API.
 Prior handoff: `docs/archive/gang-objective-2026-10-23/STATE-before-gang-objective.md`.
 
-## Gang objective
+## MCP health — 18:43 PDT
 
-Changed live override from money to reputation; application verified by Remote
-API at 2026-10-23 16:25:47 UTC. Four-member Black Hand gang, faction rep ~5,836.
-Readiness showed NutriGen Implant requiring 6,250 rep and $235m, versus ~$61.5t
-cash. Default remains money; live override is reputation.
+Live Remote API samples at 18:43:03 and 18:43:13 PDT show advancing heartbeat,
+same run mvle43b2-2qff, objective reputation, worker mode share. 43 hosts,
+1,012 sharing threads, 4,149.2 GB allocated; share power 1.29343. No invariant
+violations or worker launch failures. Maintenance reports fresh MCP, healthy
+progress, no repair needed. Steam confirms Daedalus work at 49.351 rep/sec;
+reputation increased from 1.904m to 1.905m during inspection. Zero scheduler
+hacking income is expected in this all-sharing objective.
 
-Money objective was running recruitment respect tasks, ignoring cleanupMode
-because recruitment takes precedence. Wanted ~41.7k versus respect ~1.49
-collapsed the wanted multiplier to ~0.0000357. Reputation mode activated two
-Ethical Hacking cleaners and two Cyberterrorism workers. Observed wanted rate
-changed from +3.66 to -5.07 per cycle, meeting recovery target. Ascensions are
-suppressed in reputation mode. Recovery is underway, not complete.
+Routine Remote API reconnect completed; full sync 104 files and pull 29 files
+verified. No scheduler restart or objective change. Ancillary limitations:
+augmentation readiness cannot refresh (no safe 341.1 GB rooted worker under
+all-sharing allocation); contract submission paused on unsupported Largest
+Rectangle in a Matrix. Neither is an MCP scheduler failure.
 
-Remote API reconnected through Steam; full sync of 104 files and telemetry pull
-of 29 files succeeded. Player remained at agility gym work.
+Steam gang observation at ~18:42 PDT: full 12-member roster, ~1.27m respect,
+~652.7k faction rep, wanted penalty ~0.58%; prior recovery has materially
+progressed. Prior detailed handoff archived at
+`docs/archive/mcp-health-2026-10-23/STATE-before-health-check.md`.
 
 ## Follow-up
 
-Fix recruitment overriding wanted recovery before returning to money mode.
+Fix recruitment overriding wanted recovery before returning gang to money mode.
 Reputation override avoids that branch now. No installation or reset performed.
 Standing autonomy and augmentation/reset approval boundaries remain in AGENTS.md.

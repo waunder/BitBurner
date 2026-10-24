@@ -133,3 +133,39 @@ test('malformed prior cohort status is ignored without process inspection',()=>{
   assert.deepEqual(adoptCloudCohorts(ns,['worker']),[])
  }
 })
+
+test('preparation waits for a useful chunk, then starts when capacity returns',async()=>{
+ const {ns,context,servers,processes}=fixture(),state={}
+ servers.a.hackDifficulty=8 // Complete 245GB security preparation fits first.
+ servers.b.hackDifficulty=101 // Only a token remainder would fit afterwards.
+ let s=await cloudTick(ns,state,context)
+ assert.equal(s.targets.length,1)
+ assert.equal(s.targets[0].target,'a')
+ const deferred=s.waiting.find(p=>p.target==='b')
+ assert.equal(deferred.reason,'waiting for useful preparation chunk')
+ assert.ok(deferred.availableRam<deferred.minimumRam)
+ assert.equal(s.cloudControl.effectiveMinimumPreparationRam,81.25)
+ // Completed work releases RAM; the deferred target is not excluded/locked.
+ processes.length=0
+ s=await cloudTick(ns,state,{...context,servers:['b','worker']})
+ assert.equal(s.targets.length,1)
+ assert.equal(s.targets[0].target,'b')
+ assert.ok(s.targets[0].ram>=81.25)
+})
+
+test('zero minimum restores legacy remainder admission without changing harvests',async()=>{
+ const {ns,context,servers,files}=fixture()
+ servers.a.hackDifficulty=8;servers.b.hackDifficulty=101
+ files.set('mcp_cloud_control.json',JSON.stringify({enabled:true,minimumPreparationFraction:0}))
+ const s=await cloudTick(ns,{},context)
+ assert.equal(s.targets.length,2)
+ assert.ok(s.targets.find(p=>p.target==='b').ram<81.25)
+})
+
+test('fragmented grow preparation cannot fall below its useful minimum',()=>{
+ const ram={hack:1.7,grow:1.75,weaken:1.75}
+ const plan={phase:'prepare-money',counts:{hack:0,grow:100,weaken:8}}
+ const fitted=fitCloudPreparation(plan,100,ram,.05,[{host:'a',freeRam:1},{host:'b',freeRam:1},{host:'c',freeRam:98}],99)
+ assert.equal(fitted.ram,0)
+ assert.equal(fitted.counts.grow,0)
+})

@@ -417,6 +417,20 @@ throws while reading `.length`, writes `finite-error`, and XP work never resumes
 
 If full preparation cannot fit, `fitCloudPreparation` requests the grow/weaken or security-only portion that fits free RAM; it never partially funds a harvest. Events mark `partialPreparation`, and later cohorts remeasure the actual remaining deficit. `set_cloud_mode.js [on|off|status] [minutes=120]` writes durable control, with 50% withdrawal, 32 slots and validated 1–1440 minute expiry. Control changes take effect on the next MCP tick; the game-owned control/status files are ignored by Git and never enter the source sync manifest. The module reports its started source fingerprint alongside MCP's manager version.
 
+As of 2026-10-24, partial preparation also requires a useful minimum chunk:
+`minimumPreparationFraction` in `mcp_cloud_control.json` defaults to 0.25 of
+the fleet's total preparation RAM allowance (not its currently free remainder).
+The requirement is capped at the full plan's RAM, so small complete preparations
+remain eligible. Grow chunks must include their compensating weaken threads.
+The field is clamped to 0–1; explicit zero restores legacy remainder admission.
+Insufficient capacity waits with reason `waiting for useful preparation chunk`,
+recording available/minimum/full-plan RAM. Fragmentation can also prevent placement.
+Status reports `effectiveMinimumPreparationFraction` and
+`effectiveMinimumPreparationRam`. Existing finite cohorts, including small old
+preparations, drain normally across restart; harvest RAM reservations are unchanged.
+This may deliberately leave a remainder idle until enough preparation RAM returns,
+avoiding long one-thread calls that lock targets for negligible progress.
+
 **2026-08-14 (R1):** `buildPlan` no longer picks a hack/grow split off a
 fixed RAM-fraction table keyed by which `moneyPct` tier the target sits in.
 It reads the target's actual balance point live (1GB each, no Formulas.exe

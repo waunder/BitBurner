@@ -47,3 +47,13 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
   and sorts signed amounts descending. Syntax/readback verified; Steam panel
   PID 1994 shows the negative cost below all income rows. Focused BitRunners
   work restored after routine Remote API reconnect and panel reload.
+
+
+## Completed — 2026-10-24
+
+- Concentrated finite preparation into meaningful chunks rather than token
+  remainder allocations. Deployed fingerprint finite-preparation-chunks-v7,
+  preserved active finite restoration, verified minimum/deferrals and productive
+  new cohorts. 128 focused tests pass; functional live check earned $2.02m in
+  66.8s with eight completed cohorts and no faults. Sustained cash uplift is not
+  claimed. See docs/preparation-chunks-2026-10-24.md.

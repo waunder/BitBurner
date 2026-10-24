@@ -1,6 +1,6 @@
 /** Finite multi-target batches, owned and observed by the existing MCP. */
 export const CLOUD_CONTROL = 'mcp_cloud_control.json'
-export const CLOUD_VERSION = 'finite-completion-reserve-v6'
+export const CLOUD_VERSION = 'finite-preparation-chunks-v7'
 const SCRIPTS = {hack:'scripts/hack.js',grow:'scripts/grow.js',weaken:'scripts/weaken.js'}
 
 export function planCloudBatch(ns, target, { protectedFloor = 0.25, recoveryTarget = 0.95 } = {}) {
@@ -89,10 +89,11 @@ function limitHostsToRam(hosts, budget) {
   return hosts.map(h=>{const freeRam=Math.min(h.freeRam,remaining);remaining-=freeRam;return {...h,freeRam}}).filter(h=>h.freeRam>0)
 }
 
-export function fitCloudPreparation(plan, availableRam, ram, weakenPower, hosts = null) {
+export function fitCloudPreparation(plan, availableRam, ram, weakenPower, hosts = null, minimumRam = 0) {
   if(plan.phase!=='prepare-money' && plan.phase!=='prepare-security')return plan
   const tryFit=counts=>{
     const needed=Object.entries(counts).reduce((n,[a,t])=>n+t*ram[a],0)
+    if(needed+1e-9<minimumRam)return null
     if(needed>availableRam+1e-9)return null
     const placements=hosts?placeCloudBatch(counts,hosts,ram):null
     if(hosts&&!placements)return null
@@ -237,6 +238,11 @@ export async function cloudTick(ns, state, {servers,workers,runId,objective,emit
   const protectedFloor=Math.max(0.05,Math.min(0.95,Number(control.protectedFloor)||0.25))
   const recoveryTarget=Math.max(protectedFloor+0.01,Math.min(1,Number(control.recoveryTarget)||0.95))
   const preparationRamFraction=Math.max(0.05,Math.min(0.85,Number(control.preparationRamFraction)||0.65))
+  // A quarter of the preparation allowance funds a useful chunk instead of
+  // locking a target behind a one-thread call. Small complete plans still fit.
+  // Explicit zero restores legacy admission for a reversible comparison.
+  const minimumPreparationFraction=Number.isFinite(control.minimumPreparationFraction)
+    ? Math.max(0,Math.min(1,control.minimumPreparationFraction)) : 0.25
   // Bound scheduler/pid overhead relative to the actual worker fleet instead
   // of the old fixed 32-target ceiling, which capped this 43-host network near
   // one third RAM utilization with small safe cohorts.
@@ -271,6 +277,7 @@ export async function cloudTick(ns, state, {servers,workers,runId,objective,emit
     .map(p=>p.threads*ns.getScriptRam(p.filename,host))).reduce((a,b)=>a+b,0)
   const activePreparationRam=[...state.batches.values()].filter(b=>b.phase!=='harvest').reduce((n,b)=>n+b.ram,0)+orphanFiniteRam
   const fleetRam=workers.reduce((n,h)=>n+ns.getServerMaxRam(h),0)
+  const minimumPreparationRam=fleetRam*preparationRamFraction*minimumPreparationFraction
   let preparationRamRemaining=Math.max(0,fleetRam*preparationRamFraction-activePreparationRam)
   const finiteTargets=new Set(workers.flatMap(host=>ns.ps(host)
     .filter(p=>Object.values(SCRIPTS).includes(p.filename.replace(/^\//,'')) && p.args[1]==='once')
@@ -281,6 +288,7 @@ export async function cloudTick(ns, state, {servers,workers,runId,objective,emit
     if(state.batches.size>=limit)break
     const hosts=cloudAdmissionHosts(ns,workers,state.batches,ram,reserveHarvestRam)
     let placementHosts=hosts
+    const minimumRam=plan.phase.startsWith('prepare-')?Math.min(plan.ram,minimumPreparationRam):0
     if(plan.phase.startsWith('prepare-')) {
       if(preparationRamRemaining<1){waiting.push({target:plan.target,phase:plan.phase,reason:'preparation RAM share is in use'});continue}
       placementHosts=limitHostsToRam(hosts,preparationRamRemaining)
@@ -293,10 +301,14 @@ export async function cloudTick(ns, state, {servers,workers,runId,objective,emit
     if(!placements && plan.phase.startsWith('prepare-')) {
       const prepHosts=limitHostsToRam(hosts,preparationRamRemaining)
       const prepCapacity=prepHosts.reduce((n,h)=>n+h.freeRam,0)
-      plan=fitCloudPreparation(plan,prepCapacity,ram,ns.weakenAnalyze(1,1),prepHosts)
+      if(prepCapacity+1e-9<minimumRam) {
+        waiting.push({target:plan.target,phase:plan.phase,reason:'waiting for useful preparation chunk',availableRam:prepCapacity,minimumRam,neededRam:plan.ram})
+        continue
+      }
+      plan=fitCloudPreparation(plan,prepCapacity,ram,ns.weakenAnalyze(1,1),prepHosts,minimumRam)
       placements=plan.placements||null
     }
-    if(!placements){waiting.push({target:plan.target,phase:plan.phase,neededRam:plan.ram});continue}
+    if(!placements){waiting.push({target:plan.target,phase:plan.phase,neededRam:plan.ram,minimumRam});continue}
     const id=`${runId}:cloud:${++state.seq}`,jobs=[]
     let failed=false
     for(const host of new Set(placements.map(p=>p.host))) if(host!=='home' && !(await ns.scp(Object.values(SCRIPTS),host,'home'))) {failures.push({id,target:plan.target,host,reason:'scp failed'});failed=true;break}
@@ -322,5 +334,5 @@ export async function cloudTick(ns, state, {servers,workers,runId,objective,emit
     targets:[...state.batches.values()].map(b=>({...b,moneyPct:ns.getServerMoneyAvailable(b.target)/ns.getServerMaxMoney(b.target),currentSecurity:ns.getServerSecurityLevel(b.target)})),
     workers:allocations,cloudWorkers:allocations.filter(h=>ns.getServer(h.host).purchasedByPlayer),rate,avgRate:(money-state.baseMoney)/Math.max(1,(now-state.startedAt)/1000),incomePerSec:rate,totalHacked:money-state.baseMoney,
     currentSecurity:primary?ns.getServerSecurityLevel(primaryTarget):0,moneyPct:primary?ns.getServerMoneyAvailable(primaryTarget)/ns.getServerMaxMoney(primaryTarget):0,expPerSec:0,ramUtilization:allocations.reduce((n,h)=>n+h.usedRam,0)/Math.max(1,allocations.reduce((n,h)=>n+h.maxRam,0)),
-    reservedRestorationRam:cloudAdmissionHosts(ns,workers,state.batches,ram,reserveHarvestRam).reduce((n,h)=>n+h.reservedRam,0),workerLaunchFailures:failures,cloudCapacity,cloudControl:{...control,effectiveProtectedFloor:protectedFloor,effectiveRecoveryTarget:recoveryTarget,effectivePreparationRamFraction:preparationRamFraction,effectivePreparationRamRemaining:preparationRamRemaining,effectiveMaxTargets:limit},completedBatches:state.completed,waiting}
+    reservedRestorationRam:cloudAdmissionHosts(ns,workers,state.batches,ram,reserveHarvestRam).reduce((n,h)=>n+h.reservedRam,0),workerLaunchFailures:failures,cloudCapacity,cloudControl:{...control,effectiveProtectedFloor:protectedFloor,effectiveRecoveryTarget:recoveryTarget,effectivePreparationRamFraction:preparationRamFraction,effectivePreparationRamRemaining:preparationRamRemaining,effectiveMinimumPreparationFraction:minimumPreparationFraction,effectiveMinimumPreparationRam:minimumPreparationRam,effectiveMaxTargets:limit},completedBatches:state.completed,waiting}
 }

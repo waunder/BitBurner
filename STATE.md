@@ -1,31 +1,33 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-10-23 18:43 PDT. Sources: Steam UI and direct Remote API.
-Prior handoff: `docs/archive/gang-objective-2026-10-23/STATE-before-gang-objective.md`.
+Last refreshed: 2026-10-24 10:03 PDT. Sources: Steam UI and direct Remote API.
+Prior handoff: `docs/archive/target-preparation-2026-10-24/STATE-before-deployment.md`.
 
-## MCP health — 18:43 PDT
+## Current objective and verified outcome
 
-Live Remote API samples at 18:43:03 and 18:43:13 PDT show advancing heartbeat,
-same run mvle43b2-2qff, objective reputation, worker mode share. 43 hosts,
-1,012 sharing threads, 4,149.2 GB allocated; share power 1.29343. No invariant
-violations or worker launch failures. Maintenance reports fresh MCP, healthy
-progress, no repair needed. Steam confirms Daedalus work at 49.351 rep/sec;
-reputation increased from 1.904m to 1.905m during inspection. Zero scheduler
-hacking income is expected in this all-sharing objective.
+Ken authorized fewer, meaningfully funded preparation allocations. Implemented,
+tested and deployed `finite-preparation-chunks-v7` in mcp_cloud.js. Partial prep
+now needs 25% of the total preparation allowance, capped at full-plan RAM;
+87.55GB minimum on the observed 412GB fleet. Complete smaller plans still run.
+Existing finite cohorts are preserved, so old tiny weaken rows drain naturally.
+Rollback: game cloud control `minimumPreparationFraction: 0` (hot-read).
 
-Routine Remote API reconnect completed; full sync 104 files and pull 29 files
-verified. No scheduler restart or objective change. Ancillary limitations:
-augmentation readiness cannot refresh (no safe 341.1 GB rooted worker under
-all-sharing allocation); contract submission paused on unsupported Largest
-Rectangle in a Matrix. Neither is an MCP scheduler failure.
+New MCP run mvmnbfr3-j118 verified ~10:01 PDT. Over 66.8 seconds, eight cohorts
+completed and hacking earned $2.02m; Phantasy received 287GB prep and Sigma
+Cosmetics its complete 68.25GB security plan. No launch failures/invariant faults;
+maintenance healthy. 128 focused tests pass. Not a controlled income comparison.
+Deployment evidence and tradeoffs: `docs/preparation-chunks-2026-10-24.md`.
 
-Steam gang observation at ~18:42 PDT: full 12-member roster, ~1.27m respect,
-~652.7k faction rep, wanted penalty ~0.58%; prior recovery has materially
-progressed. Prior detailed handoff archived at
-`docs/archive/mcp-health-2026-10-23/STATE-before-health-check.md`.
+Steam H346, ~$212m, focused NiteSec work restored. Prior day's Daedalus/$71t
+snapshot is historical; current BitNode has not been freshly queried.
+Routine restart required temporarily freeing diagnostic RAM; crime_returns.js
+money restored (PID2142), temporary ops HUD stopped and obsolete tails closed.
+104-file source sync and exact game module readback verified. No reset or
+augmentation installation performed.
 
-## Follow-up
+## Outstanding
 
-Fix recruitment overriding wanted recovery before returning gang to money mode.
-Reputation override avoids that branch now. No installation or reset performed.
+Earlier gang recruitment/wanted issue remains unvalidated in this new progression
+state; do not infer a live gang from yesterday. No remaining implementation or
+deployment work for this preparation change. Longer cash ROI remains unmeasured.
 Standing autonomy and augmentation/reset approval boundaries remain in AGENTS.md.

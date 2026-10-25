@@ -1,4 +1,4 @@
-import { planMoneyTasks, planReputationTasks } from "./gang_logic.js";
+import { moneyModePriority, planMoneyTasks, planReputationTasks } from "./gang_logic.js";
 
 /**
  * Gang v2: formula-driven money or faction-reputation, wanted, and territory control.
@@ -136,10 +136,8 @@ export async function main(ns) {
     // Before twelve members, respect is capital: devote the best candidates to
     // recruitment only when a recruit remains unavailable.
     const recruitGrowth = members.length < 12 && !ns.gang.canRecruitMember();
-    if (recruitGrowth && gangObjective !== "reputation") {
-      mode = "respect";
-      for (const plan of plans.filter((p) => p.trained)) plan.choice = plan.respect || plan.choice;
-    } else if (gangObjective === "reputation") {
+    const moneyPriority = moneyModePriority(cleanupMode, Boolean(clean), recruitGrowth);
+    if (gangObjective === "reputation") {
       if (cleanupMode && clean) {
         reputationPlan = planReputationTasks(plans, gang.wantedLevel, C.wantedReductionFraction, C.wantedUpdateCycles);
         for (let i = 0; i < plans.length; i++) {
@@ -154,13 +152,16 @@ export async function main(ns) {
           plan.role = plan.trained ? "respect" : "training";
         }
       }
-    } else if (cleanupMode && clean) {
+    } else if (moneyPriority === "wanted-recovery") {
       moneyPlan = planMoneyTasks(plans, gang.wantedLevel, C.wantedReductionFraction, C.wantedUpdateCycles);
       for (let i = 0; i < plans.length; i++) {
         plans[i].choice = moneyPlan.assignments[i].choice;
         plans[i].role = moneyPlan.assignments[i].role;
       }
       mode = moneyPlan.cleanerCount ? "wanted-recovery" : "cash";
+    } else if (moneyPriority === "respect") {
+      mode = "respect";
+      for (const plan of plans.filter((p) => p.trained)) plan.choice = plan.respect || plan.choice;
     } else {
       mode = "cash";
     }

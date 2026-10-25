@@ -1,53 +1,43 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-10-24 11:57 PDT. Sources: Steam UI and timestamped direct
-Remote API reads. Prior handoff is preserved in
-`docs/archive/harvest-efficiency-2026-10-24/STATE-before-assessment.md`.
+Last refreshed: 2026-10-25 10:26 PDT. Sources: Steam UI and timestamped direct
+Remote API reads. Previous handoff archived at
+`docs/archive/2026-10-25/STATE-before-mcp-xp-and-gang-iteration.md`.
 
 ## Current objective and outcome
 
-Keep improving scheduler cash efficiency through bounded, reversible trials.
-The `bitburner-efficiency-assessment` heartbeat is active every 30 minutes;
-workflow: `docs/scheduler-assessment-loop.md`. It reports material changes,
-failures or a real decision and otherwise stays quiet. Older unrelated campaign
-and SQLInject automations remain paused.
+Continue measuring MCP yield while the live objective is XP; repair defects found
+along the way. A short reversible comparison rejected an 80/20 hack/grow split.
+The 50/50 split is retained as a monitored candidate: the final 110-second
+window had a 460 XP/s median while foodnstuff money rose 3.8% to 8.2%, then a
+fresh status read showed 9.6%. Windows were phase-skewed and the 95/5 baseline
+was not matched, so this is not a proven optimum. Details:
+`docs/mcp-xp-yield-2026-10-25.md`.
 
-Deployed/tested module `finite-weighted-harvest-v9` adds affordable fitted-harvest
-ranking and equal/weighted competing-cohort caps. Both experimental game-owned
-flags are now **false**: `efficientHarvestAdmission`, `weightedHarvestShares`.
-Equal caps measured $77.4k/s, earlier legacy $79.8k/s and weighted caps $69.5k/s
-in short evolving-workload windows. No improvement was established; retain the
-tested options dormant. Existing finite restoration was preserved throughout.
-Inputs, interrupted attempts, caveats and next hypothesis:
-`docs/harvest-efficiency-2026-10-24.md`.
-
-The earlier useful-preparation-chunk policy remains active (minimum fraction
-0.25, observed minimum 114.75GB at current fleet/prep settings). Completion-aware
-wake and cohort RAM reservation remain active. No purchase, installation or
-reset was performed. Player work remains focused NiteSec.
+Fixed the gang money-mode priority defect: when wanted cleanup is active and a
+cleaner exists, it now precedes recruitment respect growth. Deployed source and
+restarted `gang-controller.js`. Steam then showed two of five members on Ethical
+Hacking, wanted falling about 55/s, and three members still earning money.
 
 ## Latest verified live state
 
-At 11:57:18 PDT, Remote API status: H351, 540GB worker fleet, run
-`mvmpbyhp-sunw`, fingerprint `finite-weighted-harvest-v9`, four harvest cohorts,
-no launch failures or invariant faults. Phantasy 243.75GB, Max Hardware 144.5GB,
-Harakiri Sushi 118.5GB, n00dles 17.05GB. Fresh post-recovery verification earned
-$119,513/s over 66.53 seconds with eight completions; this is a health check,
-not a controlled policy improvement claim. Maintenance reported MCP fresh.
+At 10:25:44 PDT, Steam/Remote API status showed MCP run `mvnn8tkf-wauz`, version
+`1ep5kgh`, XP override active, continuous workers on foodnstuff, 395 XP/s, 9.6%
+money, 4.296 security, 98.5% RAM use, no worker launch failures. Invariant
+counts included `tickWithinBounds: 14`; no new worker or target-selection fault
+was identified. Player hacking 507; Steam showed an Algorithms course in
+progress.
 
-Remote transport disconnected during the legacy recheck; its 63.152-second
-partial observation was retained and excluded from completed comparisons.
-Reconnect verified 104-file source sync and 29-file telemetry pull; focused
-NiteSec work was restored. No cash delta spans the disconnected wall-clock gap.
-Exact source readback matched local source. All 134 focused tests and
-`git diff --check` pass.
+At approximately 10:26 PDT, Steam showed The Black Hand at 5/12 members,
+wanted 58.22k, falling 55.09/s, penalty still -100%. Two members were assigned
+Ethical Hacking and the other three Money Laundering. Recruitment still needs
+125 respect. Remote API was connected; full sync had pushed all 104 watched
+source files without failures.
 
 ## Outstanding
 
-Next useful assessment: match preparation occupancy and player skill before
-testing whether preparation takes capacity a superior running harvest needs on
-its next admission. Do not equate allocation fairness or cohort count with ROI.
-No further source iteration is justified by this completed trial alone.
-Earlier gang recruitment/wanted issue remains unvalidated in current
-progression. Standing autonomy and augmentation/reset approval boundaries
-remain in AGENTS.md.
+Continue the XP split assessment with longer, phase-balanced windows; keep 50/50
+reversible and monitored until better comparison data exists. Watch wanted
+recovery until penalty clears its 99.9% hysteresis exit. No augmentation,
+installation, or reset was performed. See `AGENTS.md` for standing authority
+and stop boundaries.

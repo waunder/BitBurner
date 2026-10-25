@@ -655,18 +655,25 @@ argument, confirming hacking XP per completed action is independent of how
 much was actually stolen. The entire reason money mode ramps hack down to
 near-zero on a drained target is that a near-zero steal isn't worth the
 security cost — a reason that simply doesn't exist for XP. So XP mode uses
-one fixed split regardless of `moneyPct`: `XP_WEIGHT_HACK` (default 0.95) and
-`XP_WEIGHT_GROW` (default 0.05), tagged with the `"xp"` regime so switching
+one fixed split regardless of `moneyPct`: `XP_WEIGHT_HACK` and
+`XP_WEIGHT_GROW`, tagged with the `"xp"` regime so switching
 `OBJECTIVE` live is still recognized as a regime change (`weight_regime_change`
 event) the same way a money-mode ramp/harvest transition is.
 
-XP mode uses a 0.95/0.05 hack/grow split. Hack has the best XP per GB-second;
-the small grow share is insurance against reducing a target to exactly $0,
-where a hack receives only failure XP. It ranks targets independently of
-money using `(3 + 0.3 * baseSecurity) * (0.25 + 0.75 * chance) / hackTime`:
-the game's base XP per action, adjusted for a failed hack's quarter-XP award,
-per hack-thread second. This branch is reachable only while `OBJECTIVE` is
-`"xp"`; money-mode scoring and allocation are unchanged.
+Current configured XP split is 0.5/0.5 hack/grow (2026-10-25 trial). An earlier
+95/5 assumption favored hack's shorter cycle but allowed the target to drain
+near zero, where hack XP falls to one quarter. A short 80/20 trial did not
+support retaining that intermediate split. At 50/50, two longer windows kept
+XP median near 460/s while foodnstuff money rose from 3.8% to 9.6%. Sampling
+covered many weaken ticks and few work ticks, and the 95/5 baseline was not
+phase-matched; treat 50/50 as a monitored candidate, not a proven optimum. See
+`docs/mcp-xp-yield-2026-10-25.md`. The scheduler ranks XP targets independently
+of money using `(3 + 0.3 * baseSecurity) * (0.25 + 0.75 * chance) / hackTime`:
+base XP per action, adjusted for a failed hack's quarter-XP award, per
+hack-thread second. Grow and weaken grant the same per-thread XP as a successful
+hack, but their longer action durations affect total XP per second. This branch
+is reachable only while `OBJECTIVE` is `"xp"`; money-mode scoring and
+allocation are unchanged.
 
 **Money-based eviction is disabled in XP mode.** The hack-heavy split above
 drains each target's money toward zero by design — the `moneyDegraded` check
@@ -1001,9 +1008,11 @@ warfare is a weighted expected-win decision rather than an all-rivals gate.
 After the gang reaches twelve members, an otherwise low-value bounded cohort
 trains combat until every active member reaches a 300 combat floor; this gives
 hacking gangs a viable territory path instead of permanently losing clashes.
-Recruitment respect growth and wanted recovery take priority over territory
-training; the latter only runs while the task planner is otherwise in cash
-mode.
+Wanted recovery takes priority over money-mode recruitment respect growth when
+a cleaner is available. Recruitment respect growth runs when recruitment is
+blocked and wanted recovery is inactive or no cleaner exists. In reputation
+objective, reputation planning remains active independently of recruitment.
+Territory training only runs while the task planner is otherwise in cash mode.
 
 Capital policy is shared through `gang_capital_policy.json`, which both the
 controller and HUD read. Its current phase is `augmentation`: accumulate cash

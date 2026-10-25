@@ -129,3 +129,10 @@ export function planMoneyTasks(plans, wantedLevel, wantedReductionFraction = 0.0
   return { assignments, targetWantedRate: targetWanted, projectedMoneyRate: selected.money,
     projectedWantedRate: selected.wanted, cleanerCount: selected.cleaners, targetMet: Boolean(best) };
 }
+
+/** Select money-mode priority before applying recruitment growth. */
+export function moneyModePriority(cleanupMode, hasCleaner, recruitGrowth) {
+  if (cleanupMode && hasCleaner) return "wanted-recovery";
+  if (recruitGrowth) return "respect";
+  return "cash";
+}

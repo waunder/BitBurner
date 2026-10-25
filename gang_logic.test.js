@@ -1,6 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { planMoneyTasks, planReputationTasks } from "./gang_logic.js";
+import { moneyModePriority, planMoneyTasks, planReputationTasks } from "./gang_logic.js";
+
+test("money mode prioritizes wanted recovery over blocked recruitment growth", () => {
+  assert.equal(moneyModePriority(true, true, true), "wanted-recovery");
+  assert.equal(moneyModePriority(false, true, true), "respect");
+  assert.equal(moneyModePriority(true, false, true), "respect");
+  assert.equal(moneyModePriority(false, true, false), "cash");
+});
 
 function plan(name, respect, wanted, cleanRespect, cleanWanted) {
   return {

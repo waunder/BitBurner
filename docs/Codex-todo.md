@@ -19,10 +19,6 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
   docs/harvest-efficiency-2026-10-24.md. See
   docs/scheduler-assessment-loop.md. Installation/reset approval still required.
 
-- Fix money-mode recruitment overriding wanted recovery in gang-controller.js.
-  Verified 2026-10-23: four members, cleanupMode=true, wanted multiplier
-  ~0.0000357. Reputation override now activates recovery; preserve this objective.
-
 ## Completed — 2026-10-19
 
 - Diagnosed XP transition blocked by security-only cloud preparation. Cancel
@@ -73,3 +69,18 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
   finite restoration; 134 focused tests pass. Same-run legacy recheck and
   limitations: docs/harvest-efficiency-2026-10-24.md. Ongoing assessment remains
   active, with no augmentation/reset authorization implied.
+
+## Completed — 2026-10-25
+
+- Fixed gang-controller money-mode priority so wanted cleanup runs before
+  recruitment-respect growth when a cleaner is available. Deployed through the
+  Remote API and restarted the controller. Steam showed 2 of 5 members on
+  Ethical Hacking and wanted falling from roughly 85.1k to 58.2k at about
+  -55/s; remaining members continued earning money. Regression coverage:
+  `node --test gang_logic.test.js` (9/9). Details: `docs/processes.md`.
+- Trialed XP work splits while XP was the live MCP objective. 80/20 had a
+  307/s median and continued draining foodnstuff. Two longer 50/50 windows had
+  medians near 460/s while money rose from 3.8% to 9.6%; because samples were
+  mostly weaken-phase and no matched 95/5 window was captured, 50/50 remains a
+  monitored candidate rather than a proven optimum. Kept the live setting at
+  50/50; details and snapshots: `docs/mcp-xp-yield-2026-10-25.md`.

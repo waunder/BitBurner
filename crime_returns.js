@@ -7,28 +7,29 @@ import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./
  * @param {NS} ns
  */
 const CRIMES = [
-  { name: "Shoplift", time: 2e3, money: 15e3, diff: 1/20, weights: { dexterity: 1, agility: 1 }, exp: { dexterity: 2, agility: 2 } },
-  { name: "Rob Store", time: 60e3, money: 400e3, diff: 1/5, weights: { hacking: .5, dexterity: 2, agility: 1 }, exp: { hacking: 30, dexterity: 45, agility: 45 } },
-  { name: "Mug", time: 4e3, money: 36e3, diff: 1/5, weights: { strength: 1.5, defense: .5, dexterity: 1.5, agility: .5 }, exp: { strength: 3, defense: 3, dexterity: 3, agility: 3 } },
-  { name: "Larceny", time: 90e3, money: 800e3, diff: 1/3, weights: { hacking: .5, dexterity: 1, agility: 1 }, exp: { hacking: 45, dexterity: 60, agility: 60 } },
-  { name: "Deal Drugs", time: 10e3, money: 120e3, diff: 1, weights: { dexterity: 2, agility: 1, charisma: 3 }, exp: { dexterity: 5, agility: 5, charisma: 10 } },
-  { name: "Bond Forgery", time: 300e3, money: 4.5e6, diff: .5, weights: { hacking: .05, dexterity: 1.25 }, exp: { hacking: 100, dexterity: 150, charisma: 15 } },
-  { name: "Traffick Arms", time: 40e3, money: 600e3, diff: 2, weights: { strength: 1, defense: 1, dexterity: 1, agility: 1, charisma: 1 }, exp: { strength: 20, defense: 20, dexterity: 20, agility: 20, charisma: 40 } },
-  { name: "Homicide", time: 3e3, money: 45e3, diff: 1, weights: { strength: 2, defense: 2, dexterity: .5, agility: .5 }, exp: { strength: 2, defense: 2, dexterity: 2, agility: 2 }, kills: 1 },
-  { name: "Grand Theft Auto", time: 80e3, money: 1.6e6, diff: 8, weights: { hacking: 1, strength: 1, dexterity: 4, agility: 2, charisma: 2 }, exp: { strength: 20, defense: 20, dexterity: 20, agility: 80, charisma: 40 } },
-  { name: "Kidnap", time: 120e3, money: 3.6e6, diff: 5, weights: { strength: 1, dexterity: 1, agility: 1, charisma: 1 }, exp: { strength: 80, defense: 80, dexterity: 80, agility: 80, charisma: 80 } },
-  { name: "Assassination", time: 300e3, money: 12e6, diff: 8, weights: { strength: 1, dexterity: 2, agility: 1 }, exp: { strength: 300, defense: 300, dexterity: 300, agility: 300 }, kills: 1 },
-  { name: "Heist", time: 600e3, money: 120e6, diff: 18, weights: { hacking: 1, strength: 1, defense: 1, dexterity: 1, agility: 1, charisma: 1 }, exp: { hacking: 450, strength: 450, defense: 450, dexterity: 450, agility: 450, charisma: 450 } },
+  { name: "Shoplift", time: 2e3, money: 15e3, karma: .1, diff: 1/20, weights: { dexterity: 1, agility: 1 }, exp: { dexterity: 2, agility: 2 } },
+  { name: "Rob Store", time: 60e3, money: 400e3, karma: .5, diff: 1/5, weights: { hacking: .5, dexterity: 2, agility: 1 }, exp: { hacking: 30, dexterity: 45, agility: 45 } },
+  { name: "Mug", time: 4e3, money: 36e3, karma: .25, diff: 1/5, weights: { strength: 1.5, defense: .5, dexterity: 1.5, agility: .5 }, exp: { strength: 3, defense: 3, dexterity: 3, agility: 3 } },
+  { name: "Larceny", time: 90e3, money: 800e3, karma: 1.5, diff: 1/3, weights: { hacking: .5, dexterity: 1, agility: 1 }, exp: { hacking: 45, dexterity: 60, agility: 60 } },
+  { name: "Deal Drugs", time: 10e3, money: 120e3, karma: .5, diff: 1, weights: { dexterity: 2, agility: 1, charisma: 3 }, exp: { dexterity: 5, agility: 5, charisma: 10 } },
+  { name: "Bond Forgery", time: 300e3, money: 4.5e6, karma: .1, diff: .5, weights: { hacking: .05, dexterity: 1.25 }, exp: { hacking: 100, dexterity: 150, charisma: 15 } },
+  { name: "Traffick Arms", time: 40e3, money: 600e3, karma: 1, diff: 2, weights: { strength: 1, defense: 1, dexterity: 1, agility: 1, charisma: 1 }, exp: { strength: 20, defense: 20, dexterity: 20, agility: 20, charisma: 40 } },
+  { name: "Homicide", time: 3e3, money: 45e3, karma: 3, diff: 1, weights: { strength: 2, defense: 2, dexterity: .5, agility: .5 }, exp: { strength: 2, defense: 2, dexterity: 2, agility: 2 }, kills: 1 },
+  { name: "Grand Theft Auto", time: 80e3, money: 1.6e6, karma: 5, diff: 8, weights: { hacking: 1, strength: 1, dexterity: 4, agility: 2, charisma: 2 }, exp: { strength: 20, defense: 20, dexterity: 20, agility: 80, charisma: 40 } },
+  { name: "Kidnap", time: 120e3, money: 3.6e6, karma: 6, diff: 5, weights: { strength: 1, dexterity: 1, agility: 1, charisma: 1 }, exp: { strength: 80, defense: 80, dexterity: 80, agility: 80, charisma: 80 } },
+  { name: "Assassination", time: 300e3, money: 12e6, karma: 10, diff: 8, weights: { strength: 1, dexterity: 2, agility: 1 }, exp: { strength: 300, defense: 300, dexterity: 300, agility: 300 }, kills: 1 },
+  { name: "Heist", time: 600e3, money: 120e6, karma: 15, diff: 18, weights: { hacking: 1, strength: 1, defense: 1, dexterity: 1, agility: 1, charisma: 1 }, exp: { hacking: 450, strength: 450, defense: 450, dexterity: 450, agility: 450, charisma: 450 } },
 ]
 const STATS = ["hacking", "strength", "defense", "dexterity", "agility", "charisma"]
-const LABELS = ["Crime", "%", "$ /m", "Hack", "Str", "Def", "Dex", "Agi", "Cha"]
-const WIDTHS = [20, 5, 7, 7, 7, 7, 7, 7, 7]
+const LABELS = ["Crime", "%", "$ /m", "Karma/m", "Hack", "Str", "Def", "Dex", "Agi", "Cha"]
+const WIDTHS = [20, 5, 7, 8, 7, 7, 7, 7, 7, 7]
 const WINDOW_FILE = "crime_returns_window.json"
 const SORTS = [
   { key: "name", label: "Crime", column: 0, aliases: ["crime", "name"] },
   { key: "chance", label: "Success chance", column: 1, aliases: ["chance", "success", "%"] },
   { key: "money", label: "Money/min", column: 2, aliases: ["money", "cash", "$"] },
-  ...STATS.map((stat, i) => ({ key: stat, label: `${LABELS[i + 3]} XP/min`, column: i + 3, aliases: [stat, LABELS[i + 3].toLowerCase()] })),
+  { key: "karma", label: "Karma/min", column: 3, aliases: ["karma", "karma/min", "k"] },
+  ...STATS.map((stat, i) => ({ key: stat, label: `${LABELS[i + 4]} XP/min`, column: i + 4, aliases: [stat, LABELS[i + 4].toLowerCase()] })),
 ]
 
 function compact(n, cash = false) {
@@ -64,7 +65,7 @@ export async function main(ns) {
   ns.disableLog("sleep")
   const sort = parseSort(ns.args)
   if (!sort) {
-    ns.tprint("Usage: run crime_returns.js [crime|chance|money|hack|str|def|dex|agi|cha] [h|l]")
+    ns.tprint("Usage: run crime_returns.js [crime|chance|money|karma|hack|str|def|dex|agi|cha] [h|l]")
     ns.tprint("h = high to low (default); l = low to high. Example: run crime_returns.js str l")
     return
   }
@@ -108,10 +109,11 @@ export async function main(ns) {
       const perMin = 60_000 / crime.time
       const expFactor = (chance + (1 - chance) * .25) * perMin * expNode
       const money = chance * perMin * crime.money * (Number(player.mults.crime_money) || 1) * moneyNode
+      const karma = expFactor * crime.karma * (Number(node.CrimeKarma) || 1)
       const exp = STATS.map(stat => expFactor * (crime.exp[stat] || 0) * (Number(player.mults[`${stat}_exp`]) || 1))
-      return { crime, chance, values: [money, ...exp] }
+      return { crime, chance, values: [money, karma, ...exp] }
     }).sort((a, b) => {
-      const value = row => sort.key === "name" ? row.crime.name : sort.key === "chance" ? row.chance : sort.key === "money" ? row.values[0] : row.values[STATS.indexOf(sort.key) + 1]
+      const value = row => sort.key === "name" ? row.crime.name : sort.key === "chance" ? row.chance : sort.key === "money" ? row.values[0] : sort.key === "karma" ? row.values[1] : row.values[STATS.indexOf(sort.key) + 2]
       const delta = sort.key === "name" ? value(a).localeCompare(value(b)) : value(a) - value(b)
       return (sort.direction === "desc" ? -delta : delta) || a.crime.name.localeCompare(b.crime.name)
     })

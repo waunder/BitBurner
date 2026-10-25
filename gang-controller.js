@@ -1,4 +1,4 @@
-import { moneyModePriority, planMoneyTasks, planReputationTasks } from "./gang_logic.js";
+import { moneyModePriority, planMoneyTasks, planReputationTasks, wantedCleanupPolicy } from "./gang_logic.js";
 
 /**
  * Gang v2: formula-driven money or faction-reputation, wanted, and territory control.
@@ -12,9 +12,12 @@ import { moneyModePriority, planMoneyTasks, planReputationTasks } from "./gang_l
 const C = {
   trainStat: 75,
   ascendAt: 1.25,
-  wantedEnter: 0.995,
-  wantedExit: 0.999,
   wantedReductionFraction: 0.001,
+  severeWantedEnter: 0.05,
+  severeWantedExit: 0.10,
+  severeWantedReductionFraction: 0.04,
+  cleanupEnterAttainablePenalty: 0.75,
+  cleanupExitAttainablePenalty: 0.90,
   wantedUpdateCycles: 10,
   territoryMinWin: 0.58,
   territoryWeightedWin: 0.65,
@@ -99,6 +102,7 @@ export async function main(ns) {
   if (!ns.fileExists("Formulas.exe", "home")) return ns.tprint("gang v2: Formulas.exe required");
 
   let cleanupMode = false;
+  let severeWantedMode = false;
   let mode = "cash";
   let cashWindow = { at: Date.now(), money: ns.getServerMoneyAvailable("home") };
   let observedCashRate = null;
@@ -119,8 +123,11 @@ export async function main(ns) {
     const productive = tasks.filter((t) => t.baseMoney > 0);
     const respectTasks = tasks.filter((t) => t.baseRespect > 0);
 
-    if (gang.wantedPenalty < C.wantedEnter) cleanupMode = true;
-    else if (gang.wantedPenalty >= C.wantedExit) cleanupMode = false;
+    const wantedPolicy = wantedCleanupPolicy(gang.wantedPenalty, severeWantedMode, cleanupMode,
+      gang.respect, C.severeWantedEnter, C.severeWantedExit, C.wantedReductionFraction,
+      C.severeWantedReductionFraction, C.cleanupEnterAttainablePenalty, C.cleanupExitAttainablePenalty);
+    cleanupMode = wantedPolicy.cleanupMode;
+    severeWantedMode = wantedPolicy.severeMode;
 
     const plans = members.map((member) => {
       const stat = gang.isHacking ? member.hack : member.str;
@@ -139,7 +146,7 @@ export async function main(ns) {
     const moneyPriority = moneyModePriority(cleanupMode, Boolean(clean), recruitGrowth);
     if (gangObjective === "reputation") {
       if (cleanupMode && clean) {
-        reputationPlan = planReputationTasks(plans, gang.wantedLevel, C.wantedReductionFraction, C.wantedUpdateCycles);
+        reputationPlan = planReputationTasks(plans, gang.wantedLevel, wantedPolicy.reductionFraction, C.wantedUpdateCycles);
         for (let i = 0; i < plans.length; i++) {
           plans[i].choice = reputationPlan.assignments[i].choice;
           plans[i].role = reputationPlan.assignments[i].role;
@@ -153,7 +160,7 @@ export async function main(ns) {
         }
       }
     } else if (moneyPriority === "wanted-recovery") {
-      moneyPlan = planMoneyTasks(plans, gang.wantedLevel, C.wantedReductionFraction, C.wantedUpdateCycles);
+      moneyPlan = planMoneyTasks(plans, gang.wantedLevel, wantedPolicy.reductionFraction, C.wantedUpdateCycles);
       for (let i = 0; i < plans.length; i++) {
         plans[i].choice = moneyPlan.assignments[i].choice;
         plans[i].role = moneyPlan.assignments[i].role;
@@ -270,7 +277,10 @@ export async function main(ns) {
         projectedMoneyRate: moneyPlan.projectedMoneyRate, projectedWantedRate: moneyPlan.projectedWantedRate,
         cleanerCount: moneyPlan.cleanerCount, targetMet: moneyPlan.targetMet,
         cyclesPerUpdate: C.wantedUpdateCycles },
-      cleanupMode, territory: { fight, weightedChance, rivals: clashes.length, lowestCombat: Math.min(...members.map(combatFloor)) },
+      cleanupMode, wantedCleanup: { severeMode: severeWantedMode,
+        reductionFractionPerUpdate: wantedPolicy.reductionFraction,
+        attainablePenalty: wantedPolicy.attainablePenalty },
+      territory: { fight, weightedChance, rivals: clashes.length, lowestCombat: Math.min(...members.map(combatFloor)) },
       capital: { phase: capitalPolicy.phase, objective: capitalPolicy.objective, cash, observedCashRate,
         augmentationCashTarget: augmentationTarget, policyAllowsPurchases: capitalPolicy.allowEquipmentPurchases,
         sourceMasterEnabled: C.equipmentMasterEnabled, purchaseAllowed, blockedReason,

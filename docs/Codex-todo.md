@@ -10,6 +10,12 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
 
 ## Active work
 
+- Validate the severe-wanted cleanup band after deployment. It enters below a
+  5% wanted multiplier, targets 4% wanted reduction per ten-cycle update, and
+  exits at 10%. Confirm cleanup exits at 90% of the respect-dependent maximum
+  attainable penalty (with wanted at its floor), then compare observed wanted
+  reduction and money rate before, during, and after recovery.
+
 - Ongoing scheduler assessment/improvement loop authorized 2026-10-24.
   Assess realized cash and safe restoration, trial bounded changes, retain or
   revert on evidence, commit/push coherent changes. Thread heartbeat

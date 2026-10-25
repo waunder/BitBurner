@@ -136,3 +136,17 @@ export function moneyModePriority(cleanupMode, hasCleaner, recruitGrowth) {
   if (recruitGrowth) return "respect";
   return "cash";
 }
+
+/** Hysteretic faster-cleanup band based on the gang wanted multiplier. */
+export function wantedCleanupPolicy(wantedPenalty, severeMode, cleanupMode, respect,
+  severeEnter = 0.05, severeExit = 0.10, normalFraction = 0.001,
+  severeFraction = 0.04, cleanupEnterRatio = 0.75, cleanupExitRatio = 0.90) {
+  const attainablePenalty = respect > 0 ? respect / (respect + 1) : 0;
+  const nextCleanup = cleanupMode
+    ? wantedPenalty < attainablePenalty * cleanupExitRatio
+    : wantedPenalty < attainablePenalty * cleanupEnterRatio;
+  const nextSevere = severeMode ? wantedPenalty < severeExit : wantedPenalty < severeEnter;
+  return { cleanupMode: nextCleanup, severeMode: nextSevere,
+    reductionFraction: nextSevere ? severeFraction : normalFraction,
+    attainablePenalty };
+}

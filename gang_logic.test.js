@@ -1,12 +1,31 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { moneyModePriority, planMoneyTasks, planReputationTasks } from "./gang_logic.js";
+import { moneyModePriority, planMoneyTasks, planReputationTasks, wantedCleanupPolicy } from "./gang_logic.js";
 
 test("money mode prioritizes wanted recovery over blocked recruitment growth", () => {
   assert.equal(moneyModePriority(true, true, true), "wanted-recovery");
   assert.equal(moneyModePriority(false, true, true), "respect");
   assert.equal(moneyModePriority(true, false, true), "respect");
   assert.equal(moneyModePriority(false, true, false), "cash");
+});
+
+test("severe cleanup escalates by 40x with hysteresis and feasible exit threshold", () => {
+  let policy = wantedCleanupPolicy(0.0003, false, true, 6);
+  assert.equal(policy.severeMode, true);
+  assert.equal(policy.reductionFraction, 0.04);
+  assert.equal(policy.cleanupMode, true);
+  policy = wantedCleanupPolicy(0.07, policy.severeMode, policy.cleanupMode, 6);
+  assert.equal(policy.severeMode, true);
+  assert.equal(policy.cleanupMode, true);
+  policy = wantedCleanupPolicy(0.10, policy.severeMode, policy.cleanupMode, 6);
+  assert.equal(policy.severeMode, false);
+  assert.equal(policy.reductionFraction, 0.001);
+  const attainable = 6 / 7;
+  policy = wantedCleanupPolicy(attainable * 0.80, false, true, 6);
+  assert.equal(policy.cleanupMode, true);
+  policy = wantedCleanupPolicy(attainable * 0.91, false, policy.cleanupMode, 6);
+  assert.equal(policy.cleanupMode, false);
+  assert.equal(wantedCleanupPolicy(0.8, false, false, 6).reductionFraction, 0.001);
 });
 
 function plan(name, respect, wanted, cleanRespect, cleanWanted) {
@@ -71,6 +90,20 @@ test("money cleanup chooses the highest-money subset that meets wanted target", 
   assert.deepEqual(result.assignments.map((item) => item.role), [
     "wanted-recovery", "wanted-recovery", "money", "money",
   ]);
+});
+
+test("severe wanted target uses more cleaners and projects faster recovery", () => {
+  const plans = Array.from({ length: 5 }, (_, i) => ({
+    member: { name: String(i) }, trained: true,
+    choice: { task: "money", money: 100, respect: 0, wanted: 50 },
+    clean: { task: "clean", money: 0, respect: 0, wanted: -50 },
+  }));
+  const normal = planMoneyTasks(plans, 20_000, 0.001, 10);
+  const severe = planMoneyTasks(plans, 20_000, 0.04, 10);
+  assert.equal(normal.cleanerCount, 3);
+  assert.equal(severe.cleanerCount, 4);
+  assert.ok(severe.projectedWantedRate < normal.projectedWantedRate);
+  assert.equal(severe.targetWantedRate, -80);
 });
 
 test("money cleanup falls back to the greatest wanted reduction when target is impossible", () => {

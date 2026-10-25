@@ -1001,9 +1001,22 @@ Gang v2 is the formula-driven gang control loop. It requires `Formulas.exe`,
 recruits immediately, scores every valid productive task with
 `ns.formulas.gang`, and allocates trained members to the best money task
 unless respect growth or wanted recovery is active. Wanted uses hysteresis
-(enter below 99.5%, return to cash at 99.9%); recovery searches cleaner subsets
+derived from respect and the game's wanted floor: enter below 75% of the maximum
+attainable wanted multiplier and return to cash above 90% of that maximum. This
+avoids the previous 99.9% exit threshold, which could not be reached with the
+game's wanted floor. Recovery searches cleaner subsets
 and chooses the highest-money assignment meeting a 0.1%-per-update wanted
-reduction target, with maximum wanted reduction as the fallback. Territory
+reduction target, with maximum wanted reduction as the fallback. When the
+wanted multiplier falls below 5%, a hysteretic severe-cleanup band raises that
+target to 4% of current wanted per ten-cycle update (40x); it remains active
+until the multiplier reaches 10%, then returns to the normal target. The
+planner still chooses the highest-money allocation meeting the selected target,
+so the accelerated rate can assign more members to Ethical Hacking/Vigilante
+Justice and reduce gang income while active. `gang_status.json` exposes
+`wantedCleanup.severeMode` and `wantedCleanup.reductionFractionPerUpdate` for
+review. This is a policy target, not a promised observed reduction; if no
+allocation meets it, the planner selects the strongest available reduction.
+Territory
 warfare is a weighted expected-win decision rather than an all-rivals gate.
 After the gang reaches twelve members, an otherwise low-value bounded cohort
 trains combat until every active member reaches a 300 combat floor; this gives

@@ -46,3 +46,6 @@ After the bounded threshold change and controller restart, the 16:36 PDT
 readback showed wanted 57,403 and falling at -6.16/cycle, cleanup active with
 one cleaner, projected rate -6.16/cycle, and penalty improved to 0.99244. The
 change is retained pending continued decline.
+
+At 16:41 PDT wanted crossed below 50k to 48,824 and continued falling at
+-5.30/cycle; cleanup remained active and penalty improved to 0.99371.

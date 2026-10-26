@@ -20,3 +20,7 @@ falling at `-6.1618/cycle`; projected rate was `-6.1557/cycle`, cleanup was
 active with one cleaner, and penalty improved to `0.9924408`. This confirms the
 threshold change is causal and live. Money rate was `$2.442m/s` and the wanted
 target was met.
+
+At 16:41 PDT, wanted crossed below the alert floor to `48,824.4538`, falling
+at `-5.3039/cycle`; projected rate was `-5.2986/cycle`, cleanup remained true,
+and penalty improved to `0.9937088`. Recovery remains healthy.

@@ -14,3 +14,9 @@ Opportunity cost: leaving cleanup disabled preserves respect and money growth,
 but allows wanted to climb while the penalty is already severe. Next action is
 to inspect the controller transition guard and apply only a reversible cleanup
 band change if the source confirms a missed wanted-recovery condition.
+
+At 16:36 PDT after restarting the controller, wanted was `57,403.4111` and
+falling at `-6.1618/cycle`; projected rate was `-6.1557/cycle`, cleanup was
+active with one cleaner, and penalty improved to `0.9924408`. This confirms the
+threshold change is causal and live. Money rate was `$2.442m/s` and the wanted
+target was met.

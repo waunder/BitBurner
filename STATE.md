@@ -41,3 +41,8 @@ at +0.0895/cycle, with wanted penalty 0.9907. The controller is in
 above 50k. This is a material regression from the prior recovery window and
 is recorded in `docs/gang-monitoring-2026-10-26.md`; inspect the transition
 guard before changing behavior.
+
+After the bounded threshold change and controller restart, the 16:36 PDT
+readback showed wanted 57,403 and falling at -6.16/cycle, cleanup active with
+one cleaner, projected rate -6.16/cycle, and penalty improved to 0.99244. The
+change is retained pending continued decline.

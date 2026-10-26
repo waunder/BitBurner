@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-10-25 15:10 PDT. Sources: Steam augmentation page, Remote
+Last refreshed: 2026-10-26 16:22 PDT. Sources: Steam augmentation page, Remote
 API `augmentation_readiness.json`, `mcp_status.json`, and Remote API monitor.
 Previous handoff archived at
 `docs/archive/2026-10-25/STATE-before-wanted-monitoring-2026-10-25.md`.
@@ -32,3 +32,12 @@ wanted estimate.
 
 See `AGENTS.md` for standing authority and the augmentation-install approval
 boundary.
+
+## Latest live regression
+
+Remote API `gang_status.json` at 16:22 PDT reports wanted 66,680 and rising
+at +0.0895/cycle, with wanted penalty 0.9907. The controller is in
+`territory-training` with `cleanupMode=false` despite the wanted level being
+above 50k. This is a material regression from the prior recovery window and
+is recorded in `docs/gang-monitoring-2026-10-26.md`; inspect the transition
+guard before changing behavior.

@@ -17,7 +17,9 @@ const C = {
   severeWantedEnter: 0.05,
   severeWantedExit: 0.10,
   severeWantedReductionFraction: 0.04,
-  cleanupEnterAttainablePenalty: 0.99,
+  // Enter cleanup while the penalty is still materially harmful; the prior
+  // 0.99 gate allowed wanted to climb above 50k before recovery engaged.
+  cleanupEnterAttainablePenalty: 0.995,
   cleanupExitAttainablePenalty: 0.995,
   wantedUpdateCycles: 10,
   territoryMinWin: 0.90,

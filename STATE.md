@@ -1,49 +1,34 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-10-25 10:47 PDT. Sources: Steam UI and timestamped direct
-Remote API reads. Previous handoff archived at
-`docs/archive/2026-10-25/STATE-before-mcp-xp-and-gang-iteration.md`.
+Last refreshed: 2026-10-25 15:10 PDT. Sources: Steam augmentation page, Remote
+API `augmentation_readiness.json`, `mcp_status.json`, and Remote API monitor.
+Previous handoff archived at
+`docs/archive/2026-10-25/STATE-before-wanted-monitoring-2026-10-25.md`.
 
-## Current objective and outcome
+## Current objectives
 
-Continue measuring MCP yield while the live objective is XP; repair defects found
-along the way. A short reversible comparison rejected an 80/20 hack/grow split.
-The 50/50 split remains a monitored candidate, not a proven optimum: the final
-110-second window had a 460 XP/s median while foodnstuff money rose 3.8% to 8.2%,
-then a fresh status read showed 9.6%. Windows were phase-skewed and the 95/5
-baseline was not matched. Details: `docs/mcp-xp-yield-2026-10-25.md`.
+MCP is on money (`mcp_objective_override.txt`; `mcp_status.json` averaged
+$196.5k/s at 15:11 PDT). Gang's near-term target remains 50k Black Hand rep;
+the current Steam page showed about 39.55k around 15:10 PDT. Current cash was
+$8.33b at 15:09:41 PDT, with five installed augmentations, one queued
+(`LuminCloaking-V1 Skin Implant`), and a 1.9x price multiplier. The selected
+filter's five rep-ready hacking/experience augmentations project to about
+$6.13b if queued in descending base-price order, including the 50k
+Neuralstimulator. CSP III at 50k additionally requires CSP II from NiteSec;
+NiteSec was 12.441k and CSP II requires 18.75k. See
+`docs/gang-all-in-strategy-2026-10-25.md` for the selective budget and
+50–100k deferral recommendation.
 
-Gang wanted cleanup now has a severe-recovery band and a feasible exit threshold.
-The previous 99.9% threshold was mathematically unreachable with the wanted floor
-of 1 until respect reached 999. Below 5% of the maximum wanted multiplier, the
-controller targets 4% wanted reduction per ten-cycle batch (versus 0.1% normally),
-then returns to cash mode at 90% of the respect-dependent maximum penalty. The
-controller was deployed and restarted at about 10:46 PDT.
+Remote API monitor was connected at 15:05 PDT with a fresh full sync of 104
+files and full telemetry pull of 29/29, no failures. No augmentation purchase
+or install was performed for this assessment. Gang-controller safeguards in
+the working tree are local and un-deployed; tests passed in the prior pass.
 
-## Latest verified live state
+The five-minute wanted-level heartbeat remains active. It should alert if
+wanted reaches 100k while rising, rises by 10% or 10k between reads, or stays
+above 50k without declining. The current Steam augmentation page did not expose
+a fresh wanted reading; re-read the Gang page before relying on a current
+wanted estimate.
 
-At 10:25:44 PDT, Steam/Remote API status showed MCP run `mvnn8tkf-wauz`, version
-`1ep5kgh`, XP override active, continuous workers on foodnstuff, 395 XP/s, 9.6%
-money, 4.296 security, 98.5% RAM use, no worker launch failures. Invariant
-counts included `tickWithinBounds: 14`; no new worker or target-selection fault
-was identified. Player hacking 507; Steam showed an Algorithms course in
-progress.
-
-At 10:46 PDT before restart, Steam showed The Black Hand with 5 members, wanted
-18.41k, falling 16.81/s, penalty -99.96%, respect 8.11, and money $446/s. At
-10:46:32 PDT after restart, all five members were on Ethical Hacking; wanted was
-17.81k and falling 45.48/s, respect 8.40, penalty -99.95%, and money $14/s. At
-10:47:16 PDT wanted was 15.92k, falling 40.73/s, penalty still -99.95%, respect
-8.40, and money $15.62/s. The wanted decline is about 2.4x faster, with sharply
-lower gang income; keep measuring recovery and confirm cash mode resumes near the
-feasible exit. Recruitment still needs 125 respect. Remote API was connected at
-10:44 PDT; incremental sync/pull passes succeeded and full sync pushed all 104
-watched source files.
-
-## Outstanding
-
-Continue the XP split assessment with longer, phase-balanced windows; keep 50/50
-reversible and monitored until better comparison data exists. Watch wanted
-recovery, respect, and income through its respect-dependent exit; verify cash mode
-resumes after recovery. No augmentation, installation, or reset was performed.
-See `AGENTS.md` for standing authority and stop boundaries.
+See `AGENTS.md` for standing authority and the augmentation-install approval
+boundary.

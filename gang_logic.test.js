@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { moneyModePriority, planMoneyTasks, planReputationTasks, wantedCleanupPolicy } from "./gang_logic.js";
+import { canBuildTerritoryPower, moneyModePriority, planMoneyTasks, planReputationTasks,
+  planTerritoryPower, shouldAscendMember, shouldEngageTerritoryClashes, wantedCleanupPolicy } from "./gang_logic.js";
 
 test("money mode prioritizes wanted recovery over blocked recruitment growth", () => {
   assert.equal(moneyModePriority(true, true, true), "wanted-recovery");
@@ -21,11 +22,69 @@ test("severe cleanup escalates by 40x with hysteresis and feasible exit threshol
   assert.equal(policy.severeMode, false);
   assert.equal(policy.reductionFraction, 0.001);
   const attainable = 6 / 7;
-  policy = wantedCleanupPolicy(attainable * 0.80, false, true, 6);
+  policy = wantedCleanupPolicy(attainable * 0.992, false, true, 6);
   assert.equal(policy.cleanupMode, true);
-  policy = wantedCleanupPolicy(attainable * 0.91, false, policy.cleanupMode, 6);
+  policy = wantedCleanupPolicy(attainable * 0.996, false, policy.cleanupMode, 6);
   assert.equal(policy.cleanupMode, false);
   assert.equal(wantedCleanupPolicy(0.8, false, false, 6).reductionFraction, 0.001);
+});
+
+test("territory power policy builds only in safe idle money mode", () => {
+  const base = { objective: "money", cleanupMode: false, territory: 0.2, rosterFull: true, hasRivals: true,
+    taskAvailable: true, combatReady: true, clashSafe: true, currentlyEngaged: false, oddsPass: false };
+  assert.equal(canBuildTerritoryPower(base), true);
+  assert.equal(canBuildTerritoryPower({ ...base, objective: "reputation" }), false);
+  assert.equal(canBuildTerritoryPower({ ...base, cleanupMode: true }), false);
+  assert.equal(canBuildTerritoryPower({ ...base, clashSafe: false }), false);
+  assert.equal(canBuildTerritoryPower({ ...base, currentlyEngaged: true }), false);
+  assert.equal(canBuildTerritoryPower({ ...base, clashSafe: false,
+    currentlyEngaged: true, oddsPass: true }), true);
+  assert.equal(canBuildTerritoryPower({ ...base, currentlyEngaged: true,
+    oddsPass: false }), false);
+  assert.equal(canBuildTerritoryPower({ ...base, territory: 0.99 }), false);
+  assert.equal(canBuildTerritoryPower({ ...base, rosterFull: false }), false);
+});
+
+test("territory builder cohort takes only the lowest-value trained earners", () => {
+  const plans = [
+    { member: { name: "high" }, trained: true, choice: { task: "cash", money: 100 } },
+    { member: { name: "low" }, trained: true, choice: { task: "cash", money: 10 } },
+    { member: { name: "trainee" }, trained: false, choice: { task: "Train", money: 0 } },
+    { member: { name: "mid" }, trained: true, choice: { task: "cash", money: 50 } },
+  ];
+  const result = planTerritoryPower(plans, "Territory Warfare", 0.35);
+  assert.deepEqual(result.filter((plan) => plan.role === "territory-power").map((plan) => plan.member.name), ["low", "mid"]);
+  assert.equal(result[2].choice.task, "Train");
+});
+
+test("clashes require both a per-rival floor and weighted expected odds", () => {
+  assert.equal(shouldEngageTerritoryClashes(0.5, [
+    { territory: 0.5, chance: 0.91 }, { territory: 0.5, chance: 0.95 },
+  ], 0.90, 0.90).engage, true);
+  assert.equal(shouldEngageTerritoryClashes(0.5, [
+    { territory: 0.9, chance: 0.91 }, { territory: 0.1, chance: 0.89 },
+  ], 0.90, 0.90).engage, false);
+  assert.equal(shouldEngageTerritoryClashes(0.5, [
+    { territory: 0.9, chance: 0.99 }, { territory: 0.1, chance: 0.10 },
+  ], 0.90, 0.90).engage, false);
+  assert.equal(shouldEngageTerritoryClashes(0.5, [
+    { territory: 1, chance: Number.NaN },
+  ], 0.90, 0.90).engage, false);
+  assert.equal(shouldEngageTerritoryClashes(0.99, [
+    { territory: 1, chance: 0.99 },
+  ], 0.90, 0.90).engage, false);
+});
+
+test("ascension is suppressed during cleanup and territory power, and limited by wanted slack", () => {
+  const candidate = { objective: "money", multiplier: 1.5, threshold: 1.25,
+    respect: 100, respectToDeduct: 10, wantedLevel: 1, cleanupEnterRatio: 0.99 };
+  assert.equal(shouldAscendMember({ ...candidate, cleanupMode: true }), false);
+  assert.equal(shouldAscendMember({ ...candidate, severeMode: true }), false);
+  assert.equal(shouldAscendMember({ ...candidate, territoryPowerMode: true }), false);
+  assert.equal(shouldAscendMember({ ...candidate, objective: "reputation" }), false);
+  assert.equal(shouldAscendMember({ ...candidate, respectToDeduct: 1, wantedLevel: 1 }), true);
+  assert.equal(shouldAscendMember({ ...candidate, respectToDeduct: 99, wantedLevel: 1 }), false);
+  assert.equal(shouldAscendMember({ ...candidate, multiplier: 1.2 }), false);
 });
 
 function plan(name, respect, wanted, cleanRespect, cleanWanted) {

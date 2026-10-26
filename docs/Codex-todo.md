@@ -12,9 +12,15 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
 
 - Validate the severe-wanted cleanup band after deployment. It enters below a
   5% wanted multiplier, targets 4% wanted reduction per ten-cycle update, and
-  exits at 10%. Confirm cleanup exits at 90% of the respect-dependent maximum
+  exits at 10%. Confirm cleanup exits at 99.5% of the respect-dependent maximum
   attainable penalty (with wanted at its floor), then compare observed wanted
   reduction and money rate before, during, and after recovery.
+
+- Deploy and verify the local gang territory-power phase after wanted recovery
+  and the 300 combat floor. Confirm the 35% builder cohort stays on Territory
+  Warfare only when residual clash chance is zero or configured odds pass, and
+  that only configured odds enable clashes. Record power/odds slope and cash
+  cost; do not broaden clashes without a separate bounded pilot.
 
 - Ongoing scheduler assessment/improvement loop authorized 2026-10-24.
   Assess realized cash and safe restoration, trial bounded changes, retain or

@@ -42,3 +42,25 @@ skills changed during observation, and the target's balance/security state
 continued evolving. Revisit after collecting longer phase-balanced telemetry
 or measuring action-specific XP rates. The setting is reversible in
 `mcp_config.json`; it does not require restarting MCP.
+
+## Follow-up A/B/A check — 2026-10-25
+
+Later the same day, with live objective override still `xp`, run ID
+`mvo5rnwk-5jnw`, target `foodnstuff`, and split settings hot-reloaded without a
+restart, two-minute windows were sampled for 50/50 (A1), 60/40 (B), and 50/50
+(A2). Telemetry samples arrived every three seconds; phase mix remained
+unbalanced, so XP comparisons are descriptive rather than causal.
+
+| Split/window (UTC) | Samples | XP/s median (mean) | Money pct median | Security median |
+|---|---:|---:|---:|---:|
+| 50/50, 19:14:32–19:16:32 (A1) | 40 | 425 (358) | 0.622 | 5.07 |
+| 60/40, 19:16:52–19:18:52 (B) | 40 | 433 (377) | 0.509 | 5.16 |
+| 50/50, 19:19:22–19:21:12 (A2) | 39 | 401 (354) | 0.767 | 4.60 |
+
+Across the full windows, 60/40's median XP was only 2% above A1 and 8% above
+A2, while its median target money was lower than either 50/50 window. The
+within-window plan mixes differed, and the control's XP changed materially as
+the target state evolved. Retain 50/50 as the conservative live setting; this
+trial does not establish an XP advantage for 60/40. At the last direct Steam
+HUD read, MCP showed about 470 XP/s, with foodnstuff selected; these UI figures
+are point-in-time and are not a like-for-like window statistic.

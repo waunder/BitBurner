@@ -1001,8 +1001,8 @@ Gang v2 is the formula-driven gang control loop. It requires `Formulas.exe`,
 recruits immediately, scores every valid productive task with
 `ns.formulas.gang`, and allocates trained members to the best money task
 unless respect growth or wanted recovery is active. Wanted uses hysteresis
-derived from respect and the game's wanted floor: enter below 75% of the maximum
-attainable wanted multiplier and return to cash above 90% of that maximum. This
+derived from respect and the game's wanted floor: enter below 99% of the maximum
+attainable wanted multiplier and return to cash above 99.5% of that maximum. This
 avoids the previous 99.9% exit threshold, which could not be reached with the
 game's wanted floor. Recovery searches cleaner subsets
 and chooses the highest-money assignment meeting a 0.1%-per-update wanted
@@ -1016,11 +1016,32 @@ Justice and reduce gang income while active. `gang_status.json` exposes
 `wantedCleanup.severeMode` and `wantedCleanup.reductionFractionPerUpdate` for
 review. This is a policy target, not a promised observed reduction; if no
 allocation meets it, the planner selects the strongest available reduction.
-Territory
-warfare is a weighted expected-win decision rather than an all-rivals gate.
+Territory clash odds require at least a 90% win chance against every rival
+with territory and a territory-weighted expected chance of 90%; missing or
+invalid odds fail closed. The gang stops fighting at 99% territory. Power is
+built only by members assigned to `Territory Warfare`, so
+after the roster is full and combat training reaches a 300 floor, a low-cash
+opportunity cohort (35%, rounded up) takes that task during ordinary money
+mode. Cash earners keep the rest of the roster. Wanted recovery and the
+reputation objective suppress this power-building phase. Clashes are enabled
+only while the cohort is assigned and both odds gates pass. Members on
+`Territory Warfare` can die during a clash even when the gang wins; defense
+reduces that chance. After disabling clashes, the game decays its internal
+clash chance by 1% per territory/power update over 100 updates. To keep members
+out of that residual risk, the controller assigns the warfare task only when
+the live `gang.territoryClashChance` is zero, or when already engaged and the
+configured odds gates pass. Ascensions are suppressed during wanted cleanup
+and territory-power building, and at most one member ascends per controller
+evaluation. A candidate is skipped if its projected respect deduction would
+put the wanted multiplier below the 99% cleanup-entry floor; the next possible
+ascension is reconsidered only after the next loop reads fresh gang state.
+Ascensions remain disabled in reputation mode. The observed clash value
+appears in `gang_status.json` as `territory.clashChance`; a restart does not
+rely on a guessed decay timer.
+
 After the gang reaches twelve members, an otherwise low-value bounded cohort
-trains combat until every active member reaches a 300 combat floor; this gives
-hacking gangs a viable territory path instead of permanently losing clashes.
+trains combat until every active member reaches a 300 combat floor. This makes
+the subsequent power-building cohort less exposed to death risk.
 Wanted recovery takes priority over money-mode recruitment respect growth when
 a cleaner is available. Recruitment respect growth runs when recruitment is
 blocked and wanted recovery is inactive or no cleaner exists. In reputation
@@ -1058,9 +1079,11 @@ it maximizes wanted reduction and reports that the target was missed. The
 allocation logic lives in `gang_logic.js`; `gang_status.json` records each
 member's assigned task/role and the projected respect/wanted rates for
 live-versus-projected review. The controller keeps its existing Train Hacking
-floor for a hacking gang. It suppresses ascensions in this mode:
-the game removes a member's respect earned since its last ascension from Gang
-Faction reputation when it ascends. Switch back with
+floor for a hacking gang. It suppresses ascensions in this mode to preserve
+the gang's stored respect pool: ascension removes the member's respect earned
+since its last ascension from gang respect, but does not claw back faction
+reputation already earned. The smaller respect pool can indirectly lower
+future task output and faction-rep rate through the wanted penalty. Switch back with
 `run set_gang_objective.js money`; no restart is required. The default is
 money when no in-game override exists. This is independent of the player's
 activity and MCP objective. The controller reports current gang-faction

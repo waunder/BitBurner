@@ -140,7 +140,7 @@ export function moneyModePriority(cleanupMode, hasCleaner, recruitGrowth) {
 /** Hysteretic faster-cleanup band based on the gang wanted multiplier. */
 export function wantedCleanupPolicy(wantedPenalty, severeMode, cleanupMode, respect,
   severeEnter = 0.05, severeExit = 0.10, normalFraction = 0.001,
-  severeFraction = 0.04, cleanupEnterRatio = 0.75, cleanupExitRatio = 0.90) {
+  severeFraction = 0.04, cleanupEnterRatio = 0.99, cleanupExitRatio = 0.995) {
   const attainablePenalty = respect > 0 ? respect / (respect + 1) : 0;
   const nextCleanup = cleanupMode
     ? wantedPenalty < attainablePenalty * cleanupExitRatio
@@ -149,4 +149,50 @@ export function wantedCleanupPolicy(wantedPenalty, severeMode, cleanupMode, resp
   return { cleanupMode: nextCleanup, severeMode: nextSevere,
     reductionFraction: nextSevere ? severeFraction : normalFraction,
     attainablePenalty };
+}
+
+/** Keep clash exposure behind both per-rival and territory-weighted odds gates. */
+export function shouldEngageTerritoryClashes(territory, chances, minWin = 0.58, weightedMin = 0.65) {
+  const eligible = chances.filter((item) => (item.territory || 0) > 0);
+  if (eligible.some((item) => !Number.isFinite(item.chance))) {
+    return { engage: false, weightedChance: 0 };
+  }
+  const weight = eligible.reduce((sum, item) => sum + Math.max(0, item.territory || 0), 0);
+  const weightedChance = weight
+    ? eligible.reduce((sum, item) => sum + item.chance * Math.max(0, item.territory || 0), 0) / weight
+    : 0;
+  return { engage: territory < 0.99 && eligible.length > 0
+    && eligible.every((item) => item.chance >= minWin)
+    && weightedChance >= weightedMin, weightedChance };
+}
+
+/** Avoid ascensions that undermine cleanup, power building, or the wanted floor. */
+export function shouldAscendMember({ objective, cleanupMode, severeMode, territoryPowerMode,
+  multiplier, threshold = 1.25, respect, respectToDeduct, wantedLevel,
+  cleanupEnterRatio = 0.99 }) {
+  if (objective === "reputation" || cleanupMode || severeMode || territoryPowerMode
+    || !Number.isFinite(multiplier) || multiplier < threshold) return false;
+  const projectedRespect = Math.max(1, respect - Math.max(0, respectToDeduct || 0));
+  const projectedPenalty = projectedRespect / (projectedRespect + Math.max(0, wantedLevel || 0));
+  const usefulPenaltyFloor = (respect / (respect + 1)) * cleanupEnterRatio;
+  return projectedPenalty >= usefulPenaltyFloor;
+}
+
+/** Assign only the lowest-value cash cohort to build territory power. */
+export function planTerritoryPower(plans, taskName, share = 0.35) {
+  const builders = plans.filter((plan) => plan.trained)
+    .sort((a, b) => (a.choice?.money || 0) - (b.choice?.money || 0));
+  const count = Math.min(builders.length, Math.max(1, Math.ceil(plans.length * share)));
+  const names = new Set(builders.slice(0, count).map((plan) => plan.member.name));
+  return plans.map((plan) => names.has(plan.member.name)
+    ? { ...plan, choice: { task: taskName, money: 0, respect: 0, wanted: 0 }, role: "territory-power" }
+    : plan);
+}
+
+/** Gate power building to idle money mode and after residual clash chance decays. */
+export function canBuildTerritoryPower({ objective, cleanupMode, territory, rosterFull, hasRivals,
+  taskAvailable, combatReady, clashSafe, currentlyEngaged, oddsPass }) {
+  const riskAllowed = currentlyEngaged ? oddsPass : clashSafe;
+  return objective === "money" && !cleanupMode && territory < 0.99 && rosterFull && hasRivals
+    && taskAvailable && combatReady && riskAllowed;
 }

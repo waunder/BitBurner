@@ -1,4 +1,5 @@
-import { moneyModePriority, planMoneyTasks, planReputationTasks, wantedCleanupPolicy } from "./gang_logic.js";
+import { canBuildTerritoryPower, moneyModePriority, planMoneyTasks, planReputationTasks, planTerritoryPower,
+  shouldAscendMember, shouldEngageTerritoryClashes, wantedCleanupPolicy } from "./gang_logic.js";
 
 /**
  * Gang v2: formula-driven money or faction-reputation, wanted, and territory control.
@@ -16,16 +17,17 @@ const C = {
   severeWantedEnter: 0.05,
   severeWantedExit: 0.10,
   severeWantedReductionFraction: 0.04,
-  cleanupEnterAttainablePenalty: 0.75,
-  cleanupExitAttainablePenalty: 0.90,
+  cleanupEnterAttainablePenalty: 0.99,
+  cleanupExitAttainablePenalty: 0.995,
   wantedUpdateCycles: 10,
-  territoryMinWin: 0.58,
-  territoryWeightedWin: 0.65,
+  territoryMinWin: 0.90,
+  territoryWeightedWin: 0.90,
   // A hacking gang still needs combat stats to win territory clashes. Train a
   // bounded low-opportunity-cost cohort once recruitment is complete, rather
   // than leaving every member at 1 combat forever.
   territoryCombatStat: 300,
   territoryTraineeShare: 0.35,
+  territoryPowerShare: 0.35,
   // Keep capital policy separate so the primary HUD can show it even while
   // this optional controller is stopped. A source-level master gate still
   // prevents accidental spending during this run.
@@ -114,6 +116,12 @@ export async function main(ns) {
     while (ns.gang.canRecruitMember()) ns.gang.recruitMember(`operator-${Date.now()}`);
 
     const gang = ns.gang.getGangInformation();
+    const rivals = Object.entries(ns.gang.getAllGangInformation())
+      .filter(([name, info]) => name !== gang.faction && info.territory > 0);
+    const clashes = rivals.map(([name, info]) => ({ territory: info.territory,
+      chance: ns.gang.getChanceToWinClash(name) }));
+    const clashPolicy = shouldEngageTerritoryClashes(gang.territory, clashes,
+      C.territoryMinWin, C.territoryWeightedWin);
     const gangObjective = readGangObjective(ns);
     const members = ns.gang.getMemberNames().map((name) => ns.gang.getMemberInformation(name));
     const tasks = ns.gang.getTaskNames().map((name) => ns.gang.getTaskStats(name));
@@ -193,22 +201,39 @@ export async function main(ns) {
       }
       if (gangObjective === "money") moneyPlan = null;
       mode = "territory-training";
+    } else if (canBuildTerritoryPower({ objective: gangObjective, cleanupMode,
+      territory: gang.territory, rosterFull: members.length >= 12, hasRivals: rivals.length > 0,
+      taskAvailable: tasks.some((task) => task.name === "Territory Warfare"),
+      combatReady: members.every((member) => combatFloor(member) >= C.territoryCombatStat),
+      clashSafe: gang.territoryClashChance <= 0, currentlyEngaged: gang.territoryWarfareEngaged,
+      oddsPass: clashPolicy.engage })) {
+      // Territory Warfare builds power even while clashes are disabled. Keep a
+      // bounded low-value cohort on it; the odds gate below alone enables risk.
+      plans.splice(0, plans.length, ...planTerritoryPower(plans,
+        "Territory Warfare", C.territoryPowerShare));
+      moneyPlan = null;
+      mode = "territory-power";
     }
 
+    let ascensionUsed = false;
     for (const plan of plans) {
       if (plan.choice?.task && plan.member.task !== plan.choice.task) ns.gang.setMemberTask(plan.member.name, plan.choice.task);
       const asc = ns.gang.getAscensionResult(plan.member.name);
       const mult = asc && (gang.isHacking ? asc.hack : asc.str);
-      // Ascension removes this member's earned respect from Gang Faction
-      // reputation. Preserve the faction-reputation balance while farming it.
-      if (gangObjective !== "reputation" && mult && mult >= C.ascendAt) ns.gang.ascendMember(plan.member.name);
+      const mayAscend = shouldAscendMember({ objective: gangObjective, cleanupMode, severeMode: severeWantedMode,
+        territoryPowerMode: mode === "territory-power", multiplier: mult, threshold: C.ascendAt,
+        respect: gang.respect, respectToDeduct: asc?.respect, wantedLevel: gang.wantedLevel,
+        cleanupEnterRatio: C.cleanupEnterAttainablePenalty });
+      // Ascension reduces stored gang respect. At most one member ascends per
+      // evaluation; the next loop re-reads the game state before another.
+      if (!ascensionUsed && mayAscend) {
+        ns.gang.ascendMember(plan.member.name);
+        ascensionUsed = true;
+      }
     }
 
-    const rivals = Object.entries(ns.gang.getAllGangInformation()).filter(([name, info]) => name !== gang.faction && info.territory > 0);
-    const clashes = rivals.map(([name, info]) => ({ territory: info.territory, chance: ns.gang.getChanceToWinClash(name) }));
-    const weight = clashes.reduce((sum, x) => sum + x.territory, 0);
-    const weightedChance = weight ? clashes.reduce((sum, x) => sum + x.chance * x.territory, 0) / weight : 0;
-    const fight = gang.territory < 0.99 && clashes.some((x) => x.chance >= C.territoryMinWin) && weightedChance >= C.territoryWeightedWin;
+    const weightedChance = clashPolicy.weightedChance;
+    const fight = mode === "territory-power" && clashPolicy.engage;
     if (fight !== gang.territoryWarfareEngaged) ns.gang.setTerritoryWarfare(fight);
 
     const gross = plans.reduce((sum, p) => sum + (p.choice?.money || 0), 0);
@@ -280,7 +305,8 @@ export async function main(ns) {
       cleanupMode, wantedCleanup: { severeMode: severeWantedMode,
         reductionFractionPerUpdate: wantedPolicy.reductionFraction,
         attainablePenalty: wantedPolicy.attainablePenalty },
-      territory: { fight, weightedChance, rivals: clashes.length, lowestCombat: Math.min(...members.map(combatFloor)) },
+      territory: { fight, weightedChance, rivals: clashes.length,
+        lowestCombat: Math.min(...members.map(combatFloor)), clashChance: gang.territoryClashChance },
       capital: { phase: capitalPolicy.phase, objective: capitalPolicy.objective, cash, observedCashRate,
         augmentationCashTarget: augmentationTarget, policyAllowsPurchases: capitalPolicy.allowEquipmentPurchases,
         sourceMasterEnabled: C.equipmentMasterEnabled, purchaseAllowed, blockedReason,

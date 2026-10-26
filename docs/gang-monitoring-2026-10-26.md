@@ -24,3 +24,7 @@ target was met.
 At 16:41 PDT, wanted crossed below the alert floor to `48,824.4538`, falling
 at `-5.3039/cycle`; projected rate was `-5.2986/cycle`, cleanup remained true,
 and penalty improved to `0.9937088`. Recovery remains healthy.
+At 20:36 PDT after a Remote API reconnect, wanted was `50,281.0348` and
+rising at `+0.11172/cycle`; projected rate was `+0.11155/cycle`, penalty
+`0.9950650`, and the controller was back in `territory-training` with cleanup
+off. This is a new threshold breach after the earlier successful recovery.

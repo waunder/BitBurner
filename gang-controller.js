@@ -91,7 +91,7 @@ function readCapitalPolicy(ns) {
 
 function readGangObjective(ns) {
   const value = String(ns.read(C.objectiveOverrideFile) || "money").trim().toLowerCase()
-  return value === "reputation" ? "reputation" : "money"
+  return value === "reputation" ? "reputation" : value === "cash" ? "cash" : "money"
 }
 
 /** @param {NS} ns */
@@ -188,7 +188,8 @@ export async function main(ns) {
     // guaranteed loss. Once the final recruit is in, train only the least
     // valuable cohort until it has a usable combat floor; cash production
     // remains with the rest of the gang.
-    const needsTerritoryCombat = mode === "cash"
+    const needsTerritoryCombat = gangObjective === "money"
+      && mode === "cash"
       && gang.territory < 0.99
       && members.length >= 12
       && combatTraining
@@ -203,7 +204,7 @@ export async function main(ns) {
       }
       if (gangObjective === "money") moneyPlan = null;
       mode = "territory-training";
-    } else if (canBuildTerritoryPower({ objective: gangObjective, cleanupMode,
+    } else if (gangObjective === "money" && canBuildTerritoryPower({ objective: gangObjective, cleanupMode,
       territory: gang.territory, rosterFull: members.length >= 12, hasRivals: rivals.length > 0,
       taskAvailable: tasks.some((task) => task.name === "Territory Warfare"),
       combatReady: members.every((member) => combatFloor(member) >= C.territoryCombatStat),

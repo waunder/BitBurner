@@ -1047,6 +1047,14 @@ a cleaner is available. Recruitment respect growth runs when recruitment is
 blocked and wanted recovery is inactive or no cleaner exists. In reputation
 objective, reputation planning remains active independently of recruitment.
 Territory training only runs while the task planner is otherwise in cash mode.
+For a cash-first stretch, `run set_gang_objective.js cash` keeps the normal
+wanted-recovery and blocked-recruitment respect priorities, while assigning
+every other trained member to its best money task. This explicit objective
+suppresses both combat training and Territory Warfare power allocation, so it
+does not spend member cycles on future territory growth. It does not start or
+restart the controller; it applies on its next update. Switch back to `money`
+to restore ordinary cash mode, including its territory-training and power
+phases, or to `reputation` for faction respect.
 
 Capital policy is shared through `gang_capital_policy.json`, which both the
 controller and HUD read. Its current phase is `augmentation`: accumulate cash
@@ -1083,8 +1091,10 @@ floor for a hacking gang. It suppresses ascensions in this mode to preserve
 the gang's stored respect pool: ascension removes the member's respect earned
 since its last ascension from gang respect, but does not claw back faction
 reputation already earned. The smaller respect pool can indirectly lower
-future task output and faction-rep rate through the wanted penalty. Switch back with
-`run set_gang_objective.js money`; no restart is required. The default is
+future task output and faction-rep rate through the wanted penalty. Switch
+back with `run set_gang_objective.js money` (cash plus territory progression)
+or `run set_gang_objective.js cash` (cash-first, without territory training
+or power); no restart is required. The default is
 money when no in-game override exists. This is independent of the player's
 activity and MCP objective. The controller reports current gang-faction
 reputation, its observed rate when available, and projected respect per game

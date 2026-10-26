@@ -1,5 +1,5 @@
 /** Switch the gang controller between faction-reputation and money goals.
- * Usage: run set_gang_objective.js [reputation|money]
+ * Usage: run set_gang_objective.js [reputation|money|cash]
  * No argument reports the current override. Takes effect on the controller's
  * next update; no restart is needed. This does not start the controller.
  * @param {NS} ns
@@ -12,12 +12,13 @@ export async function main(ns) {
   const current = String(ns.read(FILE) || "money").trim().toLowerCase()
 
   if (!objective) {
-    ns.tprint(`Gang objective: ${current === "reputation" ? "reputation" : "money"} (default is money)`)
+    const normalized = ["reputation", "cash"].includes(current) ? current : "money"
+    ns.tprint(`Gang objective: ${normalized} (default is money)`)
     ns.tprint(`Controller: ${ns.isRunning("gang-controller.js", "home") ? "running" : "stopped"}`)
     return
   }
-  if (objective !== "reputation" && objective !== "money") {
-    ns.tprint("Usage: run set_gang_objective.js [reputation|money]")
+  if (!["reputation", "money", "cash"].includes(objective)) {
+    ns.tprint("Usage: run set_gang_objective.js [reputation|money|cash]")
     return
   }
 

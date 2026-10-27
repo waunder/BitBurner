@@ -1039,6 +1039,18 @@ Ascensions remain disabled in reputation mode. The observed clash value
 appears in `gang_status.json` as `territory.clashChance`; a restart does not
 rely on a guessed decay timer.
 
+All territory work is additionally guarded by the synced
+`territoryEnabled` field in `gang_capital_policy.json`. Its checked-in default
+is `false`;
+when false (including when the file is missing or malformed), the controller
+does not assign Train Combat for territory preparation or `Territory Warfare`
+for power, and actively turns Territory Warfare off if it is currently on.
+This opt-in gate is independent of the money/cash/reputation objective. Change
+the field to `true` in-game only after explicit agreement to resume territory
+work. The controller reads the shared capital policy each loop, so no restart
+is needed for policy changes. Normal source sync restores the checked-in
+`false` default if territory work was enabled in-game.
+
 After the gang reaches twelve members, an otherwise low-value bounded cohort
 trains combat until every active member reaches a 300 combat floor. This makes
 the subsequent power-building cohort less exposed to death risk.
@@ -1046,15 +1058,17 @@ Wanted recovery takes priority over money-mode recruitment respect growth when
 a cleaner is available. Recruitment respect growth runs when recruitment is
 blocked and wanted recovery is inactive or no cleaner exists. In reputation
 objective, reputation planning remains active independently of recruitment.
-Territory training only runs while the task planner is otherwise in cash mode.
+Territory training only runs while the task planner is otherwise in cash mode
+and the independent territory policy is explicitly enabled.
 For a cash-first stretch, `run set_gang_objective.js cash` keeps the normal
 wanted-recovery and blocked-recruitment respect priorities, while assigning
 every other trained member to its best money task. This explicit objective
 suppresses both combat training and Territory Warfare power allocation, so it
 does not spend member cycles on future territory growth. It does not start or
-restart the controller; it applies on its next update. Switch back to `money`
-to restore ordinary cash mode, including its territory-training and power
-phases, or to `reputation` for faction respect.
+restart the controller; it applies on its next update. Switch to `reputation`
+for faction respect. Switching to `money` does not by itself resume territory
+work; that also requires explicitly setting `territoryEnabled` to `true` in
+`gang_capital_policy.json`.
 
 Capital policy is shared through `gang_capital_policy.json`, which both the
 controller and HUD read. Its current phase is `augmentation`: accumulate cash
@@ -1092,7 +1106,8 @@ the gang's stored respect pool: ascension removes the member's respect earned
 since its last ascension from gang respect, but does not claw back faction
 reputation already earned. The smaller respect pool can indirectly lower
 future task output and faction-rep rate through the wanted penalty. Switch
-back with `run set_gang_objective.js money` (cash plus territory progression)
+back with `run set_gang_objective.js money` (cash; territory progression also
+requires `territoryEnabled: true` in `gang_capital_policy.json`)
 or `run set_gang_objective.js cash` (cash-first, without territory training
 or power); no restart is required. The default is
 money when no in-game override exists. This is independent of the player's

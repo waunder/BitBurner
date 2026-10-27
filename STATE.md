@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-10-26 17:29 PDT. Sources: Remote API monitor and live
+Last refreshed: 2026-10-27 00:38 PDT. Sources: Remote API monitor and live
 `gang_status.json` after reapplying the cash objective.
 Previous handoff archived at
 `docs/archive/2026-10-25/STATE-before-wanted-monitoring-2026-10-25.md`.
@@ -34,6 +34,10 @@ penalty is above the controller's 99.5% entry threshold.
 
 See `AGENTS.md` for standing authority and the augmentation-install approval
 boundary.
+
+At 00:38 PDT on 2026-10-27, after deploying and restarting widened cleanup hysteresis (enter 0.998, exit 0.999), telemetry showed mode=wanted-recovery, cash objective, cleanup active, wanted 61,039.65 with actual -6.6859/cycle and projected -6.6793/cycle, penalty 0.995344, gang respect 13.0488m, and faction reputation 1.3823m. Recovery is live and reducing wanted; keep the controller unchanged while the rate remains negative.
+
+At 01:33 PDT on 2026-10-27, Steam UI showed wanted 17,574.83 falling at -6.45225/sec, penalty 0.11%, gang respect 15.67104m, faction reputation 1.652m, with Ethical Hacking active. Recovery is healthy after the hysteresis widening.
 
 ## Prior wanted-monitoring snapshots
 

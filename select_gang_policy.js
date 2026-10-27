@@ -53,11 +53,15 @@ export async function main(ns) {
     return;
   }
 
-  const selected = { ...POLICIES[index], updatedAt: new Date().toISOString().slice(0, 10) };
+  // Capital-phase selection must not silently override the independent,
+  // explicit territory opt-in stored in this shared policy file.
+  const selected = { ...POLICIES[index], territoryEnabled: current.territoryEnabled === true,
+    updatedAt: new Date().toISOString().slice(0, 10) };
   await ns.write(POLICY_FILE, JSON.stringify(selected, null, 2) + "\n", "w");
   const written = readPolicy(ns);
   if (written.phase !== selected.phase
-      || written.allowEquipmentPurchases !== selected.allowEquipmentPurchases) {
+      || written.allowEquipmentPurchases !== selected.allowEquipmentPurchases
+      || written.territoryEnabled !== selected.territoryEnabled) {
     ns.tprint(`Could not verify ${POLICY_FILE}; check the policy file before relying on the selection.`);
     return;
   }

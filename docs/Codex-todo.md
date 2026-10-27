@@ -16,11 +16,11 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
   attainable penalty (with wanted at its floor), then compare observed wanted
   reduction and money rate before, during, and after recovery.
 
-- Deploy and verify the local gang territory-power phase after wanted recovery
-  and the 300 combat floor. Confirm the 35% builder cohort stays on Territory
-  Warfare only when residual clash chance is zero or configured odds pass, and
-  that only configured odds enable clashes. Record power/odds slope and cash
-  cost; do not broaden clashes without a separate bounded pilot.
+- Gang territory work is now behind a persistent opt-in policy and defaults
+  off per Ken's instruction. Resume the territory-power pilot only after Ken
+  and Codex explicitly agree to re-enable it by setting
+  `territoryEnabled: true` in `gang_capital_policy.json`; then verify the existing 300 combat floor,
+  bounded power cohort, odds gates, and cash cost.
 
 - Ongoing scheduler assessment/improvement loop authorized 2026-10-24.
   Assess realized cash and safe restoration, trial bounded changes, retain or

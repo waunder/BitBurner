@@ -73,7 +73,7 @@ function withEquipment(member, stats) {
 
 function readCapitalPolicy(ns) {
   const safe = { phase: "augmentation", objective: "Accumulate cash for the final augmentation purchase review",
-    allowEquipmentPurchases: false, augmentationCashTarget: null };
+    allowEquipmentPurchases: false, augmentationCashTarget: null, territoryEnabled: false };
   try {
     const raw = JSON.parse(ns.read(C.policyFile));
     const phases = new Set(["progression", "earning-capacity", "augmentation"]);
@@ -81,6 +81,7 @@ function readCapitalPolicy(ns) {
       phase: phases.has(raw.phase) ? raw.phase : safe.phase,
       objective: typeof raw.objective === "string" && raw.objective ? raw.objective : safe.objective,
       allowEquipmentPurchases: raw.allowEquipmentPurchases === true,
+      territoryEnabled: raw.territoryEnabled === true,
       augmentationCashTarget: Number.isFinite(raw.augmentationCashTarget) && raw.augmentationCashTarget >= 0
         ? raw.augmentationCashTarget : null,
     };
@@ -125,6 +126,8 @@ export async function main(ns) {
     const clashPolicy = shouldEngageTerritoryClashes(gang.territory, clashes,
       C.territoryMinWin, C.territoryWeightedWin);
     const gangObjective = readGangObjective(ns);
+    const capitalPolicy = readCapitalPolicy(ns);
+    const territoryEnabled = capitalPolicy.territoryEnabled;
     const members = ns.gang.getMemberNames().map((name) => ns.gang.getMemberInformation(name));
     const tasks = ns.gang.getTaskNames().map((name) => ns.gang.getTaskStats(name));
     const training = tasks.find((t) => t.name === (gang.isHacking ? "Train Hacking" : "Train Combat"));
@@ -188,7 +191,8 @@ export async function main(ns) {
     // guaranteed loss. Once the final recruit is in, train only the least
     // valuable cohort until it has a usable combat floor; cash production
     // remains with the rest of the gang.
-    const needsTerritoryCombat = gangObjective === "money"
+    const needsTerritoryCombat = territoryEnabled
+      && gangObjective === "money"
       && mode === "cash"
       && gang.territory < 0.99
       && members.length >= 12
@@ -204,7 +208,7 @@ export async function main(ns) {
       }
       if (gangObjective === "money") moneyPlan = null;
       mode = "territory-training";
-    } else if (gangObjective === "money" && canBuildTerritoryPower({ objective: gangObjective, cleanupMode,
+    } else if (territoryEnabled && gangObjective === "money" && canBuildTerritoryPower({ objective: gangObjective, cleanupMode,
       territory: gang.territory, rosterFull: members.length >= 12, hasRivals: rivals.length > 0,
       taskAvailable: tasks.some((task) => task.name === "Territory Warfare"),
       combatReady: members.every((member) => combatFloor(member) >= C.territoryCombatStat),
@@ -236,7 +240,7 @@ export async function main(ns) {
     }
 
     const weightedChance = clashPolicy.weightedChance;
-    const fight = mode === "territory-power" && clashPolicy.engage;
+    const fight = territoryEnabled && mode === "territory-power" && clashPolicy.engage;
     if (fight !== gang.territoryWarfareEngaged) ns.gang.setTerritoryWarfare(fight);
 
     const gross = plans.reduce((sum, p) => sum + (p.choice?.money || 0), 0);
@@ -245,7 +249,6 @@ export async function main(ns) {
       .filter((x) => Number.isFinite(x.cost)).sort((a, b) => a.cost - b.cost);
     const nextItem = equipment.find((x) => members.some((m) => !isOwned(m, x.item))) || null;
     const cash = ns.getServerMoneyAvailable("home");
-    const capitalPolicy = readCapitalPolicy(ns);
     const statusNow = Date.now();
     if (statusNow - factionRepReadAt >= 5000) {
       factionRepReadAt = statusNow;
@@ -308,7 +311,7 @@ export async function main(ns) {
       cleanupMode, wantedCleanup: { severeMode: severeWantedMode,
         reductionFractionPerUpdate: wantedPolicy.reductionFraction,
         attainablePenalty: wantedPolicy.attainablePenalty },
-      territory: { fight, weightedChance, rivals: clashes.length,
+      territory: { policyEnabled: territoryEnabled, fight, weightedChance, rivals: clashes.length,
         lowestCombat: Math.min(...members.map(combatFloor)), clashChance: gang.territoryClashChance },
       capital: { phase: capitalPolicy.phase, objective: capitalPolicy.objective, cash, observedCashRate,
         augmentationCashTarget: augmentationTarget, policyAllowsPurchases: capitalPolicy.allowEquipmentPurchases,

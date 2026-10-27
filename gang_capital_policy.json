@@ -3,5 +3,6 @@
   "objective": "Accumulate cash toward optional QLink while prioritizing BN2 hacking progression; stop gang equipment purchases",
   "allowEquipmentPurchases": false,
   "augmentationCashTarget": null,
+  "territoryEnabled": false,
   "updatedAt": "2026-10-07"
 }

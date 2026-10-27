@@ -1,34 +1,36 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-10-26 12:25 PDT. Sources: Remote API monitor and live
-`gang_status.json` after deploying and restarting `gang-controller.js`.
+Last refreshed: 2026-10-26 17:29 PDT. Sources: Remote API monitor and live
+`gang_status.json` after reapplying the cash objective.
 Previous handoff archived at
 `docs/archive/2026-10-25/STATE-before-wanted-monitoring-2026-10-25.md`.
 
 ## Current objectives
 
 Gang focus is the reversible `cash` objective; no territory acquisition is
-being pursued. At 12:25:41 PDT the live controller reported all 12 members on
-Money Laundering, gang money rate about $2.93m/s, Black Hand rep 793,261,
-wanted level 43,675, wanted penalty 0.9954, and no territory warfare/clash.
-The cash objective suppresses combat training and territory power building
-while preserving wanted cleanup and recruitment priorities. Source was
-deployed by a full Remote API sync and `gang-controller.js` was restarted so
-Netscript loaded it. Switch back with `run set_gang_objective.js money` to
-resume territory training/power behavior, or `reputation` for faction respect.
-The 100k Black Hand gate remains a future augmentation target; cash has
-priority for now. Refresh MCP status before relying on its current objective
-or rate.
+being pursued. At 17:29:07 PDT the live controller reported all 12 members on
+Money Laundering, projected gang money rate about $3.47m/s, Black Hand rep
+1,337,477, wanted level 60,947, wanted penalty 0.9974, and no territory
+warfare/clash. The cash objective suppresses combat training and Territory
+Warfare power building while preserving wanted cleanup and recruitment
+priorities. The override had reverted to `money`; it was reset to `cash` and
+the next controller report confirmed all members reassigned. Switch to
+`money` only to resume territory training/power behavior, or `reputation` for
+faction respect. The 2.5m Black Hand Red Pill gate remains a future objective
+for this BitNode 2 run. Refresh MCP status before relying on its current
+objective or rate.
 
-Remote API monitor was connected at 12:23:37 PDT; a fresh full sync completed
-with 104 source files and 29/29 telemetry files, no failures. The cash-mode
-controller change is deployed and verified live. No augmentation purchase or
-install was performed.
+Remote API monitor was connected at 17:28:55 PDT; a fresh full sync completed
+with 104 source files and no sync failures. Its telemetry pull returned 21/29
+files on this connection. The cash-mode code is deployed; only the persistent
+objective override needed reapplying. No augmentation purchase or install was
+performed in this turn.
 
 The five-minute wanted-level heartbeat remains active. It should alert if
 wanted reaches 100k while rising, rises by 10% or 10k between reads, or stays
-above 50k without declining. Latest live wanted level was 43,675 with a
-0.9954 wanted penalty.
+above 50k without declining. Latest live wanted level is 60,947; its rate is
+about +0.0475 per gang cycle and cleanup is currently off because the wanted
+penalty is above the controller's 99.5% entry threshold.
 
 See `AGENTS.md` for standing authority and the augmentation-install approval
 boundary.

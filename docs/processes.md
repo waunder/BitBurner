@@ -216,6 +216,18 @@ Opens as many ports as it has `.exe`s for, then `ns.nuke()`s a single server.
   `run4theh111z` is still unrooted, so untested end-to-end past the
   root-access check.
 
+### `The-Cave.js`
+
+`run The-Cave.js` uses BFS over `ns.scan` to route from
+the terminal's current server (with Source-File 4) to `The-Cave`. If that
+server is absent or unreachable in this run, it chooses the discovered server
+at greatest network distance from the start and reports that endpoint. With
+SF4 it calls `ns.singularity.connect` once per hop, stopping and reporting the last reached
+server if any hop fails. It never roots, hacks, or backdoors a server. Without
+SF4 it avoids every Singularity call and prints a pasteable ordinary-terminal
+command chain from `home`; in that case the player must first have the terminal
+at home. The script is listed in `sync_manifest.json`.
+
 After an augmentation install your `.exe`s are gone and hacking level resets,
 so the pool shrinks to what needs no ports. Rebuilding it means Create Program
 (or buying from the darkweb) before the crawler can make progress again.

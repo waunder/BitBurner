@@ -71,6 +71,7 @@
     "hacking/crawler.js",
     "hacking/worm.js",
     "hacking/backdoor.js",
+    "The-Cave.js",
     "hacking/findpath.js",
     "share_deploy.js",
     "set_objective.js",

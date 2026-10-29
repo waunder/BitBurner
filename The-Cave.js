@@ -1,7 +1,7 @@
 /**
- * Walk the terminal connection one hop at a time toward The-Cave, the
- * distinctive mid-game destination used by the current progression. If that
- * server is not present or reachable, walk to the deepest discovered server.
+ * Walk the terminal connection one hop at a time toward a named server.
+ * Defaults to World-Daemon. If the target is not present or reachable, walk
+ * to the deepest discovered server.
  * This only changes the terminal's current server; it never roots, hacks, or
  * backdoors anything.
  *
@@ -11,8 +11,9 @@
  * be queried without Singularity; place the terminal at home before pasting.
  *
  * @param {NS} ns
+ * @param {string} [ns.args[0]] destination server name
  */
-const DESTINATION = "The-Cave"
+const DEFAULT_DESTINATION = "World-Daemon"
 
 function hasSourceFile4(ns) {
 	return (ns.getResetInfo().ownedSF.get(4) || 0) > 0
@@ -46,24 +47,29 @@ function buildPath(parent, target) {
 
 /** @param {NS} ns */
 export async function main(ns) {
+	const destination = String(ns.args[0] ?? DEFAULT_DESTINATION).trim()
+	if (!destination) {
+		ns.tprint(`Usage: run ${ns.getScriptName()} [server-name]`)
+		return
+	}
 	const hasSF4 = hasSourceFile4(ns)
 	const start = hasSF4 ? ns.singularity.getCurrentServer() : "home"
 	const { parent, depth, order } = scanNetwork(ns, start)
-	const destinationExists = ns.serverExists(DESTINATION)
-	const target = destinationExists && parent.has(DESTINATION)
-		? DESTINATION
+	const destinationExists = ns.serverExists(destination)
+	const target = destinationExists && parent.has(destination)
+		? destination
 		: order.reduce((deepest, server) =>
 			depth.get(server) > depth.get(deepest) ? server : deepest, start)
 	const path = buildPath(parent, target)
 
 	if (!path || path.length === 0) {
-		ns.tprint(`The-Cave.js: no scanned route from ${start} to a destination`)
+		ns.tprint(`${ns.getScriptName()}: no scanned route from ${start} to a destination`)
 		return
 	}
 
-	if (target !== DESTINATION) {
+	if (target !== destination) {
 		const reason = destinationExists ? "not reachable in the scanned network" : "not present in this run"
-		ns.tprint(`${DESTINATION} is ${reason}; closest discovered endpoint is ${target}.`)
+		ns.tprint(`${destination} is ${reason}; closest discovered endpoint is ${target}.`)
 	}
 	ns.tprint(`Route (${path.length - 1} hops): ${path.join(" -> ")}`)
 

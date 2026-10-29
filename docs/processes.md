@@ -218,9 +218,9 @@ Opens as many ports as it has `.exe`s for, then `ns.nuke()`s a single server.
 
 ### `The-Cave.js`
 
-`run The-Cave.js` uses BFS over `ns.scan` to route from
-the terminal's current server (with Source-File 4) to `The-Cave`. If that
-server is absent or unreachable in this run, it chooses the discovered server
+`run The-Cave.js [server-name]` uses BFS over `ns.scan` to route from
+the terminal's current server (with Source-File 4) to the requested server;
+the default target is `World-Daemon`. If that server is absent or unreachable in this run, it chooses the discovered server
 at greatest network distance from the start and reports that endpoint. With
 SF4 it calls `ns.singularity.connect` once per hop, stopping and reporting the last reached
 server if any hop fails. It never roots, hacks, or backdoors a server. Without

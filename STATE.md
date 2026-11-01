@@ -20,8 +20,8 @@ karma reset to 0.
 `capital_bootstrap.js` hands over to `capital_manager.js` when it fits. The
 manager buys TOR, programs, home RAM and cloud RAM, then starts managers that did
 not fit at startup. `player_activity_config.json` is on auto with physical
-training off; player was started on free Computer Science. Installs still need
-Ken's approval. Why BN15, and the numbers: `docs/bitnode-choice-2026-11-01.md`.
+training off; player is on Shoplift. Ken approved buying augmentations on
+2026-11-01; installs still need his approval each time. Why BN15, and the numbers: `docs/bitnode-choice-2026-11-01.md`.
 
 DevTools runs on 127.0.0.1:9222 through the Steam launch option.
 

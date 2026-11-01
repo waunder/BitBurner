@@ -29,7 +29,10 @@ next BitNode still needs him. Why BN15, and the numbers: `docs/bitnode-choice-20
 them and nothing restarts it. No lab reached yet; the maze solver has not run
 live. Scout chains usually stop near depth 0-1 because hosts move or are too
 small. Capital saves for home 128GB before buying more cloud RAM. Scheduled task
-`bitburner-bn15-progress` continues this work hourly while the app is open.
+`bitburner-bn15-progress` is **paused** because Ken stopped the game on 2026-11-01;
+resume it from the Scheduled sidebar. Pause backup, 15:00 MST-ish: hacking 182,
+$13.8m, home 256GB, karma -151, no factions:
+`saves/bitburnerSave_pause_BN15_2026-11-01.save` (gitignored).
 
 DevTools runs on 127.0.0.1:9222 through the Steam launch option.
 

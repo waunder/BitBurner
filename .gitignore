@@ -69,3 +69,4 @@ tools/bb_remote_events.log.*
 tools/bb_remote_daemon.log.*
 tools/bb_remote_daemon.out.*
 tools/.remote_api_recovery.lock
+saves/*.save

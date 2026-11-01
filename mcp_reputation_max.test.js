@@ -50,10 +50,11 @@ test('maximum reputation uses every host while preserving home reserve and unrel
   const result = await reconcileReputation(f.ns, {}, f.options)
   assert.equal(result.state, 'sharing')
   assert.equal(result.hostCount, 3)
-  assert.equal(result.threads, 2063)
-  assert.equal(result.ramGb, 8252)
+  assert.equal(result.threads, 1313)
+  assert.equal(result.ramGb, 5252)
   assert.equal(result.allocations.length, 3)
-  assert.deepEqual(f.calls.filter(c => c[0] === 'kill').map(c => c[1]).sort(), [2, 4])
+  assert.deepEqual(f.calls.filter(c => c[0] === 'kill').map(c => c[1]).sort(), [4])
+  assert.equal(f.ns.ps('cloud1').some(p => p.pid === 2), true) // finite cohorts drain, never preempted
   for (const host of f.options.hosts) {
     const shares = f.ns.ps(host).filter(p => p.filename === 'mcp_share.js')
     assert.equal(shares.length, 1)

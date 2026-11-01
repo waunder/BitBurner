@@ -193,3 +193,24 @@ test("Square Root -- BigInt nearest-integer rounding", () => {
   assert.equal(solve("Square Root", 3n), "2") // sqrt(3)=1.73... rounds up
   assert.equal(solve("Square Root", 10n ** 30n), (10n ** 15n).toString())
 })
+
+test("Largest Rectangle in a Matrix -- the game's two examples and a matching brute-force area", () => {
+  assert.deepEqual(solve("Largest Rectangle in a Matrix", [[1, 0, 0], [0, 0, 0]]), [[0, 1], [1, 2]])
+  assert.deepEqual(solve("Largest Rectangle in a Matrix", [[0, 0, 0, 1], [0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]), [[0, 0], [3, 1]])
+  const clear = (grid, r1, c1, r2, c2) => grid.slice(r1, r2 + 1).every((row) => row.slice(c1, c2 + 1).every((cell) => cell === 0))
+  let seed = 7
+  const random = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648
+  for (let round = 0; round < 200; round++) {
+    const rows = 1 + Math.floor(random() * 8)
+    const columns = 1 + Math.floor(random() * 8)
+    const grid = Array.from({ length: rows }, () => Array.from({ length: columns }, () => (random() < 0.3 ? 1 : 0)))
+    let bestArea = 0
+    for (let r1 = 0; r1 < rows; r1++) for (let c1 = 0; c1 < columns; c1++) for (let r2 = r1; r2 < rows; r2++) for (let c2 = c1; c2 < columns; c2++) {
+      if (clear(grid, r1, c1, r2, c2)) bestArea = Math.max(bestArea, (r2 - r1 + 1) * (c2 - c1 + 1))
+    }
+    const [[r1, c1], [r2, c2]] = solve("Largest Rectangle in a Matrix", grid)
+    if (bestArea === 0) continue
+    assert.ok(clear(grid, r1, c1, r2, c2))
+    assert.equal((r2 - r1 + 1) * (c2 - c1 + 1), bestArea)
+  }
+})

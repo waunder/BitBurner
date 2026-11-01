@@ -636,6 +636,30 @@ function bigintSqrt(value) {
   return x
 }
 
+// The game accepts any obstacle-free rectangle with the maximum area, so ties
+// need no particular choice. Scans each row's column-height histogram.
+function largestRectangle(matrix) {
+  const heights = Array(matrix[0].length).fill(0)
+  let best = [[0, 0], [0, 0]]
+  let bestArea = 0
+  matrix.forEach((row, r) => {
+    row.forEach((cell, c) => { heights[c] = cell === 0 ? heights[c] + 1 : 0 })
+    heights.forEach((height, c) => {
+      if (height === 0) return
+      let left = c
+      let right = c
+      while (left > 0 && heights[left - 1] >= height) left--
+      while (right < heights.length - 1 && heights[right + 1] >= height) right++
+      const area = (right - left + 1) * height
+      if (area > bestArea) {
+        bestArea = area
+        best = [[r - height + 1, left], [r, right]]
+      }
+    })
+  })
+  return best
+}
+
 function squareRoot(n) {
   const value = typeof n === "bigint" ? n : BigInt(n)
   const floorRoot = bigintSqrt(value)
@@ -663,13 +687,7 @@ const SOLVERS = {
   "Encryption II: Vigenère Cipher": vigenereCipher,
   "Total Number of Primes": totalNumberOfPrimes,
   // Added 2026-09-05 -- see the block comment above these functions'
-  // definitions for sourcing/confidence. Deliberately not included:
-  // "Largest Rectangle in a Matrix" -- its output shape (two corner
-  // coordinates) doesn't match this session's confident recollection of
-  // the usual "largest all-same-value rectangle" problem (normally just an
-  // area), and there's no live specimen available to check against. Left
-  // unsupported (held by cct_watcher.js, not guessed at) rather than risk
-  // a wrong answer burning a contract's limited tries.
+  // definitions for sourcing/confidence.
   "Algorithmic Stock Trader III": stockTraderIII,
   "Algorithmic Stock Trader IV": stockTraderIV,
   "Minimum Path Sum in a Triangle": minimumPathSumTriangle,
@@ -683,6 +701,7 @@ const SOLVERS = {
   "Compression II: LZ Decompression": lzDecompress,
   "Compression III: LZ Compression": lzCompress,
   "Square Root": squareRoot,
+  "Largest Rectangle in a Matrix": largestRectangle,
 }
 
 export function solveContract(type, data) {

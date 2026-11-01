@@ -387,7 +387,7 @@ read-only with respect to gameplay; income history is not persisted. It does not
 replace `get_stats.js`.
 
 
-**Cloud multi-target batches (`mcp_cloud.js`).** MCP is the sole scheduler. `set_cloud_mode.js on` writes persistent `mcp_cloud_control.json` by default; optional `minutes` creates a lease. Current aggressive policy allows a 25% all-success money floor, restores harvest-ready targets to 95%, defaults preparation to 65% of worker RAM (the 2026-10-24 live control uses 85%), and requests up to 128 target cohorts, bounded by `min(192, max(64, 2 × workerHosts))`. The former 91% floor excluded most of the 63 money servers because one hack thread would cross it; hack thread sizing now admits those servers and caps each planned withdrawal at 75%. Preparation share is configurable with the optional prep-fraction argument (0.05–0.85) or control JSON; harvest cohorts can use the rest. Hack thread sizing uses current money and the floor. Grow sizing includes hack-added security; hack, grow, and weaken workers run with `once`. All grow/weaken RAM is reserved before hack and incomplete placement launches nothing. If a full safe harvest cohort will not pack, hack threads are reduced and grow/weaken are recomputed before trying again. A target with an existing finite cohort is not scheduled again; finite jobs survive an MCP restart and block conflicting admissions. New activation retires and verifies removal of legacy looping actions. On disable/expiry, active cohorts drain without being killed before the legacy planner resumes. A cloud exception publishes `finite-error` and retries without falling through to the continuous planner. Status reports the executed policy version, actual cloud RAM capacity and current max-server quote. Harvest ranks use expected withdrawal per action GB-second; preparation ranks forecast the harvest they unlock and charge security/money preparation GB-seconds, preventing phase priority and scan order from monopolizing residual RAM. `cloud_pool_audit.js` reports every money server and the reason it is or is not schedulable. No purchase/reset/player-activity calls.
+**Cloud multi-target batches (`mcp_cloud.js`).** MCP is the sole scheduler. `set_cloud_mode.js on` writes persistent `mcp_cloud_control.json` by default; optional `minutes` creates a lease. Current aggressive policy allows a 25% all-success money floor, restores harvest-ready targets to 95%, defaults preparation to 65% of worker RAM (the 2026-10-24 live control uses 85%), and requests up to 128 target cohorts, bounded by `min(192, max(64, 2 × workerHosts))`. The former 91% floor excluded most of the 63 money servers because one hack thread would cross it; hack thread sizing now admits those servers and caps each planned withdrawal at 75%. Preparation share is configurable with the optional prep-fraction argument (0.05–0.85) or control JSON; harvest cohorts can use the rest. Hack thread sizing uses current money and the floor. Grow sizing includes hack-added security; hack, grow, and weaken workers run with `once`. All grow/weaken RAM is reserved before hack and incomplete placement launches nothing. If a full safe harvest cohort will not pack, hack threads are reduced and grow/weaken are recomputed before trying again. A target with an existing finite cohort is not scheduled again; finite jobs survive an MCP restart and block conflicting admissions. New activation retires and verifies removal of legacy looping actions. On disable/expiry, active cohorts drain without being killed before the legacy planner resumes. If Formulas.exe is missing (e.g. after an augmentation install) while control is still enabled, cloud mode is suspended rather than erroring: it emits one `cloud_suspended` event, drains any finite cohorts, then lets the continuous planner own the pool until Formulas.exe returns. Any other cloud exception publishes `finite-error` and retries without falling through to the continuous planner. Status reports the executed policy version, actual cloud RAM capacity and current max-server quote. Harvest ranks use expected withdrawal per action GB-second; preparation ranks forecast the harvest they unlock and charge security/money preparation GB-seconds, preventing phase priority and scan order from monopolizing residual RAM. `cloud_pool_audit.js` reports every money server and the reason it is or is not schedulable. No purchase/reset/player-activity calls.
 
 It writes both `mcp_status.json` (HUD/maintenance compatibility) and `mcp_cloud_status.json`, recording effective control, target phases/counts/observed balances, process IDs/hosts, waiting demand, launch failures and completed cohorts. Batch start/completion/stop/failure decisions use the existing MCP event stream. Income derives from the game's cumulative hacking money-source delta, including any other hacking scripts; XP rate is currently unavailable in this mode. This is a simultaneous cohort scheduler, not a tightly timed overlapping batch scheduler. Source requires `Formulas.exe`. Ken explicitly requested direct Steam testing rather than the proposed browser/pilot sequence.
 
@@ -1270,7 +1270,7 @@ Dark Net money category.
 - **Durability:** cumulative loot is recomputed from immutable event shards,
   and credentials from the newest record per hostname, so the display does
   not inherit the stale merged-scoreboard problem found on 2026-08-14.
-- Opt-in, like `mcp_money.js`; it is not added to `startup.js`.
+- Opt-in; it is not added to `startup.js`.
 
 ### `dnet_roi.js`
 
@@ -1336,7 +1336,7 @@ is bought — what looks worth buying.
   self-supersede + `stock.hasWseAccount`/`hasTixApiAccess`/`has4SDataTixApi`
   0.05 each + `stock.getSymbols`/`getPrice`/`getPosition` 2.0 each +
   `stock.getForecast`/`getVolatility` 2.5 each). Not in `startup.js`'s
-  `SCRIPTS` list — same as `mcp_money.js`, it's an opt-in panel, not part of
+  `SCRIPTS` list — it's an opt-in panel, not part of
   the always-on suite.
 - Without 4S Data **TIX API access specifically** — a separate purchase from
   the UI-only 4S Market Data, `purchase4SMarketDataTixApi` vs
@@ -1799,12 +1799,9 @@ Graph` (bipartite BFS), `Compression II: LZ Decompression` and
 Bitburner's own chunk format — decompression by direct simulation,
 compression via an optimal dynamic-programming search over chunk
 length/distance, tested by round-tripping every compressed output back
-through the decompressor). **Not implemented — deliberately, not an
-oversight:** `Largest Rectangle in a Matrix`, whose documented output shape
-(two corner coordinates) didn't match this session's confident recollection
-of the usual area-only version of that problem, with no live specimen
-available to check against; held unsupported by the watcher rather than
-guessed at. **Square Root** is implemented (BigInt Newton's-method integer
+through the decompressor). **Largest Rectangle in a Matrix** is implemented
+(added 2026-11-01 from the game's own checker, which accepts any obstacle-free
+rectangle of maximum area, so ties do not matter). **Square Root** is implemented (BigInt Newton's-method integer
 sqrt, rounded to nearest) but flagged lower-confidence than the rest — its
 `NetscriptDefinitions.d.ts` tuple entry is malformed compared to every other
 type (three elements instead of the usual `[data, answer]` pair), so the
@@ -1956,19 +1953,24 @@ download every time.
 
 Brings up the whole suite from a clean slate in **one** command:
 `run startup.js`. Closes every open tail window, kills everything else on
-the host, then launches `mcp_supervisor.js`, `hacking/crawler.js`,
-`player_activity_controller.js`, `mcp.js`, `dnet_root.js` (added 2026-09-04,
-see `AGENTS.md`'s note on why darknet is back in the default list),
-`maintenance_steward.js`, `hud_consolidated.js`, `mcp_xp.js` in that order
-via `ns.run`, then exits rather than staying resident, so its own footprint
-doesn't compete with what it just started. `startup_browser.js` (above)
+the host, then launches, in priority order, `mcp_supervisor.js`,
+`hacking/crawler.js`, `mcp.js`, `maintenance_steward.js` (the MCP watchdog),
+`mcp_xp.js`, `mcp_money.js` (added 2026-11-01 at Ken's request),
+`hud_consolidated.js`, `player_activity_controller.js`, `dnet_root.js` and
+`gang-controller.js`. The last two may exit at once (no Darkscape, no gang)
+while briefly holding RAM, so any launch that fails is retried once after
+3 seconds; a final failure reports the script's RAM need and free home RAM.
+It then exits rather than staying resident. `dnet_root.js` exits quietly
+when DarkscapeNavigator.exe is not owned (e.g. right after an augmentation
+install) instead of raising a runtime-error modal. `startup_browser.js` (above)
 runs the same sequence for the browser save, plus a GitHub sync step first.
 
 - **Start:** `run startup.js` — the one command besides the supervisor's own
   bootstrap that still needs a human hand
-- **Cost:** 4.3GB while running (momentary) — 1.6GB baseline + `ns.ps`
+- **Cost:** about 4.5GB while running (momentary) — 1.6GB baseline + `ns.ps`
   (0.2GB) + `ns.killall` (0.5GB) + `ns.scriptRunning` (1.0GB) + `ns.run`
-  (1.0GB)
+  (1.0GB) + `ns.getScriptRam`/`getServerMaxRam`/`getServerUsedRam` for the
+  failure report; check with `mem startup.js`
 - **Closes tail windows *before* killing, not after — order was a real bug.**
   `ns.kill`/`ns.killall` never close a script's tail window; it's orphaned,
   frozen on whatever it last rendered. `closeTail` needs a live PID from

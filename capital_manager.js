@@ -2,7 +2,7 @@
  * Spends idle cash on hacking capacity and starts managers once they fit.
  * Buys TOR, port openers, home RAM and cloud RAM; never touches augmentations.
  * `capital_policy.json` is read every pass: enabled, reserve, homeRamTarget,
- * cloudFraction, saveWindowSec. Writes every purchase to `capital_status.json`.
+ * cloudFraction, saveWindowSec, homeRamFloor. Writes every purchase to `capital_status.json`.
  * Start: `run capital_manager.js` (startup.js launches it).
  * @param {NS} ns
  */
@@ -11,6 +11,7 @@ import { PROGRAMS, chooseCapitalAction, nextScriptToStart } from "capital_logic.
 const POLICY = "capital_policy.json"
 const STATUS = "capital_status.json"
 const POLL_MS = 10_000
+const INCOME_WINDOW_SEC = 600
 const MANAGERS = ["maintenance_steward.js", "mcp_money.js", "hud_consolidated.js", "player_activity_controller.js", "dnet_root.js"]
 
 function readPolicy(ns) {
@@ -62,14 +63,18 @@ export async function main(ns) {
   while (true) {
     const now = Date.now(), cash = ns.getServerMoneyAvailable("home")
     if (last && now > last.at) {
-      const sample = Math.max(0, cash + last.spent - last.cash) / ((now - last.at) / 1000)
-      incomePerSec = incomePerSec ? incomePerSec * 0.8 + sample * 0.2 : sample
+      // Harvests land in bursts, so average over about ten minutes; a short
+      // average flips between saving and spending on every quiet spell.
+      const seconds = (now - last.at) / 1000
+      const sample = Math.max(0, cash + last.spent - last.cash) / seconds
+      const weight = 1 - Math.exp(-seconds / INCOME_WINDOW_SEC)
+      incomePerSec = incomePerSec ? incomePerSec + (sample - incomePerSec) * weight : sample
     }
     let spent = 0
     const policy = readPolicy(ns)
     let action = null, ok = null
     if (policy.enabled !== false) {
-      const input = { ...observe(ns, policy), incomePerSec, saveWindowSec: Number(policy.saveWindowSec) || 300 }
+      const input = { ...observe(ns, policy), incomePerSec, saveWindowSec: Number(policy.saveWindowSec) || 300, homeRamFloor: Number(policy.homeRamFloor) || 128 }
       action = chooseCapitalAction(input)
       if (action && action.kind !== "save") {
         ok = buy(ns, action, input.cloud.length)

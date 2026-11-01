@@ -13,13 +13,18 @@ test("buys programs strictly in order", () => {
   assert.deepEqual(chooseCapitalAction({ ...base, programs, spendable: 50 }), { kind: "program", name: "b", cost: 50 })
   assert.equal(chooseCapitalAction({ ...base, programs, spendable: 49 }), null)
 })
+test("nothing outranks the home RAM floor", () => {
+  const input = { ...base, homeRam: 64, homeRamCost: 1000, cloudQuotes: [{ ram: 8, cost: 1 }], spendable: 100 }
+  assert.equal(chooseCapitalAction(input).reason, "home RAM floor")
+  assert.equal(chooseCapitalAction({ ...input, homeRam: 128 }).kind, "cloud")
+})
 test("home RAM precedes cloud RAM until its target", () => {
-  const input = { ...base, homeRam: 32, homeRamCost: 100, cloudQuotes: [{ ram: 8, cost: 1 }] }
+  const input = { ...base, homeRam: 256, homeRamCost: 100, cloudQuotes: [{ ram: 8, cost: 1 }] }
   assert.equal(chooseCapitalAction({ ...input, spendable: 100 }).kind, "home")
   assert.equal(chooseCapitalAction({ ...input, spendable: 99 }).kind, "cloud")
 })
 test("holds cloud buying when the next priority is within reach", () => {
-  const input = { ...base, homeRam: 32, homeRamCost: 1000, cloudQuotes: [{ ram: 8, cost: 1 }], spendable: 100 }
+  const input = { ...base, homeRam: 256, homeRamCost: 1000, cloudQuotes: [{ ram: 8, cost: 1 }], spendable: 100 }
   assert.equal(chooseCapitalAction({ ...input, incomePerSec: 10 }).kind, "save")
   assert.equal(chooseCapitalAction({ ...input, incomePerSec: 1 }).kind, "cloud")
 })

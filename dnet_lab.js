@@ -22,6 +22,8 @@ export async function main(ns) {
     ns.write(STATUS, JSON.stringify({ ts: Date.now(), lab, host: ns.getHostname(), state, ...extra }), "w")
     ns.scp(STATUS, "home")
   }
+  const required = ns.dnet.getServerRequiredCharismaLevel(lab), charisma = ns.getPlayer().skills.charisma
+  if (charisma < required) return report("charisma", { required, charisma })
   const first = await ns.dnet.labreport()
   if (!first?.success) return report("no-lab", { message: first?.message })
 

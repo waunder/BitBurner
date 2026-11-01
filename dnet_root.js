@@ -214,7 +214,12 @@ export async function main(ns) {
       let status = null
       try { status = JSON.parse(ns.read(SCOUT_STATUS) || "null") } catch { /* partial write: treat as stale */ }
       if (shouldStartScout(status, Date.now()) && await ns.scp(SCOUT_FILES, target)) {
-        const pid = ns.exec(SCOUT, target, { preventDuplicates: true })
+        let pid = ns.exec(SCOUT, target, { preventDuplicates: true })
+        // Phishing fills the gateway; it restarts next recrawl, the scout cannot wait.
+        if (!pid) {
+          for (const proc of ns.ps(target)) if (proc.filename.replace(/^\//, "") === "dnet_phish.js") ns.kill(proc.pid)
+          pid = ns.exec(SCOUT, target, { preventDuplicates: true })
+        }
         ns.write(SCOUT_STATUS, JSON.stringify({ ts: Date.now(), state: pid ? "launched" : "launch-failed", host: target, trail: [] }), "w")
       }
 

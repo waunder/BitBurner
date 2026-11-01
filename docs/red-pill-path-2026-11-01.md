@@ -48,5 +48,8 @@ dead end. Backtracking was added; the next chain stopped at depth 0 on `112233`.
 Its reasons: `echo.citadel.web` too small for the 6.1GB scout, `granny-s&grid` no
 longer directly connected, and `hacker$flame` (KingOfTheHill) ran past the 60s
 budget at 21 of 94 guesses. No lab has been seen and depth 7 has not been reached.
-Backing up to `darkweb` also failed, for a reason not yet known.
+Backing up to `darkweb` fails because phishing fills that gateway. `dnet_root.js`
+now pauses phishing to launch a scout, but the gateway stays too full to back into.
+At 14:47 MST a chain stopped at `112233` again when `net@net` moved mid-crack.
+Charisma had reached 117 by 14:45 with no training, so darknet logins raise it.
 Crawler RAM rose to 7.3GB with the lab hook; check that gateway recrawls still fit.

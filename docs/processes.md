@@ -260,7 +260,7 @@ exits, backing up along its path at a dead end. `dnet_root.js` starts a new chai
 chain finishes, so only one chain runs. New passwords go through the normal
 credential shards.
 
-- **Writes:** `dnet_scout_status.json` at home (`state`: launched, scouting, hopped,
+- **Writes:** `dnet_scout_status.json` at home (`state`: launched, scouting, cracking, hopped,
   backtracked, lab-found, charisma, dead-end, hop-limit, launch-failed) with the route, depth and
   up to four failed hops.
 - **Failure modes:** a server that moves mid-hop simply ends the chain; the next
@@ -274,8 +274,9 @@ fits on a fresh 32GB home: it upgrades home RAM until the 17GB manager can run,
 then hands over and exits. Each pass buys the first affordable item: TOR, then
 programs, then home RAM up to `homeRamTarget`, then cloud RAM up to
 `cloudFraction` of spendable cash. Full cloud slots upgrade the smallest server.
-Cloud buying pauses when measured income can reach the next program or home
-upgrade within `saveWindowSec` (default 300). It also starts waiting managers once they fit, and
+Cloud buying pauses when ten-minute average income can reach the next program or home
+upgrade within `saveWindowSec` (default 300), and always below `homeRamFloor`
+(default 128). It also starts waiting managers once they fit, and
 never touches augmentations.
 
 - **Reads:** `capital_policy.json` every pass (`enabled`, `reserve`,

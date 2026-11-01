@@ -1,12 +1,28 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-01 10:45 MST. Sources: Remote API monitor, live
-`mcp_status.json`, `maintenance_status.json`, `cct_reward_ledger.json`, Steam
-terminal.
-Previous handoff archived at
-`docs/archive/2026-10-25/STATE-before-wanted-monitoring-2026-10-25.md`.
+Last refreshed: 2026-11-01 13:05 MST. Sources: Steam game via DevTools and
+terminal, Remote API `mcp_status.json`, live BitNode/player reads.
 
-## Latest live state
+## Current live state (supersedes everything below)
+
+The live save is **BitNode 5**, not BN2 (`getResetInfo().currentNode`; owned SF
+1.2, 2.1, 4.3, 5.3). Gang creation therefore needs -54,000 karma; karma was
+-2,861 at 12:55 MST. Sections below that say "this BitNode 2 run" are stale.
+
+Fleet: 25 cloud servers, 30.72TB, plus 524GB rooted; home 256GB. Measured
+$2.66m/s and 1,293 hack XP/s on 20TB (`docs/cloud-capacity-2026-11-01.md`).
+
+Joined The Black Hand, NiteSec and CyberSec on 2026-11-01. Sector-12's invite is
+deliberately unanswered because it locks out rival city factions. Player is on
+Homicide (0.355 karma/s at 35.5% success, improving with combat stats), with
+`player_activity_config.json` left on manual override. Hacking faction work
+gives only about 3-4 rep/s, so Homicide stays on until that trade-off changes.
+No augmentation has been bought; first rep gates are 6,250 and 10,000. Installs
+still need Ken's approval.
+
+DevTools runs on 127.0.0.1:9222 through the Steam launch option.
+
+## Earlier snapshot, 2026-11-01 10:45 MST
 
 The save was reset by an augmentation install on 2026-10-31 20:18 local (4
 installed, none queued, no factions, no gang). Everything from "Current

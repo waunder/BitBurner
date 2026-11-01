@@ -40,5 +40,13 @@ darknet is not running yet, and reward handling is read from source only.
 
 The original gap was reach: spread stops one hop from `darkweb`, and
 `dnet_crawl.js` cracks only eight shallow models. `dnet_scout.js` now walks deeper
-as a single chain using the full solvers. It is untested live.
+as a single chain using the full solvers.
+
+Live, 2026-11-01 about 14:25 MST: `dnet_root.js` ran at 6.45GB once `mcp_xp.js` was
+stopped. The first chain made four hops, from `darkweb` to `bit;flame`, and hit a
+dead end. Backtracking was added; the next chain stopped at depth 0 on `112233`.
+Its reasons: `echo.citadel.web` too small for the 6.1GB scout, `granny-s&grid` no
+longer directly connected, and `hacker$flame` (KingOfTheHill) ran past the 60s
+budget at 21 of 94 guesses. No lab has been seen and depth 7 has not been reached.
+Backing up to `darkweb` also failed, for a reason not yet known.
 Crawler RAM rose to 7.3GB with the lab hook; check that gateway recrawls still fit.

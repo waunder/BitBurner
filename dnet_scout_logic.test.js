@@ -15,3 +15,7 @@ test("keeps a single chain until its status goes stale", () => {
   assert.equal(shouldStartScout({ ts: 1000 }, 2000, 5000), false)
   assert.equal(shouldStartScout({ ts: 1000 }, 7000, 5000), true)
 })
+test("restarts sooner after a chain has finished", () => {
+  assert.equal(shouldStartScout({ ts: 1000, state: "dead-end" }, 2000, 5000, 500), true)
+  assert.equal(shouldStartScout({ ts: 1000, state: "hopped" }, 2000, 5000, 500), false)
+})

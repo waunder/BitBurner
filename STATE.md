@@ -25,9 +25,9 @@ training off; player is on Shoplift. Ken approved buying augmentations and
 the installs in the Red Pill plan on 2026-11-01. Leaving BN15 or any install
 outside that plan still needs his approval. Why BN15, and the numbers: `docs/bitnode-choice-2026-11-01.md`.
 
-Labyrinth solver and `dnet_scout.js` are built and tested offline, not yet run
-live. `dnet_root.js` starts when home RAM fits it (6.45GB after removing a false
-10GB charge). Charisma training is not yet planned.
+`dnet_root.js` and `dnet_scout.js` are running live; `mcp_xp.js` was stopped to fit
+them and nothing restarts it. No lab reached yet; the maze solver has not run
+live. Charisma training is not yet planned.
 
 DevTools runs on 127.0.0.1:9222 through the Steam launch option.
 

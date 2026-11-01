@@ -255,12 +255,13 @@ opens the reward cache.
 
 Single-chain deep scout. Each copy reads its neighbours, cracks the deepest one it
 can with the full `dnet_lib.js` solvers, copies itself there, starts that copy and
-exits. `dnet_root.js` starts a new chain on `darkweb` when `dnet_scout_status.json`
-is over 5 minutes old, so only one chain runs. New passwords go through the normal
+exits, backing up along its path at a dead end. `dnet_root.js` starts a new chain on
+`darkweb` when `dnet_scout_status.json` is over 5 minutes old, or 1 minute after a
+chain finishes, so only one chain runs. New passwords go through the normal
 credential shards.
 
 - **Writes:** `dnet_scout_status.json` at home (`state`: launched, scouting, hopped,
-  lab-found, charisma, dead-end, hop-limit, launch-failed) with the full trail and
+  backtracked, lab-found, charisma, dead-end, hop-limit, launch-failed) with the route, depth and
   up to four failed hops.
 - **Failure modes:** a server that moves mid-hop simply ends the chain; the next
   start retries. A host too small for the scout counts as a failed hop.

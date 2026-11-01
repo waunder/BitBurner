@@ -1,9 +1,26 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-10-27 00:38 PDT. Sources: Remote API monitor and live
-`gang_status.json` after reapplying the cash objective.
+Last refreshed: 2026-11-01 10:45 MST. Sources: Remote API monitor, live
+`mcp_status.json`, `maintenance_status.json`, `cct_reward_ledger.json`, Steam
+terminal.
 Previous handoff archived at
 `docs/archive/2026-10-25/STATE-before-wanted-monitoring-2026-10-25.md`.
+
+## Latest live state
+
+The save was reset by an augmentation install on 2026-10-31 20:18 local (4
+installed, none queued, no factions, no gang). Everything from "Current
+objectives" down predates that reset and is history until revalidated.
+At 2026-11-01 10:45 MST: Remote API connected with full sync; hacking 284,
+money about $466m after contracts; 17 rooted workers, 524GB, no cloud servers;
+MCP on money in finite cloud mode, target phantasy; player activity on manual
+override, doing Larceny. `gang-controller.js` failed in `startup.js` for RAM
+(39GB needed, 23GB free on home); harmless while there is no gang.
+
+Both pending `Largest Rectangle in a Matrix` contracts were accepted ($16.7m,
+$50m) with the new solver; the queue is idle. Contract work now uses free RAM
+beside finite cohorts, so cloud mode no longer starves it. The pending
+post-install resilience edits are committed. All 347 tests pass.
 
 ## Current objectives
 

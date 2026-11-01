@@ -31,6 +31,13 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
   docs/harvest-efficiency-2026-10-24.md. See
   docs/scheduler-assessment-loop.md. Installation/reset approval still required.
 
+## Completed — 2026-11-01
+
+- Added the `Largest Rectangle in a Matrix` solver from the game's own checker;
+  both live contracts accepted ($16.7m, $50m). Contract work now fits beside
+  finite cohorts without killing them. Corrected the stale share test that
+  expected finite cohorts to be preempted. 347 tests pass.
+
 ## Completed — 2026-10-19
 
 - Diagnosed XP transition blocked by security-only cloud preparation. Cancel

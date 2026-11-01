@@ -14,7 +14,8 @@ The BN5 run ended at hacking 461, $9.1b and 67.6TB; a validated backup is
 BN15 multipliers: hacking level and speed 0.6, server max money 0.8, starting
 money 0.5, security 1.5, augmentations 3× cost, Daedalus needs 20 augmentations,
 World Daemon difficulty 2. Script hack money is 1, against 0.15 in BN5. The Red
-Pill is found in the darknet, not sold by Daedalus. Gangs need -54,000 karma, and
+Pill is the fifth labyrinth reward and needs at least five installs and charisma
+3,000 (`docs/red-pill-path-2026-11-01.md`). Gangs need -54,000 karma, and
 karma reset to 0.
 
 `capital_bootstrap.js` hands over to `capital_manager.js` when it fits. The

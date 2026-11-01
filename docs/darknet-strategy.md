@@ -485,7 +485,8 @@ minified source rather than on play.
    analyser also charges for ns calls reachable through imports, and
    `dnet_deploy.js` imports `dnet_lib.js`. The in-game figure is the authority
    and may exceed the ~4.6GB estimate.
-6. **`labreport` / `labradar` are unknown.** Free to call, defined failure
+6. **`labreport` / `labradar` are now read from source;** see
+   `docs/red-pill-path-2026-11-01.md`. Original note: Free to call, defined failure
    shape, no idea what they're for. Worth one zero-cost experiment from a deep
    server; not worth theorising about.
 

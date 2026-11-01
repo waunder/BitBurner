@@ -1,4 +1,4 @@
-STALE: the live save is BitNode 5 as of 2026-11-01. See STATE.md.
+STALE: the live save is BitNode 15 as of 2026-11-01. See STATE.md.
 
 BN2.1 ROADMAP
 

@@ -1,7 +1,7 @@
 {
   "enabled": true,
-  "override": "manual",
-  "physicalTarget": 30,
+  "override": "auto",
+  "physicalTarget": 0,
   "gym": "Powerhouse Gym",
   "university": "Rothman University",
   "factionWorkType": "hacking",

@@ -236,6 +236,24 @@ so the pool shrinks to what needs no ports. Rebuilding it means Create Program
 
 ## Farming
 
+### `capital_manager.js`
+
+Spends cash on hacking capacity. `capital_bootstrap.js` needs about 5.6GB, so it
+fits on a fresh 32GB home: it upgrades home RAM until the 17GB manager can run,
+then hands over and exits. Each pass buys the first affordable item: TOR, then
+programs, then home RAM up to `homeRamTarget`, then cloud RAM up to
+`cloudFraction` of spendable cash. Full cloud slots upgrade the smallest server.
+Only TOR blocks spending. It also starts waiting managers once they fit, and
+never touches augmentations.
+
+- **Reads:** `capital_policy.json` every pass (`enabled`, `reserve`,
+  `homeRamTarget` default 512, `cloudFraction` default 0.5). Set `enabled` false
+  to stop purchases, or raise `reserve` to protect cash for augmentations.
+- **Writes:** `capital_status.json` with the last 50 purchases.
+- **Failure modes:** a refused purchase is recorded with `ok: false` and retried
+  after 10s. Purchases are lost on augmentation install.
+- **Test:** `node --test capital_logic.test.js`
+
 ### `mcp.js`
 
 The orchestrator, and where nearly all the complexity lives. Each tick

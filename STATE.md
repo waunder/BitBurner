@@ -1,29 +1,27 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-01 13:05 MST. Sources: Steam game via DevTools and
-terminal, Remote API `mcp_status.json`, live BitNode/player reads.
+Last refreshed: 2026-11-01 13:55 MST. Sources: Steam game via DevTools and
+terminal, Remote API `mcp_status.json`, game source and live reads.
 
 ## Current live state (supersedes everything below)
 
-The live save is **BitNode 5**, not BN2 (`getResetInfo().currentNode`; owned SF
-1.2, 2.1, 4.3, 5.3). Gang creation therefore needs -54,000 karma; karma was
--2,861 at 12:55 MST. Sections below that say "this BitNode 2 run" are stale.
+The live save is **BitNode 15**, entered 2026-11-01 about 13:48 MST with
+`ns.singularity.b1tflum3(15, "startup.js")`, on Ken's delegated choice of node.
+BN5 gave no reward because SF5 was at its cap of 3. Owned: SF 1.2, 2.1, 4.3, 5.3.
+The BN5 run ended at hacking 461, $9.1b and 67.6TB; a validated backup is
+`saves/bitburnerSave_pre-flume_BN5x3_2026-11-01.save` (gitignored).
 
-Fleet: 25 cloud servers, 67.58TB, plus 524GB rooted; home 256GB. Measured
-$12.5m/s and 6,103 hack XP/s over 144s after the upgrade, a short window
-(`docs/cloud-capacity-2026-11-01.md`).
+BN15 multipliers: hacking level and speed 0.6, server max money 0.8, starting
+money 0.5, security 1.5, augmentations 3× cost, Daedalus needs 20 augmentations,
+World Daemon difficulty 2. Script hack money is 1, against 0.15 in BN5. The Red
+Pill is found in the darknet, not sold by Daedalus. Gangs need -54,000 karma, and
+karma reset to 0.
 
-Finishing BN5 grants no Source-File: SF5 is at its cap of 3. `b1t_flum3.exe`
-leaves without finishing and resets the run, so it needs Ken's approval.
-His decision on staying or leaving is pending.
-
-Joined The Black Hand, NiteSec and CyberSec on 2026-11-01. Sector-12's invite is
-deliberately unanswered because it locks out rival city factions. Player is on
-Homicide (0.355 karma/s at 35.5% success, improving with combat stats), with
-`player_activity_config.json` left on manual override. Hacking faction work
-gives only about 3-4 rep/s, so Homicide stays on until that trade-off changes.
-No augmentation has been bought; first rep gates are 6,250 and 10,000. Installs
-still need Ken's approval.
+`capital_bootstrap.js` hands over to `capital_manager.js` when it fits. The
+manager buys TOR, programs, home RAM and cloud RAM, then starts managers that did
+not fit at startup. `player_activity_config.json` is on auto with physical
+training off; player was started on free Computer Science. Installs still need
+Ken's approval. Why BN15, and the numbers: `docs/bitnode-choice-2026-11-01.md`.
 
 DevTools runs on 127.0.0.1:9222 through the Steam launch option.
 

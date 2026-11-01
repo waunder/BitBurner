@@ -33,6 +33,10 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
 
 ## Completed — 2026-11-01
 
+- Left BN5 for BN15 and added `capital_bootstrap.js`/`capital_manager.js`, so
+  idle cash buys capacity automatically. Reasoning:
+  `docs/bitnode-choice-2026-11-01.md`.
+
 - Filled all 25 cloud slots (30.72TB) and doubled home RAM; income and hack XP
   rose about 20× and 14×. Evidence: `docs/cloud-capacity-2026-11-01.md`.
   Joined The Black Hand, NiteSec and CyberSec; player moved to Homicide.

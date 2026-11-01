@@ -1,0 +1,78 @@
+/**
+ * Spends idle cash on hacking capacity and starts managers once they fit.
+ * Buys TOR, port openers, home RAM and cloud RAM; never touches augmentations.
+ * `capital_policy.json` is read every pass: enabled, reserve, homeRamTarget,
+ * cloudFraction. Writes every purchase to `capital_status.json`.
+ * Start: `run capital_manager.js` (startup.js launches it).
+ * @param {NS} ns
+ */
+import { PROGRAMS, chooseCapitalAction, nextScriptToStart } from "capital_logic.js"
+
+const POLICY = "capital_policy.json"
+const STATUS = "capital_status.json"
+const POLL_MS = 10_000
+const MANAGERS = ["maintenance_steward.js", "mcp_money.js", "hud_consolidated.js", "player_activity_controller.js", "dnet_root.js"]
+
+function readPolicy(ns) {
+  try { return JSON.parse(ns.read(POLICY) || "{}") } catch { return {} }
+}
+
+function observe(ns, policy) {
+  const hasTor = ns.hasTorRouter()
+  const cloud = ns.cloud.getServerNames()
+  const limit = ns.cloud.getServerLimit(), maxRam = ns.cloud.getRamLimit()
+  const cloudQuotes = []
+  for (let ram = 8; ram <= maxRam; ram *= 2) cloudQuotes.push({ ram, cost: ns.cloud.getServerCost(ram) })
+  const upgradeQuotes = cloud.map(host => {
+    const fromRam = ns.getServerMaxRam(host), toRam = fromRam * 2
+    return toRam <= maxRam ? { host, fromRam, toRam, cost: ns.cloud.getServerUpgradeCost(host, toRam) } : null
+  }).filter(Boolean)
+  return {
+    spendable: ns.getServerMoneyAvailable("home") - (Number(policy.reserve) || 0),
+    hasTor,
+    programs: hasTor ? PROGRAMS.map(name => ({ name, owned: ns.fileExists(name, "home"), cost: ns.singularity.getDarkwebProgramCost(name) })) : [],
+    homeRam: ns.getServerMaxRam("home"),
+    homeRamTarget: Number(policy.homeRamTarget) || 512,
+    homeRamCost: ns.singularity.getUpgradeHomeRamCost(),
+    cloud, cloudLimit: limit, cloudQuotes, upgradeQuotes,
+    cloudFraction: Number(policy.cloudFraction) || 0.5,
+  }
+}
+
+function buy(ns, action, serverCount) {
+  if (action.kind === "tor") return ns.singularity.purchaseTor()
+  if (action.kind === "program") return ns.singularity.purchaseProgram(action.name)
+  if (action.kind === "home") return ns.singularity.upgradeHomeRam()
+  if (action.kind === "cloud") return Boolean(ns.cloud.purchaseServer(`mcp-worker-${serverCount}`, action.ram))
+  if (action.kind === "upgrade") return ns.cloud.upgradeServer(action.host, action.toRam)
+  return false
+}
+
+function startWaitingManager(ns) {
+  const home = "home"
+  const scripts = MANAGERS.map(name => ({ name, running: ns.scriptRunning(name, home), ram: ns.getScriptRam(name, home) }))
+  const name = nextScriptToStart(scripts, ns.getServerMaxRam(home) - ns.getServerUsedRam(home))
+  return name && ns.run(name) ? name : null
+}
+
+export async function main(ns) {
+  ns.disableLog("ALL")
+  const purchases = []
+  while (true) {
+    const policy = readPolicy(ns)
+    let action = null, ok = null
+    if (policy.enabled !== false) {
+      const input = observe(ns, policy)
+      action = chooseCapitalAction(input)
+      if (action && action.kind !== "save") {
+        ok = buy(ns, action, input.cloud.length)
+        purchases.push({ ts: Date.now(), ok, ...action })
+        purchases.splice(0, Math.max(0, purchases.length - 50))
+      }
+    }
+    const started = startWaitingManager(ns)
+    ns.write(STATUS, JSON.stringify({ ts: Date.now(), policy, action, ok, started, purchases }), "w")
+    // Keep buying while purchases succeed; otherwise wait for income.
+    await ns.sleep(ok ? 200 : POLL_MS)
+  }
+}

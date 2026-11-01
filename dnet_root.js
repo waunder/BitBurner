@@ -108,6 +108,12 @@ function mergeCredentialShards(ns, creds) {
 
 export async function main(ns) {
   ns.disableLog("ALL")
+  // DarkscapeNavigator.exe is lost on augmentation install. Without it every
+  // ns.dnet call throws a runtime-error modal, so exit quietly instead.
+  if (!ns.fileExists("DarkscapeNavigator.exe", "home")) {
+    ns.tprint("dnet_root: DarkscapeNavigator.exe not owned (buy it via the TOR router); exiting")
+    return
+  }
   const creds = readCreds(ns)
   let pass = 0
   let lastCredentialMergeAt = -Infinity

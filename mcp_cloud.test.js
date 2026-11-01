@@ -13,7 +13,7 @@ function fixture() {
   getServerSecurityLevel:h=>servers[h].hackDifficulty,getServerMinSecurityLevel:h=>servers[h].minDifficulty,
   getServerMoneyAvailable:h=>servers[h].moneyAvailable,getServerMaxMoney:h=>servers[h].moneyMax,
   fileExists:()=>true,ps:h=>processes.filter(p=>p.host===h),kill:(pid)=>{const i=processes.findIndex(p=>p.pid===pid);if(i>=0)processes.splice(i,1);return true},isRunning:(pid,h)=>processes.some(p=>p.pid===pid&&p.host===h),
-  getMoneySources:()=>({sinceInstall:{hacking:nowMoney}}),hasRootAccess:()=>true,getServerRequiredHackingLevel:()=>1,getHackingLevel:()=>100,
+  getMoneySources:()=>({sinceInstall:{hacking:nowMoney}}),getTotalScriptExpGain:()=>0,hasRootAccess:()=>true,getServerRequiredHackingLevel:()=>1,getHackingLevel:()=>100,
   getServerMaxRam:()=>500,getServerUsedRam:h=>processes.filter(p=>p.host===h).reduce((n,p)=>n+p.threads*ns.getScriptRam(p.filename),0),scp:async()=>true,
   exec:(filename,host,threads,...args)=>{const p={filename,host,threads,args,pid:++seq};processes.push(p);launches.push(p);return p.pid}}
  const context={servers:['a','b','worker'],workers:['worker'],runId:'test',objective:'reputation',emit:(kind,data)=>events.push({kind,...data})}
@@ -244,4 +244,15 @@ test('weighted admission gives more RAM to a more profitable ready target',async
  assert.ok(s.targets.find(p=>p.target==='b').ram>s.targets.find(p=>p.target==='a').ram)
  assert.ok(s.targets.every(p=>p.ram<=caps[p.target]+1e-9))
  assert.equal(s.workerLaunchFailures.length,0)
+})
+
+test('missing Formulas.exe suspends cloud mode instead of throwing',async()=>{
+ const {ns,context,events,launches}=fixture();ns.fileExists=()=>false
+ assert.equal(await cloudTick(ns,{},context),null);assert.equal(launches.length,0)
+ assert.equal(events.filter(e=>e.kind==='cloud_suspended').length,1)
+})
+test('missing Formulas.exe drains active cohorts before handing back',async()=>{
+ const {ns,context,processes}=fixture(),state={};await cloudTick(ns,state,context);assert.ok(processes.length>0)
+ ns.fileExists=()=>false;assert.equal((await cloudTick(ns,state,context)).phase,'draining')
+ processes.length=0;assert.equal(await cloudTick(ns,state,context),null)
 })

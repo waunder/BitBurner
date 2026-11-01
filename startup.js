@@ -37,15 +37,20 @@
  * file dumps are remote-triggerable, so everything after it in this list is
  * (in principle) also recoverable without a repeat of this script.
  *
- * Cost: 4.3GB while running — 1.6GB baseline + ns.ps (0.2GB) + ns.killall
- * (0.5GB) + ns.scriptRunning (1.0GB) + ns.run (1.0GB), all five read from
- * the game's own cost table. Momentary only: this needs that much free on
+ * Cost: about 4.5GB while running (check with `mem startup.js`) — 1.6GB
+ * baseline + ns.ps (0.2GB) + ns.killall (0.5GB) + ns.scriptRunning (1.0GB)
+ * + ns.run (1.0GB), plus small getScriptRam/getServerMaxRam/
+ * getServerUsedRam calls for the failure report. Momentary only: this needs that much free on
  * top of whatever it's about to launch, but only for the instant it takes
  * to fire everything off, then it's gone.
  *
  * @param {NS} ns
  */
-const SCRIPTS = ["mcp_supervisor.js", "hacking/crawler.js", "player_activity_controller.js", "mcp.js", "dnet_root.js", "maintenance_steward.js", "gang-controller.js", "hud_consolidated.js", "mcp_xp.js"]
+// Priority order: income and its watchdog first, displays next, then
+// optional controllers that may exit at once (no gang, no Darkscape) and
+// briefly hold RAM while doing so. Failures get one retry after those exit.
+const SCRIPTS = ["mcp_supervisor.js", "hacking/crawler.js", "mcp.js", "maintenance_steward.js", "mcp_xp.js", "mcp_money.js", "hud_consolidated.js", "player_activity_controller.js", "dnet_root.js", "gang-controller.js"]
+const RETRY_DELAY_MS = 3000
 
 export async function main(ns) {
   ns.disableLog("ALL")
@@ -73,6 +78,7 @@ export async function main(ns) {
   let skipped = 0
   let failed = 0
 
+  const retry = []
   for (const file of SCRIPTS) {
     // scriptRunning(script, host) checks for any instance regardless of the
     // arguments it was launched with, so a live mcp.js target=n00dles still
@@ -84,11 +90,26 @@ export async function main(ns) {
     }
     const pid = ns.run(file, 1)
     if (pid === 0) {
-      ns.tprint(`startup: FAILED to start ${file} (not enough RAM on ${host}?)`)
-      failed += 1
+      retry.push(file)
     } else {
       ns.tprint(`startup: started ${file} (pid ${pid})`)
       started += 1
+    }
+  }
+
+  if (retry.length) {
+    await ns.sleep(RETRY_DELAY_MS)
+    for (const file of retry) {
+      const pid = ns.scriptRunning(file, host) ? -1 : ns.run(file, 1)
+      if (pid === 0) {
+        const need = ns.getScriptRam(file, host)
+        const free = ns.getServerMaxRam(host) - ns.getServerUsedRam(host)
+        ns.tprint(`startup: FAILED to start ${file} (needs ${need.toFixed(2)}GB, ${free.toFixed(2)}GB free on ${host})`)
+        failed += 1
+      } else {
+        ns.tprint(`startup: started ${file} on retry${pid > 0 ? ` (pid ${pid})` : " (already running)"}`)
+        started += 1
+      }
     }
   }
 

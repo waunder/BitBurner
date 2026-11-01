@@ -218,8 +218,19 @@ export function retireLegacyActionWorkers(ns, hosts) {
 export async function cloudTick(ns, state, {servers,workers,runId,objective,emit,reserveHarvestRam=false}) {
   let control
   try {control=JSON.parse(ns.read(CLOUD_CONTROL)||'{}')} catch {control={}}
-  const enabled=control.enabled===true && objective!=='xp' && (control.expiresAt==null || (Number.isFinite(control.expiresAt) && Date.now()<control.expiresAt))
+  const requested=control.enabled===true && objective!=='xp' && (control.expiresAt==null || (Number.isFinite(control.expiresAt) && Date.now()<control.expiresAt))
+  // Formulas.exe is lost on augmentation install while the persistent control
+  // file survives. Treat a missing Formulas.exe as disabled: drain any finite
+  // cohorts, then return the pool to the continuous planner instead of
+  // throwing every tick (which parked MCP in finite-error with zero income).
+  const hasFormulas=ns.fileExists('Formulas.exe','home')
+  const enabled=requested && hasFormulas
   state.batches ||= new Map(); state.seq ||= 0; state.completed ||= 0
+  if(requested && !hasFormulas && !state.formulasMissingReported) {
+    emit('cloud_suspended',{reason:'Formulas.exe missing; cloud control requested but continuous planner owns the pool',control})
+    state.formulasMissingReported=true
+  }
+  if(hasFormulas) state.formulasMissingReported=false
   if (!enabled) {
     const orphanTargets=new Set(workers.flatMap(host=>ns.ps(host)
       .filter(p=>Object.values(SCRIPTS).includes(p.filename.replace(/^\//,'')) && p.args[1]==='once')
@@ -251,7 +262,6 @@ export async function cloudTick(ns, state, {servers,workers,runId,objective,emit
     }
     return null
   }
-  if(!ns.fileExists('Formulas.exe','home')) throw Error('Cloud batches require Formulas.exe')
   // Keep targets individually recoverable, but admit the whole money-server
   // pool. The former 91% minimum made any target whose one-thread hack
   // exceeded the 3–4% gap between recovery and floor impossible to schedule.
@@ -384,6 +394,6 @@ export async function cloudTick(ns, state, {servers,workers,runId,objective,emit
   return {ts:now,runId,cloudSourceFingerprint:state.sourceFingerprint,workerMode:'finite',plan:'multi',phase:primary?.phase||(waiting.length?'capacity-wait':'idle'),weightBucket:'cloud-batches',target:primaryTarget,
     targets:[...state.batches.values()].map(b=>({...b,moneyPct:ns.getServerMoneyAvailable(b.target)/ns.getServerMaxMoney(b.target),currentSecurity:ns.getServerSecurityLevel(b.target)})),
     workers:allocations,cloudWorkers:allocations.filter(h=>ns.getServer(h.host).purchasedByPlayer),rate,avgRate:(money-state.baseMoney)/Math.max(1,(now-state.startedAt)/1000),incomePerSec:rate,totalHacked:money-state.baseMoney,
-    currentSecurity:primary?ns.getServerSecurityLevel(primaryTarget):0,moneyPct:primary?ns.getServerMoneyAvailable(primaryTarget)/ns.getServerMaxMoney(primaryTarget):0,expPerSec:0,ramUtilization:allocations.reduce((n,h)=>n+h.usedRam,0)/Math.max(1,allocations.reduce((n,h)=>n+h.maxRam,0)),
+    currentSecurity:primary?ns.getServerSecurityLevel(primaryTarget):0,moneyPct:primary?ns.getServerMoneyAvailable(primaryTarget)/ns.getServerMaxMoney(primaryTarget):0,expPerSec:ns.getTotalScriptExpGain(),ramUtilization:allocations.reduce((n,h)=>n+h.usedRam,0)/Math.max(1,allocations.reduce((n,h)=>n+h.maxRam,0)),
     reservedRestorationRam:cloudAdmissionHosts(ns,workers,state.batches,ram,reserveHarvestRam).reduce((n,h)=>n+h.reservedRam,0),workerLaunchFailures:failures,cloudCapacity,cloudControl:{...control,effectiveProtectedFloor:protectedFloor,effectiveRecoveryTarget:recoveryTarget,effectivePreparationRamFraction:preparationRamFraction,effectivePreparationRamRemaining:preparationRamRemaining,efficientHarvestAdmission,weightedHarvestShares,effectiveHarvestRamCaps:harvestRamCaps,effectiveHarvestRamCap:harvestRamCap,effectiveHarvestCompetitors:harvestCompetitors,effectiveMinimumPreparationFraction:minimumPreparationFraction,effectiveMinimumPreparationRam:minimumPreparationRam,effectiveMaxTargets:limit},completedBatches:state.completed,waiting}
 }

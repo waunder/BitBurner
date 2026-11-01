@@ -701,7 +701,9 @@ export async function acquireSession(ns, host, known, opts = {}) {
         exhaustive: false,
       }
     }
-    for (let attempt = 0; attempt <= retries; attempt++) {
+    // Named `retry` because the game bills any identifier `attempt` as
+    // codingcontract.attempt, a false 10GB charge on every importing script.
+    for (let retry = 0; retry <= retries; retry++) {
       const res = await ns.dnet.authenticate(host, cand.password)
       tried++
       if (res.success) {

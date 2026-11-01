@@ -38,8 +38,7 @@ Built and tested offline: `dnet_lab.js`, `dnet_lab_logic.js` and the crawler hoo
 100 simulated mazes pass. Never run against a real labyrinth: charisma is 1, the
 darknet is not running yet, and reward handling is read from source only.
 
-Blocking gap: spread is one hop from `darkweb`, because managers and child
-crawlers run `--no-spread`, so a depth 7 lab is out of reach. `dnet_crawl.js` also
-cracks only eight shallow password models. Next: a single-process scout that
-walks deeper without leaving residents, using the full solvers in `dnet_lib.js`.
-Crawler RAM rose to 7.3GB with this hook; check that gateway recrawls still fit.
+The original gap was reach: spread stops one hop from `darkweb`, and
+`dnet_crawl.js` cracks only eight shallow models. `dnet_scout.js` now walks deeper
+as a single chain using the full solvers. It is untested live.
+Crawler RAM rose to 7.3GB with the lab hook; check that gateway recrawls still fit.

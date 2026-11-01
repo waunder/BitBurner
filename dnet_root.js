@@ -21,7 +21,11 @@ import {
   writeDeployerShard,
 } from "dnet_lib.js"
 
+import { SCOUT_STATUS, shouldStartScout } from "dnet_scout_logic.js"
+
 const CRAWLER = "dnet_crawl.js"
+const SCOUT = "dnet_scout.js"
+const SCOUT_FILES = [SCOUT, "dnet_scout_logic.js", "dnet_lib.js", "dnet_lab.js", "dnet_lab_logic.js", "dnet_loot.js"]
 const MANAGER = "dnet_manager.js"
 const REALLOC = "dnet_realloc.js"
 const LEGACY = "dnet_deploy.js"
@@ -205,6 +209,13 @@ export async function main(ns) {
           lastFailure = { at: Date.now(), target, stage: "prepare", prep }
           continue
         }
+      }
+
+      let status = null
+      try { status = JSON.parse(ns.read(SCOUT_STATUS) || "null") } catch { /* partial write: treat as stale */ }
+      if (shouldStartScout(status, Date.now()) && await ns.scp(SCOUT_FILES, target)) {
+        const pid = ns.exec(SCOUT, target, { preventDuplicates: true })
+        ns.write(SCOUT_STATUS, JSON.stringify({ ts: Date.now(), state: pid ? "launched" : "launch-failed", host: target, trail: [] }), "w")
       }
 
       if (!delegated) {

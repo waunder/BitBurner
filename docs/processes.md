@@ -249,9 +249,22 @@ opens the reward cache.
   `dnet_lab_search.json` every 5 moves, shipped home. Resume needs the same lab
   and entrance.
 - **Failure modes:** 20 consecutive refused moves stops with `failing`.
-- **Known gap:** crawlers cannot reach labs yet; see
-  `docs/red-pill-path-2026-11-01.md`.
 - **Test:** `node --test dnet_lab_logic.test.js`
+
+### `dnet_scout.js`
+
+Single-chain deep scout. Each copy reads its neighbours, cracks the deepest one it
+can with the full `dnet_lib.js` solvers, copies itself there, starts that copy and
+exits. `dnet_root.js` starts a new chain on `darkweb` when `dnet_scout_status.json`
+is over 5 minutes old, so only one chain runs. New passwords go through the normal
+credential shards.
+
+- **Writes:** `dnet_scout_status.json` at home (`state`: launched, scouting, hopped,
+  lab-found, charisma, dead-end, hop-limit, launch-failed) with the full trail and
+  up to four failed hops.
+- **Failure modes:** a server that moves mid-hop simply ends the chain; the next
+  start retries. A host too small for the scout counts as a failed hop.
+- **Test:** `node --test dnet_scout_logic.test.js`
 
 ### `capital_manager.js`
 

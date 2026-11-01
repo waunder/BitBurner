@@ -31,3 +31,15 @@ because uncapped managers froze the renderer on 2026-08-30.
 Decision: treat the darknet as the progression route, not an income engine.
 Build lab telemetry first, then a maze solver, then test a higher cap as a
 measured experiment.
+
+## Build status
+
+Built and tested offline: `dnet_lab.js`, `dnet_lab_logic.js` and the crawler hook;
+100 simulated mazes pass. Never run against a real labyrinth: charisma is 1, the
+darknet is not running yet, and reward handling is read from source only.
+
+Blocking gap: spread is one hop from `darkweb`, because managers and child
+crawlers run `--no-spread`, so a depth 7 lab is out of reach. `dnet_crawl.js` also
+cracks only eight shallow password models. Next: a single-process scout that
+walks deeper without leaving residents, using the full solvers in `dnet_lib.js`.
+Crawler RAM rose to 7.3GB with this hook; check that gateway recrawls still fit.

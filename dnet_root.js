@@ -25,7 +25,7 @@ const CRAWLER = "dnet_crawl.js"
 const MANAGER = "dnet_manager.js"
 const REALLOC = "dnet_realloc.js"
 const LEGACY = "dnet_deploy.js"
-const FILES = [CRAWLER, MANAGER, REALLOC, "dnet_lib.js", "dnet_loot.js", "dnet_loot_realloc.js", "dnet_phish.js"]
+const FILES = [CRAWLER, MANAGER, REALLOC, "dnet_lab.js", "dnet_lab_logic.js", "dnet_lib.js", "dnet_loot.js", "dnet_loot_realloc.js", "dnet_phish.js"]
 // Gateway work is intentionally separate from shard maintenance: checking
 // darkweb may stay responsive without rereading hundreds of historic shards.
 const RETRY_MS = 5000

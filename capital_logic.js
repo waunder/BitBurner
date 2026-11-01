@@ -7,13 +7,16 @@ export const PROGRAMS = ["BruteSSH.exe", "FTPCrack.exe", "relaySMTP.exe", "Darks
  * Input costs of null mean unavailable; `spendable` is cash above the reserve.
  */
 export function chooseCapitalAction({ spendable, hasTor, torCost = 200e3, programs = [], homeRam, homeRamTarget, homeRamCost,
-  cloud = [], cloudLimit = 0, cloudQuotes = [], upgradeQuotes = [], cloudFraction = 0.5 }) {
+  cloud = [], cloudLimit = 0, cloudQuotes = [], upgradeQuotes = [], cloudFraction = 0.5, incomePerSec = 0, saveWindowSec = 300 }) {
   if (!hasTor) return spendable >= torCost ? { kind: "tor", cost: torCost } : { kind: "save", reason: "TOR", cost: torCost }
-  // Only TOR blocks spending. Saving for a $250m program would stall the cloud
-  // RAM that earns it, so unaffordable items simply wait for a later pass.
-  const missing = programs.find(p => !p.owned && Number.isFinite(p.cost) && p.cost > 0 && p.cost <= spendable)
-  if (missing) return { kind: "program", name: missing.name, cost: missing.cost }
-  if (homeRam < homeRamTarget && Number.isFinite(homeRamCost) && homeRamCost <= spendable) return { kind: "home", cost: homeRamCost }
+  const missing = programs.find(p => !p.owned && Number.isFinite(p.cost) && p.cost > 0)
+  if (missing && missing.cost <= spendable) return { kind: "program", name: missing.name, cost: missing.cost }
+  const wantsHome = homeRam < homeRamTarget && Number.isFinite(homeRamCost)
+  if (wantsHome && homeRamCost <= spendable) return { kind: "home", cost: homeRamCost }
+  // Hold cloud buying when income can reach the next priority soon, but never
+  // wait on a distant $250m program: the cloud RAM is what earns it.
+  const next = Math.min(missing?.cost ?? Infinity, wantsHome ? homeRamCost : Infinity)
+  if (Number.isFinite(next) && next - spendable <= incomePerSec * saveWindowSec) return { kind: "save", reason: "next priority", cost: next }
   const budget = spendable * cloudFraction
   if (cloud.length < cloudLimit) {
     const best = cloudQuotes.filter(q => q.cost <= budget).sort((a, b) => b.ram - a.ram)[0]

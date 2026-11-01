@@ -25,6 +25,9 @@ training off; player is on Shoplift. Ken approved buying augmentations and
 the installs in the Red Pill plan on 2026-11-01. Leaving BN15 or any install
 outside that plan still needs his approval. Why BN15, and the numbers: `docs/bitnode-choice-2026-11-01.md`.
 
+Labyrinth solver is built and tested offline, not yet run live. Next darknet step
+is a deep scout; `dnet_root.js` starts when home RAM fits it.
+
 DevTools runs on 127.0.0.1:9222 through the Steam launch option.
 
 ## Earlier snapshot, 2026-11-01 10:45 MST

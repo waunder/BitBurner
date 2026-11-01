@@ -12,7 +12,10 @@ const DEPLOYER_PREFIX = "dnet_deployer_"
 const SELF = "dnet_crawl.js"
 const MANAGER = "dnet_manager.js"
 const REALLOC = "dnet_realloc.js"
-const FILES = [SELF, MANAGER, REALLOC, "dnet_lib.js", "dnet_loot.js", "dnet_loot_realloc.js", "dnet_phish.js"]
+const LAB_WORKER = "dnet_lab.js"
+const LAB_SEARCH = "dnet_lab_search.json"
+const LAB_SIGHTING = "dnet_lab_sighting.json"
+const FILES = [SELF, MANAGER, REALLOC, LAB_WORKER, "dnet_lab_logic.js", "dnet_lib.js", "dnet_loot.js", "dnet_loot_realloc.js", "dnet_phish.js"]
 
 // Concurrency cap (2026-08-30) — constants/logic duplicated from
 // dnet_lib.js rather than imported, same reason this whole file avoids that
@@ -170,6 +173,20 @@ async function prepareTarget(ns, target) {
   return { ok: after <= 0, before, after, threads }
 }
 
+/** Report a neighbouring labyrinth, and work it once charisma qualifies. */
+async function checkForLab(ns, neighbours) {
+  const lab = neighbours.find(name => name.endsWith("l4byr1nth"))
+  if (!lab) return
+  const required = ns.dnet.getServerRequiredCharismaLevel(lab)
+  const charisma = ns.getPlayer().skills.charisma
+  const free = ns.getServerMaxRam(ns.getHostname()) - ns.getServerUsedRam(ns.getHostname())
+  const ram = ns.getScriptRam(LAB_WORKER)
+  const threads = ram > 0 ? Math.floor(free / ram) : 0
+  const pid = charisma >= required && threads > 0 ? ns.exec(LAB_WORKER, ns.getHostname(), { threads, preventDuplicates: true }, lab) : 0
+  ns.write(LAB_SIGHTING, JSON.stringify({ ts: Date.now(), lab, host: ns.getHostname(), required, charisma, threads, pid }), "w")
+  await ns.scp(LAB_SIGHTING, "home")
+}
+
 export async function main(ns) {
   ns.disableLog("ALL")
   const flags = ns.flags([
@@ -181,6 +198,7 @@ export async function main(ns) {
   const host = ns.getHostname()
   const creds = readCreds(ns)
   const neighbours = ns.dnet.probe()
+  await checkForLab(ns, neighbours)
   const summary = { seen: neighbours.length, sessions: 0, cracked: 0, prepared: 0, deployed: 0, failed: 0, failures: [] }
   const noteFailure = (target, stage, why, code = null) => {
     // One small bounded diagnostic is enough to distinguish stale credentials
@@ -237,6 +255,7 @@ export async function main(ns) {
     const files = [...FILES]
     if (ns.fileExists(CREDS_FILE)) files.push(CREDS_FILE)
     if (ns.fileExists(MANAGER_REGISTRY_FILE)) files.push(MANAGER_REGISTRY_FILE)
+    if (ns.fileExists(LAB_SEARCH)) files.push(LAB_SEARCH)
     try {
       if (!(await ns.scp(files, target))) {
         summary.failed++

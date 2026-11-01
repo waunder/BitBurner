@@ -8,15 +8,20 @@ test("saves for TOR before anything else", () => {
   assert.equal(chooseCapitalAction({ ...base, hasTor: false, spendable: 100 }).kind, "save")
   assert.equal(chooseCapitalAction({ ...base, hasTor: false, spendable: 200e3 }).kind, "tor")
 })
-test("buys the first affordable missing program", () => {
+test("buys programs strictly in order", () => {
   const programs = [{ name: "a", owned: true, cost: 0 }, { name: "b", owned: false, cost: 50 }, { name: "c", owned: false, cost: 10 }]
   assert.deepEqual(chooseCapitalAction({ ...base, programs, spendable: 50 }), { kind: "program", name: "b", cost: 50 })
-  assert.equal(chooseCapitalAction({ ...base, programs, spendable: 49 }).name, "c")
+  assert.equal(chooseCapitalAction({ ...base, programs, spendable: 49 }), null)
 })
 test("home RAM precedes cloud RAM until its target", () => {
   const input = { ...base, homeRam: 32, homeRamCost: 100, cloudQuotes: [{ ram: 8, cost: 1 }] }
   assert.equal(chooseCapitalAction({ ...input, spendable: 100 }).kind, "home")
   assert.equal(chooseCapitalAction({ ...input, spendable: 99 }).kind, "cloud")
+})
+test("holds cloud buying when the next priority is within reach", () => {
+  const input = { ...base, homeRam: 32, homeRamCost: 1000, cloudQuotes: [{ ram: 8, cost: 1 }], spendable: 100 }
+  assert.equal(chooseCapitalAction({ ...input, incomePerSec: 10 }).kind, "save")
+  assert.equal(chooseCapitalAction({ ...input, incomePerSec: 1 }).kind, "cloud")
 })
 test("cloud buys the largest size within the budget fraction", () => {
   const cloudQuotes = [{ ram: 8, cost: 10 }, { ram: 16, cost: 20 }, { ram: 32, cost: 40 }]

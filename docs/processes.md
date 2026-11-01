@@ -236,6 +236,23 @@ so the pool shrinks to what needs no ports. Rebuilding it means Create Program
 
 ## Farming
 
+### `dnet_lab.js`
+
+Walks a labyrinth by depth-first search, one `dnet.authenticate(lab, "go <dir>")`
+per room, using `dnet_lab_logic.js`. `dnet_crawl.js` launches it when a lab is a
+neighbour and charisma meets `getServerRequiredCharismaLevel`, using all free RAM
+on that host. On success it connects and runs `dnet_loot.js` on the lab, which
+opens the reward cache.
+
+- **Writes:** `dnet_lab_sighting.json` from the crawler; `dnet_lab_status.json`
+  (`state`: walking, solved, charisma, stuck, failing, no-lab) and
+  `dnet_lab_search.json` every 5 moves, shipped home. Resume needs the same lab
+  and entrance.
+- **Failure modes:** 20 consecutive refused moves stops with `failing`.
+- **Known gap:** crawlers cannot reach labs yet; see
+  `docs/red-pill-path-2026-11-01.md`.
+- **Test:** `node --test dnet_lab_logic.test.js`
+
 ### `capital_manager.js`
 
 Spends cash on hacking capacity. `capital_bootstrap.js` needs about 5.6GB, so it
@@ -243,7 +260,8 @@ fits on a fresh 32GB home: it upgrades home RAM until the 17GB manager can run,
 then hands over and exits. Each pass buys the first affordable item: TOR, then
 programs, then home RAM up to `homeRamTarget`, then cloud RAM up to
 `cloudFraction` of spendable cash. Full cloud slots upgrade the smallest server.
-Only TOR blocks spending. It also starts waiting managers once they fit, and
+Cloud buying pauses when measured income can reach the next program or home
+upgrade within `saveWindowSec` (default 300). It also starts waiting managers once they fit, and
 never touches augmentations.
 
 - **Reads:** `capital_policy.json` every pass (`enabled`, `reserve`,

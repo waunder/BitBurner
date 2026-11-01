@@ -9,8 +9,13 @@ The live save is **BitNode 5**, not BN2 (`getResetInfo().currentNode`; owned SF
 1.2, 2.1, 4.3, 5.3). Gang creation therefore needs -54,000 karma; karma was
 -2,861 at 12:55 MST. Sections below that say "this BitNode 2 run" are stale.
 
-Fleet: 25 cloud servers, 30.72TB, plus 524GB rooted; home 256GB. Measured
-$2.66m/s and 1,293 hack XP/s on 20TB (`docs/cloud-capacity-2026-11-01.md`).
+Fleet: 25 cloud servers, 67.58TB, plus 524GB rooted; home 256GB. Measured
+$12.5m/s and 6,103 hack XP/s over 144s after the upgrade, a short window
+(`docs/cloud-capacity-2026-11-01.md`).
+
+Finishing BN5 grants no Source-File: SF5 is at its cap of 3. `b1t_flum3.exe`
+leaves without finishing and resets the run, so it needs Ken's approval.
+His decision on staying or leaving is pending.
 
 Joined The Black Hand, NiteSec and CyberSec on 2026-11-01. Sector-12's invite is
 deliberately unanswered because it locks out rival city factions. Player is on

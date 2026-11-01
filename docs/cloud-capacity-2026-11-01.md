@@ -26,5 +26,11 @@ still runs one cohort at a time, so idle RAM returns if demand ever falls below
 fleet capacity. No scheduler code changed. Raw samples:
 `docs/evidence/cloud-capacity-2026-11-01/samples1.jsonl`.
 
+Later on 2026-11-01, 12 servers went from 1TB to 4TB in place for $6.67b,
+giving 67.58TB of cloud RAM. Before it, a 207s window measured $4.74m/s and
+1,298 XP/s; after it, a 144s window measured $12.5m/s and 6,103 XP/s. Hacking
+was 449 and 456, and those harvests are lumpy, so the gain is unproven at that
+length. Launch failures stayed zero.
+
 BitNode multipliers read live: ScriptHackMoney 0.15, HackExpGain 0.5,
 AugmentationMoneyCost 2, GangUniqueAugs 0.5.

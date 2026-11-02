@@ -1,13 +1,15 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-02 02:42 MST. Sources: Steam game via DevTools and
-terminal, Remote API `mcp_status.json`, game source and live reads.
+Last refreshed: 2026-11-02 03:29 MST. Sources: Steam game via DevTools and
+terminal, Remote API status files, `charisma_survey.js`.
 
 ## Current live state (supersedes everything below)
 
-**Live 02:40 MST (game, status files):** node 15, hacking 375, charisma 307 (up from 171 at 02:03), cash $10.3b, net about $20m/s, `phantasy` stack running, Tian Di Hui joined, rep 2,607 at about 3/s. Share: 16,380 threads, power 1.394 (`share_deploy.js network 256 128 20000`), `xp_filler.js` refilled after it.
-**New charisma source (game source, new this run):** `promoteStock` pays per thread on every call, about 4x phishing, and darknet RAM is the limit: 185GB rooted of about 1.5TB. `dnet_promote.js` is live: one thread on the anchor stayed running (host used 4.8 to 8.4GB). Scouts leave one behind on each host: at 02:43 about 15 threads across 7 hosts (read from each host's used RAM, 7.2GB being 2 threads). Their exp rate is unmeasured; charisma exp rose about 63/s before them, cause unknown, so compare before relying on it.
-**Install 2 plan:** Speech Processor needs 7,500 rep, about 25 minutes from 02:40. When Tian Di Hui has 7,500 (S.N.A at 6,250 comes first): export and validate the save, then `run aug_install.js --install`. `capital_policy.json` reserve is $600m on the game (gitignored); cash is far past it. Charisma exp resets on install; scouts rebuild the workers afterwards.
+**Second install done, 2026-11-02 03:26 MST.** Before it (03:25): hacking 399, charisma 426 (exp 526k), $68b, Tian Di Hui rep about 11k, karma -260. Installed Speech Processor, S.N.A, Nuoptimal, ADR-V1, Speech Enhancement, Neurotrainer I, Wired Reflexes and 6 NeuroFlux levels. Charisma mult 1.748 to 2.523, exp mult 1.544 to 2.177. Backup: `saves/bitburnerSave_pre-install2_BN15_2026-11-02.save`, validated (gitignored).
+Why now: 600 needed about 8.9m exp at the old mult (exp was rising about 170/s) and needs about 442k at the new one. About $67b was left unspent: `--install` bought no home upgrade, so the cheaper of RAM and cores evidently costs over that (home 8.19TB, cores 2). Costs not read.
+**Live 03:27:50 MST (game, status files):** node 15, hacking 1, charisma 178 (exp 3,339, about 36 exp/s from 03:26:41 to 03:27:50 with no training), $1.8k, MCP preparing n00dles and foodnstuff. Status 03:27:34: scout at depth 3, chain running. The decision is Deal Drugs, $20k/s expected; the switch was issued but the game was not yet seen doing it.
+Fixed this run: while short of cash the player chose crime by karma rate, which picked Homicide at 1.5%; it now picks by money rate. `capital_policy.json` reserve is 0 on game and disk, because $600m would have stopped the rebuild. Raise it only when saving for an install.
+**Next:** Cruel lab: depth 12, charisma 600, reward The Boots. The Dark Net page at 03:25 listed 46 hosts to depth 9, none at 12, and no lab on it. The labs need charisma at solve time, so solve before the next install. Merciless (1,500) needs about x1.85 more level multiplier: Enhanced Social Interaction x1.6 or SmartJaw x1.5 at 375k corporate rep.
 
 **First install done, 2026-11-02 about 01:22 MST.** Hacking 376, charisma 329, $259b, NiteSec rep about 17k before it. Installed The Broken Wings
 (`The W1ngs of Icarus`), 7 NiteSec augmentations and 8 NeuroFlux levels. 9 installed in all, so at least four more cycles. Leftover cash bought home RAM to

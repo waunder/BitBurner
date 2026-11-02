@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { actionKey, choosePlayerActivity, shouldSwitch } from "./player_activity_logic.js"
+import { actionKey, choosePlayerActivity, pickCrime, shouldSwitch } from "./player_activity_logic.js"
 
 const player = { skills: { hacking: 400, strength: 1, defense: 1, dexterity: 1, agility: 1 } }
 
@@ -86,4 +86,13 @@ test("a listed charisma augmentation takes faction work ahead of Leadership, oth
   const config = { physicalTarget: 0, charismaTarget: 600, charismaAugs: ["Speech Processor Implant"] }
   assert.equal(choosePlayerActivity({ player: ready, augmentation, config }).faction, "Tian Di Hui")
   assert.equal(choosePlayerActivity({ player: ready, augmentation, config: { ...config, charismaAugs: [] } }).action, "leadership")
+})
+
+test("crime is picked by money rate when cash is short and karma rate otherwise", () => {
+  const rows = [
+    { crime: "Shoplift", chance: 0.5, time: 2000, karma: 0.01, money: 15000 },
+    { crime: "Homicide", chance: 0.02, time: 3000, karma: 3, money: 45000 },
+  ]
+  assert.equal(pickCrime(rows, true).crime, "Shoplift")
+  assert.equal(pickCrime(rows, false).crime, "Homicide")
 })

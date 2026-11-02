@@ -15,6 +15,22 @@ function number(value) {
  * each combat stat Slum Snakes gate. Set it to 0 to leave physical training
  * entirely out of automatic control.
  */
+/** Best crime by money rate when cash is short, otherwise by karma rate. The game reports karma lost as positive. */
+export function pickCrime(rows, cashShort) {
+  let best = null
+  for (const { crime, chance, time, karma, money } of rows) {
+    if (!(time > 0)) continue
+    const candidate = {
+      action: "crime", crime, chance,
+      expectedKarmaPerSecond: Math.abs(karma) * chance / (time / 1000),
+      expectedMoneyPerSecond: money * chance / (time / 1000),
+    }
+    const key = cashShort ? "expectedMoneyPerSecond" : "expectedKarmaPerSecond"
+    if (candidate[key] > 0 && Number.isFinite(candidate[key]) && (!best || candidate[key] > best[key])) best = candidate
+  }
+  return best
+}
+
 export function choosePlayerActivity({ player = {}, nextGate = null, augmentation = null, crimeCandidate = null, config = {} } = {}) {
   const override = String(config.override || "auto").toLowerCase()
   if (config.enabled === false || override === "manual") {

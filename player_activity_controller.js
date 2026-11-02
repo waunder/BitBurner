@@ -8,7 +8,7 @@
  *
  * @param {NS} ns
  */
-import { actionKey, choosePlayerActivity, shouldSwitch } from "./player_activity_logic.js"
+import { actionKey, choosePlayerActivity, pickCrime, shouldSwitch } from "./player_activity_logic.js"
 
 const CONFIG = "player_activity_config.json"
 const STATUS = "player_activity_status.json"
@@ -70,20 +70,16 @@ function playerControlCapability(ns) {
   }
 }
 
-function bestKarmaCrime(ns) {
-  let best = null
+function bestCrime(ns, cashShort) {
+  const rows = []
   for (const crime of CRIMES) {
     try {
       const stats = ns.singularity.getCrimeStats(crime)
       const chance = ns.singularity.getCrimeChance(crime)
-      // The game reports karma lost as a positive number.
-      const karmaPerSecond = stats.time > 0 ? Math.abs(stats.karma) * chance / (stats.time / 1000) : 0
-      if (karmaPerSecond > 0 && Number.isFinite(karmaPerSecond) && (!best || karmaPerSecond > best.expectedKarmaPerSecond)) {
-        best = { action: "crime", crime, chance, expectedKarmaPerSecond: karmaPerSecond }
-      }
+      rows.push({ crime, chance, time: stats.time, karma: stats.karma, money: stats.money })
     } catch { /* A missing crime API is reported by the outer capability state. */ }
   }
-  return best
+  return pickCrime(rows, cashShort)
 }
 
 function startActivity(ns, decision) {
@@ -148,7 +144,7 @@ export async function main(ns) {
     const cashShort = Number(player.money) < Number(config.minTrainingCash ?? 1e7)
     const crimeNeeded = cashShort || (Number.isFinite(karmaTarget) && Number(player.karma) > karmaTarget)
     const crimeCandidate = capability.available && (crimeNeeded || String(config.override).toLowerCase() === "crime")
-      ? bestKarmaCrime(ns) : null
+      ? bestCrime(ns, cashShort) : null
     const decision = choosePlayerActivity({ player, nextGate: gateState.gate, augmentation, crimeCandidate, config })
     const key = actionKey(decision)
     const alreadySelected = alreadyDoing(currentWork, decision)

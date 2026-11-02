@@ -1394,8 +1394,9 @@ evidence-backed goal changes. A ten-minute hysteresis prevents churn.
   own faction is excluded because the player cannot perform faction work for
   the gang they lead. If neither applies and karma is above
   `crimeKarmaTarget`, it commits the crime with the highest expected karma
-  reduction per second. If no measurable gate applies, it holds the current
-  activity instead of inventing a goal.
+  reduction per second. Under `minTrainingCash` it does crime first, picked by
+  expected money per second instead. If no measurable gate applies, it holds the
+  current activity instead of inventing a goal.
 - **Control:** `repBeforeGates` puts faction rep ahead of hacking gates in auto mode.
   `player_activity_config.json` is committed and synced. Set
   `"override": "manual"` or `"enabled": false` to stop changes at the next

@@ -1,6 +1,6 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { anchorPlan, deepestFirst, promoteThreads, rankHops, shouldStartScout, scoutStart, shouldAnchor, freshRoute, routeHops, liftTargets, riderShouldScout } from "./dnet_scout_logic.js"
+import { anchorPlan, deepestFirst, labSolved, promoteThreads, rankHops, shouldStartScout, scoutStart, shouldAnchor, freshRoute, routeHops, liftTargets, riderShouldScout } from "./dnet_scout_logic.js"
 
 test("prefers deeper, then easier, unvisited hosts", () => {
   const hops = rankHops([
@@ -116,4 +116,11 @@ test("rider scouts only past its start, with new links or after the retry wait",
   assert.equal(riderShouldScout(7, 10, ["a"], "", 0, 1000, 100), true)
   assert.equal(riderShouldScout(7, 10, ["a"], "a", 950, 1000, 100), false)
   assert.equal(riderShouldScout(7, 10, ["a"], "a", 800, 1000, 100), true)
+})
+
+test("labSolved counts only a solve since the last install", () => {
+  assert.equal(labSolved({ state: "solved", ts: 20 }, 10), true)
+  assert.equal(labSolved({ state: "solved", ts: 5 }, 10), false)
+  assert.equal(labSolved({ state: "walking", ts: 20 }, 10), false)
+  assert.equal(labSolved(null, 10), false)
 })

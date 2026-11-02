@@ -59,6 +59,11 @@ export function deepestFirst(hosts, depthOf) {
   return [...hosts].sort((a, b) => (depthOf(b) ?? -1) - (depthOf(a) ?? -1))
 }
 
+/** True once this install's lab is solved, so reach no longer matters. */
+export function labSolved(status, lastAugReset) {
+  return status?.state === "solved" && status.ts > lastAugReset
+}
+
 /** Where to start the next chain: the anchor when it is reachable, else darkweb. */
 export function scoutStart(anchors, creds, gateway, lastStatus = null) {
   // A linked host can lose every neighbour, so a dead end there sends one chain round by the gateway.

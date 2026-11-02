@@ -1,9 +1,14 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-02 08:30 MST. Sources: Steam game via DevTools and
+Last refreshed: 2026-11-02 09:47 MST. Sources: Steam game via DevTools and
 terminal, Remote API status files, game bundle.
 
 ## Current live state (supersedes everything below)
+
+**Live 09:25-09:47 (game page, save read over DevTools, status files):** node 15, hacking 583, charisma 854, $1.8t, net about $316m/s, Bachman rep 125.8k at 14.25 rep/s, on track for the 400k invite about 14:40 MST. Karma -386.
+**Charisma exp is now 1,256/s, was about 190/s** (two saves 180s apart, 09:36-09:39; exp 7.54m to 7.77m). Save showed only 5 `dnet_promote.js` threads and they gave nearly all charisma exp, about 35 exp/s a thread. The solved Cruel lab is rooted with 128GB free, so `dnet_lab.js` now fills it: 31 threads, seen in the save. It dies with the next install because Cruel leaves the network; other hosts held 1,186GB free at 09:27, mostly unrooted.
+Why it matters: exp resets on install, so this only adds company rep now (rate moved 13.9 to 14.25 with charisma and hacking, roughly in step with charisma). The lasting lesson is for after each install: exp rate adds 32 ln(k) to the level term, so many threads cut the rebuild. Bundle below ESI and SmartJaw noted: Nanofiber, Magnetism, Neural Wit, DermaForce add about x1.17; TITN-41 (25k, Silhouette), Golden Tongue and SoA Beauty need factions not reached.
+After a solve, chains now start at `darkweb` to spread promoters; riders exit so their scouts stop keeping the status fresh. Live 09:46: spread worked, save shows 52 threads on 7 hosts (5 new since 09:43) and 1,572 exp/s over 120s, with the 31 on the lab. Promoters on ordinary hosts may die in mutations; lasting count not yet seen. Not tried after an install.
 
 **Live 08:24-08:29 (game page, status files, one-shot probe):** node 15, hacking 568, charisma 836, $2.07t before spending, net about $281m/s over 10 minutes, Bachman rep 62.6k as Business Manager at 14.1 rep/s focused. MCP, capital and darknet all reporting; karma -370. Cruel lab reads solved, Boots queued, still held. Invite estimate: 200k rep (Operations Manager, 15.8/s) in about 2.7h, 400k about 3.5h later, so about 14:45 MST.
 Faction rep after that is about 5.6/s at hacking 568, about 8.3/s with share, from rates seen earlier and not measured on Bachman: 375k is about 12.5 hours, so the charisma install lands about 03:30 on 2026-11-03. Rep, not cash, limits this: about $1t/hour arrives against rep that needs under $100b of augmentations for the two that matter.

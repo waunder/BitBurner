@@ -21,7 +21,7 @@ import {
   writeDeployerShard,
 } from "dnet_lib.js"
 
-import { ROUTE_FILE, SCOUT_STATUS, deepestFirst, freshRoute, promoteThreads, scoutStart, shouldStartScout } from "dnet_scout_logic.js"
+import { ROUTE_FILE, SCOUT_STATUS, deepestFirst, freshRoute, labSolved, promoteThreads, scoutStart, shouldStartScout } from "dnet_scout_logic.js"
 
 const CRAWLER = "dnet_crawl.js"
 const LAB_STATUS = "dnet_lab_status.json"
@@ -219,11 +219,15 @@ export async function main(ns) {
       let status = null
       try { status = JSON.parse(ns.read(SCOUT_STATUS) || "null") } catch { /* partial write: treat as stale */ }
       const anchors = deepestFirst(ns.dnet.getStasisLinkedServers(), host => ns.dnet.getServerDetails(host).depth)
+      let lab = null
+      try { lab = JSON.parse(ns.read(LAB_STATUS) || "null") } catch { /* partial write: treat as unsolved */ }
+      const solved = labSolved(lab, ns.getResetInfo().lastAugReset)
       if (shouldStartScout(status, Date.now())) {
         // A stasis-linked host holds still and accepts exec from here, so chains resume from it.
         let routed = false
         try { routed = freshRoute(JSON.parse(ns.read(ROUTE_FILE) || "null"), Date.now())[0] === target } catch { /* partial write: no route */ }
-        const anchor = routed ? target : scoutStart(anchors, creds, target, status)
+        // Once solved, chains leave the gateway so they pass new hosts and leave charisma workers on them.
+        const anchor = routed || solved ? target : scoutStart(anchors, creds, target, status)
         let pid = 0
         if (anchor !== target && ns.dnet.connectToSession(anchor, creds[anchor].password).success && await ns.scp(SCOUT_FILES, anchor)) {
           pid = ns.exec(SCOUT, anchor, { preventDuplicates: true })
@@ -249,18 +253,16 @@ export async function main(ns) {
       }
 
       // One walker waits on the stasis-linked host: lab links reach it faster than any chain.
-      let lab = null
-      try { lab = JSON.parse(ns.read(LAB_STATUS) || "null") } catch { /* partial write: treat as unsolved */ }
       const [linked] = anchors
       const running = (host, file) => ns.ps(host).some(proc => proc.filename.replace(/^\//, "") === file)
       // Links stop at the empty row, so every linked host tries to lift a neighbour past it.
       for (const anchor of anchors) {
-        if (lab?.state === "solved" && lab.ts > ns.getResetInfo().lastAugReset) break
+        if (solved) break
         if (!ns.dnet.connectToSession(anchor, creds[anchor]?.password ?? "").success || running(anchor, INDUCE) || running(anchor, LIFT)) continue
         if (await ns.scp(SCOUT_FILES, anchor)) ns.exec(LIFT, anchor, 1)
       }
       const lifting = linked && running(linked, INDUCE)
-      if (linked && !lifting && !(lab?.state === "solved" && lab.ts > ns.getResetInfo().lastAugReset)
+      if (linked && !lifting && !solved
         && ns.dnet.connectToSession(linked, creds[linked]?.password ?? "").success
         && !ns.ps(linked).some(proc => proc.filename.replace(/^\//, "") === "dnet_lab.js")) {
         await ns.scp(SCOUT_FILES, linked)

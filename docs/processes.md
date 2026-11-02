@@ -244,7 +244,7 @@ host until a `solved` status newer than the last install; `dnet_crawl.js` launch
 one when a lab is a neighbour and charisma fits, using all free RAM on that host.
 It waits while no lab is connected, and the game keeps its position per pid, so a
 lost link only costs time. On success it connects and runs `dnet_loot.js` on the
-lab, which opens the reward cache.
+lab, which opens the reward cache, then fills the lab with `dnet_promote.js`, keeping 8GB free. A repeat solve is cheap and `promoter` then reads 0 because one is already running; `labRam` shows it. After a solve `dnet_root.js` stops lifting and sends chains out from `darkweb` so they leave charisma workers on new hosts, and `dnet_rider.js` exits (`finished`).
 
 - **Writes:** `dnet_lab_sighting.json` from the crawler; `dnet_lab_status.json`
   (`state`: waiting, walking, solved, charisma, stuck, failing, no-lab) and
@@ -296,6 +296,10 @@ per call, every call, in `8s x 600 / (600 + charisma)`: about 4x phishing per th
 `dnet_scout.js` leaves one on each host it leaves, in the free RAM beyond its own, so a later chain can still pass; `dnet_root.js` keeps one on the stasis-linked host beside room for a scout. A scout beside a lab kills it first.
 
 - **Failure modes:** a mutation can kill it; the next chain through replaces it.
+
+### `restart_dnet_root.js`
+
+One-shot: restarts `dnet_root.js` with its args, stops riders on linked hosts, and restores work focus.
 
 ### `dnet_anchor.js`
 

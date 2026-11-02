@@ -1,7 +1,7 @@
 /**
  * Solves a labyrinth from a directly connected darknet server. One long process
  * walks the maze, because the game tracks position per PID. Its progress is
- * saved locally and shipped home; on success it opens the reward cache.
+ * saved locally and shipped home; on success it opens the reward cache and fills the lab with charisma workers.
  *
  * Start: dnet_root.js keeps one on the stasis-linked host, and dnet_crawl.js launches
  * one when a lab is a neighbour. Links come and go, so it waits for the lab each time.
@@ -12,6 +12,9 @@ import { LAB_HOSTS, NOT_ENOUGH_CHARISMA, applyMove, newSearch, nextMove, parseEx
 const STATE = "dnet_lab_search.json"
 const STATUS = "dnet_lab_status.json"
 const LOOT = "dnet_loot.js"
+const PROMOTE = "dnet_promote.js"
+const PROMOTE_RAM = 3.6
+const LOOT_ROOM = 8 // Kept free on the lab for a later dnet_loot.js.
 const SAVE_EVERY = 5
 const RETRY_MS = 1000
 const MAX_FAILS = 20
@@ -57,7 +60,10 @@ export async function main(ns) {
       ns.scp(STATE, "home")
       ns.dnet.connectToSession(lab, result.data)
       const looted = ns.scp([LOOT, "dnet_lib.js"], lab) && ns.exec(LOOT, lab, 1)
-      return report("solved", { moves, password: result.data, lootPid: looted || 0 })
+      // A solved lab is the roomiest host on the darknet until the next install.
+      const threads = Math.floor((ns.getServerMaxRam(lab) - ns.getServerUsedRam(lab) - LOOT_ROOM) / PROMOTE_RAM)
+      const promoter = threads > 0 && ns.scp(PROMOTE, lab) && ns.exec(PROMOTE, lab, { threads, preventDuplicates: true })
+      return report("solved", { moves, password: result.data, lootPid: looted || 0, promoter: promoter || 0, threads, labRam: [ns.getServerMaxRam(lab), ns.getServerUsedRam(lab)] })
     }
     const next = parseExits(result.data)
     // The game keeps this pid's position, so a lost link costs time and nothing else.

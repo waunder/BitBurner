@@ -1,9 +1,15 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-02 07:30 MST. Sources: Steam game via DevTools and
+Last refreshed: 2026-11-02 08:30 MST. Sources: Steam game via DevTools and
 terminal, Remote API status files, game bundle.
 
 ## Current live state (supersedes everything below)
+
+**Live 08:24-08:29 (game page, status files, one-shot probe):** node 15, hacking 568, charisma 836, $2.07t before spending, net about $281m/s over 10 minutes, Bachman rep 62.6k as Business Manager at 14.1 rep/s focused. MCP, capital and darknet all reporting; karma -370. Cruel lab reads solved, Boots queued, still held. Invite estimate: 200k rep (Operations Manager, 15.8/s) in about 2.7h, 400k about 3.5h later, so about 14:45 MST.
+Faction rep after that is about 5.6/s at hacking 568, about 8.3/s with share, from rates seen earlier and not measured on Bachman: 375k is about 12.5 hours, so the charisma install lands about 03:30 on 2026-11-03. Rep, not cash, limits this: about $1t/hour arrives against rep that needs under $100b of augmentations for the two that matter.
+Donations do not help yet: `getFavorToDonate` is 150. Favor: NiteSec 36, Tian Di Hui 18, Black Hand 13. 150 is about 472k total rep (fit: 25,500 x (1.02^favor - 1)). Earning 472k rather than 375k at Bachman would unlock donations there from the next cycle, about 1.5 more hours; decide then. Bachman company favor would gain 63 from rep so far; not enough to justify installing, because rep and charisma both reset.
+Spent idle cash: `capital_policy.json` now has `homeRamTarget` 131072 and `reserve` $500b (game file, gitignored). Home went 8.19TB to 65.5TB for $1.42t at 08:27, which survives installs. Next step costs about $3.16t and will buy itself once cash passes about $3.66t. Effect on income not yet measured.
+Running a one-shot while focused: click "Do something else simultaneously", then the Terminal sidebar item; end the script with `ns.singularity.setFocus(true)` to restore the rep rate.
 
 **Live 07:29 (game page, status files):** node 15, hacking 547, charisma 826, $1.07t, net $244m/s over 10 minutes, Bachman rep 17.8k as Business Analyst. Bachman work is now focused (`focusWork`): 12.0 rep/s seen on the page, against 80% of that unfocused. The controller refocuses hourly, so the Steam game shows the work page, not the terminal, and `#terminal-input` is missing. Click "Do something else simultaneously" to get the terminal for up to an hour. Invite at this rate, rising with promotions: about 15:00 MST, not observed.
 Checked and ruled out, 07:25: the `b-and-a` backdoor needs hacking 1,061. No early install: Boots, Nanofiber and 13 NeuroFlux give about x1.27, which needs about 1e8 charisma exp for 1,500. Rehearsing the row 16 crossing is not possible yet: migrations cap at the lab row minus 1, and the active lab stays Cruel until The Boots is installed. Infiltration pays well (Storm Technologies 8.7k rep a run, difficulty 3.48, above about 3.5 is barred) but the game fails any untrusted key event, so scripting it would mean defeating its automation check; not done. By hand it stays open to Ken for the 375k faction rep, and it gives no company rep.

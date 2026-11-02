@@ -1,6 +1,6 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { anchorPlan, deepestFirst, promoteThreads, rankHops, shouldStartScout, scoutStart, shouldAnchor, freshRoute, routeHops } from "./dnet_scout_logic.js"
+import { anchorPlan, deepestFirst, promoteThreads, rankHops, shouldStartScout, scoutStart, shouldAnchor, freshRoute, routeHops, liftTargets, riderShouldScout } from "./dnet_scout_logic.js"
 
 test("prefers deeper, then easier, unvisited hosts", () => {
   const hops = rankHops([
@@ -95,4 +95,25 @@ test("anchorPlan ignores a linked host and a full one", () => {
 test("deepestFirst orders by depth", () => {
   const depth = { a: 1, b: 6 }
   assert.deepEqual(deepestFirst(["a", "b"], h => depth[h]), ["b", "a"])
+})
+
+test("lifts the hardest roomy neighbour it can enter", () => {
+  const base = { hasCred: true, difficulty: 8, maxRam: 32 }
+  const hosts = liftTargets([
+    { ...base, host: "small", maxRam: 16 }, { ...base, host: "blocked", maxRam: 32, blockedRam: 30 },
+    { ...base, host: "locked", hasCred: false }, { ...base, host: "linked", linked: true },
+    { ...base, host: "fixed", isStationary: true }, { ...base, host: "shallow", difficulty: 4 },
+    { ...base, host: "easy", difficulty: 6 }, { ...base, host: "hard", difficulty: 9, maxRam: 22 },
+    { ...base, host: "big", difficulty: 9 }, { ...base, host: "th3_l4byr1nth" },
+  ], 20)
+  assert.deepEqual(hosts.map(h => h.host), ["big", "hard", "easy"])
+})
+
+test("rider scouts only past its start, with new links or after the retry wait", () => {
+  assert.equal(riderShouldScout(7, 7, ["a"], "", 0, 1000, 100), false)
+  assert.equal(riderShouldScout(7, 5, ["a"], "", 0, 1000, 100), false)
+  assert.equal(riderShouldScout(7, 10, [], "", 0, 1000, 100), false)
+  assert.equal(riderShouldScout(7, 10, ["a"], "", 0, 1000, 100), true)
+  assert.equal(riderShouldScout(7, 10, ["a"], "a", 950, 1000, 100), false)
+  assert.equal(riderShouldScout(7, 10, ["a"], "a", 800, 1000, 100), true)
 })

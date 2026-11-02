@@ -270,8 +270,23 @@ ranks route hosts first, forwards only, and a route from `darkweb` overrides the
 - **Writes:** `dnet_scout_status.json` at home (`state`: launched, scouting, cracking, anchored, hopped,
   backtracked, lab-found, charisma, dead-end, hop-limit, launch-failed) with the route, depth and
   up to four failed hops; a hop that did not fit records `maxRam`, `usedRam` and `blockedRam`.
+Passwords come from `dnet_lib.js` `candidatesFor` where the answer is in the hint, and from `dnet_feedback.js` where a wrong
+guess returns a clue: a plain `authenticate` hides the clue, so the scout reads it from the server log with `heartbleed` (peek).
+No solver: KingOfTheHill, PHP 5.4 over 5 digits, OpenWebAccessPoint above difficulty 16. To drop the shallowest link the scout kills everything on that host, because unlinking costs 14GB; it fetches `dnet_creds.txt` from home first. 6.7GB.
+
 - **Failure modes:** a server that moves mid-hop simply ends the chain; the next
   start retries. A host too small for the scout counts as a failed hop.
+- **Test:** `node --test dnet_scout_logic.test.js dnet_feedback.test.js`
+
+### `dnet_lift.js`, `dnet_induce.js`, `dnet_rider.js`
+
+Cross the empty rows. Game source: every 8th row (8, 16, 24) can never hold a host and links join only adjacent rows, so no chain walks past 7.
+`induceServerMigration` needs only a direct link. At 100% charge the host moves to a random free slot in rows difficulty-2 to difficulty+4, capped at the lab row minus 1, and scripts on it keep running. A host placed in the row before the lab links to it on arrival.
+`dnet_root.js` runs `dnet_lift.js` on every stasis-linked host without an induce running, until a solve since the last install. It picks the hardest neighbour with a known password, a difficulty of at least 5 and 13.5GB, starts `dnet_rider.js` there, then fills its own host with `dnet_induce.js`, killing the charisma worker and walker on that host. The rider starts `dnet_scout.js` once the host is deeper than it began. The scout then links its own host when that beats the shallowest link.
+Charge per call is threads x 0.01 x (charisma + 500) / (200 x difficulty + 1000), at 6s a call, and the call pays charisma exp.
+
+- **Writes:** `dnet_lift_status.json` (lifting, no-target, no-room, refused), `dnet_rider_status.json` (waiting, moved, scouting). Both hold the latest report from any host.
+- **Failure modes:** a landing in a shallower row wastes the lift; the rider stays and waits. A host with no links waits for a mutation to add one.
 - **Test:** `node --test dnet_scout_logic.test.js`
 
 ### `dnet_promote.js`

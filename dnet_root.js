@@ -28,7 +28,9 @@ const LAB_STATUS = "dnet_lab_status.json"
 const SCOUT = "dnet_scout.js"
 const SCOUT_ROOM = 6.8 // GB a passing dnet_scout.js needs.
 const PROMOTE_RAM = 3.6
-const SCOUT_FILES = ["dnet_anchor.js", SCOUT, "dnet_scout_logic.js", "dnet_lib.js", "dnet_feedback.js", "dnet_lab.js", "dnet_lab_logic.js", "dnet_loot.js", "dnet_promote.js"]
+const LIFT = "dnet_lift.js"
+const INDUCE = "dnet_induce.js"
+const SCOUT_FILES = [LIFT, INDUCE, "dnet_rider.js", "dnet_anchor.js", SCOUT, "dnet_scout_logic.js", "dnet_lib.js", "dnet_feedback.js", "dnet_lab.js", "dnet_lab_logic.js", "dnet_loot.js", "dnet_promote.js"]
 const MANAGER = "dnet_manager.js"
 const REALLOC = "dnet_realloc.js"
 const LEGACY = "dnet_deploy.js"
@@ -250,14 +252,22 @@ export async function main(ns) {
       let lab = null
       try { lab = JSON.parse(ns.read(LAB_STATUS) || "null") } catch { /* partial write: treat as unsolved */ }
       const [linked] = anchors
-      if (linked && !(lab?.state === "solved" && lab.ts > ns.getResetInfo().lastAugReset)
+      const running = (host, file) => ns.ps(host).some(proc => proc.filename.replace(/^\//, "") === file)
+      // Links stop at the empty row, so every linked host tries to lift a neighbour past it.
+      for (const anchor of anchors) {
+        if (lab?.state === "solved" && lab.ts > ns.getResetInfo().lastAugReset) break
+        if (!ns.dnet.connectToSession(anchor, creds[anchor]?.password ?? "").success || running(anchor, INDUCE) || running(anchor, LIFT)) continue
+        if (await ns.scp(SCOUT_FILES, anchor)) ns.exec(LIFT, anchor, 1)
+      }
+      const lifting = linked && running(linked, INDUCE)
+      if (linked && !lifting && !(lab?.state === "solved" && lab.ts > ns.getResetInfo().lastAugReset)
         && ns.dnet.connectToSession(linked, creds[linked]?.password ?? "").success
         && !ns.ps(linked).some(proc => proc.filename.replace(/^\//, "") === "dnet_lab.js")) {
         await ns.scp(SCOUT_FILES, linked)
         ns.exec("dnet_lab.js", linked, 1)
       }
       // The linked host never moves, so it keeps a charisma worker, leaving room for a scout.
-      if (linked && ns.dnet.connectToSession(linked, creds[linked]?.password ?? "").success
+      if (linked && !lifting && ns.dnet.connectToSession(linked, creds[linked]?.password ?? "").success
         && !ns.ps(linked).some(proc => proc.filename.replace(/^\//, "") === "dnet_promote.js")) {
         const threads = promoteThreads(ns.getServerMaxRam(linked), ns.getServerUsedRam(linked) + SCOUT_ROOM, PROMOTE_RAM)
         if (threads > 0 && await ns.scp(SCOUT_FILES, linked)) ns.exec("dnet_promote.js", linked, threads)

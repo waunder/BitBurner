@@ -4,6 +4,9 @@ export const SCOUT_STALE_MS = 5 * 60 * 1000
 export const SCOUT_RETRY_MS = 60 * 1000
 export const ROUTE_FILE = "dnet_route.json"
 export const ROUTE_STALE_MS = 10 * 60 * 1000
+export const LIFT_STATUS = "dnet_lift_status.json"
+export const RIDER_STATUS = "dnet_rider_status.json"
+export const LIFT_MIN_DIFFICULTY = 5 // A migration lands at most difficulty + 4, and row 9 is the first past the wall.
 const FINISHED = new Set(["dead-end", "hop-limit", "launch-failed"])
 
 /** Unvisited online neighbours one hop away, deepest first, then easiest to crack. */
@@ -62,4 +65,17 @@ export function scoutStart(anchors, creds, gateway, lastStatus = null) {
   const host = anchors.find(name => name !== gateway && typeof creds[name]?.password === "string"
     && !(lastStatus?.state === "dead-end" && lastStatus.host === name))
   return host ?? gateway
+}
+
+/** Neighbours worth lifting: movable, enterable and roomy, hardest first because they land deepest, then the most RAM. */
+export function liftTargets(neighbours, minRam) {
+  return neighbours.filter(n => n.hasCred && !n.linked && !n.isStationary && n.isOnline !== false && n.isConnectedToCurrentServer !== false
+    && !n.host.endsWith("l4byr1nth") && (n.difficulty ?? 0) >= LIFT_MIN_DIFFICULTY && n.maxRam - (n.blockedRam ?? 0) >= minRam)
+    .sort((a, b) => (b.difficulty ?? 0) - (a.difficulty ?? 0) || b.maxRam - a.maxRam || a.host.localeCompare(b.host))
+}
+
+/** A rider scouts once its host is deeper than it started and has links it has not just tried. */
+export function riderShouldScout(start, depth, neighbours, tried, triedAt, now, retryMs) {
+  if (!(depth > start) || !neighbours.length) return false
+  return [...neighbours].sort().join() !== tried || now - triedAt >= retryMs
 }

@@ -120,6 +120,8 @@ export async function main(ns) {
   report("scouting", { neighbours: neighbours.length })
   const lab = neighbours.find(n => n.host.endsWith("l4byr1nth"))
   const creds = readCreds(ns)
+  // A lifted host arrives deeper than any link, and an unlinked host can move or shut down.
+  if (!lab && await moveAnchor(host, depth, creds)) report("anchored", { target: host, targetDepth: depth })
   // dnet_lab.js reports charisma itself, so the scout stays small enough to hop.
   // The link keeps this host beside the lab for the whole walk.
   if (lab) {

@@ -249,7 +249,7 @@ function systemStatus(ns, now) {
   const apiOk = freshMs < 30000
 
   const mcp = json(ns, "mcp_status.json")
-  const mcpFreshMs = now - (mcp?.timestamp || 0)
+  const mcpFreshMs = now - (mcp?.ts || 0)
   const mcpOk = mcpFreshMs < 60000
 
   return {

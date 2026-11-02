@@ -42,8 +42,8 @@ Live 21:32 MST (status files): `th3_l4byr1nth` seen from `austin`; `dnet_lab.js`
 297/300 and has not walked the maze. Best scout depth is 6 (`byte:web`), up from 2, and that host
 holds the stasis link, applied live, so chains now start there (`dnet_anchor.js`). Keep the link on one
 deep host; limit is 1 until Broken Wings. Money $12.4b, MCP $3.1m/s average, hacking XP 68k/s.
-Leadership is ahead of hacking gates up to `charismaTarget` 600, at ZB in Volhaven; the move from
-Rothman is unverified. In scripts never name a variable `attempt`: the RAM check bills 10GB.
+Leadership is ahead of hacking gates up to `charismaTarget` 600, at ZB in Volhaven (live 21:42 MST).
+In scripts never name a variable `attempt`: the RAM check bills 10GB.
 Three runs of this task overlapped at 21:06-21:18 and edited the same files. Before editing, run
 `git status` and check no other BN15 session is running.
 

@@ -4,6 +4,7 @@
  * mcp_status.json leaves out. Shared by hud_consolidated.js and get_target_stats.js.
  */
 const ACTIONS = { "scripts/weaken.js": "weaken", "scripts/xp_weaken.js": "weaken", "scripts/grow.js": "grow", "scripts/hack.js": "hack" }
+const STACK_ACTION = p => p.filename.replace(/^\//, "") === "scripts/stack_job.js" ? String(p.args[0]) : null
 
 /** @param hosts [{cloud, max, jobs: [{filename, ram}]}] */
 export function summarizeRam(hosts) {
@@ -14,7 +15,7 @@ export function summarizeRam(hosts) {
     group.hosts++
     group.max += host.max
     for (const job of host.jobs) {
-      const action = ACTIONS[job.filename.replace(/^\//, "")]
+      const action = job.action ?? ACTIONS[job.filename.replace(/^\//, "")]
       if (action) group[action] += job.ram
     }
   }
@@ -39,7 +40,7 @@ export function readFleetRam(ns) {
   const hosts = [...seen].filter(host => host !== "home" && ns.hasRootAccess(host) && ns.getServerMaxRam(host) > 0).map(host => ({
     cloud: cloud.has(host),
     max: ns.getServerMaxRam(host),
-    jobs: ns.ps(host).map(p => ({ filename: p.filename, ram: p.threads * ns.getScriptRam(p.filename, host) })),
+    jobs: ns.ps(host).map(p => ({ filename: p.filename, action: STACK_ACTION(p), ram: p.threads * ns.getScriptRam(p.filename, host) })),
   }))
   return summarizeRam(hosts)
 }

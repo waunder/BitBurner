@@ -315,7 +315,8 @@ export async function cloudTick(ns, state, {servers,workers,runId,objective,emit
   const finiteTargets=new Set(workers.flatMap(host=>ns.ps(host)
     .filter(p=>Object.values(SCRIPTS).includes(p.filename.replace(/^\//,'')) && p.args[1]==='once')
     .map(p=>String(p.args[0]))))
-  const candidates=servers.filter(h=>h!=='home' && !ns.getServer(h).purchasedByPlayer && ns.hasRootAccess(h) && ns.getServerMaxMoney(h)>0 && ns.getServerRequiredHackingLevel(h)<=ns.getHackingLevel() && !state.batches.has(h) && !finiteTargets.has(h))
+  let stacked=[];try{stacked=JSON.parse(ns.read('stack_targets.json')||'[]')}catch{/* partial write */}
+  const candidates=servers.filter(h=>h!=='home' && !stacked.includes(h) && !ns.getServer(h).purchasedByPlayer && ns.hasRootAccess(h) && ns.getServerMaxMoney(h)>0 && ns.getServerRequiredHackingLevel(h)<=ns.getHackingLevel() && !state.batches.has(h) && !finiteTargets.has(h))
     .map(h=>planCloudBatch(ns,h,{protectedFloor,recoveryTarget})).filter(Boolean).sort((a,b)=>b.rank-a.rank)
   const harvestCompetitors=candidates.filter(p=>p.phase==='harvest').length+
     [...state.batches.values()].filter(p=>p.phase==='harvest').length

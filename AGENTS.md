@@ -97,6 +97,7 @@ files are gitignored.
 - Remote API operations, recovery and sync verification: `docs/remote-api-keepalive.md`
 - Original Remote API design and incident history: `docs/remote-api-migration.md`
 - Darknet tactics and prior incidents: `docs/darknet-strategy.md`
+- Plain-language BN15 route and stat priorities: `docs/bn15-route-refresher.md`
 - Scheduler rationale and evidence: `docs/scheduler-review-2026-09-12.md`
 - Working-method background: `docs/agent-working-agreement.md`
 - Retired long-form AGENTS context: Git revision immediately before this

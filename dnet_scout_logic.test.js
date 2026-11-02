@@ -52,6 +52,7 @@ test("routeHops only moves forward along a fresh route", () => {
   const hops = [{ host: "a" }, { host: "b" }, { host: "x", depth: 9 }, { host: "c", isConnectedToCurrentServer: false }]
   assert.deepEqual(routeHops(hops, route, "a", new Set()).map(n => n.host), ["b"])
   assert.deepEqual(routeHops(hops, route, "x", new Set(["b"])).map(n => n.host), ["a"])
+  assert.deepEqual(routeHops([{ host: "darkweb" }], route, "x", new Set()), [])
   assert.deepEqual(routeHops(hops, [], "a", new Set()), [])
 })
 

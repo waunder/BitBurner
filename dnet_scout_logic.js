@@ -20,7 +20,7 @@ export function freshRoute(route, now, staleMs = ROUTE_STALE_MS) {
 
 /** Neighbours further along the route than this host, furthest first; only forwards, so a route cannot loop. */
 export function routeHops(neighbours, route, host, tried) {
-  const here = route.indexOf(host)
+  const here = Math.max(route.indexOf(host), 0) // Off the route, its start is no way forward.
   return neighbours.filter(n => route.indexOf(n.host) > here && !tried.has(n.host) && n.isOnline !== false && n.isConnectedToCurrentServer !== false && !n.host.endsWith("l4byr1nth"))
     .sort((a, b) => route.indexOf(b.host) - route.indexOf(a.host))
 }

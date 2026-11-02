@@ -6,7 +6,7 @@ export const ROUTE_FILE = "dnet_route.json"
 export const ROUTE_STALE_MS = 10 * 60 * 1000
 export const LIFT_STATUS = "dnet_lift_status.json"
 export const RIDER_STATUS = "dnet_rider_status.json"
-export const LIFT_MIN_DIFFICULTY = 5 // A migration lands at most difficulty + 4, and row 9 is the first past the wall.
+const WALL_EVERY = 8 // Rows 8, 16 and 24 never hold a host.
 const FINISHED = new Set(["dead-end", "hop-limit", "launch-failed"])
 
 /** Unvisited online neighbours one hop away, deepest first, then easiest to crack. */
@@ -72,10 +72,17 @@ export function scoutStart(anchors, creds, gateway, lastStatus = null) {
   return host ?? gateway
 }
 
-/** Neighbours worth lifting: movable, enterable and roomy, hardest first because they land deepest, then the most RAM. */
-export function liftTargets(neighbours, minRam) {
+/** Least difficulty that can pass the next wall from this depth: a migration lands at most difficulty + 4. */
+export function liftFloor(depth) {
+  const wall = (Math.floor((depth ?? 0) / WALL_EVERY) + 1) * WALL_EVERY
+  return wall + 1 - 4
+}
+
+/** Neighbours worth lifting: movable, enterable, roomy and able to pass the wall, hardest first because they land deepest, then the most RAM. */
+export function liftTargets(neighbours, minRam, depth = 0) {
+  const floor = liftFloor(depth)
   return neighbours.filter(n => n.hasCred && !n.linked && !n.isStationary && n.isOnline !== false && n.isConnectedToCurrentServer !== false
-    && !n.host.endsWith("l4byr1nth") && (n.difficulty ?? 0) >= LIFT_MIN_DIFFICULTY && n.maxRam - (n.blockedRam ?? 0) >= minRam)
+    && !n.host.endsWith("l4byr1nth") && (n.difficulty ?? 0) >= floor && n.maxRam - (n.blockedRam ?? 0) >= minRam)
     .sort((a, b) => (b.difficulty ?? 0) - (a.difficulty ?? 0) || b.maxRam - a.maxRam || a.host.localeCompare(b.host))
 }
 

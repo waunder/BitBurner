@@ -30,7 +30,7 @@ export async function main(ns) {
   for (const host of ns.dnet.probe()) {
     try { options.push({ host, ...ns.dnet.getServerDetails(host), maxRam: ns.getServerMaxRam(host), linked: linked.includes(host), hasCred: typeof creds[host]?.password === "string" }) } catch { /* moved between calls */ }
   }
-  const candidates = liftTargets(options, RIDER_ROOM)
+  const candidates = liftTargets(options, RIDER_ROOM, ns.dnet.getDepth(here))
   if (!candidates.length) return report("no-target", { neighbours: options.map(n => ({ host: n.host, depth: n.depth, difficulty: n.difficulty, maxRam: n.maxRam, hasCred: n.hasCred })) })
 
   const refused = []

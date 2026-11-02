@@ -1,6 +1,6 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { anchorPlan, deepestFirst, labSolved, promoteThreads, rankHops, shouldStartScout, scoutStart, shouldAnchor, freshRoute, routeHops, liftTargets, riderShouldScout } from "./dnet_scout_logic.js"
+import { anchorPlan, deepestFirst, labSolved, promoteThreads, rankHops, shouldStartScout, scoutStart, shouldAnchor, freshRoute, routeHops, liftFloor, liftTargets, riderShouldScout } from "./dnet_scout_logic.js"
 
 test("prefers deeper, then easier, unvisited hosts", () => {
   const hops = rankHops([
@@ -107,6 +107,14 @@ test("lifts the hardest roomy neighbour it can enter", () => {
     { ...base, host: "big", difficulty: 9 }, { ...base, host: "th3_l4byr1nth" },
   ], 20)
   assert.deepEqual(hosts.map(h => h.host), ["big", "hard", "easy"])
+})
+
+test("past the first wall, only a host that can clear the next wall is worth lifting", () => {
+  assert.deepEqual([0, 7, 9, 15, 17, 23].map(liftFloor), [5, 5, 13, 13, 21, 21])
+  const base = { hasCred: true, maxRam: 32 }
+  const hosts = [{ ...base, host: "short", difficulty: 12 }, { ...base, host: "tall", difficulty: 13 }]
+  assert.deepEqual(liftTargets(hosts, 20, 15).map(h => h.host), ["tall"])
+  assert.deepEqual(liftTargets(hosts, 20, 7).map(h => h.host), ["tall", "short"])
 })
 
 test("rider scouts only past its start, with new links or after the retry wait", () => {

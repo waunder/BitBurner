@@ -1,9 +1,14 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-02 14:19 Pacific, on the PC. Sources: Steam game via
+Last refreshed: 2026-11-02 15:21 Pacific, on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 ## Current live state (supersedes everything below)
+
+**Live 15:21 Pacific (game page, status files):** node 15, hacking 783, charisma 1,042, $3.24t, net $345m/s over 1 minute, karma -471, 16 installed, Boots queued. Bachman rep 49.1k at 13.0 rep/s on the page, so 375k about 22:20 Pacific if the rate holds. Stacks and MCP earning; Remote API connected. `player_activity_status.json` lags the page, so read the page for the rep rate.
+**Decision: install at 375k, do not wait for 472k.** This replaces "worth deciding then" below. 375k already gives about 139 Bachman favor by the fit below, so about 97k more in a later cycle reaches 150 donations without the 2.2-hour delay now. More charisma augmentations are not needed: Boots, ESI, SmartJaw and ADR-V2 (62.5k rep, same faction) take the level multiplier to about 7, so 1,500 needs about 216k exp, 2,500 about 12m and 3,000 about 90m, all modelled with the fit in the charisma route below, and Hammer and Staff cut those further. Cash will not limit the buy: about $180b modelled for the 8 augmentations rep will allow, at x1.9 each.
+Row 16: `dnet_lift.js` now takes only neighbours able to clear the next wall (difficulty 13 from rows 9-15, 21 from rows 17-23), so charges are not spent on hosts that cannot cross. Tests pass (453) and it is on the game; it has not run, because lifting stops once the lab is solved. The game source (v3.0.1) shows stasis links are 1 plus Wings, Hammer and Staff, so 2 now. Merciless and later labs drop only the manual UI; scripts walk them the same way. Offset labs change only the start and end, which the search does not assume.
+`tools/save_export.py` reads and validates the save over DevTools; `--out NAME` writes `saves/NAME.json.gz`. The summary and the DevTools read are seen working; `--out` has not been run, so check its output at the first backup.
 
 **Live 14:19 Pacific (game page, save over DevTools, status files):** node 15, hacking 777, charisma 1,024 (exp 52.7m), $2.02t, net $294m/s over 1 minute, karma -456, 16 installed, Boots queued. Bachman invited and `faction_join.js` accepted; the controller moved the player to Bachman hacking work unaided, so the 11:27 fix is now seen working. Stacks 4/4, no new resets.
 **Rep:** was 6.5/s and unfocused at 14:14. Now 12.9/s, read twice (14:18, 14:19), with work focused and share on: 2.5k of the 375k, so about 22:20 Pacific if the rate holds; modelled, and it rises slowly with hacking. New `share_deploy.js cloud 8` took 8 cloud servers from `xp_filler.js` (threads 11.97m to 7.42m, so about 38% less hacking exp), leaving the servers held for MCP and stacks. Why 8: above about 2m threads share power barely moves. Rate matches share power about 1.58; `getSharePower` itself not read.

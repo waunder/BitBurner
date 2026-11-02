@@ -60,3 +60,7 @@ connected. Scouts now skip those. The scout measures 5.4GB, not 6.1GB.
 
 At 21:32 MST a chain found `th3_l4byr1nth` next to `austin`, four hops after the stasis
 anchor went in. Scouts had been losing neighbours mid-crack; the anchor holds position.
+
+At 22:09 MST a script finished the Normal lab (manual labs do accept scripts): 17 moves from `bungo`. The reward lands
+as a cache on the lab, and opening it queues the augmentation; it still needs an install. The anchored host at depth 6
+kept gaining links, so short chains from it reached lab neighbours twice in five minutes. Each lab link lasted about a minute.

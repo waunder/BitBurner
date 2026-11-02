@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-01 22:10 MST. Sources: Steam game via DevTools and
+Last refreshed: 2026-11-01 22:12 MST. Sources: Steam game via DevTools and
 terminal, Remote API `mcp_status.json`, game source and live reads.
 
 ## Current live state (supersedes everything below)
@@ -50,8 +50,16 @@ Three runs of this task overlapped at 21:06-21:18 and edited the same files. Bef
 Live 22:03 MST (status files): the maze solver walked for the first time, from `digital:hydr0_tech`, 5 rooms
 at about 5s each with 1 thread, then the link dropped after about a minute and it waited (expected). Charisma
 307, hacking 357, money $23.6b. `dnet_lab.js` now waits for lab links and keeps its pid position; `dnet_root.js`
-keeps one on the stasis host (`byte:web`) and scouts give it all free threads. Unverified: a finished maze, the
-`dnet_loot.js` cache, and whether more threads shorten moves. Scout moving the link beside the lab returned false
+keeps one on the stasis host (`byte:web`) and scouts give it all free threads.
+
+**Live 22:09 MST: first labyrinth solved** from `bungo`, 17 moves, 2 threads, about 4s a move. `dnet_loot.js` opened the
+cache and The Broken Wings is queued, listed in game as `The W1ngs of Icarus` (read 22:11 with `getOwnedAugmentations`).
+Installed 0. Hacking 364, charisma 315, money $32.7b, factions NiteSec and The Black Hand, karma -188.
+Next: buy every augmentation rep allows (nothing automates this; capital_manager never touches augmentations), back up
+the save, then install. Not installed yet because $32b is idle and only rep limits what the first install carries: hold for
+faction rep no more than about two hours. Before the install set `charismaTarget` to 600 in `player_activity_config.json`.
+
+Scout moving the link beside the lab returned false
 at 22:03, reason unknown (likely under 14.2GB free). The Dark Net page holds the full topology (read by
 `tools/dnet_map.py`), but links reshuffle about every minute, so a long route goes stale; the anchor works better.
 Charisma target is now 300: it resets on install, and the 600 lab needs Broken Wings installed. Raise it after

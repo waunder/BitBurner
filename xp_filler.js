@@ -1,6 +1,6 @@
 /**
- * Turns cloud RAM MCP is not using into hacking XP. Each pass starts one-shot
- * weakens on the best XP target, keeping a reserve so MCP cohorts still fit.
+ * Turns cloud and rooted-host RAM MCP is not using into hacking XP. Each pass starts one-shot
+ * weakens on the best XP target, keeping a cloud reserve so MCP cohorts still fit.
  * Weakening cannot hurt a target. Stop it by killing this script; workers finish alone.
  *
  * Start: run xp_filler.js. Writes xp_filler_status.json.
@@ -23,12 +23,14 @@ export async function main(ns) {
   while (true) {
     const player = ns.getPlayer()
     const cloud = new Set(ns.cloud.getServerNames())
-    const target = bestXpTarget(rootedHosts(ns).filter(h => !cloud.has(h)).map(host => ({
+    const rooted = rootedHosts(ns).filter(h => !cloud.has(h))
+    const target = bestXpTarget(rooted.map(host => ({
       host, exp: ns.formulas.hacking.hackExp(ns.getServer(host), player), weakenMs: ns.getWeakenTime(host),
     })))
     let started = 0, threads = 0
-    if (target) for (const host of cloud) {
-      const want = fillerThreads(ns.getServerMaxRam(host), ns.getServerUsedRam(host))
+    // MCP schedules only on cloud servers, so rooted hosts need no reserve.
+    if (target) for (const host of [...cloud, ...rooted]) {
+      const want = cloud.has(host) ? fillerThreads(ns.getServerMaxRam(host), ns.getServerUsedRam(host)) : fillerThreads(ns.getServerMaxRam(host), ns.getServerUsedRam(host), 0, 0)
       if (want < 1) continue
       ns.scp(WORKER, host, "home")
       if (ns.exec(WORKER, host, want, target)) { started++; threads += want }

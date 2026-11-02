@@ -6,6 +6,7 @@ test("fillerThreads leaves the reserve free", () => {
   assert.equal(fillerThreads(32768, 0), Math.floor(32768 * 0.7 / 1.75))
   assert.equal(fillerThreads(1024, 0), 0)
   assert.equal(fillerThreads(32768, 30000), 0)
+  assert.equal(fillerThreads(16, 0, 0, 0), 9)
 })
 
 test("bestXpTarget ranks XP per weaken time", () => {

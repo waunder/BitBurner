@@ -258,20 +258,32 @@ can with the full `dnet_lib.js` solvers, copies itself there, starts that copy a
 exits, backing up along its path at a dead end. `dnet_root.js` starts a new chain on
 `darkweb` when `dnet_scout_status.json` is over 5 minutes old, or 1 minute after a
 chain finishes, so only one chain runs. New passwords go through the normal
-credential shards.
+credential shards. On a host deeper than the current anchor with room for
+`dnet_anchor.js` (about 14GB), the scout moves the single stasis link there, and
+`dnet_root.js` starts later chains from the anchor, falling back to `darkweb`.
+Blocked RAM is cleared only when a hop fails.
 
-- **Writes:** `dnet_scout_status.json` at home (`state`: launched, scouting, cracking, hopped,
+- **Writes:** `dnet_scout_status.json` at home (`state`: launched, scouting, cracking, anchored, hopped,
   backtracked, lab-found, charisma, dead-end, hop-limit, launch-failed) with the route, depth and
   up to four failed hops; a hop that did not fit records `maxRam`, `usedRam` and `blockedRam`.
 - **Failure modes:** a server that moves mid-hop simply ends the chain; the next
   start retries. A host too small for the scout counts as a failed hop.
 - **Test:** `node --test dnet_scout_logic.test.js`
 
+### `dnet_anchor.js`
+
+Applies the stasis link on its own host, or removes it with `--unlink`, then exits.
+A linked server cannot move or go offline and accepts remote exec. The limit is 1,
+plus one each for The Broken Wings, The Hammer and The Staff. Started by `dnet_scout.js`.
+
+- **Writes:** `dnet_anchor_status.json` at home (host, link, success, code, message).
+- **Failure modes:** a link lost mid-move sends the next chain back to `darkweb`.
+
 ### `xp_filler.js`
 
-Turns cloud RAM MCP leaves idle into hacking XP with one-shot `scripts/xp_weaken.js`
-runs on the best XP-per-second rooted host. Keeps 30% of each server, or 2TB, free for
-MCP. MCP ignores the worker's filename. Started by `startup.js`; kill it to stop.
+Turns cloud and rooted-host RAM MCP leaves idle into hacking XP with one-shot
+`scripts/xp_weaken.js` runs on the best XP-per-second rooted host. Keeps 30% of each
+cloud server, or 2TB, free for MCP; rooted hosts have no reserve. MCP ignores the worker's filename. Started by `startup.js`; kill it to stop.
 
 - **Writes:** `xp_filler_status.json` (target, workers started, threads).
 - **Failure modes:** a filled server makes MCP use another; a failed exec is skipped.
@@ -1281,6 +1293,10 @@ and never changes player work.
   XP panel, which owns XP-rate and progression guidance.
 
 ### `player_activity_controller.js`
+
+`charismaTarget` in `player_activity_config.json` puts Leadership ahead of hacking
+gates in auto mode, travelling to `charismaCity` for `charismaUniversity` (default
+ZB Institute of Technology, twice Rothman's rate).
 
 The sole persistent controller allowed to change the player's current work.
 It evaluates once per minute, records its decision and reason in

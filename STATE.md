@@ -36,7 +36,7 @@ was down from about 17:26 to 20:56, which Ken reopened. NiteSec joined; Sector-1
 left for a deliberate choice. MCP used under 4% of cloud RAM (25TB), so `xp_filler.js`
 now puts the idle part into hacking XP: 9.25m XP in 137s, about 67k/s against 810/s.
 `capital_manager.js` stops cloud buying while MCP fills under 50%. MCP runs only on
-cloud servers, so rooted hosts stay empty (492GB total, by design). The daemon rereads
+cloud servers; the filler also fills rooted hosts (about 492GB). The daemon rereads
 `sync_manifest.json` each pass. Unknown: whether the filler lowers MCP income, which
 read 0 at 21:03 between harvests and averaged $2.7m/s; compare before keeping it.
 

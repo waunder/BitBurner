@@ -40,10 +40,12 @@ export async function main(ns) {
     ns.scp(SCOUT_STATUS, "home")
   }
   const hopTo = async (target, nextPath) => {
-    const files = ns.fileExists(CREDS_FILE) ? [...FILES, CREDS_FILE] : FILES
+    const files = ns.read(CREDS_FILE) ? [...FILES, CREDS_FILE] : FILES
     if (!(await ns.scp(files, target))) return 0
     return ns.exec("dnet_scout.js", target, { preventDuplicates: true }, "--path", JSON.stringify(nextPath), "--seen", JSON.stringify(seen), "--hops", flags.hops - 1)
   }
+  // Why a hop failed: too small, or full, tells us which fix is worth building.
+  const fit = target => ({ maxRam: ns.getServerMaxRam(target), usedRam: ns.getServerUsedRam(target), blockedRam: ns.dnet.getBlockedRam(target) })
 
   const neighbours = neighbourDetails(ns)
   report("scouting", { neighbours: neighbours.length })
@@ -67,7 +69,7 @@ export async function main(ns) {
     }
     if (next.blockedRam > 0) await freeBlockedRam(ns, next.host, 25, false)
     if (await hopTo(next.host, path)) return report("hopped", { next: next.host, nextDepth: next.depth, failures })
-    failures.push({ host: next.host, depth: next.depth, why: "scout did not fit" })
+    failures.push({ host: next.host, depth: next.depth, why: "scout did not fit", ...fit(next.host) })
   }
   const back = path.at(-2)
   if (back) {

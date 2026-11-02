@@ -262,7 +262,7 @@ credential shards.
 
 - **Writes:** `dnet_scout_status.json` at home (`state`: launched, scouting, cracking, hopped,
   backtracked, lab-found, charisma, dead-end, hop-limit, launch-failed) with the route, depth and
-  up to four failed hops.
+  up to four failed hops; a hop that did not fit records `maxRam`, `usedRam` and `blockedRam`.
 - **Failure modes:** a server that moves mid-hop simply ends the chain; the next
   start retries. A host too small for the scout counts as a failed hop.
 - **Test:** `node --test dnet_scout_logic.test.js`

@@ -904,6 +904,9 @@ class TriggerDaemon:
         self.started_at = time.monotonic()
         self.sync_enabled = sync_enabled
         self.watched_files = watched_files if watched_files is not None else WATCHED_FILES
+        # A long-lived daemon must see manifest additions without a restart;
+        # an injected list (selftest) stays fixed.
+        self._manifest_is_dynamic = watched_files is None
         # None means "resolve dynamically" -- see _resolve_repo_root and the
         # class docstring for why this must not be resolved once and cached.
         self._repo_root_override = repo_root
@@ -959,6 +962,16 @@ class TriggerDaemon:
             _log(f"SYNC: could not read {relpath}: {e}")
             return None
 
+    def _reload_manifest(self) -> None:
+        """Re-read sync_manifest.json; keep the last good list if it is mid-edit."""
+        if not self._manifest_is_dynamic:
+            return
+        try:
+            with open(self._resolve_repo_root() / "sync_manifest.json", encoding="utf-8") as f:
+                self.watched_files = json.load(f)["files"]
+        except (OSError, ValueError, KeyError) as e:
+            _log(f"SYNC: manifest reload failed, keeping {len(self.watched_files)} files: {e}")
+
     async def _resync(self, full: bool) -> dict:
         """Push every watched file (full=True) or only those whose on-disk
         content differs from what was last successfully pushed (full=False).
@@ -966,6 +979,7 @@ class TriggerDaemon:
         (push_file will just raise, which is caught per-file below) though
         callers should generally guard on rpc.is_connected first.
         """
+        self._reload_manifest()
         pushed, failed, missing = [], [], []
         for relpath in self.watched_files:
             content = self._read_watched(relpath)

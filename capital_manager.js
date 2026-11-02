@@ -56,6 +56,11 @@ function startWaitingManager(ns) {
   return name && ns.run(name) ? name : null
 }
 
+/** MCP's own demand for cloud RAM; a missing status must not block buying. */
+function readUtilization(ns) {
+  try { return JSON.parse(ns.read("mcp_status.json")).ramUtilization ?? 1 } catch { return 1 }
+}
+
 export async function main(ns) {
   ns.disableLog("ALL")
   const purchases = []
@@ -74,7 +79,7 @@ export async function main(ns) {
     const policy = readPolicy(ns)
     let action = null, ok = null
     if (policy.enabled !== false) {
-      const input = { ...observe(ns, policy), incomePerSec, saveWindowSec: Number(policy.saveWindowSec) || 300, homeRamFloor: Number(policy.homeRamFloor) || 128 }
+      const input = { ...observe(ns, policy), ramUtilization: readUtilization(ns), incomePerSec, saveWindowSec: Number(policy.saveWindowSec) || 300, homeRamFloor: Number(policy.homeRamFloor) || 128 }
       action = chooseCapitalAction(input)
       if (action && action.kind !== "save") {
         ok = buy(ns, action, input.cloud.length)

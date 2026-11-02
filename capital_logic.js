@@ -7,7 +7,7 @@ export const PROGRAMS = ["BruteSSH.exe", "FTPCrack.exe", "relaySMTP.exe", "Darks
  * Input costs of null mean unavailable; `spendable` is cash above the reserve.
  */
 export function chooseCapitalAction({ spendable, hasTor, torCost = 200e3, programs = [], homeRam, homeRamTarget, homeRamCost,
-  cloud = [], cloudLimit = 0, cloudQuotes = [], upgradeQuotes = [], cloudFraction = 0.5, incomePerSec = 0, saveWindowSec = 300, homeRamFloor = 128 }) {
+  cloud = [], cloudLimit = 0, cloudQuotes = [], upgradeQuotes = [], cloudFraction = 0.5, incomePerSec = 0, saveWindowSec = 300, homeRamFloor = 128, ramUtilization = 1, cloudDemandFloor = 0.5 }) {
   if (!hasTor) return spendable >= torCost ? { kind: "tor", cost: torCost } : { kind: "save", reason: "TOR", cost: torCost }
   const missing = programs.find(p => !p.owned && Number.isFinite(p.cost) && p.cost > 0)
   if (missing && missing.cost <= spendable) return { kind: "program", name: missing.name, cost: missing.cost }
@@ -19,6 +19,8 @@ export function chooseCapitalAction({ spendable, hasTor, torCost = 200e3, progra
   // wait on a distant $250m program: the cloud RAM is what earns it.
   const next = Math.min(missing?.cost ?? Infinity, wantsHome ? homeRamCost : Infinity)
   if (Number.isFinite(next) && next - spendable <= incomePerSec * saveWindowSec) return { kind: "save", reason: "next priority", cost: next }
+  // MCP is not filling what it has, so more cloud RAM would earn nothing.
+  if (ramUtilization < cloudDemandFloor) return null
   const budget = spendable * cloudFraction
   if (cloud.length < cloudLimit) {
     const best = cloudQuotes.filter(q => q.cost <= budget).sort((a, b) => b.ram - a.ram)[0]

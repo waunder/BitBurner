@@ -267,7 +267,25 @@ credential shards.
   start retries. A host too small for the scout counts as a failed hop.
 - **Test:** `node --test dnet_scout_logic.test.js`
 
+### `xp_filler.js`
+
+Turns cloud RAM MCP leaves idle into hacking XP with one-shot `scripts/xp_weaken.js`
+runs on the best XP-per-second rooted host. Keeps 30% of each server, or 2TB, free for
+MCP. MCP ignores the worker's filename. Started by `startup.js`; kill it to stop.
+
+- **Writes:** `xp_filler_status.json` (target, workers started, threads).
+- **Failure modes:** a filled server makes MCP use another; a failed exec is skipped.
+- **Test:** `node --test xp_filler_logic.test.js`
+
+### `faction_join.js`
+
+Accepts faction invitations every minute, except the six city factions, which lock
+each other out. Started by `startup.js`. Writes `faction_join_status.json`.
+
 ### `capital_manager.js`
+
+Cloud buying stops while `mcp_status.json` `ramUtilization` is under 50%.
+
 
 Spends cash on hacking capacity. `capital_bootstrap.js` needs about 5.6GB, so it
 fits on a fresh 32GB home: it upgrades home RAM until the 17GB manager can run,

@@ -12,6 +12,13 @@ test("fillableCloud keeps the largest servers clear", () => {
   assert.deepEqual(fillableCloud([{ host: "a", max: 8 }, { host: "b", max: 32 }, { host: "c", max: 16 }], 1), ["c", "a"])
 })
 
+test("fillableCloud also holds whole servers for a stack reserve", () => {
+  const hosts = ["a", "b", "c", "d"].map(host => ({ host, max: 16 }))
+  assert.deepEqual(fillableCloud(hosts, 1, 17), ["d"])
+  assert.deepEqual(fillableCloud(hosts, 1, 0), ["b", "c", "d"])
+  assert.deepEqual(fillableCloud(hosts, 1, 999), [])
+})
+
 test("bestXpTarget ranks XP per weaken time", () => {
   assert.equal(bestXpTarget([{ host: "slow", exp: 30, weakenMs: 300 }, { host: "fast", exp: 15, weakenMs: 100 }]), "fast")
   assert.equal(bestXpTarget([{ host: "bad", exp: 0, weakenMs: 1 }]), null)

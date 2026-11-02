@@ -4,7 +4,7 @@
  * until jobs drain, then it re-prepares. MCP skips the target while
  * stack_status.json is under two minutes old, so killing this script hands it back.
  *
- * Start: run stack_batch.js <target> [hackFraction=0.1] [spacingMs=2000] [gapMs=200] [ramBudgetGB=40960]
+ * Start: run stack_batch.js <target> [hackFraction=0.1] [spacingMs=2000] [gapMs=200] [ramBudgetGB=65536]
  * Writes stack_status.json (batches, resets, stolen, $/s since first batch).
  * @param {NS} ns
  */
@@ -57,7 +57,7 @@ async function prepare(ns, target, report) {
 
 export async function main(ns) {
   ns.disableLog("ALL")
-  const [target, hackFraction = 0.1, spacingMs = 2000, gapMs = 200, ramBudget = 40960] = ns.args
+  const [target, hackFraction = 0.1, spacingMs = 2000, gapMs = 200, ramBudget = 65536] = ns.args
   ns.getPortHandle(PORT).clear()
   const stats = { batches: 0, resets: 0, stolen: 0, startedAt: 0 }
   const report = (state, extra = {}) => {

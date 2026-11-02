@@ -290,10 +290,11 @@ weaken land in order. MCP skips the target while `stack_status.json` is under tw
 minutes old, so a dead runner hands it back. Waits for any MCP cohort to finish, prepares the target, then launches every `spacingMs` up to `ramBudgetGB`.
 Hack income returns on port 7.
 
-- **Args:** `target [hackFraction=0.1] [spacingMs=2000] [gapMs=200] [ramBudgetGB=40960]`.
+- **Args:** `target [hackFraction=0.1] [spacingMs=2000] [gapMs=200] [ramBudgetGB=65536]`.
 - **Writes:** `stack_status.json` (state, batches, resets, stolen, perSec).
 - **Failure modes:** money under 50% or security 5 over minimum stops launching, drains
-  jobs, re-prepares and counts a reset. A full fleet skips that batch.
+  jobs, re-prepares and counts a reset. A full fleet skips that batch. Reaching the budget also pauses launches, which earns in
+  bursts: `omega-net` needs about 59TB for one batch per 2s at weaken 390s, and at 40TB it averaged $38.6m/s against about $57m/s.
 - **Stop:** kill it. `startup.js` does not start it, so an install ends the trial.
 - **Test:** `node --test stack_logic.test.js`
 
@@ -301,7 +302,7 @@ Hack income returns on port 7.
 
 Turns cloud and rooted-host RAM MCP leaves idle into hacking XP with one-shot
 `scripts/xp_weaken.js` runs on the best XP-per-second rooted host. Keeps the three largest
-cloud servers clear for MCP and 5% free on the others; rooted hosts have no margin. MCP ignores the worker's filename. Started by `startup.js`; kill it to stop.
+cloud servers clear for MCP, plus enough whole servers to hold 64TB while `stack_status.json` is under two minutes old, and 5% free on the others; rooted hosts have no margin. MCP ignores the worker's filename. Started by `startup.js`; kill it to stop.
 
 - **Writes:** `xp_filler_status.json` (target, workers started, threads).
 - **Failure modes:** a filled server makes MCP use another; a failed exec is skipped.

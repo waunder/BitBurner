@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-01 21:34 MST. Sources: Steam game via DevTools and
+Last refreshed: 2026-11-01 22:10 MST. Sources: Steam game via DevTools and
 terminal, Remote API `mcp_status.json`, game source and live reads.
 
 ## Current live state (supersedes everything below)
@@ -46,6 +46,17 @@ Leadership is ahead of hacking gates up to `charismaTarget` 600, at ZB in Volhav
 In scripts never name a variable `attempt`: the RAM check bills 10GB.
 Three runs of this task overlapped at 21:06-21:18 and edited the same files. Before editing, run
 `git status` and check no other BN15 session is running.
+
+Live 22:03 MST (status files): the maze solver walked for the first time, from `digital:hydr0_tech`, 5 rooms
+at about 5s each with 1 thread, then the link dropped after about a minute and it waited (expected). Charisma
+307, hacking 357, money $23.6b. `dnet_lab.js` now waits for lab links and keeps its pid position; `dnet_root.js`
+keeps one on the stasis host (`byte:web`) and scouts give it all free threads. Unverified: a finished maze, the
+`dnet_loot.js` cache, and whether more threads shorten moves. Scout moving the link beside the lab returned false
+at 22:03, reason unknown (likely under 14.2GB free). The Dark Net page holds the full topology (read by
+`tools/dnet_map.py`), but links reshuffle about every minute, so a long route goes stale; the anchor works better.
+Charisma target is now 300: it resets on install, and the 600 lab needs Broken Wings installed. Raise it after
+that install. Player is on Algorithms at Rothman (live 22:00). Capital manager is idle with $23b while MCP fills
+under 50%; money has no use until faction rep or the install. Sector-12 and Volhaven invites are still open.
 
 DevTools runs on 127.0.0.1:9222 through the Steam launch option.
 

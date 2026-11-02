@@ -16,6 +16,7 @@ import { ROUTE_FILE, SCOUT_STATUS, freshRoute, rankHops, routeHops, shouldAnchor
 const LAB_WORKER = "dnet_lab.js"
 const ANCHOR = "dnet_anchor.js"
 const ANCHOR_RAM = 14.2 // Fixed so the scout saves getScriptRam's 0.1GB: darkweb has little to spare.
+const LAB_RAM = 5.5 // Fixed for the same reason; slightly over, so the thread count always fits.
 const ANCHOR_WAIT_MS = 60_000
 const FILES = [ANCHOR, "dnet_scout.js", "dnet_scout_logic.js", "dnet_lib.js", LAB_WORKER, "dnet_lab_logic.js", "dnet_loot.js"]
 const SESSION_BUDGET_MS = 180_000
@@ -80,7 +81,9 @@ export async function main(ns) {
   // The link keeps this host beside the lab for the whole walk.
   if (lab) {
     const anchored = await moveAnchor(host, depth, creds, true)
-    return report("lab-found", { lab: lab.host, anchored, pid: ns.exec(LAB_WORKER, host, { preventDuplicates: true }, lab.host) })
+    // This scout's own RAM frees on exit, too late to count. Threads speed every move, and links last about a minute.
+    const threads = Math.max(1, Math.floor((ns.getServerMaxRam(host) - ns.getServerUsedRam(host)) / LAB_RAM))
+    return report("lab-found", { lab: lab.host, anchored, threads, pid: ns.exec(LAB_WORKER, host, { threads, preventDuplicates: true }, lab.host) })
   }
   if (flags.hops <= 0) return report("hop-limit")
 

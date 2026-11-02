@@ -1,30 +1,23 @@
 import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./tail_geometry.js"
+import { readStacks } from "./stack_files.js"
+import { buildPanel, WIDTH } from "./ops_hud_logic.js"
 /**
- * Consolidated, low-impact operations HUD.
+ * Compact daily operations view: automation health, what the player is doing
+ * and why, the next Red Pill goal and what blocks it, and what needs attention.
  *
- * It combines already-produced status records; it never scans the network,
- * parses Darknet shards, controls scripts, or writes telemetry.  This is the
- * compact daily view; the specialist HUDs remain available for investigation.
+ * Reads existing status files only. It scans nothing, controls no script and
+ * writes no telemetry beyond ops_hud_version.txt. A stale file reads as stale.
  *
- * Start: run ops_hud.js [x=<px> y=<px> w=<px> h=<px>]
- *
+ * Start: run ops_hud.js [x=<px>] [y=<px>] [w=<px>] [h=<px>]
  * @param {NS} ns
  */
-import { chooseProgressionGuidance } from "./progression_guidance_logic.js"
-
-const POLL_MS = 30000
-const GATE_REFRESH_MS = 600000
-const MCP_STALE_MS = 300000
-const DNET_STALE_MS = 30000
-const MANAGER_FRESH_MS = 120000
-const WIDTH_CHARS = 42
-export const OPS_HUD_VERSION = "2026-09-02.3"
+const ME = "ops_hud.js"
+const POLL_MS = 15000
+export const OPS_HUD_VERSION = "2026-11-02.1"
 const OVERVIEW_DROP = 190
 const RIGHT_MARGIN = 8
-const WHITE = "\u001b[1;37m"
-const GREEN = "\u001b[1;32m"
+const COLORS = { head: "\u001b[1;37m", ok: "\u001b[1;32m", warn: "\u001b[1;33m" }
 const RESET = "\u001b[0m"
-let gateCache = { ts: 0, gates: [], ok: false }
 
 function parseArgs(ns) {
   const out = {}
@@ -36,285 +29,66 @@ function parseArgs(ns) {
   return out
 }
 
-function readJson(ns, file, fallback = null) {
-  try {
-    const raw = ns.read(file)
-    return raw ? JSON.parse(raw) : fallback
-  } catch {
-    return fallback
-  }
+function json(ns, file, fallback = null) {
+  try { return JSON.parse(ns.read(file) || "null") ?? fallback } catch { return fallback /* partial write */ }
 }
 
-function row(left, right = "") {
-  left = String(left)
-  right = String(right)
-  const gap = WIDTH_CHARS - left.length - right.length
-  return gap > 0 ? left + " ".repeat(gap) + right : `${left} ${right}`
-}
-
-function compact(value) {
-  const n = Number(value) || 0
-  const sign = n < 0 ? "-" : ""
-  const abs = Math.abs(n)
-  for (const [scale, suffix] of [[1e12, "t"], [1e9, "b"], [1e6, "m"], [1e3, "k"]]) {
-    if (abs >= scale) return sign + (abs / scale).toFixed(abs / scale >= 100 ? 0 : 1) + suffix
-  }
-  return sign + abs.toFixed(0)
-}
-
-function age(now, ts) {
-  if (!Number.isFinite(ts)) return "missing"
-  const seconds = Math.max(0, Math.floor((now - ts) / 1000))
-  return seconds < 60 ? `${seconds}s` : `${Math.floor(seconds / 60)}m${seconds % 60}s`
-}
-
-function parseReward(reward) {
-  const text = String(reward || "")
-  const cash = text.match(/\$([\d,.]+)\s*([kmbt]?)/i)
-  const factor = { k: 1e3, m: 1e6, b: 1e9, t: 1e12 }[(cash?.[2] || "").toLowerCase()] || 1
-  const parsedCash = cash ? Number(cash[1].replaceAll(",", "")) * factor : 0
-  const reps = [...text.matchAll(/([\d,.]+)\s*(?:faction\s+)?reputation\s*(?:with|for)\s*([^,.;]+)/gi)]
-  return { cash: Number.isFinite(parsedCash) ? parsedCash : 0, reps: reps.map((match) => ({ name: match[2].trim(), amount: Number(match[1].replaceAll(",", "")) || 0 })) }
-}
-
-function contractTotals(ledger) {
-  const opening = ledger?.openingBalance || {}
-  const out = { accepted: Number(opening.accepted) || 0, cash: Number(opening.cash) || 0, reps: { ...(opening.factionRep || {}) } }
-  for (const entry of ledger?.entries || []) {
-    if (!entry.ok) continue
-    out.accepted++
-    const parsed = parseReward(entry.reward)
-    out.cash += parsed.cash
-    for (const rep of parsed.reps) out.reps[rep.name] = (out.reps[rep.name] || 0) + rep.amount
-  }
-  return out
-}
-
-function resetAt(ns) {
-  try {
-    const raw = Number(ns.getResetInfo?.().lastAugReset)
-    if (!Number.isFinite(raw) || raw <= 0) return null
-    return raw > 946684800000 ? raw : Date.now() - raw
-  } catch { return null }
-}
-
-function currentContractTotals(ns, ledger) {
-  const since = resetAt(ns)
-  if (!since) return { known: false, accepted: 0, cash: 0 }
-  const out = contractTotals({ entries: (ledger?.entries || []).filter((entry) => Number(entry?.ts) >= since) })
-  return { known: true, accepted: out.accepted, cash: out.cash }
-}
-
-function workerRam(mcp, cloudNames) {
-  const cloud = new Set(cloudNames)
-  let used = 0
-  let max = 0
-  for (const worker of mcp?.workers || []) {
-    if (!cloud.has(worker.host)) continue
-    used += Number(worker.usedRam) || 0
-    max += Number(worker.maxRam) || 0
-  }
-  return { used, max }
-}
-
-// Read-only network walk: this is deliberately a *gate* finder, not target
-// selection.  It tells the player what the next discovered hacking-level
-// threshold is; MCP remains solely responsible for choosing a worker target.
-function nextHackingGate(ns, hacking) {
-  const now = Date.now()
-  if (now - gateCache.ts < GATE_REFRESH_MS) {
-    return { gate: gateCache.gates.find((gate) => gate.required > hacking) || null, ok: gateCache.ok }
-  }
-  try {
-    const seen = new Set(["home"])
-    const queue = ["home"]
-    const gates = []
-    for (let i = 0; i < queue.length; i++) {
-      const host = queue[i]
-      for (const next of ns.scan(host)) {
-        if (!seen.has(next)) {
-          seen.add(next)
-          queue.push(next)
-        }
-      }
-      if (host === "home") continue
-      const required = Number(ns.getServerRequiredHackingLevel(host))
-      if (Number.isFinite(required) && required > hacking) gates.push({ host, required })
-    }
-    gates.sort((a, b) => a.required - b.required || a.host.localeCompare(b.host))
-    gateCache = { ts: now, gates, ok: true }
-    return { gate: gates[0] || null, ok: true }
-  } catch {
-    // A failed scan is not evidence that there is no remaining gate. Keep a
-    // prior successful cache, if any; otherwise communicate uncertainty.
-    if (!gateCache.ok) gateCache = { ts: now, gates: [], ok: false }
-    return { gate: gateCache.gates.find((gate) => gate.required > hacking) || null, ok: gateCache.ok }
-  }
-}
-
-function playerTimeAdvice(ns, mcp, augmentation) {
-  const skills = mcp?.player?.skills || {}
-  const hacking = Number(skills.hacking) || 0
-  const charisma = Number(skills.charisma) || 0
-  const scriptXp = Number(mcp?.expPerSec) || 0
-  const gateState = nextHackingGate(ns, hacking)
-  const root = readJson(ns, "dnet_deployer_home.json")
-  const darknetLive = Number.isFinite(root?.ts) && Date.now() - root.ts <= DNET_STALE_MS
-  const guidance = chooseProgressionGuidance({ hacking, charisma, gate: gateState.gate, gateScanOk: gateState.ok, darknetLive, augmentation: augmentation?.ok ? { queued: augmentation.queuedCount, candidate: augmentation.candidate } : null })
+function gather(ns) {
   return {
-    stats: `YOU H${hacking} C${charisma}`,
-    recommendation: guidance.next,
-    gate: guidance.gate,
-    best: `Best: ${guidance.best}`,
-    detail: `MCP +${compact(scriptXp)} XP/s; ${guidance.confidence}`,
-    basis: guidance.basis,
+    now: Date.now(),
+    mcp: json(ns, "mcp_status.json"),
+    stacks: readStacks(ns, Infinity),
+    stackManager: json(ns, "stack_manager_status.json"),
+    capital: json(ns, "capital_status.json"),
+    activity: json(ns, "player_activity_status.json"),
+    install: json(ns, "aug_install_status.json"),
+    root: json(ns, "dnet_deployer_home.json"),
+    registry: json(ns, "dnet_manager_registry.json", {}),
+    scout: json(ns, "dnet_scout_status.json"),
+    lab: json(ns, "dnet_lab_status.json"),
+    review: json(ns, "automation_review.json", {}),
   }
-}
-
-// The activity planner has a more complete view of *manual* player time than
-// the generic Hack/augmentation guidance: it also knows about the explicit
-// physical baseline.  Prefer its durable decision when it is fresh, so the
-// panel never tells Ken to stay at university while asking him to train at a
-// gym on the line immediately below it.
-function manualActivityAdvice(playerActivity, fallback) {
-  const decision = playerActivity?.decision
-  if (!decision || decision.action === "hold") return fallback
-  const reason = String(decision.reason || "named player goal")
-  if (decision.action === "gym") {
-    const stat = String(decision.stat || "physical").replace(/^./, (char) => char.toUpperCase())
-    return {
-      recommendation: `NEXT ${stat} ${decision.current ?? "?"}→${decision.target ?? "?"}`,
-      gate: `physical baseline: ${reason}`,
-      best: `Gym: ${decision.gym || "Powerhouse Gym"} (${stat})`,
-      basis: "known Slum Snakes physical gate",
-    }
-  }
-  if (decision.action === "algorithms") return {
-    recommendation: "NEXT Hack progression",
-    gate: reason,
-    best: `Rothman: ${decision.course || "Algorithms"}`,
-    basis: "next discovered Hack gate",
-  }
-  if (decision.action === "faction") return {
-    recommendation: `NEXT rep: ${decision.faction || "faction"}`,
-    gate: reason,
-    best: `Faction work: ${decision.faction || "named faction"}`,
-    basis: "live augmentation reputation gap",
-  }
-  return fallback
-}
-
-function buildLines(ns) {
-  const now = Date.now()
-  const mcp = readJson(ns, "mcp_status.json")
-  const root = readJson(ns, "dnet_deployer_home.json")
-  const registry = readJson(ns, "dnet_manager_registry.json", {})
-  const review = readJson(ns, "automation_review.json", {})
-  const ledger = readJson(ns, "cct_reward_ledger.json", { openingBalance: {}, entries: [] })
-  const latestSubmit = readJson(ns, "cct_submit_status.json")
-  const inventory = readJson(ns, "cct_inventory.json")
-  const cctWatch = readJson(ns, "cct_watch_status.json")
-  const cctQueue = readJson(ns, "cct_queue_status.json", {})
-  const augmentation = readJson(ns, "augmentation_readiness.json", {})
-  const playerActivity = readJson(ns, "player_activity_status.json", {})
-  const capitalPolicy = readJson(ns, "gang_capital_policy.json", {})
-  const cloudNames = ns.cloud.getServerNames()
-  const cloudRam = workerRam(mcp, cloudNames)
-  const mcpAge = Number.isFinite(mcp?.ts) ? now - mcp.ts : Infinity
-  const dnetAge = Number.isFinite(root?.ts) ? now - root.ts : Infinity
-  const managers = Object.values(registry).filter((ts) => Number.isFinite(ts) && now - ts < MANAGER_FRESH_MS).length
-  const totals = contractTotals(ledger)
-  const currentContracts = currentContractTotals(ns, ledger)
-  const recent = (ledger.entries || []).at(-1) || latestSubmit
-  const reps = Object.entries(totals.reps).sort((a, b) => b[1] - a[1]).slice(0, 2)
-  const alerts = Array.isArray(review?.alerts) ? review.alerts : []
-  const mcpState = !mcp ? "MISSING" : mcpAge > MCP_STALE_MS ? "STALE" : "LIVE"
-  const dnetState = !root ? "MISSING" : dnetAge > DNET_STALE_MS ? "STALE" : "LIVE"
-  const health = alerts.length ? "ATTENTION" : mcpState !== "LIVE" || dnetState === "STALE" ? "CHECK" : "OK"
-  const threadCount = (mcp?.workers || []).reduce((total, worker) => total + (worker.actions || []).reduce((sum, action) => sum + (Number(action.threads) || 0), 0), 0)
-  const cloudPct = cloudRam.max ? `${Math.round(100 * cloudRam.used / cloudRam.max)}%` : "--"
-  const recentText = !recent ? "no recorded submission" : recent.ok ? `accepted ${recent.type || "contract"}` : `paused ${recent.reason || "guard"}`
-  const playerTime = playerTimeAdvice(ns, mcp, augmentation)
-  const manualAdvice = manualActivityAdvice(playerActivity, playerTime)
-  const activityText = !playerActivity?.decision ? "controller awaiting first check"
-    : playerActivity.decision.action === "hold" ? `hold: ${playerActivity.decision.reason}`
-      : `${playerActivity.decision.action}: ${playerActivity.decision.reason}`
-  const capitalPhase = capitalPolicy.phase ? `${capitalPolicy.phase}: ${capitalPolicy.objective || ""}` : "not configured"
-  const augText = !augmentation?.ok
-    ? playerActivity?.apiUnavailable
-      ? "requires Source-File 4"
-      : "assessment unavailable"
-    : augmentation.queuedCount
-    ? `${augmentation.queuedCount} queued / ${augmentation.installedCount} installed`
-    : augmentation.candidate ? `${augmentation.candidate.name.slice(0, 19)} +${compact(augmentation.candidate.repGap)} rep`
-      : "no prereq-ready offering"
-
-  return [
-    row("OPERATIONS", health),
-    row(`MCP ${mcpState}`, `${mcp?.target || "--"} / ${mcp?.OBJECTIVE || mcp?.objective || "--"}`),
-    row(`rate ${compact(mcp?.rate)}/s`, `avg ${compact(mcp?.avgRate)}/s`),
-    row(`workers ${threadCount} threads`, `${(mcp?.workers || []).length} hosts / ${age(now, mcp?.ts)}`),
-    row("capital phase", capitalPhase.slice(0, WIDTH_CHARS - 14)),
-    row(playerTime.stats, manualAdvice.recommendation),
-    row("gate", manualAdvice.gate.slice(0, WIDTH_CHARS - 6)),
-    row("best now", manualAdvice.best),
-    row("script XP", playerTime.detail),
-    row("guidance basis", manualAdvice.basis.slice(0, 25)),
-    row("player action", playerActivity?.apiUnavailable ? `API blocked: ${playerActivity.capability?.currentNode === 4 ? "BitNode 4 expected" : `SF4 level ${playerActivity.capability?.sf4Level ?? "unknown"}`}` : activityText.slice(0, WIDTH_CHARS - 14)),
-    row("augmentation runway", augText),
-    row(currentContracts.known ? `contracts ${currentContracts.accepted} this reset` : `contracts ${totals.accepted} recorded`, `$${compact(currentContracts.known ? currentContracts.cash : totals.cash)}`),
-    // Inventory is an independently durable *successful* scan. A later
-    // watcher failure must not make those known contracts look invalid or
-    // turn a useful count into the unhelpful blanket "SCAN ERROR".
-    row(`discovery ${inventory?.contracts?.length ?? "--"} available`, cctWatch?.ok === false ? `last OK ${age(now, inventory?.ts)}` : age(now, inventory?.ts)),
-    ...(cctWatch?.ok === false ? [row("discovery retry", "last scan failed; retrying")] : []),
-    row("CCT queue", `${cctQueue.action || "waiting"}: ${String(cctQueue.reason || "next scan").slice(0, 24)}`),
-    ...reps.map(([name, rep]) => row(name.slice(0, 27), `+${compact(rep)} rep`)),
-    row("latest CCT", recentText.slice(0, WIDTH_CHARS - 11)),
-    row(`DNET ${dnetState}`, `${managers} managers / ${age(now, root?.ts)}`),
-    row(`cloud ${cloudNames.length} servers`, `${compact(cloudRam.used)}/${compact(cloudRam.max)} GB ${cloudPct}`),
-    row("automation", alerts.length ? alerts[0].message.slice(0, WIDTH_CHARS - 11) : "no active alerts"),
-  ]
 }
 
 function closePrior(ns) {
   for (const proc of ns.ps(ns.getHostname())) {
-    if (proc.pid === ns.pid || proc.filename.replace(/^\//, "") !== "ops_hud.js") continue
+    if (proc.pid === ns.pid || proc.filename.replace(/^\//, "") !== ME) continue
     ns.ui?.closeTail(proc.pid)
     ns.kill(proc.pid)
   }
 }
 
-function placeTail(ns, args, lines) {
+function placeTail(ns, args, count, first) {
   if (!ns.ui) return
-  ns.ui.openTail()
-  ns.ui.setTailTitle("operations")
   const styles = ns.ui.getStyles?.()
   const charWidth = styles ? styles.tailFontSize * 0.6 : 8
   const lineHeight = styles ? styles.tailFontSize * styles.lineHeight : 16
-  const width = args.w || Math.ceil(WIDTH_CHARS * charWidth) + 34
+  const width = args.w || Math.ceil(WIDTH * charWidth) + 34
+  ns.ui.resizeTail(width, args.h || Math.ceil((count + 1) * lineHeight) + 40)
+  if (!first) return
   const screenWidth = ns.ui.windowSize?.()[0] || 1280
-  ns.ui.resizeTail(width, args.h || Math.ceil((lines.length + 1) * lineHeight) + 40)
   ns.ui.moveTail(Math.round(args.x === undefined ? Math.max(0, screenWidth - width - RIGHT_MARGIN) : args.x), Math.round(args.y === undefined ? OVERVIEW_DROP : args.y))
 }
 
 export async function main(ns) {
   ns.disableLog("ALL")
-  await capturePriorTailPosition(ns, "ops_hud.js")
+  await capturePriorTailPosition(ns, ME)
   closePrior(ns)
-  // A tiny generation marker lets the launcher refresh this panel once after
-  // a real HUD upgrade, while routine MCP restarts leave its tail untouched.
+  // A generation marker lets mcp_launch.js refresh this panel once after a real upgrade.
   ns.write("ops_hud_version.txt", OPS_HUD_VERSION, "w")
-  const parsedArgs = parseArgs(ns)
-  const args = { ...parsedArgs, ...loadTailPosition(ns, "ops_hud.js", parsedArgs) }
-  let placed = false
+  const parsed = parseArgs(ns)
+  const args = { ...parsed, ...loadTailPosition(ns, ME, parsed) }
+  ns.ui?.openTail()
+  ns.ui?.setTailTitle("operations")
+  let shown = 0
   while (true) {
-    const lines = buildLines(ns)
+    let rows
+    try { rows = buildPanel(gather(ns)).rows } catch (e) { rows = [["warn", "ERROR"], ["warn", String(e).slice(0, WIDTH)]] }
     ns.clearLog()
-    for (const [i, line] of lines.entries()) ns.print((i === 0 ? WHITE : GREEN) + line + RESET)
-    if (!placed) { placeTail(ns, args, lines); placed = true }
+    for (const [tone, text] of rows) ns.print(COLORS[tone] + text + RESET)
+    if (rows.length !== shown) { placeTail(ns, args, rows.length, shown === 0); shown = rows.length }
     ns.ui?.renderTail()
-    await saveTailPosition(ns, "ops_hud.js")
+    await saveTailPosition(ns, ME)
     await ns.sleep(POLL_MS)
   }
 }

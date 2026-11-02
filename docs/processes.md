@@ -1881,31 +1881,47 @@ submissions, or steady-state writes.
 
 ### `ops_hud.js`
 
-The compact consolidated operations panel: one quiet tail for the decisions
-that need attention, with specialist HUDs retained for deeper inspection.
-It reads only the existing MCP status, contract ledger/latest result, Darknet
-root heartbeat/manager registry, automation-review status, and purchased-cloud
-names. It does not scan, parse Darknet shards, write telemetry, or control any
-gameplay script. It refreshes every 30 seconds and labels missing or stale MCP
-and Darknet records explicitly.
+The compact daily operations panel (42 columns, refreshed every 15 seconds).
+Pure view logic is in `ops_hud_logic.js` (`ops_hud_logic.test.js`). It reads
+status files only: it scans nothing, controls no script, and writes nothing
+but `ops_hud_version.txt`. Cash, income streams, RAM yield and augmentation
+cost stay in `money.js`; `hud_consolidated.js` is separate.
 
 - **Start:** `run ops_hud.js` (optional `x= y= w= h=`), or add `--ops-hud` to
-  a `restart_mcp.js` request.
-- **Shows:** MCP target/objective/rate/worker status; a local-telemetry-only
-  player-time recommendation with an explicit confidence/basis; contract accepts, cash, leading faction
-  reputation and latest result; Darknet heartbeat/managers; cloud-worker
-  count/RAM utilization; and the first current automation alert. It performs
-  a cached (ten-minute) read-only network walk to name the lowest discovered hacking-level gate,
-  showing the player's current level and the level gap (not an invented XP
-  total). A normal-server gate therefore takes priority and states, plainly,
-  `need +N H: server (HX)` and `Best: Rothman Algorithms until HX`. Once no
-  such gate exists, the panel calls out only evidence-backed alternatives:
-  a live Darknet means Charisma is already growing passively; otherwise it
-  says that no gym, crime, or faction-work requirement has been observed.
-  It never starts, stops, or inspects player work. The panel is not replaced
-  on ordinary MCP restarts (only a tagged HUD-source upgrade refreshes it), so its tail remains in place. When a contract
-  scan fails after a prior successful inventory, it retains the usable count
-  and shows the age of that last-good inventory plus a retry note.
+  a `restart_mcp.js` request. Position is kept by `tail_geometry.js`; a new
+  copy closes the old tail before killing it. Times use a fixed UTC-7 offset.
+- **Inputs:** `mcp_status.json`, `readStacks` (`stack_status_*.json`),
+  `stack_manager_status.json`, `capital_status.json`,
+  `player_activity_status.json` (decision, gate, augmentation),
+  `aug_install_status.json`, `dnet_deployer_home.json`,
+  `dnet_manager_registry.json`, `dnet_scout_status.json`,
+  `dnet_lab_status.json`, `automation_review.json`.
+- **AUTOMATION:** one row each for MCP, stack manager (live/total stacks, up to
+  three stacks with $/s and resets), capital manager (last action), darknet
+  heartbeat and managers, scout and lab walker. Each shows its age; a file older
+  than its limit (MCP 120s, stacks 120s, stack manager 180s, capital 60s,
+  darknet 30s) reads `STALE` and a missing one `MISSING`, in yellow, and is
+  listed under ATTENTION. Hacking and charisma show a trailing `?` when the MCP
+  record is stale.
+- **PLAYER:** the activity controller's decision, its reason, its age, and the
+  next Hack gate it found (the panel no longer scans for one).
+- **GOAL:** the next Red Pill lab (Normal 300, Cruel 600, Merciless 1,500,
+  Uber 2,500, Eternal 3,000 charisma), labs solved out of 5, and what blocks it:
+  charisma short by N, or the lab walker state. Labs solved come from the
+  `dnet_lab_status.json` record (kept across installs), never below the queued
+  lab rewards; with neither it shows `?`. It also shows Red Pill charisma
+  (3,000), whether the install is `HELD` (a reward is queued and charisma is
+  short of the next lab), queued count and time since the last install.
+- **ATTENTION:** up to four items, alerts first (failed capital purchase or stack
+  start, stack resets, MCP invariants, lab stuck/failing, API unavailable, failed
+  install buys, `automation_review.json` alerts), then stale files.
+  Header health is `OK`, `CHECK` (stale only) or `ATTENTION`.
+- **Dropped:** gang and capital-phase text, contract ledger/discovery/queue,
+  cloud RAM (see `money.js`), the generic guidance text and its network walk.
+  `progression_guidance_logic.js` is no longer used by the panel.
+- **Version:** `OPS_HUD_VERSION` in `ops_hud.js` is compared by
+  `mcp_launch.js` with its own constant; until that constant is updated the
+  launcher restarts the panel on each launch (tail position is kept).
 
 ### `maintenance_steward.js` and `cct_watcher.js`
 

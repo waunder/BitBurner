@@ -118,6 +118,7 @@
     "player_activity_logic.js",
     "player_activity_config.json",
     "ops_hud.js",
+    "ops_hud_logic.js",
     "hud_consolidated.js",
     "hud_toggle.js",
     "remote_api_keepalive.js",

@@ -2308,8 +2308,9 @@ if the game is disconnected it clicks Options, Remote API, Connect over DevTools
 on 127.0.0.1:9222, at most every 5 minutes, then restores focused work. It skips
 that if `#terminal-input` holds text. **Writes:** `tools/daemon_supervisor.log`,
 `tools/bb_remote_daemon.log`. **Failure modes:** a game not started with
-`--remote-debugging-port=9222` is treated as not running; the daemon it started
-survives the supervisor, but nothing then restarts that daemon.
+`--remote-debugging-port=9222` is treated as not running. A daemon started from
+a Terminal tab's supervisor died when that tab closed (seen 13:44), so run it
+through the logon task from `tools/install_supervisor_task.ps1`.
 
 For routine work, use `tools/remote_api_monitor.sh` to inspect/recover the
 local daemon, reconnect Steam through Options → Remote API if the game is

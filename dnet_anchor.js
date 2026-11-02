@@ -3,8 +3,8 @@
  * server cannot move or go offline, and can be reached by exec from anywhere, so
  * dnet_root.js starts scout chains there instead of at darkweb.
  *
- * Start: dnet_scout.js, on a deeper host than the current anchor. Args: --unlink.
- * Link limit is 1 until labyrinth rewards raise it. Needs about 14GB.
+ * Start: dnet_scout.js, on a deeper host than the shallowest anchor. Args: --unlink.
+ * Link limit starts at 1 and labyrinth rewards raise it. Needs about 14GB.
  * @param {NS} ns
  */
 export const ANCHOR_STATUS = "dnet_anchor_status.json"

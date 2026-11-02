@@ -260,9 +260,9 @@ can with the full `dnet_lib.js` solvers, copies itself there, starts that copy a
 exits, backing up along its path at a dead end. `dnet_root.js` starts a new chain on
 `darkweb` when `dnet_scout_status.json` is over 5 minutes old, or 1 minute after a
 chain finishes, so only one chain runs. New passwords go through the normal
-credential shards. On a host deeper than the current anchor with room for
-`dnet_anchor.js` (about 14GB), the scout moves the single stasis link there, and
-`dnet_root.js` starts later chains from the anchor, falling back to `darkweb`.
+credential shards. On a host deeper than the deepest anchor (or the shallowest, at the limit) with room for
+`dnet_anchor.js` (about 14GB), the scout links it, giving up the shallowest link at `getStasisLinkLimit()`, and
+`dnet_root.js` starts later chains from the deepest anchor, falling back to `darkweb`. A charisma worker on the host is killed when it alone blocks the link or the hop.
 Blocked RAM is cleared only when a hop fails. Beside a lab the scout moves the link
 to its own host, even at equal depth. A fresh `dnet_route.json` from `tools/dnet_map.py`
 ranks route hosts first, forwards only, and a route from `darkweb` overrides the anchor.

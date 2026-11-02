@@ -21,7 +21,7 @@ import {
   writeDeployerShard,
 } from "dnet_lib.js"
 
-import { ROUTE_FILE, SCOUT_STATUS, freshRoute, promoteThreads, scoutStart, shouldStartScout } from "dnet_scout_logic.js"
+import { ROUTE_FILE, SCOUT_STATUS, deepestFirst, freshRoute, promoteThreads, scoutStart, shouldStartScout } from "dnet_scout_logic.js"
 
 const CRAWLER = "dnet_crawl.js"
 const LAB_STATUS = "dnet_lab_status.json"
@@ -216,14 +216,17 @@ export async function main(ns) {
 
       let status = null
       try { status = JSON.parse(ns.read(SCOUT_STATUS) || "null") } catch { /* partial write: treat as stale */ }
+      const anchors = deepestFirst(ns.dnet.getStasisLinkedServers(), host => ns.dnet.getServerDetails(host).depth)
       if (shouldStartScout(status, Date.now())) {
         // A stasis-linked host holds still and accepts exec from here, so chains resume from it.
         let routed = false
         try { routed = freshRoute(JSON.parse(ns.read(ROUTE_FILE) || "null"), Date.now())[0] === target } catch { /* partial write: no route */ }
-        const anchor = routed ? target : scoutStart(ns.dnet.getStasisLinkedServers(), creds, target, status)
+        const anchor = routed ? target : scoutStart(anchors, creds, target, status)
         let pid = 0
         if (anchor !== target && ns.dnet.connectToSession(anchor, creds[anchor].password).success && await ns.scp(SCOUT_FILES, anchor)) {
           pid = ns.exec(SCOUT, anchor, { preventDuplicates: true })
+          // Its charisma worker restarts below, leaving room for the next scout.
+          if (!pid && ns.kill("dnet_promote.js", anchor)) pid = ns.exec(SCOUT, anchor, { preventDuplicates: true })
         }
         const start = pid ? anchor : target
         if (!pid && await ns.scp(SCOUT_FILES, target)) {
@@ -246,7 +249,7 @@ export async function main(ns) {
       // One walker waits on the stasis-linked host: lab links reach it faster than any chain.
       let lab = null
       try { lab = JSON.parse(ns.read(LAB_STATUS) || "null") } catch { /* partial write: treat as unsolved */ }
-      const [linked] = ns.dnet.getStasisLinkedServers()
+      const [linked] = anchors
       if (linked && !(lab?.state === "solved" && lab.ts > ns.getResetInfo().lastAugReset)
         && ns.dnet.connectToSession(linked, creds[linked]?.password ?? "").success
         && !ns.ps(linked).some(proc => proc.filename.replace(/^\//, "") === "dnet_lab.js")) {

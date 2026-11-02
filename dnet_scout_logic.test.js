@@ -1,6 +1,6 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { promoteThreads, rankHops, shouldStartScout, scoutStart, shouldAnchor, freshRoute, routeHops } from "./dnet_scout_logic.js"
+import { anchorPlan, deepestFirst, promoteThreads, rankHops, shouldStartScout, scoutStart, shouldAnchor, freshRoute, routeHops } from "./dnet_scout_logic.js"
 
 test("prefers deeper, then easier, unvisited hosts", () => {
   const hops = rankHops([
@@ -72,4 +72,27 @@ test("promoteThreads fits whole threads in free RAM", () => {
   assert.equal(promoteThreads(32, 2, 3.6), 8)
   assert.equal(promoteThreads(16, 14, 3.6), 0)
   assert.equal(promoteThreads(16, 17, 3.6), 0)
+})
+
+test("anchorPlan adds a link below the limit and keeps the old one", () => {
+  assert.deepEqual(anchorPlan([{ host: "a", depth: 0 }], 2, "b", 3, 15, 14), { drop: null })
+  assert.equal(anchorPlan([{ host: "a", depth: 5 }], 2, "b", 3, 15, 14), null)
+})
+
+test("anchorPlan gives up the shallowest link at the limit", () => {
+  const links = [{ host: "deep", depth: 7 }, { host: "near", depth: 2 }]
+  assert.deepEqual(anchorPlan(links, 2, "b", 3, 15, 14), { drop: "near" })
+  assert.equal(anchorPlan(links, 2, "b", 2, 15, 14), null)
+  assert.deepEqual(anchorPlan(links, 2, "b", 1, 15, 14, true), { drop: "near" })
+})
+
+test("anchorPlan ignores a linked host and a full one", () => {
+  assert.equal(anchorPlan([{ host: "b", depth: 1 }], 2, "b", 3, 15, 14), null)
+  assert.equal(anchorPlan([], 2, "b", 3, 8, 14), null)
+  assert.deepEqual(anchorPlan([], 1, "b", 0, 15, 14), { drop: null })
+})
+
+test("deepestFirst orders by depth", () => {
+  const depth = { a: 1, b: 6 }
+  assert.deepEqual(deepestFirst(["a", "b"], h => depth[h]), ["b", "a"])
 })

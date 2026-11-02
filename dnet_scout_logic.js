@@ -41,6 +41,21 @@ export function shouldAnchor(anchorDepth, targetDepth, freeRam, anchorRam, besid
   return Number.isFinite(targetDepth) && (besideLab || targetDepth > (anchorDepth ?? -1)) && freeRam >= anchorRam
 }
 
+/** What a link on target needs: { drop } names the shallowest link to give up at the limit, or null when no link is due. */
+export function anchorPlan(links, limit, target, targetDepth, freeRam, anchorRam, besideLab = false) {
+  if (links.some(link => link.host === target)) return null
+  const byDepth = [...links].sort((a, b) => (a.depth ?? -1) - (b.depth ?? -1))
+  const full = links.length >= limit
+  const beat = full ? byDepth[0]?.depth : byDepth.at(-1)?.depth
+  if (!shouldAnchor(beat, targetDepth, freeRam, anchorRam, besideLab)) return null
+  return { drop: full ? byDepth[0]?.host ?? null : null }
+}
+
+/** Linked hosts, deepest first, so chains and the walker use the furthest one. */
+export function deepestFirst(hosts, depthOf) {
+  return [...hosts].sort((a, b) => (depthOf(b) ?? -1) - (depthOf(a) ?? -1))
+}
+
 /** Where to start the next chain: the anchor when it is reachable, else darkweb. */
 export function scoutStart(anchors, creds, gateway, lastStatus = null) {
   // A linked host can lose every neighbour, so a dead end there sends one chain round by the gateway.

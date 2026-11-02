@@ -11,7 +11,7 @@
  * @param {NS} ns
  */
 import { CODE, CREDS_FILE, acquireSession, freeBlockedRam, readCreds, recordCred, shipCred } from "dnet_lib.js"
-import { ROUTE_FILE, SCOUT_STATUS, freshRoute, promoteThreads, rankHops, routeHops, shouldAnchor } from "dnet_scout_logic.js"
+import { ROUTE_FILE, SCOUT_STATUS, anchorPlan, freshRoute, promoteThreads, rankHops, routeHops } from "dnet_scout_logic.js"
 
 const LAB_WORKER = "dnet_lab.js"
 const PROMOTE = "dnet_promote.js"
@@ -64,14 +64,16 @@ export async function main(ns) {
     while (ns.dnet.getStasisLinkedServers().includes(target) !== linked && Date.now() < deadline) await ns.sleep(1000)
     return ns.dnet.getStasisLinkedServers().includes(target) === linked
   }
-  // Moves the one stasis link down to a deeper host, so the next chain starts there.
+  // Puts a stasis link on a deeper host, giving up the shallowest at the limit, so the next chain starts there.
   const moveAnchor = async (target, targetDepth, creds, besideLab = false) => {
-    const free = ns.getServerMaxRam(target) - ns.getServerUsedRam(target)
-    const [old] = ns.dnet.getStasisLinkedServers()
-    if (old === target) return false
-    const oldDepth = old ? ns.dnet.getServerDetails(old).depth : undefined
-    if (!shouldAnchor(oldDepth, targetDepth, free, ANCHOR_RAM, besideLab)) return false
-    if (old && (!ns.dnet.connectToSession(old, creds[old]?.password ?? "").success || !(await runAnchor(old, false, "--unlink")))) return false
+    const links = ns.dnet.getStasisLinkedServers().map(name => ({ host: name, depth: ns.dnet.getServerDetails(name).depth }))
+    const limit = ns.dnet.getStasisLinkLimit()
+    const wanted = () => anchorPlan(links, limit, target, targetDepth, ns.getServerMaxRam(target) - ns.getServerUsedRam(target), ANCHOR_RAM, besideLab)
+    let plan = wanted()
+    // A charisma worker left by an earlier chain must not keep the link off a deep host.
+    if (!plan && anchorPlan(links, limit, target, targetDepth, ns.getServerMaxRam(target), ANCHOR_RAM, besideLab) && ns.kill(PROMOTE, target)) plan = wanted()
+    if (!plan) return false
+    if (plan.drop && (!ns.dnet.connectToSession(plan.drop, creds[plan.drop]?.password ?? "").success || !(await runAnchor(plan.drop, false, "--unlink")))) return false
     return runAnchor(target, true)
   }
 
@@ -126,6 +128,7 @@ export async function main(ns) {
     // Links move, so try the hop first and clear blocked RAM only if it failed.
     if (await ns.scp(FILES, next.host) && await moveAnchor(next.host, next.depth, creds)) report("anchored", { target: next.host, targetDepth: next.depth })
     let pid = await hopTo(next.host, path)
+    if (!pid && ns.kill(PROMOTE, next.host)) pid = await hopTo(next.host, path)
     if (!pid && next.blockedRam > 0) {
       await freeBlockedRam(ns, next.host, 25, false)
       pid = await hopTo(next.host, path)

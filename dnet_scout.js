@@ -11,14 +11,16 @@
  * @param {NS} ns
  */
 import { CODE, CREDS_FILE, acquireSession, freeBlockedRam, readCreds, recordCred, shipCred } from "dnet_lib.js"
-import { ROUTE_FILE, SCOUT_STATUS, freshRoute, rankHops, routeHops, shouldAnchor } from "dnet_scout_logic.js"
+import { ROUTE_FILE, SCOUT_STATUS, freshRoute, promoteThreads, rankHops, routeHops, shouldAnchor } from "dnet_scout_logic.js"
 
 const LAB_WORKER = "dnet_lab.js"
+const PROMOTE = "dnet_promote.js"
 const ANCHOR = "dnet_anchor.js"
 const ANCHOR_RAM = 14.2 // Fixed so the scout saves getScriptRam's 0.1GB: darkweb has little to spare.
+const PROMOTE_RAM = 3.6 // Fixed for the same reason.
 const LAB_RAM = 5.5 // Fixed for the same reason; slightly over, so the thread count always fits.
 const ANCHOR_WAIT_MS = 60_000
-const FILES = [ANCHOR, "dnet_scout.js", "dnet_scout_logic.js", "dnet_lib.js", LAB_WORKER, "dnet_lab_logic.js", "dnet_loot.js"]
+const FILES = [ANCHOR, "dnet_scout.js", "dnet_scout_logic.js", "dnet_lib.js", LAB_WORKER, "dnet_lab_logic.js", "dnet_loot.js", PROMOTE]
 const SESSION_BUDGET_MS = 180_000
 const BRUTE_LIMIT = 2000
 const MAX_HOPS = 60
@@ -73,6 +75,12 @@ export async function main(ns) {
     return runAnchor(target, true)
   }
 
+  // This scout's own RAM frees on exit, which keeps room for a later chain to pass through.
+  const leavePromoter = () => {
+    const threads = promoteThreads(ns.getServerMaxRam(host), ns.getServerUsedRam(host), PROMOTE_RAM)
+    return threads > 0 ? ns.exec(PROMOTE, host, { threads, preventDuplicates: true }) : 0
+  }
+
   const neighbours = neighbourDetails(ns)
   report("scouting", { neighbours: neighbours.length })
   const lab = neighbours.find(n => n.host.endsWith("l4byr1nth"))
@@ -80,6 +88,7 @@ export async function main(ns) {
   // dnet_lab.js reports charisma itself, so the scout stays small enough to hop.
   // The link keeps this host beside the lab for the whole walk.
   if (lab) {
+    ns.kill(PROMOTE, host) // The walker needs these threads more.
     const anchored = await moveAnchor(host, depth, creds, true)
     // This scout's own RAM frees on exit, too late to count. Threads speed every move, and links last about a minute.
     const threads = Math.max(1, Math.floor((ns.getServerMaxRam(host) - ns.getServerUsedRam(host)) / LAB_RAM))
@@ -121,14 +130,14 @@ export async function main(ns) {
       await freeBlockedRam(ns, next.host, 25, false)
       pid = await hopTo(next.host, path)
     }
-    if (pid) return report("hopped", { next: next.host, nextDepth: next.depth, failures })
+    if (pid) return report("hopped", { next: next.host, nextDepth: next.depth, failures, promoter: leavePromoter() })
     failures.push({ host: next.host, depth: next.depth, why: "hop refused", ...lastHop, ...fit(next.host) })
   }
   const back = path.at(-2)
   if (back) {
     const session = await acquireSession(ns, back, creds[back], { timeBudgetMs: SESSION_BUDGET_MS })
-    if (session.ok && await hopTo(back, path.slice(0, -2))) return report("backtracked", { next: back, failures })
+    if (session.ok && await hopTo(back, path.slice(0, -2))) return report("backtracked", { next: back, failures, promoter: leavePromoter() })
     failures.push({ host: back, stage: "backtrack", why: session.ok ? "hop refused" : session.why, code: session.code, ...(session.ok ? { ...lastHop, ...fit(back) } : {}) })
   }
-  report("dead-end", { neighbours: neighbours.length, failures })
+  report("dead-end", { neighbours: neighbours.length, failures, promoter: leavePromoter() })
 }

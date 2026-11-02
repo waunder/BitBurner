@@ -25,6 +25,11 @@ export function routeHops(neighbours, route, host, tried) {
     .sort((a, b) => route.indexOf(b.host) - route.indexOf(a.host))
 }
 
+/** Threads of the charisma worker that fit in a host's free RAM. */
+export function promoteThreads(maxRam, usedRam, ram) {
+  return ram > 0 ? Math.max(0, Math.floor((maxRam - usedRam) / ram)) : 0
+}
+
 /** A single chain: start another only when the last one has gone quiet. */
 export function shouldStartScout(status, now, staleMs = SCOUT_STALE_MS, retryMs = SCOUT_RETRY_MS) {
   const wait = FINISHED.has(status?.state) ? retryMs : staleMs

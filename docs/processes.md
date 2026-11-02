@@ -274,6 +274,14 @@ ranks route hosts first, forwards only, and a route from `darkweb` overrides the
   start retries. A host too small for the scout counts as a failed hop.
 - **Test:** `node --test dnet_scout_logic.test.js`
 
+### `dnet_promote.js`
+
+Charisma worker. Loops `dnet.promoteStock("ECP")`, which pays `charisma_exp x threads x 10 x (200 + charisma) / 200`
+per call, every call, in `8s x 600 / (600 + charisma)`: about 4x phishing per thread at charisma 234 (game source). Only runs on a darknet server, 3.6GB a thread.
+`dnet_scout.js` leaves one on each host it leaves, in the free RAM beyond its own, so a later chain can still pass; `dnet_root.js` keeps one on the stasis-linked host beside room for a scout. A scout beside a lab kills it first.
+
+- **Failure modes:** a mutation can kill it; the next chain through replaces it.
+
 ### `dnet_anchor.js`
 
 Applies the stasis link on its own host, or removes it with `--unlink`, then exits.

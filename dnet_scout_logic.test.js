@@ -1,6 +1,6 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { rankHops, shouldStartScout, scoutStart, shouldAnchor, freshRoute, routeHops } from "./dnet_scout_logic.js"
+import { promoteThreads, rankHops, shouldStartScout, scoutStart, shouldAnchor, freshRoute, routeHops } from "./dnet_scout_logic.js"
 
 test("prefers deeper, then easier, unvisited hosts", () => {
   const hops = rankHops([
@@ -66,4 +66,10 @@ test("shouldAnchor allows a same-depth move beside a lab", () => {
   assert.equal(shouldAnchor(6, 6, 20, 14.2), false)
   assert.equal(shouldAnchor(6, 6, 20, 14.2, true), true)
   assert.equal(shouldAnchor(6, 6, 10, 14.2, true), false)
+})
+
+test("promoteThreads fits whole threads in free RAM", () => {
+  assert.equal(promoteThreads(32, 2, 3.6), 8)
+  assert.equal(promoteThreads(16, 14, 3.6), 0)
+  assert.equal(promoteThreads(16, 17, 3.6), 0)
 })

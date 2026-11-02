@@ -1,9 +1,13 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-02 02:03 MST. Sources: Steam game via DevTools and
+Last refreshed: 2026-11-02 02:42 MST. Sources: Steam game via DevTools and
 terminal, Remote API `mcp_status.json`, game source and live reads.
 
 ## Current live state (supersedes everything below)
+
+**Live 02:40 MST (game, status files):** node 15, hacking 375, charisma 307 (up from 171 at 02:03), cash $10.3b, net about $20m/s, `phantasy` stack running, Tian Di Hui joined, rep 2,607 at about 3/s. Share: 16,380 threads, power 1.394 (`share_deploy.js network 256 128 20000`), `xp_filler.js` refilled after it.
+**New charisma source (game source, new this run):** `promoteStock` pays per thread on every call, about 4x phishing, and darknet RAM is the limit: 185GB rooted of about 1.5TB. `dnet_promote.js` is live: one thread on the anchor stayed running (host used 4.8 to 8.4GB). Scouts now leave one behind on each host; that had not yet fired by 02:40 and its exp rate is unmeasured. Compare charisma exp before relying on it.
+**Install 2 plan:** Speech Processor needs 7,500 rep, about 25 minutes from 02:40. When Tian Di Hui has 7,500 (S.N.A at 6,250 comes first): export and validate the save, then `run aug_install.js --install`. `capital_policy.json` reserve is $600m on the game (gitignored); cash is far past it. Charisma exp resets on install, so restart share-free and let scouts rebuild promoters.
 
 **First install done, 2026-11-02 about 01:22 MST.** Hacking 376, charisma 329, $259b, NiteSec rep about 17k before it. Installed The Broken Wings
 (`The W1ngs of Icarus`), 7 NiteSec augmentations and 8 NeuroFlux levels. 9 installed in all, so at least four more cycles. Leftover cash bought home RAM to

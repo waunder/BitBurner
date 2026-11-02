@@ -286,15 +286,15 @@ plus one each for The Broken Wings, The Hammer and The Staff. Started by `dnet_s
 ### `stack_batch.js`
 
 Stacked-batch trial on one target, using `additionalMsec` so hack, weaken, grow and
-weaken land in order. MCP skips hosts in `stack_targets.json`; waits for any MCP cohort
-to finish, prepares the target, then launches every `spacingMs` up to `ramBudgetGB`.
+weaken land in order. MCP skips the target while `stack_status.json` is under two
+minutes old, so a dead runner hands it back. Waits for any MCP cohort to finish, prepares the target, then launches every `spacingMs` up to `ramBudgetGB`.
 Hack income returns on port 7.
 
 - **Args:** `target [hackFraction=0.1] [spacingMs=2000] [gapMs=200] [ramBudgetGB=40960]`.
 - **Writes:** `stack_status.json` (state, batches, resets, stolen, perSec).
 - **Failure modes:** money under 50% or security 5 over minimum stops launching, drains
   jobs, re-prepares and counts a reset. A full fleet skips that batch.
-- **Stop:** kill it and empty `stack_targets.json`.
+- **Stop:** kill it. `startup.js` does not start it, so an install ends the trial.
 - **Test:** `node --test stack_logic.test.js`
 
 ### `xp_filler.js`

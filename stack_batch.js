@@ -1,8 +1,8 @@
 /**
  * Stacked-batch trial on one target. Prepares it, then starts timed batches every
  * spacing so hack, weaken, grow and weaken land in order. Drift pauses launching
- * until jobs drain, then it re-prepares. MCP skips targets in stack_targets.json;
- * remove the target there and kill this script to end the trial.
+ * until jobs drain, then it re-prepares. MCP skips the target while
+ * stack_status.json is under two minutes old, so killing this script hands it back.
  *
  * Start: run stack_batch.js <target> [hackFraction=0.1] [spacingMs=2000] [gapMs=200] [ramBudgetGB=40960]
  * Writes stack_status.json (batches, resets, stolen, $/s since first batch).

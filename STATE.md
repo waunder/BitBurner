@@ -28,6 +28,13 @@ next BitNode still needs him. Why BN15, and the numbers: `docs/bitnode-choice-20
 `dnet_root.js` and `dnet_scout.js` are running live; the maze solver has not run live. Scheduled task `bitburner-bn15-progress` is enabled and runs hourly (confirmed 2026-11-01). Pause backup: hacking
 182, $13.8m: `saves/bitburnerSave_pause_BN15_2026-11-01.save` (gitignored).
 
+Stacked-batch trial on `omega-net`, 22:03 to 23:15 MST (`stack_status.json`): 341 batches, no resets,
+$18.3b stolen, about $53.6m per batch, money and security held at ideal. It averaged $4.3m/s against
+MCP's projected $1.4m/s for this target. At the intended one batch per 2s (seen live 23:15) that is
+about $27m/s, not yet sustained. Launches nearly stopped while the Remote API was down, 22:14 to
+23:00. Unproven guess: the game window is throttled when idle, which may also cause the repeated
+1006 drops. `avgRate` and `incomePerSec` in MCP status understate income; compare `totalHacked`.
+
 Live 21:03 MST (game): hacking 294, charisma 281, about $1.8b, 25 cloud servers at
 639TB, home 512GB, Algorithms running. The game never paused; only the Remote API
 was down from about 17:26 to 20:56, which Ken reopened. NiteSec joined; Sector-12 is

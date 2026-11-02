@@ -239,13 +239,15 @@ so the pool shrinks to what needs no ports. Rebuilding it means Create Program
 ### `dnet_lab.js`
 
 Walks a labyrinth by depth-first search, one `dnet.authenticate(lab, "go <dir>")`
-per room, using `dnet_lab_logic.js`. `dnet_crawl.js` launches it when a lab is a
-neighbour and charisma meets `getServerRequiredCharismaLevel`, using all free RAM
-on that host. On success it connects and runs `dnet_loot.js` on the lab, which
-opens the reward cache.
+per room, using `dnet_lab_logic.js`. `dnet_root.js` keeps one on the stasis-linked
+host until a `solved` status newer than the last install; `dnet_crawl.js` launches
+one when a lab is a neighbour and charisma fits, using all free RAM on that host.
+It waits while no lab is connected, and the game keeps its position per pid, so a
+lost link only costs time. On success it connects and runs `dnet_loot.js` on the
+lab, which opens the reward cache.
 
 - **Writes:** `dnet_lab_sighting.json` from the crawler; `dnet_lab_status.json`
-  (`state`: walking, solved, charisma, stuck, failing, no-lab) and
+  (`state`: waiting, walking, solved, charisma, stuck, failing, no-lab) and
   `dnet_lab_search.json` every 5 moves, shipped home. Resume needs the same lab
   and entrance.
 - **Failure modes:** 20 consecutive refused moves stops with `failing`.
@@ -261,7 +263,9 @@ chain finishes, so only one chain runs. New passwords go through the normal
 credential shards. On a host deeper than the current anchor with room for
 `dnet_anchor.js` (about 14GB), the scout moves the single stasis link there, and
 `dnet_root.js` starts later chains from the anchor, falling back to `darkweb`.
-Blocked RAM is cleared only when a hop fails.
+Blocked RAM is cleared only when a hop fails. Beside a lab the scout moves the link
+to its own host, even at equal depth. A fresh `dnet_route.json` from `tools/dnet_map.py`
+ranks route hosts first, forwards only, and a route from `darkweb` overrides the anchor.
 
 - **Writes:** `dnet_scout_status.json` at home (`state`: launched, scouting, cracking, anchored, hopped,
   backtracked, lab-found, charisma, dead-end, hop-limit, launch-failed) with the route, depth and

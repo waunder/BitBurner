@@ -11,7 +11,7 @@
  * @param {NS} ns
  */
 import { CODE, CREDS_FILE, acquireSession, freeBlockedRam, readCreds, recordCred, shipCred } from "dnet_lib.js"
-import { SCOUT_STATUS, rankHops, shouldAnchor } from "dnet_scout_logic.js"
+import { ROUTE_FILE, SCOUT_STATUS, freshRoute, rankHops, routeHops, shouldAnchor } from "dnet_scout_logic.js"
 
 const LAB_WORKER = "dnet_lab.js"
 const ANCHOR = "dnet_anchor.js"
@@ -62,11 +62,12 @@ export async function main(ns) {
     return ns.dnet.getStasisLinkedServers().includes(target) === linked
   }
   // Moves the one stasis link down to a deeper host, so the next chain starts there.
-  const moveAnchor = async (target, targetDepth, creds) => {
+  const moveAnchor = async (target, targetDepth, creds, besideLab = false) => {
     const free = ns.getServerMaxRam(target) - ns.getServerUsedRam(target)
     const [old] = ns.dnet.getStasisLinkedServers()
+    if (old === target) return false
     const oldDepth = old ? ns.dnet.getServerDetails(old).depth : undefined
-    if (!shouldAnchor(oldDepth, targetDepth, free, ANCHOR_RAM)) return false
+    if (!shouldAnchor(oldDepth, targetDepth, free, ANCHOR_RAM, besideLab)) return false
     if (old && (!ns.dnet.connectToSession(old, creds[old]?.password ?? "").success || !(await runAnchor(old, false, "--unlink")))) return false
     return runAnchor(target, true)
   }
@@ -74,19 +75,32 @@ export async function main(ns) {
   const neighbours = neighbourDetails(ns)
   report("scouting", { neighbours: neighbours.length })
   const lab = neighbours.find(n => n.host.endsWith("l4byr1nth"))
+  const creds = readCreds(ns)
   // dnet_lab.js reports charisma itself, so the scout stays small enough to hop.
-  if (lab) return report("lab-found", { lab: lab.host, pid: ns.exec(LAB_WORKER, host, { preventDuplicates: true }, lab.host) })
+  // The link keeps this host beside the lab for the whole walk.
+  if (lab) {
+    const anchored = await moveAnchor(host, depth, creds, true)
+    return report("lab-found", { lab: lab.host, anchored, pid: ns.exec(LAB_WORKER, host, { preventDuplicates: true }, lab.host) })
+  }
   if (flags.hops <= 0) return report("hop-limit")
 
-  const creds = readCreds(ns)
+  // tools/dnet_map.py reads the route off the Dark Net page; without one the chain explores.
+  let route = []
+  try {
+    await ns.scp(ROUTE_FILE, host, "home")
+    route = freshRoute(JSON.parse(ns.read(ROUTE_FILE) || "null"), Date.now())
+  } catch { /* no route or partial write: explore */ }
   const failures = []
   // Links move during a crack, so each try re-reads the neighbours.
   const tried = new Set(seen)
+  const failed = new Set()
   // No variable named "attempt": the game's RAM check bills it as codingcontract.attempt, 10GB.
   for (let tryCount = 0; tryCount < MAX_TRIES; tryCount++) {
-    const next = rankHops(neighbourDetails(ns), tried)[0]
+    const options = neighbourDetails(ns)
+    const next = routeHops(options, route, host, failed)[0] ?? rankHops(options, tried)[0]
     if (!next) break
     tried.add(next.host)
+    failed.add(next.host)
     report("cracking", { target: next.host, targetDepth: next.depth, model: next.modelId })
     const session = await acquireSession(ns, next.host, creds[next.host], { bruteForceLimit: BRUTE_LIMIT, timeBudgetMs: SESSION_BUDGET_MS })
     if (!session.ok) {

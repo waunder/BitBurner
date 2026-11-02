@@ -22,7 +22,7 @@ export function choosePlayerActivity({ player = {}, nextGate = null, augmentatio
   }
 
   if (override === "algorithms") {
-    return { action: "algorithms", university: config.university || "Rothman University", course: "Algorithms", reason: "explicit Algorithms override", confidence: "HIGH" }
+    return { action: "algorithms", university: config.university || "Rothman University", city: config.universityCity || "Sector-12", course: "Algorithms", reason: "explicit Algorithms override", confidence: "HIGH" }
   }
   if (override === "crime") {
     return crimeCandidate
@@ -61,7 +61,7 @@ export function choosePlayerActivity({ player = {}, nextGate = null, augmentatio
   const hacking = number(player.skills?.hacking)
   if (nextGate && number(nextGate.required) > hacking) {
     return {
-      action: "algorithms", university: config.university || "Rothman University", course: "Algorithms",
+      action: "algorithms", university: config.university || "Rothman University", city: config.universityCity || "Sector-12", course: "Algorithms",
       required: number(nextGate.required), host: nextGate.host,
       reason: `H${hacking} → H${number(nextGate.required)} for ${nextGate.host}`,
       confidence: "HIGH",

@@ -1,6 +1,6 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { rankHops, shouldStartScout, scoutStart, shouldAnchor } from "./dnet_scout_logic.js"
+import { rankHops, shouldStartScout, scoutStart, shouldAnchor, freshRoute, routeHops } from "./dnet_scout_logic.js"
 
 test("prefers deeper, then easier, unvisited hosts", () => {
   const hops = rankHops([
@@ -45,4 +45,24 @@ test("a dead end at the anchor sends the next chain through the gateway", () => 
   const creds = { deep: { password: "x" } }
   assert.equal(scoutStart(["deep"], creds, "darkweb", { state: "dead-end", host: "deep" }), "darkweb")
   assert.equal(scoutStart(["deep"], creds, "darkweb", { state: "dead-end", host: "darkweb" }), "deep")
+})
+
+test("routeHops only moves forward along a fresh route", () => {
+  const route = ["darkweb", "a", "b", "c"]
+  const hops = [{ host: "a" }, { host: "b" }, { host: "x", depth: 9 }, { host: "c", isConnectedToCurrentServer: false }]
+  assert.deepEqual(routeHops(hops, route, "a", new Set()).map(n => n.host), ["b"])
+  assert.deepEqual(routeHops(hops, route, "x", new Set(["b"])).map(n => n.host), ["a"])
+  assert.deepEqual(routeHops(hops, [], "a", new Set()), [])
+})
+
+test("freshRoute ignores a stale or malformed route", () => {
+  assert.deepEqual(freshRoute({ ts: 100, path: ["a"] }, 200, 1000), ["a"])
+  assert.deepEqual(freshRoute({ ts: 100, path: ["a"] }, 2000, 1000), [])
+  assert.deepEqual(freshRoute(null, 200), [])
+})
+
+test("shouldAnchor allows a same-depth move beside a lab", () => {
+  assert.equal(shouldAnchor(6, 6, 20, 14.2), false)
+  assert.equal(shouldAnchor(6, 6, 20, 14.2, true), true)
+  assert.equal(shouldAnchor(6, 6, 10, 14.2, true), false)
 })

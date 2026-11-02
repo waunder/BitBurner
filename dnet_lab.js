@@ -3,10 +3,11 @@
  * walks the maze, because the game tracks position per PID. Its progress is
  * saved locally and shipped home; on success it opens the reward cache.
  *
- * Start: dnet_crawl.js launches it when a lab is a neighbour and charisma fits.
+ * Start: dnet_root.js keeps one on the stasis-linked host, and dnet_crawl.js launches
+ * one when a lab is a neighbour. Links come and go, so it waits for the lab each time.
  * @param {NS} ns
  */
-import { NOT_ENOUGH_CHARISMA, applyMove, newSearch, nextMove, parseExits, resumeSearch } from "dnet_lab_logic.js"
+import { LAB_HOSTS, NOT_ENOUGH_CHARISMA, applyMove, newSearch, nextMove, parseExits, resumeSearch } from "dnet_lab_logic.js"
 
 const STATE = "dnet_lab_search.json"
 const STATUS = "dnet_lab_status.json"
@@ -14,14 +15,26 @@ const LOOT = "dnet_loot.js"
 const SAVE_EVERY = 5
 const RETRY_MS = 1000
 const MAX_FAILS = 20
+const WAIT_MS = 2000
 
 export async function main(ns) {
   ns.disableLog("ALL")
-  const lab = String(ns.args[0])
+  let lab = ns.args[0] === undefined ? null : String(ns.args[0])
   const report = (state, extra = {}) => {
     ns.write(STATUS, JSON.stringify({ ts: Date.now(), lab, host: ns.getHostname(), state, ...extra }), "w")
     ns.scp(STATUS, "home")
   }
+  // With no argument, the first lab to link up names the walk.
+  const connected = () => {
+    const near = ns.dnet.probe()
+    lab ??= LAB_HOSTS.find(name => near.includes(name)) ?? null
+    return near.includes(lab)
+  }
+  const waitForLab = async () => {
+    report("waiting")
+    while (!connected()) await ns.sleep(WAIT_MS)
+  }
+  await waitForLab()
   const required = ns.dnet.getServerRequiredCharismaLevel(lab), charisma = ns.getPlayer().skills.charisma
   if (charisma < required) return report("charisma", { required, charisma })
   const first = await ns.dnet.labreport()
@@ -47,6 +60,8 @@ export async function main(ns) {
       return report("solved", { moves, password: result.data, lootPid: looted || 0 })
     }
     const next = parseExits(result.data)
+    // The game keeps this pid's position, so a lost link costs time and nothing else.
+    if (!connected()) { await waitForLab(); continue }
     if (!String(result.message).startsWith("You have moved") || !next) {
       if (++fails >= MAX_FAILS) return report("failing", { code: result.code, message: result.message, position: search.position })
       await ns.sleep(RETRY_MS)

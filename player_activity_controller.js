@@ -26,6 +26,7 @@ const DEFAULT_CONFIG = {
   crimeKarmaTarget: -54_000,
   charismaTarget: 0,
   charismaUniversity: "ZB Institute of Technology",
+  universityCity: "Sector-12",
   charismaCity: "Volhaven",
 }
 
@@ -89,8 +90,7 @@ function startActivity(ns, decision) {
     const gymStat = { strength: "str", defense: "def", dexterity: "dex", agility: "agi" }[decision.stat]
     return ns.singularity.gymWorkout(decision.gym, gymStat, false)
   }
-  if (decision.action === "algorithms") return ns.singularity.universityCourse(decision.university, decision.course, false)
-  if (decision.action === "leadership") {
+  if (decision.action === "algorithms" || decision.action === "leadership") {
     if (ns.getPlayer().city !== decision.city && !ns.singularity.travelToCity(decision.city)) return false
     return ns.singularity.universityCourse(decision.university, decision.course, false)
   }

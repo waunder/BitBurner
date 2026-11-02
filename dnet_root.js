@@ -21,9 +21,10 @@ import {
   writeDeployerShard,
 } from "dnet_lib.js"
 
-import { SCOUT_STATUS, scoutStart, shouldStartScout } from "dnet_scout_logic.js"
+import { ROUTE_FILE, SCOUT_STATUS, freshRoute, scoutStart, shouldStartScout } from "dnet_scout_logic.js"
 
 const CRAWLER = "dnet_crawl.js"
+const LAB_STATUS = "dnet_lab_status.json"
 const SCOUT = "dnet_scout.js"
 const SCOUT_FILES = ["dnet_anchor.js", SCOUT, "dnet_scout_logic.js", "dnet_lib.js", "dnet_lab.js", "dnet_lab_logic.js", "dnet_loot.js"]
 const MANAGER = "dnet_manager.js"
@@ -215,7 +216,9 @@ export async function main(ns) {
       try { status = JSON.parse(ns.read(SCOUT_STATUS) || "null") } catch { /* partial write: treat as stale */ }
       if (shouldStartScout(status, Date.now())) {
         // A stasis-linked host holds still and accepts exec from here, so chains resume from it.
-        const anchor = scoutStart(ns.dnet.getStasisLinkedServers(), creds, target, status)
+        let routed = false
+        try { routed = freshRoute(JSON.parse(ns.read(ROUTE_FILE) || "null"), Date.now())[0] === target } catch { /* partial write: no route */ }
+        const anchor = routed ? target : scoutStart(ns.dnet.getStasisLinkedServers(), creds, target, status)
         let pid = 0
         if (anchor !== target && ns.dnet.connectToSession(anchor, creds[anchor].password).success && await ns.scp(SCOUT_FILES, anchor)) {
           pid = ns.exec(SCOUT, anchor, { preventDuplicates: true })
@@ -236,6 +239,17 @@ export async function main(ns) {
           }
         }
         ns.write(SCOUT_STATUS, JSON.stringify({ ts: Date.now(), state: pid ? "launched" : "launch-failed", host: start, trail: [] }), "w")
+      }
+
+      // One walker waits on the stasis-linked host: lab links reach it faster than any chain.
+      let lab = null
+      try { lab = JSON.parse(ns.read(LAB_STATUS) || "null") } catch { /* partial write: treat as unsolved */ }
+      const [linked] = ns.dnet.getStasisLinkedServers()
+      if (linked && !(lab?.state === "solved" && lab.ts > ns.getResetInfo().lastAugReset)
+        && ns.dnet.connectToSession(linked, creds[linked]?.password ?? "").success
+        && !ns.ps(linked).some(proc => proc.filename.replace(/^\//, "") === "dnet_lab.js")) {
+        await ns.scp(SCOUT_FILES, linked)
+        ns.exec("dnet_lab.js", linked, 1)
       }
 
       if (!delegated) {

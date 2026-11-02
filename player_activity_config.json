@@ -2,7 +2,7 @@
   "enabled": true,
   "override": "auto",
   "physicalTarget": 0,
-  "charismaTarget": 600,
+  "charismaTarget": 300,
   "gym": "Powerhouse Gym",
   "university": "Rothman University",
   "factionWorkType": "hacking",

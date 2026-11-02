@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-01 17:22 MST. Sources: Steam game via DevTools and
+Last refreshed: 2026-11-01 21:05 MST. Sources: Steam game via DevTools and
 terminal, Remote API `mcp_status.json`, game source and live reads.
 
 ## Current live state (supersedes everything below)
@@ -25,18 +25,22 @@ training off; player is on Shoplift. Ken gave full approval on 2026-11-01 to
 finish BN15 with any changes, including purchases and installs. Choosing the
 next BitNode still needs him. Why BN15, and the numbers: `docs/bitnode-choice-2026-11-01.md`.
 
-`dnet_root.js` and `dnet_scout.js` are running live; `mcp_xp.js` was stopped to fit
-them and nothing restarts it. No lab reached yet; the maze solver has not run
+`dnet_root.js` and `dnet_scout.js` are running live; No lab reached yet; the maze solver has not run
 live. Best scout depth is 2 (17:21 MST), and charisma is 213 against the first
 gate of 300. Scheduled task `bitburner-bn15-progress` is **still paused**; Ken
 resumed the game about 17:08 MST but the resume call was refused by the session's
 permission check, so resume it from the Scheduled sidebar. Pause backup: hacking
 182, $13.8m: `saves/bitburnerSave_pause_BN15_2026-11-01.save` (gitignored).
 
-Live 17:20 MST (game): hacking 201, 25 cloud servers, about 7TB, Algorithms running,
-no factions. The Remote API dropped at 17:10 with code 1006, cause unknown;
-reconnected through Options by DevTools. The daemon restarted at 17:17 MST and now
-rereads `sync_manifest.json` each pass; all 112 files sync.
+Live 21:03 MST (game): hacking 294, charisma 281, about $1.8b, 25 cloud servers at
+639TB, home 512GB, Algorithms running. The game never paused; only the Remote API
+was down from about 17:26 to 20:56, which Ken reopened. NiteSec joined; Sector-12 is
+left for a deliberate choice. MCP used under 4% of cloud RAM (25TB), so `xp_filler.js`
+now puts the idle part into hacking XP: 9.25m XP in 137s, about 67k/s against 810/s.
+`capital_manager.js` stops cloud buying while MCP fills under 50%. MCP runs only on
+cloud servers, so rooted hosts stay empty (492GB total, by design). The daemon rereads
+`sync_manifest.json` each pass. Unknown: whether the filler lowers MCP income, which
+read 0 at 21:03 between harvests and averaged $2.7m/s; compare before keeping it.
 
 DevTools runs on 127.0.0.1:9222 through the Steam launch option.
 

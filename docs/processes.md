@@ -284,7 +284,7 @@ each other out. Started by `startup.js`. Writes `faction_join_status.json`.
 
 ### `capital_manager.js`
 
-Cloud buying stops while `mcp_status.json` `ramUtilization` is under 50%.
+Cloud buying stops while MCP's own jobs in `mcp_status.json` `cloudWorkers` fill under 50% of cloud RAM.
 
 
 Spends cash on hacking capacity. `capital_bootstrap.js` needs about 5.6GB, so it

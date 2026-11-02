@@ -56,9 +56,13 @@ function startWaitingManager(ns) {
   return name && ns.run(name) ? name : null
 }
 
-/** MCP's own demand for cloud RAM; a missing status must not block buying. */
+/** MCP's own demand for cloud RAM; xp_filler.js is excluded because it only uses leftovers. */
 function readUtilization(ns) {
-  try { return JSON.parse(ns.read("mcp_status.json")).ramUtilization ?? 1 } catch { return 1 }
+  try {
+    const workers = JSON.parse(ns.read("mcp_status.json")).cloudWorkers
+    const threads = workers.flatMap(w => w.actions).reduce((sum, a) => sum + a.threads, 0)
+    return threads * 1.75 / workers.reduce((sum, w) => sum + w.maxRam, 0)
+  } catch { return 1 }
 }
 
 export async function main(ns) {

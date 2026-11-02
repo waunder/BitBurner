@@ -39,3 +39,26 @@ test("a failed activity launch is retried rather than recorded as active", () =>
   const desired = { action: "gym", gym: "Powerhouse Gym", stat: "strength", target: 30 }
   assert.equal(shouldSwitch({ now: 20_000, previous: { actionKey: actionKey(desired), lastSwitchAt: null }, desired }).switch, true)
 })
+
+test("charisma gate trains Leadership ahead of the hacking gate", () => {
+  const player = { skills: { hacking: 100, charisma: 282 } }
+  const config = { physicalTarget: 0, charismaTarget: 300 }
+  const below = choosePlayerActivity({ player, nextGate: { host: "x", required: 355 }, config })
+  assert.equal(below.course, "Leadership")
+  assert.equal(actionKey(below), "leadership:ZB Institute of Technology:Leadership")
+  const met = choosePlayerActivity({ player: { skills: { hacking: 100, charisma: 300 } }, nextGate: { host: "x", required: 355 }, config })
+  assert.equal(met.course, "Algorithms")
+})
+
+test("charisma below target picks Leadership ahead of a hacking gate", () => {
+  const result = choosePlayerActivity({ player: { skills: { hacking: 300, charisma: 282 } }, nextGate: { host: "I.I.I.I", required: 355 }, config: { physicalTarget: 0, charismaTarget: 600 } })
+  assert.equal(result.action, "leadership")
+  assert.equal(result.city, "Volhaven")
+  assert.equal(actionKey(result), "leadership:ZB Institute of Technology:Leadership")
+})
+
+test("charisma at target, or no target, falls through to the hacking gate", () => {
+  const gate = { host: "I.I.I.I", required: 355 }
+  assert.equal(choosePlayerActivity({ player: { skills: { hacking: 300, charisma: 600 } }, nextGate: gate, config: { physicalTarget: 0, charismaTarget: 600 } }).action, "algorithms")
+  assert.equal(choosePlayerActivity({ player: { skills: { hacking: 300, charisma: 1 } }, nextGate: gate, config: { physicalTarget: 0 } }).action, "algorithms")
+})

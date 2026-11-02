@@ -21,11 +21,11 @@ import {
   writeDeployerShard,
 } from "dnet_lib.js"
 
-import { SCOUT_STATUS, shouldStartScout } from "dnet_scout_logic.js"
+import { SCOUT_STATUS, scoutStart, shouldStartScout } from "dnet_scout_logic.js"
 
 const CRAWLER = "dnet_crawl.js"
 const SCOUT = "dnet_scout.js"
-const SCOUT_FILES = [SCOUT, "dnet_scout_logic.js", "dnet_lib.js", "dnet_lab.js", "dnet_lab_logic.js", "dnet_loot.js"]
+const SCOUT_FILES = ["dnet_anchor.js", SCOUT, "dnet_scout_logic.js", "dnet_lib.js", "dnet_lab.js", "dnet_lab_logic.js", "dnet_loot.js"]
 const MANAGER = "dnet_manager.js"
 const REALLOC = "dnet_realloc.js"
 const LEGACY = "dnet_deploy.js"
@@ -213,14 +213,29 @@ export async function main(ns) {
 
       let status = null
       try { status = JSON.parse(ns.read(SCOUT_STATUS) || "null") } catch { /* partial write: treat as stale */ }
-      if (shouldStartScout(status, Date.now()) && await ns.scp(SCOUT_FILES, target)) {
-        let pid = ns.exec(SCOUT, target, { preventDuplicates: true })
-        // Phishing fills the gateway; it restarts next recrawl, the scout cannot wait.
-        if (!pid) {
-          for (const proc of ns.ps(target)) if (proc.filename.replace(/^\//, "") === "dnet_phish.js") ns.kill(proc.pid)
-          pid = ns.exec(SCOUT, target, { preventDuplicates: true })
+      if (shouldStartScout(status, Date.now())) {
+        // A stasis-linked host holds still and accepts exec from here, so chains resume from it.
+        const anchor = scoutStart(ns.dnet.getStasisLinkedServers(), creds, target)
+        let pid = 0
+        if (anchor !== target && ns.dnet.connectToSession(anchor, creds[anchor].password).success && await ns.scp(SCOUT_FILES, anchor)) {
+          pid = ns.exec(SCOUT, anchor, { preventDuplicates: true })
         }
-        ns.write(SCOUT_STATUS, JSON.stringify({ ts: Date.now(), state: pid ? "launched" : "launch-failed", host: target, trail: [] }), "w")
+        const start = pid ? anchor : target
+        if (!pid && await ns.scp(SCOUT_FILES, target)) {
+          pid = ns.exec(SCOUT, target, { preventDuplicates: true })
+          // Phishing fills the gateway; it restarts next recrawl, the scout cannot wait.
+          if (!pid) {
+            for (const proc of ns.ps(target)) if (proc.filename.replace(/^\//, "") === "dnet_phish.js") ns.kill(proc.pid)
+            pid = ns.exec(SCOUT, target, { preventDuplicates: true })
+          }
+          // Different --generation args let two managers share a host; only the newest stays.
+          if (!pid) {
+            const managers = ns.ps(target).filter(proc => proc.filename.replace(/^\//, "") === "dnet_manager.js")
+            for (const proc of managers.slice(0, -1)) ns.kill(proc.pid)
+            pid = ns.exec(SCOUT, target, { preventDuplicates: true })
+          }
+        }
+        ns.write(SCOUT_STATUS, JSON.stringify({ ts: Date.now(), state: pid ? "launched" : "launch-failed", host: start, trail: [] }), "w")
       }
 
       if (!delegated) {

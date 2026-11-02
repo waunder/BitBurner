@@ -24,6 +24,9 @@ const DEFAULT_CONFIG = {
   cooldownMs: 10 * 60 * 1000,
   repInvestmentMaxPriceMultiple: 250,
   crimeKarmaTarget: -54_000,
+  charismaTarget: 0,
+  charismaUniversity: "ZB Institute of Technology",
+  charismaCity: "Volhaven",
 }
 
 let gateCache = { ts: 0, gates: [], ok: false }
@@ -87,6 +90,10 @@ function startActivity(ns, decision) {
     return ns.singularity.gymWorkout(decision.gym, gymStat, false)
   }
   if (decision.action === "algorithms") return ns.singularity.universityCourse(decision.university, decision.course, false)
+  if (decision.action === "leadership") {
+    if (ns.getPlayer().city !== decision.city && !ns.singularity.travelToCity(decision.city)) return false
+    return ns.singularity.universityCourse(decision.university, decision.course, false)
+  }
   if (decision.action === "faction") return ns.singularity.workForFaction(decision.faction, decision.workType, false)
   if (decision.action === "crime") return ns.singularity.commitCrime(decision.crime, false)
   return false
@@ -100,6 +107,7 @@ function alreadyDoing(work, decision) {
   }
   if (decision.action === "faction") return work.type === "FACTION" && work.factionName === decision.faction && work.factionWorkType === decision.workType
   if (decision.action === "algorithms") return work.type === "CLASS" && work.classType === decision.course
+  if (decision.action === "leadership") return work.type === "CLASS" && work.classType === decision.course && work.location === decision.university
   if (decision.action === "crime") return work.type === "CRIME" && work.crimeType === decision.crime
   return false
 }

@@ -46,6 +46,18 @@ export function choosePlayerActivity({ player = {}, nextGate = null, augmentatio
     }
   }
 
+  // Darknet labs gate on charisma, and logins speed up with it. Worth more than
+  // Algorithms now xp_filler.js supplies hacking XP. Off when charismaTarget is 0.
+  const charismaTarget = Math.max(0, number(config.charismaTarget))
+  const charisma = number(player.skills?.charisma)
+  if (override === "auto" && charisma < charismaTarget) {
+    return {
+      action: "leadership", university: config.charismaUniversity || "ZB Institute of Technology",
+      city: config.charismaCity || "Volhaven", course: "Leadership", target: charismaTarget, current: charisma,
+      reason: `charisma ${charisma}/${charismaTarget} for darknet labs`, confidence: "HIGH",
+    }
+  }
+
   const hacking = number(player.skills?.hacking)
   if (nextGate && number(nextGate.required) > hacking) {
     return {
@@ -88,6 +100,7 @@ export function actionKey(decision) {
   if (!decision || decision.action === "hold") return "hold"
   if (decision.action === "gym") return `gym:${decision.gym}:${decision.stat}:${decision.target}`
   if (decision.action === "algorithms") return `algorithms:${decision.university}:${decision.course}`
+  if (decision.action === "leadership") return `leadership:${decision.university}:${decision.course}`
   if (decision.action === "faction") return `faction:${decision.faction}:${decision.workType}`
   if (decision.action === "crime") return `crime:${decision.crime}`
   return String(decision.action)

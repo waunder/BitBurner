@@ -1,6 +1,6 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { rankHops, shouldStartScout } from "./dnet_scout_logic.js"
+import { rankHops, shouldStartScout, scoutStart, shouldAnchor } from "./dnet_scout_logic.js"
 
 test("prefers deeper, then easier, unvisited hosts", () => {
   const hops = rankHops([
@@ -26,4 +26,17 @@ test("rankHops skips probed hosts that are not directly connected", () => {
     { host: "near", depth: 2, isConnectedToCurrentServer: true },
   ], [])
   assert.deepEqual(hops.map(n => n.host), ["near"])
+})
+
+test("the anchor moves only to a deeper host with room for the worker", () => {
+  assert.equal(shouldAnchor(2, 3, 15, 14), true)
+  assert.equal(shouldAnchor(undefined, 0, 15, 14), true)
+  assert.equal(shouldAnchor(3, 3, 15, 14), false)
+  assert.equal(shouldAnchor(2, 3, 8, 14), false)
+})
+
+test("chains start at a stasis anchor whose password is known", () => {
+  assert.equal(scoutStart(["deep"], { deep: { password: "x" } }, "darkweb"), "deep")
+  assert.equal(scoutStart(["deep"], {}, "darkweb"), "darkweb")
+  assert.equal(scoutStart([], {}, "darkweb"), "darkweb")
 })

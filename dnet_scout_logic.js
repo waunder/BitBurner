@@ -16,3 +16,14 @@ export function shouldStartScout(status, now, staleMs = SCOUT_STALE_MS, retryMs 
   const wait = FINISHED.has(status?.state) ? retryMs : staleMs
   return !(Number.isFinite(status?.ts) && now - status.ts < wait)
 }
+
+/** Move the single stasis link only to a strictly deeper host that can hold the worker. */
+export function shouldAnchor(anchorDepth, targetDepth, freeRam, anchorRam) {
+  return Number.isFinite(targetDepth) && targetDepth > (anchorDepth ?? -1) && freeRam >= anchorRam
+}
+
+/** Where to start the next chain: the anchor when it is reachable, else darkweb. */
+export function scoutStart(anchors, creds, gateway) {
+  const host = anchors.find(name => name !== gateway && typeof creds[name]?.password === "string")
+  return host ?? gateway
+}

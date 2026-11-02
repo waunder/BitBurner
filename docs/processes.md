@@ -1422,7 +1422,8 @@ evidence-backed goal changes. A ten-minute hysteresis prevents churn.
   current activity instead of inventing a goal.
 - **Control:** `repBeforeGates` puts faction rep ahead of hacking gates in auto mode.
   `companyTarget` (`company`, `field`) puts company work ahead of training until that faction has joined, once cash passes `minTrainingCash`, and applies again each pass to take promotions.
-  `focusWork` focuses company and faction work, which pays 25% more rep than unfocused, retried hourly. The terminal page is hidden while focused: click "Do something else" for an hour of terminal use, or clear the flag.
+  `focusWork` focuses company and faction work, which pays 25% more rep than unfocused, retried hourly. The terminal page is hidden while focused: click "Do something else" for an hour of terminal use, or clear the flag. `restart_player.js` restarts the controller and restores focus.
+  `charismaAugs` take faction work ahead of every other faction, whatever the charisma; `charismaTarget` only governs Leadership.
   `player_activity_config.json` is committed and synced. Set
   `"override": "manual"` or `"enabled": false` to stop changes at the next
   minute; `"algorithms"`, `"physical"`, and `"crime"` are explicit overrides.

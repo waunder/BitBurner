@@ -77,12 +77,13 @@ export function choosePlayerActivity({ player = {}, nextGate = null, augmentatio
     return { action: "company", company: corp.company, field: corp.field || "Business", reason: `company rep at ${corp.company} until its faction invites`, confidence: "HIGH" }
   }
   // Level scales with the multiplier but only the log of exp, so charisma augmentations beat Leadership.
-  const charismaAug = override === "auto" && charisma < charismaTarget ? repTarget(player, augmentation, config, new Set(config.charismaAugs || [])) : null
+  // Later labs need more than charismaTarget, so this does not stop at it.
+  const charismaAug = override === "auto" ? repTarget(player, augmentation, config, new Set(config.charismaAugs || [])) : null
   if (charismaAug) {
     return {
       action: "faction", faction: charismaAug.faction, workType: config.factionWorkType || "hacking",
       augmentation: charismaAug.name, repGap: number(charismaAug.repGap), price: number(charismaAug.price),
-      reason: `${charismaAug.faction} needs +${Math.ceil(number(charismaAug.repGap))} rep for ${charismaAug.name} ahead of Leadership`,
+      reason: `${charismaAug.faction} needs +${Math.ceil(number(charismaAug.repGap))} rep for ${charismaAug.name}`,
       confidence: "HIGH",
     }
   }

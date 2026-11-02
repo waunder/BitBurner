@@ -1,9 +1,14 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-02 10:33 MST. Sources: Steam game via DevTools and
+Last refreshed: 2026-11-02 11:29 MST. Sources: Steam game via DevTools and
 terminal, Remote API status files, game bundle.
 
 ## Current live state (supersedes everything below)
+
+**Live 11:24-11:28 (game page, save over DevTools, status files):** node 15, hacking 725, charisma 957 (exp 24.4m), $2.43t, net about $300m/s, Bachman rep 227.6k at 18.35 rep/s as Operations Manager, karma -416. 400k lands about 14:05 MST at that rate. MCP, capital and darknet reporting; 47 `dnet_promote.js` threads. Boots still queued, install held. Hacking exp 43.4e9, so the 1PB cloud kept the rate from 10:33; income is unchanged by it (about $300m/s).
+**Fixed a stall that was waiting at the invite:** charisma augmentations only took faction work while charisma was under `charismaTarget` (600), and it is 957. The player would have gone to the cheapest augmentation (Neural Wit at BitRunners) and worked up by price, leaving Enhanced Social Interaction and SmartJaw nearly last. `charismaAugs` now win regardless (deployed, controller restarted 11:27 with new `restart_player.js`, focus restored). The transition itself is unverified until the invite.
+`capital_policy.json` (game file): `reserve` $500b to $100b and `homeRamTarget` 262144. Augmentations that matter cost under $100b and $1t/hour arrives, so the old reserve only delayed home RAM, which survives installs. Home steps fire at about $3.26t (about 12:10) and about $6.4t. Modelled, not observed. **Set `reserve` to 0 before the install**, or it stalls the rebuild.
+Seen, unexplained: rep rose with no faction work, Tian Di Hui 14.9k at 05:00 to 41.8k, NiteSec 26.2k. Nanofiber Weave is already buyable. Neural Wit needs 4.1k more rep and Magnetism 9.3k: about 45 minutes in all, worth weighing just before the install, after 375k.
 
 **Live 10:24-10:33 (save over DevTools, status files):** node 15, hacking 638, charisma about 915 (exp 15.2m, about 2,700 exp/s), $1.47t, Bachman rep 164.8k at 15.1 rep/s at 10:24, karma -401. MCP, capital and darknet reporting. Cruel lab solved, Boots queued, install held.
 **Idle cash turned into hacking XP.** Faction rep rate follows hacking level, and cash was piling up against a need under $100b. `capital_manager.js` refused cloud RAM because MCP used under half of it, so the policy now has `cloudDemandFloor` 0 (`capital_policy.json`, game file). All 25 cloud servers went to 1PB, the game's cap: 401TB to 26.2PB for about $1.38t, 10:27-10:29. `xp_filler.js` threads 85,883 to 11.9m. Hacking exp 1.63e9 at 10:27:56 to 4.88e9 at 10:32:39, about 11m exp/s (about 100x the 2h rate before), hacking 594 to 638 in 5 minutes.

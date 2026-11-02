@@ -88,6 +88,16 @@ test("a listed charisma augmentation takes faction work ahead of Leadership, oth
   assert.equal(choosePlayerActivity({ player: ready, augmentation, config: { ...config, charismaAugs: [] } }).action, "leadership")
 })
 
+test("a listed charisma augmentation beats cheaper faction work once charismaTarget is passed", () => {
+  const ready = { money: 1e12, factions: ["Bachman & Associates"], skills: { hacking: 700, charisma: 950 } }
+  const augmentation = { ok: true, workCandidates: [
+    { faction: "BitRunners", name: "Neural Wit Amplifier", repGap: 4000, cashReady: true, price: 5e7 },
+    { faction: "Bachman & Associates", name: "SmartJaw", repGap: 375000, cashReady: true, price: 5e10 },
+  ] }
+  const config = { physicalTarget: 0, charismaTarget: 600, charismaAugs: ["SmartJaw"], companyTarget: { company: "Bachman & Associates" } }
+  assert.equal(choosePlayerActivity({ player: ready, augmentation, config }).faction, "Bachman & Associates")
+})
+
 test("crime is picked by money rate when cash is short and karma rate otherwise", () => {
   const rows = [
     { crime: "Shoplift", chance: 0.5, time: 2000, karma: 0.01, money: 15000 },

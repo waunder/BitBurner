@@ -9,5 +9,10 @@
   "factionWorkType": "hacking",
   "cooldownMs": 600000,
   "repInvestmentMaxPriceMultiple": 250,
-  "crimeKarmaTarget": -54000
+  "crimeKarmaTarget": -54000,
+  "charismaAugs": [
+    "Speech Processor Implant",
+    "Speech Enhancement",
+    "Social Negotiation Assistant (S.N.A)"
+  ]
 }

@@ -79,3 +79,11 @@ test("too little cash for tuition picks crime ahead of Leadership", () => {
   const funded = { ...player, money: 2e7 }
   assert.equal(choosePlayerActivity({ player: funded, nextGate: null, augmentation: null, crimeCandidate, config }).action, "leadership")
 })
+
+test("a listed charisma augmentation takes faction work ahead of Leadership, others do not", () => {
+  const ready = { money: 1e8, skills: { hacking: 200, charisma: 150 } }
+  const augmentation = { ok: true, workCandidates: [{ faction: "Tian Di Hui", name: "Speech Processor Implant", repGap: 500, cashReady: true, price: 1e6 }] }
+  const config = { physicalTarget: 0, charismaTarget: 600, charismaAugs: ["Speech Processor Implant"] }
+  assert.equal(choosePlayerActivity({ player: ready, augmentation, config }).faction, "Tian Di Hui")
+  assert.equal(choosePlayerActivity({ player: ready, augmentation, config: { ...config, charismaAugs: [] } }).action, "leadership")
+})

@@ -338,7 +338,14 @@ through `startup.js`. Back up the save first.
 ### `faction_join.js`
 
 Accepts faction invitations every minute, except the six city factions, which lock
-each other out. Started by `startup.js`. Writes `faction_join_status.json`.
+each other out. Until Tian Di Hui is joined it travels to Chongqing once hacking is 50 and
+cash $1.5m, because that faction invites only there. The player controller moves the player on for Leadership;
+the invite stays. Started by `startup.js`. Writes `faction_join_status.json`.
+
+### `charisma_survey.js`
+
+One-shot. Writes `charisma_survey.json`: charisma level, exp, multipliers, and every augmentation that raises
+charisma or charisma exp with price, rep and factions. Lists every game faction, joined or not.
 
 ### `capital_manager.js`
 

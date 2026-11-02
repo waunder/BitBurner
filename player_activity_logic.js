@@ -55,6 +55,16 @@ export function choosePlayerActivity({ player = {}, nextGate = null, augmentatio
   if (override === "auto" && number(player.money) < trainingCash && crimeCandidate) {
     return { ...crimeCandidate, reason: `crime for cash ${number(player.money).toFixed(0)}/${trainingCash} before training`, confidence: "HIGH" }
   }
+  // Level scales with the multiplier but only the log of exp, so charisma augmentations beat Leadership.
+  const charismaAug = override === "auto" && charisma < charismaTarget ? repTarget(player, augmentation, config, new Set(config.charismaAugs || [])) : null
+  if (charismaAug) {
+    return {
+      action: "faction", faction: charismaAug.faction, workType: config.factionWorkType || "hacking",
+      augmentation: charismaAug.name, repGap: number(charismaAug.repGap), price: number(charismaAug.price),
+      reason: `${charismaAug.faction} needs +${Math.ceil(number(charismaAug.repGap))} rep for ${charismaAug.name} ahead of Leadership`,
+      confidence: "HIGH",
+    }
+  }
   if (override === "auto" && charisma < charismaTarget) {
     return {
       action: "leadership", university: config.charismaUniversity || "ZB Institute of Technology",
@@ -116,13 +126,13 @@ export function shouldSwitch({ now, previous = {}, desired, cooldownMs = 10 * 60
   return { switch: true, reason: "new evidence-backed activity" }
 }
 
-function repTarget(player, augmentation, config) {
+function repTarget(player, augmentation, config, only = null) {
   const targets = augmentation?.ok
     ? (augmentation.workCandidates || [augmentation.workCandidate || augmentation.candidate].filter(Boolean))
     : []
   const repPriceLimit = number(player.money) * Math.max(1, number(config.repInvestmentMaxPriceMultiple ?? 250))
   return targets
-    .filter((item) => item.canWorkForRep !== false && number(item.repGap) > 0 && item.faction
+    .filter((item) => (!only || only.has(item.name)) && item.canWorkForRep !== false && number(item.repGap) > 0 && item.faction
       && (item.cashReady || number(item.price) <= repPriceLimit))
     .sort((a, b) => Number(b.cashReady) - Number(a.cashReady)
       || number(a.price) - number(b.price) || number(a.repGap) - number(b.repGap))[0]

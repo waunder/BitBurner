@@ -34,12 +34,13 @@ export async function main(ns) {
       host, exp: ns.formulas.hacking.hackExp(ns.getServer(host), player), weakenMs: ns.getWeakenTime(host),
     })))
     let started = 0, threads = 0
-    // MCP schedules only on cloud servers, so rooted hosts need no margin.
+    // Rooted hosts need no margin.
     const fillable = fillableCloud([...cloud].map(host => ({ host, max: ns.getServerMaxRam(host) })), 3, stackReserve(ns))
-    if (target) for (const host of [...fillable, ...rooted]) {
-      const want = fillerThreads(ns.getServerMaxRam(host), ns.getServerUsedRam(host), cloud.has(host) ? 0.05 : 0)
+    if (target) for (const host of ["home", ...fillable, ...rooted]) {
+      // MCP schedules on home too, so the filler takes at most half of it.
+      const want = fillerThreads(ns.getServerMaxRam(host), ns.getServerUsedRam(host), host === "home" ? 0.5 : cloud.has(host) ? 0.05 : 0)
       if (want < 1) continue
-      ns.scp(WORKER, host, "home")
+      if (host !== "home") ns.scp(WORKER, host, "home")
       if (ns.exec(WORKER, host, want, target)) { started++; threads += want }
     }
     ns.write(STATUS, JSON.stringify({ ts: Date.now(), target, started, threads }), "w")

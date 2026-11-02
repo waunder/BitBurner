@@ -170,6 +170,7 @@ export function cloudWakeDelay(status, now, nominalMs, enabled) {
 }
 
 /** Hold finished harvest slots until its final restoration job completes. */
+const HOME_WORKER_RESERVE_GB=512
 export function cloudAdmissionHosts(ns, workers, batches, ram, reserveHarvestRam) {
   const held=new Map()
   if(reserveHarvestRam)for(const batch of batches.values()) {
@@ -179,7 +180,7 @@ export function cloudAdmissionHosts(ns, workers, batches, ram, reserveHarvestRam
     }
   }
   return workers.map(host=>({host,reservedRam:held.get(host)||0,
-    freeRam:Math.max(0,ns.getServerMaxRam(host)-ns.getServerUsedRam(host)-(held.get(host)||0))}))
+    freeRam:Math.max(0,ns.getServerMaxRam(host)-ns.getServerUsedRam(host)-(held.get(host)||0)-(host==='home'?HOME_WORKER_RESERVE_GB:0))}))
     .sort((a,b)=>b.freeRam-a.freeRam)
 }
 

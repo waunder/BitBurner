@@ -919,9 +919,8 @@ function chooseTarget(ns, servers, maxWeaken, skippedTargets, drainedTargets) {
   return ranked.length > 0 ? ranked[0].server : null
 }
 
-// Retained for config compatibility and any diagnostics that calculate home
-// headroom. Home is deliberately not a worker host: it is the control plane
-// and should remain available for tools, contracts, and future RAM upgrades.
+// Home is a worker host because its RAM survives an install; cloudAdmissionHosts
+// keeps HOME_WORKER_RESERVE_GB free there for the control plane.
 function getHostFreeRam(ns, host) {
   const usedRam = ns.getServerUsedRam(host)
   let freeRam = ns.getServerMaxRam(host) - usedRam
@@ -940,7 +939,6 @@ function getWorkerHosts(ns, servers = null) {
   }
   const workers = []
   for (const server of hosts) {
-    if (server === "home") continue
     // Cloud servers are bought by us and accept work even though the normal
     // rooted-network predicate need not identify them in the Cloud API era.
     if (!cloudHosts.has(server) && !ns.hasRootAccess(server)) continue
@@ -1345,7 +1343,7 @@ export async function main(ns) {
     const workers = getWorkerHosts(ns, servers)
     try {
       reputation = await reconcileReputation(ns, reputation, {
-        objective: OBJECTIVE, hosts: ["home", ...workers], reserveHomeGb: HOME_RAM_RESERVE,
+        objective: OBJECTIVE, hosts: workers, reserveHomeGb: HOME_RAM_RESERVE,
         runId, emit: (kind, inputs) => events.emit(kind, inputs),
       })
     } catch (error) {

@@ -50,6 +50,11 @@ export function choosePlayerActivity({ player = {}, nextGate = null, augmentatio
   // Algorithms now xp_filler.js supplies hacking XP. Off when charismaTarget is 0.
   const charismaTarget = Math.max(0, number(config.charismaTarget))
   const charisma = number(player.skills?.charisma)
+  // A fresh install has no cash for travel or tuition, and a refused course leaves the player idle.
+  const trainingCash = number(config.minTrainingCash ?? 1e7)
+  if (override === "auto" && number(player.money) < trainingCash && crimeCandidate) {
+    return { ...crimeCandidate, reason: `crime for cash ${number(player.money).toFixed(0)}/${trainingCash} before training`, confidence: "HIGH" }
+  }
   if (override === "auto" && charisma < charismaTarget) {
     return {
       action: "leadership", university: config.charismaUniversity || "ZB Institute of Technology",

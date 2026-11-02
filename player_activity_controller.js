@@ -76,8 +76,9 @@ function bestKarmaCrime(ns) {
     try {
       const stats = ns.singularity.getCrimeStats(crime)
       const chance = ns.singularity.getCrimeChance(crime)
-      const karmaPerSecond = stats.time > 0 ? -stats.karma * chance / (stats.time / 1000) : 0
-      if (stats.karma < 0 && Number.isFinite(karmaPerSecond) && (!best || karmaPerSecond > best.expectedKarmaPerSecond)) {
+      // The game reports karma lost as a positive number.
+      const karmaPerSecond = stats.time > 0 ? Math.abs(stats.karma) * chance / (stats.time / 1000) : 0
+      if (karmaPerSecond > 0 && Number.isFinite(karmaPerSecond) && (!best || karmaPerSecond > best.expectedKarmaPerSecond)) {
         best = { action: "crime", crime, chance, expectedKarmaPerSecond: karmaPerSecond }
       }
     } catch { /* A missing crime API is reported by the outer capability state. */ }
@@ -144,7 +145,8 @@ export async function main(ns) {
       try { currentWork = ns.singularity.getCurrentWork() } catch { capability.available = false }
     }
     const karmaTarget = Number(config.crimeKarmaTarget)
-    const crimeNeeded = Number.isFinite(karmaTarget) && Number(player.karma) > karmaTarget
+    const cashShort = Number(player.money) < Number(config.minTrainingCash ?? 1e7)
+    const crimeNeeded = cashShort || (Number.isFinite(karmaTarget) && Number(player.karma) > karmaTarget)
     const crimeCandidate = capability.available && (crimeNeeded || String(config.override).toLowerCase() === "crime")
       ? bestKarmaCrime(ns) : null
     const decision = choosePlayerActivity({ player, nextGate: gateState.gate, augmentation, crimeCandidate, config })

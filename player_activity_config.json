@@ -2,7 +2,7 @@
   "enabled": true,
   "override": "auto",
   "physicalTarget": 0,
-  "charismaTarget": 300,
+  "charismaTarget": 600,
   "repBeforeGates": true,
   "gym": "Powerhouse Gym",
   "university": "Rothman University",

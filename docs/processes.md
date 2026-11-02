@@ -316,7 +316,7 @@ short of its full need. Started by `startup.js` and `capital_manager.js`.
 ### `xp_filler.js`
 
 Turns cloud and rooted-host RAM MCP leaves idle into hacking XP with one-shot
-`scripts/xp_weaken.js` runs on the best XP-per-second rooted host. Keeps the three largest
+`scripts/xp_weaken.js` runs on the best XP-per-second rooted host. Uses at most half of home. Keeps the three largest
 cloud servers clear for MCP, plus enough whole servers to hold the budgets of running stacks, and 5% free on the others; rooted hosts have no margin. MCP ignores the worker's filename. Started by `startup.js`; kill it to stop.
 
 - **Writes:** `xp_filler_status.json` (target, workers started, threads).
@@ -365,7 +365,7 @@ never touches augmentations.
 
 ### `mcp.js`
 
-The orchestrator, and where nearly all the complexity lives. Each tick
+The orchestrator, and where nearly all the complexity lives. Home is a worker host (since 2026-11-02), less 512GB kept for the control plane in `cloudAdmissionHosts`. Each tick
 (`LOOP_SLEEP_MS`, normally 10s; finite harvest completion wake described below)
 it scans the network, decides on a target, decides on a
 plan, and allocates worker threads across every rooted normal host plus every

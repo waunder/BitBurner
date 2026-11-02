@@ -70,3 +70,12 @@ test("repBeforeGates works for faction rep ahead of a hack gate", () => {
   assert.equal(choosePlayerActivity({ ...args, config: { physicalTarget: 0 } }).action, "algorithms")
   assert.equal(choosePlayerActivity({ ...args, augmentation: { ok: true, workCandidates: [] }, config: { physicalTarget: 0, repBeforeGates: true } }).action, "algorithms")
 })
+
+test("too little cash for tuition picks crime ahead of Leadership", () => {
+  const crimeCandidate = { action: "crime", crime: "Shoplift", chance: 1 }
+  const player = { money: 1600, karma: 0, skills: { charisma: 54, hacking: 1 } }
+  const config = { override: "auto", physicalTarget: 0, charismaTarget: 600 }
+  assert.equal(choosePlayerActivity({ player, nextGate: null, augmentation: null, crimeCandidate, config }).action, "crime")
+  const funded = { ...player, money: 2e7 }
+  assert.equal(choosePlayerActivity({ player: funded, nextGate: null, augmentation: null, crimeCandidate, config }).action, "leadership")
+})

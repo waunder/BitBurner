@@ -73,6 +73,7 @@
     "dnet_lab.js",
     "dnet_scout.js",
     "dnet_scout_logic.js",
+    "dnet_feedback.js",
     "dnet_lab_logic.js",
     "capital_logic.js",
     "capital_manager.js",

@@ -26,9 +26,9 @@ import { ROUTE_FILE, SCOUT_STATUS, deepestFirst, freshRoute, promoteThreads, sco
 const CRAWLER = "dnet_crawl.js"
 const LAB_STATUS = "dnet_lab_status.json"
 const SCOUT = "dnet_scout.js"
-const SCOUT_ROOM = 6 // GB a passing dnet_scout.js needs.
+const SCOUT_ROOM = 6.8 // GB a passing dnet_scout.js needs.
 const PROMOTE_RAM = 3.6
-const SCOUT_FILES = ["dnet_anchor.js", SCOUT, "dnet_scout_logic.js", "dnet_lib.js", "dnet_lab.js", "dnet_lab_logic.js", "dnet_loot.js", "dnet_promote.js"]
+const SCOUT_FILES = ["dnet_anchor.js", SCOUT, "dnet_scout_logic.js", "dnet_lib.js", "dnet_feedback.js", "dnet_lab.js", "dnet_lab_logic.js", "dnet_loot.js", "dnet_promote.js"]
 const MANAGER = "dnet_manager.js"
 const REALLOC = "dnet_realloc.js"
 const LEGACY = "dnet_deploy.js"

@@ -11,6 +11,7 @@
  * @param {NS} ns
  */
 import { CODE, CREDS_FILE, acquireSession, freeBlockedRam, readCreds, recordCred, shipCred } from "dnet_lib.js"
+import { feedbackSolver, runSolver } from "dnet_feedback.js"
 import { ROUTE_FILE, SCOUT_STATUS, anchorPlan, freshRoute, promoteThreads, rankHops, routeHops } from "dnet_scout_logic.js"
 
 const LAB_WORKER = "dnet_lab.js"
@@ -20,7 +21,7 @@ const ANCHOR_RAM = 14.2 // Fixed so the scout saves getScriptRam's 0.1GB: darkwe
 const PROMOTE_RAM = 3.6 // Fixed for the same reason.
 const LAB_RAM = 5.5 // Fixed for the same reason; slightly over, so the thread count always fits.
 const ANCHOR_WAIT_MS = 60_000
-const FILES = [ANCHOR, "dnet_scout.js", "dnet_scout_logic.js", "dnet_lib.js", LAB_WORKER, "dnet_lab_logic.js", "dnet_loot.js", PROMOTE]
+const FILES = [ANCHOR, "dnet_scout.js", "dnet_scout_logic.js", "dnet_lib.js", "dnet_feedback.js", LAB_WORKER, "dnet_lab_logic.js", "dnet_loot.js", PROMOTE]
 const SESSION_BUDGET_MS = 180_000
 const BRUTE_LIMIT = 2000
 const MAX_HOPS = 60
@@ -32,6 +33,25 @@ function neighbourDetails(ns) {
     try { out.push({ host, ...ns.dnet.getServerDetails(host) }) } catch { /* moved between calls */ }
   }
   return out
+}
+
+// A failed authenticate hides its clue from scripts, but the server logs it.
+async function askServer(ns, host, guess) {
+  for (let retry = 0; retry < 3; retry++) {
+    const res = await ns.dnet.authenticate(host, guess)
+    if (res.success) return { success: true }
+    if (res.code === CODE.RequestTimeOut) continue
+    if (res.code !== CODE.AuthFailure) return { stop: res }
+    const read = await ns.dnet.heartbleed(host, { peek: true, logsToCapture: 8 })
+    if (!read.success) return { stop: read }
+    for (const line of read.logs) {
+      try {
+        const log = JSON.parse(line)
+        if (log.passwordAttempted === guess) return log
+      } catch { /* traffic lines are plain text */ }
+    }
+  }
+  return { stop: { code: CODE.RequestTimeOut, message: `no logged reply to ${guess}` } }
 }
 
 export async function main(ns) {
@@ -64,6 +84,12 @@ export async function main(ns) {
     while (ns.dnet.getStasisLinkedServers().includes(target) !== linked && Date.now() < deadline) await ns.sleep(1000)
     return ns.dnet.getStasisLinkedServers().includes(target) === linked
   }
+  // setStasisLink bills 14GB even to unlink, more than a shallow host has free beside its workers.
+  const dropLink = async (target, creds) => {
+    if (!ns.dnet.connectToSession(target, creds[target]?.password ?? "").success || !(await ns.scp(ANCHOR, target))) return false
+    for (const proc of ns.ps(target)) ns.kill(proc.pid)
+    return runAnchor(target, false, "--unlink")
+  }
   // Puts a stasis link on a deeper host, giving up the shallowest at the limit, so the next chain starts there.
   const moveAnchor = async (target, targetDepth, creds, besideLab = false) => {
     const links = ns.dnet.getStasisLinkedServers().map(name => ({ host: name, depth: ns.dnet.getServerDetails(name).depth }))
@@ -73,7 +99,7 @@ export async function main(ns) {
     // A charisma worker left by an earlier chain must not keep the link off a deep host.
     if (!plan && anchorPlan(links, limit, target, targetDepth, ns.getServerMaxRam(target), ANCHOR_RAM, besideLab) && ns.kill(PROMOTE, target)) plan = wanted()
     if (!plan) return false
-    if (plan.drop && (!ns.dnet.connectToSession(plan.drop, creds[plan.drop]?.password ?? "").success || !(await runAnchor(plan.drop, false, "--unlink")))) return false
+    if (plan.drop && !(await dropLink(plan.drop, creds))) return false
     return runAnchor(target, true)
   }
 
@@ -83,6 +109,13 @@ export async function main(ns) {
     return threads > 0 ? ns.exec(PROMOTE, host, { threads, preventDuplicates: true }) : 0
   }
 
+  const feedback = (target, details, deadline) => {
+    const solver = feedbackSolver(details, target)
+    return solver && runSolver(solver, guess => askServer(ns, target, guess), deadline)
+  }
+
+  // dnet_root.js starts chains without the credentials the link moves need.
+  await ns.scp(CREDS_FILE, host, "home")
   const neighbours = neighbourDetails(ns)
   report("scouting", { neighbours: neighbours.length })
   const lab = neighbours.find(n => n.host.endsWith("l4byr1nth"))
@@ -116,7 +149,7 @@ export async function main(ns) {
     tried.add(next.host)
     failed.add(next.host)
     report("cracking", { target: next.host, targetDepth: next.depth, model: next.modelId })
-    const session = await acquireSession(ns, next.host, creds[next.host], { bruteForceLimit: BRUTE_LIMIT, timeBudgetMs: SESSION_BUDGET_MS })
+    const session = await acquireSession(ns, next.host, creds[next.host], { bruteForceLimit: BRUTE_LIMIT, timeBudgetMs: SESSION_BUDGET_MS, solver: feedback })
     if (!session.ok) {
       failures.push({ host: next.host, depth: next.depth, model: next.modelId, why: session.why, code: session.code })
       if (session.code === CODE.NotEnoughCharisma) return report("charisma", { failures })

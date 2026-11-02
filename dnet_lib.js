@@ -217,8 +217,8 @@ export function candidatesFor(d, bruteForceLimit = 0) {
     }
 
     case MODEL.SortedEchoVuln:
-      for (const p of uniquePermutations(data, 3)) add(p, "PHP 5.4: permutation of the sorted digits")
-      return { model: d.modelId, exhaustive: data.length > 0 && data.length <= 3, candidates: out }
+      for (const p of uniquePermutations(data, 5)) add(p, "PHP 5.4: permutation of the sorted digits")
+      return { model: d.modelId, exhaustive: data.length > 0 && data.length <= 5, candidates: out }
 
     case MODEL.BufferOverflow:
       if (Number.isInteger(d.passwordLength) && d.passwordLength > 0) {
@@ -244,6 +244,33 @@ export function candidatesFor(d, bruteForceLimit = 0) {
       for (const p of EU_COUNTRIES) add(p, "EuroZone Free: EU country list")
       return { model: d.modelId, exhaustive: true, candidates: out }
 
+    case MODEL.RomanNumeral:
+      if (data && !data.includes(",")) add(String(fromRoman(data)), "BellaCuore: value of the numeral")
+      return { model: d.modelId, exhaustive: out.length > 0, candidates: out }
+
+    case MODEL.LargestPrimeFactor:
+      add(String(largestPrimeFactor(Number(data))), "PrimeTime 2: largest prime factor")
+      return { model: d.modelId, exhaustive: true, candidates: out }
+
+    case MODEL.ConvertToBase10:
+      add(String(Math.round(fromBase(data))), "OctantVoxel: base conversion")
+      return { model: d.modelId, exhaustive: true, candidates: out }
+
+    case MODEL.parsedExpression:
+      add(String(evaluateExpression(data)), "MathML: evaluated by a parser, never eval: the data can carry code")
+      return { model: d.modelId, exhaustive: true, candidates: out }
+
+    case MODEL.BinaryEncodedFeedback:
+      add(data.split(" ").map((bits) => String.fromCharCode(parseInt(bits, 2))).join(""), "110100100: bytes as characters")
+      return { model: d.modelId, exhaustive: true, candidates: out }
+
+    case MODEL.encryptedPassword: {
+      const split = data.lastIndexOf(";")
+      const masks = data.slice(split + 1).split(" ")
+      add([...data.slice(0, split)].map((c, i) => String.fromCharCode(c.charCodeAt(0) ^ parseInt(masks[i], 2))).join(""), "OrdoXenos: XOR with the masks")
+      return { model: d.modelId, exhaustive: true, candidates: out }
+    }
+
     default:
       break
   }
@@ -258,6 +285,68 @@ export function candidatesFor(d, bruteForceLimit = 0) {
   }
 
   return { model: d.modelId, exhaustive: false, candidates: out }
+}
+
+/** Value of a roman numeral; the game writes zero as "nulla". */
+export function fromRoman(text) {
+  const values = { I: 1, V: 5, X: 10, L: 50, C: 100, D: 500, M: 1000 }
+  let total = 0
+  for (let i = 0; i < text.length; i++) {
+    const value = values[text[i]] ?? 0
+    total += value < (values[text[i + 1]] ?? 0) ? -value : value
+  }
+  return total
+}
+
+export function largestPrimeFactor(value) {
+  let rest = value
+  let largest = 1
+  for (let p = 2; p * p <= rest; p++) {
+    while (rest % p === 0) {
+      largest = p
+      rest /= p
+    }
+  }
+  return rest > 1 ? rest : largest
+}
+
+/** "base,digits", where the base and the digits can both be fractional. */
+export function fromBase(data) {
+  const comma = data.indexOf(",")
+  const base = Number(data.slice(0, comma))
+  const [whole, fraction = ""] = data.slice(comma + 1).split(".")
+  const digit = (c) => "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".indexOf(c)
+  let value = 0
+  for (let i = 0; i < whole.length; i++) value += digit(whole[i]) * base ** (whole.length - 1 - i)
+  for (let i = 0; i < fraction.length; i++) value += digit(fraction[i]) * base ** -(i + 1)
+  return value
+}
+
+/** Arithmetic with the game's disguised operators; anything after a comma is bait. */
+export function evaluateExpression(text) {
+  const source = text.replaceAll("ҳ", "*").replaceAll("÷", "/").replaceAll("➕", "+").replaceAll("➖", "-")
+    .replaceAll("ns.exit(),", "").split(",")[0]
+  const tokens = source.match(/\d*\.?\d+|[-+*/()]/g) ?? []
+  let at = 0
+  const factor = () => {
+    const token = tokens[at++]
+    if (token === "-") return -factor()
+    if (token !== "(") return Number(token)
+    const value = sum()
+    at++
+    return value
+  }
+  const product = () => {
+    let value = factor()
+    while (tokens[at] === "*" || tokens[at] === "/") value = tokens[at++] === "*" ? value * factor() : value / factor()
+    return value
+  }
+  const sum = () => {
+    let value = product()
+    while (tokens[at] === "+" || tokens[at] === "-") value = tokens[at++] === "+" ? value + product() : value - product()
+    return value
+  }
+  return sum()
 }
 
 /** Unique permutations, bounded so the roaming crawler never explodes into
@@ -685,6 +774,10 @@ export async function acquireSession(ns, host, known, opts = {}) {
   if (!details.isConnectedToCurrentServer) {
     return { ok: false, why: "not directly connected", code: CODE.DirectConnectionRequired, tried: 0, timeouts: 0 }
   }
+
+  // A caller that can read the server's logs solves the feedback models itself.
+  const solved = await opts.solver?.(host, details, deadline)
+  if (solved) return solved
 
   const plan = candidatesFor(details, bruteForceLimit)
   let tried = 0

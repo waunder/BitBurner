@@ -36,9 +36,9 @@ export async function main(ns) {
     ts: Date.now(), watcherPid, maintenancePid, activityPid,
   }, null, 2), "w")
   // Start (or source-refresh) the panel while the heavy controller has not
-  // reclaimed home RAM. Its own scan is cached and it is then left alone on
+  // reclaimed home RAM. It is then left alone on
   // ordinary controller restarts.
-  const opsVersion = "2026-09-02.3"
+  const opsVersion = "2026-11-02.1"
   const refreshOpsHud = !ns.isRunning("ops_hud.js", "home") || String(ns.read("ops_hud_version.txt") || "").trim() !== opsVersion
   if (refreshOpsHud) {
     for (const proc of ns.ps("home")) {

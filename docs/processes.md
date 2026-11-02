@@ -330,7 +330,7 @@ as if prepared with `ns.formulas`, picks by income per TB (up to 4 stacks, skipp
 stacks get any budget they lack first and are never stopped. The first stack may start
 short of its full need. Started by `startup.js` and `capital_manager.js`.
 
-- **Writes:** `stack_manager_status.json` (plan, started, failed, top estimates), `stack_budgets.json`. Deletes status files of dead stacks at start.
+- **Writes:** `stack_manager_status.json` (plan, started, failed, top estimates), `stack_budgets.json`. Deletes status files of dead stacks each pass.
 - **Needs:** `Formulas.exe`, bought by `capital_manager.js` after the other programs; until then it waits.
 - **Failure modes:** a target whose estimate falls stays running; an exec that fails for home RAM is retried next pass.
 - **Shared reader:** `stack_files.js` `readStacks`, used by MCP (skip list), `xp_filler.js` (reserve), `capital_manager.js` (demand) and `money.js`.

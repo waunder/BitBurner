@@ -48,7 +48,7 @@ function freePort(plan) {
   return port
 }
 
-/** Files from runs that ended, such as before an install, would read as live stolen totals. */
+/** Files from runs that ended, such as before an install, would count as stacks. A file looks live for two minutes, so this runs every pass. */
 function clearDeadStatus(ns) {
   const live = new Set(readStacks(ns).map(s => s.target))
   for (const file of ns.ls("home", "stack_status")) {
@@ -58,8 +58,8 @@ function clearDeadStatus(ns) {
 
 export async function main(ns) {
   ns.disableLog("ALL")
-  clearDeadStatus(ns)
   while (true) {
+    clearDeadStatus(ns)
     const status = { ts: Date.now(), state: "waiting for Formulas.exe", plan: [], started: [], failed: [] }
     if (ns.fileExists("Formulas.exe", "home")) {
       const player = ns.getPlayer()

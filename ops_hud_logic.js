@@ -115,7 +115,7 @@ export function buildPanel(f) {
     const fresh = now - s.ts < FRESH.stacks
     rows.push([fresh ? "ok" : "warn", fit(` ${s.target}`.slice(0, 18), fresh ? `${s.state || ""} ${money(s.perSec)}/s r${s.resets || 0}`.slice(0, 23) : `STALE ${ago(now, s.ts)}`)])
     if (!fresh) stale(`stack ${s.target} stale`)
-    else if (s.resets > 0) alert(`stack ${s.target} reset x${s.resets}`)
+    else if (s.resets > 0 && s.state !== "stacking") alert(`stack ${s.target} ${s.state}, reset x${s.resets}`)
   }
   if (stacks.length > 3) rows.push(["ok", ` +${stacks.length - 3} more stacks`])
 
@@ -124,7 +124,7 @@ export function buildPanel(f) {
   else if (f.capital?.ok === false) alert(`capital purchase failed: ${f.capital.action?.kind}`)
 
   const managers = Object.values(f.registry || {}).filter((ts) => Number.isFinite(ts) && now - ts < MANAGER_FRESH_MS).length
-  rows.push([tone(dnetAge), fit(`darknet ${mark(dnetAge, f.root?.ts)}`, `${managers} mgr`)])
+  rows.push([tone(dnetAge), fit(`darknet ${mark(dnetAge, f.root?.ts)}`, managers ? `${managers} mgr` : "")])
   if (dnetAge !== "live") stale(`darknet ${dnetAge.toLowerCase()}`)
   if (f.scout) rows.push([tone(scoutAge), fit(" scout", `${f.scout.state || "?"} d${f.scout.depth ?? "?"} ${ago(now, f.scout.ts)}`.slice(0, 30))])
   if (f.lab) {

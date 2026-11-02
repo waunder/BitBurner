@@ -88,3 +88,9 @@ test("goal names the next lab, its block, and when to hold the install", () => {
   assert.equal(chooseGoal({ charisma: 5, solved: null }).title, "next lab unknown")
   assert.match(chooseGoal({ charisma: 3100, solved: 5 }).block, /Red Pill/)
 })
+
+test("a stack that recovered from a reset needs no attention", () => {
+  const stack = { target: "a", ts: NOW, resets: 2, perSec: 1 }
+  assert.equal(buildPanel({ now: NOW, stacks: [{ ...stack, state: "stacking" }] }).rows.some(([, text]) => text.includes("reset x2")), false)
+  assert.equal(buildPanel({ now: NOW, stacks: [{ ...stack, state: "preparing" }] }).rows.some(([, text]) => text.includes("reset x2")), true)
+})

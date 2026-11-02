@@ -23,7 +23,9 @@ export function shouldAnchor(anchorDepth, targetDepth, freeRam, anchorRam) {
 }
 
 /** Where to start the next chain: the anchor when it is reachable, else darkweb. */
-export function scoutStart(anchors, creds, gateway) {
-  const host = anchors.find(name => name !== gateway && typeof creds[name]?.password === "string")
+export function scoutStart(anchors, creds, gateway, lastStatus = null) {
+  // A linked host can lose every neighbour, so a dead end there sends one chain round by the gateway.
+  const host = anchors.find(name => name !== gateway && typeof creds[name]?.password === "string"
+    && !(lastStatus?.state === "dead-end" && lastStatus.host === name))
   return host ?? gateway
 }

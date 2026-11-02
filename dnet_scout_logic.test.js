@@ -40,3 +40,9 @@ test("chains start at a stasis anchor whose password is known", () => {
   assert.equal(scoutStart(["deep"], {}, "darkweb"), "darkweb")
   assert.equal(scoutStart([], {}, "darkweb"), "darkweb")
 })
+
+test("a dead end at the anchor sends the next chain through the gateway", () => {
+  const creds = { deep: { password: "x" } }
+  assert.equal(scoutStart(["deep"], creds, "darkweb", { state: "dead-end", host: "deep" }), "darkweb")
+  assert.equal(scoutStart(["deep"], creds, "darkweb", { state: "dead-end", host: "darkweb" }), "deep")
+})

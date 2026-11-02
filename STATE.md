@@ -40,7 +40,7 @@ read 0 at 21:03 between harvests and averaged $2.7m/s; compare before keeping it
 
 Live 21:32 MST (status files): `th3_l4byr1nth` seen from `austin`; `dnet_lab.js` stopped on charisma
 297/300 and has not walked the maze. Best scout depth is 6 (`byte:web`), up from 2, and that host
-holds the stasis link, applied live, so chains now start there (`dnet_anchor.js`). Keep the link on one
+holds the stasis link, applied live, so chains now start there (`dnet_anchor.js`). At 21:44 `byte:web` had no neighbours, so a dead end there now starts one chain from `darkweb`. Keep the link on one
 deep host; limit is 1 until Broken Wings. Money $12.4b, MCP $3.1m/s average, hacking XP 68k/s.
 Leadership is ahead of hacking gates up to `charismaTarget` 600, at ZB in Volhaven (live 21:42 MST).
 In scripts never name a variable `attempt`: the RAM check bills 10GB.

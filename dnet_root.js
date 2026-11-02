@@ -215,7 +215,7 @@ export async function main(ns) {
       try { status = JSON.parse(ns.read(SCOUT_STATUS) || "null") } catch { /* partial write: treat as stale */ }
       if (shouldStartScout(status, Date.now())) {
         // A stasis-linked host holds still and accepts exec from here, so chains resume from it.
-        const anchor = scoutStart(ns.dnet.getStasisLinkedServers(), creds, target)
+        const anchor = scoutStart(ns.dnet.getStasisLinkedServers(), creds, target, status)
         let pid = 0
         if (anchor !== target && ns.dnet.connectToSession(anchor, creds[anchor].password).success && await ns.scp(SCOUT_FILES, anchor)) {
           pid = ns.exec(SCOUT, anchor, { preventDuplicates: true })

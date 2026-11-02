@@ -153,7 +153,7 @@ export async function main(ns) {
     const switchDecision = !capability.available
       ? { switch: false, reason: `blocked: player-action API unavailable (SF4 level ${capability.sf4Level}, BitNode ${capability.currentNode ?? "unknown"})` }
       : alreadySelected ? { switch: false, reason: "already performing selected activity" }
-        : shouldSwitch({ now, previous: decision.action === "leadership" ? { ...prior, actionKey: null } : prior, desired: decision, cooldownMs: Number(config.cooldownMs) || DEFAULT_CONFIG.cooldownMs })
+        : shouldSwitch({ now, previous: { ...prior, actionKey: null }, desired: decision, cooldownMs: Number(config.cooldownMs) || DEFAULT_CONFIG.cooldownMs })
     let started = null
     let error = null
     if (switchDecision.switch) {

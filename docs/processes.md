@@ -282,8 +282,8 @@ plus one each for The Broken Wings, The Hammer and The Staff. Started by `dnet_s
 ### `xp_filler.js`
 
 Turns cloud and rooted-host RAM MCP leaves idle into hacking XP with one-shot
-`scripts/xp_weaken.js` runs on the best XP-per-second rooted host. Keeps 30% of each
-cloud server, or 2TB, free for MCP; rooted hosts have no reserve. MCP ignores the worker's filename. Started by `startup.js`; kill it to stop.
+`scripts/xp_weaken.js` runs on the best XP-per-second rooted host. Keeps the three largest
+cloud servers clear for MCP and 5% free on the others; rooted hosts have no margin. MCP ignores the worker's filename. Started by `startup.js`; kill it to stop.
 
 - **Writes:** `xp_filler_status.json` (target, workers started, threads).
 - **Failure modes:** a filled server makes MCP use another; a failed exec is skipped.

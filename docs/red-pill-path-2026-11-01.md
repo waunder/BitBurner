@@ -67,3 +67,5 @@ kept gaining links, so short chains from it reached lab neighbours twice in five
 
 Charisma gap, 23:32 MST: reward stats in the game source add only about 1.06 (Boots) and 1.07 (Hammer) to the level multiplier before
 The Red Pill, and level grows with the log of exp, so training alone cannot reach 1,500 or 3,000. Details are in `STATE.md`.
+
+Correction, 2026-11-02: augmentations close that gap. Charisma level multipliers across all factions compound to about x16; `STATE.md` holds the route.

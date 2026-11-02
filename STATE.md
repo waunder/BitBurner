@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-01 13:55 MST. Sources: Steam game via DevTools and
+Last refreshed: 2026-11-01 17:22 MST. Sources: Steam game via DevTools and
 terminal, Remote API `mcp_status.json`, game source and live reads.
 
 ## Current live state (supersedes everything below)
@@ -27,12 +27,16 @@ next BitNode still needs him. Why BN15, and the numbers: `docs/bitnode-choice-20
 
 `dnet_root.js` and `dnet_scout.js` are running live; `mcp_xp.js` was stopped to fit
 them and nothing restarts it. No lab reached yet; the maze solver has not run
-live. Scout chains usually stop near depth 0-1 because hosts move or are too
-small. Capital saves for home 128GB before buying more cloud RAM. Scheduled task
-`bitburner-bn15-progress` is **paused** because Ken stopped the game on 2026-11-01;
-resume it from the Scheduled sidebar. Pause backup, 15:00 MST-ish: hacking 182,
-$13.8m, home 256GB, karma -151, no factions:
-`saves/bitburnerSave_pause_BN15_2026-11-01.save` (gitignored).
+live. Best scout depth is 2 (17:21 MST), and charisma is 213 against the first
+gate of 300. Scheduled task `bitburner-bn15-progress` is **still paused**; Ken
+resumed the game about 17:08 MST but the resume call was refused by the session's
+permission check, so resume it from the Scheduled sidebar. Pause backup: hacking
+182, $13.8m: `saves/bitburnerSave_pause_BN15_2026-11-01.save` (gitignored).
+
+Live 17:20 MST (game): hacking 201, 25 cloud servers, about 7TB, Algorithms running,
+no factions. The Remote API dropped at 17:10 with code 1006, cause unknown;
+reconnected through Options by DevTools. The daemon restarted at 17:17 MST and now
+rereads `sync_manifest.json` each pass; all 112 files sync.
 
 DevTools runs on 127.0.0.1:9222 through the Steam launch option.
 

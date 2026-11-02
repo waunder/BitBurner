@@ -4,10 +4,10 @@ export const SCOUT_STALE_MS = 5 * 60 * 1000
 export const SCOUT_RETRY_MS = 60 * 1000
 const FINISHED = new Set(["dead-end", "hop-limit", "launch-failed"])
 
-/** Unvisited online neighbours, deepest first, then easiest to crack. */
+/** Unvisited online neighbours one hop away, deepest first, then easiest to crack. */
 export function rankHops(neighbours, visited) {
   const seen = new Set(visited)
-  return neighbours.filter(n => n.isOnline !== false && !seen.has(n.host) && !n.host.endsWith("l4byr1nth"))
+  return neighbours.filter(n => n.isOnline !== false && n.isConnectedToCurrentServer !== false && !seen.has(n.host) && !n.host.endsWith("l4byr1nth"))
     .sort((a, b) => (b.depth ?? 0) - (a.depth ?? 0) || (a.difficulty ?? 0) - (b.difficulty ?? 0) || a.host.localeCompare(b.host))
 }
 

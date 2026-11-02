@@ -19,3 +19,11 @@ test("restarts sooner after a chain has finished", () => {
   assert.equal(shouldStartScout({ ts: 1000, state: "dead-end" }, 2000, 5000, 500), true)
   assert.equal(shouldStartScout({ ts: 1000, state: "hopped" }, 2000, 5000, 500), false)
 })
+
+test("rankHops skips probed hosts that are not directly connected", () => {
+  const hops = rankHops([
+    { host: "far", depth: 5, isConnectedToCurrentServer: false },
+    { host: "near", depth: 2, isConnectedToCurrentServer: true },
+  ], [])
+  assert.deepEqual(hops.map(n => n.host), ["near"])
+})

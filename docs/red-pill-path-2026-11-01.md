@@ -53,3 +53,7 @@ now pauses phishing to launch a scout, but the gateway stays too full to back in
 At 14:47 MST a chain stopped at `112233` again when `net@net` moved mid-crack.
 Charisma had reached 117 by 14:45 with no training, so darknet logins raise it.
 Crawler RAM rose to 7.3GB with the lab hook; check that gateway recrawls still fit.
+
+At 17:21 MST a chain reached depth 2 at `sm4rt_t04ster::grid`, the deepest seen in
+BN15, then spent all four tries on hosts `probe()` listed but that were not directly
+connected. Scouts now skip those. The scout measures 5.4GB, not 6.1GB.

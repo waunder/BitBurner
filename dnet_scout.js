@@ -75,7 +75,7 @@ export async function main(ns) {
   if (back) {
     const session = await acquireSession(ns, back, creds[back], { timeBudgetMs: SESSION_BUDGET_MS })
     if (session.ok && await hopTo(back, path.slice(0, -2))) return report("backtracked", { next: back, failures })
-    failures.push({ host: back, stage: "backtrack", why: session.ok ? "scout did not fit" : session.why, code: session.code })
+    failures.push({ host: back, stage: "backtrack", why: session.ok ? "scout did not fit" : session.why, code: session.code, ...(session.ok ? fit(back) : {}) })
   }
   report("dead-end", { neighbours: neighbours.length, failures })
 }

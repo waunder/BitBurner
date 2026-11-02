@@ -1,9 +1,14 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-02 09:47 MST. Sources: Steam game via DevTools and
+Last refreshed: 2026-11-02 10:33 MST. Sources: Steam game via DevTools and
 terminal, Remote API status files, game bundle.
 
 ## Current live state (supersedes everything below)
+
+**Live 10:24-10:33 (save over DevTools, status files):** node 15, hacking 638, charisma about 915 (exp 15.2m, about 2,700 exp/s), $1.47t, Bachman rep 164.8k at 15.1 rep/s at 10:24, karma -401. MCP, capital and darknet reporting. Cruel lab solved, Boots queued, install held.
+**Idle cash turned into hacking XP.** Faction rep rate follows hacking level, and cash was piling up against a need under $100b. `capital_manager.js` refused cloud RAM because MCP used under half of it, so the policy now has `cloudDemandFloor` 0 (`capital_policy.json`, game file). All 25 cloud servers went to 1PB, the game's cap: 401TB to 26.2PB for about $1.38t, 10:27-10:29. `xp_filler.js` threads 85,883 to 11.9m. Hacking exp 1.63e9 at 10:27:56 to 4.88e9 at 10:32:39, about 11m exp/s (about 100x the 2h rate before), hacking 594 to 638 in 5 minutes.
+Modelled, not observed: hacking about 790 at the 14:40 invite. Faction rep about 11/s with share against 8.3/s, so the 375k lands about 23:40 tonight rather than 03:30. These servers die on install; only the cash is spent. Home upgrade ($3.16t) still buys itself at $3.66t, about 2 hours at recent income. Effect on income not yet measured; MCP average unchanged after 5 minutes.
+**At the invite:** check `faction_join.js` accepted, the player moved to faction hacking work, and start share with `share_deploy.js network 256 128 1000000`; share RAM has to come from the filler. All unverified. `restart_capital.js` restarts the manager and restores focus.
 
 **Live 09:25-09:47 (game page, save read over DevTools, status files):** node 15, hacking 583, charisma 854, $1.8t, net about $316m/s, Bachman rep 125.8k at 14.25 rep/s, on track for the 400k invite about 14:40 MST. Karma -386.
 **Charisma exp is now 1,256/s, was about 190/s** (two saves 180s apart, 09:36-09:39; exp 7.54m to 7.77m). Save showed only 5 `dnet_promote.js` threads and they gave nearly all charisma exp, about 35 exp/s a thread. The solved Cruel lab is rooted with 128GB free, so `dnet_lab.js` now fills it: 31 threads, seen in the save. It dies with the next install because Cruel leaves the network; other hosts held 1,186GB free at 09:27, mostly unrooted.

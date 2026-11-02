@@ -2,7 +2,7 @@
  * Spends idle cash on hacking capacity and starts managers once they fit.
  * Buys TOR, port openers, home RAM and cloud RAM; never touches augmentations.
  * `capital_policy.json` is read every pass: enabled, reserve, homeRamTarget,
- * cloudFraction, saveWindowSec, homeRamFloor. Writes every purchase to `capital_status.json`.
+ * cloudFraction, saveWindowSec, homeRamFloor, cloudDemandFloor. Writes every purchase to `capital_status.json`.
  * Start: `run capital_manager.js` (startup.js launches it).
  * @param {NS} ns
  */
@@ -85,7 +85,7 @@ export async function main(ns) {
     const policy = readPolicy(ns)
     let action = null, ok = null
     if (policy.enabled !== false) {
-      const input = { ...observe(ns, policy), ramUtilization: readUtilization(ns), incomePerSec, saveWindowSec: Number(policy.saveWindowSec) || 300, homeRamFloor: Number(policy.homeRamFloor) || 128 }
+      const input = { ...observe(ns, policy), ramUtilization: readUtilization(ns), incomePerSec, saveWindowSec: Number(policy.saveWindowSec) || 300, homeRamFloor: Number(policy.homeRamFloor) || 128, cloudDemandFloor: Number(policy.cloudDemandFloor ?? 0.5) }
       action = chooseCapitalAction(input)
       if (action && action.kind !== "save") {
         ok = buy(ns, action, input.cloud.length)

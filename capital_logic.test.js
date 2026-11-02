@@ -49,4 +49,5 @@ test("cloud buying stops while MCP leaves RAM idle", () => {
   const input = { spendable: 1e9, hasTor: true, homeRam: 512, homeRamTarget: 512, cloud: ["a"], cloudLimit: 1, upgradeQuotes: [{ host: "a", fromRam: 8, toRam: 16, cost: 1e3 }] }
   assert.equal(chooseCapitalAction({ ...input, ramUtilization: 0.04 }), null)
   assert.equal(chooseCapitalAction({ ...input, ramUtilization: 0.8 }).kind, "upgrade")
+  assert.equal(chooseCapitalAction({ ...input, ramUtilization: 0.04, cloudDemandFloor: 0 }).kind, "upgrade")
 })

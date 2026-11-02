@@ -380,7 +380,7 @@ charisma or charisma exp with price, rep and factions. Lists every game faction,
 
 ### `capital_manager.js`
 
-Cloud buying stops while MCP's own jobs in `mcp_status.json` `cloudWorkers` fill under 50% of cloud RAM.
+Cloud buying stops while MCP's own jobs in `mcp_status.json` `cloudWorkers` fill under `cloudDemandFloor` of cloud RAM (default 0.5). Set it to 0 in the policy when cash has no better use and the RAM should go to `xp_filler.js` instead. `restart_capital.js` restarts the manager and restores work focus.
 
 
 Spends cash on hacking capacity. `capital_bootstrap.js` needs about 5.6GB, so it
@@ -394,7 +394,7 @@ upgrade within `saveWindowSec` (default 300), and always below `homeRamFloor`
 never touches augmentations.
 
 - **Reads:** `capital_policy.json` every pass (`enabled`, `reserve`,
-  `homeRamTarget` default 512, `cloudFraction` default 0.5). Set `enabled` false
+  `homeRamTarget` default 512, `cloudFraction` default 0.5, `cloudDemandFloor` default 0.5). Set `enabled` false
   to stop purchases, or raise `reserve` to protect cash for augmentations.
 - **Writes:** `capital_status.json` with the last 50 purchases.
 - **Failure modes:** a refused purchase is recorded with `ok: false` and retried

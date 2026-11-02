@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-01 22:12 MST. Sources: Steam game via DevTools and
+Last refreshed: 2026-11-01 23:22 MST. Sources: Steam game via DevTools and
 terminal, Remote API `mcp_status.json`, game source and live reads.
 
 ## Current live state (supersedes everything below)
@@ -65,6 +65,15 @@ Installed 0. Hacking 364, charisma 315, money $32.7b, factions NiteSec and The B
 Next: buy every augmentation rep allows (nothing automates this; capital_manager never touches augmentations), back up
 the save, then install. Not installed yet because $32b is idle and only rep limits what the first install carries: hold for
 faction rep no more than about two hours. Before the install set `charismaTarget` to 600 in `player_activity_config.json`.
+
+**Live 23:22 MST (game, status files):** node 15, hacking 369, charisma 317, money about $75b at about $53m/s over two
+minutes, NiteSec rep 6,828, Black Hand 1,892, karma -188. Remote API dropped at about 22:15 and was reconnected from
+Options at 23:15; the game kept running. Player now works for NiteSec: new `repBeforeGates` config puts rep ahead of hack
+gates, restarted live. Rep 2.24/s, 2.59/s with 64 share threads on home (`share_deploy.js balanced`, running). NiteSec
+jumped 4,508 to 6,204 and Black Hand 211 to 1,881 within a minute around 23:17, cause unknown.
+**Install plan:** rep only reaches about 14,000 by 00:10, which is the agreed limit, so install then. Steps: back up the save, set
+`charismaTarget` 600, `run aug_install.js --install` (new; buys dearest first, then NeuroFlux, restarts `startup.js`; only
+`--dry` has run live, planning BitWire alone at 6,800 rep). Install loses cloud servers and home RAM; rebuild is expected.
 
 Scout moving the link beside the lab returned false
 at 22:03, reason unknown (likely under 14.2GB free). The Dark Net page holds the full topology (read by

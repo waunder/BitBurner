@@ -64,6 +64,8 @@
     "purchase_worker_server.js",
     "capital_bootstrap.js",
     "dnet_anchor.js",
+    "aug_install.js",
+    "aug_install_logic.js",
     "dnet_lab.js",
     "dnet_scout.js",
     "dnet_scout_logic.js",

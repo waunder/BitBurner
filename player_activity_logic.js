@@ -58,8 +58,9 @@ export function choosePlayerActivity({ player = {}, nextGate = null, augmentatio
     }
   }
 
+  // xp_filler.js supplies hacking XP, so with an install pending rep is the scarce input.
   const hacking = number(player.skills?.hacking)
-  if (nextGate && number(nextGate.required) > hacking) {
+  if (nextGate && number(nextGate.required) > hacking && !(config.repBeforeGates && override === "auto" && hasRepTarget(player, augmentation, config))) {
     return {
       action: "algorithms", university: config.university || "Rothman University", city: config.universityCity || "Sector-12", course: "Algorithms",
       required: number(nextGate.required), host: nextGate.host,
@@ -68,16 +69,7 @@ export function choosePlayerActivity({ player = {}, nextGate = null, augmentatio
     }
   }
 
-  const targets = augmentation?.ok
-    ? (augmentation.workCandidates || [augmentation.workCandidate || augmentation.candidate].filter(Boolean))
-    : []
-  const money = number(player.money)
-  const repPriceLimit = money * Math.max(1, number(config.repInvestmentMaxPriceMultiple ?? 250))
-  const candidate = targets
-    .filter((item) => item.canWorkForRep !== false && number(item.repGap) > 0 && item.faction
-      && (item.cashReady || number(item.price) <= repPriceLimit))
-    .sort((a, b) => Number(b.cashReady) - Number(a.cashReady)
-      || number(a.price) - number(b.price) || number(a.repGap) - number(b.repGap))[0]
+  const candidate = repTarget(player, augmentation, config)
   if (candidate) {
     return {
       action: "faction", faction: candidate.faction, workType: config.factionWorkType || "hacking",
@@ -117,4 +109,20 @@ export function shouldSwitch({ now, previous = {}, desired, cooldownMs = 10 * 60
     return { switch: false, reason: `cooldown ${Math.ceil((cooldownMs - (now - previous.lastSwitchAt)) / 1000)}s` }
   }
   return { switch: true, reason: "new evidence-backed activity" }
+}
+
+function repTarget(player, augmentation, config) {
+  const targets = augmentation?.ok
+    ? (augmentation.workCandidates || [augmentation.workCandidate || augmentation.candidate].filter(Boolean))
+    : []
+  const repPriceLimit = number(player.money) * Math.max(1, number(config.repInvestmentMaxPriceMultiple ?? 250))
+  return targets
+    .filter((item) => item.canWorkForRep !== false && number(item.repGap) > 0 && item.faction
+      && (item.cashReady || number(item.price) <= repPriceLimit))
+    .sort((a, b) => Number(b.cashReady) - Number(a.cashReady)
+      || number(a.price) - number(b.price) || number(a.repGap) - number(b.repGap))[0]
+}
+
+function hasRepTarget(player, augmentation, config) {
+  return Boolean(repTarget(player, augmentation, config))
 }

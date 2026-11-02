@@ -307,6 +307,17 @@ cloud servers clear for MCP and 5% free on the others; rooted hosts have no marg
 - **Failure modes:** a filled server makes MCP use another; a failed exec is skipped.
 - **Test:** `node --test xp_filler_logic.test.js`
 
+### `aug_install.js`
+
+Buys every augmentation current rep and cash allow, dearest first because each
+purchase raises later prices, then NeuroFlux Governor levels with what is left.
+With `--install` it then installs and restarts through `startup.js`. Back up the
+save first.
+
+- **Args:** `--dry` plans only; `--install` installs after buying.
+- **Writes:** `aug_install_status.json` (plan, bought, failed, money before).
+- **Test:** `node --test aug_install_logic.test.js`
+
 ### `faction_join.js`
 
 Accepts faction invitations every minute, except the six city factions, which lock
@@ -1337,7 +1348,8 @@ evidence-backed goal changes. A ten-minute hysteresis prevents churn.
   `crimeKarmaTarget`, it commits the crime with the highest expected karma
   reduction per second. If no measurable gate applies, it holds the current
   activity instead of inventing a goal.
-- **Control:** `player_activity_config.json` is committed and synced. Set
+- **Control:** `repBeforeGates` puts faction rep ahead of hacking gates in auto mode.
+  `player_activity_config.json` is committed and synced. Set
   `"override": "manual"` or `"enabled": false` to stop changes at the next
   minute; `"algorithms"`, `"physical"`, and `"crime"` are explicit overrides.
   Set `physicalTarget` to `0` to remove gym training from automatic selection.

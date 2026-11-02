@@ -62,3 +62,11 @@ test("charisma at target, or no target, falls through to the hacking gate", () =
   assert.equal(choosePlayerActivity({ player: { skills: { hacking: 300, charisma: 600 } }, nextGate: gate, config: { physicalTarget: 0, charismaTarget: 600 } }).action, "algorithms")
   assert.equal(choosePlayerActivity({ player: { skills: { hacking: 300, charisma: 1 } }, nextGate: gate, config: { physicalTarget: 0 } }).action, "algorithms")
 })
+
+test("repBeforeGates works for faction rep ahead of a hack gate", () => {
+  const augmentation = { ok: true, workCandidates: [{ name: "BitWire", faction: "NiteSec", repGap: 100, price: 1, cashReady: true }] }
+  const args = { player: { money: 10, skills: { hacking: 300, charisma: 600 } }, nextGate: { host: "x", required: 355 }, augmentation }
+  assert.equal(choosePlayerActivity({ ...args, config: { physicalTarget: 0, repBeforeGates: true } }).action, "faction")
+  assert.equal(choosePlayerActivity({ ...args, config: { physicalTarget: 0 } }).action, "algorithms")
+  assert.equal(choosePlayerActivity({ ...args, augmentation: { ok: true, workCandidates: [] }, config: { physicalTarget: 0, repBeforeGates: true } }).action, "algorithms")
+})

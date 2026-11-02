@@ -20,6 +20,8 @@
     "skim_probe.js",
     "mcp_hud.js",
     "mcp_money.js",
+    "money.js",
+    "money_logic.js",
     "gang_capital_policy.json",
     "select_gang_policy.js",
     "gang-controller.js",

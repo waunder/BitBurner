@@ -1089,6 +1089,22 @@ before closing it. This preserves manual moves across reruns without coupling
 one panel's location to another. Position files are game-side runtime state
 and are excluded from source sync.
 
+### `money.js`
+
+The money panel started by `startup.js` and `capital_manager.js`, replacing
+`mcp_money.js`. Shows cash, net $/s, each income stream and each spending
+category over 1 and 10 minutes, income per TB of RAM (stacked target against MCP
+targets), and whether cash or rep limits the augmentations on offer.
+
+- **Start:** `run money.js` — optional `x= y= w= h=`; polls every 5s and supersedes a prior copy.
+- **Reads:** `ns.getMoneySources().sinceInstall`, `stack_status.json`, `mcp_status.json`, `player_activity_status.json`.
+- **Writes:** `money_status.json` (the panel's full view), `tail_position_money.json`.
+- **Limits:** rates show `--` until half their window has run, and reset when the panel restarts.
+  The stacked share since install is only as complete as `stack_status.json`: income from a stack run
+  that ended before the panel started counts as `other hacking`. Augmentation totals assume dearest
+  first at a 1.9 price step and ignore prerequisite order. MCP RAM is the sum of `targets[].ram`.
+- **Test:** `node --test money_logic.test.js`
+
 ### `mcp_money.js`
 
 A second small panel, independent of the HUD — start/stop/roll-up like any

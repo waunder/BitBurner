@@ -12,7 +12,7 @@ const POLICY = "capital_policy.json"
 const STATUS = "capital_status.json"
 const POLL_MS = 10_000
 const INCOME_WINDOW_SEC = 600
-const MANAGERS = ["maintenance_steward.js", "mcp_money.js", "hud_consolidated.js", "player_activity_controller.js", "dnet_root.js"]
+const MANAGERS = ["maintenance_steward.js", "money.js", "hud_consolidated.js", "player_activity_controller.js", "dnet_root.js"]
 
 function readPolicy(ns) {
   try { return JSON.parse(ns.read(POLICY) || "{}") } catch { return {} }

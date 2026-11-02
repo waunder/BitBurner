@@ -1,11 +1,11 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-02 11:40 MST. Sources: Steam game via DevTools and
+Last refreshed: 2026-11-02 12:17 MST. Sources: Steam game via DevTools and
 terminal, Remote API status files, game bundle.
 
 ## Current live state (supersedes everything below)
 
-**Move to the PC prepared, not started (11:40).** Ken plans to run Claude and BitBurner on the PC, to play Cities: II alongside it. The game is still on the Mac; `docs/pc-move-2026-11-02.md` has the setup, cutover, checks and way back, none of it tried on the PC. If you are on the PC and the game runs here, follow its verify section first. If you are on the Mac after cutover, stop: this copy is stale. Only one live copy of the save, ever. At cutover the hourly task must be disabled here and later recreated on the PC.
+**Mac closed down for the PC move, 12:16 MST. The game is not running anywhere until the PC starts it.** Export taken 12:15:33: node 15, cash $191b (home upgrades took the $2.58t), hacking 749, charisma 982, karma -429, 16 installed, The B00ts of Perseus queued, install still held. File: `saves/bitburnerSave_pc-move_BN15_2026-11-02.json.gz` on the Mac (gitignored, gzip checked, player data parsed), SHA-256 28180fbecce89dcae95848a282e75615cba16052835aed9d261f68925a8426f6, handed to Ken through session Outputs. Mac game quit; `com.bitburner.remote-api-monitor` booted out, daemon stopped; hourly task disabled and to be recreated on the PC. PC prep was still in progress at shutdown. Continue at "On the PC" in `docs/pc-move-2026-11-02.md`, step 6. Import this file, not Steam Cloud. If you are on the Mac, this copy is stale: stop.
 **Live 11:32 (status files):** $2.58t, net about $291m/s over 1 minute, the-hub $162m/s, omega-net $59m/s, silver-helix $44m/s, phantasy $21m/s. Reserve $100b. Remote API connected.
 
 **Live 11:24-11:28 (game page, save over DevTools, status files):** node 15, hacking 725, charisma 957 (exp 24.4m), $2.43t, net about $300m/s, Bachman rep 227.6k at 18.35 rep/s as Operations Manager, karma -416. 400k lands about 14:05 MST at that rate. MCP, capital and darknet reporting; 47 `dnet_promote.js` threads. Boots still queued, install held. Hacking exp 43.4e9, so the 1PB cloud kept the rate from 10:33; income is unchanged by it (about $300m/s).

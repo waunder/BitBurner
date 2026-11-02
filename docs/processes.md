@@ -2302,6 +2302,15 @@ Local files are always UTF-8, and pulled files keep the game's LF, so sync does
 not depend on the platform's default encoding. `selftest` skips the cwd-rename
 regression on Windows, which refuses to rename a process's working directory.
 
+`tools/daemon_supervisor.py` is the Windows keep-alive; `remote_api_monitor.py`
+stays Mac-only. Every 30s it starts the daemon if the control port refuses, and
+if the game is disconnected it clicks Options, Remote API, Connect over DevTools
+on 127.0.0.1:9222, at most every 5 minutes, then restores focused work. It skips
+that if `#terminal-input` holds text. **Writes:** `tools/daemon_supervisor.log`,
+`tools/bb_remote_daemon.log`. **Failure modes:** a game not started with
+`--remote-debugging-port=9222` is treated as not running; the daemon it started
+survives the supervisor, but nothing then restarts that daemon.
+
 For routine work, use `tools/remote_api_monitor.sh` to inspect/recover the
 local daemon, reconnect Steam through Options → Remote API if the game is
 disconnected, and run `tools/force_sync.sh` after source changes. Verify

@@ -45,6 +45,7 @@ gang_objective_override.txt
 tools/bb_remote_events.log
 tools/bb_remote_daemon.out
 tools/bb_remote_daemon.log
+tools/daemon_supervisor.log
 tools/bb_remote_monitor.log
 
 # Generated local governance-auditor heartbeat and logs

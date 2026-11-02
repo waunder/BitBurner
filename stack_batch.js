@@ -87,7 +87,10 @@ export async function main(ns) {
     while (true) {
       drain()
       const s = read(ns, target), now = Date.now()
-      if (!isHealthy(s)) break
+      if (!isHealthy(s)) {
+        stats.lastReset = { ts: now, moneyPct: s.money / s.maxMoney, securityOver: s.security - s.minSecurity, hacking: ns.getHackingLevel() }
+        break
+      }
       inFlight = inFlight.filter(b => b.endsAt > now)
       const times = { hackMs: ns.getHackTime(target), growMs: ns.getGrowTime(target), weakenMs: ns.getWeakenTime(target) }
       const threads = batchThreads({

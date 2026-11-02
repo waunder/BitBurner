@@ -315,7 +315,7 @@ Hack income returns on its port.
 
 - **Args:** `target [hackFraction=0.1] [spacingMs=2000] [gapMs=200] [ramBudgetGB=65536] [port=7]`.
 - **Reads:** `stack_budgets.json` each batch; its entry overrides the budget argument.
-- **Writes:** `stack_status_<target>.json` (state, ramBudget, batches, resets, stolen, perSec), at least every 30s.
+- **Writes:** `stack_status_<target>.json` (state, ramBudget, batches, resets, lastReset, stolen, perSec), at least every 30s.
 - **Failure modes:** money under 50% or security 5 over minimum stops launching, drains
   jobs, re-prepares and counts a reset. A full fleet skips that batch. Reaching the budget also pauses launches, which earns in
   bursts: `omega-net` needs about 59TB for one batch per 2s at weaken 390s, and at 40TB it averaged $38.6m/s against about $57m/s.

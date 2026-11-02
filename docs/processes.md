@@ -311,11 +311,12 @@ cloud servers clear for MCP and 5% free on the others; rooted hosts have no marg
 
 Buys every augmentation current rep and cash allow, dearest first because each
 purchase raises later prices, then NeuroFlux Governor levels with what is left.
-With `--install` it then installs and restarts through `startup.js`. Back up the
-save first.
+With `--install` it then spends the rest on home RAM and cores, cheapest first, because
+both survive an install (only a BitNode reset clears them), then installs and restarts
+through `startup.js`. Back up the save first.
 
 - **Args:** `--dry` plans only; `--install` installs after buying.
-- **Writes:** `aug_install_status.json` (plan, bought, failed, money before).
+- **Writes:** `aug_install_status.json` (plan, bought, failed, money before, final home RAM and cores).
 - **Test:** `node --test aug_install_logic.test.js`
 
 ### `faction_join.js`

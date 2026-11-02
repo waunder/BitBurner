@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { planPurchases } from "./aug_install_logic.js"
+import { nextHomeUpgrade, planPurchases } from "./aug_install_logic.js"
 
 const offer = (name, price, extra = {}) => ({ name, faction: "F", rep: 10, repRequired: 5, price, prerequisites: [], ...extra })
 
@@ -18,4 +18,10 @@ test("prices compound and an unaffordable item is passed over", () => {
   const { plan, left } = planPurchases([offer("a", 10), offer("b", 8)], [], 12)
   assert.deepEqual(plan.map((item) => item.name), ["a"])
   assert.equal(left, 2)
+})
+
+test("leftover cash takes the cheaper home upgrade and stops when neither is affordable", () => {
+  assert.deepEqual(nextHomeUpgrade(10, 4, 5), { kind: "cores", cost: 4 })
+  assert.deepEqual(nextHomeUpgrade(4, 10, 5), { kind: "ram", cost: 4 })
+  assert.equal(nextHomeUpgrade(10, 20, 5), null)
 })

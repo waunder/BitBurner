@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-01 23:22 MST. Sources: Steam game via DevTools and
+Last refreshed: 2026-11-01 23:32 MST. Sources: Steam game via DevTools and
 terminal, Remote API `mcp_status.json`, game source and live reads.
 
 ## Current live state (supersedes everything below)
@@ -73,7 +73,17 @@ gates, restarted live. Rep 2.24/s, 2.59/s with 64 share threads on home (`share_
 jumped 4,508 to 6,204 and Black Hand 211 to 1,881 within a minute around 23:17, cause unknown.
 **Install plan:** rep only reaches about 14,000 by 00:10, which is the agreed limit, so install then. Steps: back up the save, set
 `charismaTarget` 600, `run aug_install.js --install` (new; buys dearest first, then NeuroFlux, restarts `startup.js`; only
-`--dry` has run live, planning BitWire alone at 6,800 rep). Install loses cloud servers and home RAM; rebuild is expected.
+`--dry` has run live, planning BitWire alone at 6,800 rep). Install loses cloud servers; rebuild is expected. Home RAM and cores
+survive (game source: only the BitNode reset clears them), so `--install` now spends leftover cash on them last; that part has not run live.
+
+**Live 23:32 MST (game, status files):** $96b+, hacking 371, charisma 319 (exp 190k), NiteSec rep 7,490 (read 23:29). Hacking XP is lost
+on install, so until then 99,172 share threads run across cloud and rooted hosts (`share_deploy.js network 256 128 100000`), share power
+1.466 against about 1.17 before; expected rep about 3.3/s, not yet measured. `xp_filler.js` was restarted and fills only what is left. Stack
+held afterwards: 52 batches in 116s, about $57m/s, money 100%, no resets. Install after 00:10 as planned; the share threads die with it.
+
+**Charisma is the biggest open risk.** Fit to live values: level = (32 ln(exp+535) - 200) × 1.1 × mult, mult 1.5376 now (the 1.1 is inferred).
+At mult 1.75, roughly what the lab rewards give, 1,500 needs about 2e13 exp and 3,000 is out of reach; exp is 190k after 10 hours. The route needs
+charisma-multiplier augmentations (for example Speech Processor) well before the Merciless lab. Not yet priced or planned.
 
 Scout moving the link beside the lab returned false
 at 22:03, reason unknown (likely under 14.2GB free). The Dark Net page holds the full topology (read by

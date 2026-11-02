@@ -29,4 +29,10 @@ export function planPurchases(offers, owned, money, priceStep = 1.9) {
   return { plan, left }
 }
 
+/** Home RAM and cores survive an install, so leftover cash goes on the cheaper of the two. */
+export function nextHomeUpgrade(ramCost, coreCost, money) {
+  const pick = coreCost < ramCost ? { kind: "cores", cost: coreCost } : { kind: "ram", cost: ramCost }
+  return pick.cost <= money ? pick : null
+}
+
 export const NEUROFLUX = "NeuroFlux Governor"

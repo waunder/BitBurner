@@ -64,3 +64,6 @@ anchor went in. Scouts had been losing neighbours mid-crack; the anchor holds po
 At 22:09 MST a script finished the Normal lab (manual labs do accept scripts): 17 moves from `bungo`. The reward lands
 as a cache on the lab, and opening it queues the augmentation; it still needs an install. The anchored host at depth 6
 kept gaining links, so short chains from it reached lab neighbours twice in five minutes. Each lab link lasted about a minute.
+
+Charisma gap, 23:32 MST: reward stats in the game source add only about 1.06 (Boots) and 1.07 (Hammer) to the level multiplier before
+The Red Pill, and level grows with the log of exp, so training alone cannot reach 1,500 or 3,000. Details are in `STATE.md`.

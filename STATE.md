@@ -27,7 +27,7 @@ next BitNode still needs him. Why BN15, and the numbers: `docs/bitnode-choice-20
 
 `dnet_root.js` and `dnet_scout.js` are running live; No lab reached yet; the maze solver has not run
 live. Best scout depth is 2 (17:21 MST), and charisma is 213 against the first
-gate of 300. Scheduled task `bitburner-bn15-progress` ran once at 21:06 MST but still lists as disabled, so automatic runs may be off. Pause backup: hacking
+gate of 300. Scheduled task `bitburner-bn15-progress` is enabled and runs hourly (confirmed 2026-11-01). Pause backup: hacking
 182, $13.8m: `saves/bitburnerSave_pause_BN15_2026-11-01.save` (gitignored).
 
 Live 21:03 MST (game): hacking 294, charisma 281, about $1.8b, 25 cloud servers at

@@ -93,6 +93,10 @@ function startActivity(ns, decision) {
   }
   if (decision.action === "faction") return ns.singularity.workForFaction(decision.faction, decision.workType, false)
   if (decision.action === "crime") return ns.singularity.commitCrime(decision.crime, false)
+  if (decision.action === "company") {
+    ns.singularity.applyToCompany(decision.company, decision.field)
+    return ns.singularity.workForCompany(decision.company, false)
+  }
   return false
 }
 
@@ -106,6 +110,7 @@ function alreadyDoing(work, decision) {
   if (decision.action === "algorithms") return work.type === "CLASS" && work.classType === decision.course
   if (decision.action === "leadership") return work.type === "CLASS" && work.classType === decision.course && work.location === decision.university
   if (decision.action === "crime") return work.type === "CRIME" && work.crimeType === decision.crime
+  if (decision.action === "company") return work.type === "COMPANY" && work.companyName === decision.company
   return false
 }
 
@@ -147,6 +152,8 @@ export async function main(ns) {
       ? bestCrime(ns, cashShort) : null
     const decision = choosePlayerActivity({ player, nextGate: gateState.gate, augmentation, crimeCandidate, config })
     const key = actionKey(decision)
+    // Applying again is how a rising rep takes the promotion.
+    if (decision.action === "company" && capability.available) ns.singularity.applyToCompany(decision.company, decision.field)
     const alreadySelected = alreadyDoing(currentWork, decision)
     const switchDecision = !capability.available
       ? { switch: false, reason: `blocked: player-action API unavailable (SF4 level ${capability.sf4Level}, BitNode ${capability.currentNode ?? "unknown"})` }

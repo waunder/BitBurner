@@ -69,3 +69,5 @@ Charisma gap, 23:32 MST: reward stats in the game source add only about 1.06 (Bo
 The Red Pill, and level grows with the log of exp, so training alone cannot reach 1,500 or 3,000. Details are in `STATE.md`.
 
 Correction, 2026-11-02: augmentations close that gap. Charisma level multipliers across all factions compound to about x16; `STATE.md` holds the route.
+
+Correction, 2026-11-02 06:52: Cruel solved by script. Rows 8, 16, 24 hold no hosts, so every lab past Normal needs induced migration, not a walk. See `dnet_lift.js` in `docs/processes.md`.

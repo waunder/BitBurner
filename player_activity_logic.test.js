@@ -96,3 +96,13 @@ test("crime is picked by money rate when cash is short and karma rate otherwise"
   assert.equal(pickCrime(rows, true).crime, "Shoplift")
   assert.equal(pickCrime(rows, false).crime, "Homicide")
 })
+
+test("works for the target company until its faction has joined", () => {
+  const config = { companyTarget: { company: "Bachman & Associates", field: "Business" }, minTrainingCash: 1e7, physicalTarget: 0 }
+  const crimeCandidate = { action: "crime", crime: "Shoplift" }
+  const decide = (factions, money = 1e9) => choosePlayerActivity({ player: { factions, money, skills: {} }, crimeCandidate, config })
+  assert.equal(decide([]).action, "company")
+  assert.equal(actionKey(decide([])), "company:Bachman & Associates")
+  assert.notEqual(decide(["Bachman & Associates"]).action, "company")
+  assert.notEqual(decide([], 100).action, "company")
+})

@@ -10,9 +10,12 @@
   "cooldownMs": 600000,
   "repInvestmentMaxPriceMultiple": 250,
   "crimeKarmaTarget": -54000,
+  "companyTarget": { "company": "Bachman & Associates", "field": "Business" },
   "charismaAugs": [
     "Speech Processor Implant",
     "Speech Enhancement",
-    "Social Negotiation Assistant (S.N.A)"
+    "Social Negotiation Assistant (S.N.A)",
+    "Enhanced Social Interaction Implant",
+    "SmartJaw"
   ]
 }

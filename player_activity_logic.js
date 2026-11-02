@@ -71,6 +71,11 @@ export function choosePlayerActivity({ player = {}, nextGate = null, augmentatio
   if (override === "auto" && number(player.money) < trainingCash && crimeCandidate) {
     return { ...crimeCandidate, reason: `crime for cash ${number(player.money).toFixed(0)}/${trainingCash} before training`, confidence: "HIGH" }
   }
+  // Corporate factions invite on company rep alone, and sell the charisma augmentations the later labs need.
+  const corp = config.companyTarget
+  if (override === "auto" && corp?.company && !(player.factions || []).includes(corp.company)) {
+    return { action: "company", company: corp.company, field: corp.field || "Business", reason: `company rep at ${corp.company} until its faction invites`, confidence: "HIGH" }
+  }
   // Level scales with the multiplier but only the log of exp, so charisma augmentations beat Leadership.
   const charismaAug = override === "auto" && charisma < charismaTarget ? repTarget(player, augmentation, config, new Set(config.charismaAugs || [])) : null
   if (charismaAug) {
@@ -126,6 +131,7 @@ export function actionKey(decision) {
   if (decision.action === "leadership") return `leadership:${decision.university}:${decision.course}`
   if (decision.action === "faction") return `faction:${decision.faction}:${decision.workType}`
   if (decision.action === "crime") return `crime:${decision.crime}`
+  if (decision.action === "company") return `company:${decision.company}`
   return String(decision.action)
 }
 

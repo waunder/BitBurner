@@ -21,13 +21,26 @@
  *   reserveHomeGb: GB protected for controllers (default 32)
  *   maxThreads: cap on total share threads launched (default unlimited)
  *
+ * `run share_deploy.js cloud [servers=8]` takes that many whole cloud servers
+ * from xp_filler.js, never the ones it keeps clear for MCP and the stacks, then
+ * restores work focus.
+ *
  * `run share_deploy.js stop` kills every running scripts/share.js instance
  * (home + network) — the reverse of either mode above.
  */
 
+import { readStacks, LEGACY_BUDGET_GB } from "./stack_files.js"
+import { fillableCloud } from "./xp_filler_logic.js"
+
 const SHARE_SCRIPT = "/scripts/share.js"
+const XP_WORKER = "scripts/xp_weaken.js"
 const ACTION_SCRIPTS = new Set(["scripts/weaken.js", "scripts/grow.js", "scripts/hack.js"])
 export const DEFAULT_SHARE_HOME_GB = 256
+
+/** Whole cloud servers for share: only ones xp_filler.js may fill, so MCP's and the stacks' servers stay clear. */
+export function shareCloudHosts(hosts, servers, reserveRam = 0) {
+  return servers > 0 ? fillableCloud(hosts, 3, reserveRam).slice(-servers) : []
+}
 
 export function targetShareThreads(targetGb, shareRam, maxThreads = Infinity) {
   if (!(targetGb > 0) || !(shareRam > 0) || !(maxThreads > 0)) return 0
@@ -51,7 +64,7 @@ function scanNetwork(ns) {
 /** @param {NS} ns */
 export async function main(ns) {
   const mode = String(ns.args[0] ?? "balanced")
-  const validModes = new Set(["balanced", "home", "spare", "network", "stop"])
+  const validModes = new Set(["balanced", "home", "spare", "network", "cloud", "stop"])
   if (!validModes.has(mode)) {
     ns.tprint(`share_deploy: unknown mode ${JSON.stringify(mode)}; use balanced, spare, network, or stop.`)
     return
@@ -63,6 +76,23 @@ export async function main(ns) {
       if (ns.scriptKill(SHARE_SCRIPT, host)) killed++
     }
     ns.tprint(`share_deploy: stopped share.js on ${killed} host(s); MCP will reclaim the RAM on its next tick.`)
+    return
+  }
+
+  if (mode === "cloud") {
+    const servers = Number(ns.args[1] ?? 8)
+    for (const host of scanNetwork(ns)) ns.scriptKill(SHARE_SCRIPT, host)
+    const hosts = ns.cloud.getServerNames().map(host => ({ host, max: ns.getServerMaxRam(host) }))
+    const reserve = readStacks(ns).reduce((sum, s) => sum + (s.ramBudget || LEGACY_BUDGET_GB), 0)
+    let threads = 0
+    for (const host of shareCloudHosts(hosts, servers, reserve)) {
+      ns.scriptKill(XP_WORKER, host)
+      const want = Math.floor((ns.getServerMaxRam(host) - ns.getServerUsedRam(host)) / ns.getScriptRam(SHARE_SCRIPT))
+      await ns.scp(SHARE_SCRIPT, host)
+      if (want > 0 && ns.exec(SHARE_SCRIPT, host, want)) threads += want
+    }
+    ns.tprint(`share_deploy: ${threads} share threads on ${servers} cloud server(s). Share power after the first call lands: run again to read; now ${ns.getSharePower().toFixed(4)}.`)
+    ns.singularity.setFocus(true)
     return
   }
 

@@ -1,9 +1,16 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-02 13:18 Pacific, on the PC. Sources: Steam game via
+Last refreshed: 2026-11-02 14:19 Pacific, on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 ## Current live state (supersedes everything below)
+
+**Live 14:19 Pacific (game page, save over DevTools, status files):** node 15, hacking 777, charisma 1,024 (exp 52.7m), $2.02t, net $294m/s over 1 minute, karma -456, 16 installed, Boots queued. Bachman invited and `faction_join.js` accepted; the controller moved the player to Bachman hacking work unaided, so the 11:27 fix is now seen working. Stacks 4/4, no new resets.
+**Rep:** was 6.5/s and unfocused at 14:14. Now 12.9/s, read twice (14:18, 14:19), with work focused and share on: 2.5k of the 375k, so about 22:20 Pacific if the rate holds; modelled, and it rises slowly with hacking. New `share_deploy.js cloud 8` took 8 cloud servers from `xp_filler.js` (threads 11.97m to 7.42m, so about 38% less hacking exp), leaving the servers held for MCP and stacks. Why 8: above about 2m threads share power barely moves. Rate matches share power about 1.58; `getSharePower` itself not read.
+Other faction rep with no work is the game's passive gain, 1% to 10% of the work rate by favor (game source), not a darknet effect. Corporation bribes are not worth it at $1b a rep. Faction hacking work beats field and security here (game formula).
+**At 375k, in this order:** `capital_policy.json` reserve 0; raise `charismaTarget` to 1500 in `player_activity_config.json`; back up and validate the save; `run aug_install.js --install`. Charisma 1,500 then needs about 400k exp with Boots, ESI and SmartJaw (modelled). Merciless needs a second crossing, which has never run: lifting past row 16 needs a host of difficulty 13 or more.
+Worth deciding then: 472k Bachman rep gets donations next cycle (about 2 more hours, modelled), against a rep cap of 375k now. If `charisma_survey.js` still shows more charisma behind Bachman, the extra hours pay back at each later install.
+This was the hourly task's first run on the PC.
 
 **Game is live on the PC, 13:18 Pacific. The Mac copy is stale: do not start it there.** Export imported and hash matched. Connected with a clean full sync: 138 pushed, 29 pulled, none failed or missing. Seen 12:48-13:18: node 15, hacking 755, charisma 988, cash $898b, 16 installed, The B00ts of Perseus queued, install not done, focused Bachman work at 317.5k rep and 18.9 rep/s, reserve $100b. All four stacks batching at full money; the-hub loaded at 15% money and rebuilt by 12:57. Net $288m/s over 1 minute.
 Not checked on the PC: running beside Cities: II, `dnet_promote.js` thread count, `dnet_root.js`. `dnet_status.json` and `dnet_roi_current.json` hold old data; `dnet_scout_status.json` is live. This PC pushes over SSH (key `Kens-PC BitBurner`, added 2026-11-02).

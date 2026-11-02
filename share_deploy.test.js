@@ -1,6 +1,19 @@
 import { describe, test } from "node:test"
 import assert from "node:assert/strict"
-import { DEFAULT_SHARE_HOME_GB, targetShareThreads } from "./share_deploy.js"
+import { DEFAULT_SHARE_HOME_GB, shareCloudHosts, targetShareThreads } from "./share_deploy.js"
+
+describe("shareCloudHosts", () => {
+  const hosts = Array.from({ length: 6 }, (_, i) => ({ host: `c${i}`, max: 100 }))
+
+  test("never takes the servers kept clear for MCP or the stacks", () => {
+    assert.deepEqual(shareCloudHosts(hosts, 2, 50), ["c4", "c5"])
+    assert.deepEqual(shareCloudHosts(hosts, 9, 50), ["c4", "c5"])
+  })
+
+  test("no servers asked for, none taken", () => {
+    assert.deepEqual(shareCloudHosts(hosts, 0), [])
+  })
+})
 
 describe("targetShareThreads — balanced home sharing", () => {
   test("the default target is approximately 256GB and fits whole threads only", () => {

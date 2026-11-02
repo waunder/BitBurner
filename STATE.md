@@ -1,9 +1,13 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-02 12:17 MST. Sources: Steam game via DevTools and
-terminal, Remote API status files, game bundle.
+Last refreshed: 2026-11-02 13:18 Pacific, on the PC. Sources: Steam game via
+DevTools, Remote API status files.
 
 ## Current live state (supersedes everything below)
+
+**Game is live on the PC, 13:18 Pacific. The Mac copy is stale: do not start it there.** Export imported and hash matched. Connected with a clean full sync: 138 pushed, 29 pulled, none failed or missing. Seen 12:48-13:18: node 15, hacking 755, charisma 988, cash $898b, 16 installed, The B00ts of Perseus queued, install not done, focused Bachman work at 317.5k rep and 18.9 rep/s, reserve $100b. All four stacks batching at full money; the-hub loaded at 15% money and rebuilt by 12:57. Net $288m/s over 1 minute.
+Not checked on the PC: running beside Cities: II, `dnet_promote.js` thread count, `dnet_root.js`. `dnet_status.json` and `dnet_roi_current.json` hold old data; `dnet_scout_status.json` is live. Still to do: GitHub SSH key (this PC cannot push without it), hourly task from `docs/pc-move-bn15-progress-task.md`, a Windows supervisor for the daemon. Nothing restarts the daemon if it dies, and a restarted daemon needs Options, Remote API, Connect.
+`money.js` and `capital_manager.js` read from the game, so status files such as `money_status.json` are read with `ctl-get`, not from disk. A script restarted between 12:42 and 12:46 could have run a copy with garbled non-ASCII text from the first failed sync; a clean resync replaced the files, and none was seen misbehaving.
 
 **Mac closed down for the PC move, 12:16 MST. The game is not running anywhere until the PC starts it.** Export taken 12:15:33: node 15, cash $191b (home upgrades took the $2.58t), hacking 749, charisma 982, karma -429, 16 installed, The B00ts of Perseus queued, install still held. File: `saves/bitburnerSave_pc-move_BN15_2026-11-02.json.gz` on the Mac (gitignored, gzip checked, player data parsed), SHA-256 28180fbecce89dcae95848a282e75615cba16052835aed9d261f68925a8426f6, handed to Ken through session Outputs. Mac game quit; `com.bitburner.remote-api-monitor` booted out, daemon stopped; hourly task disabled and to be recreated on the PC. PC prep was still in progress at shutdown. Continue at "On the PC" in `docs/pc-move-2026-11-02.md`, step 6. Import this file, not Steam Cloud. If you are on the Mac, this copy is stale: stop.
 **Live 11:32 (status files):** $2.58t, net about $291m/s over 1 minute, the-hub $162m/s, omega-net $59m/s, silver-helix $44m/s, phantasy $21m/s. Reserve $100b. Remote API connected.

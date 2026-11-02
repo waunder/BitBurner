@@ -627,7 +627,7 @@ async def cmd_probe(args):
 
 
 async def cmd_push(args):
-    content = Path(args.local_file).read_text()
+    content = Path(args.local_file).read_text(encoding="utf-8")
 
     async def action(api):
         return await api.push_file(args.remote_filename, content, args.server)
@@ -952,7 +952,7 @@ class TriggerDaemon:
 
     def _read_watched(self, relpath: str) -> str | None:
         try:
-            return (self._resolve_repo_root() / relpath).read_text()
+            return (self._resolve_repo_root() / relpath).read_text(encoding="utf-8")
         except FileNotFoundError:
             if relpath not in self._missing_warned:
                 _log(f"SYNC: watched file missing on disk, skipping: {relpath}")
@@ -1086,7 +1086,8 @@ class TriggerDaemon:
             if not full and self._last_pulled.get(relpath) == content:
                 continue
             try:
-                (self._resolve_repo_root() / relpath).write_text(content)
+                # Bytes, so Windows cannot turn the game's LF into CRLF.
+                (self._resolve_repo_root() / relpath).write_bytes(content.encode("utf-8"))
                 self._last_pulled[relpath] = content
                 pulled.append(relpath)
             except OSError as e:
@@ -1362,7 +1363,7 @@ async def cmd_ctl_dump(args):
 
 
 async def cmd_ctl_push(args):
-    content = Path(args.local_file).read_text()
+    content = Path(args.local_file).read_text(encoding="utf-8")
     result = await _ctl_call(
         args.control_port, {"cmd": "push", "file": args.remote_filename, "content": content}
     )
@@ -1437,7 +1438,7 @@ async def cmd_serve(args):
             if cmd == "quit":
                 break
             elif cmd == "push" and len(rest) == 2:
-                content = Path(rest[1]).read_text()
+                content = Path(rest[1]).read_text(encoding="utf-8")
                 result = await api.push_file(rest[0], content)
             elif cmd == "get" and len(rest) == 1:
                 result = await api.get_file(rest[0])
@@ -1582,6 +1583,22 @@ async def run_selftest():
     )
     checks.append(("concurrent gets don't cross ids", (a, b, c) == ("A", "B", "C")))
 
+    # -- Windows defaults to cp1252 and CRLF: non-ASCII and LF must survive both ways.
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        (tmp_path / "uni.js").write_bytes("// █ — ok\n".encode("utf-8"))
+        files["/uni.txt"] = "█ — ok\nline2\n"
+        daemon = TriggerDaemon(rpc, watched_files=["uni.js"], repo_root=tmp_path, pull_files=["uni.txt"])
+        await daemon._resync(full=True)
+        await daemon._pull(full=True)
+        checks.append(("non-ASCII pushed from disk unchanged", files.pop("/uni.js", None) == "// █ — ok\n"))
+        checks.append((
+            "non-ASCII pulled to disk as UTF-8 with LF",
+            (tmp_path / "uni.txt").exists()
+            and (tmp_path / "uni.txt").read_bytes() == "█ — ok\nline2\n".encode("utf-8"),
+        ))
+        files.pop("/uni.txt", None)
+
     # -- TriggerDaemon routine sync (added 2026-08-10, see the module
     # docstring's "Routine script sync" section) — exercised against a small
     # temp-directory fixture, not the real repo, so this stays isolated and
@@ -1673,65 +1690,66 @@ async def run_selftest():
     # process, the same thing `mv` does to a long-running one, and checking
     # that dynamic (repo_root=None) resolution survives it while a pinned
     # root reproduces the original bug and trips the loud alarm.
-    with tempfile.TemporaryDirectory() as outer:
-        old_dir = Path(outer) / "old_location"
-        old_dir.mkdir()
-        (old_dir / "watched.js").write_text("console.log('v1')")
-        watched2 = ["watched.js"]
+    if os.name != "nt":  # Windows refuses to rename a process's cwd.
+        with tempfile.TemporaryDirectory() as outer:
+            old_dir = Path(outer) / "old_location"
+            old_dir.mkdir()
+            (old_dir / "watched.js").write_text("console.log('v1')")
+            watched2 = ["watched.js"]
 
-        prior_cwd = os.getcwd()
-        os.chdir(old_dir)
-        try:
-            dynamic_daemon = TriggerDaemon(rpc, watched_files=watched2, pull_enabled=False)
-            result_before = await dynamic_daemon._resync(full=True)
-            checks.append((
-                "dynamic repo_root resolves against cwd before any move",
-                result_before["missing"] == [] and result_before["pushed"] == ["watched.js"],
-            ))
+            prior_cwd = os.getcwd()
+            os.chdir(old_dir)
+            try:
+                dynamic_daemon = TriggerDaemon(rpc, watched_files=watched2, pull_enabled=False)
+                result_before = await dynamic_daemon._resync(full=True)
+                checks.append((
+                    "dynamic repo_root resolves against cwd before any move",
+                    result_before["missing"] == [] and result_before["pushed"] == ["watched.js"],
+                ))
 
-            # A second daemon pinned to the pre-move path, to reproduce the
-            # actual bug for contrast -- this is exactly what the frozen
-            # module-level REPO_ROOT used to do.
-            stale_daemon = TriggerDaemon(rpc, watched_files=watched2, repo_root=old_dir, pull_enabled=False)
+                # A second daemon pinned to the pre-move path, to reproduce the
+                # actual bug for contrast -- this is exactly what the frozen
+                # module-level REPO_ROOT used to do.
+                stale_daemon = TriggerDaemon(rpc, watched_files=watched2, repo_root=old_dir, pull_enabled=False)
 
-            new_dir = Path(outer) / "new_location"
-            old_dir.rename(new_dir)
-            # No explicit chdir after the rename -- os.getcwd() is expected
-            # to reflect it automatically (kernel tracks cwd by inode, not
-            # by path string), exactly like the live daemon's cwd tracked
-            # `mv` in the real incident. If this assumption is ever wrong
-            # on some platform, this check itself is what should catch it.
-            checks.append((
-                "this process's cwd followed the rename, unassisted",
-                Path(os.getcwd()).resolve() == new_dir.resolve(),
-            ))
+                new_dir = Path(outer) / "new_location"
+                old_dir.rename(new_dir)
+                # No explicit chdir after the rename -- os.getcwd() is expected
+                # to reflect it automatically (kernel tracks cwd by inode, not
+                # by path string), exactly like the live daemon's cwd tracked
+                # `mv` in the real incident. If this assumption is ever wrong
+                # on some platform, this check itself is what should catch it.
+                checks.append((
+                    "this process's cwd followed the rename, unassisted",
+                    Path(os.getcwd()).resolve() == new_dir.resolve(),
+                ))
 
-            result_dynamic_after = await dynamic_daemon._resync(full=True)
-            checks.append((
-                "dynamic repo_root survives a live directory rename with no restart",
-                result_dynamic_after["missing"] == [] and result_dynamic_after["pushed"] == ["watched.js"],
-            ))
-            checks.append(("dynamic daemon has no alarm after surviving the rename", dynamic_daemon.sync_root_alarm is None))
+                result_dynamic_after = await dynamic_daemon._resync(full=True)
+                checks.append((
+                    "dynamic repo_root survives a live directory rename with no restart",
+                    result_dynamic_after["missing"] == [] and result_dynamic_after["pushed"] == ["watched.js"],
+                ))
+                checks.append(("dynamic daemon has no alarm after surviving the rename", dynamic_daemon.sync_root_alarm is None))
 
-            result_stale_after = await stale_daemon._resync(full=True)
-            checks.append((
-                "pinned (stale) repo_root reproduces the original incident",
-                result_stale_after["missing"] == ["watched.js"],
-            ))
-            checks.append((
-                "stale repo_root trips the loud alarm instead of failing silently",
-                stale_daemon.sync_root_alarm is not None and str(old_dir) in stale_daemon.sync_root_alarm,
-            ))
-            status_while_alarmed = await stale_daemon._do_status()
-            checks.append(("the alarm is visible via ctl-status, not just a log line", status_while_alarmed["sync_root_alarm"] is not None))
+                result_stale_after = await stale_daemon._resync(full=True)
+                checks.append((
+                    "pinned (stale) repo_root reproduces the original incident",
+                    result_stale_after["missing"] == ["watched.js"],
+                ))
+                checks.append((
+                    "stale repo_root trips the loud alarm instead of failing silently",
+                    stale_daemon.sync_root_alarm is not None and str(old_dir) in stale_daemon.sync_root_alarm,
+                ))
+                status_while_alarmed = await stale_daemon._do_status()
+                checks.append(("the alarm is visible via ctl-status, not just a log line", status_while_alarmed["sync_root_alarm"] is not None))
 
-            # Alarm is a live read of the current pass, not sticky: pointing
-            # the same daemon back at a real root clears it on the next call.
-            stale_daemon._repo_root_override = new_dir
-            result_recovered = await stale_daemon._resync(full=True)
-            checks.append(("alarm clears once repo_root is healthy again", result_recovered["missing"] == [] and stale_daemon.sync_root_alarm is None))
-        finally:
-            os.chdir(prior_cwd)
+                # Alarm is a live read of the current pass, not sticky: pointing
+                # the same daemon back at a real root clears it on the next call.
+                stale_daemon._repo_root_override = new_dir
+                result_recovered = await stale_daemon._resync(full=True)
+                checks.append(("alarm clears once repo_root is healthy again", result_recovered["missing"] == [] and stale_daemon.sync_root_alarm is None))
+            finally:
+                os.chdir(prior_cwd)
 
     # -- Pull-side counterpart: every write failing (not "missing", since
     # missing means the remote file doesn't exist -- see _pull's comment)
@@ -1745,7 +1763,7 @@ async def run_selftest():
     checks.append(("pull write failure under a bad repo_root is reported as failed, not raised", pull_result_broken["failed"] == ["only_pull_target.txt"]))
     checks.append((
         "all-writes-failed trips pull_root_alarm",
-        broken_pull_daemon.pull_root_alarm is not None and "does/not/exist" in broken_pull_daemon.pull_root_alarm,
+        broken_pull_daemon.pull_root_alarm is not None and "anywhere" in broken_pull_daemon.pull_root_alarm,
     ))
 
     await rpc.stop()

@@ -2298,6 +2298,10 @@ the safer recovery, sync, and verification workflow is documented in
 handling. The migration report below records the original implementation and
 historical findings; its prototype-era status statements are not current.
 
+Local files are always UTF-8, and pulled files keep the game's LF, so sync does
+not depend on the platform's default encoding. `selftest` skips the cwd-rename
+regression on Windows, which refuses to rename a process's working directory.
+
 For routine work, use `tools/remote_api_monitor.sh` to inspect/recover the
 local daemon, reconnect Steam through Options → Remote API if the game is
 disconnected, and run `tools/force_sync.sh` after source changes. Verify

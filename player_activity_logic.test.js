@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { actionKey, choosePlayerActivity, pickCrime, shouldSwitch } from "./player_activity_logic.js"
+import { actionKey, choosePlayerActivity, pickCrime, shouldFocus, shouldSwitch } from "./player_activity_logic.js"
 
 const player = { skills: { hacking: 400, strength: 1, defense: 1, dexterity: 1, agility: 1 } }
 
@@ -105,4 +105,14 @@ test("works for the target company until its faction has joined", () => {
   assert.equal(actionKey(decide([])), "company:Bachman & Associates")
   assert.notEqual(decide(["Bachman & Associates"]).action, "company")
   assert.notEqual(decide([], 100).action, "company")
+})
+
+test("focuses rep work hourly only while it is the selected activity", () => {
+  const base = { config: { focusWork: true }, action: "company", selected: true, focused: false, now: 4e6, lastFocusAt: 0 }
+  assert.equal(shouldFocus(base), true)
+  assert.equal(shouldFocus({ ...base, lastFocusAt: 3e6 }), false)
+  assert.equal(shouldFocus({ ...base, focused: true }), false)
+  assert.equal(shouldFocus({ ...base, action: "crime" }), false)
+  assert.equal(shouldFocus({ ...base, selected: false }), false)
+  assert.equal(shouldFocus({ ...base, config: {} }), false)
 })

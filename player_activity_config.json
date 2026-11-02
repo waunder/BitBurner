@@ -4,6 +4,7 @@
   "physicalTarget": 0,
   "charismaTarget": 600,
   "repBeforeGates": true,
+  "focusWork": true,
   "gym": "Powerhouse Gym",
   "university": "Rothman University",
   "factionWorkType": "hacking",

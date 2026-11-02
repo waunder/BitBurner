@@ -8,7 +8,7 @@
  *
  * @param {NS} ns
  */
-import { actionKey, choosePlayerActivity, pickCrime, shouldSwitch } from "./player_activity_logic.js"
+import { actionKey, choosePlayerActivity, pickCrime, shouldFocus, shouldSwitch } from "./player_activity_logic.js"
 
 const CONFIG = "player_activity_config.json"
 const STATUS = "player_activity_status.json"
@@ -126,6 +126,7 @@ export async function main(ns) {
   closePrior(ns)
   let prior = readJson(ns, STATUS, {}) || {}
   let lastAugmentationRefresh = 0
+  let lastFocusAt = 0
   while (true) {
     const now = Date.now()
     const config = configFor(ns)
@@ -166,6 +167,10 @@ export async function main(ns) {
         started = startActivity(ns, decision)
         if (!started) error = "game rejected the requested activity; check faction, city, and work requirements"
       } catch (exception) { error = String(exception?.message || exception) }
+    }
+    if (capability.available && !error && shouldFocus({ config, action: decision.action, selected: alreadySelected, focused: ns.singularity.isFocused(), now, lastFocusAt })) {
+      lastFocusAt = now
+      ns.singularity.setFocus(true)
     }
     const apiUnavailable = !capability.available || /requires Source-File 4/i.test(error || "")
     const capitalPolicy = readJson(ns, "gang_capital_policy.json", {}) || {}

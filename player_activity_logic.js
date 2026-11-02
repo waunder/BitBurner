@@ -124,6 +124,12 @@ export function choosePlayerActivity({ player = {}, nextGate = null, augmentatio
   return { action: "hold", reason: "no actionable Hack gate, reachable faction reputation target, or karma requirement", confidence: "LOW" }
 }
 
+/** Unfocused work pays 80% rep. Retried hourly, so anyone can leave the work page for a while. */
+export function shouldFocus({ config = {}, action, selected, focused, now, lastFocusAt = 0, retryMs = 60 * 60 * 1000 } = {}) {
+  return config.focusWork === true && selected === true && focused === false
+    && (action === "company" || action === "faction") && now - lastFocusAt >= retryMs
+}
+
 export function actionKey(decision) {
   if (!decision || decision.action === "hold") return "hold"
   if (decision.action === "gym") return `gym:${decision.gym}:${decision.stat}:${decision.target}`

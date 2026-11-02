@@ -81,6 +81,8 @@
     "fleet_ram.js",
     "stack_batch.js",
     "stack_logic.js",
+    "stack_manager.js",
+    "stack_files.js",
     "scripts/stack_job.js",
     "ipvgo_player.js",
     "ipvgo_logic.js",

@@ -1,11 +1,12 @@
 import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./tail_geometry.js"
+import { readStacks } from "./stack_files.js"
 import { addSample, augOutlook, duration, money, nextStackTotal, ramYield, streams, windowRate, WINDOWS_MS } from "./money_logic.js"
 /**
  * Money panel: how fast cash is growing, which stream earns it, where it goes,
  * and whether cash or rep limits the next augmentations.
  *
  * Income comes from ns.getMoneySources; the stacked target is split out of
- * hacking with stack_status.json. Rates need a panel running through their
+ * hacking with the stack status files. Rates need a panel running through their
  * window, so they show -- at first. Writes money_status.json each poll.
  *
  * Start: run money.js [x=<px>] [y=<px>] [w=<px>] [h=<px>]
@@ -41,11 +42,15 @@ const columns = (label, one, ten, total) => label.slice(0, 18).padEnd(18) + one.
 const rateRow = (row) => columns(row.label, cell(row.rates[0]), cell(row.rates[1]), money(row.total))
 
 /** One reading of everything the panel derives from. */
-function read(ns, previous, now) {
+function read(ns, totals, now) {
   const sources = ns.getMoneySources().sinceInstall
-  const stack = json(ns, "stack_status.json")
-  const stackTotal = nextStackTotal(previous, Number(stack?.stolen) || 0, sources.hacking || 0)
-  return { t: now, sources, stack: stackTotal.total, stackRaw: stackTotal, stackTarget: stack?.target, stackLive: now - (stack?.ts || 0) < STALE_MS, stackRam: stack?.inFlightRam || 0 }
+  const stacks = {}, stackRam = {}
+  for (const stack of readStacks(ns, Infinity)) {
+    totals[stack.target] = nextStackTotal(totals[stack.target], Number(stack.stolen) || 0, sources.hacking || 0)
+    if (now - stack.ts < STALE_MS) stackRam[stack.target] = stack.inFlightRam || 0
+  }
+  for (const [target, total] of Object.entries(totals)) stacks[target] = total.total
+  return { t: now, sources, stacks, stackRam }
 }
 
 function summarize(ns, samples, now) {
@@ -60,11 +65,10 @@ function summarize(ns, samples, now) {
   return {
     ts: now, cash, net, ...flows,
     augs: augOutlook(cash, activity?.augmentation?.workCandidates, net[1] ?? net[0] ?? 0),
-    yields: {
-      stack: last.stackLive ? ramYield(steady(flows.income.find((r) => r.key === "stack")), last.stackRam) : null,
-      rest: ramYield(steady(flows.income.find((r) => r.key === "rest")), mcpRam),
-    },
-    stackTarget: last.stackTarget,
+    yields: [
+      ...flows.income.filter((r) => r.key.startsWith("stack:")).map((r) => ({ label: r.label, value: ramYield(steady(r), last.stackRam[r.label]) })),
+      { label: "MCP targets", value: ramYield(steady(flows.income.find((r) => r.key === "rest")), mcpRam) },
+    ].filter((y) => y.value !== null),
   }
 }
 
@@ -79,8 +83,7 @@ function buildLines(view, pos) {
   if (view.spending.length) lines.push([WHITE, "spent"], ...view.spending.map((row) => [YELLOW, rateRow(row)]))
   const { augs, yields } = view
   lines.push([WHITE, "per TB of RAM"])
-  if (yields.stack !== null) lines.push([GREEN, fit(view.stackTarget || "stack", `${money(yields.stack)}/s`)])
-  if (yields.rest !== null) lines.push([GREEN, fit("MCP targets", `${money(yields.rest)}/s`)])
+  for (const { label, value } of yields) lines.push([GREEN, fit(label, `${money(value)}/s`)])
   lines.push([WHITE, fit("augmentations", `limited by ${augs.limit}`)])
   lines.push([GREEN, fit(`ready ${augs.ready}`, money(augs.readyCost))])
   lines.push([GREEN, fit(`all ${augs.all} offered`, money(augs.allCost) + (augs.allWait > 0 ? ` in ${duration(augs.allWait)}` : ""))])
@@ -113,8 +116,8 @@ export async function main(ns) {
   const args = { ...parsed, ...loadTailPosition(ns, ME, parsed) }
   const styles = ns.ui.getStyles()
   const pos = resolvePosition(ns, args, styles)
-  const samples = []
-  let previous = null, shown = 0
+  const samples = [], totals = {}
+  let shown = 0
 
   ns.ui.openTail()
   ns.ui.setTailTitle("money")
@@ -122,9 +125,8 @@ export async function main(ns) {
   while (true) {
     let lines
     try {
-      const now = Date.now(), sample = read(ns, previous, now)
-      previous = sample.stackRaw
-      addSample(samples, sample)
+      const now = Date.now()
+      addSample(samples, read(ns, totals, now))
       const view = summarize(ns, samples, now)
       lines = buildLines(view, pos)
       ns.write(STATUS, JSON.stringify(view), "w")

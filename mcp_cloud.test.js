@@ -13,7 +13,7 @@ function fixture() {
   getServerSecurityLevel:h=>servers[h].hackDifficulty,getServerMinSecurityLevel:h=>servers[h].minDifficulty,
   getServerMoneyAvailable:h=>servers[h].moneyAvailable,getServerMaxMoney:h=>servers[h].moneyMax,
   fileExists:()=>true,ps:h=>processes.filter(p=>p.host===h),kill:(pid)=>{const i=processes.findIndex(p=>p.pid===pid);if(i>=0)processes.splice(i,1);return true},isRunning:(pid,h)=>processes.some(p=>p.pid===pid&&p.host===h),
-  getMoneySources:()=>({sinceInstall:{hacking:nowMoney}}),getTotalScriptExpGain:()=>0,hasRootAccess:()=>true,getServerRequiredHackingLevel:()=>1,getHackingLevel:()=>100,
+  getMoneySources:()=>({sinceInstall:{hacking:nowMoney}}),ls:()=>[],getTotalScriptExpGain:()=>0,hasRootAccess:()=>true,getServerRequiredHackingLevel:()=>1,getHackingLevel:()=>100,
   getServerMaxRam:()=>500,getServerUsedRam:h=>processes.filter(p=>p.host===h).reduce((n,p)=>n+p.threads*ns.getScriptRam(p.filename),0),scp:async()=>true,
   exec:(filename,host,threads,...args)=>{const p={filename,host,threads,args,pid:++seq};processes.push(p);launches.push(p);return p.pid}}
  const context={servers:['a','b','worker'],workers:['worker'],runId:'test',objective:'reputation',emit:(kind,data)=>events.push({kind,...data})}

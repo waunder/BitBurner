@@ -1,5 +1,5 @@
 /** Pure spending decisions for capital_manager.js. No ns calls, no side effects. */
-export const PROGRAMS = ["BruteSSH.exe", "FTPCrack.exe", "relaySMTP.exe", "DarkscapeNavigator.exe", "HTTPWorm.exe", "SQLInject.exe"]
+export const PROGRAMS = ["BruteSSH.exe", "FTPCrack.exe", "relaySMTP.exe", "DarkscapeNavigator.exe", "HTTPWorm.exe", "SQLInject.exe", "Formulas.exe"]
 
 /**
  * Choose the next purchase, or null to wait. Affordable programs and home RAM come

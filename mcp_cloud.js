@@ -1,3 +1,4 @@
+import { readStacks } from './stack_files.js'
 /** Finite multi-target batches, owned and observed by the existing MCP. */
 export const CLOUD_CONTROL = 'mcp_cloud_control.json'
 export const CLOUD_VERSION = 'finite-weighted-harvest-v9'
@@ -316,7 +317,7 @@ export async function cloudTick(ns, state, {servers,workers,runId,objective,emit
     .filter(p=>Object.values(SCRIPTS).includes(p.filename.replace(/^\//,'')) && p.args[1]==='once')
     .map(p=>String(p.args[0]))))
   // Only a running stack_batch.js holds its target, so an install hands it back to MCP.
-  let stacked=[];try{const stack=JSON.parse(ns.read('stack_status.json')||'null');if(Date.now()-stack?.ts<120000)stacked=[stack.target]}catch{/* partial write */}
+  const stacked=readStacks(ns).map(s=>s.target)
   const candidates=servers.filter(h=>h!=='home' && !stacked.includes(h) && !ns.getServer(h).purchasedByPlayer && ns.hasRootAccess(h) && ns.getServerMaxMoney(h)>0 && ns.getServerRequiredHackingLevel(h)<=ns.getHackingLevel() && !state.batches.has(h) && !finiteTargets.has(h))
     .map(h=>planCloudBatch(ns,h,{protectedFloor,recoveryTarget})).filter(Boolean).sort((a,b)=>b.rank-a.rank)
   const harvestCompetitors=candidates.filter(p=>p.phase==='harvest').length+

@@ -2,7 +2,7 @@ import test from "node:test"
 import assert from "node:assert/strict"
 import { addSample, augOutlook, duration, KEEP_MS, money, nextStackTotal, orderedCost, ramYield, streams, windowRate } from "./money_logic.js"
 
-const sample = (t, hacking, stack, extra = {}) => ({ t, stack, stackTarget: "omega-net", sources: { total: hacking, hacking, ...extra } })
+const sample = (t, hacking, stack, extra = {}) => ({ t, stacks: { "omega-net": stack }, sources: { total: hacking, hacking, ...extra } })
 
 test("money and duration stay short", () => {
   assert.equal(money(135168000000), "135b")
@@ -40,6 +40,11 @@ test("streams separates the stack from other hacking and sorts spending apart", 
   const { income, spending } = streams([sample(0, 100, 40, { servers: -5 }), sample(60000, 700, 340, { servers: -5, darknet: 10 })])
   assert.deepEqual(income.map((r) => [r.label, r.total, r.rates[0]]), [["other hacking", 360, 5], ["omega-net", 340, 5], ["darknet", 10, null]].map(([a, b, c]) => [a, b, c === null ? 10 / 60 : c]))
   assert.deepEqual(spending.map((r) => r.label), ["cloud+home"])
+})
+
+test("streams gives each stacked target its own row", () => {
+  const rows = streams([{ t: 0, stacks: { a: 30, b: 10 }, sources: { total: 100, hacking: 100 } }]).income
+  assert.deepEqual(rows.map((r) => [r.label, r.total]), [["other hacking", 60], ["a", 30], ["b", 10]])
 })
 
 test("streams labels plain hacking when no stack has run", () => {

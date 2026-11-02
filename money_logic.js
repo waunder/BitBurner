@@ -44,12 +44,12 @@ export function windowRate(samples, ms, value) {
 /** Splits hacking into the stacked target and the rest, then every other game category. */
 export function streams(samples) {
   const last = samples.at(-1)
-  const stack = (s) => s.stack
-  const rest = (s) => Math.max(0, (s.sources.hacking || 0) - s.stack)
+  const stacked = (s) => Object.values(s.stacks).reduce((sum, value) => sum + value, 0)
+  const rest = (s) => Math.max(0, (s.sources.hacking || 0) - stacked(s))
   const rows = []
   const add = (key, label, value) => rows.push({ key, label, total: value(last), rates: WINDOWS_MS.map((ms) => windowRate(samples, ms, value)) })
-  if (last.stack > 0) add("stack", last.stackTarget || "stack", stack)
-  if (last.sources.hacking) add("rest", last.stack > 0 ? "other hacking" : "hacking", rest)
+  for (const target of Object.keys(last.stacks)) if (last.stacks[target] > 0) add(`stack:${target}`, target, (s) => s.stacks[target] || 0)
+  if (last.sources.hacking) add("rest", stacked(last) > 0 ? "other hacking" : "hacking", rest)
   for (const key of Object.keys(last.sources)) {
     if (key === "total" || key === "hacking" || !last.sources[key]) continue
     add(key, LABELS[key] || key, (s) => s.sources[key] || 0)

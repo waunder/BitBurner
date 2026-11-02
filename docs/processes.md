@@ -285,24 +285,39 @@ plus one each for The Broken Wings, The Hammer and The Staff. Started by `dnet_s
 
 ### `stack_batch.js`
 
-Stacked-batch trial on one target, using `additionalMsec` so hack, weaken, grow and
-weaken land in order. MCP skips the target while `stack_status.json` is under two
-minutes old, so a dead runner hands it back. Waits for any MCP cohort to finish, prepares the target, then launches every `spacingMs` up to `ramBudgetGB`.
-Hack income returns on port 7.
+Stacked batches on one target, using `additionalMsec` so hack, weaken, grow and
+weaken land in order. MCP skips the target while its status file is under two
+minutes old, so a dead runner hands it back. Waits for any MCP cohort to finish, prepares the target, then launches every `spacingMs` up to its RAM budget.
+Hack income returns on its port.
 
-- **Args:** `target [hackFraction=0.1] [spacingMs=2000] [gapMs=200] [ramBudgetGB=65536]`.
-- **Writes:** `stack_status.json` (state, batches, resets, stolen, perSec).
+- **Args:** `target [hackFraction=0.1] [spacingMs=2000] [gapMs=200] [ramBudgetGB=65536] [port=7]`.
+- **Reads:** `stack_budgets.json` each batch; its entry overrides the budget argument.
+- **Writes:** `stack_status_<target>.json` (state, ramBudget, batches, resets, stolen, perSec), at least every 30s.
 - **Failure modes:** money under 50% or security 5 over minimum stops launching, drains
   jobs, re-prepares and counts a reset. A full fleet skips that batch. Reaching the budget also pauses launches, which earns in
   bursts: `omega-net` needs about 59TB for one batch per 2s at weaken 390s, and at 40TB it averaged $38.6m/s against about $57m/s.
-- **Stop:** kill it. `startup.js` does not start it, so an install ends the trial.
+- **Stop:** kill it; jobs already launched finish alone.
+- **Test:** `node --test stack_logic.test.js`
+
+### `stack_manager.js`
+
+Keeps `stack_batch.js` running on the best targets. Each minute it prices every rooted target
+as if prepared with `ns.formulas`, picks by income per TB (up to 4 stacks, skipping targets under
+15% of the best income or 25% of the best yield), and gives them up to 60% of cloud RAM. Running
+stacks get any budget they lack first and are never stopped. The first stack may start
+short of its full need. Started by `startup.js` and `capital_manager.js`.
+
+- **Writes:** `stack_manager_status.json` (plan, started, failed, top estimates), `stack_budgets.json`. Deletes status files of dead stacks at start.
+- **Needs:** `Formulas.exe`, bought by `capital_manager.js` after the other programs; until then it waits.
+- **Failure modes:** a target whose estimate falls stays running; an exec that fails for home RAM is retried next pass.
+- **Shared reader:** `stack_files.js` `readStacks`, used by MCP (skip list), `xp_filler.js` (reserve), `capital_manager.js` (demand) and `money.js`.
 - **Test:** `node --test stack_logic.test.js`
 
 ### `xp_filler.js`
 
 Turns cloud and rooted-host RAM MCP leaves idle into hacking XP with one-shot
 `scripts/xp_weaken.js` runs on the best XP-per-second rooted host. Keeps the three largest
-cloud servers clear for MCP, plus enough whole servers to hold 64TB while `stack_status.json` is under two minutes old, and 5% free on the others; rooted hosts have no margin. MCP ignores the worker's filename. Started by `startup.js`; kill it to stop.
+cloud servers clear for MCP, plus enough whole servers to hold the budgets of running stacks, and 5% free on the others; rooted hosts have no margin. MCP ignores the worker's filename. Started by `startup.js`; kill it to stop.
 
 - **Writes:** `xp_filler_status.json` (target, workers started, threads).
 - **Failure modes:** a filled server makes MCP use another; a failed exec is skipped.
@@ -1098,10 +1113,10 @@ category over 1 and 10 minutes, income per TB of RAM (stacked target against MCP
 targets), and whether cash or rep limits the augmentations on offer.
 
 - **Start:** `run money.js` — optional `x= y= w= h=`; polls every 5s and supersedes a prior copy.
-- **Reads:** `ns.getMoneySources().sinceInstall`, `stack_status.json`, `mcp_status.json`, `player_activity_status.json`.
+- **Reads:** `ns.getMoneySources().sinceInstall`, stack status files, `mcp_status.json`, `player_activity_status.json`.
 - **Writes:** `money_status.json` (the panel's full view), `tail_position_money.json`.
 - **Limits:** rates show `--` until half their window has run, and reset when the panel restarts.
-  The stacked share since install is only as complete as `stack_status.json`: income from a stack run
+  The stacked share since install is only as complete as the stack status files: income from a stack run
   that ended before the panel started counts as `other hacking`. Augmentation totals assume dearest
   first at a 1.9 price step and ignore prerequisite order. MCP RAM is the sum of `targets[].ram`.
 - **Test:** `node --test money_logic.test.js`

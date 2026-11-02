@@ -6,9 +6,6 @@ export function fillerThreads(maxRam, usedRam, reserveFraction = 0.05) {
   return Math.max(0, Math.floor((maxRam * (1 - reserveFraction) - usedRam) / WORKER_RAM))
 }
 
-/** Matches stack_batch.js's default ramBudget, the most its batches hold at once. */
-export const STACK_RESERVE_GB = 65536
-
 /** The largest cloud servers stay clear so MCP cohorts fit whole, plus enough more to hold reserveRam. */
 export function fillableCloud(hosts, keepClear = 3, reserveRam = 0) {
   const sorted = [...hosts].sort((a, b) => b.max - a.max || a.host.localeCompare(b.host))

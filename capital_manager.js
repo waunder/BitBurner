@@ -6,13 +6,14 @@
  * Start: `run capital_manager.js` (startup.js launches it).
  * @param {NS} ns
  */
+import { readStacks } from "stack_files.js"
 import { PROGRAMS, chooseCapitalAction, nextScriptToStart } from "capital_logic.js"
 
 const POLICY = "capital_policy.json"
 const STATUS = "capital_status.json"
 const POLL_MS = 10_000
 const INCOME_WINDOW_SEC = 600
-const MANAGERS = ["maintenance_steward.js", "money.js", "hud_consolidated.js", "player_activity_controller.js", "dnet_root.js"]
+const MANAGERS = ["maintenance_steward.js", "money.js", "stack_manager.js", "hud_consolidated.js", "player_activity_controller.js", "dnet_root.js"]
 
 function readPolicy(ns) {
   try { return JSON.parse(ns.read(POLICY) || "{}") } catch { return {} }
@@ -56,12 +57,13 @@ function startWaitingManager(ns) {
   return name && ns.run(name) ? name : null
 }
 
-/** MCP's own demand for cloud RAM; xp_filler.js is excluded because it only uses leftovers. */
+/** MCP's and the stacks' demand for cloud RAM; xp_filler.js is excluded because it only uses leftovers. */
 function readUtilization(ns) {
   try {
     const workers = JSON.parse(ns.read("mcp_status.json")).cloudWorkers
     const threads = workers.flatMap(w => w.actions).reduce((sum, a) => sum + a.threads, 0)
-    return threads * 1.75 / workers.reduce((sum, w) => sum + w.maxRam, 0)
+    const stackRam = readStacks(ns).reduce((sum, s) => sum + (s.inFlightRam || 0), 0)
+    return (threads * 1.75 + stackRam) / workers.reduce((sum, w) => sum + w.maxRam, 0)
   } catch { return 1 }
 }
 

@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-01 21:05 MST. Sources: Steam game via DevTools and
+Last refreshed: 2026-11-01 21:34 MST. Sources: Steam game via DevTools and
 terminal, Remote API `mcp_status.json`, game source and live reads.
 
 ## Current live state (supersedes everything below)
@@ -25,9 +25,7 @@ training off; player is on Shoplift. Ken gave full approval on 2026-11-01 to
 finish BN15 with any changes, including purchases and installs. Choosing the
 next BitNode still needs him. Why BN15, and the numbers: `docs/bitnode-choice-2026-11-01.md`.
 
-`dnet_root.js` and `dnet_scout.js` are running live; No lab reached yet; the maze solver has not run
-live. Best scout depth is 2 (17:21 MST), and charisma is 213 against the first
-gate of 300. Scheduled task `bitburner-bn15-progress` is enabled and runs hourly (confirmed 2026-11-01). Pause backup: hacking
+`dnet_root.js` and `dnet_scout.js` are running live; the maze solver has not run live. Scheduled task `bitburner-bn15-progress` is enabled and runs hourly (confirmed 2026-11-01). Pause backup: hacking
 182, $13.8m: `saves/bitburnerSave_pause_BN15_2026-11-01.save` (gitignored).
 
 Live 21:03 MST (game): hacking 294, charisma 281, about $1.8b, 25 cloud servers at
@@ -39,6 +37,15 @@ now puts the idle part into hacking XP: 9.25m XP in 137s, about 67k/s against 81
 cloud servers; the filler also fills rooted hosts (about 492GB). The daemon rereads
 `sync_manifest.json` each pass. Unknown: whether the filler lowers MCP income, which
 read 0 at 21:03 between harvests and averaged $2.7m/s; compare before keeping it.
+
+Live 21:32 MST (status files): `th3_l4byr1nth` seen from `austin`; `dnet_lab.js` stopped on charisma
+297/300 and has not walked the maze. Best scout depth is 6 (`byte:web`), up from 2, and that host
+holds the stasis link, applied live, so chains now start there (`dnet_anchor.js`). Keep the link on one
+deep host; limit is 1 until Broken Wings. Money $12.4b, MCP $3.1m/s average, hacking XP 68k/s.
+Leadership is ahead of hacking gates up to `charismaTarget` 600, at ZB in Volhaven; the move from
+Rothman is unverified. In scripts never name a variable `attempt`: the RAM check bills 10GB.
+Three runs of this task overlapped at 21:06-21:18 and edited the same files. Before editing, run
+`git status` and check no other BN15 session is running.
 
 DevTools runs on 127.0.0.1:9222 through the Steam launch option.
 

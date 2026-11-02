@@ -57,3 +57,6 @@ Crawler RAM rose to 7.3GB with the lab hook; check that gateway recrawls still f
 At 17:21 MST a chain reached depth 2 at `sm4rt_t04ster::grid`, the deepest seen in
 BN15, then spent all four tries on hosts `probe()` listed but that were not directly
 connected. Scouts now skip those. The scout measures 5.4GB, not 6.1GB.
+
+At 21:32 MST a chain found `th3_l4byr1nth` next to `austin`, four hops after the stasis
+anchor went in. Scouts had been losing neighbours mid-crack; the anchor holds position.

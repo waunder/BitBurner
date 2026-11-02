@@ -434,6 +434,11 @@ The same hack budget remains active during regrowth, avoiding a cloud-sized hack
 
 #### The work-weight calculation
 
+`fleet_ram.js` measures live weaken, grow and hack RAM from processes, split into
+cloud and hacked servers, and counts `xp_filler.js` workers as weaken. Its `Cloud` and
+`Hacked` lines appear in the expanded MCP section of `hud_consolidated.js` and as
+`CLOUD` and `HACKED` lines in `get_target_stats.js`.
+
 `get_target_stats.js` is an opt-in five-second live panel. It unions the targets
 in `mcp_status.json` with every observed `/scripts/{weaken,grow,hack}.js` target,
 including jobs missing from the manager snapshot. `WORKER RAM` counts only

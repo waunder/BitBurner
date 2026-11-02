@@ -1,4 +1,5 @@
 import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./tail_geometry.js"
+import { formatRamGroup, readFleetRam } from "./fleet_ram.js"
 /** Consolidated Interactive HUD - Clickable Sections
  *
  * Single summary window showing MCP, Darknet, Augmentation, System status.
@@ -124,6 +125,7 @@ function mcpStatus(ns, now) {
   // actually deployed. Keep both numbers visible: a small active count is
   // the signal for spare-capacity investigation, while the thread total says
   // whether the active hosts are doing material work.
+  const fleet = readFleetRam(ns)
   const deployment = `${activeWorkerCount}/${workerCount} servers ${activeWorkerPct.toFixed(0)}%; ${threadTotal}t ${actionRamPct.toFixed(0)}% RAM (${actionSummary})`
 
   if(status.reputation?.allocation==='all' && objective==='reputation') {
@@ -143,6 +145,8 @@ function mcpStatus(ns, now) {
       `Rate: ${compact(rate, 2)}/s (avg ${compact(avgRate, 2)}/s)`,
       `Total hacked: ${compact(money)}`,
       `Deployment: ${deployment}`,
+      formatRamGroup("Cloud", fleet.cloud),
+      formatRamGroup("Hacked", fleet.hacked),
     ],
   }
 }

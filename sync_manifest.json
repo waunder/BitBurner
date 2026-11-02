@@ -74,6 +74,7 @@
     "xp_filler_logic.js",
     "scripts/xp_weaken.js",
     "faction_join.js",
+    "fleet_ram.js",
     "ipvgo_player.js",
     "ipvgo_logic.js",
     "ipvgo_hud.js",

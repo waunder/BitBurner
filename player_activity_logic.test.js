@@ -98,6 +98,18 @@ test("a listed charisma augmentation beats cheaper faction work once charismaTar
   assert.equal(choosePlayerActivity({ player: ready, augmentation, config }).faction, "Bachman & Associates")
 })
 
+test("a priority augmentation takes faction work ahead of charisma augmentations", () => {
+  const ready = { money: 4e8, factions: ["Bachman & Associates"], skills: { hacking: 100, charisma: 100 } }
+  const augmentation = { ok: true, workCandidates: [
+    { faction: "Bachman & Associates", name: "SmartJaw", repGap: 375000, cashReady: false, price: 1.5e10 },
+    { faction: "Tian Di Hui", name: "Neuroreceptor Management Implant", repGap: 72000, cashReady: false, price: 1.65e9 },
+  ] }
+  const config = { physicalTarget: 0, charismaAugs: ["SmartJaw"], priorityAugs: ["Neuroreceptor Management Implant"] }
+  const result = choosePlayerActivity({ player: ready, augmentation, config })
+  assert.equal(result.faction, "Tian Di Hui")
+  assert.match(result.reason, /priority/)
+})
+
 test("crime is picked by money rate when cash is short and karma rate otherwise", () => {
   const rows = [
     { crime: "Shoplift", chance: 0.5, time: 2000, karma: 0.01, money: 15000 },

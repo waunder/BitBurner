@@ -10,7 +10,8 @@ export async function main(ns) {
     name, faction, rep: s.getFactionRep(faction), repRequired: s.getAugmentationRepReq(name),
     price: s.getAugmentationPrice(name), prerequisites: s.getAugmentationPrereq(name),
   })))
-  const { plan } = planPurchases(offers, owned, player.money)
+  const config = JSON.parse(ns.read("player_activity_config.json") || "{}")
+  const { plan } = planPurchases(offers, owned, player.money, 1.9, config.priorityAugs || [])
   const status = { ts: Date.now(), money: player.money, plan: plan.map((item) => [item.name, item.faction, item.price]), bought: [], failed: [], neuroflux: 0, homeRam: 0, homeCores: 0, installed: false }
   if (!flags.dry) {
     for (const item of plan) (s.purchaseAugmentation(item.faction, item.name) ? status.bought : status.failed).push(item.name)

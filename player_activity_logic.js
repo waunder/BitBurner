@@ -76,6 +76,16 @@ export function choosePlayerActivity({ player = {}, nextGate = null, augmentatio
   if (override === "auto" && corp?.company && !(player.factions || []).includes(corp.company)) {
     return { action: "company", company: corp.company, field: corp.field || "Business", reason: `company rep at ${corp.company} until its faction invites`, confidence: "HIGH" }
   }
+  // Ken's named picks take faction work ahead of everything else, charisma augmentations included.
+  const priorityAug = override === "auto" ? repTarget(player, augmentation, config, new Set(config.priorityAugs || [])) : null
+  if (priorityAug) {
+    return {
+      action: "faction", faction: priorityAug.faction, workType: config.factionWorkType || "hacking",
+      augmentation: priorityAug.name, repGap: number(priorityAug.repGap), price: number(priorityAug.price),
+      reason: `${priorityAug.faction} needs +${Math.ceil(number(priorityAug.repGap))} rep for ${priorityAug.name} (priority)`,
+      confidence: "HIGH",
+    }
+  }
   // Level scales with the multiplier but only the log of exp, so charisma augmentations beat Leadership.
   // Later labs need more than charismaTarget, so this does not stop at it.
   const charismaAug = override === "auto" ? repTarget(player, augmentation, config, new Set(config.charismaAugs || [])) : null

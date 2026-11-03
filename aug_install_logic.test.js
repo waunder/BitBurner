@@ -20,6 +20,12 @@ test("prices compound and an unaffordable item is passed over", () => {
   assert.equal(left, 2)
 })
 
+test("a priority augmentation keeps its cash even when dearer ones would use it all", () => {
+  const offers = [offer("a", 10), offer("b", 8), offer("p", 3)]
+  assert.deepEqual(planPurchases(offers, [], 15).plan.map((item) => item.name), ["a"])
+  assert.deepEqual(planPurchases(offers, [], 15, 1.9, ["p"]).plan.map((item) => item.name), ["b", "p"])
+})
+
 test("leftover cash takes the cheaper home upgrade and stops when neither is affordable", () => {
   assert.deepEqual(nextHomeUpgrade(10, 4, 5), { kind: "cores", cost: 4 })
   assert.deepEqual(nextHomeUpgrade(4, 10, 5), { kind: "ram", cost: 4 })

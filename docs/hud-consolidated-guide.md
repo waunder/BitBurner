@@ -146,11 +146,15 @@ of each game, not every move, so a single game can easily run past the
 problem.
 
 ### Augmentation
-**Compact:** XP rate, time to next purchase  
+**Compact:** augmentations queued, how many more the install would buy, Source Files, karma  
 **Expanded:**
-- Current charisma
-- XP per minute
-- Time to next augmentation
+- Installed and queued counts, and the queued names
+- What `aug_install.js` would buy right now and its total cost (from
+  `augmentation_readiness.json`, refreshed every 2 minutes; NeuroFlux and home
+  upgrades are spent from what is left and are not shown)
+- Rep target: the player controller's current reason, from
+  `player_activity_status.json`
+- Readiness age, Source Files, karma
 
 ### System
 **Compact:** Remote API & MCP status  

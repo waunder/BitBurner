@@ -34,7 +34,8 @@ async function refreshAugmentationReadiness(ns) {
     const ram = ns.getScriptRam("augmentation_readiness.js", "home")
     const prepared = await prepareContractWorker(ns, selectContractWorker(ns, ram), ram)
     if (!prepared.ok) return { refreshed: false, error: prepared.reason, requiredRam: ram, status: current }
-    const copied = await ns.scp("augmentation_readiness.js", prepared.worker, "home")
+    // The planner it imports and the priority list it reads must travel with it.
+    const copied = await ns.scp(["augmentation_readiness.js", "aug_install_logic.js", "player_activity_config.json"], prepared.worker, "home")
     const pid = copied ? ns.exec("augmentation_readiness.js", prepared.worker, 1, "--once") : 0
     if (!pid) return { refreshed: false, error: `could not start on ${prepared.worker}`, status: current }
     while (ns.isRunning(pid, prepared.worker)) await ns.sleep(100)

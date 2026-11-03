@@ -1,4 +1,4 @@
-import { NEUROFLUX, nextHomeUpgrade, planPurchases } from "./aug_install_logic.js"
+import { NEUROFLUX, donationFor, donationPlan, nextHomeUpgrade, planPurchases } from "./aug_install_logic.js"
 
 /** Buys what rep and cash allow, then installs on --install. See docs/processes.md. @param {NS} ns */
 export async function main(ns) {
@@ -11,13 +11,30 @@ export async function main(ns) {
     price: s.getAugmentationPrice(name), prerequisites: s.getAugmentationPrereq(name),
   })))
   const config = JSON.parse(ns.read("player_activity_config.json") || "{}")
-  const { plan } = planPurchases(offers, owned, player.money, 1.9, config.priorityAugs || [])
-  const status = { ts: Date.now(), money: player.money, plan: plan.map((item) => [item.name, item.faction, item.price]), bought: [], failed: [], neuroflux: 0, homeRam: 0, homeCores: 0, installed: false }
+  // Factions past the favor threshold sell rep for cash, so rep stops limiting their augmentations.
+  const donating = player.factions.filter((faction) => s.getFactionFavor(faction) >= ns.getFavorToDonate())
+  const donations = donationPlan(offers, owned, player.money, player.mults.faction_rep, donating)
+  let money = player.money
+  for (const gift of donations) {
+    if (!flags.dry && !s.donateToFaction(gift.faction, gift.amount)) continue
+    money -= gift.amount
+    for (const item of offers) if (item.faction === gift.faction) item.rep = flags.dry ? gift.rep : s.getFactionRep(gift.faction)
+  }
+  const { plan } = planPurchases(offers, owned, money, 1.9, config.priorityAugs || [])
+  const status = { ts: Date.now(), money: player.money, donations: donations.map((gift) => [gift.faction, gift.amount]), plan: plan.map((item) => [item.name, item.faction, item.price]), bought: [], failed: [], neuroflux: 0, fluxDonated: 0, homeRam: 0, homeCores: 0, installed: false }
   if (!flags.dry) {
     for (const item of plan) (s.purchaseAugmentation(item.faction, item.name) ? status.bought : status.failed).push(item.name)
-    const fluxFaction = player.factions.slice().sort((a, b) => s.getFactionRep(b) - s.getFactionRep(a))
-      .find((faction) => s.getAugmentationsFromFaction(faction).includes(NEUROFLUX))
-    while (fluxFaction && status.neuroflux < 100 && s.purchaseAugmentation(fluxFaction, NEUROFLUX)) status.neuroflux++
+    const sellers = player.factions.filter((faction) => s.getAugmentationsFromFaction(faction).includes(NEUROFLUX))
+    const fluxFaction = sellers.find((faction) => donating.includes(faction))
+      || sellers.sort((a, b) => s.getFactionRep(b) - s.getFactionRep(a))[0]
+    while (fluxFaction && status.neuroflux < 100) {
+      // Each level asks more rep; a donating faction buys the gap when cash covers it and the price.
+      const gap = s.getAugmentationRepReq(NEUROFLUX) - s.getFactionRep(fluxFaction)
+      const gift = donating.includes(fluxFaction) ? donationFor(gap, ns.getPlayer().mults.faction_rep) : 0
+      if (gift && gift + s.getAugmentationPrice(NEUROFLUX) <= ns.getPlayer().money && s.donateToFaction(fluxFaction, gift)) status.fluxDonated += gift
+      if (!s.purchaseAugmentation(fluxFaction, NEUROFLUX)) break
+      status.neuroflux++
+    }
   }
   ns.write("aug_install_status.json", JSON.stringify(status), "w")
   ns.tprint(JSON.stringify(status))

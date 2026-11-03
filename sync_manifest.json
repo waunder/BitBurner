@@ -22,6 +22,7 @@
     "mcp_money.js",
     "money.js",
     "charisma_survey.js",
+    "rep_survey.js",
     "company_survey.js",
     "money_logic.js",
     "gang_capital_policy.json",

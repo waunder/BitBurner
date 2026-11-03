@@ -11,6 +11,8 @@
  * @param {NS} ns
  */
 
+import { planPurchases } from "./aug_install_logic.js"
+
 const STATUS = "augmentation_readiness.json"
 const POLL_MS = 120_000
 
@@ -73,9 +75,15 @@ function assess(ns) {
       a.price - b.price || a.name.localeCompare(b.name) || a.faction.localeCompare(b.faction))
     const candidate = candidates[0] || null
     const workCandidate = candidates.find((item) => item.canWorkForRep) || null
+    // What `aug_install.js` would buy right now, before NeuroFlux and home upgrades.
+    let priority = []
+    try { priority = JSON.parse(ns.read("player_activity_config.json") || "{}").priorityAugs || [] } catch {}
+    const money = Number(player?.money) || 0
+    const { plan, left } = planPurchases(candidates, includingQueued, money, 1.9, priority)
+    const installPlan = { names: plan.map((item) => item.name), cost: money - left }
     return {
-      ts: now, ok: true, resetAt: resetAt(ns), money: Number(player?.money) || 0,
-      installedCount: installed.length, queuedCount: queued.length, queued,
+      ts: now, ok: true, resetAt: resetAt(ns), money,
+      installedCount: installed.length, queuedCount: queued.length, queued, installPlan,
       factionCount: factions.length, candidate, workCandidate,
       workCandidates: candidates.filter((item) => item.canWorkForRep),
       gangFaction, candidatesConsidered: candidates.length,

@@ -225,8 +225,12 @@ function augmentationStatus(ns, now) {
   let karma = null
   try { karma = Number(ns.heart.break()) } catch { /* Preserve an unavailable marker. */ }
 
+  const plan = readinessFresh ? readiness.installPlan : null
+  const activity = json(ns, "player_activity_status.json")
+  const target = activity?.ok && now - activity.ts <= 300_000 ? activity.decision : null
+
   const augCompact = readinessFresh
-    ? `${readiness.queuedCount || 0} queued`
+    ? `${readiness.queuedCount || 0} queued${plan ? ` +${plan.names.length} to buy` : ""}`
     : readiness?.ok ? `stale ${readiness.queuedCount || 0} queued` : "readiness unavailable"
   const ageLabel = readiness?.ok ? age(now, readiness.ts) : "missing"
 
@@ -234,7 +238,10 @@ function augmentationStatus(ns, now) {
     compact: `${augCompact} · SF ${sourceFileSummary.replace(" owned", "")} · K ${karma === null || !Number.isFinite(karma) ? "unknown" : compact(karma, 0)}`,
     expanded: [
       `Augmentations: ${readinessFresh ? `${readiness.installedCount} installed, ${readiness.queuedCount} queued` : readiness?.ok ? `${readiness.installedCount} installed, ${readiness.queuedCount} queued (stale)` : "readiness unavailable"}`,
-      `Next candidate: ${readinessFresh ? (readiness.candidate?.name || "none available") : "unknown (stale status)"}`,
+      `Queued: ${readinessFresh ? (readiness.queued?.join(", ") || "none") : "unknown (stale status)"}`,
+      `Install would buy: ${plan ? `${plan.names.length} for ${compact(plan.cost)}` : "unknown (stale status)"}`,
+      ...(plan?.names.length ? plan.names.map((name) => `  ${name}`) : []),
+      `Rep target: ${target ? target.reason || target.action : "unknown (controller status stale)"}`,
       `Readiness age: ${ageLabel}`,
       `Source Files: ${sourceFileSummary}`,
       ...(sourceFiles?.length ? sourceFiles.map((sf) => `  SF${sf.n}.${sf.lvl}`) : []),

@@ -10,6 +10,11 @@ Everything is Codex's call unless it installs an augmentation, resets the
 game, or permanently forfeits progress. Stop for Ken's explicit approval for
 that one category only.
 
+Standing exception (Ken, 2026-11-03, BN15): installs are approved up to
+readiness to complete this BitNode. Back up the save before each one. Still
+stop before destroying `w0r1d_daemon`, entering or choosing a BitNode, or any
+other reset; tell Ken about new problems or discoveries.
+
 For everything else, proceed without asking: deploy capital (including stock
 capital), change automation, commit/push, restart scripts, and use reversible
 feature flags when their risk and ROI justify it. Complete authorized

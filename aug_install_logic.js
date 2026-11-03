@@ -47,3 +47,32 @@ export function nextHomeUpgrade(ramCost, coreCost, money) {
 }
 
 export const NEUROFLUX = "NeuroFlux Governor"
+
+/** Money that buys `gap` faction rep: the game gives amount / 1e6 * the faction rep multiplier. */
+export function donationFor(gap, repMult) {
+  return gap > 0 ? Math.ceil(gap * 1e6 / repMult * 1.001) : 0
+}
+
+/**
+ * Donations that lift each donating faction to the dearest rep any of its unowned offers needs,
+ * while the total stays within `share` of cash. Cheapest factions first.
+ * @param {string[]} donating factions whose favor allows donations
+ */
+export function donationPlan(offers, owned, money, repMult, donating, share = 0.25) {
+  const held = new Set(owned)
+  const need = new Map()
+  for (const offer of offers) {
+    if (!donating.includes(offer.faction) || held.has(offer.name) || offer.name === NEUROFLUX) continue
+    const seen = need.get(offer.faction)
+    need.set(offer.faction, { rep: offer.rep, target: Math.max(seen?.target || 0, offer.repRequired) })
+  }
+  let budget = money * share
+  const plan = []
+  for (const [faction, { rep, target }] of [...need].sort((a, b) => (a[1].target - a[1].rep) - (b[1].target - b[1].rep))) {
+    const amount = donationFor(target - rep, repMult)
+    if (!amount || amount > budget) continue
+    budget -= amount
+    plan.push({ faction, amount, rep: target })
+  }
+  return plan
+}

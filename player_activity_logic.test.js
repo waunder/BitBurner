@@ -110,6 +110,17 @@ test("a priority augmentation takes faction work ahead of charisma augmentations
   assert.match(result.reason, /priority/)
 })
 
+test("no faction work for an augmentation another faction already sells", () => {
+  const ready = { money: 1e12, factions: ["BitRunners", "NiteSec", "Tian Di Hui"], skills: { hacking: 1000, charisma: 3000 } }
+  const augmentation = { ok: true, workCandidates: [
+    { faction: "BitRunners", name: "DataJack", repGap: 16000, cashReady: true, price: 2.5e9 },
+    { faction: "NiteSec", name: "DataJack", repGap: 0, cashReady: true, price: 2.5e9 },
+    { faction: "BitRunners", name: "BitRunners Neurolink", repGap: 780000, cashReady: true, price: 2.5e10 },
+  ] }
+  const result = choosePlayerActivity({ player: ready, augmentation, config: { physicalTarget: 0 } })
+  assert.equal(result.augmentation, "BitRunners Neurolink")
+})
+
 test("crime is picked by money rate when cash is short and karma rate otherwise", () => {
   const rows = [
     { crime: "Shoplift", chance: 0.5, time: 2000, karma: 0.01, money: 15000 },

@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { nextHomeUpgrade, planPurchases } from "./aug_install_logic.js"
+import { donationFor, donationPlan, nextHomeUpgrade, planPurchases } from "./aug_install_logic.js"
 
 const offer = (name, price, extra = {}) => ({ name, faction: "F", rep: 10, repRequired: 5, price, prerequisites: [], ...extra })
 
@@ -30,4 +30,12 @@ test("leftover cash takes the cheaper home upgrade and stops when neither is aff
   assert.deepEqual(nextHomeUpgrade(10, 4, 5), { kind: "cores", cost: 4 })
   assert.deepEqual(nextHomeUpgrade(4, 10, 5), { kind: "ram", cost: 4 })
   assert.equal(nextHomeUpgrade(10, 20, 5), null)
+})
+
+test("donations lift a donating faction to its dearest offer within the cash share", () => {
+  const offers = [offer("a", 1, { faction: "D", rep: 100, repRequired: 900 }), offer("b", 1, { faction: "D", rep: 100, repRequired: 500 }),
+    offer("c", 1, { faction: "N", rep: 0, repRequired: 900 }), offer("owned", 1, { faction: "D", rep: 100, repRequired: 5000 })]
+  assert.deepEqual(donationPlan(offers, ["owned"], 1e10, 2, ["D"]), [{ faction: "D", amount: donationFor(800, 2), rep: 900 }])
+  assert.deepEqual(donationPlan(offers, ["owned"], 1e9, 2, ["D"]), [])
+  assert.equal(donationFor(800, 2), 400400000)
 })

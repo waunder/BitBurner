@@ -170,8 +170,10 @@ function repTarget(player, augmentation, config, only = null) {
     ? (augmentation.workCandidates || [augmentation.workCandidate || augmentation.candidate].filter(Boolean))
     : []
   const repPriceLimit = number(player.money) * Math.max(1, number(config.repInvestmentMaxPriceMultiple ?? 250))
+  // An augmentation another faction already sells us needs no more rep anywhere.
+  const repReady = new Set(targets.filter((item) => number(item.repGap) <= 0).map((item) => item.name))
   return targets
-    .filter((item) => (!only || only.has(item.name)) && item.canWorkForRep !== false && number(item.repGap) > 0 && item.faction
+    .filter((item) => (!only || only.has(item.name)) && !repReady.has(item.name) && item.canWorkForRep !== false && number(item.repGap) > 0 && item.faction
       && (item.cashReady || number(item.price) <= repPriceLimit))
     .sort((a, b) => Number(b.cashReady) - Number(a.cashReady)
       || number(a.price) - number(b.price) || number(a.repGap) - number(b.repGap))[0]

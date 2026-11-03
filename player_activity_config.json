@@ -2,7 +2,7 @@
   "enabled": true,
   "override": "auto",
   "physicalTarget": 0,
-  "charismaTarget": 1500,
+  "charismaTarget": 2500,
   "priorityAugs": ["Neuroreceptor Management Implant"],
   "repBeforeGates": true,
   "focusWork": true,

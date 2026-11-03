@@ -354,11 +354,14 @@ cloud servers clear for MCP, plus enough whole servers to hold the budgets of ru
 
 Buys every augmentation current rep and cash allow, dearest first because each
 purchase raises later prices, then NeuroFlux Governor levels with what is left.
+Rep-ready names in `priorityAugs` (`player_activity_config.json`) always fit: a dearer
+augmentation is skipped rather than leave too little cash for them.
 With `--install` it then spends the rest on home RAM and cores, cheapest first, because
 both survive an install (only a BitNode reset clears them), then installs and restarts
 through `startup.js`. Back up the save first.
 
 - **Args:** `--dry` plans only; `--install` installs after buying.
+- **Reads:** `player_activity_config.json` (`priorityAugs`).
 - **Writes:** `aug_install_status.json` (plan, bought, failed, money before, final home RAM and cores).
 - **Test:** `node --test aug_install_logic.test.js`
 
@@ -1425,6 +1428,7 @@ evidence-backed goal changes. A ten-minute hysteresis prevents churn.
 - **Control:** `repBeforeGates` puts faction rep ahead of hacking gates in auto mode.
   `companyTarget` (`company`, `field`) puts company work ahead of training until that faction has joined, once cash passes `minTrainingCash`, and applies again each pass to take promotions.
   `focusWork` focuses company and faction work, which pays 25% more rep than unfocused, retried hourly. The terminal page is hidden while focused: click "Do something else" for an hour of terminal use, or clear the flag. `restart_player.js` restarts the controller and restores focus.
+  `priorityAugs` take faction work ahead of everything after the cash and company steps, `charismaAugs` included, and `aug_install.js` keeps cash for them in its plan.
   `charismaAugs` take faction work ahead of every other faction, whatever the charisma; `charismaTarget` only governs Leadership.
   `player_activity_config.json` is committed and synced. Set
   `"override": "manual"` or `"enabled": false` to stop changes at the next
@@ -2313,6 +2317,22 @@ that if `#terminal-input` holds text. **Writes:** `tools/daemon_supervisor.log`,
 `--remote-debugging-port=9222` is treated as not running. A daemon started from
 a Terminal tab's supervisor died when that tab closed (seen 13:44), so run it
 through the logon task from `tools/install_supervisor_task.ps1`.
+
+`tools/game_terminal.py "<command>"` runs one terminal command over DevTools and
+prints the lines it wrote, e.g. `run restart_player.js`. It types the command
+and dispatches Enter from page JavaScript (`Runtime.evaluate` only), leaves
+focused work through "Do something else simultaneously" when the terminal is
+hidden, refuses if `#terminal-input` holds text, and clicks Focus afterwards
+unless `--stay`. `--port 9333` points it at a disposable browser game. **Never
+send the DevTools `Input` domain to the Steam game**: on 2026-11-03 a keyUp with
+`"text": null` failed parameter deserialization, and Electron 41.4.0 turned that
+into a fatal browser-process crash (dump decoded with Electron's breakpad
+symbols: `Input::DomainDispatcherImpl::dispatchKeyEvent` → `DeserializeField`
+→ `node::Assert` → `V8FatalErrorCallback`). Edge answers the same message with
+-32602 "Invalid parameters", so treat any malformed CDP message as a crash risk;
+the tool's `cdp_message` refuses `None` values and any method but
+`Runtime.evaluate`. **Failure modes:** a script that changes page (for example
+`setFocus(true)`) returns no output lines, because the terminal leaves the page.
 
 For routine work, use `tools/remote_api_monitor.sh` to inspect/recover the
 local daemon, reconnect Steam through Options → Remote API if the game is

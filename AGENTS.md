@@ -56,6 +56,9 @@ real in-game/manual action requires Ken; check it off after confirmation.
   Do not ask Ken to perform the routine connect/sync steps when UI automation
   and the local daemon are available. A reconnect resync must be verified
   before relying on it.
+- To run a terminal command in the Steam game, use `tools/game_terminal.py`.
+  Never send DevTools `Input.*` commands to it: a malformed one crashed the
+  whole game on 2026-11-03 (see `docs/processes.md`, CDP section).
 - `sync_manifest.json` is the single source of truth for scripts delivered to
   the game. Add a new live script there in the same commit.
 - Tail windows are finite DOM views, not durable logs. Durable state/events

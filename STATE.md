@@ -3,6 +3,13 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-04 about 11:15 Pacific (PC clock 12:15).** Live (autosave, game `ps`, status files): BN10,
+cash $45.9b, hacking 221, karma -77.5, home 8.19TB (half used), 0 installed, 0 queued, 4 factions. Every resident
+script runs. Player works NiteSec hacking: 5,184 rep in an hour (about 1.4 rep/s); Artificial Synaptic Potentiation
+12.5k (about 1.5 h, modelled), Neurotrainer II and CSP Gen I 20k (about 3 h). Tian Di Hui's Speech Processor 327 short.
+MCP on omega-net, $42m/s now ($26.5m/s average). Install plan unchanged (9 augmentations, $8.9b), still held for NiteSec.
+No Red Pill, so no World Daemon. Changed nothing in the game.
+
 **Hourly check, 2026-11-04 about 10:15 Pacific (PC clock 11:15): NiteSec joined.** Live (autosave, game `ps`, status
 files): BN10, cash $29.7-32.3b, hacking 214 (past avmnite-02h's 211), karma -71.5, 0 installed, 0 queued. Every resident
 script runs. The worm's backdoor of avmnite-02h fires only once, at rooting, when hacking was still too low, so I ran

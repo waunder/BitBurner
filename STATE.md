@@ -3,6 +3,14 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-04 about 07:20 Pacific (PC clock 08:20).** Live (autosave, game `ps`, Remote API files):
+BN10, cash $15.0b, hacking 169, karma -50.5, home 4.10TB (half used), 0 installed, 0 queued. Factions CyberSec, Tian Di
+Hui, Sector-12. Every resident script runs (MCP, capital_manager, steward, faction_join, sleeve_controller, xp_filler,
+HUD, player controller, dnet_root, 4 stack batches); gang-controller is not running (no gang yet). Only **one** sleeve
+exists (the plan expected two): shock 3.0, sync 29, synchronizing for karma. Rep, not cash, is the limit: CyberSec 3,617
+(Synaptic at 4,000, BitWire 7,500, CSP Gen I 20,000); rep-ready now: Neurotrainer I, Wired Reflexes. No install yet:
+wait for the CyberSec batch. No Red Pill, so no World Daemon. Changed nothing.
+
 **Augmentations under way, 2026-11-04 about 05:55 Pacific.** Home is 1TB (capital_bootstrap/capital_manager bought it
 with coding-contract and cache money; cash $680m). capital_manager had restarted hud, player_activity_controller and
 dnet_root, but not the startup.js-only scripts, so I ran faction_join, sleeve_controller, xp_filler, gang-controller

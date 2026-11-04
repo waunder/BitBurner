@@ -3,6 +3,14 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Augmentations under way, 2026-11-04 about 05:55 Pacific.** Home is 1TB (capital_bootstrap/capital_manager bought it
+with coding-contract and cache money; cash $680m). capital_manager had restarted hud, player_activity_controller and
+dnet_root, but not the startup.js-only scripts, so I ran faction_join, sleeve_controller, xp_filler, gang-controller
+(no gang yet, karma -45). Factions: CyberSec, plus Tian Di Hui joined by faction_join (Sector-12 and Chongqing invites
+left; city factions). Player works CyberSec hacking rep for Neurotrainer I (rep gap 1879, cash ready), then Synaptic
+Enhancement, BitWire, CSP Gen I. Sleeve 0: shock 4.9, synchronizing. The game terminal had been left connected to CSEC;
+`home` first.
+
 **MCP back, 2026-11-04 about 04:35 Pacific (PC clock 05:35), Ken awake.** capital_manager bought home 32 to
 64GB ($15.1m) at 04:33. The loops are gone: new `early_stop.js` (core/dev, pushed by hand, not in the manifest)
 killed weakenGrowHack on 24 servers. `run startup.js` (after killing hud_consolidated and capital_manager for its

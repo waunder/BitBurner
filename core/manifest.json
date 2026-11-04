@@ -87,6 +87,7 @@
     "player_activity_logic.js": "core/player/player_activity_logic.js",
     "ops_hud.js": "core/hud/ops_hud.js",
     "ops_hud_logic.js": "core/hud/ops_hud_logic.js",
+    "run_target_logic.js": "core/hud/run_target_logic.js",
     "hud_consolidated.js": "core/hud/hud_consolidated.js",
     "hud_toggle.js": "core/hud/hud_toggle.js",
     "remote_api_keepalive.js": "core/maintenance/remote_api_keepalive.js",
@@ -111,6 +112,7 @@
     "mcp_config.json": "core/config/mcp_config.json",
     "mcp_multi_config.json": "core/config/mcp_multi_config.json",
     "gang_capital_policy.json": "core/config/gang_capital_policy.json",
-    "player_activity_config.json": "core/config/player_activity_config.json"
+    "player_activity_config.json": "core/config/player_activity_config.json",
+    "run_target.json": "core/config/run_target.json"
   }
 }

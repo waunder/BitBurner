@@ -1,0 +1,19 @@
+{
+  "goal": "BN10: SF10.1 and Covenant sleeves (first $10t)",
+  "updated": "2026-11-04",
+  "steps": [
+    { "label": "NiteSec gate", "metric": { "kind": "hacking", "target": 211 } },
+    { "label": "First install, with NiteSec augs", "metric": { "kind": "installed", "target": 1 } },
+    {
+      "label": "Covenant invite",
+      "metrics": [
+        { "kind": "installed", "target": 20 },
+        { "kind": "money", "target": 75e9 },
+        { "kind": "hacking", "target": 850 },
+        { "kind": "combat", "target": 850 }
+      ]
+    },
+    { "label": "First Covenant sleeve", "metric": { "kind": "money", "target": 10e12 } },
+    { "label": "World Daemon: stop for Ken" }
+  ]
+}

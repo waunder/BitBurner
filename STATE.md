@@ -3,6 +3,12 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**HUD run target, 2026-11-04 about 09:35 Pacific (PC clock 10:35).** At Ken's request the HUD now opens with a pinned
+run-target block (Goal, Now with progress bars, Next, Work) from `run_target.json` (`profiles/bn10/config`). Seen live:
+"NiteSec gate, hack 208/211, 98%". **Keep `run_target.json` current as the plan changes** (edit, `profile.py build bn10`,
+`ctl-push run_target.json profiles/bn10/config/run_target.json`); see `docs/processes.md`. Augmented Targeting I has joined
+the install plan (7 augmentations, $2.4b).
+
 **Hourly check, 2026-11-04 about 09:15 Pacific (PC clock 10:15).** Live (autosave, game `ps`, status files): BN10,
 cash $22.6-23.0b, hacking 204 (NiteSec gate avmnite-02h needs 211; it is rooted), karma -67.5, home 4TB (2TB used),
 0 installed, 0 queued. faction_join added Sector-12; the player works Sector-12 hacking for Augmented Targeting I

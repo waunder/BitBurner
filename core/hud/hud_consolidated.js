@@ -1,5 +1,6 @@
 import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./tail_geometry.js"
 import { formatRamGroup, readFleetRam } from "./fleet_ram.js"
+import { runTargetView } from "./run_target_logic.js"
 /** Consolidated Interactive HUD - Clickable Sections
  *
  * Single summary window showing MCP, Darknet, Augmentation, System status.
@@ -437,6 +438,27 @@ function gangStatus(ns, now) {
   }
 }
 
+// Pinned above the sections: the run's goal and the current step, from the
+// hand-edited run_target.json, with live progress.
+function runTargetStatus(ns, now) {
+  const activity = json(ns, "player_activity_status.json")
+  const activityFresh = activity?.ok && Number.isFinite(activity.ts) && now - activity.ts <= 300_000
+  const readiness = json(ns, "augmentation_readiness.json")
+  let karma = null
+  try { karma = Number(ns.heart.break()) } catch { /* shown as unknown */ }
+  const skills = ns.getPlayer().skills
+  const live = {
+    hacking: ns.getHackingLevel(),
+    combat: Math.min(skills.strength, skills.defense, skills.dexterity, skills.agility),
+    money: ns.getServerMoneyAvailable("home"),
+    karma,
+    installed: readiness?.ok ? readiness.installedCount : undefined,
+    gate: activityFresh ? activity.gate : undefined,
+    work: activityFresh ? activity.decision?.reason || activity.decision?.action : "controller status stale",
+  }
+  return runTargetView(json(ns, "run_target.json"), live, compact)
+}
+
 function buildDisplay(ns, state, pos) {
   const now = Date.now()
 
@@ -455,9 +477,13 @@ function buildDisplay(ns, state, pos) {
   lines.push(COLORS.HEADER + "╔═══════════════════════════════════╗" + COLORS.RESET)
   lines.push(COLORS.HEADER + "║        CONSOLIDATED HUD           ║" + COLORS.RESET)
   lines.push(COLORS.HEADER + "╚═══════════════════════════════════╝" + COLORS.RESET)
-  lines.push("")
+  const target = runTargetStatus(ns, now)
+  for (const [i, line] of target.lines.entries()) {
+    lines.push((i === 0 || line.startsWith("Now:") ? COLORS.HEADER : COLORS.HEALTHY) + line + COLORS.RESET)
+  }
+  lines.push(COLORS.HEADER + "─".repeat(37) + COLORS.RESET)
 
-  let lineNum = 4
+  let lineNum = 4 + target.lines.length + 1
 
   for (const section of sections) {
     const isExpanded = state.expanded === section.key

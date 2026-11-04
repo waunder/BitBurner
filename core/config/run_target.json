@@ -1,0 +1,6 @@
+{
+  "goal": "not set for this BitNode: add a profile run_target.json",
+  "steps": [
+    { "label": "World Daemon: stop for Ken" }
+  ]
+}

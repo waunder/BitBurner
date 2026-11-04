@@ -1365,6 +1365,14 @@ Running `gang-controller.js` again now kills older copies on home before
 continuing, preventing duplicate controllers from assigning tasks or
 overwriting status.
 
+**Run target (top of `hud_consolidated.js`, always shown).** `run_target_logic.js` (pure, tested) renders
+`run_target.json`: a `goal` and ordered `steps`, each with `metric`, `metrics` (all must be met) or neither
+(`done: true` finishes it). Kinds: hacking, combat (lowest of str/def/dex/agi), money, karma (met from above),
+installed, gate (hacking against `player_activity_status.json` `gate`). "Now" is the step after the last met one, so an
+install's reset does not move it back. It also shows Next and the controller's `decision.reason` as Work. The file is
+profile config (`core/config` default, `profiles/bn10/config` for BN10): edit it as the plan changes, rebuild the manifest,
+push it; the HUD rereads it every 5 seconds, so no restart is needed.
+
 `hud_consolidated.js` is the default operator view: the Gang summary shows the
 current capital phase even when `gang-controller.js` is stopped, and its
 expanded section includes the objective, policy state, latest ROI candidate,

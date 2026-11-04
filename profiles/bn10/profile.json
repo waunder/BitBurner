@@ -15,7 +15,8 @@
     "sleeve_buyer.js": "profiles/bn10/sleeve/sleeve_buyer.js"
   },
   "config": {
-    "player_activity_config.json": "profiles/bn10/config/player_activity_config.json"
+    "player_activity_config.json": "profiles/bn10/config/player_activity_config.json",
+    "run_target.json": "profiles/bn10/config/run_target.json"
   },
   "startup": [
     "sleeve_controller.js"

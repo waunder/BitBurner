@@ -266,6 +266,8 @@ credential shards. On a host deeper than the deepest anchor (or the shallowest, 
 Blocked RAM is cleared only when a hop fails. Beside a lab the scout moves the link
 to its own host, even at equal depth. A fresh `dnet_route.json` from `tools/dnet_map.py`
 ranks route hosts first, forwards only, and a route from `darkweb` overrides the anchor.
+`dnet_map.py` leaves focused work ("Do something else simultaneously") to reach the sidebar, opening and
+reading the map in one evaluate call; the Dark Net page only shows about 2-3 rows past the deepest admin host.
 
 - **Writes:** `dnet_scout_status.json` at home (`state`: launched, scouting, cracking, anchored, hopped,
   backtracked, lab-found, charisma, dead-end, hop-limit, launch-failed) with the route, depth and

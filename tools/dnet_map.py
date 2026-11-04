@@ -21,9 +21,10 @@ return JSON.stringify(out)})()"""
 OPEN = "(name=>{const t=[...document.querySelectorAll('.MuiListItem-root,.MuiListItemButton-root,[role=button]')].find(e=>e.innerText.trim()==name);t?.click();return !!t})"
 
 
-async def evaluate(ws, expression, ids=iter(range(1, 10**6))):
+async def evaluate(ws, expression, await_promise=False, ids=iter(range(1, 10**6))):
     msg_id = next(ids)
-    await ws.send(json.dumps({"id": msg_id, "method": "Runtime.evaluate", "params": {"expression": expression, "returnByValue": True}}))
+    params = {"expression": expression, "returnByValue": True, "awaitPromise": await_promise}
+    await ws.send(json.dumps({"id": msg_id, "method": "Runtime.evaluate", "params": params}))
     while True:
         reply = json.loads(await ws.recv())
         if reply.get("id") == msg_id:
@@ -34,10 +35,12 @@ async def read_graph():
     pages = json.load(urllib.request.urlopen("http://127.0.0.1:9222/json"))
     url = next(p["webSocketDebuggerUrl"] for p in pages if p["type"] == "page")
     async with websockets.connect(url, max_size=None) as ws:
-        await evaluate(ws, f"{OPEN}('Dark Net')")
-        await asyncio.sleep(1.5)
-        graph = json.loads(await evaluate(ws, READ_GRAPH))
-        await evaluate(ws, f"{OPEN}('Terminal')")
+        # Focused work hides the sidebar and a running script refocuses within seconds,
+        # so leave the work page, open the map and read it in one evaluate call.
+        graph = json.loads(await evaluate(ws, f"""(async()=>{{
+const away=[...document.querySelectorAll('button')].find(b=>b.innerText.trim()=='Do something else simultaneously');away?.click();
+await new Promise(r=>setTimeout(r,300));{OPEN}('Dark Net');await new Promise(r=>setTimeout(r,1500));
+const graph={READ_GRAPH};{OPEN}('Terminal');return graph}})()""", await_promise=True))
     return graph
 
 

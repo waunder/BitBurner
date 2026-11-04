@@ -24,6 +24,14 @@ Ken need not be present for intermediate decisions. Record decision inputs and
 observed results. Keep working while useful work remains, report material
 progress periodically, and say plainly when there is nothing left to do.
 
+## Governance
+
+Ken does not read code or administer the PC; the agent is his technical manager.
+`docs/governance.md` lists what may be done alone, what always goes to Ken first (anything
+real outside the game, changes to the PC, trust and permissions, doubt), and an inventory
+of everything that runs outside the game. Keep it current, and put questions and doubts
+at the top of replies.
+
 ## Current authority
 
 `STATE.md` is the compact, dated handoff; refresh it when the objective or

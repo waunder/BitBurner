@@ -1,9 +1,13 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-02 15:21 Pacific, on the PC. Sources: Steam game via
+Last refreshed: 2026-11-03 17:17 Pacific, on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 ## Current live state (supersedes everything below)
+
+**Live 17:16-17:17 Pacific 2026-11-03 (save over DevTools, `ctl-status`, status files), 80 minutes after install 4:** node 15, hacking 1,738, **charisma 3,085 (already past the Staff lab's 2,500)**, $3.19b, karma -960, 38 installed, none queued. Remote API connected, last full sync 15:06 clean. Now joined 7 factions including Chongqing (was left alone; Sector-12 now excluded). Player on Black Hand hacking work; controller wants Chongqing for Neuregen (34.4k rep short), held by its 10-minute cooldown. Install plan so far: Magnetism Amplifier only ($750m).
+MCP rebuilding: run `mw1cf1hs-k7uy`, 1,574 batches, about $172m/s hacking over 1 minute, RAM use 5%, objective override on. `capital_manager.js` is spending income on cloud upgrades (16TB to 32TB), so net cash is about +$9m/s. Contracts idle.
+Darknet: scout cracking `rho_construction` at depth 13 (`hacker&net`); lab status `waiting`, no lab linked yet; `dnet_lift.js` refused (`n07_a_5erver`, session). Staff needs depth 23, so the row 16 crossing is the blocker, not charisma.
 
 **Install 4 ran about 15:55 Pacific 2026-11-03 (`aug_install_status.json`):** donated $320b to BitRunners, which was enough for every planned item: bought ENM Core V2, BitRunners Neurolink, Neuroreceptor, DataJack, CRTX42-AA, Nanofiber, then 13 NeuroFlux; home 262144GB, cores 3 to 5. After it: 38 installed, none queued, $1,262, hacking 3, charisma 143, karma -923; startup scripts all running (`ps`), controller on crime for cash as in earlier rebuilds. `charismaTarget` now 2500 for the Staff lab (depth 23). The donation formula is now seen working. Next: rebuild, darknet to depth 23 (lifting needs difficulty-21 hosts from row 17), charisma 2,500, solve, install The Staff.
 **15:52 Pacific 2026-11-03: Ken approved installs up to readiness to complete BN15 (standing exception in AGENTS.md; still stop before `w0r1d_daemon` or any BitNode choice).** Merciless lab solved: The H4mmer of Daedalus queued. Live: charisma 3,403 (mult 7.27), hacking 1,498, $28.5t, faction rep mult 2.70, 31 installed. Backup `saves/bitburnerSave_pre-install4_BN15_2026-11-03.json.gz` (gzip checked, SHA-256 71df6993172cb8587c3d68fb0fa843b7e96256cde6d4db33c3cd1fc3b42a5af0).

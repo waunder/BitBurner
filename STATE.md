@@ -9,7 +9,9 @@ earned $1,353 (but charisma 18 to 70); hack loops on rooted starter servers earn
 runs on home for charisma and cracking, and `scripts/weakenGrowHack.js joesguns` loops fill every rooted
 server (Ken's idea). BruteSSH bought; 12 servers rooted, 118 threads. `early_spread.js` (core/dev, pushed by
 hand, not in the manifest) roots what the owned openers allow and fills free RAM; rerun after each port
-opener. **When home fits `mcp.js` again: kill the weakenGrowHack loops first, then `run startup.js`.**
+opener. Update 04:25 Pacific: FTPCrack bought; 19 servers rooted, about 218 loop threads. The hourly run
+briefly restarted mcp.js; capital_bootstrap handed over to `capital_manager.js` (17.25GB), which also
+started `maintenance_steward.js`; home is full, so `dnet_root.js` is off until home grows. **When home fits `mcp.js` again: kill the weakenGrowHack loops first, then `run startup.js`.**
 
 **BN10 entered 2026-11-04 about 03:30 Pacific (PC clock 04:30).** Ken destroyed the World Daemon; at his word I
 entered BN10.1 (default options). SF15 awarded. Cutover done: `restructure` merged to main (f58e530), daemon

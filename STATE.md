@@ -3,6 +3,15 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-04 about 10:15 Pacific (PC clock 11:15): NiteSec joined.** Live (autosave, game `ps`, status
+files): BN10, cash $29.7-32.3b, hacking 214 (past avmnite-02h's 211), karma -71.5, 0 installed, 0 queued. Every resident
+script runs. The worm's backdoor of avmnite-02h fires only once, at rooting, when hacking was still too low, so I ran
+`hacking/backdoor.js avmnite-02h` by hand ("backdoor installed"); faction_join took the invite within a minute (4
+factions). NiteSec rep 0: Artificial Synaptic Potentiation 12.5k, Neurotrainer II and CSP Gen I 20k. The controller
+finishes Tian Di Hui's Speech Processor (747 rep short), then its cheapest-first rule picks Neurotrainer II at NiteSec;
+config unchanged. Install plan still 9 augmentations, $8.9b, held for NiteSec (run_target step 2). At about 1.5 rep/s
+that is a few hours (modelled). No Red Pill, so no World Daemon. Gate now crush-fitness 235.
+
 **HUD run target, 2026-11-04 about 09:35 Pacific (PC clock 10:35).** At Ken's request the HUD now opens with a pinned
 run-target block (Goal, Now with progress bars, Next, Work) from `run_target.json` (`profiles/bn10/config`). Seen live:
 "NiteSec gate, hack 208/211, 98%". **Keep `run_target.json` current as the plan changes** (edit, `profile.py build bn10`,

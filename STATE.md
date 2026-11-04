@@ -3,6 +3,15 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-04 about 08:15-08:25 Pacific (PC clock 09:15).** Live (autosave, game `ps`, status files):
+BN10, cash $15-21b, hacking 190, karma -58.5, home 4.10TB (1.95TB used), 0 installed, 0 queued, same 3 factions. Every
+resident script runs (as at 07:20). MCP harvesting omega-net, $45m/s now ($16m/s average), 15 of 15 cloud servers.
+CyberSec 7,801 rep, Tian Di Hui 4,097 (about 1.6 rep/s); the player is on Tian Di Hui for Speech Enhancement (5,000).
+Rep-ready install plan: BitWire, Synaptic, Neurotrainer I, Wired Reflexes ($279m). **Held the install:** these are
+small multipliers, and installing now resets hacking to 1 (NiteSec's avmnite-02h needs 211; the worm backdoors it once
+rooted) and throws away CyberSec's progress toward CSP Gen I (20,000). Install once NiteSec augmentations join the
+batch or rep stalls. No Red Pill, so no World Daemon. Changed nothing in the game.
+
 **Hourly check, 2026-11-04 about 07:20 Pacific (PC clock 08:20).** Live (autosave, game `ps`, Remote API files):
 BN10, cash $15.0b, hacking 169, karma -50.5, home 4.10TB (half used), 0 installed, 0 queued. Factions CyberSec, Tian Di
 Hui, Sector-12. Every resident script runs (MCP, capital_manager, steward, faction_join, sleeve_controller, xp_filler,

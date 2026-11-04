@@ -3,6 +3,15 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-04 about 14:20 Pacific (PC clock 15:20): crawler now retries faction backdoors.** Live (autosave,
+game `ps`, status files, `capital_policy.json` read over the API): BN10, $1.06b, hacking 165, karma -108, home 8.19TB (half
+used), 14 installed, 0 queued, factions Tian Di Hui and CyberSec (NiteSec lost at the install). Every resident script
+runs; `reserve` is 0. Player works CyberSec for CSP Gen II (3.5k of 37.5k). Sleeve 0: shock 0, sync 55, synchronizing.
+No Red Pill, so no World Daemon. Change: `hacking/crawler.js` now runs `backdoor.js` on CSEC, avmnite-02h, I.I.I.I and
+run4theh111z whenever one is rooted, within hacking level and not backdoored (worm.js only tried at its own nuke, which is
+why avmnite-02h needed a manual backdoor). 502 tests pass; synced, crawler restarted (pid 6119). Not yet observed firing:
+avmnite-02h needs hacking 211. **Next:** confirm NiteSec rejoins by itself at 211; rebuild cash toward install 2.
+
 **BN10 install 1 ran 2026-11-04 about 13:25 Pacific (PC clock 14:25), hourly task.** NiteSec reached 20,207 rep at
 13:24 (`augmentation_readiness.json`). Before (save over DevTools): BN10, $171.4b, hacking 233, karma -91.5, 0 installed.
 Backup `saves/bitburnerSave_pre-install1_BN10_2026-11-04.json.gz` (gzip checked, player parsed, node 10, SHA-256

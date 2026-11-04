@@ -181,7 +181,10 @@ Three things are worth reading off that diagram:
 
 Breadth-first walk of the network, forever. For each server that is unrooted,
 within your hacking level, and not in `IGNORE`, it runs `worm.js` against it.
-Sleeps 2 minutes between sweeps.
+Sleeps 2 minutes between sweeps. Since 2026-11-04 it also runs `hacking/backdoor.js` on
+any of the four faction servers (`CSEC`, `avmnite-02h`, `I.I.I.I`, `run4theh111z`) that is
+rooted, within hacking level and not yet backdoored, so the backdoor no longer depends on
+worm.js's fresh nuke (after an install, servers are rooted before hacking catches up).
 
 - **Start:** `run hacking/crawler.js`
 - **Reads/writes:** nothing on disk

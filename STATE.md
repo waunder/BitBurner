@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-03 22:20 Pacific, on the PC. Sources: Steam game via
+Last refreshed: 2026-11-03 23:24 Pacific, on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 ## Current live state (supersedes everything below)

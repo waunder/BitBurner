@@ -12,6 +12,6 @@
   "cooldownMs": 600000,
   "repInvestmentMaxPriceMultiple": 250,
   "crimeKarmaTarget": -54000,
-  "companyTarget": { "company": "Clarke Incorporated", "field": "Business" },
+  "companyTarget": { "company": "OmniTek Incorporated", "field": "Business" },
   "charismaAugs": []
 }

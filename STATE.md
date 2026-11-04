@@ -3,7 +3,7 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
-**Hourly check, 2026-11-04 about 14:20 Pacific (PC clock 15:20): crawler now retries faction backdoors.** Live (autosave,
+**Hourly check, 2026-11-04 about 14:15 Pacific (PC clock 15:15): crawler now retries faction backdoors.** Live (autosave,
 game `ps`, status files, `capital_policy.json` read over the API): BN10, $1.06b, hacking 165, karma -108, home 8.19TB (half
 used), 14 installed, 0 queued, factions Tian Di Hui and CyberSec (NiteSec lost at the install). Every resident script
 runs; `reserve` is 0. Player works CyberSec for CSP Gen II (3.5k of 37.5k). Sleeve 0: shock 0, sync 55, synchronizing.

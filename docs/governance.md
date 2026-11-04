@@ -58,6 +58,7 @@ Everything inside the game and this repository, within `AGENTS.md`'s standing au
 | Python venv | Tool dependencies | `.venv/` in the repo | — |
 | Generated folders | Test copies and pulled telemetry; safe to delete, never source | `build/`, `runtime/` (gitignored) | New with the restructure |
 | Save backups | Validated game saves before each install | `saves/` (gitignored, local only) | 5 so far |
+| Offline repo backup | Git bundle (full history) and zip of the clone, saves included, made at Ken's request while GitHub was degraded | `D:\Backups\BitBurner\` on the HDD | First made 2026-11-04 04:25 PC clock |
 
 Connected to Claude here but **not used for game work**: Gmail, Google Calendar, Google Drive,
 Hugging Face. Claude does not touch them without Ken asking.

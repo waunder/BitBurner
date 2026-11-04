@@ -13,6 +13,13 @@ opener. Update 04:25 Pacific: FTPCrack bought; 19 servers rooted, about 218 loop
 briefly restarted mcp.js; capital_bootstrap handed over to `capital_manager.js` (17.25GB), which also
 started `maintenance_steward.js`; home is full, so `dnet_root.js` is off until home grows. **When home fits `mcp.js` again: kill the weakenGrowHack loops first, then `run startup.js`.**
 
+**Update 2026-11-04 04:20 Pacific (PC clock 05:20), hourly run.** Live (Steam, game terminal and autosave): BN10, hacking 94,
+$6.3m at 04:18, home 32GB full (mcp_supervisor, crawler, capital_manager, maintenance_steward), 0 augs, no factions, karma -7,
+player studying CS at Rothman. capital_manager bought relaySMTP by itself. I stopped the steward, ran
+`early_spread.js joesguns`: 8 more rooted, 384 more loop threads (about 600 in all); the steward came straight back.
+Next opener: HTTPWorm $30m (capital_manager buys it; then rerun early_spread the same way). Times in the 04:25 note
+above were the PC clock, which runs an hour ahead of Pacific (PST since 2026-11-01).
+
 **BN10 entered 2026-11-04 about 03:30 Pacific (PC clock 04:30).** Ken destroyed the World Daemon; at his word I
 entered BN10.1 (default options). SF15 awarded. Cutover done: `restructure` merged to main (f58e530), daemon
 restarted (map manifest, clean full sync of 142), `profile.py switch bn10 --live` (backup

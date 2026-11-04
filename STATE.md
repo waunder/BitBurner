@@ -1,9 +1,12 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-03 18:08 Pacific, on the PC. Sources: Steam game via
+Last refreshed: 2026-11-03 18:58 Pacific, on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 ## Current live state (supersedes everything below)
+
+**Install 5 ran 18:56 Pacific 2026-11-03: The St4ff of Asclepius installed.** Uber lab (`ub3r_l4byr1nth`, depth 23) solved 18:38:38 by `dnet_lab.js` on `the_void` (depth 22, 152 moves), 1h45m after install 4; the route came from `tools/dnet_map.py` once links reached rows 19-20. Before the install: $189t, hacking 2,402, charisma 4,422, karma -3,956, Staff queued. Backup `saves/bitburnerSave_pre-install5_BN15_2026-11-03.json.gz` (gzip checked, player parsed, SHA-256 ddd3230d10bafa1731e4f4b28b3928b08a317c8c255d85c6c4238451799b2dde). `aug_install.js --install` bought The Black Hand, Neuregen, Magnetism Amplifier and 15 NeuroFlux ($7.9b donated for NeuroFlux rep), home to 524,288GB and 6 cores. After it: $1,262, controller on crime for cash, `ps` shows all startup scripts. `charismaTarget` 3000 (read back from the game).
+**Next: Eternal lab, depth 29, charisma 3,000, reward The Red Pill.** Row 24 is the next empty row, so lifting is needed again (floor 21 from rows 17-23). Then the World Daemon: stop before destroying it and tell Ken.
 
 **Live 17:16-17:17 Pacific 2026-11-03 (save over DevTools, `ctl-status`, status files), 80 minutes after install 4:** node 15, hacking 1,738, **charisma 3,085 (already past the Staff lab's 2,500)**, $3.19b, karma -960, 38 installed, none queued. Remote API connected, last full sync 15:06 clean. Now joined 7 factions including Chongqing (was left alone; Sector-12 now excluded). Player on Black Hand hacking work; controller wants Chongqing for Neuregen (34.4k rep short), held by its 10-minute cooldown. Install plan so far: Magnetism Amplifier only ($750m).
 MCP rebuilding: run `mw1cf1hs-k7uy`, 1,574 batches, about $172m/s hacking over 1 minute, RAM use 5%, objective override on. `capital_manager.js` is spending income on cloud upgrades (16TB to 32TB), so net cash is about +$9m/s. Contracts idle.

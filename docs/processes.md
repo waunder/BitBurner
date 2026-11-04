@@ -389,6 +389,12 @@ One-shot. Writes `company_survey.json`: skills, jobs, invitations, queued augmen
 One-shot. Writes `charisma_survey.json`: charisma level, exp, multipliers, and every augmentation that raises
 charisma or charisma exp with price, rep and factions. Lists every game faction, joined or not.
 
+### `hacking_survey.js`
+
+One-shot. Writes `hacking_survey.json`: hacking level, exp, multipliers, the BitNode's `HackingLevelMultiplier`,
+combat skills, karma, joined factions and invitations, and every augmentation that raises hacking or hacking exp
+with price, rep and factions. Lists every game faction, joined or not. Takes no actions.
+
 ### `capital_manager.js`
 
 Cloud buying stops while MCP's own jobs in `mcp_status.json` `cloudWorkers` fill under `cloudDemandFloor` of cloud RAM (default 0.5). Set it to 0 in the policy when cash has no better use and the RAM should go to `xp_filler.js` instead. `restart_capital.js` restarts the manager and restores work focus.

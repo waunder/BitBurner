@@ -3,7 +3,7 @@
   "override": "auto",
   "physicalTarget": 0,
   "charismaTarget": 0,
-  "priorityAugs": ["Neuroreceptor Management Implant"],
+  "priorityAugs": ["nextSENS Gene Modification", "Neuronal Densification", "OmniTek InfoLoad", "Xanipher", "Embedded Netburner Module Core V3 Upgrade"],
   "repBeforeGates": true,
   "focusWork": true,
   "gym": "Powerhouse Gym",
@@ -12,6 +12,6 @@
   "cooldownMs": 600000,
   "repInvestmentMaxPriceMultiple": 250,
   "crimeKarmaTarget": -54000,
-  "companyTarget": { "company": "Bachman & Associates", "field": "Business" },
+  "companyTarget": { "company": "Clarke Incorporated", "field": "Business" },
   "charismaAugs": []
 }

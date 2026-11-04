@@ -1,9 +1,12 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-03 21:20 Pacific, on the PC. Sources: Steam game via
+Last refreshed: 2026-11-03 22:20 Pacific, on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 ## Current live state (supersedes everything below)
+
+**22:15-22:20 Pacific 2026-11-03 (hourly task; save over DevTools, `hacking_survey.json`, `company_survey.json`): hacking 6,000 is out of reach at the current multiplier. One more install with hacking augmentations is needed.** Live: node 15, $177t, hacking 3,512, hacking mult 9.35, exp mult 15.17, exp 1.62e11 rising about 7e7/s, karma -6,591, 52 installed, none queued, Remote API connected. World Daemon still needs 6,000 (read from the save), not rooted. Level is mult x 0.6 (BN15 `HackingLevelMultiplier`, read) x (32 ln exp - 200), so each doubling of exp adds only about 124 levels: 6,000 at mult 9.35 needs about 1.7e17 exp, a million times today's. At exp 1e13 it needs mult about 13.2 (x1.41). Unowned hacking augmentations (survey): nextSENS x1.20 (438k) and Neuronal Densification x1.15 (188k) at Clarke Incorporated; OmniTek InfoLoad x1.20 (625k); Xanipher x1.20 (NWO, 875k); ENM Core V3 x1.10 (1.75m, Daedalus, joined); QLink x1.75 (Illuminati, $75t, needs combat 1,200, combat is 2-169). Clarke plus OmniTek gives mult about 15.5, and 6,000 then needs about 3e11 exp, about an hour of today's rate (modelled).
+**Changed:** `player_activity_config.json` `companyTarget` Bachman (joined) to Clarke Incorporated, Business; `priorityAugs` now nextSENS, Neuronal Densification, OmniTek InfoLoad, Xanipher, ENM Core V3. Pushed and read back from the game. Business Intern at Clarke models 246 rep/s (Formulas, `company_survey.js`), so the company invite should take well under an hour; not yet seen. It had been on Daedalus hacking work for Synfibril Muscle (combat, no hacking value); seen switched to Clarke company work at 22:19 (save). **Next:** once Clarke's faction invites and nextSENS is rep-ready, switch `companyTarget` to OmniTek Incorporated; install when both are bought (backup first), then rebuild to 6,000. New one-shot `hacking_survey.js`.
 
 **At the World Daemon, follow `docs/bn10-cutover-runbook.md`.** The hourly task notifies Ken when hacking reaches 6000. Ken then reviews the BN10 startup steps with a session and hands the cutover over. Live 21:50 Pacific: hacking 3,055 of 6,000.
 

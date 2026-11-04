@@ -3,7 +3,7 @@
   "updated": "2026-11-04",
   "steps": [
     { "label": "NiteSec gate", "metric": { "kind": "hacking", "target": 211 } },
-    { "label": "First install, with NiteSec augs", "metric": { "kind": "installed", "target": 1 } },
+    { "install": true, "waitFor": ["NiteSec"], "metric": { "kind": "installed", "target": 1 } },
     {
       "label": "Covenant invite",
       "metrics": [

@@ -80,7 +80,10 @@ function assess(ns) {
     try { priority = JSON.parse(ns.read("player_activity_config.json") || "{}").priorityAugs || [] } catch {}
     const money = Number(player?.money) || 0
     const { plan, left } = planPurchases(candidates, includingQueued, money, 1.9, priority)
-    const installPlan = { names: plan.map((item) => item.name), cost: money - left }
+    const installPlan = {
+      names: plan.map((item) => item.name), cost: money - left,
+      factions: [...new Set(plan.map((item) => item.faction))],
+    }
     return {
       ts: now, ok: true, resetAt: resetAt(ns), money,
       installedCount: installed.length, queuedCount: queued.length, queued, installPlan,

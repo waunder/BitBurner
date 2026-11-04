@@ -453,6 +453,7 @@ function runTargetStatus(ns, now) {
     money: ns.getServerMoneyAvailable("home"),
     karma,
     installed: readiness?.ok ? readiness.installedCount : undefined,
+    installPlan: readiness?.ok ? readiness.installPlan : undefined,
     gate: activityFresh ? activity.gate : undefined,
     work: activityFresh ? activity.decision?.reason || activity.decision?.action : "controller status stale",
   }

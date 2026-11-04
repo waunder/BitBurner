@@ -1,6 +1,6 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { bar, describeStep, metricProgress, nowIndex, runTargetView } from "./run_target_logic.js"
+import { bar, describeStep, installLabel, metricProgress, nowIndex, runTargetView } from "./run_target_logic.js"
 
 const compact = (n, d = 1) => (Math.abs(n) >= 1e9 ? (n / 1e9).toFixed(d) + "b" : String(Math.round(n)))
 
@@ -66,6 +66,17 @@ test("all steps done and missing config are explicit", () => {
   const done = runTargetView({ goal: "g", steps: [{ label: "a", done: true }] }, {}, compact)
   assert.match(done.lines[1], /all 1 steps done/)
   assert.equal(runTargetView(null, {}, compact).compact, "none set")
+})
+
+test("install step names the count, factions and what it waits on", () => {
+  const plan = { names: ["a", "b", "c"], factions: ["Sector-12", "CyberSec"] }
+  assert.equal(installLabel(plan, ["NiteSec"]), "Install 3 augments from Sector-12, CyberSec; waiting on NiteSec")
+  assert.equal(installLabel({ ...plan, factions: [...plan.factions, "NiteSec"] }, ["NiteSec"]),
+    "Install 3 augments from Sector-12, CyberSec, NiteSec")
+  assert.equal(installLabel({ names: ["a"] }), "Install 1 augment")
+  assert.equal(installLabel(undefined), "Install (plan unknown)")
+  const step = describeStep({ install: true, waitFor: ["NiteSec"] }, { installPlan: plan }, compact)
+  assert.match(step.label, /^Install 3 augments/)
 })
 
 test("bar clamps", () => {

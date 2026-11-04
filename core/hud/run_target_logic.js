@@ -56,6 +56,18 @@ function stepMetrics(step) {
   return step?.metric ? [step.metric] : []
 }
 
+// A step with `install: true` takes its label from the readiness planner's
+// install plan; `waitFor` names factions the install is being held for, shown
+// until one of their augmentations joins the plan.
+export function installLabel(plan, waitFor = []) {
+  if (!plan || !Array.isArray(plan.names)) return "Install (plan unknown)"
+  const factions = plan.factions || []
+  const count = plan.names.length
+  const from = factions.length ? ` from ${factions.join(", ")}` : ""
+  const waiting = waitFor.filter((name) => !factions.includes(name))
+  return `Install ${count} augment${count === 1 ? "" : "s"}${from}${waiting.length ? `; waiting on ${waiting.join(", ")}` : ""}`
+}
+
 export function describeStep(step, live, compact) {
   const parts = stepMetrics(step).map((metric) => {
     const progress = metricProgress(metric, live)
@@ -65,7 +77,8 @@ export function describeStep(step, live, compact) {
     return { ...progress, text: `${SHORT[metric.kind]}${progress.host ? ` ${progress.host}` : ""} ${v}/${t}` }
   })
   const met = parts.length > 0 && parts.every((part) => part.met)
-  return { label: step.label || "unnamed step", done: Boolean(step.done) || met, parts }
+  const label = step.install ? installLabel(live.installPlan, step.waitFor) : step.label || "unnamed step"
+  return { label, done: Boolean(step.done) || met, parts }
 }
 
 export function nowIndex(steps) {

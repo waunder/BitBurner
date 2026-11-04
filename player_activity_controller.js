@@ -82,6 +82,12 @@ function bestCrime(ns, cashShort) {
   return pickCrime(rows, cashShort)
 }
 
+// Gangs offer no hacking work (Slum Snakes, 2026-11-03), so take the best kind the faction does offer.
+function offeredWorkType(ns, faction, wanted) {
+  const offered = ns.singularity.getFactionWorkTypes(faction)
+  return offered.includes(wanted) ? wanted : ["hacking", "field", "security"].find(type => offered.includes(type)) ?? wanted
+}
+
 function startActivity(ns, decision) {
   if (decision.action === "gym") {
     const gymStat = { strength: "str", defense: "def", dexterity: "dex", agility: "agi" }[decision.stat]
@@ -152,6 +158,7 @@ export async function main(ns) {
     const crimeCandidate = capability.available && (crimeNeeded || String(config.override).toLowerCase() === "crime")
       ? bestCrime(ns, cashShort) : null
     const decision = choosePlayerActivity({ player, nextGate: gateState.gate, augmentation, crimeCandidate, config })
+    if (decision.action === "faction" && capability.available) decision.workType = offeredWorkType(ns, decision.faction, decision.workType)
     const key = actionKey(decision)
     // Applying again is how a rising rep takes the promotion.
     if (decision.action === "company" && capability.available) ns.singularity.applyToCompany(decision.company, decision.field)

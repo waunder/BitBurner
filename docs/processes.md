@@ -1418,6 +1418,11 @@ The sole persistent controller allowed to change the player's current work.
 It evaluates once per minute, records its decision and reason in
 `player_activity_status.json`, and changes activity only when the selected
 evidence-backed goal changes. A ten-minute hysteresis prevents churn.
+Faction work uses `factionWorkType` when the faction offers it, else the first of
+hacking, field, security that it does (`getFactionWorkTypes`); gangs such as Slum
+Snakes offer no hacking work, which the game rejected every pass until 2026-11-03.
+The HUD's "Rep target" line shows a fresh failed status as `failing: <error>`;
+only a status older than 5 minutes reads "controller status stale".
 
 - **Start:** automatic before MCP via `mcp_launch.js` and `startup.js`.
 - **Policy:** after the configured physical baseline, a discovered normal

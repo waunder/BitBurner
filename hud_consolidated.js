@@ -227,7 +227,12 @@ function augmentationStatus(ns, now) {
 
   const plan = readinessFresh ? readiness.installPlan : null
   const activity = json(ns, "player_activity_status.json")
-  const target = activity?.ok && now - activity.ts <= 300_000 ? activity.decision : null
+  const activityFresh = Number.isFinite(activity?.ts) && now - activity.ts <= 300_000
+  const target = activity?.ok && activityFresh ? activity.decision : null
+  // A fresh status that failed is an error to read, not a stale one.
+  const targetLabel = target ? target.reason || target.action
+    : activityFresh ? `failing: ${activity.error || "unknown error"} (${activity.decision?.reason || activity.decision?.action || "no decision"})`
+      : "unknown (controller status stale)"
 
   const augCompact = readinessFresh
     ? `${readiness.queuedCount || 0} queued${plan ? ` +${plan.names.length} to buy` : ""}`
@@ -241,7 +246,7 @@ function augmentationStatus(ns, now) {
       `Queued: ${readinessFresh ? (readiness.queued?.join(", ") || "none") : "unknown (stale status)"}`,
       `Install would buy: ${plan ? `${plan.names.length} for ${compact(plan.cost)}` : "unknown (stale status)"}`,
       ...(plan?.names.length ? plan.names.map((name) => `  ${name}`) : []),
-      `Rep target: ${target ? target.reason || target.action : "unknown (controller status stale)"}`,
+      `Rep target: ${targetLabel}`,
       `Readiness age: ${ageLabel}`,
       `Source Files: ${sourceFileSummary}`,
       ...(sourceFiles?.length ? sourceFiles.map((sf) => `  SF${sf.n}.${sf.lvl}`) : []),

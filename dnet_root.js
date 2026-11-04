@@ -117,8 +117,11 @@ function mergeCredentialShards(ns, creds) {
 
 export async function main(ns) {
   ns.disableLog("ALL")
-  // DarkscapeNavigator.exe is lost on augmentation install. Without it every
-  // ns.dnet call throws a runtime-error modal, so exit quietly instead.
+  // DarkscapeNavigator.exe is lost on augmentation install. Game rule
+  // (src/DarkNet/utils/darknetAuthUtils.ts): hasDarknetAccess() is true in BN15, with any
+  // SF15 level, or with the exe, so outside BN15 (BN10) SF15.1 opens ns.dnet by itself and
+  // this guard is only a conservative wait for the exe. Without access every ns.dnet call
+  // throws a runtime-error modal, so exit quietly instead.
   if (!ns.fileExists("DarkscapeNavigator.exe", "home")) {
     ns.tprint("dnet_root: DarkscapeNavigator.exe not owned (buy it via the TOR router); exiting")
     return

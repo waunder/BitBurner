@@ -15,6 +15,12 @@ readiness to complete this BitNode. Back up the save before each one. Still
 stop before destroying `w0r1d_daemon`, entering or choosing a BitNode, or any
 other reset; tell Ken about new problems or discoveries.
 
+At the World Daemon (Ken, 2026-11-03): send Ken a notification and wait. He reviews the
+BN10 startup steps (`docs/bn10-plan.md`, `docs/architecture-profiles.md`) with the agent,
+then hands the cutover to the agent. From that handover, BN10 runs under the same guidance
+as BN15: installs approved up to readiness to complete BN10, with a save backup before
+each, and a stop again at its World Daemon or any other reset.
+
 For everything else, proceed without asking: deploy capital (including stock
 capital), change automation, commit/push, restart scripts, and use reversible
 feature flags when their risk and ROI justify it. Complete authorized

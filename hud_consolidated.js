@@ -255,6 +255,19 @@ function augmentationStatus(ns, now) {
   }
 }
 
+function sleeveStatus(ns, now) {
+  const status = json(ns, "sleeve_status.json")
+  if (!status || !Number.isFinite(status.ts) || now - status.ts > 180_000) return { compact: "-- unavailable", expanded: ["No fresh sleeve_status.json (controller not running)"] }
+  if (!status.available) return { compact: "-- unavailable", expanded: ["Sleeve API needs BitNode 10 or Source-File 10"] }
+  if (status.error) return { compact: "error", expanded: [status.error] }
+  const rows = status.sleeves || []
+  const doing = rows.map((row) => `${row.index}:${row.desired?.action === "crime" ? row.desired.crime : row.desired?.faction || row.desired?.action}`).join(" ")
+  return {
+    compact: `${rows.length} sleeve${rows.length === 1 ? "" : "s"} · ${doing || "none"}${status.ok ? "" : " · errors"}`,
+    expanded: rows.map((row) => `#${row.index} shock ${Number(row.shock).toFixed(0)} sync ${Number(row.sync).toFixed(0)}: ${row.reason}${row.error ? ` [${row.error}]` : ""}`),
+  }
+}
+
 function systemStatus(ns, now) {
   const statusOk = json(ns, "dnet_scorecard_status.json")
   const freshMs = now - (statusOk?.ts || 0)
@@ -434,6 +447,7 @@ function buildDisplay(ns, state, pos) {
     { key: "ipvgo", label: "IPvGO", data: ipvgoStatus(ns, now) },
     { key: "gang", label: "Gang", data: gangStatus(ns, now) },
     { key: "aug", label: "Augmentation", data: augmentationStatus(ns, now) },
+    { key: "sleeves", label: "Sleeves", data: sleeveStatus(ns, now) },
     { key: "system", label: "System", data: systemStatus(ns, now) },
   ]
 
@@ -448,7 +462,7 @@ function buildDisplay(ns, state, pos) {
   for (const section of sections) {
     const isExpanded = state.expanded === section.key
     const indicator = isExpanded ? "▼" : "▶"
-    const keyHint = { mcp: "hm", darknet: "hd", cct: "hc", gang: "hg", ipvgo: "hi", aug: "ha", system: "hs" }[section.key]
+    const keyHint = { mcp: "hm", darknet: "hd", cct: "hc", gang: "hg", ipvgo: "hi", aug: "ha", sleeves: "hl", system: "hs" }[section.key]
     const hint = COLORS.HEADER + `[${keyHint}]` + COLORS.RESET
     const sectionHeader = COLORS.HEADER + `${indicator} ${section.label}` + COLORS.RESET
     const compactLine = sectionHeader + COLORS.HEALTHY + " " + section.data.compact + " " + hint

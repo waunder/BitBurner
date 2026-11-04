@@ -1457,6 +1457,56 @@ only a status older than 5 minutes reads "controller status stale".
   BitNode 4. Without it, the controller records the current node/level and
   leaves the player's current work untouched.
 
+### `sleeve_controller.js` and `sleeve_logic.js`
+
+BN10 work package A. Not in `sync_manifest.json` and not run live: the live save is BN15
+without SF10, where the Sleeve API throws. Once a minute the controller reads every sleeve,
+asks `sleeve_logic.js` for one task per sleeve, and changes a sleeve only when its current
+task differs. It never changes the player's work, buys sleeves or installs augmentations.
+
+Priority per sleeve, each rule checked against bitburner-src `dev` (file paths in
+`sleeve_logic.js`' header):
+
+1. Shock above `shockRecoverAbove` (40) means shock recovery, kept until below
+   `shockResumeBelow` (5). Shock scales sleeve money, exp and rep by (100 - shock)/100, but
+   not crime karma or crime success. Any work drains shock 0.0001 per cycle and recovery
+   adds 0.0002, so recovery is 3x faster. `karmaWhileShocked: true` lets shocked sleeves
+   earn karma anyway (off by default).
+2. While player karma is above `crimeKarmaTarget`: synchronize if sync is below `syncBelow`
+   (60; kept until 99), else the crime with the best karma rate. Karma credit is
+   crime.karma x sync/100 on success. Rep and money are not scaled by sync, so sync is
+   ignored for them.
+3. Faction rep from the readiness planner's `workCandidates`. One sleeve per faction (the
+   game throws otherwise); factions the player is not working go first; the player's
+   faction is used last, since the game does not forbid sharing with the player. The gang's
+   faction is excluded (the game stops that work). The player's `workType` is tried first,
+   then hacking, field, security; the game returns false for types a faction does not offer.
+4. Crime by money rate, else synchronize, else leave the sleeve alone.
+
+Crime success is computed from the sleeve's skills and `crime_success` multiplier (the
+`Crime.successRate` formula). The BitNode's own crime multiplier is not visible without SF5
+and is assumed to be 1, so chances can be slightly optimistic.
+
+- **Start:** `run sleeve_controller.js` (BN10 or any node with SF10). No arguments. A new
+  instance kills the prior one.
+- **Reads:** `player_activity_config.json` (`crimeKarmaTarget`), optional
+  `sleeve_config.json` (any key of `DEFAULT_SLEEVE_CONFIG`, e.g. `enabled`,
+  `shockRecoverAbove`, `karmaWhileShocked`; not committed), `player_activity_status.json`,
+  `augmentation_readiness.json` (both ignored when older than 5 minutes).
+- **Writes:** `sleeve_status.json`: `ts`, `ok`, `available`, `karma`, `karmaTarget`,
+  `playerFaction`, `readinessAgeMs`, and per sleeve `shock`, `sync`, `memory`, `current`,
+  `desired`, `reason`, `changed`, `error`. The HUD's Sleeves section (`hl`) shows it, or
+  "unavailable" when it is older than 3 minutes or the API is unavailable.
+- **RAM:** six `ns.sleeve` functions (getSleeve, getTask, setToShockRecovery,
+  setToSynchronize, setToCommitCrime, setToFactionWork) at 4GB each, plus `ns.heart.break`
+  and `ns.ps`, about 26GB. Sleeves are counted by probing `getSleeve` until it throws.
+- **Failure modes:** without the Sleeve API it prints one line, writes
+  `available: false`, and rechecks every 5 minutes. Any other error is reported in the
+  status and retried a minute later. A refused task (for example a faction not yet joined)
+  shows as that sleeve's `error` and is retried the next pass. Stale or failed
+  readiness data means no rep target, so sleeves fall to money crime.
+- **Test:** `node --test sleeve_logic.test.js`.
+
 ### `dnet_scorecard.js`
 
 A compact Dark Net panel in the same visual family as `mcp_money.js`. It

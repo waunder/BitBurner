@@ -11,7 +11,7 @@ manifest committed. `run startup.js`: home is 32GB, so only mcp_supervisor, craw
 failed for RAM (incl. player_activity_controller 36.8GB, sleeve_controller 26.3GB, dnet_root 7.45GB). By hand:
 killed mcp_xp, started capital_bootstrap.js (raises home RAM), player studying Computer Science (free) at
 Rothman. Next: rerun `run startup.js` as home grows. Audit finding 6 was wrong: mcp.js plus mcp_xp left
-capital_bootstrap 0.15GB short on 32GB. Pushes refused (GitHub outage), commits are local.
+capital_bootstrap 0.15GB short on 32GB. GitHub refused pushes 03:20-03:35 (outage); main pushed after.
 
 ## Repo layout (restructure branch; applies once it is merged at the BN10 cutover)
 

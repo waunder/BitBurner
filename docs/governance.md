@@ -54,6 +54,7 @@ Everything inside the game and this repository, within `AGENTS.md`'s standing au
 | Chrome DevTools port | Lets Claude read the game page and type terminal commands | 127.0.0.1:9222 (local only), the Steam game | Listening |
 | Claude app task `bitburner-bn15-progress` | Hourly autonomous check-in on the run | `~/.claude/scheduled-tasks/` | Working again. A run started 2026-11-02 15:58 Pacific froze on one command, and the scheduler skipped every later hour. Stopped 2026-11-03 20:36, and the next run completed. The prompt now caps every command at 120s and stands aside when another session is active. |
 | GitHub SSH key "Kens-PC BitBurner" | Lets this PC push to the repo | Ken's GitHub account | In use |
+| Repo `waunder/BitBurner` visibility | **Public** since 2026-09-04, so the browser save could fetch scripts. Everything pushed is world-readable, including `STATE.md` and docs. Saves and telemetry are gitignored. | GitHub | Public; making it private breaks only the browser-save sync |
 | Python venv | Tool dependencies | `.venv/` in the repo | — |
 | Generated folders | Test copies and pulled telemetry; safe to delete, never source | `build/`, `runtime/` (gitignored) | New with the restructure |
 | Save backups | Validated game saves before each install | `saves/` (gitignored, local only) | 5 so far |

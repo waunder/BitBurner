@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-03 18:58 Pacific, on the PC. Sources: Steam game via
+Last refreshed: 2026-11-03 21:20 Pacific, on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 ## Repo layout (restructure branch; applies once it is merged at the BN10 cutover)
@@ -12,6 +12,10 @@ from the game now land in `runtime/<game path>`** (e.g. `runtime/mcp_status.json
 merge, the root copies are the live ones. See `docs/architecture-profiles.md`.
 
 ## Current live state (supersedes everything below)
+
+**Install 6 ran 21:16 Pacific 2026-11-03: The Red Pill is installed (seen in the post-install save).** The Eternal lab had been solved between 18:58 and 21:15 by the existing automation; this run found The Red Pill queued. Before the install (21:15, save over DevTools): node 15, $609t, hacking 3,189, charisma 6,295, karma -6,538, 42 installed. Backup `saves/bitburnerSave_pre-install6_BN15_2026-11-03.json.gz` (gzip checked, player parsed, Red Pill queued, SHA-256 4c212f767a3a41cca8f437343e0791e2d767be8b91dcefb394a3ae1ab6b40d07). `aug_install.js --install` bought 9 Tetrads/Slum Snakes augmentations and 9 NeuroFlux ($63.5b donated for NeuroFlux rep), home to 1,048,576GB and 7 cores. After it: 52 installed, none queued, $67k, hacking 5, hacking mult 9.35, hacking exp mult 15.17, controller on crime for cash, `ps` shows all startup scripts.
+**World Daemon:** `w0r1d_d43m0n` now exists in the save, needs hacking **6,000** and 5 ports; not rooted or backdoored. Nothing automated backdoors it (`worm.js` backdoors only the four faction gateways; XP scripts only weaken; MCP hacks only servers with money). **Next: rebuild to hacking 6,000, then stop and tell Ken. Do not backdoor it; choosing the next BitNode (planned BN10, `docs/bn10-plan.md`) is Ken's call.**
+`player_activity_config.json`: `charismaTarget` 0 and `charismaAugs` empty, read back from the game 21:16, because no lab remains and charisma work would slow the hacking rebuild.
 
 **Install 5 ran 18:56 Pacific 2026-11-03: The St4ff of Asclepius installed.** Uber lab (`ub3r_l4byr1nth`, depth 23) solved 18:38:38 by `dnet_lab.js` on `the_void` (depth 22, 152 moves), 1h45m after install 4; the route came from `tools/dnet_map.py` once links reached rows 19-20. Before the install: $189t, hacking 2,402, charisma 4,422, karma -3,956, Staff queued. Backup `saves/bitburnerSave_pre-install5_BN15_2026-11-03.json.gz` (gzip checked, player parsed, SHA-256 ddd3230d10bafa1731e4f4b28b3928b08a317c8c255d85c6c4238451799b2dde). `aug_install.js --install` bought The Black Hand, Neuregen, Magnetism Amplifier and 15 NeuroFlux ($7.9b donated for NeuroFlux rep), home to 524,288GB and 6 cores. After it: $1,262, controller on crime for cash, `ps` shows all startup scripts. `charismaTarget` 3000 (read back from the game).
 **Next: Eternal lab, depth 29, charisma 3,000, reward The Red Pill.** Row 24 is the next empty row, so lifting is needed again (floor 21 from rows 17-23). Then the World Daemon: stop before destroying it and tell Ken.

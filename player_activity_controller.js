@@ -25,6 +25,7 @@ const DEFAULT_CONFIG = {
   repInvestmentMaxPriceMultiple: 250,
   crimeKarmaTarget: -54_000,
   charismaTarget: 0,
+  covenantTarget: false,
   charismaUniversity: "ZB Institute of Technology",
   universityCity: "Sector-12",
   charismaCity: "Volhaven",
@@ -157,7 +158,7 @@ export async function main(ns) {
     const crimeNeeded = cashShort || (Number.isFinite(karmaTarget) && Number(player.karma) > karmaTarget)
     const crimeCandidate = capability.available && (crimeNeeded || String(config.override).toLowerCase() === "crime")
       ? bestCrime(ns, cashShort) : null
-    const decision = choosePlayerActivity({ player, nextGate: gateState.gate, augmentation, crimeCandidate, config })
+    const decision = choosePlayerActivity({ player, nextGate: gateState.gate, augmentation, crimeCandidate, config, bitNode: capability.currentNode })
     if (decision.action === "faction" && capability.available) decision.workType = offeredWorkType(ns, decision.faction, decision.workType)
     const key = actionKey(decision)
     // Applying again is how a rising rep takes the promotion.

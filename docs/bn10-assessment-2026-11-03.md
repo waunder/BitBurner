@@ -39,8 +39,9 @@ is a judgement, not a measurement.
   so we would have 2 while in BN10 and 1 afterwards at SF10.1.
 - **Covenant sleeves:** up to 5 more, bought only inside BN10 from The Covenant, and
   "a permanent effect". Prices are $10t, $100t, $1q, $10q and $100q. The first one, and
-  probably the second, is realistic late in BN10. Entry to The Covenant is from memory, not
-  checked: about 20 augmentations, $75b, hacking 850 and combat 850, which is a large gym
+  probably the second, is realistic late in BN10. Entry to The Covenant, verified 2026-11-04
+  in `src/Faction/FactionInfo.tsx` (see `docs/bn10-plan.md`, package B): 20 installed
+  augmentations, $75b, hacking 850 and all four combat stats 850, which is a large gym
   grind at the 0.4 level multiplier.
 - **Sleeve memory** (up to 100, bought in BN10) survives resets and sets the sync a sleeve
   restarts at.
@@ -74,4 +75,4 @@ day of each node is mostly recovery, and the payoff grows with node length and w
 - Whether SF10 alone opens the Sleeve API outside BN10 (`canAccessBitNodeFeature(10)`).
   The code points that way, but that is inferred.
 - Whether an augmentation install resets sleeve shock, or only a BitNode reset.
-- The Covenant's join requirements.
+- ~~The Covenant's join requirements~~ verified 2026-11-04, see `docs/bn10-plan.md`.

@@ -74,6 +74,27 @@ memory upgrades after that. It must record cost, expected payoff and the outcome
 capital rule). Do not touch `sleeve_*` controller files (package A) or
 `hud_consolidated.js`.
 
+**Status 2026-11-04: implemented on branch, not live.** Verified in bitburner-src `dev`:
+
+- Invite rule, `src/Faction/FactionInfo.tsx`, `FactionName.TheCovenant`:
+  `inviteReqs: [haveAugmentations(20), haveMoney(75e9), haveSkill("hacking", 850), haveCombatSkills(850)]`.
+  `haveAugmentations(n)` in `src/Faction/FactionJoinCondition.ts` tests `p.augmentations.length >= n`:
+  installed only, queued ones do not count. `haveCombatSkills(n)` is every one of strength,
+  defense, dexterity and agility at least `n`. The faction name string is "The Covenant"
+  (`src/Faction/Enums.ts`). A rumor (not an invite) shows in BN10 at 10 augs, $35b, 425/425.
+- `faction_join.js` joins every invite except the six city factions, so a Covenant invite is
+  accepted unchanged; no fix was needed.
+- `src/PersonObjects/Sleeve/SleeveCovenantPurchases.tsx`: `purchaseSleeve` needs BN10,
+  Covenant membership, fewer than 5 bought and cash >= `getSleeveCost`; cost is
+  `10^bought * 10e12`. `purchaseSleeveMemoryUpgrade` needs BN10, membership, memory + n <= 100;
+  n points cost `1e12 * sum(1.02^(memory-1+i))`. Both return `{ success, message }`.
+  `src/NetscriptFunctions/Sleeve.ts`: `purchaseSleeve` and `upgradeMemory` throw outside BN10
+  (`checkBitNodeRequirement`); `getSleeveCost` and `getSleeve` need only Sleeve API access.
+- Built: `covenantTarget` goal in `player_activity_logic.js` (off by default, BN10 only),
+  `sleeve_buyer.js` and `sleeve_buyer_logic.js`. See `docs/processes.md`.
+- Not verified: the RAM cost of each `ns.sleeve` call (taken as 4GB per the brief), and
+  whether `ns.getPlayer().factions` lists The Covenant immediately after `joinFaction`.
+
 ### C. BN10 readiness audit of the existing suite
 
 Read-through plus small fixes, with tests, for anything that assumes BN15:

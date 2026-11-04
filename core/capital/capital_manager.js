@@ -13,10 +13,20 @@ const POLICY = "capital_policy.json"
 const STATUS = "capital_status.json"
 const POLL_MS = 10_000
 const INCOME_WINDOW_SEC = 600
-const MANAGERS = ["maintenance_steward.js", "money.js", "stack_manager.js", "hud_consolidated.js", "player_activity_controller.js", "dnet_root.js"]
+// Resident scripts only: one that exits at once (gang-controller.js without a
+// gang) would be relaunched every pass. The profile's startup list follows.
+const MANAGERS = ["maintenance_steward.js", "money.js", "stack_manager.js", "faction_join.js", "hud_consolidated.js", "player_activity_controller.js", "dnet_root.js"]
+const LAST = ["xp_filler.js"]
 
 function readPolicy(ns) {
   try { return JSON.parse(ns.read(POLICY) || "{}") } catch { return {} }
+}
+
+/** MANAGERS, then the active profile's startup scripts, then leftovers fillers. */
+function managerList(ns) {
+  let profile = []
+  try { profile = JSON.parse(ns.read("sync_manifest.json") || "{}").startup ?? [] } catch { /* core only */ }
+  return [...new Set([...MANAGERS, ...profile, ...LAST])]
 }
 
 function observe(ns, policy) {
@@ -52,7 +62,7 @@ function buy(ns, action, serverCount) {
 
 function startWaitingManager(ns) {
   const home = "home"
-  const scripts = MANAGERS.map(name => ({ name, running: ns.scriptRunning(name, home), ram: ns.getScriptRam(name, home) }))
+  const scripts = managerList(ns).map(name => ({ name, running: ns.scriptRunning(name, home), ram: ns.getScriptRam(name, home) }))
   const name = nextScriptToStart(scripts, ns.getServerMaxRam(home) - ns.getServerUsedRam(home))
   return name && ns.run(name) ? name : null
 }

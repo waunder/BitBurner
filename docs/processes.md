@@ -434,7 +434,10 @@ programs, then home RAM up to `homeRamTarget`, then cloud RAM up to
 `cloudFraction` of spendable cash. Full cloud slots upgrade the smallest server.
 Cloud buying pauses when ten-minute average income can reach the next program or home
 upgrade within `saveWindowSec` (default 300), and always below `homeRamFloor`
-(default 128). It also starts waiting managers once they fit, and
+(default 128). It also starts waiting managers once they fit, one per pass in order:
+steward, `money.js`, `stack_manager.js`, `faction_join.js`, HUD, `player_activity_controller.js`,
+`dnet_root.js`, the profile's `startup` scripts (bn10: `sleeve_controller.js`), then `xp_filler.js`.
+`gang-controller.js` is left to `startup.js` because it exits at once without a gang. It
 never touches augmentations.
 
 - **Reads:** `capital_policy.json` every pass (`enabled`, `reserve`,

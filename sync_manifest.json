@@ -27,6 +27,7 @@
     "mcp_money.js": "core/hud/mcp_money.js",
     "money.js": "core/capital/money.js",
     "charisma_survey.js": "core/player/charisma_survey.js",
+    "hacking_survey.js": "core/player/hacking_survey.js",
     "rep_survey.js": "core/player/rep_survey.js",
     "company_survey.js": "core/player/company_survey.js",
     "money_logic.js": "core/capital/money_logic.js",

@@ -37,6 +37,30 @@ short stop-list for the few things that still need Ken directly.
 
 ---
 
+## Repo layout and profiles
+
+The repo and the game are laid out differently. In the game every script stays at its flat
+path (`mcp.js`, `dnet_lib.js`, `hacking/crawler.js`), so no import changes. In the repo the
+same files live in a tree, and a manifest maps game path to repo path. Design and rationale:
+`docs/architecture-profiles.md`.
+
+- `core/` runs in every BitNode (`core/mcp`, `capital`, `player`, `hud`, `contracts`, `gang`,
+  `ipvgo`, `lib`, `startup`, `maintenance`, `hacking`, `scripts`, `config`). `core/dev` holds
+  unshipped diagnostics. `core/manifest.json` lists the core files and config defaults.
+- `profiles/<name>/` adds what one BitNode needs: `bn15` (the `dnet_*` darknet family and the
+  BN15-tuned `player_activity_config.json`), `bn10` (`sleeve_*`), `_template`.
+  `profile.json` has `files`, `config` (overrides of core config), `startup`, `bitnodes`, `extends`.
+- `python tools/profile.py build <profile>` merges core and profile into `sync_manifest.json`
+  (generated, committed; its header names the active profile). `plan <profile>` previews a switch
+  offline. `switch <profile> --live` and `check` talk to the game: see the profile section of
+  `docs/governance.md` and `docs/bn10-plan.md`.
+- `python tools/stage.py <profile>` copies the merged set, at game paths, plus each script's
+  `*.test.js`, into `build/<profile>/`. **Every `node --test ...` command in this file runs there**
+  (`cd build/bn15 && node --test dnet_lib.test.js`), because tests import each other by game path.
+- Telemetry the daemon pulls from the game (`mcp_status.json`, `mcp_events.txt`, the `PULL_FILES`
+  list in `tools/bb_remote.py`) is written to `runtime/<game path>` and is gitignored. Read
+  status files there, not at the repo root. `tools/mcp_status_parser.py` reads `runtime/mcp_status.json`.
+
 ## The map
 
 `select_gang_policy.js` is the in-game selector for `gang_capital_policy.json`.
@@ -123,7 +147,8 @@ Three things are worth reading off that diagram:
   — the daemon now covers everything the extension did.** As of 2026-08-10,
   `tools/bb_remote.py`'s `daemon` mode pushes every watched live-game
   script/config file (`mcp.js`, `hacking/*`, `scripts/*`, `mcp_config.json`,
-  `dnet_*.js`, etc. — see `WATCHED_FILES` in the script) directly into the
+  `dnet_*.js`, etc. — see `WATCHED_FILES` in the script, a game path to repo path map read
+  from `sync_manifest.json`) directly into the
   game via `pushFile`: a full push of everything on every game connection
   (first connect or any reconnect after a drop, closing the exact
   "doesn't replay on reconnect" gap `CLAUDE.md` documents), plus an
@@ -264,7 +289,7 @@ credential shards. On a host deeper than the deepest anchor (or the shallowest, 
 `dnet_anchor.js` (about 14GB), the scout links it, giving up the shallowest link at `getStasisLinkLimit()`, and
 `dnet_root.js` starts later chains from the deepest anchor, falling back to `darkweb`. A charisma worker on the host is killed when it alone blocks the link or the hop.
 Blocked RAM is cleared only when a hop fails. Beside a lab the scout moves the link
-to its own host, even at equal depth. A fresh `dnet_route.json` from `tools/dnet_map.py`
+to its own host, even at equal depth. A fresh `dnet_route.json` from `profiles/bn15/tools/dnet_map.py`
 ranks route hosts first, forwards only, and a route from `darkweb` overrides the anchor.
 `dnet_map.py` leaves focused work ("Do something else simultaneously") to reach the sidebar, opening and
 reading the map in one evaluate call; the Dark Net page only shows about 2-3 rows past the deepest admin host.
@@ -362,6 +387,8 @@ Buys every augmentation current rep and cash allow, dearest first because each
 purchase raises later prices, then NeuroFlux Governor levels with what is left.
 Rep-ready names in `priorityAugs` (`player_activity_config.json`) always fit: a dearer
 augmentation is skipped rather than leave too little cash for them.
+A donation is made only if the cash left still covers the cheapest augmentation it newly
+unlocks (matters when prices are x5, as in BN10; in BN15 cash was never the limit).
 With `--install` it then spends the rest on home RAM and cores, cheapest first, because
 both survive an install (only a BitNode reset clears them), then installs and restarts
 through `startup.js`. Back up the save first.
@@ -1455,6 +1482,14 @@ only a status older than 5 minutes reads "controller status stale".
   every pass; it does not retain a stale capability failure across resets.
   When the requested activity is already active, it leaves that work in place
   and preserves accumulated progress.
+- **Covenant goal (BN10 only):** `covenantTarget: true` (default `false`) trains toward
+  The Covenant's invite (`COVENANT` in `player_activity_logic.js`: all combat stats 850, hacking
+  850; 20 installed augmentations and $75b are the other gates, from bitburner-src
+  `src/Faction/FactionInfo.tsx`). It starts once installed + queued augmentations reach 20 and
+  cash reaches `covenantCloseFraction` (default 0.5) of $75b, using the gym action for the weakest
+  combat stat and then Algorithms for hacking. It sits after the cash-crime step and ahead of
+  company, priority and charisma work, applies only in auto mode and BitNode 10, and stops once
+  The Covenant is joined. `faction_join.js` accepts the invite unchanged.
 - **Scope:** selects only player work (gym, Algorithms, faction hacking, or
   crime). It never buys/installs augmentations, trades, allocates share RAM,
   or controls Darknet. The consolidated HUD shows both the capital phase and
@@ -1462,6 +1497,80 @@ only a status older than 5 minutes reads "controller status stale".
 - **Capability check:** player-work selection requires Source-File 4 outside
   BitNode 4. Without it, the controller records the current node/level and
   leaves the player's current work untouched.
+
+### `sleeve_controller.js` and `sleeve_logic.js`
+
+BN10 work package A. Lives in `profiles/bn10/sleeve/`, so it is in the bn10 profile's manifest
+only (not bn15's) and not run live: the live save is BN15
+without SF10, where the Sleeve API throws. Once a minute the controller reads every sleeve,
+asks `sleeve_logic.js` for one task per sleeve, and changes a sleeve only when its current
+task differs. It never changes the player's work, buys sleeves or installs augmentations.
+
+Priority per sleeve, each rule checked against bitburner-src `dev` (file paths in
+`sleeve_logic.js`' header):
+
+1. Shock above `shockRecoverAbove` (40) means shock recovery, kept until below
+   `shockResumeBelow` (5). Shock scales sleeve money, exp and rep by (100 - shock)/100, but
+   not crime karma or crime success. Any work drains shock 0.0001 per cycle and recovery
+   adds 0.0002, so recovery is 3x faster. `karmaWhileShocked: true` lets shocked sleeves
+   earn karma anyway (off by default).
+2. While player karma is above `crimeKarmaTarget`: synchronize if sync is below `syncBelow`
+   (60; kept until 99), else the crime with the best karma rate. Karma credit is
+   crime.karma x sync/100 on success. Rep and money are not scaled by sync, so sync is
+   ignored for them.
+3. Faction rep from the readiness planner's `workCandidates`. One sleeve per faction (the
+   game throws otherwise); factions the player is not working go first; the player's
+   faction is used last, since the game does not forbid sharing with the player. The gang's
+   faction is excluded (the game stops that work). The player's `workType` is tried first,
+   then hacking, field, security; the game returns false for types a faction does not offer.
+4. Crime by money rate, else synchronize, else leave the sleeve alone.
+
+Crime success is computed from the sleeve's skills and `crime_success` multiplier (the
+`Crime.successRate` formula). The BitNode's own crime multiplier is not visible without SF5
+and is assumed to be 1, so chances can be slightly optimistic.
+
+- **Start:** `run sleeve_controller.js` (BN10 or any node with SF10). No arguments. A new
+  instance kills the prior one.
+- **Reads:** `player_activity_config.json` (`crimeKarmaTarget`), optional
+  `sleeve_config.json` (any key of `DEFAULT_SLEEVE_CONFIG`, e.g. `enabled`,
+  `shockRecoverAbove`, `karmaWhileShocked`; not committed), `player_activity_status.json`,
+  `augmentation_readiness.json` (both ignored when older than 5 minutes).
+- **Writes:** `sleeve_status.json`: `ts`, `ok`, `available`, `karma`, `karmaTarget`,
+  `playerFaction`, `readinessAgeMs`, and per sleeve `shock`, `sync`, `memory`, `current`,
+  `desired`, `reason`, `changed`, `error`. The HUD's Sleeves section (`hl`) shows it, or
+  "unavailable" when it is older than 3 minutes or the API is unavailable.
+- **RAM:** six `ns.sleeve` functions (getSleeve, getTask, setToShockRecovery,
+  setToSynchronize, setToCommitCrime, setToFactionWork) at 4GB each, plus `ns.heart.break`
+  and `ns.ps`, about 26GB. Sleeves are counted by probing `getSleeve` until it throws.
+- **Failure modes:** without the Sleeve API it prints one line, writes
+  `available: false`, and rechecks every 5 minutes. Any other error is reported in the
+  status and retried a minute later. A refused task (for example a faction not yet joined)
+  shows as that sleeve's `error` and is retried the next pass. Stale or failed
+  readiness data means no rep target, so sleeves fall to money crime.
+- **Test:** `node --test sleeve_logic.test.js`.
+
+### `sleeve_buyer.js`
+
+BN10 only; in `profiles/bn10/sleeve/`, so shipped by the bn10 profile only. Buys Covenant sleeves, then sleeve
+memory, with cash above the `reserve` in `capital_policy.json`. Pure rules in
+`sleeve_buyer_logic.js`; game rules in `docs/bn10-plan.md` package B. Four `ns.sleeve` calls
+(`getSleeveCost`, `getSleeve`, `purchaseSleeve`, `upgradeMemory`), about 16GB by the 4GB rule.
+
+- **Start:** `run sleeve_buyer.js`, after joining The Covenant. If it is not BN10 or the player is
+  not yet a member it writes the reason to `sleeve_buyer_status.json` and exits; rerun after joining.
+- **Policy:** a sleeve whenever spendable (cash minus reserve) covers `getSleeveCost()`. Memory only
+  after the first Covenant sleeve, on the lowest-memory sleeve, the largest batch of up to 10
+  points that spendable covers. Memory cost is computed locally from the game formula.
+  Note `capital_manager.js` spends the same cash above the reserve; raise `reserve` to save.
+- **Payoff model:** a full sleeve earns `sleeveShare` (policy key, default 0.25) of smoothed player
+  income, scaled by memory/100 because sync restarts at memory. That share is an assumption, not
+  a measurement. `paybackHours` is cost over that rate; null while income is 0.
+- **Writes:** `sleeve_buyer_status.json`: `idle` reason, or `income`, `sleeveCost`, `reserve`, last
+  `action` and `outcome`, and `purchases` (last 50) each with cost, payoff model and outcome
+  (`ok`, game message, cash before and after).
+- **Failure modes:** a refused purchase is recorded with `ok: false` and retried after 30s.
+  `purchaseSleeve` and `upgradeMemory` throw outside BN10. After five sleeves it only buys memory.
+- **Test:** `node --test sleeve_buyer_logic.test.js`
 
 ### `dnet_scorecard.js`
 
@@ -1792,7 +1901,7 @@ an auth token, and `ns.wget` has no way to send one.
 
 - **Start:** `run sync_from_github.js [pattern]` — no pattern pulls every
   file `sync_manifest.json` lists; a glob pattern (same `*`/`?` syntax as
-  `lsf.js`) pulls only manifest entries matching it, e.g.
+  `lsf.js`, matched against the game path) pulls only manifest entries matching it, e.g.
   `run sync_from_github.js dnet_*`.
 - **Mechanism:** fetches `sync_manifest.json` fresh from GitHub every run
   (never expects a local copy — the browser save has no other way to get
@@ -1807,8 +1916,9 @@ an auth token, and `ns.wget` has no way to send one.
   before failing to load. `startup_browser.js` carries its own duplicate
   copy of this same pull loop rather than importing this file.
 - **Shared manifest, not a second file list:** `sync_manifest.json` (repo
-  root, hand-maintained, tracked — allow-listed in `.gitignore` alongside
-  `mcp_config.json`) is the single source of truth for "every file that
+  root, **generated** by `tools/profile.py build <profile>` from `core/manifest.json` and
+  `profiles/<name>/profile.json`, tracked; its value is a map `{game path: repo path}`, and this
+  script fetches the repo path and writes the game path) is the single source of truth for "every file that
   loads into the game," consumed by both this script and
   `tools/bb_remote.py`'s `WATCHED_FILES` (which now loads it via `json.load`
   instead of hardcoding its own copy — fixed 2026-09-04 specifically to
@@ -2070,8 +2180,10 @@ Mirrors `mcp.js`'s tail output into its own window, so the orchestrator's
 
 ### `mcp_status_parser.py` / `mcp_status_parser.js`
 
-Local, out-of-game. Pretty-prints `mcp_status.json` including per-host
-allocations, once that file has been pulled out of the game.
+Local, out-of-game; they live in `tools/`. Pretty-prints `runtime/mcp_status.json` including
+per-host allocations, once that file has been pulled out of the game.
+**Since the profile restructure, every pulled file lands in `runtime/<game path>`** (gitignored),
+not at the repo root; the remarks below about "the matching local path" mean that folder.
 
 **As of 2026-08-11, `tools/bb_remote.py`'s `daemon` mode now pulls this file
 (and `mcp_status_log.txt`/`mcp_target_state.json`/`mcp_events.txt`)
@@ -2190,17 +2302,27 @@ Brings up the whole suite from a clean slate in **one** command:
 the host, then launches, in priority order, `mcp_supervisor.js`,
 `hacking/crawler.js`, `mcp.js`, `maintenance_steward.js` (the MCP watchdog),
 `mcp_xp.js`, `mcp_money.js` (added 2026-11-01 at Ken's request),
-`hud_consolidated.js`, `player_activity_controller.js`, `dnet_root.js` and
-`gang-controller.js`. The last two may exit at once (no Darkscape, no gang)
+`hud_consolidated.js`, `player_activity_controller.js`, `xp_filler.js`,
+`faction_join.js`, `gang-controller.js` and, last, `dnet_root.js` (resident, and
+the largest of the optional ones because of the darknet library, so on a small
+home such as BN10's it cannot take RAM from the others). `dnet_root.js` and
+`gang-controller.js` may exit at once (no Darkscape, no gang)
 while briefly holding RAM, so any launch that fails is retried once after
 3 seconds; a final failure reports the script's RAM need and free home RAM.
 It then exits rather than staying resident. `dnet_root.js` exits quietly
 when DarkscapeNavigator.exe is not owned (e.g. right after an augmentation
-install) instead of raising a runtime-error modal. `startup_browser.js` (above)
+install) instead of raising a runtime-error modal. Outside BN15 the game opens
+`ns.dnet` to any SF15 level or to the exe (`hasDarknetAccess()`), so BN10 with
+SF15.1 works; the guard is only a conservative wait for the exe. `startup_browser.js` (above)
 runs the same sequence for the browser save, plus a GitHub sync step first.
 
 - **Start:** `run startup.js` — the one command besides the supervisor's own
   bootstrap that still needs a human hand
+- **Small homes (BN10 audit, `docs/bn10-readiness-audit.md`):** on the 32GB home SF1 grants,
+  startup (4.5GB) + supervisor (about 4.5GB) + crawler (about 3.1GB) leave about 20GB, less than
+  `mcp.js`'s 23.6GB, so `capital_bootstrap.js` (5.6GB) gets its RAM and raises home RAM. A home of
+  8GB cannot hold startup beside the bootstrap: run `run capital_bootstrap.js` by hand first.
+  (Static call counts, not measured.)
 - **Cost:** about 4.5GB while running (momentary) — 1.6GB baseline + `ns.ps`
   (0.2GB) + `ns.killall` (0.5GB) + `ns.scriptRunning` (1.0GB) + `ns.run`
   (1.0GB) + `ns.getScriptRam`/`getServerMaxRam`/`getServerUsedRam` for the

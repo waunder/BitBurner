@@ -9,12 +9,12 @@
 # again.
 /*.json
 /*.txt
-!/mcp_config.json
-!/mcp_multi_config.json
-!/player_activity_config.json
-!/reputation_config.json
 !/sync_manifest.json
-!/tsconfig.json
+
+# Restructure: pulled telemetry goes to runtime/ (not source), and tools/stage.py
+# writes the test copies to build/. Both are regenerated at will.
+runtime/
+build/
 
 # macOS
 .DS_Store
@@ -51,7 +51,7 @@ tools/bb_remote_monitor.log
 # Generated local governance-auditor heartbeat and logs
 .audit/
 
-# Darknet canary test output (tools/dnet_canary_test.sh) — appended-to
+# Darknet canary test output (profiles/bn15/tools/dnet_canary_test.sh) — appended-to
 # result log, unbounded generated output like mcp_status_log.txt; findings
 # worth keeping belong in docs/claude-todo.md or a proper doc, not this file.
 docs/darknet-canary-log.md

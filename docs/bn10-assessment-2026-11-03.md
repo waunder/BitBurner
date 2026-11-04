@@ -39,8 +39,9 @@ is a judgement, not a measurement.
   so we would have 2 while in BN10 and 1 afterwards at SF10.1.
 - **Covenant sleeves:** up to 5 more, bought only inside BN10 from The Covenant, and
   "a permanent effect". Prices are $10t, $100t, $1q, $10q and $100q. The first one, and
-  probably the second, is realistic late in BN10. Entry to The Covenant is from memory, not
-  checked: about 20 augmentations, $75b, hacking 850 and combat 850, which is a large gym
+  probably the second, is realistic late in BN10. Entry to The Covenant, verified 2026-11-04
+  in `src/Faction/FactionInfo.tsx` (see `docs/bn10-plan.md`, package B): 20 installed
+  augmentations, $75b, hacking 850 and all four combat stats 850, which is a large gym
   grind at the 0.4 level multiplier.
 - **Sleeve memory** (up to 100, bought in BN10) survives resets and sets the sync a sleeve
   restarts at.
@@ -55,7 +56,7 @@ is a judgement, not a measurement.
 - **Money from sleeve work goes 100% to the player.** Exp shared with the player is scaled by sync.
 
 The catch is shock. A new or reset sleeve starts at shock 100, which earns nothing.
-Recovery work takes about 28 hours of game time from 100 to 0 at intelligence bonus 1, and
+Recovery work takes about 18.5 hours of game time from 100 to 0 at intelligence bonus 1 (0.0003 a cycle in all: 0.0001 from any work plus 0.0002 from the recovery task; package A, `Sleeve.ts` `process`), and
 it resets on every BitNode change. Sync starts at the sleeve's memory value. So the first
 day of each node is mostly recovery, and the payoff grows with node length and with SF10 level.
 
@@ -74,4 +75,4 @@ day of each node is mostly recovery, and the payoff grows with node length and w
 - Whether SF10 alone opens the Sleeve API outside BN10 (`canAccessBitNodeFeature(10)`).
   The code points that way, but that is inferred.
 - Whether an augmentation install resets sleeve shock, or only a BitNode reset.
-- The Covenant's join requirements.
+- ~~The Covenant's join requirements~~ verified 2026-11-04, see `docs/bn10-plan.md`.

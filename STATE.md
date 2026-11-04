@@ -3,6 +3,14 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+## Repo layout (restructure branch; applies once it is merged at the BN10 cutover)
+
+The repo is a tree (`core/`, `profiles/<name>/`, `tools/`, `docs/`); the game still has the flat
+file names below. `sync_manifest.json` maps game path to repo path. **Status and event files pulled
+from the game now land in `runtime/<game path>`** (e.g. `runtime/mcp_status.json`,
+`runtime/augmentation_readiness.json`), not at the repo root: refresh STATE from there. Until the
+merge, the root copies are the live ones. See `docs/architecture-profiles.md`.
+
 **BN10 cutover checks, 2026-11-04 03:25 PC clock (Ken awake, reviewing).** Live: BN15, hacking 7,100
 of 6,000, 66 installed, daemon connected. `restructure` merged with main (78f0ea1, committed locally;
 push refused while GitHub reports an outage): 465/492 node tests, 27 Python, selftest all pass. Save backup

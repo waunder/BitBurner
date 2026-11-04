@@ -1,0 +1,51 @@
+{
+  "name": "bn15",
+  "description": "BitNode 15: darknet family (dnet_*), labyrinth tooling and the BN15-tuned player-activity config.",
+  "extends": [
+    "core"
+  ],
+  "bitnodes": [
+    15
+  ],
+  "files": {
+    "dnet_probe.js": "profiles/bn15/dnet/dnet_probe.js",
+    "dnet_deploy.js": "profiles/bn15/dnet/dnet_deploy.js",
+    "dnet_lib.js": "profiles/bn15/dnet/dnet_lib.js",
+    "dnet_loot.js": "profiles/bn15/dnet/dnet_loot.js",
+    "dnet_loot_realloc.js": "profiles/bn15/dnet/dnet_loot_realloc.js",
+    "dnet_realloc.js": "profiles/bn15/dnet/dnet_realloc.js",
+    "dnet_refresh.js": "profiles/bn15/dnet/dnet_refresh.js",
+    "dnet_phish.js": "profiles/bn15/dnet/dnet_phish.js",
+    "dnet_promote.js": "profiles/bn15/dnet/dnet_promote.js",
+    "restart_dnet_root.js": "profiles/bn15/dnet/restart_dnet_root.js",
+    "dnet_scorecard.js": "profiles/bn15/dnet/dnet_scorecard.js",
+    "dnet_roi.js": "profiles/bn15/dnet/dnet_roi.js",
+    "dnet_hud.js": "profiles/bn15/dnet/dnet_hud.js",
+    "dnet_crawl.js": "profiles/bn15/dnet/dnet_crawl.js",
+    "dnet_manager.js": "profiles/bn15/dnet/dnet_manager.js",
+    "dnet_root.js": "profiles/bn15/dnet/dnet_root.js",
+    "dnet_loot_all.js": "profiles/bn15/dnet/dnet_loot_all.js",
+    "dnet_loot_merge.js": "profiles/bn15/dnet/dnet_loot_merge.js",
+    "dnet_creds_merge.js": "profiles/bn15/dnet/dnet_creds_merge.js",
+    "dnet_status_merge.js": "profiles/bn15/dnet/dnet_status_merge.js",
+    "dnet_killswarm.js": "profiles/bn15/dnet/dnet_killswarm.js",
+    "dnet_ramcheck.js": "profiles/bn15/dnet/dnet_ramcheck.js",
+    "dnet_canary_phase1.js": "profiles/bn15/dnet/dnet_canary_phase1.js",
+    "dnet_anchor.js": "profiles/bn15/dnet/dnet_anchor.js",
+    "dnet_induce.js": "profiles/bn15/dnet/dnet_induce.js",
+    "dnet_lift.js": "profiles/bn15/dnet/dnet_lift.js",
+    "dnet_rider.js": "profiles/bn15/dnet/dnet_rider.js",
+    "dnet_lab.js": "profiles/bn15/dnet/dnet_lab.js",
+    "dnet_scout.js": "profiles/bn15/dnet/dnet_scout.js",
+    "dnet_scout_logic.js": "profiles/bn15/dnet/dnet_scout_logic.js",
+    "dnet_feedback.js": "profiles/bn15/dnet/dnet_feedback.js",
+    "dnet_lab_logic.js": "profiles/bn15/dnet/dnet_lab_logic.js"
+  },
+  "config": {
+    "player_activity_config.json": "profiles/bn15/config/player_activity_config.json"
+  },
+  "startup": [
+    "dnet_root.js"
+  ],
+  "notes": "startup.js launches the manifest startup list (dnet_root.js) after its core list. restart_mcp.js and mcp_launch.js start dnet_* scripts only on request. bn10 extends this profile for the darknet."
+}

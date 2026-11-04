@@ -23,6 +23,21 @@ Everything inside the game and this repository, within `AGENTS.md`'s standing au
   connectors or plugins.
 - **Doubt:** whenever Claude is unsure an action is safe or reversible, or a result looks wrong.
 
+## Permissions policy (Ken, 2026-11-03)
+
+1. **Claude does not expand its own permissions.** It may ask Ken for more, saying why, and
+   must wait for his grant. Raising the permission mode already requires Ken's click. The
+   gap: Claude can write files, including the Claude settings files that hold permission
+   allow-rules (`.claude/settings*.json` and `~/.claude/settings.json`). So by policy Claude
+   never edits permission rules, hooks or trust settings in those files, or anywhere else,
+   without Ken's explicit grant for that change.
+2. **Claude never gives an agent or session more than it has.** Subagents inherit this
+   session's permissions and cannot exceed them. Sessions Claude starts run at its own
+   permission mode or lower.
+3. **Requests to widen another agent's or session's permissions are not made.** Ken would
+   deny them. If wider access is truly needed, Claude asks for it for itself, and does
+   the work itself.
+
 ## How Ken hears about things
 
 - Questions and doubts go at the top of Claude's reply, in plain words, never buried.
@@ -36,7 +51,7 @@ Everything inside the game and this repository, within `AGENTS.md`'s standing au
 | Windows task "BitBurner daemon supervisor" | Keeps the Remote API daemon alive at logon | Task Scheduler; runs `tools\daemon_supervisor.py` | Running |
 | Remote API daemon | Syncs scripts into the game and pulls status files; listens on 127.0.0.1:12526/12527 (local only) | `tools/bb_remote.py` | Connected all day |
 | Chrome DevTools port | Lets Claude read the game page and type terminal commands | 127.0.0.1:9222 (local only), the Steam game | Listening |
-| Claude app task `bitburner-bn15-progress` | Hourly autonomous check-in on the run | `~/.claude/scheduled-tasks/` | Enabled, but **last run 2026-11-02 15:58 Pacific**: it has not fired for over a day |
+| Claude app task `bitburner-bn15-progress` | Hourly autonomous check-in on the run | `~/.claude/scheduled-tasks/` | Working again. A run started 2026-11-02 15:58 Pacific froze on one command, and the scheduler skipped every later hour. Stopped 2026-11-03 20:36, and the next run completed. The prompt now caps every command at 120s and stands aside when another session is active. |
 | GitHub SSH key "Kens-PC BitBurner" | Lets this PC push to the repo | Ken's GitHub account | In use |
 | Python venv | Tool dependencies | `.venv/` in the repo | — |
 | Save backups | Validated game saves before each install | `saves/` (gitignored, local only) | 5 so far |
@@ -46,7 +61,5 @@ Hugging Face. Claude does not touch them without Ken asking.
 
 ## Open questions for Ken
 
-1. The hourly task has not run since 2026-11-02 at 15:58 Pacific. Keep it, fix it, or retire
-   it? This session is now doing its job.
-2. Six stalled Claude sessions from the trust problem are still in the sidebar
+1. Six stalled Claude sessions from the trust problem are still in the sidebar
    (`docs/agent-working-models-2026-11-03.md`). Archive them?

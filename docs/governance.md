@@ -61,5 +61,5 @@ Hugging Face. Claude does not touch them without Ken asking.
 
 ## Open questions for Ken
 
-1. Six stalled Claude sessions from the trust problem are still in the sidebar
-   (`docs/agent-working-models-2026-11-03.md`). Archive them?
+None. The six stalled sessions from the trust problem were archived on 2026-11-03 at Ken's
+request (`docs/agent-working-models-2026-11-03.md`); archived sessions can be reopened.

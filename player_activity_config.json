@@ -2,7 +2,7 @@
   "enabled": true,
   "override": "auto",
   "physicalTarget": 0,
-  "charismaTarget": 3000,
+  "charismaTarget": 0,
   "priorityAugs": ["Neuroreceptor Management Implant"],
   "repBeforeGates": true,
   "focusWork": true,
@@ -13,11 +13,5 @@
   "repInvestmentMaxPriceMultiple": 250,
   "crimeKarmaTarget": -54000,
   "companyTarget": { "company": "Bachman & Associates", "field": "Business" },
-  "charismaAugs": [
-    "Speech Processor Implant",
-    "Speech Enhancement",
-    "Social Negotiation Assistant (S.N.A)",
-    "Enhanced Social Interaction Implant",
-    "SmartJaw"
-  ]
+  "charismaAugs": []
 }

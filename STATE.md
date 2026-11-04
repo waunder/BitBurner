@@ -3,6 +3,16 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**BN10 entered 2026-11-04 about 03:30 Pacific (PC clock 04:30).** Ken destroyed the World Daemon; at his word I
+entered BN10.1 (default options). SF15 awarded. Cutover done: `restructure` merged to main (f58e530), daemon
+restarted (map manifest, clean full sync of 142), `profile.py switch bn10 --live` (backup
+`saves/pre-switch-bn10-20261104-033022.json.gz`, pushed 146, deleted 0), `check --content` OK, profile
+manifest committed. `run startup.js`: home is 32GB, so only mcp_supervisor, crawler, mcp.js, mcp_xp started; 11
+failed for RAM (incl. player_activity_controller 36.8GB, sleeve_controller 26.3GB, dnet_root 7.45GB). By hand:
+killed mcp_xp, started capital_bootstrap.js (raises home RAM), player studying Computer Science (free) at
+Rothman. Next: rerun `run startup.js` as home grows. Audit finding 6 was wrong: mcp.js plus mcp_xp left
+capital_bootstrap 0.15GB short on 32GB. Pushes refused (GitHub outage), commits are local.
+
 ## Repo layout (restructure branch; applies once it is merged at the BN10 cutover)
 
 The repo is a tree (`core/`, `profiles/<name>/`, `tools/`, `docs/`); the game still has the flat

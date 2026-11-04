@@ -8,8 +8,8 @@ Claude keeps it current. Last checked: 2026-11-04.
 
 Everything inside the game and this repository, within `AGENTS.md`'s standing authority:
 - game scripts, code, tests, commits and pushes to `waunder/BitBurner`;
-- in-game spending, restarts, and augmentation installs up to BN15 completion (with a
-  validated save backup first);
+- in-game spending, restarts, augmentation installs and Covenant sleeve purchases through BN10
+  completion (Ken's handover, 2026-11-04), with a validated save backup before each install;
 - subagents working in isolated worktrees, whose work Claude reviews before it merges.
 
 ## What always comes to Ken first
@@ -49,11 +49,11 @@ Everything inside the game and this repository, within `AGENTS.md`'s standing au
 | Item | What it does | Where it lives | Status (2026-11-03) |
 | --- | --- | --- | --- |
 | Windows task "BitBurner daemon supervisor" | Keeps the Remote API daemon alive at logon | Task Scheduler; runs `tools\daemon_supervisor.py` | Running |
-| Remote API daemon | Syncs scripts into the game (from the generated `sync_manifest.json`) and pulls status files into `runtime/`; listens on 127.0.0.1:12526/12527 (local only) | `tools/bb_remote.py` | Connected all day |
-| Profile tool | Merges core and a BitNode profile into the manifest; `switch` (needs `--live`) rewrites the game's files at a BitNode boundary, `check` compares the game with the manifest. Never run unattended. | `tools/profile.py`, `tools/stage.py` | Built on branch `restructure`, not merged or run live |
+| Remote API daemon | Syncs scripts into the game (from the generated `sync_manifest.json`) and pulls status files into `runtime/`; listens on 127.0.0.1:12526/12527 (local only) | `tools/bb_remote.py` | Connected; restarted 2026-11-04 03:29 for the map-form manifest, clean full sync |
+| Profile tool | Merges core and a BitNode profile into the manifest; `switch` (needs `--live`) rewrites the game's files at a BitNode boundary, `check` compares the game with the manifest. Never run unattended. | `tools/profile.py`, `tools/stage.py` | Live since the BN10 cutover, 2026-11-04 03:30 Pacific: `switch bn10` and `check` ran cleanly |
 | Chrome DevTools port | Lets Claude read the game page and type terminal commands | 127.0.0.1:9222 (local only), the Steam game | Listening |
-| Claude app task `bitburner-bn15-progress` | Hourly autonomous check-in on the run | `~/.claude/scheduled-tasks/` | Working again. A run started 2026-11-02 15:58 Pacific froze on one command, and the scheduler skipped every later hour. Stopped 2026-11-03 20:36, and the next run completed. The prompt now caps every command at 120s and stands aside when another session is active. |
-| GitHub SSH key "Kens-PC BitBurner" | Lets this PC push to the repo | Ken's GitHub account | In use |
+| Claude app task `bitburner-bn15-progress` (titled "BitBurner BN10 progress") | Hourly autonomous check-in on the run; prompt rewritten for BN10 on 2026-11-04 | `~/.claude/scheduled-tasks/` | Working again. A run started 2026-11-02 15:58 Pacific froze on one command, and the scheduler skipped every later hour. Stopped 2026-11-03 20:36, and the next run completed. The prompt now caps every command at 120s and stands aside when another session is active. |
+| GitHub SSH key "Kens-PC BitBurner" | Lets this PC push to the repo | Ken's GitHub account | In use. Pushes refused from about 03:20 Pacific 2026-11-04 during a GitHub outage; key still listed on the account |
 | Repo `waunder/BitBurner` visibility | **Public** since 2026-09-04, so the browser save could fetch scripts. Everything pushed is world-readable, including `STATE.md` and docs. Saves and telemetry are gitignored. | GitHub | Public; making it private breaks only the browser-save sync |
 | Python venv | Tool dependencies | `.venv/` in the repo | — |
 | Generated folders | Test copies and pulled telemetry; safe to delete, never source | `build/`, `runtime/` (gitignored) | New with the restructure |

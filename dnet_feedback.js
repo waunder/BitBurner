@@ -115,6 +115,91 @@ function* bySniffing(d, host) {
   if (start >= 0) yield noise.slice(start + host.length + 1).split(" ")[0]
 }
 
+const PEAK = 10_000
+const HILL_DROP = 2_600
+
+// KingOfTheHill answers with the altitude of Gaussian hills, 10,000 m at the password and
+// 2,600 m lower per hill away, about 3 widths apart (game source, dev). Far from a hill the
+// altitude is tiny but exact, so a parabola through three log-altitudes gives the nearest
+// hill's centre and height, and a side hill's height says how far away the peak is.
+function* byAltitude(d) {
+  const length = d.passwordLength
+  if (!(length > 1)) {
+    for (const digit of DIGITS) yield digit
+    return
+  }
+  const low = 10 ** (length - 1)
+  const high = 10 ** length - 1
+  const width = 10 ** (length - 2) + 1
+  const inRange = x => Math.min(high, Math.max(low, Math.round(x)))
+  const altitudeAt = function* (x) { return Number((yield String(x)).data) }
+  const logAltitude = function* (x) { return Math.log(yield* altitudeAt(x)) }
+  // Hills four or more away from the peak are below sea level, so fit the size and keep the sign.
+  const fitAt = function* (x, step) {
+    const middle = Math.min(high - step, Math.max(low + step, Math.round(x)))
+    const samples = []
+    for (const at of [middle - step, middle, middle + step]) samples.push(yield* altitudeAt(at))
+    const sign = Math.sign(samples[1])
+    if (!sign || samples.some(value => Math.sign(value) !== sign)) return null
+    const [below, at, above] = samples.map(value => Math.log(Math.abs(value)))
+    if (![below, at, above].every(Number.isFinite)) return null
+    const curve = (above - 2 * at + below) / (2 * step * step)
+    const slope = sign * (above - below) / (2 * step)
+    if (!(curve < 0)) return { middle, slope }
+    return { middle, centre: middle - sign * slope / (2 * curve), height: sign * Math.exp(at - slope * slope / (4 * curve)) }
+  }
+  const seeds = []
+  for (let x = low + 13 * width; x < high; x += 26 * width) seeds.push(x)
+  seeds.push(high - 13 * width)
+  const tried = new Set()
+  const fitted = new Set()
+  let x = seeds.shift()
+  for (let round = 0; round < 20 && x !== undefined; round++) {
+    // A jump that lands where an earlier fit stood would only repeat it.
+    if (fitted.has(inRange(x))) {
+      x = seeds.shift()
+      continue
+    }
+    fitted.add(inRange(x))
+    const fit = yield* fitAt(x, Math.max(1, Math.round(width / 2)))
+    if (!fit) {
+      x = seeds.shift()
+      continue
+    }
+    if (fit.centre === undefined) {
+      x = fit.middle + Math.sign(fit.slope) * 2 * width
+      continue
+    }
+    if (fit.height > PEAK - HILL_DROP / 2) {
+      // Within 3% of the password only the main hill counts, so narrow fits converge on it exactly.
+      let centre = inRange(fit.centre)
+      for (let closer = 0; closer < 4; closer++) {
+        const close = yield* fitAt(centre, Math.max(1, Math.round(width / 20)))
+        const next = close?.centre === undefined ? centre : inRange(close.centre)
+        if (next === centre) break
+        centre = next
+      }
+      for (const guess of [0, 1, -1, 2, -2].map(offset => inRange(centre + offset))) {
+        if (!tried.has(guess)) {
+          tried.add(guess)
+          yield String(guess)
+        }
+      }
+      x = centre + width
+      continue
+    }
+    const reach = 3 * width * Math.max(1, Math.round((PEAK - fit.height) / HILL_DROP))
+    // Hill heights jitter, so a peak near either end can be overshot: clamp rather than drop.
+    const sides = [...new Set([inRange(fit.centre + reach), inRange(fit.centre - reach)])]
+    let best = -Infinity
+    x = sides[0]
+    for (const side of sides) {
+      const altitude = yield* logAltitude(side)
+      if (altitude > best) [best, x] = [altitude, side]
+    }
+  }
+}
+
 const SPICE = "\u{1F336}"
 
 /** A generator of guesses for the model, or null when it has no feedback solver. */
@@ -132,6 +217,7 @@ export function feedbackSolver(d, host) {
     case "Factori-Os": return byDivisors(d)
     case "BigMo%od": return byResidues(d)
     case "OpenWebAccessPoint": return bySniffing(d, host)
+    case "KingOfTheHill": return byAltitude(d)
     default: return null
   }
 }

@@ -20,6 +20,28 @@ const replies = {
   "Factori-Os": (pw, g) => ({ data: Number(pw) % Number(g) ? "false" : "true" }),
   "BigMo%od": (pw, g) => ({ data: String(Number(pw) % Number(g) % ((Number(g) - 1) % 32 + 1)) }),
   OpenWebAccessPoint: (pw, g, host) => ({ data: `noise xyz ${host}:${pw} more noise` }),
+  KingOfTheHill: (pw, g) => ({ data: String(altitude(pw, g, hillDifficulty)) }),
+}
+
+// getKingOfTheHillAltitude from the game source (dev), with a seeded stand-in for its WHRNG.
+let hillDifficulty = 30
+function altitude(pw, guess, difficulty) {
+  const password = Number(pw)
+  const x = Number(guess)
+  let seed = password % 2147483647 || 1
+  const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647
+  const hill = (location, height, width) => height * Math.exp(((x - location) ** 2 / width ** 2) * -1)
+  const hillCount = Math.min(Math.floor(difficulty / 8), 4) * 2 + 1
+  const passwordHillIndex = Math.floor(random() * (hillCount - 2)) + 1
+  const width = 10 ** Math.max(pw.length - 2, 0) + 1
+  if (Math.abs((x - password) / password) < 0.03) return hill(password, 10000, width)
+  let total = 0
+  for (let i = 0; i < hillCount; i++) {
+    const locationOffset = (i - passwordHillIndex) * width * 3 * (random() * 0.2 + 0.9)
+    const heightOffset = Math.abs((i - passwordHillIndex) * 2600) * (random() * 0.1 + 0.95)
+    total += hill(password + locationOffset, 10000 - heightOffset, width)
+  }
+  return total
 }
 
 async function play(details, password, host = "some:host") {
@@ -96,9 +118,28 @@ describe("feedback solvers", () => {
     assert.equal(feedbackSolver({ modelId: "OpenWebAccessPoint", difficulty: 17 }, "h").next().done, true)
   })
 
+  test("KingOfTheHill climbs to the highest peak in a few guesses", async () => {
+    // Overlapping hills with jittered heights defeat it now and then; a later chain retries.
+    for (const difficulty of [6, 12, 20, 30, 45]) {
+      hillDifficulty = difficulty
+      const length = Math.ceil(Math.min(1 + difficulty / 6, 10))
+      const counts = []
+      for (let run = 0; run < 200; run++) {
+        const password = positive(length)
+        const { result, seen } = await play({ modelId: "KingOfTheHill", passwordLength: length, difficulty }, password)
+        if (result.ok) {
+          assert.equal(result.password, password)
+          counts.push(seen.length)
+        }
+      }
+      counts.sort((a, b) => a - b)
+      assert.ok(counts.length >= 196, `difficulty ${difficulty}: solved ${counts.length}/200`)
+      assert.ok(counts[Math.floor(counts.length * 0.9)] <= 20, `difficulty ${difficulty}: p90 ${counts[Math.floor(counts.length * 0.9)]}`)
+    }
+  })
+
   test("a model without a solver returns null", () => {
     assert.equal(feedbackSolver({ modelId: "FreshInstall_1.0" }, "h"), null)
-    assert.equal(feedbackSolver({ modelId: "KingOfTheHill" }, "h"), null)
   })
 
   test("runSolver stops on a refusal and on the deadline", async () => {

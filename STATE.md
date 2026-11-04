@@ -3,6 +3,16 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-04 about 12:15 Pacific (PC clock 13:15): reserve raised for the install.** Live (autosave,
+game `ps`, status files): BN10, cash $32.8-36.9b, hacking 227, karma -82.5, home 8.19TB (4TB used), 0 installed,
+0 queued, 4 factions. Every resident script runs. NiteSec rep 11,749 (about 1.8 rep/s): Artificial Synaptic Potentiation
+12.5k minutes away, Neurotrainer II and CSP Gen I 20k in about 75 min (modelled). Tian Di Hui's Speech Processor 176
+short. Sleeve 0: shock 0, sync 47.7, synchronizing. `aug_install.js --dry` still plans the 9 ($8.9b); adding NiteSec's
+three makes 12 at about $63b (1.9x per purchase, modelled). capital_manager had spent about $25b per 10 min on cloud
+upgrades (mcp-worker-8 to 13 to 64TB, 11:17-12:12), which an install wipes, so I set `capital_policy.json` `reserve`
+to $70b (was 0; confirmed read at 12:16). At about $43m/s cash covers the batch within the hour. **Next: install once
+NiteSec reaches 20k (backup first), then set `reserve` back to 0.** No Red Pill, so no World Daemon.
+
 **Hourly check, 2026-11-04 about 11:15 Pacific (PC clock 12:15).** Live (autosave, game `ps`, status files): BN10,
 cash $45.9b, hacking 221, karma -77.5, home 8.19TB (half used), 0 installed, 0 queued, 4 factions. Every resident
 script runs. Player works NiteSec hacking: 5,184 rep in an hour (about 1.4 rep/s); Artificial Synaptic Potentiation

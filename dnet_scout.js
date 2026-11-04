@@ -23,6 +23,9 @@ const LAB_RAM = 5.5 // Fixed for the same reason; slightly over, so the thread c
 const ANCHOR_WAIT_MS = 60_000
 const FILES = [ANCHOR, "dnet_scout.js", "dnet_scout_logic.js", "dnet_lib.js", "dnet_feedback.js", LAB_WORKER, "dnet_lab_logic.js", "dnet_loot.js", PROMOTE]
 const SESSION_BUDGET_MS = 180_000
+// About 3.75s a guess live. RateMyPix needs about 70 for a 10-character alphanumeric password (difficulty 19-21).
+// Kept under SCOUT_STALE_MS, so dnet_root.js does not start a second chain meanwhile.
+const MODEL_BUDGET_MS = { "RateMyPix.Auth": 290_000 }
 const BRUTE_LIMIT = 2000
 const MAX_HOPS = 60
 const MAX_TRIES = 4
@@ -151,7 +154,7 @@ export async function main(ns) {
     tried.add(next.host)
     failed.add(next.host)
     report("cracking", { target: next.host, targetDepth: next.depth, model: next.modelId })
-    const session = await acquireSession(ns, next.host, creds[next.host], { bruteForceLimit: BRUTE_LIMIT, timeBudgetMs: SESSION_BUDGET_MS, solver: feedback })
+    const session = await acquireSession(ns, next.host, creds[next.host], { bruteForceLimit: BRUTE_LIMIT, timeBudgetMs: MODEL_BUDGET_MS[next.modelId] ?? SESSION_BUDGET_MS, solver: feedback })
     if (!session.ok) {
       failures.push({ host: next.host, depth: next.depth, model: next.modelId, why: session.why, code: session.code })
       if (session.code === CODE.NotEnoughCharisma) return report("charisma", { failures })

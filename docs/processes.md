@@ -274,7 +274,7 @@ reading the map in one evaluate call; the Dark Net page only shows about 2-3 row
   up to four failed hops; a hop that did not fit records `maxRam`, `usedRam` and `blockedRam`.
 Passwords come from `dnet_lib.js` `candidatesFor` where the answer is in the hint, and from `dnet_feedback.js` where a wrong
 guess returns a clue: a plain `authenticate` hides the clue, so the scout reads it from the server log with `heartbleed` (peek).
-No solver: PHP 5.4 over 5 digits, OpenWebAccessPoint above difficulty 16. To drop the shallowest link the scout kills everything on that host, because unlinking costs 14GB; it fetches `dnet_creds.txt` from home first. 6.7GB.
+No solver: PHP 5.4 over 5 digits, OpenWebAccessPoint above difficulty 16. A crack gets 180s (`RateMyPix.Auth` 290s, still under the 5-minute stale mark). To drop the shallowest link the scout kills everything on that host, because unlinking costs 14GB; it fetches `dnet_creds.txt` from home first. 6.7GB.
 
 - **Failure modes:** a server that moves mid-hop simply ends the chain; the next
   start retries. A host too small for the scout counts as a failed hop.

@@ -3,6 +3,18 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**BN10 install 1 ran 2026-11-04 about 13:25 Pacific (PC clock 14:25), hourly task.** NiteSec reached 20,207 rep at
+13:24 (`augmentation_readiness.json`). Before (save over DevTools): BN10, $171.4b, hacking 233, karma -91.5, 0 installed.
+Backup `saves/bitburnerSave_pre-install1_BN10_2026-11-04.json.gz` (gzip checked, player parsed, node 10, SHA-256
+554930090510642f1be0f57767f380e01b827c217f0d24fee6b9264d4de7b0cf). `aug_install.js --install` (`aug_install_status.json`)
+bought all 13 planned, no failures: Artificial Synaptic Potentiation, CSP Gen I, Speech Processor, Neurotrainer II, S.N.A,
+Nuoptimal, ADR-V1, Augmented Targeting I, Speech Enhancement, BitWire, Synaptic Enhancement, Neurotrainer I, Wired
+Reflexes, plus 2 NeuroFlux. After (status files 13:32): 14 installed, $1.6m, controller on crime for cash, `ps` shows every
+resident script (mcp, capital_manager, steward, money, stack_manager, HUD, controller, xp_filler, faction_join, dnet_root,
+sleeve_controller, cct_watcher). `capital_policy.json` `reserve` set back to 0 (read back). Sleeve 0 synchronizing (sync
+52.5). Next readiness candidate: CSP Gen II at CyberSec (37.5k short). No Red Pill, so no World Daemon. **Next:** rebuild
+cash and hacking; aim for the next install batch; Covenant needs 20 installed, $75b, hacking 850, combat 850.
+
 **Hourly check, 2026-11-04 about 12:15 Pacific (PC clock 13:15): reserve raised for the install.** Live (autosave,
 game `ps`, status files): BN10, cash $32.8-36.9b, hacking 227, karma -82.5, home 8.19TB (4TB used), 0 installed,
 0 queued, 4 factions. Every resident script runs. NiteSec rep 11,749 (about 1.8 rep/s): Artificial Synaptic Potentiation

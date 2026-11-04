@@ -32,16 +32,17 @@ export async function main(ns) {
     g: "gang",
     i: "ipvgo",
     a: "aug",
+    l: "sleeves",
     s: "system",
     n: "none",
   }
 
   const section = shortMap[arg] || arg
-  const valid = ["mcp", "darknet", "cct", "gang", "ipvgo", "aug", "system", "none"]
+  const valid = ["mcp", "darknet", "cct", "gang", "ipvgo", "aug", "sleeves", "system", "none"]
 
   if (!valid.includes(section)) {
     ns.tprint(`Invalid section: ${arg}`)
-    ns.tprint(`Valid: m(cp), d(arknet), c(ct), g(ang), i(pvgo), a(ug), s(ystem), n(one-collapse)`)
+    ns.tprint(`Valid: m(cp), d(arknet), c(ct), g(ang), i(pvgo), a(ug), l(sleeves), s(ystem), n(one-collapse)`)
     return
   }
 
@@ -57,6 +58,7 @@ export async function main(ns) {
       gang: "Gang",
       ipvgo: "IPvGO",
       aug: "Augmentation",
+      sleeves: "Sleeves",
       system: "System",
       none: "all",
     }[section]

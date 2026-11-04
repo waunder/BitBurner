@@ -3,6 +3,12 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**BN10 cutover checks, 2026-11-04 03:25 PC clock (Ken awake, reviewing).** Live: BN15, hacking 7,100
+of 6,000, 66 installed, daemon connected. `restructure` merged with main (78f0ea1, committed locally;
+push refused while GitHub reports an outage): 465/492 node tests, 27 Python, selftest all pass. Save backup
+`saves/bitburnerSave_pre-worlddaemon_BN15_2026-11-04.json.gz` (SHA-256 a009e9a3…). Waiting on Ken's call
+at the World Daemon.
+
 ## Current live state (supersedes everything below)
 
 **2026-11-04 01:15 PST (02:15 PC clock): World Daemon ready, Ken notified (hourly task).** Live save over DevTools: node 15, hacking 6,656 of the required 6,000 (`w0r1d_d43m0n` `requiredHackingSkill` read from the save), $128t, karma -6,681, 66 installed, none queued, Remote API connected, player on Daedalus hacking work. The daemon shows **rooted** (`hasAdminRights` true) by the existing automation since 00:43 PST; not backdoored, not destroyed, no BitNode chosen. The push notification tool reported "not sent" because the app terminal was active; the message is in the `bitburner-bn15-progress` session instead. **Next: Ken opens a BitBurner session and says "review the BN10 startup steps" (`docs/bn10-cutover-runbook.md`). The hourly task makes no further changes.**

@@ -99,6 +99,7 @@
     "ops_hud.js": "core/hud/ops_hud.js",
     "ops_hud_logic.js": "core/hud/ops_hud_logic.js",
     "run_target_logic.js": "core/hud/run_target_logic.js",
+    "run_report.js": "core/hud/run_report.js",
     "hud_consolidated.js": "core/hud/hud_consolidated.js",
     "hud_toggle.js": "core/hud/hud_toggle.js",
     "remote_api_keepalive.js": "core/maintenance/remote_api_keepalive.js",

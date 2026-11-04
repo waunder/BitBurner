@@ -3,6 +3,12 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Run report window, 2026-11-04 about 15:20 Pacific (PC clock 16:20).** New resident `run_report.js` shows
+`run_report.json` in a "Run report" tail window; the hourly task now writes and pushes a short report at the end of
+every run (prompt updated). First report (the 15:15 check) seen live in the game. capital_manager.js keeps it alive
+after its next restart (source pushed, not restarted). The HUD process runs (PID 10) but its tail window was not
+on screen at 15:20; left alone.
+
 **Hourly check, 2026-11-04 about 15:15 Pacific (PC clock 16:15): steady, no changes.** Live (autosave, game `ps`,
 status files, `capital_policy.json` and `sleeve_status.json` read over the API): BN10, $8.4-9.3b, hacking 205, karma -116,
 14 installed, 0 queued, factions Tian Di Hui and CyberSec. Every resident script plus crawler runs; `reserve` 0. CyberSec rep

@@ -15,7 +15,7 @@ const POLL_MS = 10_000
 const INCOME_WINDOW_SEC = 600
 // Resident scripts only: one that exits at once (gang-controller.js without a
 // gang) would be relaunched every pass. The profile's startup list follows.
-const MANAGERS = ["maintenance_steward.js", "money.js", "stack_manager.js", "faction_join.js", "hud_consolidated.js", "player_activity_controller.js", "dnet_root.js"]
+const MANAGERS = ["maintenance_steward.js", "money.js", "stack_manager.js", "faction_join.js", "hud_consolidated.js", "run_report.js", "player_activity_controller.js", "dnet_root.js"]
 const LAST = ["xp_filler.js"]
 
 function readPolicy(ns) {

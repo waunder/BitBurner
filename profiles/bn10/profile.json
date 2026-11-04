@@ -1,8 +1,9 @@
 {
   "name": "bn10",
-  "description": "BitNode 10: sleeve controller and Covenant purchases. No darknet scripts (see docs/architecture-profiles.md, Placement decisions).",
+  "description": "BitNode 10: sleeve controller and Covenant purchases, plus the bn15 darknet family (The Red Pill can come from the 4th lab in BN10).",
   "extends": [
-    "core"
+    "core",
+    "bn15"
   ],
   "bitnodes": [
     10
@@ -13,9 +14,11 @@
     "sleeve_buyer_logic.js": "profiles/bn10/sleeve/sleeve_buyer_logic.js",
     "sleeve_buyer.js": "profiles/bn10/sleeve/sleeve_buyer.js"
   },
-  "config": {},
+  "config": {
+    "player_activity_config.json": "profiles/bn10/config/player_activity_config.json"
+  },
   "startup": [
     "sleeve_controller.js"
   ],
-  "notes": "Start sleeve_controller.js in the first hour (about 26GB); start sleeve_buyer.js after joining The Covenant. Core config defaults apply (neutral player_activity_config.json)."
+  "notes": "Extends bn15 for the darknet scripts and dnet_root.js; bn10 config overrides bn15 BN15-tuned player_activity_config.json with the neutral one. startup.js launches the manifest startup list (dnet_root.js, then sleeve_controller.js, about 26GB) after core. Start sleeve_buyer.js after joining The Covenant; set covenantTarget true near 20 installs."
 }

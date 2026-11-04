@@ -194,3 +194,13 @@ Rule used: core if any BitNode needs it, profile only if a BitNode can run witho
 1. Darknet in BN10 or not (above). Default as built: not.
 2. Whether to make `startup.js` read the profile's `startup` list, or keep launching by hand in BN10.
 3. The daemon must be restarted before `switch` (the running one cannot read the map form).
+
+### Added 2026-11-03 at review
+
+- **Profile startup lists are live.** `tools/profile.py build` writes the profile's `startup` list
+  into `sync_manifest.json`. `startup.js` launches its core list, then that list. `dnet_root.js`
+  left the core list and is now bn15's startup entry, so the bn15 launch order is unchanged.
+- **bn10 extends bn15.** The Red Pill can come from the 4th darknet lab in BN10, so the darknet
+  family ships there too. `profiles/bn10/config/player_activity_config.json` (the neutral default)
+  overrides bn15's BN15-tuned config. The bn10 startup list is `dnet_root.js`, then
+  `sleeve_controller.js`.

@@ -1,0 +1,18 @@
+{
+  "enabled": true,
+  "override": "auto",
+  "physicalTarget": 0,
+  "charismaTarget": 0,
+  "covenantTarget": false,
+  "covenantCloseFraction": 0.5,
+  "priorityAugs": [],
+  "repBeforeGates": true,
+  "focusWork": true,
+  "gym": "Powerhouse Gym",
+  "university": "Rothman University",
+  "factionWorkType": "hacking",
+  "cooldownMs": 600000,
+  "repInvestmentMaxPriceMultiple": 250,
+  "crimeKarmaTarget": -54000,
+  "charismaAugs": []
+}

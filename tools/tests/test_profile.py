@@ -156,20 +156,19 @@ class RealRepoTests(unittest.TestCase):
         fresh = P.build_manifest(P.resolve(REPO, committed["profile"]))
         self.assertEqual(committed, fresh)
 
-    def test_bn15_and_bn10_differ_only_by_their_own_files(self):
+    def test_bn10_is_bn15_plus_sleeves(self):
+        # bn10 extends bn15 for the darknet (Red Pill from the 4th lab), adding only sleeves.
         a, b = P.resolve(REPO, "bn15"), P.resolve(REPO, "bn10")
-        core = P.load_layer(REPO, "core")
-        shared = set(core.files) | set(core.config)
-        self.assertTrue(shared <= set(a.files) and shared <= set(b.files))
-        self.assertFalse(any(g.startswith("dnet_") for g in b.files))
-        self.assertTrue(all(g.startswith("sleeve_") for g in set(b.files) - shared))
+        self.assertTrue(set(a.files) <= set(b.files))
+        self.assertTrue(all(g.startswith("sleeve_") for g in set(b.files) - set(a.files)))
+        self.assertEqual(b.startup, ["dnet_root.js", "sleeve_controller.js"])
 
     def test_game_paths_keep_flat_and_special_subpaths(self):
         files = P.resolve(REPO, "bn15").files
         for p in ("mcp.js", "hacking/crawler.js", "scripts/hack.js", "dnet_lib.js", "player_activity_config.json"):
             self.assertIn(p, files)
         self.assertEqual(files["player_activity_config.json"], "profiles/bn15/config/player_activity_config.json")
-        self.assertEqual(P.resolve(REPO, "bn10").files["player_activity_config.json"], "core/config/player_activity_config.json")
+        self.assertEqual(P.resolve(REPO, "bn10").files["player_activity_config.json"], "profiles/bn10/config/player_activity_config.json")
 
 
 class StageTests(unittest.TestCase):

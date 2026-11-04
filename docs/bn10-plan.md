@@ -130,22 +130,23 @@ has chosen BN10, the World Daemon is destroyed, and the game is in BN10:
    restarts it). Confirm `ctl-status` shows `"manifest_format": "map"`.
 3. `python tools/profile.py plan bn10` (offline preview), then
    `python tools/profile.py switch bn10 --live`. It checks the game is in BN10, backs up and
-   validates the save, writes `sync_manifest.json` for bn10, pushes every file, and deletes the
-   BN15 profile's game files (the `dnet_*` family) that the bn10 manifest does not list.
+   validates the save, writes `sync_manifest.json` for bn10, pushes every file, and deletes any
+   previous-profile game files the bn10 manifest does not list (bn10 extends bn15, so the darknet
+   family stays).
 4. `python tools/profile.py check` (add `--content` to compare bytes), then `run startup.js`.
-   `startup.js` still lists `dnet_root.js`, which no longer exists in the game: the launch prints
-   one failure line for it, which is expected.
+   `startup.js` launches the core list, then the manifest's `startup` list: `dnet_root.js`, then
+   `sleeve_controller.js` (about 26GB; if home is still too small it reports a failure; rerun
+   `run sleeve_controller.js` once home has room).
 5. **Settings after the switch:**
    - `player_activity_config.json` is already the neutral core default in BN10 (`charismaTarget` 0,
      no `companyTarget`, no `priorityAugs`). Set `covenantTarget` true once installs near 20.
    - `capital_policy.json` (a game file, not in the repo): set `reserve` and `homeRamTarget` once
      BN10 income is known. Raise `reserve` toward $10t when the first Covenant sleeve is near,
      because `capital_manager.js` spends the same cash.
-   - Start `sleeve_controller.js` in the first hour, for 2 sleeves on shock recovery. It needs
-     about 26GB, so start it once home has room. Start `sleeve_buyer.js` after joining The Covenant.
-6. **Darknet decision for Ken:** the bn10 profile ships no darknet scripts. The Red Pill still
-   comes from the 4th lab in BN10; decide early with `dnet_roi.js` data whether that beats
-   Daedalus at hacking x0.35. If yes, add `bn15` to bn10's `extends` (one line in
-   `profiles/bn10/profile.json`), rebuild, and run `switch bn10 --live` again.
+   - Check `sleeve_controller.js` is running (2 sleeves on shock recovery). Start `sleeve_buyer.js`
+     after joining The Covenant.
+6. **Darknet:** bn10 extends bn15, so the darknet runs in BN10 too (decided 2026-11-03: the Red
+   Pill can come from the 4th lab there). Check with `dnet_roi.js` data whether it beats Daedalus at
+   hacking x0.35; if it does not pay, drop `bn15` from bn10's `extends`, rebuild, and switch again.
 7. **Roll back** if needed: the old flat layout is the parent commit of the merge, and the save
    backup from step 3 restores the game.

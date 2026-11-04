@@ -5,6 +5,9 @@
     "core",
     "bn15"
   ],
+  "startup": [
+    "dnet_root.js"
+  ],
   "files": {
     "sync_manifest.json": "sync_manifest.json",
     "BN2-roadmap.txt": "docs/archive/BN2-roadmap.txt",

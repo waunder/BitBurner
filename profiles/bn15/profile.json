@@ -47,5 +47,5 @@
   "startup": [
     "dnet_root.js"
   ],
-  "notes": "core/startup/startup.js still hard-codes the full launch list including dnet_root.js; 'startup' records what this profile expects beyond core. restart_mcp.js and mcp_launch.js start dnet_* scripts only on request."
+  "notes": "startup.js launches the manifest startup list (dnet_root.js) after its core list. restart_mcp.js and mcp_launch.js start dnet_* scripts only on request. bn10 extends this profile for the darknet."
 }

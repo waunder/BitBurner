@@ -163,6 +163,8 @@ def build_manifest(merged: Merged) -> dict:
         ),
         "profile": merged.profile,
         "layers": merged.chain,
+        # startup.js launches these after its core list.
+        "startup": merged.startup,
         "files": files,
     }
 

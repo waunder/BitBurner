@@ -1449,6 +1449,14 @@ only a status older than 5 minutes reads "controller status stale".
   every pass; it does not retain a stale capability failure across resets.
   When the requested activity is already active, it leaves that work in place
   and preserves accumulated progress.
+- **Covenant goal (BN10 only):** `covenantTarget: true` (default `false`) trains toward
+  The Covenant's invite (`COVENANT` in `player_activity_logic.js`: all combat stats 850, hacking
+  850; 20 installed augmentations and $75b are the other gates, from bitburner-src
+  `src/Faction/FactionInfo.tsx`). It starts once installed + queued augmentations reach 20 and
+  cash reaches `covenantCloseFraction` (default 0.5) of $75b, using the gym action for the weakest
+  combat stat and then Algorithms for hacking. It sits after the cash-crime step and ahead of
+  company, priority and charisma work, applies only in auto mode and BitNode 10, and stops once
+  The Covenant is joined. `faction_join.js` accepts the invite unchanged.
 - **Scope:** selects only player work (gym, Algorithms, faction hacking, or
   crime). It never buys/installs augmentations, trades, allocates share RAM,
   or controls Darknet. The consolidated HUD shows both the capital phase and
@@ -1506,6 +1514,29 @@ and is assumed to be 1, so chances can be slightly optimistic.
   shows as that sleeve's `error` and is retried the next pass. Stale or failed
   readiness data means no rep target, so sleeves fall to money crime.
 - **Test:** `node --test sleeve_logic.test.js`.
+
+### `sleeve_buyer.js`
+
+BN10 only; not in `sync_manifest.json` until BN10 starts. Buys Covenant sleeves, then sleeve
+memory, with cash above the `reserve` in `capital_policy.json`. Pure rules in
+`sleeve_buyer_logic.js`; game rules in `docs/bn10-plan.md` package B. Four `ns.sleeve` calls
+(`getSleeveCost`, `getSleeve`, `purchaseSleeve`, `upgradeMemory`), about 16GB by the 4GB rule.
+
+- **Start:** `run sleeve_buyer.js`, after joining The Covenant. If it is not BN10 or the player is
+  not yet a member it writes the reason to `sleeve_buyer_status.json` and exits; rerun after joining.
+- **Policy:** a sleeve whenever spendable (cash minus reserve) covers `getSleeveCost()`. Memory only
+  after the first Covenant sleeve, on the lowest-memory sleeve, the largest batch of up to 10
+  points that spendable covers. Memory cost is computed locally from the game formula.
+  Note `capital_manager.js` spends the same cash above the reserve; raise `reserve` to save.
+- **Payoff model:** a full sleeve earns `sleeveShare` (policy key, default 0.25) of smoothed player
+  income, scaled by memory/100 because sync restarts at memory. That share is an assumption, not
+  a measurement. `paybackHours` is cost over that rate; null while income is 0.
+- **Writes:** `sleeve_buyer_status.json`: `idle` reason, or `income`, `sleeveCost`, `reserve`, last
+  `action` and `outcome`, and `purchases` (last 50) each with cost, payoff model and outcome
+  (`ok`, game message, cash before and after).
+- **Failure modes:** a refused purchase is recorded with `ok: false` and retried after 30s.
+  `purchaseSleeve` and `upgradeMemory` throw outside BN10. After five sleeves it only buys memory.
+- **Test:** `node --test sleeve_buyer_logic.test.js`
 
 ### `dnet_scorecard.js`
 

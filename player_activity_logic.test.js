@@ -149,3 +149,34 @@ test("focuses rep work hourly only while it is the selected activity", () => {
   assert.equal(shouldFocus({ ...base, selected: false }), false)
   assert.equal(shouldFocus({ ...base, config: {} }), false)
 })
+
+const covenantBase = {
+  bitNode: 10,
+  player: { money: 60e9, factions: [], skills: { hacking: 900, strength: 500, defense: 700, dexterity: 800, agility: 850 } },
+  augmentation: { ok: true, installedCount: 18, queuedCount: 3 },
+  config: { covenantTarget: true, physicalTarget: 0, minTrainingCash: 0 },
+}
+
+test("covenantTarget trains the weakest combat stat to 850 once augs and cash are close", () => {
+  const result = choosePlayerActivity(covenantBase)
+  assert.equal(result.action, "gym")
+  assert.equal(result.stat, "strength")
+  assert.equal(result.target, 850)
+})
+
+test("covenantTarget is off by default and outside BN10", () => {
+  assert.notEqual(choosePlayerActivity({ ...covenantBase, config: { ...covenantBase.config, covenantTarget: false } }).action, "gym")
+  assert.notEqual(choosePlayerActivity({ ...covenantBase, bitNode: 15 }).action, "gym")
+})
+
+test("covenantTarget waits for augmentations and cash", () => {
+  assert.notEqual(choosePlayerActivity({ ...covenantBase, augmentation: { ok: true, installedCount: 10, queuedCount: 2 } }).action, "gym")
+  assert.notEqual(choosePlayerActivity({ ...covenantBase, player: { ...covenantBase.player, money: 1e9 } }).action, "gym")
+})
+
+test("covenantTarget falls through to hacking, then stops once the faction is joined", () => {
+  const trained = { ...covenantBase.player, skills: { hacking: 700, strength: 850, defense: 850, dexterity: 850, agility: 850 } }
+  assert.equal(choosePlayerActivity({ ...covenantBase, player: trained }).action, "algorithms")
+  const joined = { ...covenantBase.player, factions: ["The Covenant"] }
+  assert.notEqual(choosePlayerActivity({ ...covenantBase, player: joined }).action, "gym")
+})

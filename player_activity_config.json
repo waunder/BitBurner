@@ -3,6 +3,8 @@
   "override": "auto",
   "physicalTarget": 0,
   "charismaTarget": 3000,
+  "covenantTarget": false,
+  "covenantCloseFraction": 0.5,
   "priorityAugs": ["Neuroreceptor Management Implant"],
   "repBeforeGates": true,
   "focusWork": true,

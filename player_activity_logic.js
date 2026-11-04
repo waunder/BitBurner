@@ -31,7 +31,45 @@ export function pickCrime(rows, cashShort) {
   return best
 }
 
-export function choosePlayerActivity({ player = {}, nextGate = null, augmentation = null, crimeCandidate = null, config = {} } = {}) {
+// bitburner-src dev, src/Faction/FactionInfo.tsx, TheCovenant inviteReqs:
+// [haveAugmentations(20), haveMoney(75e9), haveSkill("hacking", 850), haveCombatSkills(850)]
+// haveAugmentations counts installed augmentations only (src/Faction/FactionJoinCondition.ts).
+export const COVENANT = { faction: "The Covenant", augs: 20, money: 75e9, hacking: 850, combat: 850 }
+
+/**
+ * Train toward The Covenant's stat gates once its augmentation and money gates are close.
+ * Off unless `covenantTarget` is true, and BN10 only: the faction's sleeve shop works nowhere else.
+ */
+function covenantTraining({ player, augmentation, config, bitNode }) {
+  if (config.covenantTarget !== true || Number(bitNode) !== 10) return null
+  if ((player.factions || []).includes(COVENANT.faction)) return null
+  const owned = number(augmentation?.installedCount) + number(augmentation?.queuedCount)
+  const fraction = Math.min(1, Math.max(0, number(config.covenantCloseFraction ?? 0.5)))
+  if (owned < COVENANT.augs || number(player.money) < COVENANT.money * fraction) return null
+  const weakest = PHYSICAL_SKILLS
+    .map((skill) => ({ skill, level: number(player.skills?.[skill]) }))
+    .filter((item) => item.level < COVENANT.combat)
+    .sort((a, b) => a.level - b.level || PHYSICAL_SKILLS.indexOf(a.skill) - PHYSICAL_SKILLS.indexOf(b.skill))[0]
+  if (weakest) {
+    return {
+      action: "gym", gym: config.gym || "Powerhouse Gym", stat: weakest.skill,
+      target: COVENANT.combat, current: weakest.level,
+      reason: `${weakest.skill} ${weakest.level}/${COVENANT.combat}: The Covenant invite needs all combat stats ${COVENANT.combat}`,
+      confidence: "HIGH",
+    }
+  }
+  const hacking = number(player.skills?.hacking)
+  if (hacking < COVENANT.hacking) {
+    return {
+      action: "algorithms", university: config.university || "Rothman University", city: config.universityCity || "Sector-12", course: "Algorithms",
+      required: COVENANT.hacking, host: COVENANT.faction,
+      reason: `H${hacking} → H${COVENANT.hacking} for The Covenant invite`, confidence: "HIGH",
+    }
+  }
+  return null
+}
+
+export function choosePlayerActivity({ player = {}, nextGate = null, augmentation = null, crimeCandidate = null, config = {}, bitNode = null } = {}) {
   const override = String(config.override || "auto").toLowerCase()
   if (config.enabled === false || override === "manual") {
     return { action: "hold", reason: "manual override is active", confidence: "HIGH" }
@@ -70,6 +108,10 @@ export function choosePlayerActivity({ player = {}, nextGate = null, augmentatio
   const trainingCash = number(config.minTrainingCash ?? 1e7)
   if (override === "auto" && number(player.money) < trainingCash && crimeCandidate) {
     return { ...crimeCandidate, reason: `crime for cash ${number(player.money).toFixed(0)}/${trainingCash} before training`, confidence: "HIGH" }
+  }
+  if (override === "auto") {
+    const covenant = covenantTraining({ player, augmentation, config, bitNode })
+    if (covenant) return covenant
   }
   // Corporate factions invite on company rep alone, and sell the charisma augmentations the later labs need.
   const corp = config.companyTarget

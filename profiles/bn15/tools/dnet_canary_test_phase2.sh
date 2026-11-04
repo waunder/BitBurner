@@ -7,7 +7,7 @@
 
 set -e
 
-REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 CONTROL_PORT=${CONTROL_PORT:-12527}
 LOG_FILE="$REPO_DIR/docs/darknet-canary-phase2-log.md"
 
@@ -30,7 +30,7 @@ echo "[$(date '+%H:%M:%S')] ✅ Game connected to Remote API"
 
 # Kill scorecard if running
 echo "[$(date '+%H:%M:%S')] Killing dnet_scorecard.js (if running)..."
-python3 "$REPO_DIR/tools/bb_remote.py" ctl-push dnet_killswarm.js dnet_killswarm.js > /dev/null 2>&1 || true
+python3 "$REPO_DIR/tools/bb_remote.py" ctl-push dnet_killswarm.js "$REPO_DIR/profiles/bn15/dnet/dnet_killswarm.js" > /dev/null 2>&1 || true
 python3 "$REPO_DIR/tools/bb_remote.py" ctl-restart > /dev/null 2>&1 || true
 sleep 2
 
@@ -99,7 +99,7 @@ for RUN in 1 2 3; do
 
   echo "[$(date '+%H:%M:%S')] Test window closed"
   echo "[$(date '+%H:%M:%S')] Cleaning up darknet processes..."
-  python3 "$REPO_DIR/tools/bb_remote.py" ctl-push dnet_killswarm.js dnet_killswarm.js > /dev/null 2>&1 || true
+  python3 "$REPO_DIR/tools/bb_remote.py" ctl-push dnet_killswarm.js "$REPO_DIR/profiles/bn15/dnet/dnet_killswarm.js" > /dev/null 2>&1 || true
   sleep 2
 
   if [ $FREEZE_DETECTED -eq 1 ]; then

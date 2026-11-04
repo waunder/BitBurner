@@ -1,0 +1,12 @@
+{
+  "name": "_template",
+  "description": "Copy this folder to profiles/<name>/ and fill it in. Not a real profile: profile.py refuses to build it.",
+  "extends": [
+    "core"
+  ],
+  "bitnodes": [],
+  "files": {},
+  "config": {},
+  "startup": [],
+  "notes": "files: {game path: repo path} for scripts only this BitNode needs. config: files that override a core config default. startup: scripts startup.js should launch beyond the core list."
+}

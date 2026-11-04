@@ -14,24 +14,25 @@
     "jsx": "react",
     "paths": {
       "@ns": [
-        "NetscriptDefinitions.d.ts"
+        "./NetscriptDefinitions.d.ts"
       ],
       "@/*": [
-        "./*"
+        "../build/bn15/*"
       ],
       "*": [
-        "./*"
+        "../build/bn15/*"
       ],
       "/*": [
-        "./*"
+        "../build/bn15/*"
       ]
     }
   },
   "include": [
-    "**/*"
+    "../core/**/*",
+    "../profiles/**/*"
   ],
   "files": [
-    "NetscriptDefinitions.d.ts",
-    "NetscriptGlobals.d.ts"
+    "./NetscriptDefinitions.d.ts",
+    "./NetscriptGlobals.d.ts"
   ]
 }

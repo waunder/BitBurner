@@ -1,0 +1,21 @@
+{
+  "name": "bn10",
+  "description": "BitNode 10: sleeve controller and Covenant purchases. No darknet scripts (see docs/architecture-profiles.md, Placement decisions).",
+  "extends": [
+    "core"
+  ],
+  "bitnodes": [
+    10
+  ],
+  "files": {
+    "sleeve_logic.js": "profiles/bn10/sleeve/sleeve_logic.js",
+    "sleeve_controller.js": "profiles/bn10/sleeve/sleeve_controller.js",
+    "sleeve_buyer_logic.js": "profiles/bn10/sleeve/sleeve_buyer_logic.js",
+    "sleeve_buyer.js": "profiles/bn10/sleeve/sleeve_buyer.js"
+  },
+  "config": {},
+  "startup": [
+    "sleeve_controller.js"
+  ],
+  "notes": "Start sleeve_controller.js in the first hour (about 26GB); start sleeve_buyer.js after joining The Covenant. Core config defaults apply (neutral player_activity_config.json)."
+}

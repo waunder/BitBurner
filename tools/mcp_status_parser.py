@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-STATUS_FILE = Path(__file__).resolve().parent / 'mcp_status.json'
+STATUS_FILE = Path(__file__).resolve().parent.parent / 'runtime' / 'mcp_status.json'
 
 def fmt_num(value):
     if not isinstance(value, (int, float)):

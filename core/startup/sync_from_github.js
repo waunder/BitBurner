@@ -78,10 +78,13 @@ export async function main(ns) {
     return
   }
 
-  let files = manifest.files ?? []
+  // manifest.files maps game path -> repo path; the old list form is read as identity.
+  let files = Array.isArray(manifest.files)
+    ? manifest.files.map((f) => [f, f])
+    : Object.entries(manifest.files ?? {})
   if (pattern) {
     const regex = globToRegex(pattern)
-    files = files.filter((f) => regex.test(f))
+    files = files.filter(([game]) => regex.test(game))
     if (files.length === 0) {
       ns.tprint(`sync_from_github: no manifest entries match "${pattern}"`)
       return
@@ -92,14 +95,15 @@ export async function main(ns) {
 
   const succeeded = []
   const failed = []
-  for (const file of files) {
-    const ok = await ns.wget(RAW_BASE + file, file)
+  for (const [game, repo] of files) {
+    // Fetch the repo path, write the game path: the repo tree is not the game's flat layout.
+    const ok = await ns.wget(RAW_BASE + repo, game)
     if (ok) {
-      succeeded.push(file)
-      ns.print(`OK   ${file}`)
+      succeeded.push(game)
+      ns.print(`OK   ${game}`)
     } else {
-      failed.push(file)
-      ns.print(`FAIL ${file}`)
+      failed.push(game)
+      ns.print(`FAIL ${game}`)
     }
   }
 
@@ -114,6 +118,7 @@ export async function main(ns) {
       ok: failed.length === 0,
       repo: REPO,
       branch: BRANCH,
+      profile: manifest.profile ?? null,
       pattern: pattern ?? null,
       requested: files.length,
       succeeded: succeeded.length,

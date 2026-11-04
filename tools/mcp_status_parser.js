@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const STATUS_FILE = path.resolve(__dirname, 'mcp_status.json');
+const STATUS_FILE = path.resolve(__dirname, '..', 'runtime', 'mcp_status.json');
 
 function loadStatus() {
   if (!fs.existsSync(STATUS_FILE)) {

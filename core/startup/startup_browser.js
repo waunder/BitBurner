@@ -103,6 +103,13 @@ export async function main(ns) {
   ns.tprint(`startup_browser: done — ${started} started, ${skipped} already running, ${failed} failed`)
 }
 
+// manifest.files maps game path -> repo path (the old list form is read as identity).
+// Twin of sync_from_github.js's own entry parsing.
+function manifestEntries(manifest) {
+  const files = manifest.files ?? {}
+  return Array.isArray(files) ? files.map((f) => [f, f]) : Object.entries(files)
+}
+
 // Duplicate of sync_from_github.js's pull loop -- see this file's own header
 // comment for why it isn't a shared import.
 async function pullFromGithub(ns) {
@@ -118,13 +125,13 @@ async function pullFromGithub(ns) {
     return { ok: false, reason: `manifest parse failed: ${err}`, requested: 0, succeeded: [], failed: [] }
   }
 
-  const files = manifest.files ?? []
+  const files = manifestEntries(manifest)
   const succeeded = []
   const failed = []
-  for (const file of files) {
-    const ok = await ns.wget(RAW_BASE + file, file)
-    if (ok) succeeded.push(file)
-    else failed.push(file)
+  for (const [game, repo] of files) {
+    const ok = await ns.wget(RAW_BASE + repo, game)
+    if (ok) succeeded.push(game)
+    else failed.push(game)
   }
 
   return { ok: failed.length === 0, requested: files.length, succeeded, failed }

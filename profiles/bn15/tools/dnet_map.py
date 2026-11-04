@@ -12,7 +12,7 @@ from pathlib import Path
 
 import websockets
 
-REPO = Path(__file__).resolve().parent.parent
+REPO = Path(__file__).resolve().parents[3]  # profiles/bn15/tools/ -> repo root
 READ_GRAPH = """(()=>{const out=[];for(const b of document.querySelectorAll('button')){
 const k=Object.keys(b).find(k=>k.startsWith('__reactFiber'));if(!k)continue;let f=b[k];
 for(let i=0;i<6&&f;i++,f=f.return){const s=f.memoizedProps?.server;if(s?.hostname){
@@ -59,7 +59,8 @@ def shortest_route(graph, start="darkweb"):
 
 
 def push_route(route):
-    file = REPO / "dnet_route.json"
+    file = REPO / "runtime" / "dnet_route.json"  # generated, gitignored
+    file.parent.mkdir(exist_ok=True)
     file.write_text(json.dumps({"ts": int(time.time() * 1000), "path": route}))
     done = subprocess.run([sys.executable, str(REPO / "tools/bb_remote.py"), "ctl-push", "dnet_route.json", str(file)], capture_output=True, text=True)
     return done.stdout.strip() or done.stderr.strip()

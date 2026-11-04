@@ -17,7 +17,7 @@ worker for faction rep, karma and money in every later BitNode.
    half the max RAM, and hacking level is x0.35. Expect much slower income than BN15.
 2. **Sleeves on from the first hour.** BN10 gives 2 sleeves at once (SF10 level 0, +1 for
    being in BN10, and the base is min(3, ...)). They start at shock 100 and earn nothing, so
-   shock recovery comes first (about 28 game hours from 100 to 0). Then they work in
+   shock recovery comes first (about 18.5 game hours from 100 to 0). Then they work in
    parallel: karma for the gang, rep for the next augmentation, then money.
 3. **Augmentations.** Prices are x5 money and x2 rep, so installs are fewer and later.
    `aug_install.js` and the readiness planner already price from the game.
@@ -111,3 +111,25 @@ its logic), and do not touch `hud_consolidated.js`.
 
 Later, not yet assigned: grafting automation, and Bladeburner (sleeves can do it, but it
 needs Bladeburner, which BN10 does not give).
+
+## Status, 2026-11-03
+
+Packages A, B and C are built by subagents, reviewed, and merged on branch `bn10-prep`
+(492 tests pass). The branch is not merged to `main`, because `main` syncs to the live BN15
+game. Details: package reports in `docs/processes.md`, audit in `docs/bn10-readiness-audit.md`.
+
+## Checklist at BN10 start
+
+Do these after Ken has chosen BN10, the World Daemon is destroyed, and the game is in BN10:
+
+1. Merge `bn10-prep` into `main`. Add `sleeve_controller.js`, `sleeve_logic.js`,
+   `sleeve_buyer.js` and `sleeve_buyer_logic.js` to `sync_manifest.json` in the same commit.
+2. `player_activity_config.json` is BN15-tuned (audit, needs Ken): set `charismaTarget` 0,
+   drop `companyTarget`, clear `priorityAugs`. Set `covenantTarget` true once installs near 20.
+3. `capital_policy.json` (a game file): set `reserve` and `homeRamTarget` once BN10 income is
+   known. Raise `reserve` toward $10t when the first Covenant sleeve is near, because
+   `capital_manager.js` spends the same cash.
+4. Start `sleeve_controller.js` in the first hour, for 2 sleeves on shock recovery. It needs
+   about 26GB, so start it once home has room. Start `sleeve_buyer.js` after joining The Covenant.
+5. Darknet: the Red Pill still comes from the 4th lab in BN10. Decide early with
+   `dnet_roi.js` whether that beats Daedalus at hacking x0.35.

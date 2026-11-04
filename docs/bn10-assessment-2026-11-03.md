@@ -56,7 +56,7 @@ is a judgement, not a measurement.
 - **Money from sleeve work goes 100% to the player.** Exp shared with the player is scaled by sync.
 
 The catch is shock. A new or reset sleeve starts at shock 100, which earns nothing.
-Recovery work takes about 28 hours of game time from 100 to 0 at intelligence bonus 1, and
+Recovery work takes about 18.5 hours of game time from 100 to 0 at intelligence bonus 1 (0.0003 a cycle in all: 0.0001 from any work plus 0.0002 from the recovery task; package A, `Sleeve.ts` `process`), and
 it resets on every BitNode change. Sync starts at the sleeve's memory value. So the first
 day of each node is mostly recovery, and the payoff grows with node length and with SF10 level.
 

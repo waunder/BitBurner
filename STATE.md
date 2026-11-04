@@ -10,7 +10,9 @@ killed weakenGrowHack on 24 servers. `run startup.js` (after killing hud_consoli
 stack_manager; failed for RAM: hud_consolidated, player_activity_controller, xp_filler, faction_join,
 gang-controller, dnet_root, sleeve_controller. MCP is preparing targets across all 24 rooted servers. Home is
 full again; capital_bootstrap keeps buying home RAM (next $47.8m) until capital_manager fits, so HTTPWorm waits
-until then. **Next: as home grows, rerun `run startup.js` (free 4.55GB first); do not rerun early_spread now that MCP runs.**
+until then. Correction to the 04:15 test: the darknet does earn. With dnet_root off, the self-spreading `dnet_crawl.js`
+on darknet hosts kept opening darkweb caches, four of them cash ($8.7m to $9.0m each, $35.3m by 04:42). BN10 money sources
+then: coding contracts $220.8m, hacking $120.9m, darknet $35.3m. **Next: as home grows, rerun `run startup.js` (free 4.55GB first); do not rerun early_spread now that MCP runs.**
 
 **BN10 early game, 2026-11-04 about 04:15 Pacific.** Darknet versus hacking test: in 30 min the darknet
 earned $1,353 (but charisma 18 to 70); hack loops on rooted starter servers earned $1.37m in about 18 min

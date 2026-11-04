@@ -3,6 +3,15 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**MCP back, 2026-11-04 about 04:35 Pacific (PC clock 05:35), Ken awake.** capital_manager bought home 32 to
+64GB ($15.1m) at 04:33. The loops are gone: new `early_stop.js` (core/dev, pushed by hand, not in the manifest)
+killed weakenGrowHack on 24 servers. `run startup.js` (after killing hud_consolidated and capital_manager for its
+4.55GB): started mcp_supervisor, crawler, mcp.js, capital_bootstrap, maintenance_steward, mcp_xp, money.js,
+stack_manager; failed for RAM: hud_consolidated, player_activity_controller, xp_filler, faction_join,
+gang-controller, dnet_root, sleeve_controller. MCP is preparing targets across all 24 rooted servers. Home is
+full again; capital_bootstrap keeps buying home RAM (next $47.8m) until capital_manager fits, so HTTPWorm waits
+until then. **Next: as home grows, rerun `run startup.js` (free 4.55GB first); do not rerun early_spread now that MCP runs.**
+
 **BN10 early game, 2026-11-04 about 04:15 Pacific.** Darknet versus hacking test: in 30 min the darknet
 earned $1,353 (but charisma 18 to 70); hack loops on rooted starter servers earned $1.37m in about 18 min
 (game money sources). So: `mcp.js` is paused (it cannot fit beside the rest on 32GB anyway), `dnet_root.js`

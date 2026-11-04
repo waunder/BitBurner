@@ -3,6 +3,13 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-04 about 15:15 Pacific (PC clock 16:15): steady, no changes.** Live (autosave, game `ps`,
+status files, `capital_policy.json` and `sleeve_status.json` read over the API): BN10, $8.4-9.3b, hacking 205, karma -116,
+14 installed, 0 queued, factions Tian Di Hui and CyberSec. Every resident script plus crawler runs; `reserve` 0. CyberSec rep
+12.6k of 37.5k for CSP Gen II (about 9k/h, so roughly 3 h, modelled). The avmnite-02h gate now reads hacking 216
+(`player_activity_status.json`), not 211. Sleeve 0: shock 0, sync 58.9, synchronizing. No Red Pill, so no World Daemon.
+Note: `runtime/capital_policy.json` is a stale pull (shows the old $70b); read the live file with `ctl-get`.
+
 **Hourly check, 2026-11-04 about 14:15 Pacific (PC clock 15:15): crawler now retries faction backdoors.** Live (autosave,
 game `ps`, status files, `capital_policy.json` read over the API): BN10, $1.06b, hacking 165, karma -108, home 8.19TB (half
 used), 14 installed, 0 queued, factions Tian Di Hui and CyberSec (NiteSec lost at the install). Every resident script

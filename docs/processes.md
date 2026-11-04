@@ -284,7 +284,7 @@ No solver: PHP 5.4 over 5 digits, OpenWebAccessPoint above difficulty 16. A crac
 
 Cross the empty rows. Game source: every 8th row (8, 16, 24) can never hold a host and links join only adjacent rows, so no chain walks past 7.
 `induceServerMigration` needs only a direct link. At 100% charge the host moves to a random free slot in rows difficulty-2 to difficulty+4, capped at the lab row minus 1, and scripts on it keep running. A host placed in the row before the lab links to it on arrival.
-`dnet_root.js` runs `dnet_lift.js` on every stasis-linked host without an induce running, until a solve since the last install. It picks the hardest neighbour with a known password, a difficulty that can clear the next wall (5 up to row 7, 13 up to row 15, 21 up to row 23) and 13.5GB, starts `dnet_rider.js` there, then fills its own host with `dnet_induce.js`, killing the charisma worker and walker on that host. The rider starts `dnet_scout.js` once the host is deeper than it began. The scout then links its own host when that beats the shallowest link.
+`dnet_root.js` runs `dnet_lift.js` on every stasis-linked host without an induce running, until a solve since the last install. It picks the hardest neighbour with a known password, a difficulty that can clear the next wall (5 up to row 7, 13 up to row 15, 21 up to row 23) and 13.5GB, starts `dnet_rider.js` there, then fills its own host with `dnet_induce.js`, killing the charisma worker and walker on that host. The rider starts `dnet_scout.js` once the host is deeper than it began, after taking the scout's files from home. The scout then links its own host when that beats the shallowest link.
 Charge per call is threads x 0.01 x (charisma + 500) / (200 x difficulty + 1000), at 6s a call, and the call pays charisma exp.
 
 - **Writes:** `dnet_lift_status.json` (lifting, no-target, no-room, refused), `dnet_rider_status.json` (waiting, moved, scouting). Both hold the latest report from any host.
@@ -302,6 +302,10 @@ per call, every call, in `8s x 600 / (600 + charisma)`: about 4x phishing per th
 ### `restart_dnet_root.js`
 
 One-shot: restarts `dnet_root.js` with its args, stops riders on linked hosts, and restores work focus.
+
+### `dnet_refresh.js`
+
+One-shot on home: copies the darknet kit (lift, induce, rider, anchor, scout, lab, loot, promote and their libraries) from home to every host in `dnet_creds.txt` that accepts `connectToSession`. Run it after changing any of those files: chains and riders copy files host to host, so old copies otherwise keep travelling. Since 2026-11-03 the scout also pulls its files from home at start, and the rider before each scout it launches. Prints copied and refused counts.
 
 ### `dnet_anchor.js`
 

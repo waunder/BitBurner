@@ -9,6 +9,8 @@
 import { RIDER_STATUS, labSolved, riderShouldScout } from "dnet_scout_logic.js"
 
 const SCOUT = "dnet_scout.js"
+// A rider outlives source changes, so its scout takes the current files from home.
+const SCOUT_KIT = [SCOUT, "dnet_anchor.js", "dnet_scout_logic.js", "dnet_lib.js", "dnet_feedback.js", "dnet_lab.js", "dnet_lab_logic.js", "dnet_loot.js", "dnet_promote.js"]
 const LAB_STATUS = "dnet_lab_status.json"
 const POLL_MS = 15_000
 const RETRY_MS = 120_000
@@ -43,6 +45,7 @@ export async function main(ns) {
       tried = [...neighbours].sort().join()
       triedAt = Date.now()
       ns.kill("dnet_promote.js", host) // Left by the last scout; the next one needs the RAM.
+      await ns.scp(SCOUT_KIT, host, "home")
       report("scouting", { neighbours, pid: ns.exec(SCOUT, host, { preventDuplicates: true }) })
     }
   }

@@ -117,8 +117,9 @@ export async function main(ns) {
     return solver && runSolver(solver, guess => askServer(ns, target, guess), deadline)
   }
 
-  // dnet_root.js starts chains without the credentials the link moves need.
-  await ns.scp(CREDS_FILE, host, "home")
+  // dnet_root.js starts chains without the credentials the link moves need, and hops copy
+  // files host to host, so take the current source from home before passing it on.
+  await ns.scp([...FILES, CREDS_FILE], host, "home")
   const neighbours = neighbourDetails(ns)
   report("scouting", { neighbours: neighbours.length })
   const lab = neighbours.find(n => n.host.endsWith("l4byr1nth"))

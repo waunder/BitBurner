@@ -51,6 +51,7 @@
     "dnet_loot.js",
     "dnet_loot_realloc.js",
     "dnet_realloc.js",
+    "dnet_refresh.js",
     "dnet_phish.js",
     "dnet_promote.js",
     "restart_capital.js",

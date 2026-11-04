@@ -3,6 +3,14 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**BN10 early game, 2026-11-04 about 04:15 Pacific.** Darknet versus hacking test: in 30 min the darknet
+earned $1,353 (but charisma 18 to 70); hack loops on rooted starter servers earned $1.37m in about 18 min
+(game money sources). So: `mcp.js` is paused (it cannot fit beside the rest on 32GB anyway), `dnet_root.js`
+runs on home for charisma and cracking, and `scripts/weakenGrowHack.js joesguns` loops fill every rooted
+server (Ken's idea). BruteSSH bought; 12 servers rooted, 118 threads. `early_spread.js` (core/dev, pushed by
+hand, not in the manifest) roots what the owned openers allow and fills free RAM; rerun after each port
+opener. **When home fits `mcp.js` again: kill the weakenGrowHack loops first, then `run startup.js`.**
+
 **BN10 entered 2026-11-04 about 03:30 Pacific (PC clock 04:30).** Ken destroyed the World Daemon; at his word I
 entered BN10.1 (default options). SF15 awarded. Cutover done: `restructure` merged to main (f58e530), daemon
 restarted (map manifest, clean full sync of 142), `profile.py switch bn10 --live` (backup

@@ -1,9 +1,11 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-04 00:43 PST (01:43 on the PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 ## Current live state (supersedes everything below)
+
+**2026-11-04 01:15 PST (02:15 PC clock): World Daemon ready, Ken notified (hourly task).** Live save over DevTools: node 15, hacking 6,656 of the required 6,000 (`w0r1d_d43m0n` `requiredHackingSkill` read from the save), $128t, karma -6,681, 66 installed, none queued, Remote API connected, player on Daedalus hacking work. The daemon shows **rooted** (`hasAdminRights` true) by the existing automation since 00:43 PST; not backdoored, not destroyed, no BitNode chosen. The push notification tool reported "not sent" because the app terminal was active; the message is in the `bitburner-bn15-progress` session instead. **Next: Ken opens a BitBurner session and says "review the BN10 startup steps" (`docs/bn10-cutover-runbook.md`). The hourly task makes no further changes.**
 
 **Install 7 ran 00:39 PST 2026-11-04 (hourly task): the hacking augmentations are installed.** Before (00:15-00:39, save over DevTools, `ctl-status`, `augmentation_readiness.json`): node 15, $1.61q, hacking 3,795 of 6,000, karma -6,669, 52 installed, The L4w of Bayes queued, Remote API connected, MCP about $100b/s net. OmniTek InfoLoad became rep-ready at 00:38 (626.4k of 625k, about 126 rep/s as modelled). Backup `saves/bitburnerSave_pre-install7_BN15_2026-11-04.json.gz` (gzip checked, player parsed, L4w queued, SHA-256 5eae137658eccd4562f1a690eff0e3c09142cce6777f8412da6b74849ff4996b). `aug_install.js --install` (`aug_install_status.json`) bought 13: ENM Analyze Engine, PC Direct-Neural Interface, OmniTek InfoLoad, nextSENS, Neuronal Densification, Social Dynamics Processor, Synfibril Muscle, Bionic Legs, Bionic Spine, Combat Rib II and III, Augmented Targeting II and III; 6 NeuroFlux ($81.7b donated for NeuroFlux rep), no failures; home to 2,097,152GB, 7 cores.
 **After it (save 00:41 PST, `ps`):** 66 installed, none queued, all startup scripts running, controller on crime for cash as in earlier rebuilds. **Hacking 4,629 two minutes after the install** (exp 4.1e8). By level = mult x 0.6 x (32 ln exp - 200), 6,000 needs about 2.3e10 exp (modelled), so probably within the next hour or two. World Daemon not rooted, not touched.

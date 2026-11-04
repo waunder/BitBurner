@@ -64,14 +64,19 @@ export function donationPlan(offers, owned, money, repMult, donating, share = 0.
   for (const offer of offers) {
     if (!donating.includes(offer.faction) || held.has(offer.name) || offer.name === NEUROFLUX) continue
     const seen = need.get(offer.faction)
-    need.set(offer.faction, { rep: offer.rep, target: Math.max(seen?.target || 0, offer.repRequired) })
+    // Cheapest offer the gift would newly unlock: with augmentation prices at x5 (BN10) cash can
+    // be the limit, and a donation that leaves nothing affordable only burns cash.
+    const unlocked = offer.repRequired > offer.rep ? offer.price : Infinity
+    need.set(offer.faction, { rep: offer.rep, target: Math.max(seen?.target || 0, offer.repRequired), cheapest: Math.min(seen?.cheapest ?? Infinity, unlocked) })
   }
   let budget = money * share
+  let cash = money
   const plan = []
-  for (const [faction, { rep, target }] of [...need].sort((a, b) => (a[1].target - a[1].rep) - (b[1].target - b[1].rep))) {
+  for (const [faction, { rep, target, cheapest }] of [...need].sort((a, b) => (a[1].target - a[1].rep) - (b[1].target - b[1].rep))) {
     const amount = donationFor(target - rep, repMult)
-    if (!amount || amount > budget) continue
+    if (!amount || amount > budget || cash - amount < cheapest) continue
     budget -= amount
+    cash -= amount
     plan.push({ faction, amount, rep: target })
   }
   return plan

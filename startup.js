@@ -49,7 +49,10 @@
 // Priority order: income and its watchdog first, displays next, then
 // optional controllers that may exit at once (no gang, no Darkscape) and
 // briefly hold RAM while doing so. Failures get one retry after those exit.
-const SCRIPTS = ["mcp_supervisor.js", "hacking/crawler.js", "mcp.js", "capital_bootstrap.js", "maintenance_steward.js", "mcp_xp.js", "money.js", "stack_manager.js", "hud_consolidated.js", "player_activity_controller.js", "dnet_root.js", "xp_filler.js", "faction_join.js", "gang-controller.js"]
+// dnet_root.js is last: it stays resident and its darknet library makes it the
+// largest of the optional ones, so on a small home (BN10) it must not take the
+// RAM that faction_join.js and gang-controller.js need.
+const SCRIPTS = ["mcp_supervisor.js", "hacking/crawler.js", "mcp.js", "capital_bootstrap.js", "maintenance_steward.js", "mcp_xp.js", "money.js", "stack_manager.js", "hud_consolidated.js", "player_activity_controller.js", "xp_filler.js", "faction_join.js", "gang-controller.js", "dnet_root.js"]
 const RETRY_DELAY_MS = 3000
 
 export async function main(ns) {

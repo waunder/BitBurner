@@ -362,6 +362,8 @@ Buys every augmentation current rep and cash allow, dearest first because each
 purchase raises later prices, then NeuroFlux Governor levels with what is left.
 Rep-ready names in `priorityAugs` (`player_activity_config.json`) always fit: a dearer
 augmentation is skipped rather than leave too little cash for them.
+A donation is made only if the cash left still covers the cheapest augmentation it newly
+unlocks (matters when prices are x5, as in BN10; in BN15 cash was never the limit).
 With `--install` it then spends the rest on home RAM and cores, cheapest first, because
 both survive an install (only a BitNode reset clears them), then installs and restarts
 through `startup.js`. Back up the save first.
@@ -2265,17 +2267,27 @@ Brings up the whole suite from a clean slate in **one** command:
 the host, then launches, in priority order, `mcp_supervisor.js`,
 `hacking/crawler.js`, `mcp.js`, `maintenance_steward.js` (the MCP watchdog),
 `mcp_xp.js`, `mcp_money.js` (added 2026-11-01 at Ken's request),
-`hud_consolidated.js`, `player_activity_controller.js`, `dnet_root.js` and
-`gang-controller.js`. The last two may exit at once (no Darkscape, no gang)
+`hud_consolidated.js`, `player_activity_controller.js`, `xp_filler.js`,
+`faction_join.js`, `gang-controller.js` and, last, `dnet_root.js` (resident, and
+the largest of the optional ones because of the darknet library, so on a small
+home such as BN10's it cannot take RAM from the others). `dnet_root.js` and
+`gang-controller.js` may exit at once (no Darkscape, no gang)
 while briefly holding RAM, so any launch that fails is retried once after
 3 seconds; a final failure reports the script's RAM need and free home RAM.
 It then exits rather than staying resident. `dnet_root.js` exits quietly
 when DarkscapeNavigator.exe is not owned (e.g. right after an augmentation
-install) instead of raising a runtime-error modal. `startup_browser.js` (above)
+install) instead of raising a runtime-error modal. Outside BN15 the game opens
+`ns.dnet` to any SF15 level or to the exe (`hasDarknetAccess()`), so BN10 with
+SF15.1 works; the guard is only a conservative wait for the exe. `startup_browser.js` (above)
 runs the same sequence for the browser save, plus a GitHub sync step first.
 
 - **Start:** `run startup.js` — the one command besides the supervisor's own
   bootstrap that still needs a human hand
+- **Small homes (BN10 audit, `docs/bn10-readiness-audit.md`):** on the 32GB home SF1 grants,
+  startup (4.5GB) + supervisor (about 4.5GB) + crawler (about 3.1GB) leave about 20GB, less than
+  `mcp.js`'s 23.6GB, so `capital_bootstrap.js` (5.6GB) gets its RAM and raises home RAM. A home of
+  8GB cannot hold startup beside the bootstrap: run `run capital_bootstrap.js` by hand first.
+  (Static call counts, not measured.)
 - **Cost:** about 4.5GB while running (momentary) — 1.6GB baseline + `ns.ps`
   (0.2GB) + `ns.killall` (0.5GB) + `ns.scriptRunning` (1.0GB) + `ns.run`
   (1.0GB) + `ns.getScriptRam`/`getServerMaxRam`/`getServerUsedRam` for the

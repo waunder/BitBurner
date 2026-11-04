@@ -39,3 +39,15 @@ test("donations lift a donating faction to its dearest offer within the cash sha
   assert.deepEqual(donationPlan(offers, ["owned"], 1e9, 2, ["D"]), [])
   assert.equal(donationFor(800, 2), 400400000)
 })
+
+test("a donation is skipped when the cash left cannot buy anything it unlocks (BN10 prices)", () => {
+  const offers = [offer("dear", 5e9, { faction: "D", rep: 0, repRequired: 100 })]
+  // The whole $1b would cover the gift, but the augmentation then costs $5b: nothing would be bought.
+  assert.deepEqual(donationPlan(offers, [], 1e9, 1, ["D"], 1), [])
+  assert.equal(donationPlan(offers, [], 1e10, 1, ["D"]).length, 1)
+})
+
+test("the cheapest unlocked offer decides, so a dear one beside an affordable one still gets its gift", () => {
+  const offers = [offer("cheap", 1e8, { faction: "D", rep: 0, repRequired: 100 }), offer("dear", 5e9, { faction: "D", rep: 0, repRequired: 200 })]
+  assert.equal(donationPlan(offers, [], 1e9, 1e6, ["D"]).length, 1)
+})

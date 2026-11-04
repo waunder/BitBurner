@@ -30,7 +30,7 @@ Before running ANY test:
 
 ```bash
 # From terminal, in BitBurner repo directory:
-bash tools/dnet_canary_test.sh
+bash profiles/bn15/tools/dnet_canary_test.sh
 
 # This will:
 # 1. Kill scorecard (eliminates interference)
@@ -58,7 +58,7 @@ run dnet_canary_phase1.js
 
 ```bash
 # Terminal:
-bash tools/dnet_canary_test.sh --phase 1 --runs 1
+bash profiles/bn15/tools/dnet_canary_test.sh --phase 1 --runs 1
 ```
 
 The script will:
@@ -72,7 +72,7 @@ Fix any errors before proceeding.
 ### Step 2: Run Full Phase 1 (3 Runs, 30-Min Waits)
 
 ```bash
-bash tools/dnet_canary_test.sh --phase 1 --runs 3
+bash profiles/bn15/tools/dnet_canary_test.sh --phase 1 --runs 3
 ```
 
 This will:
@@ -130,7 +130,7 @@ This will:
 
 | File | Purpose |
 |------|---------|
-| `tools/dnet_canary_test.sh` | Main test orchestrator (shell wrapper) |
+| `profiles/bn15/tools/dnet_canary_test.sh` | Main test orchestrator (shell wrapper) |
 | `dnet_canary_phase1.js` | In-game test launcher (runs dnet_root.js with config) |
 | `docs/darknet-canary-log.md` | Test results markdown (auto-generated) |
 | `dnet_canary_config.json` | Temp config (written during test, deleted after) |
@@ -247,7 +247,7 @@ Total: 2-3 hours for Phase 1 diagnosis.
 
 ## Resources
 
-- Protocol reference: `DNET_CANARY_PROTOCOL.md`
+- Protocol reference: `docs/archive/DNET_CANARY_PROTOCOL.md`
 - Darknet strategy: `docs/darknet-strategy.md`
 - Investigation findings: `docs/darknet-investigation.md` (to be created)
 - Test results: `docs/darknet-canary-log.md` (auto-generated)

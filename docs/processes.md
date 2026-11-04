@@ -37,6 +37,30 @@ short stop-list for the few things that still need Ken directly.
 
 ---
 
+## Repo layout and profiles
+
+The repo and the game are laid out differently. In the game every script stays at its flat
+path (`mcp.js`, `dnet_lib.js`, `hacking/crawler.js`), so no import changes. In the repo the
+same files live in a tree, and a manifest maps game path to repo path. Design and rationale:
+`docs/architecture-profiles.md`.
+
+- `core/` runs in every BitNode (`core/mcp`, `capital`, `player`, `hud`, `contracts`, `gang`,
+  `ipvgo`, `lib`, `startup`, `maintenance`, `hacking`, `scripts`, `config`). `core/dev` holds
+  unshipped diagnostics. `core/manifest.json` lists the core files and config defaults.
+- `profiles/<name>/` adds what one BitNode needs: `bn15` (the `dnet_*` darknet family and the
+  BN15-tuned `player_activity_config.json`), `bn10` (`sleeve_*`), `_template`.
+  `profile.json` has `files`, `config` (overrides of core config), `startup`, `bitnodes`, `extends`.
+- `python tools/profile.py build <profile>` merges core and profile into `sync_manifest.json`
+  (generated, committed; its header names the active profile). `plan <profile>` previews a switch
+  offline. `switch <profile> --live` and `check` talk to the game: see the profile section of
+  `docs/governance.md` and `docs/bn10-plan.md`.
+- `python tools/stage.py <profile>` copies the merged set, at game paths, plus each script's
+  `*.test.js`, into `build/<profile>/`. **Every `node --test ...` command in this file runs there**
+  (`cd build/bn15 && node --test dnet_lib.test.js`), because tests import each other by game path.
+- Telemetry the daemon pulls from the game (`mcp_status.json`, `mcp_events.txt`, the `PULL_FILES`
+  list in `tools/bb_remote.py`) is written to `runtime/<game path>` and is gitignored. Read
+  status files there, not at the repo root. `tools/mcp_status_parser.py` reads `runtime/mcp_status.json`.
+
 ## The map
 
 `select_gang_policy.js` is the in-game selector for `gang_capital_policy.json`.
@@ -123,7 +147,8 @@ Three things are worth reading off that diagram:
   — the daemon now covers everything the extension did.** As of 2026-08-10,
   `tools/bb_remote.py`'s `daemon` mode pushes every watched live-game
   script/config file (`mcp.js`, `hacking/*`, `scripts/*`, `mcp_config.json`,
-  `dnet_*.js`, etc. — see `WATCHED_FILES` in the script) directly into the
+  `dnet_*.js`, etc. — see `WATCHED_FILES` in the script, a game path to repo path map read
+  from `sync_manifest.json`) directly into the
   game via `pushFile`: a full push of everything on every game connection
   (first connect or any reconnect after a drop, closing the exact
   "doesn't replay on reconnect" gap `CLAUDE.md` documents), plus an
@@ -264,7 +289,7 @@ credential shards. On a host deeper than the deepest anchor (or the shallowest, 
 `dnet_anchor.js` (about 14GB), the scout links it, giving up the shallowest link at `getStasisLinkLimit()`, and
 `dnet_root.js` starts later chains from the deepest anchor, falling back to `darkweb`. A charisma worker on the host is killed when it alone blocks the link or the hop.
 Blocked RAM is cleared only when a hop fails. Beside a lab the scout moves the link
-to its own host, even at equal depth. A fresh `dnet_route.json` from `tools/dnet_map.py`
+to its own host, even at equal depth. A fresh `dnet_route.json` from `profiles/bn15/tools/dnet_map.py`
 ranks route hosts first, forwards only, and a route from `darkweb` overrides the anchor.
 `dnet_map.py` leaves focused work ("Do something else simultaneously") to reach the sidebar, opening and
 reading the map in one evaluate call; the Dark Net page only shows about 2-3 rows past the deepest admin host.
@@ -1469,7 +1494,8 @@ only a status older than 5 minutes reads "controller status stale".
 
 ### `sleeve_controller.js` and `sleeve_logic.js`
 
-BN10 work package A. Not in `sync_manifest.json` and not run live: the live save is BN15
+BN10 work package A. Lives in `profiles/bn10/sleeve/`, so it is in the bn10 profile's manifest
+only (not bn15's) and not run live: the live save is BN15
 without SF10, where the Sleeve API throws. Once a minute the controller reads every sleeve,
 asks `sleeve_logic.js` for one task per sleeve, and changes a sleeve only when its current
 task differs. It never changes the player's work, buys sleeves or installs augmentations.
@@ -1519,7 +1545,7 @@ and is assumed to be 1, so chances can be slightly optimistic.
 
 ### `sleeve_buyer.js`
 
-BN10 only; not in `sync_manifest.json` until BN10 starts. Buys Covenant sleeves, then sleeve
+BN10 only; in `profiles/bn10/sleeve/`, so shipped by the bn10 profile only. Buys Covenant sleeves, then sleeve
 memory, with cash above the `reserve` in `capital_policy.json`. Pure rules in
 `sleeve_buyer_logic.js`; game rules in `docs/bn10-plan.md` package B. Four `ns.sleeve` calls
 (`getSleeveCost`, `getSleeve`, `purchaseSleeve`, `upgradeMemory`), about 16GB by the 4GB rule.
@@ -1869,7 +1895,7 @@ an auth token, and `ns.wget` has no way to send one.
 
 - **Start:** `run sync_from_github.js [pattern]` — no pattern pulls every
   file `sync_manifest.json` lists; a glob pattern (same `*`/`?` syntax as
-  `lsf.js`) pulls only manifest entries matching it, e.g.
+  `lsf.js`, matched against the game path) pulls only manifest entries matching it, e.g.
   `run sync_from_github.js dnet_*`.
 - **Mechanism:** fetches `sync_manifest.json` fresh from GitHub every run
   (never expects a local copy — the browser save has no other way to get
@@ -1884,8 +1910,9 @@ an auth token, and `ns.wget` has no way to send one.
   before failing to load. `startup_browser.js` carries its own duplicate
   copy of this same pull loop rather than importing this file.
 - **Shared manifest, not a second file list:** `sync_manifest.json` (repo
-  root, hand-maintained, tracked — allow-listed in `.gitignore` alongside
-  `mcp_config.json`) is the single source of truth for "every file that
+  root, **generated** by `tools/profile.py build <profile>` from `core/manifest.json` and
+  `profiles/<name>/profile.json`, tracked; its value is a map `{game path: repo path}`, and this
+  script fetches the repo path and writes the game path) is the single source of truth for "every file that
   loads into the game," consumed by both this script and
   `tools/bb_remote.py`'s `WATCHED_FILES` (which now loads it via `json.load`
   instead of hardcoding its own copy — fixed 2026-09-04 specifically to
@@ -2147,8 +2174,10 @@ Mirrors `mcp.js`'s tail output into its own window, so the orchestrator's
 
 ### `mcp_status_parser.py` / `mcp_status_parser.js`
 
-Local, out-of-game. Pretty-prints `mcp_status.json` including per-host
-allocations, once that file has been pulled out of the game.
+Local, out-of-game; they live in `tools/`. Pretty-prints `runtime/mcp_status.json` including
+per-host allocations, once that file has been pulled out of the game.
+**Since the profile restructure, every pulled file lands in `runtime/<game path>`** (gitignored),
+not at the repo root; the remarks below about "the matching local path" mean that folder.
 
 **As of 2026-08-11, `tools/bb_remote.py`'s `daemon` mode now pulls this file
 (and `mcp_status_log.txt`/`mcp_target_state.json`/`mcp_events.txt`)

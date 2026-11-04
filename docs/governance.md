@@ -2,7 +2,7 @@
 
 Ken directs; Claude is the technical manager. Ken does not read code or administer the PC,
 so this file is his view of what exists, what Claude may do alone, and what comes to him.
-Claude keeps it current. Last checked: 2026-11-03 20:40 Pacific.
+Claude keeps it current. Last checked: 2026-11-04.
 
 ## What Claude does without asking
 
@@ -49,11 +49,13 @@ Everything inside the game and this repository, within `AGENTS.md`'s standing au
 | Item | What it does | Where it lives | Status (2026-11-03) |
 | --- | --- | --- | --- |
 | Windows task "BitBurner daemon supervisor" | Keeps the Remote API daemon alive at logon | Task Scheduler; runs `tools\daemon_supervisor.py` | Running |
-| Remote API daemon | Syncs scripts into the game and pulls status files; listens on 127.0.0.1:12526/12527 (local only) | `tools/bb_remote.py` | Connected all day |
+| Remote API daemon | Syncs scripts into the game (from the generated `sync_manifest.json`) and pulls status files into `runtime/`; listens on 127.0.0.1:12526/12527 (local only) | `tools/bb_remote.py` | Connected all day |
+| Profile tool | Merges core and a BitNode profile into the manifest; `switch` (needs `--live`) rewrites the game's files at a BitNode boundary, `check` compares the game with the manifest. Never run unattended. | `tools/profile.py`, `tools/stage.py` | Built on branch `restructure`, not merged or run live |
 | Chrome DevTools port | Lets Claude read the game page and type terminal commands | 127.0.0.1:9222 (local only), the Steam game | Listening |
 | Claude app task `bitburner-bn15-progress` | Hourly autonomous check-in on the run | `~/.claude/scheduled-tasks/` | Working again. A run started 2026-11-02 15:58 Pacific froze on one command, and the scheduler skipped every later hour. Stopped 2026-11-03 20:36, and the next run completed. The prompt now caps every command at 120s and stands aside when another session is active. |
 | GitHub SSH key "Kens-PC BitBurner" | Lets this PC push to the repo | Ken's GitHub account | In use |
 | Python venv | Tool dependencies | `.venv/` in the repo | — |
+| Generated folders | Test copies and pulled telemetry; safe to delete, never source | `build/`, `runtime/` (gitignored) | New with the restructure |
 | Save backups | Validated game saves before each install | `saves/` (gitignored, local only) | 5 so far |
 
 Connected to Claude here but **not used for game work**: Gmail, Google Calendar, Google Drive,

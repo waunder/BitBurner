@@ -61,7 +61,9 @@ real in-game/manual action requires Ken; check it off after confirmation.
   must close their prior tail with `ns.ui.closeTail(pid)`.
 - `ns.write` accepts only `.txt`, `.json`, `.css`, or script extensions.
 - Generated game telemetry is not source. Never broadly download game files
-  over local source; the exact safe pull sets live in `tools/bb_remote.py`.
+  over local source; the exact safe pull sets live in `tools/bb_remote.py`
+  (`PULL_FILES`), and they are written to the gitignored `runtime/<game path>`,
+  never beside the scripts. Read status files from `runtime/`.
 - Remote API access is agent-operated and previously verified end to end.
   Always begin with the status/recovery workflow in
   `docs/remote-api-keepalive.md`; if Steam is disconnected, reconnect through
@@ -73,15 +75,21 @@ real in-game/manual action requires Ken; check it off after confirmation.
   Never send DevTools `Input.*` commands to it: a malformed one crashed the
   whole game on 2026-11-03 (see `docs/processes.md`, CDP section).
 - `sync_manifest.json` is the single source of truth for scripts delivered to
-  the game. Add a new live script there in the same commit.
+  the game, but it is generated: it maps game path to repo path for the active
+  profile (`tools/profile.py build <profile>`). Add a new live script to
+  `core/manifest.json` (every BitNode) or `profiles/<name>/profile.json` (one
+  BitNode), rebuild the manifest and commit both in the same commit. Game paths
+  stay flat; the repo is a tree (`core/`, `profiles/`, `tools/`, `docs/`; see
+  `docs/architecture-profiles.md`). Tests sit beside their file and run in the
+  staged copy: `python tools/stage.py bn15`, then `node --test` in `build/bn15`.
 - Tail windows are finite DOM views, not durable logs. Durable state/events
   are the evidence source; logs should record decision inputs as well as
   outcomes.
 
 ## Project shape and current direction
 
-`mcp.js` is the money/XP scheduler. `hacking/crawler.js` →
-`hacking/worm.js` grows its worker pool. `restart_mcp.js` is the routine
+`mcp.js` (`core/mcp/`) is the money/XP scheduler. `hacking/crawler.js` →
+`hacking/worm.js` (`core/hacking/`) grows its worker pool. `restart_mcp.js` is the routine
 restart entry point; the HUDs are projections, not separate truth.
 
 Current priority is `STATE.md`'s named work. Capital purchases must show
@@ -110,6 +118,7 @@ files are gitignored.
 ## Read on demand
 
 - System map and arguments/files/failures: `docs/processes.md`
+- Repo tree, profiles and the BitNode cutover: `docs/architecture-profiles.md`
 - Remote API operations, recovery and sync verification: `docs/remote-api-keepalive.md`
 - Original Remote API design and incident history: `docs/remote-api-migration.md`
 - Darknet tactics and prior incidents: `docs/darknet-strategy.md`

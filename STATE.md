@@ -3,6 +3,14 @@
 Last refreshed: 2026-11-03 18:58 Pacific, on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+## Repo layout (restructure branch; applies once it is merged at the BN10 cutover)
+
+The repo is a tree (`core/`, `profiles/<name>/`, `tools/`, `docs/`); the game still has the flat
+file names below. `sync_manifest.json` maps game path to repo path. **Status and event files pulled
+from the game now land in `runtime/<game path>`** (e.g. `runtime/mcp_status.json`,
+`runtime/augmentation_readiness.json`), not at the repo root: refresh STATE from there. Until the
+merge, the root copies are the live ones. See `docs/architecture-profiles.md`.
+
 ## Current live state (supersedes everything below)
 
 **Install 5 ran 18:56 Pacific 2026-11-03: The St4ff of Asclepius installed.** Uber lab (`ub3r_l4byr1nth`, depth 23) solved 18:38:38 by `dnet_lab.js` on `the_void` (depth 22, 152 moves), 1h45m after install 4; the route came from `tools/dnet_map.py` once links reached rows 19-20. Before the install: $189t, hacking 2,402, charisma 4,422, karma -3,956, Staff queued. Backup `saves/bitburnerSave_pre-install5_BN15_2026-11-03.json.gz` (gzip checked, player parsed, SHA-256 ddd3230d10bafa1731e4f4b28b3928b08a317c8c255d85c6c4238451799b2dde). `aug_install.js --install` bought The Black Hand, Neuregen, Magnetism Amplifier and 15 NeuroFlux ($7.9b donated for NeuroFlux rep), home to 524,288GB and 6 cores. After it: $1,262, controller on crime for cash, `ps` shows all startup scripts. `charismaTarget` 3000 (read back from the game).

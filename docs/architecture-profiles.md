@@ -129,3 +129,68 @@ early.
 - In-game paths and every script's imports, run calls, exec calls and scp lists.
 - `AGENTS.md` rules, governance, and the save-backup rule.
 - `tools/` behaviour, apart from the manifest map and the `runtime/` pull folder.
+
+## Build status (branch `restructure`, 2026-11-04)
+
+Built, not merged, not run against the game. `core/manifest.json`, `profiles/{bn15,bn10,_template}/profile.json`,
+`tools/profile.py` (`list`, `build`, `plan`, `switch --live`, `check`), `tools/stage.py` and the map-form
+reads in `tools/bb_remote.py`, `core/startup/sync_from_github.js` and `core/startup/startup_browser.js` are in.
+`sync_manifest.json` is committed as the bn15 build. Proof: `build/bn15` is byte-identical to the
+pre-move tree for every shipped file except `sync_manifest.json`, the two sync scripts (they read the map)
+and one added file, `formulas_logic.js` (below). Tests: 465 pass in `build/bn15`, 384 in `build/bn10`;
+`bn15` plus the 27 sleeve tests equals the 492 on `bn10-prep`.
+
+Additions beyond the plan, all small:
+- `tools/manifest_lib.py`: the one manifest reader, shared by the daemon, `profile.py` and the tests. The old list
+  form raises `ManifestFormatError` with a regenerate instruction instead of syncing nothing.
+- `bb_remote.py` gains `ctl-list` and `ctl-delete` (used by `profile.py check` and `switch`) and reports
+  `manifest_format: "map"` in `ctl-status`; `switch` refuses a daemon that does not.
+- `profile.py plan <profile>` previews a switch offline. `extends` may be a list, so a profile can build on
+  another profile as well as core (for example bn10 on bn15, see below).
+- Python tests: `tools/tests/` (`python -m unittest discover -s tools/tests`).
+
+## Placement decisions
+
+Rule used: core if any BitNode needs it, profile only if a BitNode can run without it; unsure means core.
+
+- **Whole darknet family to `profiles/bn15/dnet/`:** every `dnet_*` script and test, plus
+  `restart_dnet_root.js`. Judgement call: the darknet needs the SF15.1 grant, which BN10 will have, and
+  `docs/bn10-plan.md` leaves "darknet early in BN10?" to Ken. Core scripts that name `dnet_*` files
+  (`mcp_launch.js`, `restart_mcp.js`, `capital_manager.js`, `mcp_xp.js`, `ops_hud.js`,
+  `hud_consolidated.js`, `automation_review.js`) only start them on request or read their JSON, so with the
+  files absent they print "failed to start" or show "unavailable". To run the darknet in BN10, add `bn15`
+  to bn10's `extends` (that also brings bn15's tuned `player_activity_config.json`; override it again in bn10's `config`).
+- **`startup.js` stays core and unchanged,** so it still launches `dnet_root.js`. A profile's `startup` field
+  records what the profile adds beyond core (bn15 `dnet_root.js`, bn10 `sleeve_controller.js`) but no script reads it
+  yet. In BN10 the launch prints one failure for `dnet_root.js`, and `sleeve_controller.js` is started by hand.
+  Making `startup.js` read the list is a behaviour change, deliberately left for after the cutover.
+- **`player_activity_config.json` is split.** `profiles/bn15/config/` holds the current BN15-tuned file (moved with `git mv`,
+  byte-identical to today's). `core/config/` holds a new neutral default for every other node:
+  `charismaTarget` 0, no `companyTarget`, `priorityAugs` and `charismaAugs` empty, as `docs/bn10-readiness-audit.md` item 13 suggests
+  (clearing `charismaAugs` is my addition: those augmentations only exist to feed the darknet labs). `covenantTarget` stays false.
+- **`formulas_logic.js` added to the core manifest.** `mcp.js` imports it but the old manifest never listed it, so a fresh node would
+  fail to load `mcp.js`. This is the one change to the shipped file set. Its test now runs too.
+- **Other core files by folder:** `core/mcp` (scheduler, cloud batches, reputation, XP, stacks, share, `progression_guidance_logic.js`
+  imported by `mcp_xp.js`), `core/capital` (capital, purchases, `money*`, stock trader), `core/player`, `core/hud` (all panels, including
+  `mcp_hud`, `mcp_money`, `mcp_stocks`, `get_stats`, `crime_returns`), `core/lib` (`tail_geometry.js`, imported by 16 scripts, and `lsf.js`),
+  `core/contracts`, `core/gang`, `core/ipvgo` (IPvGO is unsure for BN10, so core), `core/startup`, `core/maintenance`
+  (steward, automation review, keepalive), `core/hacking` (`hacking/*` and `The-Cave.js`), `core/scripts` (the `scripts/*` workers).
+  `core/maintenance`, `core/hacking`, `core/scripts` and `core/dev` are folders the plan did not name.
+- **`core/dev/` is never shipped:** diagnostics that were never in the manifest (`formulas_*` probes and shadows, `mcp_formulas_shadow.js`,
+  `cloud_reputation_quote.js`, `crime_sort.js`). Two darknet ones, `dnet_canary_phase2.js` and `dnet_reset_creds.js`, sit in `profiles/bn15/dev/`.
+- **Tools:** the BN15-only `dnet_map.py` and the two `dnet_canary_test*.sh` moved to `profiles/bn15/tools/` (paths fixed; `dnet_map.py` writes
+  its route to `runtime/`). `mcp_status_parser.py` and `.js` moved to `tools/` and read `runtime/mcp_status.json`.
+- **`BN2-roadmap.txt`:** it is a game file (the manifest lists it), so only its repo path moved, to `docs/archive/`; its game path is unchanged.
+- **Tests** sit beside the file they test and are staged by name (`<stem>.test.js` and `<stem>_*.test.js`). Of the 35 test files,
+  27 are core, 6 are darknet and 2 are sleeve.
+- **Editor files:** `editor/tsconfig.json` now includes `core/` and `profiles/` and resolves bare imports against `build/bn15/`.
+- **`hourly-task-prompt.txt`:** not in this repo at all. The hourly task's prompt lives in
+  `~/.claude/scheduled-tasks/bitburner-bn15-progress/SKILL.md`, names no pulled file, and was not touched.
+- **Not touched:** two references that were already dead before the move (`purchaseServer-8GB.js` runs `early-hack-template.js`;
+  `hud_consolidated.js` runs `hud_click_monitor.js`; neither file is in any manifest).
+
+## Decisions needed at cutover
+
+1. Darknet in BN10 or not (above). Default as built: not.
+2. Whether to make `startup.js` read the profile's `startup` list, or keep launching by hand in BN10.
+3. The daemon must be restarted before `switch` (the running one cannot read the map form).

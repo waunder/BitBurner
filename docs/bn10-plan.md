@@ -32,8 +32,8 @@ worker for faction rep, karma and money in every later BitNode.
   function it references. A controller using 6 functions is about 26GB, and early BN10 home
   RAM is small. Keep sleeve scripts lean, and keep pure logic in a separate `*_logic.js` file
   with no `ns` calls so it can be tested and costs nothing.
-- **Not live yet.** Do not add new BN10 scripts to `sync_manifest.json`, and do not run
-  anything in the Steam game. The live save is BN15. Work stays on your branch; it is
+- **Not live yet.** New BN10 scripts go in `profiles/bn10/profile.json`, never in `core/manifest.json`
+  or the BN15 manifest, and nothing runs in the Steam game. The live save is BN15. Work stays on your branch; it is
   merged when BN10 starts.
 - **House style.** `AGENTS.md` and `docs/processes.md` are the guides. Logic files have
   `*.test.js` tests, run with `node --test *.test.js`, and all of them must pass. Document
@@ -115,21 +115,37 @@ needs Bladeburner, which BN10 does not give).
 ## Status, 2026-11-03
 
 Packages A, B and C are built by subagents, reviewed, and merged on branch `bn10-prep`
-(492 tests pass). The branch is not merged to `main`, because `main` syncs to the live BN15
+(492 tests pass; the same suite in the restructured tree is 465 in `build/bn15` plus the 27 sleeve tests only `build/bn10` carries). The branch is not merged to `main`, because `main` syncs to the live BN15
 game. Details: package reports in `docs/processes.md`, audit in `docs/bn10-readiness-audit.md`.
 
-## Checklist at BN10 start
+## Cutover at BN10 start
 
-Do these after Ken has chosen BN10, the World Daemon is destroyed, and the game is in BN10:
+Replaces the old checklist. The sleeve scripts, the neutral config and the profile mechanism
+are all on branch `restructure` (design: `docs/architecture-profiles.md`). Do these after Ken
+has chosen BN10, the World Daemon is destroyed, and the game is in BN10:
 
-1. Merge `bn10-prep` into `main`. Add `sleeve_controller.js`, `sleeve_logic.js`,
-   `sleeve_buyer.js` and `sleeve_buyer_logic.js` to `sync_manifest.json` in the same commit.
-2. `player_activity_config.json` is BN15-tuned (audit, needs Ken): set `charismaTarget` 0,
-   drop `companyTarget`, clear `priorityAugs`. Set `covenantTarget` true once installs near 20.
-3. `capital_policy.json` (a game file): set `reserve` and `homeRamTarget` once BN10 income is
-   known. Raise `reserve` toward $10t when the first Covenant sleeve is near, because
-   `capital_manager.js` spends the same cash.
-4. Start `sleeve_controller.js` in the first hour, for 2 sleeves on shock recovery. It needs
-   about 26GB, so start it once home has room. Start `sleeve_buyer.js` after joining The Covenant.
-5. Darknet: the Red Pill still comes from the 4th lab in BN10. Decide early with
-   `dnet_roi.js` whether that beats Daedalus at hacking x0.35.
+1. **Merge** `restructure` into `main`. It already contains `bn10-prep`, so the sleeve scripts
+   arrive with it; they are listed in `profiles/bn10/profile.json`, not in the BN15 manifest.
+2. **Restart the Remote API daemon** so it reads the new manifest format (the supervisor task
+   restarts it). Confirm `ctl-status` shows `"manifest_format": "map"`.
+3. `python tools/profile.py plan bn10` (offline preview), then
+   `python tools/profile.py switch bn10 --live`. It checks the game is in BN10, backs up and
+   validates the save, writes `sync_manifest.json` for bn10, pushes every file, and deletes the
+   BN15 profile's game files (the `dnet_*` family) that the bn10 manifest does not list.
+4. `python tools/profile.py check` (add `--content` to compare bytes), then `run startup.js`.
+   `startup.js` still lists `dnet_root.js`, which no longer exists in the game: the launch prints
+   one failure line for it, which is expected.
+5. **Settings after the switch:**
+   - `player_activity_config.json` is already the neutral core default in BN10 (`charismaTarget` 0,
+     no `companyTarget`, no `priorityAugs`). Set `covenantTarget` true once installs near 20.
+   - `capital_policy.json` (a game file, not in the repo): set `reserve` and `homeRamTarget` once
+     BN10 income is known. Raise `reserve` toward $10t when the first Covenant sleeve is near,
+     because `capital_manager.js` spends the same cash.
+   - Start `sleeve_controller.js` in the first hour, for 2 sleeves on shock recovery. It needs
+     about 26GB, so start it once home has room. Start `sleeve_buyer.js` after joining The Covenant.
+6. **Darknet decision for Ken:** the bn10 profile ships no darknet scripts. The Red Pill still
+   comes from the 4th lab in BN10; decide early with `dnet_roi.js` data whether that beats
+   Daedalus at hacking x0.35. If yes, add `bn15` to bn10's `extends` (one line in
+   `profiles/bn10/profile.json`), rebuild, and run `switch bn10 --live` again.
+7. **Roll back** if needed: the old flat layout is the parent commit of the merge, and the save
+   backup from step 3 restores the game.

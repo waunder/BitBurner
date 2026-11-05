@@ -3,6 +3,16 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-05 about 09:20 Pacific (PC clock 10:20): fixed the Covenant gym start.** Live (autosave, game
+`ps`, `augmentation_readiness.json`, `player_activity_status.json`, `sleeve_status.json` over the API): BN10, about $38.6b,
+hacking 345, karma -3227, **23 installed** (install 4 confirmed), 0 queued, factions NiteSec, Tian Di Hui and CyberSec.
+The controller had picked the Covenant goal (strength 27/850) but `gymWorkout` was refused every poll: the player was in
+Chongqing and Powerhouse Gym is in Sector-12. Fix: gym decisions now carry `city` (`gymCity`, default Sector-12) and the
+controller travels first (503 tests pass in `build/bn10`); pushed, controller restarted, live work read back as CLASS str at
+Powerhouse Gym. All 16 resident scripts and 4 stack batches run. Sleeve 0: shock 0, sync 99.0, Homicide. No Red Pill, so no
+World Daemon. **Watch:** the Covenant goal needs cash >= $37.5b each poll, with no hysteresis, so spending can flip the
+player back to NiteSec work; add hysteresis if that is seen.
+
 **BN10 install 4 ran 2026-11-05 about 08:15 Pacific (PC clock 09:15), hourly task.** Before (autosave, game `ps`,
 `augmentation_readiness.json`, `sleeve_status.json`): BN10, about $241.7b, hacking 405, karma -2618, 19 installed, 0
 queued, factions The Black Hand, NiteSec, Tetrads, Slum Snakes, Tian Di Hui and CyberSec. Neural Wit Amplifier rep-ready

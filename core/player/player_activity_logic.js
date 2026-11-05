@@ -52,7 +52,7 @@ function covenantTraining({ player, augmentation, config, bitNode }) {
     .sort((a, b) => a.level - b.level || PHYSICAL_SKILLS.indexOf(a.skill) - PHYSICAL_SKILLS.indexOf(b.skill))[0]
   if (weakest) {
     return {
-      action: "gym", gym: config.gym || "Powerhouse Gym", stat: weakest.skill,
+      action: "gym", gym: config.gym || "Powerhouse Gym", city: config.gymCity || "Sector-12", stat: weakest.skill,
       target: COVENANT.combat, current: weakest.level,
       reason: `${weakest.skill} ${weakest.level}/${COVENANT.combat}: The Covenant invite needs all combat stats ${COVENANT.combat}`,
       confidence: "HIGH",
@@ -92,7 +92,7 @@ export function choosePlayerActivity({ player = {}, nextGate = null, augmentatio
       .sort((a, b) => a.level - b.level || PHYSICAL_SKILLS.indexOf(a.skill) - PHYSICAL_SKILLS.indexOf(b.skill))[0]
     if (weakest) {
       return {
-        action: "gym", gym: config.gym || "Powerhouse Gym", stat: weakest.skill,
+        action: "gym", gym: config.gym || "Powerhouse Gym", city: config.gymCity || "Sector-12", stat: weakest.skill,
         target, current: weakest.level,
         reason: `${weakest.skill} ${weakest.level}/${target}: physical baseline for Slum Snakes`,
         confidence: "HIGH",

@@ -172,6 +172,7 @@ test("covenantTarget trains the weakest combat stat to 850 once augs and cash ar
   assert.equal(result.action, "gym")
   assert.equal(result.stat, "strength")
   assert.equal(result.target, 850)
+  assert.equal(result.city, "Sector-12")
 })
 
 test("covenantTarget is off by default and outside BN10", () => {

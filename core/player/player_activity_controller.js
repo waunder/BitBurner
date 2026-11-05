@@ -92,6 +92,8 @@ function offeredWorkType(ns, faction, wanted) {
 function startActivity(ns, decision) {
   if (decision.action === "gym") {
     const gymStat = { strength: "str", defense: "def", dexterity: "dex", agility: "agi" }[decision.stat]
+    // gymWorkout refuses a gym outside the player's city (Chongqing vs Sector-12, 2026-11-05).
+    if (decision.city && ns.getPlayer().city !== decision.city && !ns.singularity.travelToCity(decision.city)) return false
     return ns.singularity.gymWorkout(decision.gym, gymStat, false)
   }
   if (decision.action === "algorithms" || decision.action === "leadership") {

@@ -1509,7 +1509,7 @@ only a status older than 5 minutes reads "controller status stale".
   850; 20 installed augmentations and $75b are the other gates, from bitburner-src
   `src/Faction/FactionInfo.tsx`). It starts once installed + queued augmentations reach 20 and
   cash reaches `covenantCloseFraction` (default 0.5) of $75b, using the gym action for the weakest
-  combat stat and then Algorithms for hacking. It sits after the cash-crime step and ahead of
+  combat stat (travelling to `gymCity`, default Sector-12, first) and then Algorithms for hacking. It sits after the cash-crime step and ahead of
   company, priority and charisma work, applies only in auto mode and BitNode 10, and stops once
   The Covenant is joined. `faction_join.js` accepts the invite unchanged.
 - **Scope:** selects only player work (gym, Algorithms, faction hacking, or

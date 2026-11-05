@@ -3,6 +3,12 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-05 about 03:15 Pacific (PC clock 04:15): steady, no changes.** Live (autosave, game `ps`,
+`augmentation_readiness.json`, `sleeve_status.json` over the API): BN10, about $177b, hacking 377, karma -428, 17
+installed, 0 queued, factions The Black Hand, NiteSec, Tian Di Hui and CyberSec. Every resident script, crawler and
+run_report run. Black Hand 20.0k of 30k for Magnetism Amplifier (about 15k/h, so roughly 40 min, modelled); Nanofiber
+Weave still held for that batch. Sleeve 0: shock 0, sync 99.0, Homicide for karma. No Red Pill, so no World Daemon.
+
 **Hourly check, 2026-11-05 about 02:15 Pacific (PC clock 03:15): Nanofiber rep-ready, install held.** Live (autosave,
 game `ps`, `augmentation_readiness.json`, `player_activity_status.json`, `sleeve_status.json` over the API): BN10, about
 $169b, hacking 368, karma -248, 17 installed, 0 queued, factions The Black Hand, NiteSec, Tian Di Hui and CyberSec. Every

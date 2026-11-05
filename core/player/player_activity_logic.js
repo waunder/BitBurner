@@ -36,6 +36,29 @@ export function pickCrime(rows, cashShort) {
 // haveAugmentations counts installed augmentations only (src/Faction/FactionJoinCondition.ts).
 export const COVENANT = { faction: "The Covenant", augs: 20, money: 75e9, hacking: 850, combat: 850 }
 
+// bitburner-src dev, src/PersonObjects/formulas/skill.ts: level = floor(mult * (32 * ln(exp + 534.6) - 200)).
+// The effective mult (augmentations x BitNode) is inferred from the current level and exp.
+export function expForLevel(level, exp, target) {
+  const base = 32 * Math.log(number(exp) + 534.6) - 200
+  const mult = base > 0 ? number(level) / base : 0
+  if (!(mult > 0)) return null
+  return Math.exp((target / mult + 200) / 32) - 534.6
+}
+
+/** Gym hours to lift every combat stat to the Covenant gate, or null when exp is not reported. */
+export function covenantGymHours(player, expPerSecond) {
+  let seconds = 0
+  for (const skill of PHYSICAL_SKILLS) {
+    const level = number(player.skills?.[skill])
+    if (level >= COVENANT.combat) continue
+    if (!Number.isFinite(Number(player.exp?.[skill]))) return null
+    const need = expForLevel(level, player.exp[skill], COVENANT.combat)
+    if (need === null) return null
+    seconds += Math.max(0, need - number(player.exp[skill])) / expPerSecond
+  }
+  return seconds / 3600
+}
+
 /**
  * Train toward The Covenant's stat gates once its augmentation and money gates are close.
  * Off unless `covenantTarget` is true, and BN10 only: the faction's sleeve shop works nowhere else.
@@ -46,6 +69,9 @@ function covenantTraining({ player, augmentation, config, bitNode }) {
   const owned = number(augmentation?.installedCount) + number(augmentation?.queuedCount)
   const fraction = Math.min(1, Math.max(0, number(config.covenantCloseFraction ?? 0.5)))
   if (owned < COVENANT.augs || number(player.money) < COVENANT.money * fraction) return null
+  // Combat exp per level grows exponentially; at low multipliers 850 is out of reach and gym time is wasted.
+  const hours = covenantGymHours(player, Math.max(1, number(config.covenantGymExpPerSec ?? 20)))
+  if (hours !== null && hours > number(config.covenantMaxTrainHours ?? 48)) return null
   const weakest = PHYSICAL_SKILLS
     .map((skill) => ({ skill, level: number(player.skills?.[skill]) }))
     .filter((item) => item.level < COVENANT.combat)

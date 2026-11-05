@@ -3,6 +3,18 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-05 about 10:15 Pacific (PC clock 11:15): Covenant gym goal gated on reachability.** Live
+(autosave, `player_activity_status.json`, game `ps`): BN10, about $75.0b, hacking 398, karma -3724, 23 installed, 0 queued,
+factions The Black Hand, NiteSec, Slum Snakes, Tian Di Hui and CyberSec. The Covenant goal had the player in the gym, but
+the gate is out of reach: from the skill formula, strength 92 at 14.2k exp (effective mult 0.87) needs about 1e16 exp for
+850, and the gym gives about 20 exp/s; hacking 850 likewise needs about 3.6e16 exp (1.6e9 now). Fix: `covenantTraining`
+infers each stat's multiplier from level and exp and skips the goal when the gym would take over `covenantMaxTrainHours`
+(48). 504 tests pass in `build/bn10`; synced, `restart_player.js` run, and the controller now decides Slum Snakes field
+work for SmartSonar Implant (0.7k/45k rep), held by the 10-minute switch cooldown when read (switch not yet observed).
+`covenantTarget` stays true. Sleeve 0: shock 0, sync 99.0, Homicide. No Red Pill; `w0r1d_d43m0n` unlinked, needs hacking
+6000. **Implication:** The Covenant needs far higher stat multipliers (many more installs and NeuroFlux), so the run is in
+a long aug-grinding phase; worth Ken's review whether BN10's Covenant goal is realistic.
+
 **Hourly check, 2026-11-05 about 09:20 Pacific (PC clock 10:20): fixed the Covenant gym start.** Live (autosave, game
 `ps`, `augmentation_readiness.json`, `player_activity_status.json`, `sleeve_status.json` over the API): BN10, about $38.6b,
 hacking 345, karma -3227, **23 installed** (install 4 confirmed), 0 queued, factions NiteSec, Tian Di Hui and CyberSec.

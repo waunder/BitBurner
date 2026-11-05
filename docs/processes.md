@@ -1511,7 +1511,13 @@ only a status older than 5 minutes reads "controller status stale".
   cash reaches `covenantCloseFraction` (default 0.5) of $75b, using the gym action for the weakest
   combat stat (travelling to `gymCity`, default Sector-12, first) and then Algorithms for hacking. It sits after the cash-crime step and ahead of
   company, priority and charisma work, applies only in auto mode and BitNode 10, and stops once
-  The Covenant is joined. `faction_join.js` accepts the invite unchanged.
+  The Covenant is joined. `faction_join.js` accepts the invite unchanged. It also waits while the
+  gym is hopeless: from each combat stat's level and exp it infers the effective multiplier
+  (skill formula, bitburner-src `src/PersonObjects/formulas/skill.ts`) and skips the goal when
+  lifting all four to 850 would take more than `covenantMaxTrainHours` (default 48) at
+  `covenantGymExpPerSec` (default 20, observed at Powerhouse Gym 2026-11-05). In BN10 on
+  2026-11-05, strength 92 at 14k exp needed about 1e16 exp, so installs must raise the
+  multipliers first.
 - **Scope:** selects only player work (gym, Algorithms, faction hacking, or
   crime). It never buys/installs augmentations, trades, allocates share RAM,
   or controls Darknet. The consolidated HUD shows both the capital phase and

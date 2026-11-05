@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { actionKey, choosePlayerActivity, pickCrime, shouldFocus, shouldSwitch } from "./player_activity_logic.js"
+import { actionKey, choosePlayerActivity, covenantGymHours, expForLevel, pickCrime, shouldFocus, shouldSwitch } from "./player_activity_logic.js"
 
 const player = { skills: { hacking: 400, strength: 1, defense: 1, dexterity: 1, agility: 1 } }
 
@@ -183,6 +183,19 @@ test("covenantTarget is off by default and outside BN10", () => {
 test("covenantTarget waits for augmentations and cash", () => {
   assert.notEqual(choosePlayerActivity({ ...covenantBase, augmentation: { ok: true, installedCount: 10, queuedCount: 2 } }).action, "gym")
   assert.notEqual(choosePlayerActivity({ ...covenantBase, player: { ...covenantBase.player, money: 1e9 } }).action, "gym")
+})
+
+test("covenantTarget skips the gym while 850 combat is out of reach", () => {
+  // BN10 live 2026-11-05: strength 92 at 14.2k exp needs about 1e16 exp for 850.
+  const weak = { ...covenantBase.player, skills: { hacking: 398, strength: 92, defense: 101, dexterity: 96, agility: 99 },
+    exp: { strength: 14161, defense: 14176, dexterity: 27727, agility: 25292 } }
+  assert.ok(expForLevel(92, 14161, 850) > 1e15)
+  assert.notEqual(choosePlayerActivity({ ...covenantBase, player: weak }).action, "gym")
+  // Strength 840 at 2m exp needs about 2.2m for 850: a few hours at 20 exp/s.
+  const near = { ...covenantBase.player, skills: { hacking: 900, strength: 840, defense: 850, dexterity: 850, agility: 850 },
+    exp: { strength: 2e6 } }
+  assert.ok(covenantGymHours(near, 20) < 48)
+  assert.equal(choosePlayerActivity({ ...covenantBase, player: near }).action, "gym")
 })
 
 test("covenantTarget falls through to hacking, then stops once the faction is joined", () => {

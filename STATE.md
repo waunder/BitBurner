@@ -3,6 +3,15 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-05 about 02:15 Pacific (PC clock 03:15): Nanofiber rep-ready, install held.** Live (autosave,
+game `ps`, `augmentation_readiness.json`, `player_activity_status.json`, `sleeve_status.json` over the API): BN10, about
+$169b, hacking 368, karma -248, 17 installed, 0 queued, factions The Black Hand, NiteSec, Tian Di Hui and CyberSec. Every
+resident script, crawler and run_report run. Tian Di Hui 76.6k, so Nanofiber Weave ($625m) is the whole install plan;
+held for a bigger batch, as with CSP Gen II. Player now works The Black Hand for Magnetism Amplifier (5.1k of 30k, about
+15k/h, so roughly 1.6 h, modelled). **Next:** when Magnetism is rep-ready, back up, then `aug_install.js --install`.
+Sleeve 0: shock 0, sync 99.0, now on Homicide for karma (1.5% chance; still the best karma rate by the logic's model).
+Next gate rothman-uni at hacking 392. No Red Pill, so no World Daemon.
+
 **Hourly check, 2026-11-05 about 01:15 Pacific (PC clock 02:15): steady, no changes.** Live (autosave, game `ps`,
 `augmentation_readiness.json`, `player_activity_status.json`, `sleeve_status.json` over the API): BN10, about $71.1b,
 hacking 355, karma -217, 17 installed, 0 queued, factions The Black Hand (newly joined), NiteSec, Tian Di Hui and CyberSec.

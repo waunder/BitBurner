@@ -3,6 +3,20 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**BN10 install 3 ran 2026-11-05 about 04:15 Pacific (PC clock 05:15), hourly task.** Before (autosave, game `ps`,
+`augmentation_readiness.json`, `sleeve_status.json`): BN10, about $194.6b, hacking 385, karma -701, 17 installed, 0 queued,
+factions The Black Hand, NiteSec, Tian Di Hui and CyberSec; Black Hand 33.0k, so Magnetism Amplifier (30k) was rep-ready
+beside Nanofiber Weave, the planned trigger. Backup `saves/bitburnerSave_pre-install3_BN10_2026-11-05.json.gz` (gzip
+checked, player parsed, node 10, 17 augs, SHA-256 e7c77a76c30807bda4ef31a975afdb527a57e100d82a9f912217c368f4b68015).
+`aug_install.js --install` (`aug_install_status.json`) bought both planned (Magnetism Amplifier, Nanofiber Weave), no
+failures, plus 10 NeuroFlux; home now 16TB (from 8.19TB), 3 cores. After (game `ps`, PIDs restarted from 2): every resident
+script back (mcp, supervisor, crawler, steward, mcp_xp, money, stack_manager, HUD, run_report, controller, xp_filler,
+faction_join, dnet_root, sleeve_controller, capital_manager, cct_watcher). Expected 19 installed (not yet read back live:
+status files and autosave had not refreshed at check time). Sleeve 0 (the only sleeve): shock 0, sync 99.0, Homicide for
+karma. No Red Pill, so no World Daemon. **Next:** confirm 19 installed; next rep target Neuroreceptor Management Implant
+(Tian Di Hui 150k, rep now reset); one more install reaches 20, then set `covenantTarget` true (Covenant also needs
+hacking 850 and combat 850).
+
 **Hourly check, 2026-11-05 about 03:15 Pacific (PC clock 04:15): steady, no changes.** Live (autosave, game `ps`,
 `augmentation_readiness.json`, `sleeve_status.json` over the API): BN10, about $177b, hacking 377, karma -428, 17
 installed, 0 queued, factions The Black Hand, NiteSec, Tian Di Hui and CyberSec. Every resident script, crawler and

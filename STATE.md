@@ -3,6 +3,13 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-05 about 05:20 Pacific (PC clock 06:20): install 3 confirmed, steady.** Live (autosave, game
+`ps`, `augmentation_readiness.json`, `aug_install_status.json`, `sleeve_status.json` over the API): BN10, about $13.1b,
+hacking 313 (reset at 04:15 Pacific), karma -1088, **19 installed**, 0 queued, factions NiteSec, Tian Di Hui and CyberSec
+(The Black Hand not yet rejoined after the reset). Every resident script, crawler and run_report run; nothing died. Rep
+target CRTX42-AA Gene Modification (NiteSec 13.9k of 90k, $1.125b); player works NiteSec hacking. Sleeve 0: shock 0, sync
+99.0, Homicide for karma. `covenantTarget` still false: set it after the next install (20+). No Red Pill, so no World Daemon.
+
 **BN10 install 3 ran 2026-11-05 about 04:15 Pacific (PC clock 05:15), hourly task.** Before (autosave, game `ps`,
 `augmentation_readiness.json`, `sleeve_status.json`): BN10, about $194.6b, hacking 385, karma -701, 17 installed, 0 queued,
 factions The Black Hand, NiteSec, Tian Di Hui and CyberSec; Black Hand 33.0k, so Magnetism Amplifier (30k) was rep-ready

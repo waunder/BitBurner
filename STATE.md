@@ -3,6 +3,13 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-04 about 16:15 Pacific (PC clock 17:15): steady, NiteSec rejoined by itself.** Live (autosave,
+game `ps`, `augmentation_readiness.json`, `sleeve_status.json` and `capital_policy.json` over the API): BN10, about $51b,
+hacking 231, karma -125, 14 installed, 0 queued, factions NiteSec, Tian Di Hui and CyberSec. NiteSec is back without a
+manual step, so the crawler backdoor retry works. Every resident script, crawler and run_report run; `reserve` 0. CyberSec
+22.8k of 37.5k for CSP Gen II (about 10k/h, so roughly 1.5 h, modelled). Next gate: johnson-ortho at hacking 279. Sleeve 0:
+shock 0, sync 62.7, synchronizing. No Red Pill, so no World Daemon. No changes made.
+
 **Run report window, 2026-11-04 about 15:20 Pacific (PC clock 16:20).** New resident `run_report.js` shows
 `run_report.json` in a "Run report" tail window; the hourly task now writes and pushes a short report at the end of
 every run (prompt updated). First report (the 15:15 check) seen live in the game. capital_manager.js keeps it alive

@@ -21,9 +21,11 @@ function age(ms) {
   return minutes < 60 ? `${minutes}m` : `${Math.floor(minutes / 60)}h ${minutes % 60}m`
 }
 
-function render(ns, now) {
-  let report = null
-  try { report = JSON.parse(ns.read(FILE)) } catch { /* shown below */ }
+function readReport(ns) {
+  try { return JSON.parse(ns.read(FILE)) } catch { return null }
+}
+
+function render(report, now) {
   if (!report || !Array.isArray(report.lines)) return ["No run report yet (run_report.json missing or invalid)."]
   const posted = Number.isFinite(report.ts) ? new Date(report.ts).toLocaleTimeString() : "unknown time"
   const overdue = Number.isFinite(report.ts) && now - report.ts > OVERDUE_MS ? "  ⚠ overdue" : ""
@@ -44,12 +46,22 @@ export async function main(ns) {
       ns.kill(proc.pid)
     }
   }
-  const pos = loadTailPosition(ns, "run_report.js")
-  ns.ui.openTail()
-  ns.ui.setTailTitle("Run report")
-  ns.ui.moveTail(pos.x ?? DEFAULT_X, pos.y ?? DEFAULT_Y)
+  const open = () => {
+    const pos = loadTailPosition(ns, "run_report.js")
+    ns.ui.openTail()
+    ns.ui.setTailTitle("Run report")
+    ns.ui.moveTail(pos.x ?? DEFAULT_X, pos.y ?? DEFAULT_Y)
+  }
+  open()
+  let shownTs = readReport(ns)?.ts
   while (true) {
-    const lines = render(ns, Date.now())
+    const report = readReport(ns)
+    // Closing the window leaves the script running; a new report reopens it.
+    if (report?.ts !== shownTs) {
+      shownTs = report?.ts
+      open()
+    }
+    const lines = render(report, Date.now())
     ns.clearLog()
     for (const line of lines) ns.print(line)
     const styles = ns.ui.getStyles?.() || {}

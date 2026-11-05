@@ -509,6 +509,10 @@ function buildDisplay(ns, state, pos) {
     }
   }
 
+  // A closed tail has no tailProperties; say how to get the report back.
+  const report = ns.ps("home").find((proc) => proc.filename.replace(/^\//, "") === "run_report.js")
+  if (!report) lines.push(COLORS.HEADER + "Run report: not running (run run_report.js)" + COLORS.RESET)
+  else if (!ns.getRunningScript(report.pid)?.tailProperties) lines.push(COLORS.HEADER + "Run report: hidden until the next report (run run_report.js)" + COLORS.RESET)
   lines.push(COLORS.HEADER + `Updated: ${new Date().toLocaleTimeString()}` + COLORS.RESET)
 
   return lines

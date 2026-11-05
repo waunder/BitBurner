@@ -1370,7 +1370,7 @@ overwriting status.
 
 **Run report (`run_report.js`, resident, tail window "Run report").** Shows `run_report.json`
 (`{ts, title, lines}`), which the hourly scheduled task writes to `runtime/run_report.json` and pushes with `ctl-push`.
-Rereads it every 10 seconds, so a new report needs no restart; shows its age and "overdue" past 2 hours. Started by
+Rereads it every 10 seconds, so a new report needs no restart; shows its age and "overdue" past 2 hours. Closing the window does not stop the script; each new report reopens it, and meanwhile the HUD shows a "Run report: hidden" line. Started by
 `startup.js` and kept alive by `capital_manager.js` (MANAGERS). Saves its window position like the HUD.
 
 **Run target (top of `hud_consolidated.js`, always shown).** `run_target_logic.js` (pure, tested) renders

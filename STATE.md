@@ -3,6 +3,14 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-04 about 22:15 Pacific (PC clock 23:15): install 2 confirmed, steady, no changes.** Live
+(autosave, game `ps`, `augmentation_readiness.json`, `player_activity_status.json`, `mcp_status.json`, and
+`sleeve_status.json` and `capital_status.json` over the API): BN10, about $9.6b, hacking 247, karma -191, **17 installed**,
+0 queued, factions NiteSec (rejoined), Tian Di Hui and CyberSec. Every resident script, crawler and run_report run.
+MCP about $37m/s, total about $66m/s; capital_manager took cloud workers 0-8 to 2TB after the reset. Player works Tian Di
+Hui for Nanofiber Weave (9.5k of 75k); NiteSec at 0.3k, so CRTX42-AA (90k) is further. Sleeve 0: shock 0, sync 85.0,
+synchronizing. Next gate johnson-ortho at hacking 267. No Red Pill, so no World Daemon.
+
 **BN10 install 2 ran 2026-11-04 about 21:17 Pacific (PC clock 22:17), hourly task.** Before (save export 21:16, readiness
 file): BN10, $107.7b, hacking 278, karma -162, 14 installed, 0 queued, factions NiteSec, Tian Di Hui and CyberSec; NiteSec
 42.2k rep, so Embedded Netburner Module (30k) and Neural-Retention (40k) were rep-ready beside CSP Gen II. Backup

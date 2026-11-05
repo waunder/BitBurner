@@ -3,6 +3,19 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**BN10 install 4 ran 2026-11-05 about 08:15 Pacific (PC clock 09:15), hourly task.** Before (autosave, game `ps`,
+`augmentation_readiness.json`, `sleeve_status.json`): BN10, about $241.7b, hacking 405, karma -2618, 19 installed, 0
+queued, factions The Black Hand, NiteSec, Tetrads, Slum Snakes, Tian Di Hui and CyberSec. Neural Wit Amplifier rep-ready
+and Combat Rib I within 27 rep. Backup `saves/bitburnerSave_pre-install4_BN10_2026-11-05.json.gz` (gzip checked, player
+parsed, node 10, 19 augs, no Red Pill, SHA-256 c5fa0f867b4eeac4fca13242ebc5960941bc331b7b7e80071cfc99feeb4128c1).
+`aug_install.js --install` (`aug_install_status.json`) bought Combat Rib I, Neural Wit Amplifier, LuminCloaking-V1 and
+V2, no failures, plus 6 NeuroFlux; home stays 16TB, 3 cores. After (game `ps`): all 16 resident scripts back. Expected 23
+installed (not yet read back live). **`covenantTarget` set true** in `profiles/bn10/config/player_activity_config.json`
+(503 tests pass in `build/bn10`; pushed and read back from the game): once cash reaches $37.5b the player trains combat
+to 850, then hacking to 850, for The Covenant (also $75b). Sleeve 0: shock 0, sync 99.0, Homicide. No Red Pill, so no
+World Daemon. **Next:** confirm 23 installed and that the controller picks the Covenant goal; start `sleeve_buyer.js`
+after joining The Covenant.
+
 **Hourly check, 2026-11-05 about 07:20 Pacific (PC clock 08:20): steady, no changes.** Live (autosave, game `ps`,
 `augmentation_readiness.json`, `sleeve_status.json` over the API): BN10, about $106b, hacking 388, karma -2062, 19
 installed, 0 queued, same five factions. All 16 resident scripts and 4 stack batches run; nothing died. Slum Snakes 7.8k of

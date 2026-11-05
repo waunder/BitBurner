@@ -3,6 +3,14 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-05 about 06:15 Pacific (PC clock 07:15): steady, joined Slum Snakes.** Live (autosave, game
+`ps`, `augmentation_readiness.json`, `player_activity_status.json`, `sleeve_status.json` over the API): BN10, about $46b,
+hacking 364, karma -1575, 19 installed, 0 queued, factions The Black Hand, NiteSec, Slum Snakes, Tian Di Hui and
+CyberSec. Every resident script, crawler and run_report run; nothing died. The planner moved the player to Slum Snakes
+field work for its cheap augs: LuminCloaking-V1 (3k rep, $25m) at 1.2k, then Neural Wit Amplifier (10k, $50m), at about
+3.7k/h (modelled from 1.2k over ~19 min). **Plan:** install 4 (reaches 20) once Neural Wit is rep-ready, about 08:45
+Pacific, then set `covenantTarget` true. Sleeve 0: shock 0, sync 99.0, Homicide. No Red Pill, so no World Daemon.
+
 **Hourly check, 2026-11-05 about 05:20 Pacific (PC clock 06:20): install 3 confirmed, steady.** Live (autosave, game
 `ps`, `augmentation_readiness.json`, `aug_install_status.json`, `sleeve_status.json` over the API): BN10, about $13.1b,
 hacking 313 (reset at 04:15 Pacific), karma -1088, **19 installed**, 0 queued, factions NiteSec, Tian Di Hui and CyberSec

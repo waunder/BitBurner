@@ -3,6 +3,19 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**BN10 install 2 ran 2026-11-04 about 21:17 Pacific (PC clock 22:17), hourly task.** Before (save export 21:16, readiness
+file): BN10, $107.7b, hacking 278, karma -162, 14 installed, 0 queued, factions NiteSec, Tian Di Hui and CyberSec; NiteSec
+42.2k rep, so Embedded Netburner Module (30k) and Neural-Retention (40k) were rep-ready beside CSP Gen II. Backup
+`saves/bitburnerSave_pre-install2_BN10_2026-11-04.json.gz` (gzip checked, player parsed, node 10, 14 augs, SHA-256
+e8c3f229bc80854782ae8654e78fb5b3f197a7568eb744da2be7c311bbd8f6f1). `aug_install.js --install` (`aug_install_status.json`)
+bought all 3 planned (Neural-Retention, ENM, CSP Gen II), no failures, plus 10 NeuroFlux; home stays 8.19TB, 2 cores.
+After (game `ps` 21:18): every resident script back (mcp, supervisor, crawler, steward, mcp_xp, money, stack_manager, HUD,
+run_report, controller, xp_filler, faction_join, dnet_root, sleeve_controller, capital_manager, cct_watcher); controller on
+crime for cash; `reserve` 0. Expected 17 installed (not yet read back live). NiteSec lost again; the crawler should
+re-backdoor avmnite-02h at hacking 211. `covenantTarget` left false: Covenant also needs hacking 850 and combat 850, far off.
+Sleeve 0: shock 0, sync 81.5. No Red Pill, so no World Daemon. **Next:** confirm 17 installed and NiteSec rejoin; CRTX42-AA
+(NiteSec 90k) is the next rep target.
+
 **Hourly check, 2026-11-04 about 19:15 Pacific (PC clock 20:15): steady, no changes.** Live (autosave, game `ps`,
 `augmentation_readiness.json`, `player_activity_status.json`, `sleeve_status.json`, `mcp_status.json` over the API): BN10,
 about $102.6b, hacking 265, karma -147, 14 installed, 0 queued, factions NiteSec, Tian Di Hui and CyberSec. Home 8.19TB.

@@ -1481,7 +1481,9 @@ only a status older than 5 minutes reads "controller status stale".
 - **Policy:** after the configured physical baseline, a discovered normal
   server Hack gate selects Rothman Algorithms. Otherwise, the controller
   builds faction reputation toward the nearest prerequisite-ready augmentation
-  whose faction accepts work; it may start rep before cash is ready when its
+  whose faction accepts work: among cash-ready ones the smallest rep gap (since
+  2026-11-04; it was the cheapest, which picked a 66k gap over a 29k one in BN10),
+  otherwise the cheapest. It may start rep before cash is ready when its
   price is within `repInvestmentMaxPriceMultiple` of current cash. The gang's
   own faction is excluded because the player cannot perform faction work for
   the gang they lead. If neither applies and karma is above

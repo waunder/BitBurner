@@ -3,6 +3,16 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-04 about 18:15 Pacific (PC clock 19:15): rep target now the smallest gap.** Live (autosave,
+game `ps`, `augmentation_readiness.json`, `player_activity_status.json`, `sleeve_status.json`, `capital_status.json` over
+the API): BN10, about $97b, hacking 257, karma -139, 14 installed, 0 queued, factions NiteSec, Tian Di Hui and CyberSec.
+Income about $64m/s; every resident script, crawler and run_report run; `reserve` 0. CyberSec reached 37.9k, so CSP Gen
+II is rep-ready ($625m, the whole install plan); install held for a bigger batch. Change: the controller ranked
+cash-ready rep targets cheapest first and had moved to Tian Di Hui for Nanofiber Weave (66k gap) over NiteSec's
+Embedded Netburner Module (29k gap). `player_activity_logic.js` now takes the smallest gap when cash is ready (cheapest
+otherwise); 503 tests pass; synced, controller restarted 18:16, its next decision chose NiteSec (`switched` true).
+Sleeve 0: shock 0, sync 70.1, synchronizing. Next gate johnson-ortho at hacking 279. No Red Pill, so no World Daemon.
+
 **Hourly check, 2026-11-04 about 17:15 Pacific (PC clock 18:15): steady, no changes.** Live (autosave, game `ps`,
 `augmentation_readiness.json`, `sleeve_status.json`, `capital_policy.json` and `capital_status.json` over the API): BN10,
 about $32.9b, hacking 245, karma -132, 14 installed, 0 queued, factions NiteSec, Tian Di Hui and CyberSec. The cash drop

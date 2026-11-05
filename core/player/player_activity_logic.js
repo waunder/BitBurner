@@ -217,8 +217,11 @@ function repTarget(player, augmentation, config, only = null) {
   return targets
     .filter((item) => (!only || only.has(item.name)) && !repReady.has(item.name) && item.canWorkForRep !== false && number(item.repGap) > 0 && item.faction
       && (item.cashReady || number(item.price) <= repPriceLimit))
+    // With cash in hand, rep time is the cost, so take the smallest gap; otherwise the cheapest.
     .sort((a, b) => Number(b.cashReady) - Number(a.cashReady)
-      || number(a.price) - number(b.price) || number(a.repGap) - number(b.repGap))[0]
+      || (a.cashReady
+        ? number(a.repGap) - number(b.repGap) || number(a.price) - number(b.price)
+        : number(a.price) - number(b.price) || number(a.repGap) - number(b.repGap)))[0]
 }
 
 function hasRepTarget(player, augmentation, config) {

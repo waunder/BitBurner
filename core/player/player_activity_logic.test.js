@@ -121,6 +121,16 @@ test("no faction work for an augmentation another faction already sells", () => 
   assert.equal(result.augmentation, "BitRunners Neurolink")
 })
 
+test("with cash ready, faction work takes the smallest rep gap over the cheapest augmentation", () => {
+  const ready = { money: 9.7e10, factions: ["NiteSec", "Tian Di Hui"], skills: { hacking: 257, charisma: 192 } }
+  const augmentation = { ok: true, workCandidates: [
+    { faction: "Tian Di Hui", name: "Nanofiber Weave", repGap: 66115, cashReady: true, price: 6.25e8 },
+    { faction: "NiteSec", name: "Embedded Netburner Module", repGap: 28771, cashReady: true, price: 1.25e9 },
+  ] }
+  const result = choosePlayerActivity({ player: ready, augmentation, config: { physicalTarget: 0 } })
+  assert.equal(result.augmentation, "Embedded Netburner Module")
+})
+
 test("crime is picked by money rate when cash is short and karma rate otherwise", () => {
   const rows = [
     { crime: "Shoplift", chance: 0.5, time: 2000, karma: 0.01, money: 15000 },

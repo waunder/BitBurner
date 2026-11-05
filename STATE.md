@@ -3,6 +3,13 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-04 about 17:15 Pacific (PC clock 18:15): steady, no changes.** Live (autosave, game `ps`,
+`augmentation_readiness.json`, `sleeve_status.json`, `capital_policy.json` and `capital_status.json` over the API): BN10,
+about $32.9b, hacking 245, karma -132, 14 installed, 0 queued, factions NiteSec, Tian Di Hui and CyberSec. The cash drop
+from $51b is capital_manager upgrading cloud workers 0-8 to 64TB at $25.5b each (income about $58m/s). Every resident
+script, crawler and run_report run; `reserve` 0. CyberSec 34.1k of 37.5k for CSP Gen II (about 20 min, modelled). Next
+gate: johnson-ortho at hacking 279. Sleeve 0: shock 0, sync 66.4, synchronizing. No Red Pill, so no World Daemon.
+
 **Hourly check, 2026-11-04 about 16:15 Pacific (PC clock 17:15): steady, NiteSec rejoined by itself.** Live (autosave,
 game `ps`, `augmentation_readiness.json`, `sleeve_status.json` and `capital_policy.json` over the API): BN10, about $51b,
 hacking 231, karma -125, 14 installed, 0 queued, factions NiteSec, Tian Di Hui and CyberSec. NiteSec is back without a

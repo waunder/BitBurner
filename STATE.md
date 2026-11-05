@@ -3,6 +3,13 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-04 about 19:15 Pacific (PC clock 20:15): steady, no changes.** Live (autosave, game `ps`,
+`augmentation_readiness.json`, `player_activity_status.json`, `sleeve_status.json`, `mcp_status.json` over the API): BN10,
+about $102.6b, hacking 265, karma -147, 14 installed, 0 queued, factions NiteSec, Tian Di Hui and CyberSec. Home 8.19TB.
+MCP about $83m/s. Every resident script, crawler and run_report run. NiteSec 15.7k of 30k for Embedded Netburner Module
+(about 14k/h since the 18:16 switch, so roughly 1 h, modelled); CSP Gen II still rep-ready via CyberSec. Next: install
+that batch once ENM is rep-ready. Sleeve 0: shock 0, sync 73.9, synchronizing. No Red Pill, so no World Daemon.
+
 **Hourly check, 2026-11-04 about 18:15 Pacific (PC clock 19:15): rep target now the smallest gap.** Live (autosave,
 game `ps`, `augmentation_readiness.json`, `player_activity_status.json`, `sleeve_status.json`, `capital_status.json` over
 the API): BN10, about $97b, hacking 257, karma -139, 14 installed, 0 queued, factions NiteSec, Tian Di Hui and CyberSec.

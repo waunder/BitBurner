@@ -3,6 +3,16 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-05 about 15:15 Pacific (PC clock 16:15): install deferred one hour.** Live (autosave, game
+`ps`, `augmentation_readiness.json`, `player_activity_status.json`, `sleeve_status.json` over the API): BN10, about
+$485b, hacking 472, karma -7293, 23 installed, 1 queued (The W1ngs of Icarus), same five factions. All 16 resident
+scripts, run_report and 4 stack batches run; nothing died. SmartSonar Implant is now rep-ready (in the install plan), and
+the controller moved the player to NiteSec hacking work: CRTX42-AA Gene Modification 70.0k of 90k at about 31k/h (1.05k
+rep in 120s between two readiness samples, modelled), so about 40 minutes; Cranial Signal Processors Gen III (100k) about
+an hour. **Decision:** not installing now; the 16:15 Pacific run installs with CRTX42 (and Gen III if ready), with a save
+backup, since an install resets the rep that is about to buy them. Sleeve 0: shock 0, sync 99.0, Homicide. No Red Pill,
+so no World Daemon.
+
 **Hourly check, 2026-11-05 about 14:15 Pacific (PC clock 15:15): steady, no changes.** Live (autosave, game `ps`,
 `augmentation_readiness.json`, `player_activity_status.json`, `sleeve_status.json` over the API): BN10, about $372b,
 hacking 464, karma -6540, 23 installed, 1 queued (The W1ngs of Icarus), same five factions. All 16 resident scripts,

@@ -3,6 +3,18 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-06 13:15 Pacific (PC clock 14:15): steady, no changes.** Live (autosave summary, `ps` 13:16,
+readiness 13:13, sleeve status 13:15, metrics 13:15): BN10, cash $8.02t, hacking 903, combat 234/172/232/158, karma
+-26.9k, 35 installed, 0 queued, all 17 residents running, 1 sleeve on Homicide for karma (shock 0, sync 99). World
+Daemon: not present (no Daedalus, Red Pill not installed). Player on BitRunners hacking work for Neural Accelerator
+(160k rep away, cash ready). Measured, 13 samples 12:15 to 13:15: BitRunners 112k rep/h, The Black Hand 31.4k, NiteSec
+27.7k, Tian Di Hui 19.1k, CyberSec 18.1k, Tetrads 16.9k, Slum Snakes 16k, hacking exp 7.61b/h, karma -941/h, cash
+5.31t/h, MCP average 1.09b/s, rate 1.48b/s, share 1.56. Trend: `cash/h 367b>2.3t>5.31t ACCELERATING | MCP
+1.24b>1.04b>1.48b STEADY | hackExp/h 4b>7.63b>7.61b STEADY | rep work BitRunners SWITCH | rep best BitRunners SWITCH`
+(cycle 3.8h, nothing DECELERATING). Advisor: **build** (Neural Accelerator in about 1.5h); decision: **build, agree**:
+Neural Accelerator and Cranial Signal Processors Gen IV are close, and Neuroreceptor stays queued in `installPlan` for
+that install. Cash passed $8t; the first Covenant sleeve still waits on combat 850 for the invite.
+
 **Hourly check, 2026-11-06 12:15 Pacific (PC clock 13:15): steady, no changes.** Live (autosave summary, `ps` 12:16,
 readiness 12:15, activity status 12:14, sleeve status 12:15, metrics 12:15): BN10, cash $2.81t, hacking 878 (past the
 Covenant's 850), combat 231/170/229/156, karma -26.0k, 35 installed, 0 queued, all 17 residents running, 1 sleeve on

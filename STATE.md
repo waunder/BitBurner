@@ -3,6 +3,19 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-06 06:15 Pacific (PC clock 07:15): share relaunched, otherwise steady; no install.** Live
+(autosave summary, `ps` 06:15, readiness, metrics 06:15): BN10, cash $139b to $186b, hacking 738, combat 144-164, karma
+-20.1k, 33 installed (install 7 read back), 0 queued, all 17 residents running. World Daemon: not present (no Daedalus,
+Red Pill not installed). Player on Tetrads field work for Bionic Arms, 116k rep away (about 4.3h). Cloud servers rebuilt
+(RAM 2.92m GB), so `run share_deploy.js cloud 8` was relaunched; the 06:15 sample shows share power 1.50. Measured, 10
+samples 05:20 to 06:05 (new cycle only; the 60-minute window crosses the install): Tetrads 17.1k rep/h, NiteSec 9.06k,
+The Black Hand 7.51k, Tian Di Hui 7.16k, CyberSec 6.71k, Slum Snakes 6.52k, BitRunners 5.96k, hacking exp 1.85b/h,
+karma -940/h, cash 247b/h, MCP average 275m/s, rate 487m/s. Trend: all n/a (cycle 0.9h). `metrics.py cycles`: previous
+cycle 3.97h, rebuild hacking 1.81h, rep 2.06h; rep earned The Black Hand 208k, NiteSec 41k, CyberSec 33.7k, Tian Di Hui
+32k, Tetrads 27.3k, Slum Snakes 22k, BitRunners 2.73k; favor banked: none recorded. New cycle rebuilt hacking in 0.67h.
+Favor now: NiteSec 186, The Black Hand 137, Tian Di Hui 126. Advisor: **build** (nothing to install; best next Bionic
+Arms in 4.3h); decision: **build, agree**. Covenant: installs met; still needs hacking 850, combat 850.
+
 **BN10 install 7 ran 2026-11-06 about 05:15 Pacific (PC clock 06:15), hourly task.** Before (autosave summary,
 `augmentation_readiness.json`, metrics 05:10, `ps` 05:14): BN10, cash $459b, hacking 662, combat 141-157, karma -19.2k,
 30 installed, 0 queued, all 17 residents running. World Daemon: not present (no Daedalus, Red Pill not installed). Player

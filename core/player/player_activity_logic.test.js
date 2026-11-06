@@ -149,6 +149,21 @@ test("valued candidates rank by value per rep, and zero-value ones are skipped",
   assert.equal(none.host, "run4theh111z")
 })
 
+test("a target counts the faction's cheaper valued augmentations its rep unlocks on the way", () => {
+  const ready = { money: 5e11, factions: ["NiteSec", "The Black Hand"], skills: { hacking: 400, charisma: 300 } }
+  // Alone, Solo beats Far (0.04/10k vs 0.1/40k), but Far's 40k at The Black Hand also reaches Near and Shared.
+  const workCandidates = [
+    { faction: "NiteSec", name: "Solo", repGap: 10000, cashReady: true, price: 1e9, value: 0.04 },
+    { faction: "NiteSec", name: "Shared", repGap: 30000, cashReady: true, price: 1e9, value: 0.04 },
+    { faction: "The Black Hand", name: "Shared", repGap: 20000, cashReady: true, price: 1e9, value: 0.04 },
+    { faction: "The Black Hand", name: "Near", repGap: 15000, cashReady: true, price: 1e9, value: 0.04 },
+    { faction: "The Black Hand", name: "Far", repGap: 40000, cashReady: true, price: 1e9, value: 0.1 },
+  ]
+  const result = choosePlayerActivity({ player: ready, augmentation: { ok: true, workCandidates }, config: { physicalTarget: 0 } })
+  assert.equal(result.faction, "The Black Hand")
+  assert.equal(result.augmentation, "Far")
+})
+
 test("favor push works the target faction until favor plus pending gain reaches the donation threshold", () => {
   const player = { money: 5e11, factions: ["NiteSec", "The Black Hand"], skills: { hacking: 458, charisma: 319 } }
   const workCandidates = [{ faction: "The Black Hand", name: "Big", repGap: 20000, cashReady: true, price: 1e9, value: 0.1 }]

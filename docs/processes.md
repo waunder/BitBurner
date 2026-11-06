@@ -1376,7 +1376,9 @@ mults 0.1/0.025, faction_rep 0.5 (level mults dominate exp mults). Rates come fr
 steward now copies to the worker with `install_advisor_logic.js` and `run_target.json`. Also reports
 `covenantHackingFactor24h`, the hacking multiplier factor still needed to reach 850 in a 24h cycle. Shown on the HUD
 as Advice. Readiness also tags each candidate with `value`; `player_activity_logic.js` `repTarget` ranks cash-ready
-candidates by value per rep and skips zero-value ones (named priority and charisma lists keep the old order).
+candidates by value per rep and skips zero-value ones (named priority and charisma lists keep the old order). A
+target's value is the sum of the distinct valued augmentations its faction's rep reaches by then (its own and every
+cheaper one there), so a faction selling several wanted augmentations beats one selling a single one.
 `favorTarget` (player_activity_config.json) runs before them: the controller works that faction until favor plus
 pending gain (readiness `favor`) reaches `favorToDonate`, after which `aug_install.js` donates for rep and NeuroFlux. No script installs on it: installs stay with the hourly task's judgement (Ken, 2026-11-05), which weighs the
 advice as one input and records its decision beside the verdict.

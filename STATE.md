@@ -3,6 +3,14 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Rep target counts shared faction rep, 2026-11-05 about 19:30 Pacific (PC clock 20:30).** Ken: DataJack could have
+come from The Black Hand while that rep also built toward its other augmentations, instead of from NiteSec alone.
+`repTarget` (`player_activity_logic.js`) now scores a target by the sum of distinct valued augmentations its faction's
+rep reaches by then, per rep gap. 521 tests pass in `build/bn10`; `profile.py check --content` clean; player controller
+restarted (`restart_player.js`, read live 19:33): still the NiteSec favor push (favor 113 +30.2 pending), so the new
+ranking first acts when that push ends. Not changed: named `priorityAugs` lists still take the smallest gap. The
+restart fell inside share A/B hour A but did not change the player's work.
+
 **Hourly check, 2026-11-05 20:15 Pacific (PC clock 21:15): share A/B hour B started.** Live (autosave summary,
 `ps`, metrics 20:15): BN10, cash $422b, hacking 567, karma -11.2k, 27 installed, 0 queued, all residents running
 (MCP, crawler, money, stacks, steward, capital_manager, HUD, run_report, xp_filler, dnet_root, sleeve_controller,

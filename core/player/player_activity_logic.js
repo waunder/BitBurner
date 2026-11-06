@@ -244,16 +244,26 @@ function repTarget(player, augmentation, config, only = null) {
   const repPriceLimit = number(player.money) * Math.max(1, number(config.repInvestmentMaxPriceMultiple ?? 250))
   // An augmentation another faction already sells us needs no more rep anywhere.
   const repReady = new Set(targets.filter((item) => number(item.repGap) <= 0).map((item) => item.name))
-  return targets
+  const eligible = targets
     .filter((item) => (!only || only.has(item.name)) && !repReady.has(item.name) && item.canWorkForRep !== false && number(item.repGap) > 0 && item.faction
       && (item.cashReady || number(item.price) <= repPriceLimit))
     // Valued candidates (augmentation_readiness.js, install_advisor_logic.js weights) rank by value per rep,
     // since rep time is the cost; a zero-value one is not worth the time. Named lists (`only`) and
     // unvalued data keep the old order: with cash in hand the smallest gap, otherwise the cheapest.
     .filter((item) => only || !Number.isFinite(item.value) || item.value > 0)
+  // Rep at one faction unlocks all its cheaper augmentations too, so a target is worth the distinct
+  // valued names that faction's rep reaches by then (Ken: DataJack on The Black Hand on the way).
+  const bundle = (target) => {
+    const names = new Map()
+    for (const item of eligible) {
+      if (item.faction === target.faction && number(item.repGap) <= number(target.repGap) && Number.isFinite(item.value)) names.set(item.name, item.value)
+    }
+    return [...names.values()].reduce((sum, value) => sum + value, 0)
+  }
+  return eligible
     .sort((a, b) => Number(b.cashReady) - Number(a.cashReady)
       || (!only && Number.isFinite(a.value) && Number.isFinite(b.value)
-        ? b.value / number(b.repGap) - a.value / number(a.repGap) : 0)
+        ? bundle(b) / number(b.repGap) - bundle(a) / number(a.repGap) : 0)
       || (a.cashReady
         ? number(a.repGap) - number(b.repGap) || number(a.price) - number(b.price)
         : number(a.price) - number(b.price) || number(a.repGap) - number(b.repGap)))[0]

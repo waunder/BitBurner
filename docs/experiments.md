@@ -30,15 +30,21 @@ treat their "before" numbers as rough.
 
 ### Share A/B (for the hourly task)
 
-- **Date**: not yet run. Run once, at a quiet hour: no install due, the player
+- **Date**: started 2026-11-05 19:15 Pacific (hourly task): hour A, share off,
+  `share_deploy.js stop` (stopped share.js on 8 hosts). Player on NiteSec hacking
+  work (favor push, about 2h left, modelled). Next hourly run: `cloud 8` at the
+  start of hour B. Run once, at a quiet hour: no install due, the player
   on one faction's work for the whole two hours, not in a stand-aside run.
+- **Context before A** (measured, 13 samples, 18:10 to 19:10 Pacific, share on
+  1.46): NiteSec 76.2k rep/h, hacking exp 3.35b/h, MCP average 252m/s.
 - **Change**: hour A `home; run share_deploy.js stop` (share off); hour B
   `home; run share_deploy.js cloud 8` (share on, as now). Same faction, same
   work type, focus unchanged. Leave share on afterwards.
 - **Metric**: rep/h for that faction (expected about x1.46 with share on, the
   share power); hacking exp/h (expected lower with share on, since share takes
   8 cloud servers from `xp_filler.js`); MCP average unchanged.
-- **Baseline window**: hour A, from the first 5-minute sample after `stop`.
+- **Baseline window**: hour A, from the first 5-minute sample after `stop`
+  (2026-11-05 19:20 to 20:20 Pacific).
 - **After window**: hour B, from the first sample after `cloud 8`.
 - **Result**: pending. Fill in with `metrics.py rates --from <B start> --to <B end> --before 60`,
   skipping the first sample after each switch. Decide: keep share on if rep/h

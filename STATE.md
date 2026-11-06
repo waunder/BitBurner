@@ -3,6 +3,15 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-05 19:15 Pacific (PC clock 20:15): share A/B hour A started.** Live (save summary and
+`ps`, 19:14): BN10, cash $217b, hacking 540, karma -10.4k, 27 installed, 0 queued, all residents running. World
+Daemon: not present (no Daedalus, Red Pill not installed). Player on NiteSec hacking work, favor 113 +19.3 pending
+toward 150 (about 143k more rep, about 2h, modelled). Measured, 13 samples 18:10 to 19:10: NiteSec 76.2k rep/h,
+hacking exp 3.35b/h, karma -780/h, cash 32b/h, MCP average 252m/s. Trend: n/a everywhere (cycle 2.9h). Advisor:
+build (HemoRecirculator at Tetrads, 15m); decision: no install, agree (nothing queued). **Share A/B:** hour A
+(`share_deploy.js stop`) from 19:15; the next hourly run should run `home; run share_deploy.js cloud 8` for hour B
+and record both in `docs/experiments.md`. If the next run stands aside, share stays off: restore it then.
+
 **Measurement regime live, 2026-11-05 about 18:00 Pacific (PC clock 19:00).** New resident `metrics_logger.js`
 (`metrics_logic.js`, tests beside it) appends one JSON sample every 5 minutes, on the clock, to the game's
 `metrics_log.txt` (money, sinceInstall income, skills, exp, karma, city, share power, work and controller reason, faction

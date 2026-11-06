@@ -11,7 +11,8 @@ no valued augmentation in joined factions: NiteSec, Tian Di Hui and CyberSec hav
 (no hacking, combat or rep mults), yet the controller works NiteSec toward DataJack (225k rep). Value now lies in
 rejoining The Black Hand, Slum Snakes, BitRunners and others. Covenant needs a hacking mult x1.73 above today's to
 reach 850 in a 24h cycle (hacking exp about 7.1e7/h, modelled). Combat is 6. **Next:** compare the advisor with the
-hourly task's calls for a day; candidate fix: rep target by value per hour instead of smallest gap.
+hourly task's calls; candidate fix: rep target by value per hour instead of smallest gap. **Ken, 16:45 Pacific:** install
+decisions stay with the hourly task's judgement; the advisor is an input, never a trigger.
 
 **BN10 install 5 ran 2026-11-05 about 16:15 Pacific (PC clock 17:15), hourly task.** Before (autosave, game `ps`,
 `augmentation_readiness.json`, `player_activity_status.json`): BN10, about $327b (autosave; $345b live at install),

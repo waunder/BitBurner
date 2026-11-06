@@ -3,6 +3,16 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Macro review acted on, 2026-11-05 about 17:30 Pacific (PC clock 18:30): share on, NiteSec favor push.** Review
+(one-shot `core/dev/macro_probe.js`, `macro_probe.json`): since BN10 start hacking earned $14.1t, servers cost $13.2t,
+augmentations $0.63t; rep, not cash, limits every goal. (1) `share_deploy.js cloud 8`: share power 1.00 to **1.46**
+(read live); the work page then showed 14.4 rep/s focused at The Black Hand. (2) New `favorTarget` (bn10 config:
+NiteSec) in the player controller, after `priorityAugs`: works that faction until favor + pending gain reaches
+`getFavorToDonate()` (150); readiness now writes `favor` and `favorToDonate`. NiteSec favor 113.2 (+1.9 pending), so
+about 250k more NiteSec rep (modelled). At 150, `aug_install.js` donates cash for rep and NeuroFlux at each install.
+Favor banks at each install, so installs need not wait for it. Controller decided NiteSec at 17:30. 513 tests pass.
+Not done: company factions (no `companyTarget` in BN10), IPvGO off all BN10, sleeve karma-vs-rep test.
+
 **Rep target by value per rep, 2026-11-05 about 16:55 Pacific (PC clock 17:55).** `augmentation_readiness.js` tags
 each candidate with the advisor's weighted `value`; the player controller now ranks cash-ready candidates by value per
 rep and skips zero-value ones (named `priorityAugs`/`charismaAugs` keep the old order). With nothing valued it falls

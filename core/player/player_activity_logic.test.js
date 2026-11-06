@@ -149,6 +149,21 @@ test("valued candidates rank by value per rep, and zero-value ones are skipped",
   assert.equal(none.host, "run4theh111z")
 })
 
+test("favor push works the target faction until favor plus pending gain reaches the donation threshold", () => {
+  const player = { money: 5e11, factions: ["NiteSec", "The Black Hand"], skills: { hacking: 458, charisma: 319 } }
+  const workCandidates = [{ faction: "The Black Hand", name: "Big", repGap: 20000, cashReady: true, price: 1e9, value: 0.1 }]
+  const config = { physicalTarget: 0, favorTarget: "NiteSec" }
+  const short = { ok: true, workCandidates, favorToDonate: 150, favor: { NiteSec: { favor: 113, gain: 20 } } }
+  const pushed = choosePlayerActivity({ player, augmentation: short, config })
+  assert.equal(pushed.faction, "NiteSec")
+  assert.match(pushed.reason, /favor 113 \+20\.0 pending → 150/)
+  const reached = { ...short, favor: { NiteSec: { favor: 113, gain: 37 } } }
+  assert.equal(choosePlayerActivity({ player, augmentation: reached, config }).augmentation, "Big")
+  // Not joined, or no favor data: no push.
+  assert.equal(choosePlayerActivity({ player: { ...player, factions: ["The Black Hand"] }, augmentation: short, config }).augmentation, "Big")
+  assert.equal(choosePlayerActivity({ player, augmentation: { ok: true, workCandidates }, config }).augmentation, "Big")
+})
+
 test("crime is picked by money rate when cash is short and karma rate otherwise", () => {
   const rows = [
     { crime: "Shoplift", chance: 0.5, time: 2000, karma: 0.01, money: 15000 },

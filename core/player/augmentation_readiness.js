@@ -122,10 +122,15 @@ function assess(ns, previous = null) {
       factions: [...new Set(plan.map((item) => item.faction))],
     }
     const factionRep = Object.fromEntries(factions.map((faction) => [faction, Number(ns.singularity.getFactionRep(faction)) || 0]))
+    // Favor now and what an install would add; the player controller's favor push reads it.
+    const favor = Object.fromEntries(factions.map((faction) => [faction, {
+      favor: Number(ns.singularity.getFactionFavor(faction)) || 0, gain: Number(ns.singularity.getFactionFavorGain(faction)) || 0,
+    }]))
+    const favorToDonate = Number(ns.getFavorToDonate()) || 150
     let advice
     try { advice = advise(ns, { now, player, previous, factionRep, queued, plan, candidates }) } catch (error) { advice = { verdict: "error", reason: String(error?.message || error) } }
     return {
-      ts: now, ok: true, resetAt: resetAt(ns), money, factionRep, hackingExp: Number(player?.exp?.hacking) || 0, advice,
+      ts: now, ok: true, resetAt: resetAt(ns), money, factionRep, favor, favorToDonate, hackingExp: Number(player?.exp?.hacking) || 0, advice,
       installedCount: installed.length, queuedCount: queued.length, queued, installPlan,
       factionCount: factions.length, candidate, workCandidate,
       workCandidates: candidates.filter((item) => item.canWorkForRep),

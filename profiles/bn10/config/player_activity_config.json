@@ -6,6 +6,7 @@
   "covenantTarget": true,
   "covenantCloseFraction": 0.5,
   "priorityAugs": [],
+  "favorTarget": "NiteSec",
   "repBeforeGates": true,
   "focusWork": true,
   "gym": "Powerhouse Gym",

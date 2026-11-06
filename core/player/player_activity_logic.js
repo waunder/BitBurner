@@ -154,6 +154,10 @@ export function choosePlayerActivity({ player = {}, nextGate = null, augmentatio
       confidence: "HIGH",
     }
   }
+  // Favor at the donation threshold lets aug_install.js buy rep (and NeuroFlux) with cash, which is in surplus.
+  // Favor is banked at each install, so this works the faction until favor + pending gain reaches it.
+  const push = override === "auto" ? favorPush(player, augmentation, config) : null
+  if (push) return push
   // Level scales with the multiplier but only the log of exp, so charisma augmentations beat Leadership.
   // Later labs need more than charismaTarget, so this does not stop at it.
   const charismaAug = override === "auto" ? repTarget(player, augmentation, config, new Set(config.charismaAugs || [])) : null
@@ -253,6 +257,21 @@ function repTarget(player, augmentation, config, only = null) {
       || (a.cashReady
         ? number(a.repGap) - number(b.repGap) || number(a.price) - number(b.price)
         : number(a.price) - number(b.price) || number(a.repGap) - number(b.repGap)))[0]
+}
+
+export function favorPush(player, augmentation, config) {
+  const faction = config.favorTarget
+  if (!faction || !(player.factions || []).includes(faction)) return null
+  const row = augmentation?.ok ? augmentation.favor?.[faction] : null
+  if (!row) return null
+  const threshold = number(augmentation.favorToDonate || 150)
+  const projected = number(row.favor) + number(row.gain)
+  if (projected >= threshold) return null
+  return {
+    action: "faction", faction, workType: config.factionWorkType || "hacking",
+    reason: `${faction} favor ${number(row.favor).toFixed(0)} +${number(row.gain).toFixed(1)} pending → ${threshold} for donations`,
+    confidence: "HIGH",
+  }
 }
 
 function hasRepTarget(player, augmentation, config) {

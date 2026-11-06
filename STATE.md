@@ -3,6 +3,16 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**BN10 combat weighted like hacking, 2026-11-06 about 08:20 Pacific (PC clock 09:20).** Ken left the call to Claude.
+The Covenant needs every combat stat 850. From the 07:50 sample the implied combat mult is about 1.37 (strength 175 at 27k
+exp), so 850 needs about 1.35e11 exp per stat; hacking (783, mult about 1.49) needs about 28b and gets there in hours.
+`covenantTraining` only starts the gym under 48h at 20 exp/s, which needs combat mult about 3.6. So
+`profiles/bn10/config/run_target.json` now has `augWeights` with strength/defense/dexterity/agility 1 (were 0.25) and
+combat exp 0.1 (were 0.025); hacking, hacking exp and faction rep unchanged. Read live: readiness `weightsFrom`
+run_target.json, Bionic Arms value 0.131 to 0.525, still the controller's target. No defense or agility augmentation is
+offered by a joined faction yet. Sleeve stays on Homicide: karma -20.9k toward -54k for a gang (about 35h at -940/h),
+whose faction should sell the combat augmentations; sleeve gym time pays only once the mults are near 3.6.
+
 **Share relaunches itself after installs, 2026-11-06 about 07:50 Pacific (PC clock 08:50).** `xp_filler.js` now keeps
 `scripts/share.js` on the N smallest fillable cloud servers each 20s pass (`share_policy.json` `cloudServers`, default 8;
 `share_deploy.js cloud N` writes N, `stop` writes 0), tops them up as they grow and stops share on other cloud servers.

@@ -1,19 +1,68 @@
 {
   "goal": "BN10: SF10.1 and Covenant sleeves (first $10t)",
-  "updated": "2026-11-04",
+  "updated": "2026-11-06",
   "steps": [
-    { "label": "NiteSec gate", "metric": { "kind": "hacking", "target": 211 } },
-    { "install": true, "waitFor": ["NiteSec"], "metric": { "kind": "installed", "target": 1 } },
+    {
+      "label": "NiteSec gate",
+      "metric": {
+        "kind": "hacking",
+        "target": 211
+      }
+    },
+    {
+      "install": true,
+      "waitFor": [
+        "NiteSec"
+      ],
+      "metric": {
+        "kind": "installed",
+        "target": 1
+      }
+    },
     {
       "label": "Covenant invite",
       "metrics": [
-        { "kind": "installed", "target": 20 },
-        { "kind": "money", "target": 75e9 },
-        { "kind": "hacking", "target": 850 },
-        { "kind": "combat", "target": 850 }
+        {
+          "kind": "installed",
+          "target": 20
+        },
+        {
+          "kind": "money",
+          "target": 75000000000.0
+        },
+        {
+          "kind": "hacking",
+          "target": 850
+        },
+        {
+          "kind": "combat",
+          "target": 850
+        }
       ]
     },
-    { "label": "First Covenant sleeve", "metric": { "kind": "money", "target": 10e12 } },
-    { "label": "World Daemon: stop for Ken" }
-  ]
+    {
+      "label": "First Covenant sleeve",
+      "metric": {
+        "kind": "money",
+        "target": 10000000000000.0
+      }
+    },
+    {
+      "label": "World Daemon: stop for Ken"
+    }
+  ],
+  "augWeightsWhy": "Covenant needs every combat stat 850; at the about 1.4 combat mult that is about 1e11 exp each, while hacking reaches 850 in hours. Combat level mults weigh as much as hacking until the combat gate is met; covenantTraining starts the gym once about 3.6 is reached (48h at 20 exp/s).",
+  "augWeights": {
+    "hacking": 1,
+    "strength": 1,
+    "defense": 1,
+    "dexterity": 1,
+    "agility": 1,
+    "hacking_exp": 0.1,
+    "strength_exp": 0.1,
+    "defense_exp": 0.1,
+    "dexterity_exp": 0.1,
+    "agility_exp": 0.1,
+    "faction_rep": 0.5
+  }
 }

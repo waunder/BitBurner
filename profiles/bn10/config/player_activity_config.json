@@ -5,7 +5,7 @@
   "charismaTarget": 0,
   "covenantTarget": true,
   "covenantCloseFraction": 0.5,
-  "priorityAugs": [],
+  "priorityAugs": ["Bionic Arms", "Neuroreceptor Management Implant"],
   "favorTarget": "NiteSec",
   "repBeforeGates": true,
   "focusWork": true,

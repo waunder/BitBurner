@@ -3,6 +3,12 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Neuroreceptor Management Implant is the player target, 2026-11-06 about 10:40 Pacific (PC clock 11:40).** Ken: once
+Bionic Arms is done, shift to Neuroreceptor. BN10 `player_activity_config.json` `priorityAugs` is now Bionic Arms (bought
+in install 8) and Neuroreceptor Management Implant. Read live: the controller reason is "Tian Di Hui needs +127053 rep for
+Neuroreceptor Management Implant (priority)". Priority picks come ahead of the favor push and the valued ranking. Remove the
+name from `priorityAugs` once it is bought. Share confirmed back by itself after install 8 (1.41 at 10:15).
+
 **Hourly check, 2026-11-06 10:15 Pacific (PC clock 11:15): steady, no changes.** Live (autosave summary, `ps` 10:15,
 readiness 10:13, activity status 10:18, metrics 10:10): BN10, cash $72b to $112b, hacking 723 to 733, combat 148-223,
 karma -24.0k, **35 installed** (install 8 read back: 33 + Glibness + Bionic Arms), 0 queued, all 17 residents running.

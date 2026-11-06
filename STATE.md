@@ -3,6 +3,27 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**BN10 install 6 ran 2026-11-06 about 01:16 Pacific (PC clock 02:16), hourly task.** Before (autosave summary,
+`augmentation_readiness.json`, metrics 01:15): BN10, cash $3.13t, hacking 610, combat 132-147, karma -15.6k, 27 installed,
+0 queued; Tetrads 50.5k, so Power Recirculation Core was rep-ready. Player had moved to The Black Hand hacking work
+(Neuralstimulator, 17.6k rep gap). Measured, 13 samples 00:15 to 01:15: The Black Hand 33.4k rep/h, NiteSec 9.0k, Tian Di
+Hui 8.6k, Tetrads 8.3k, CyberSec 7.4k, hacking exp 9.24b/h, karma -842/h, cash 760b/h, MCP average 323m/s, rate 318m/s.
+Trend: cash STEADY, MCP STEADY, hacking exp STEADY, work rep SWITCH (Tetrads to The Black Hand). Advisor: **wait** 1.1h for
+Bionic Arms; decision: **install now, disagree**. The advisor prices Bionic Arms (Tetrads, 74k gap) at 68.8k rep/h, but
+Tetrads measured 8.3k to 14.6k/h, so it is hours away; the install banks NiteSec 113 to about 154 (past 150, so later
+installs can donate cash for rep and NeuroFlux at $760b/h income), Tetrads 0 to 56 and The Black Hand 62 to 97.
+Neuralstimulator (about 30 min away) was the one thing given up. Backup
+`saves/bitburnerSave_pre-install6_BN10_2026-11-06.json.gz` (gzip checked, player parsed, node 10, 27 augs, 0 queued,
+SHA-256 e482cfb9a22a47004a9f6a2284f9e767a0a5d9df0ed9e278e3578cbda556639c). `aug_install.js --install`
+(`aug_install_status.json`) bought DataJack, Power Recirculation Core and HemoRecirculator, no failures, plus 9 NeuroFlux;
+home now 32TB, 4 cores. After (game `ps` 01:17): every resident back from PID 2 (mcp_supervisor, crawler, mcp, steward,
+mcp_xp, money, stack_manager, HUD, run_report, controller, xp_filler, faction_join, metrics_logger, dnet_root,
+sleeve_controller, capital_manager, cct_watcher). **Changed:** `capital_policy.json` `reserve` $2t back to 0 (pushed, read
+back), so the rebuild buys cloud servers again. Expected 30 installed, plus NeuroFlux levels (not yet read back: status
+files had not refreshed). `metrics.py cycles` for the new cycle: pending, no sample yet. No Red Pill, so no World Daemon.
+**Next:** confirm installed count and favor; next targets Neuralstimulator (The Black Hand 100k) and Bionic Arms (Tetrads
+125k); Covenant still needs hacking 850 and combat 850 (`covenantTarget` true).
+
 **Hourly check, 2026-11-06 00:15 Pacific (PC clock 01:15): steady, install due next run.** Live (autosave summary,
 `ps`, readiness, metrics 00:10): BN10, cash $2.52t, hacking 602, combat 129-143, karma -14.7k, 27 installed, 0 queued,
 all residents running (`ps` 00:16). World Daemon: not present (no Daedalus, Red Pill not installed). Player on Tetrads

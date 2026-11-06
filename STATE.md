@@ -3,6 +3,17 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-06 08:15 Pacific (PC clock 09:15): steady, no changes.** Live (autosave summary, `ps` 08:16,
+readiness, metrics 08:10): BN10, cash $2.41t to $2.78t, hacking 824, combat 170-193, karma -22.1k, 33 installed, 0 queued,
+all 17 residents running. World Daemon: not present (no Daedalus, Red Pill not installed). Player on Tetrads field work:
+Glibness Enhancement 2.6k rep away (weight 0), Bionic Arms 46.6k away (about 1.2h). Measured, 12 samples 07:15 to 08:10:
+Tetrads 36.8k rep/h, NiteSec 30.7k, The Black Hand 16.3k, Tian Di Hui 15.6k, CyberSec 14.6k, Slum Snakes 12.5k,
+BitRunners 4.43k, hacking exp 6.77b/h, karma -1.05k/h, cash 1.95t/h, MCP average 1.03b/s, rate 1.77b/s, share 1.56.
+Trend: `cash/h -->279b>1.95t n/a | MCP -->713m>1.77b n/a | hackExp/h -->7.4b>6.77b n/a | rep work Tetrads -->32.4k>36.8k
+n/a | rep best Tetrads n/a` (cycle 2.9h, two windows only). Advisor: **build** (nothing to install; Bionic Arms in 1.2h);
+decision: **build, agree**. Hacking 850 about 1h out at 26 levels/h; combat 850 and karma -54k (gang, about 30h) remain
+the long poles. Share A/B not run: an install is likely within two hours.
+
 **BN10 combat weighted like hacking, 2026-11-06 about 08:20 Pacific (PC clock 09:20).** Ken left the call to Claude.
 The Covenant needs every combat stat 850. From the 07:50 sample the implied combat mult is about 1.37 (strength 175 at 27k
 exp), so 850 needs about 1.35e11 exp per stat; hacking (783, mult about 1.49) needs about 28b and gets there in hours.

@@ -3,6 +3,24 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-06 15:15 Pacific (PC clock 16:15): no changes by me; capital_manager bought home RAM.** Live
+(metrics 15:10, readiness 15:12, `ps` 15:18, `capital_status.json` 15:14): BN10, cash $3.06t, hacking 931, combat
+239/176/237/162, karma -28.9k, 35 installed, 1 queued (The B00ts of Perseus), all 17 residents running, sleeve on
+Homicide. World Daemon: not present (no Daedalus, Red Pill not installed). **Capital purchase (AGENTS.md rule):**
+`capital_manager.js` bought home RAM 131072GB to 262144GB at 14:37 for $14.99t (policy `homeRamTarget` 262144, `reserve`
+0; set earlier, see the 2026-11-03 notes). Expected payoff: home RAM survives installs, so every later rebuild starts
+with 256TB home. Observed so far: total RAM 7.995m to 8.126m GB (+1.6%), no visible change in MCP or cash/h in 35
+minutes. Home is now at target, so no further home steps fire. Cash resets toward the first Covenant sleeve's $10t,
+which still waits on combat 850 anyway. Measured, 13 samples 14:10 to 15:10: BitRunners 112k rep/h, NiteSec 26.3k,
+Tian Di Hui 19.8k, The Black Hand 19.5k, CyberSec 17.8k, Tetrads 16.9k, Slum Snakes 16.1k, hacking exp 7.81b/h, karma
+-1.07k/h, cash/h -15.1t (the purchase; income before it about 5.3t/h), MCP average 1.47b/s, rate 980m/s, share 1.47.
+Trend: `cash/h 5.29t>4.66t>-15.1t DECELERATING | MCP 1.42b>1.02b>980m STEADY | hackExp/h 7.61b>7.17b>7.81b STEADY |
+rep work BitRunners 112k>102k>112k STEADY | rep best BitRunners STEADY` (cash DECELERATING is the one-off $15t home
+purchase, not an income drop; hacking income grew about 5.3t/h throughout). Advisor: **wait** (Artificial Bio-neural
+Network Implant 95k rep away, about 50m); decision: **wait, agree**: one more hour adds it to Neural Accelerator, ENM
+Core Implant, CSP Gen IV, Neuroreceptor and the queued B00ts of Perseus, and the install also takes BitRunners favor
+from 41 to about 152, past the donation threshold. Expect the install next check (cash $3t covers the about $160b plan).
+
 **Hourly check, 2026-11-06 14:15 Pacific (PC clock 15:15): steady, no changes.** Live (autosave summary, `ps` 14:16,
 readiness 14:14, sleeve status 14:14, metrics 14:15): BN10, cash $12.8t, hacking 919, combat 237/174/234/160, karma
 -27.9k, 35 installed, **1 queued: The B00ts of Perseus** (new since 13:15; in BN15 it was the cruel-lab reward, likely the darknet again; source not checked),

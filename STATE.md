@@ -3,6 +3,20 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-06 02:15 Pacific (PC clock 03:15): install 6 confirmed, steady, no changes.** Live (autosave
+summary, `ps` 02:16, readiness, metrics 02:10): BN10, cash $59b to $95b (cloud buying again at reserve 0), hacking 548,
+combat 127-140, karma -16.5k, **30 installed** (install 6 confirmed), 0 queued, all 17 residents running. Favor after
+install: NiteSec 153.8, Tian Di Hui 120.7, CyberSec 104.0, The Black Hand 97.2, Slum Snakes 80.4, Tetrads 55.9. World
+Daemon: not present (Red Pill not installed). Player on The Black Hand hacking work (Neuralstimulator 100k, 83k gap).
+Measured, 11 samples 01:20 to 02:10 (new cycle, 0.9h): The Black Hand 16.4k rep/h, NiteSec 5.9k, Tian Di Hui 5.1k,
+CyberSec 4.7k, Slum Snakes 4.3k, Tetrads 2.7k, hacking exp 779m/h, karma -899/h, cash 110b/h, MCP average 138m/s, rate
+285m/s. Trend: all n/a (cycle under 3h). `metrics.py cycles`: previous cycle 9.02h, +3 installed, rep NiteSec 290k,
+The Black Hand 82.4k, Tian Di Hui 75.4k, CyberSec 60.5k, Tetrads 50.5k; favor banked NiteSec +40.7, CyberSec +18.8,
+Tian Di Hui +16.4. Advisor: **build** (nothing to install; Bionic Arms 2.2h at its 55k rep/h); decision: **build,
+agree**, though Tetrads measures 2.7k/h, so Bionic Arms is further off than 2.2h; Neuralstimulator is about 5h at the
+measured rate. Share A/B not run: the cycle is in its rebuild (cloud RAM still growing), which would confound it.
+Covenant: 30/20 installs met; still needs hacking 850, combat 850, $75b held.
+
 **BN10 install 6 ran 2026-11-06 about 01:16 Pacific (PC clock 02:16), hourly task.** Before (autosave summary,
 `augmentation_readiness.json`, metrics 01:15): BN10, cash $3.13t, hacking 610, combat 132-147, karma -15.6k, 27 installed,
 0 queued; Tetrads 50.5k, so Power Recirculation Core was rep-ready. Player had moved to The Black Hand hacking work

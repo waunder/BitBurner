@@ -3,6 +3,20 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-06 14:15 Pacific (PC clock 15:15): steady, no changes.** Live (autosave summary, `ps` 14:16,
+readiness 14:14, sleeve status 14:14, metrics 14:15): BN10, cash $12.8t, hacking 919, combat 237/174/234/160, karma
+-27.9k, 35 installed, **1 queued: The B00ts of Perseus** (darknet lab reward, new since 13:15; not bought by a script),
+all 17 residents running, 1 sleeve on Homicide for karma (shock 0, sync 99). World Daemon: not present (no Daedalus,
+Red Pill not installed). Player on BitRunners hacking work (346k rep). Measured, 10 samples 13:30 to 14:15: BitRunners
+112k rep/h, NiteSec 26.9k, The Black Hand 20.8k, Tian Di Hui 19.5k, CyberSec 18.6k, Tetrads 16.6k, Slum Snakes 15.8k,
+hacking exp 7.67b/h, karma -1.07k/h, cash 5.28t/h, MCP average 1.15b/s, rate 665m/s, share 1.56. Trend: `cash/h
+2.64t>5.35t>5.28t STEADY | MCP 1.11b>1.45b>665m STEADY | hackExp/h 7.62b>7.61b>7.67b STEADY | rep work BitRunners
+SWITCH | rep best BitRunners SWITCH` (cycle 4.8h, nothing DECELERATING; the last MCP read is low but the window
+average holds). Advisor: **wait** (Embedded Netburner Module Core Implant 3.8k rep away, minutes); decision: **build,
+agree**: Neural Accelerator is 54k away (about 0.5h at 112k/h). Expect the install next check, with Neural Accelerator,
+ENM Core Implant, Cranial Signal Processors Gen IV, Neuroreceptor and the queued B00ts of Perseus. Cash is past the first
+Covenant sleeve's $10t, but the invite still waits on combat 850.
+
 **Hourly check, 2026-11-06 13:15 Pacific (PC clock 14:15): steady, no changes.** Live (autosave summary, `ps` 13:16,
 readiness 13:13, sleeve status 13:15, metrics 13:15): BN10, cash $8.02t, hacking 903, combat 234/172/232/158, karma
 -26.9k, 35 installed, 0 queued, all 17 residents running, 1 sleeve on Homicide for karma (shock 0, sync 99). World

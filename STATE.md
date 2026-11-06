@@ -3,6 +3,16 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-05 21:15 Pacific (PC clock 22:15): share A/B done, share stays on.** Live (autosave summary,
+`ps`, metrics 21:10): BN10, cash $449b to $509b, hacking 574, combat 104-115, karma -12.1k, 27 installed, 0 queued,
+all residents running. World Daemon: not present (no Daedalus, Red Pill not installed). Player on NiteSec hacking
+work, favor 113 +36.6 pending, about 1.4 favor short of 150; next modelled target HemoRecirculator at Tetrads
+(18.9k rep gap). Measured, 12 samples 20:15 to 21:10: NiteSec 82.6k rep/h, hacking exp 3.09b/h, karma -942/h, cash
+-27b/h (money spent as fast as earned; not traced this run), MCP average 290m/s. Trend: cash STEADY, MCP STEADY,
+hacking exp STEADY, NiteSec rep STEADY. Advisor: build; decision: no install, agree (nothing queued). **Share A/B
+result:** hour B 83.1k rep/h at share 1.39 against hour A 56.2k at 1.00, x1.48; exp cost confounded by MCP, at most
+about 4b/h. Share left on (`docs/experiments.md`).
+
 **Rep target counts shared faction rep, 2026-11-05 about 19:30 Pacific (PC clock 20:30).** Ken: DataJack could have
 come from The Black Hand while that rep also built toward its other augmentations, instead of from NiteSec alone.
 `repTarget` (`player_activity_logic.js`) now scores a target by the sum of distinct valued augmentations its faction's

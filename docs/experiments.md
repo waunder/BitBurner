@@ -54,9 +54,15 @@ treat their "before" numbers as rough.
   (12 samples, 18:20 to 19:15, share 1.46): NiteSec 77.5k rep/h, so share-on was
   x1.38 rep (share power predicts x1.46). Exp is confounded: it more than doubled
   while the MCP rate rose 211m to 327m/s, so most of that rise is MCP, not the 8 servers.
-- **Result**: pending hour B. Fill in with `metrics.py rates --from <B start> --to <B end> --before 60`,
-  skipping the first sample after each switch. Decide: keep share on if rep/h
-  gain beats the exp loss for the current goal.
+- **Hour B measured** (11 samples, 20:20 to 21:10 Pacific, share 1.39 average):
+  NiteSec 83.1k rep/h, hacking exp 3.19b/h, MCP average 290m/s (rate 246m/s).
+- **Result** (hourly task, 2026-11-05 21:15 Pacific): share on gives NiteSec x1.48
+  rep/h against hour A (83.1k vs 56.2k), in line with the share power (1.39 to 1.53)
+  and with the x1.38 of the hour before A. Hacking exp was 3.19b/h on against 7.37b/h
+  off, but the MCP rate also differed (246m against 277 to 327m/s), so the exp cost
+  of the 8 servers is at most about 4b/h and probably less. Decision: keep share on;
+  rep is the bottleneck for the next installs, and hacking 574 is far from any gate
+  except The Covenant's 850. Share stays on (`cloud 8`).
 
 ## 2026-11-05
 
@@ -67,7 +73,7 @@ treat their "before" numbers as rough.
 - **Metric**: faction rep/h up by the share power; hacking exp/h down.
 - **Baseline window**: point read only: share power 1.00 before, 1.46 after (`ns.getSharePower()`).
 - **After window**: point read only: 14.4 rep/s focused at The Black Hand on the work page.
-- **Result**: pending, not measured. The share A/B above measures it.
+- **Result**: measured by the share A/B above: x1.38 to x1.48 faction rep/h; kept on.
 
 ### NiteSec favor push (`favorTarget`)
 

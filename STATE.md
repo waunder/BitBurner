@@ -3,6 +3,20 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-06 04:15 Pacific (PC clock 05:15): steady, no changes; install due next run.** Live (autosave
+summary, `ps` 04:20, readiness, metrics 04:10): BN10, cash $356b to $487b, hacking 640, combat 131-145, karma -18.2k,
+30 installed, 0 queued, all 17 residents running. World Daemon: not present (no Daedalus, Red Pill not installed). Player
+on The Black Hand hacking work, rep 169.9k: Neuralstimulator (100k) is rep-ready; The Black Hand augmentation and Enhanced
+Myelin Sheathing (both 200k) are 30.1k away, about 20 min; CSP Gen IV (250k) about 50 min. Measured, 13 samples 03:10 to
+04:10 (share on, power 1.32 average): The Black Hand 92.4k rep/h, NiteSec 11.9k, Tian Di Hui 10.4k, CyberSec 10.2k, Slum
+Snakes 7.65k, Tetrads 4.82k, BitRunners 1.04k, hacking exp 3.61b/h, karma -848/h, cash 256b/h, MCP average 468m/s, rate
+582m/s. Trend: `cash/h 169b>256b n/a | MCP 652m>582m n/a | hackExp/h 4.73b>3.61b n/a | rep work The Black Hand
+59.4k>92.4k n/a` (cycle 2.9h, so all n/a). Share confirmed: The Black Hand rep/h rose 56% hour on hour with share on,
+in line with the A/B's x1.48; the hacking exp and MCP dips are likely share threads taking cloud RAM. Advisor: **wait**
+19m for The Black Hand; decision: **wait, agree**. Next run (about 05:15) should find The Black Hand near 250k: install
+then with Neuralstimulator, The Black Hand, Enhanced Myelin Sheathing and CSP Gen IV if rep-ready; after install,
+relaunch `share_deploy.js cloud 8`. Covenant: 30/20 installs met; still needs hacking 850, combat 850.
+
 **Hourly check, 2026-11-06 03:15 Pacific (PC clock 04:15): share restored, otherwise steady.** Live (autosave
 summary, `ps` 03:15, readiness, metrics 03:10/03:20): BN10, cash $132b to $222b, hacking 622, combat 129-143, karma
 -17.4k, 30 installed, 0 queued, all 17 residents running. **BitRunners joined** (rep 650, favor 10.2). World Daemon:

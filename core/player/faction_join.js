@@ -8,21 +8,26 @@
 const CITY = new Set(["Sector-12", "Aevum", "Chongqing", "New Tokyo", "Ishima", "Volhaven"])
 const STATUS = "faction_join_status.json"
 const POLL_MS = 60_000
-// Tian Di Hui sells the cheapest charisma augmentations and only invites in these cities.
-const TIAN_DI_HUI = { faction: "Tian Di Hui", city: "Chongqing", hacking: 50, cash: 1.5e6 }
+// Factions that invite only in certain cities. Travel there once the other requirements are met.
+// Tian Di Hui: hacking 50, $1m. Tetrads (bitburner-src FactionInfo.tsx): combat 75 each, karma -18,
+// Chongqing, New Tokyo or Ishima; sells cheap combat augmentations.
+const CITY_GATED = [
+  { faction: "Tian Di Hui", city: "Chongqing", ready: (p) => p.skills.hacking >= 50 && p.money >= 1.5e6 },
+  { faction: "Tetrads", city: "Chongqing",
+    ready: (p) => ["strength", "defense", "dexterity", "agility"].every((s) => p.skills[s] >= 75) && p.karma <= -18 && p.money >= 2e5 },
+]
 
-function seekTianDiHui(ns) {
+function seekCityFactions(ns) {
   const player = ns.getPlayer()
-  const { faction, city, hacking, cash } = TIAN_DI_HUI
-  if (player.factions.includes(faction) || player.city === city) return
-  if (player.skills.hacking >= hacking && player.money >= cash) ns.singularity.travelToCity(city)
+  const next = CITY_GATED.find((gate) => !player.factions.includes(gate.faction) && gate.ready(player))
+  if (next && player.city !== next.city) ns.singularity.travelToCity(next.city)
 }
 
 export async function main(ns) {
   ns.disableLog("ALL")
   const joined = []
   while (true) {
-    seekTianDiHui(ns)
+    seekCityFactions(ns)
     const invites = ns.singularity.checkFactionInvitations()
     for (const faction of invites) {
       if (!CITY.has(faction) && ns.singularity.joinFaction(faction)) joined.push({ ts: Date.now(), faction })

@@ -1,7 +1,7 @@
 {
   "enabled": true,
   "override": "auto",
-  "physicalTarget": 0,
+  "physicalTarget": 75,
   "charismaTarget": 0,
   "covenantTarget": true,
   "covenantCloseFraction": 0.5,

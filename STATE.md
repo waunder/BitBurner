@@ -3,6 +3,16 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Faction value survey, 2026-11-05 about 17:50 Pacific (PC clock 18:50): Tetrads before company factions.** One-shot
+`core/dev/faction_value_survey.js` (`faction_value_survey.json`, advisor weights): every company's best eligible job is IT
+Intern at 9.1 company rep/s (Formulas), so a 400k invite is about 12h and resets each install; Clarke is 0.626 value for
+875k faction rep. Tetrads is 0.325 for 195k (HemoRecirculator, Power Recirculation Core, Bionic Arms) and needs only
+combat 75 each (about 17 gym minutes, modelled from the skill formula), karma -18 and Chongqing/New Tokyo/Ishima.
+Changed: bn10 `physicalTarget` 0 to 75 (gym runs first after every install); `faction_join.js` generalised to
+city-gated factions (Tian Di Hui, Tetrads: travels to Chongqing once ready). Controller decided gym at 17:52, held by
+its switch cooldown when read. Company factions: revisit when hacking/charisma unlock better jobs. Also high value
+but gated: The Syndicate (combat 200), Fulcrum (company + backdoor), Covenant.
+
 **Macro review acted on, 2026-11-05 about 17:30 Pacific (PC clock 18:30): share on, NiteSec favor push.** Review
 (one-shot `core/dev/macro_probe.js`, `macro_probe.json`): since BN10 start hacking earned $14.1t, servers cost $13.2t,
 augmentations $0.63t; rep, not cash, limits every goal. (1) `share_deploy.js cloud 8`: share power 1.00 to **1.46**

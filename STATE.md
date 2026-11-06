@@ -3,6 +3,20 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-06 10:15 Pacific (PC clock 11:15): steady, no changes.** Live (autosave summary, `ps` 10:15,
+readiness 10:13, activity status 10:18, metrics 10:10): BN10, cash $72b to $112b, hacking 723 to 733, combat 148-223,
+karma -24.0k, **35 installed** (install 8 read back: 33 + Glibness + Bionic Arms), 0 queued, all 17 residents running.
+World Daemon: not present (no Daedalus, Red Pill not installed). Post-install gym baseline ran 09:40 to 10:17 (same
+pattern as the 05:14 cycle), then the controller moved the player to BitRunners hacking work at 10:17 for Artificial
+Bio-neural Network Implant (546k rep away). Measured, 8 samples 09:35 to 10:10 (new cycle only): NiteSec 17.7k rep/h,
+The Black Hand 13.1k, Tian Di Hui 12.6k, CyberSec 12k, Slum Snakes 11.7k, BitRunners 3.95k, hacking exp 957m/h, karma
+-996/h, cash 241b/h, MCP average 290m/s, rate 343m/s, share 1.41. Trend: all n/a (cycle 0.7h). `metrics.py cycles`:
+previous cycle 4.23h, rebuild hacking 0.67h, rep 1.25h; rep earned Tetrads 124k, NiteSec 79.9k; favor banked The Black
+Hand +40.3, NiteSec +32.4, Tetrads +16.7. Advisor: **build** (best next Neural Accelerator, 396k rep, about 5.6h);
+decision: **build, agree**. Covenant combat 850: implied combat mult now about 1.9 (was 1.37), but `covenantGymHours`
+still far over 48h, so combat remains the long pole (gang augmentations, karma -24.0k of -54k). The share A/B the
+earlier entries call "not run" already ran on 2026-11-05 (`docs/experiments.md`: x1.38 to x1.48 rep, share kept on).
+
 **BN10 install 8 ran 2026-11-06 about 09:29 Pacific (PC clock 10:29), hourly task.** Before (autosave summary 09:14
 and 09:28, readiness 09:26, metrics 09:10, `ps` 09:16): BN10, cash $3.10t to $4.39t, hacking 841 to 844, combat
 179-204, karma -23.2k, 33 installed, 0 queued, all 17 residents running. World Daemon: not present (no Daedalus, Red

@@ -3192,7 +3192,7 @@ reads actual RAM. A new MCP restart is required to load this code. See
 has not been substantiated; the extra legacy sleep is not a proven freeze
 fix. Historical root cause is still unknown.
 
-**Re-enabled for BN15.** The old stability hold ended with Ken's BN15 approval: the worker sleeps 1s between calls, 99k threads ran live for 40 minutes on 2026-11-01 without trouble, and `share_deploy.js cloud [servers=8]` runs a handful of large processes on whole cloud servers taken from `xp_filler.js`, never those kept for MCP or the stacks. It restores work focus. Install kills the threads.
+**Re-enabled for BN15.** The old stability hold ended with Ken's BN15 approval: the worker sleeps 1s between calls, 99k threads ran live for 40 minutes on 2026-11-01 without trouble, and `share_deploy.js cloud [servers=8]` runs a handful of large processes on whole cloud servers taken from `xp_filler.js`, never those kept for MCP or the stacks. It restores work focus and records N in `share_policy.json` (`stop` records 0). Install kills the threads; `xp_filler.js` then puts share back on the N smallest fillable cloud servers as `capital_manager.js` rebuilds them, tops them up as they grow, and stops share on every other cloud server (2026-11-06).
 
 Added 2026-08-13, Ken-requested ("boost our rate of reputation growth").
 Self-contained, not touched by `mcp.js`, not auto-started by anything.

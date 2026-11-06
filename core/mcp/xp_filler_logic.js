@@ -19,3 +19,19 @@ export function bestXpTarget(candidates) {
   return [...candidates].filter(c => c.weakenMs > 0 && c.exp > 0)
     .sort((a, b) => b.exp / b.weakenMs - a.exp / a.weakenMs || a.weakenMs - b.weakenMs)[0]?.host ?? null
 }
+
+export const SHARE_POLICY = "share_policy.json"
+export const DEFAULT_SHARE_SERVERS = 8
+
+/** Cloud servers kept on share; `share_policy.json` holds `{ "cloudServers": N }`, written by share_deploy.js. */
+export function shareServers(text) {
+  try {
+    const n = Number(JSON.parse(text || "{}").cloudServers ?? DEFAULT_SHARE_SERVERS)
+    return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0
+  } catch { return DEFAULT_SHARE_SERVERS }
+}
+
+/** Whole cloud servers for share: the smallest ones xp_filler.js may fill, so MCP's and the stacks' servers stay clear. */
+export function shareCloudHosts(hosts, servers, reserveRam = 0) {
+  return servers > 0 ? fillableCloud(hosts, 3, reserveRam).slice(-servers) : []
+}

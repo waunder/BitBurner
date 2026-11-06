@@ -3,6 +3,13 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Share relaunches itself after installs, 2026-11-06 about 07:50 Pacific (PC clock 08:50).** `xp_filler.js` now keeps
+`scripts/share.js` on the N smallest fillable cloud servers each 20s pass (`share_policy.json` `cloudServers`, default 8;
+`share_deploy.js cloud N` writes N, `stop` writes 0), tops them up as they grow and stops share on other cloud servers.
+So after an install share returns as cloud servers are rebuilt; **the hourly task no longer needs to run `share_deploy.js
+cloud 8` after installs.** 522 tests pass in `build/bn10`; `profile.py check --content` clean; `xp_filler.js` restarted
+live: status lists 8 share hosts (the ones already sharing, nothing to top up), share power 1.50 at 07:50.
+
 **Hourly check, 2026-11-06 06:15 Pacific (PC clock 07:15): share relaunched, otherwise steady; no install.** Live
 (autosave summary, `ps` 06:15, readiness, metrics 06:15): BN10, cash $139b to $186b, hacking 738, combat 144-164, karma
 -20.1k, 33 installed (install 7 read back), 0 queued, all 17 residents running. World Daemon: not present (no Daedalus,

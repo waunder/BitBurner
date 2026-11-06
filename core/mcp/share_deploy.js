@@ -23,24 +23,23 @@
  *
  * `run share_deploy.js cloud [servers=8]` takes that many whole cloud servers
  * from xp_filler.js, never the ones it keeps clear for MCP and the stacks, then
- * restores work focus.
+ * restores work focus, and records N in share_policy.json so xp_filler.js
+ * keeps those servers on share, including after installs.
  *
  * `run share_deploy.js stop` kills every running scripts/share.js instance
- * (home + network) — the reverse of either mode above.
+ * (home + network) — the reverse of either mode above — and sets the cloud
+ * share policy to 0 so xp_filler.js does not bring it back.
  */
 
 import { readStacks, LEGACY_BUDGET_GB } from "./stack_files.js"
-import { fillableCloud } from "./xp_filler_logic.js"
+import { SHARE_POLICY, shareCloudHosts } from "./xp_filler_logic.js"
+
+export { shareCloudHosts }
 
 const SHARE_SCRIPT = "/scripts/share.js"
 const XP_WORKER = "scripts/xp_weaken.js"
 const ACTION_SCRIPTS = new Set(["scripts/weaken.js", "scripts/grow.js", "scripts/hack.js"])
 export const DEFAULT_SHARE_HOME_GB = 256
-
-/** Whole cloud servers for share: only ones xp_filler.js may fill, so MCP's and the stacks' servers stay clear. */
-export function shareCloudHosts(hosts, servers, reserveRam = 0) {
-  return servers > 0 ? fillableCloud(hosts, 3, reserveRam).slice(-servers) : []
-}
 
 export function targetShareThreads(targetGb, shareRam, maxThreads = Infinity) {
   if (!(targetGb > 0) || !(shareRam > 0) || !(maxThreads > 0)) return 0
@@ -71,6 +70,7 @@ export async function main(ns) {
   }
 
   if (mode === "stop") {
+    ns.write(SHARE_POLICY, JSON.stringify({ cloudServers: 0 }), "w")
     let killed = 0
     for (const host of scanNetwork(ns)) {
       if (ns.scriptKill(SHARE_SCRIPT, host)) killed++
@@ -81,6 +81,7 @@ export async function main(ns) {
 
   if (mode === "cloud") {
     const servers = Number(ns.args[1] ?? 8)
+    ns.write(SHARE_POLICY, JSON.stringify({ cloudServers: servers }), "w")
     for (const host of scanNetwork(ns)) ns.scriptKill(SHARE_SCRIPT, host)
     const hosts = ns.cloud.getServerNames().map(host => ({ host, max: ns.getServerMaxRam(host) }))
     const reserve = readStacks(ns).reduce((sum, s) => sum + (s.ramBudget || LEGACY_BUDGET_GB), 0)

@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { bestXpTarget, fillableCloud, fillerThreads } from "./xp_filler_logic.js"
+import { bestXpTarget, fillableCloud, fillerThreads, shareServers } from "./xp_filler_logic.js"
 
 test("fillerThreads leaves the margin free", () => {
   assert.equal(fillerThreads(32768, 0), Math.floor(32768 * 0.95 / 1.75))
@@ -22,4 +22,12 @@ test("fillableCloud also holds whole servers for a stack reserve", () => {
 test("bestXpTarget ranks XP per weaken time", () => {
   assert.equal(bestXpTarget([{ host: "slow", exp: 30, weakenMs: 300 }, { host: "fast", exp: 15, weakenMs: 100 }]), "fast")
   assert.equal(bestXpTarget([{ host: "bad", exp: 0, weakenMs: 1 }]), null)
+})
+
+test("shareServers defaults to 8 and honours stop", () => {
+  assert.equal(shareServers(""), 8)
+  assert.equal(shareServers("{}"), 8)
+  assert.equal(shareServers('{"cloudServers":4}'), 4)
+  assert.equal(shareServers('{"cloudServers":0}'), 0)
+  assert.equal(shareServers("not json"), 8)
 })

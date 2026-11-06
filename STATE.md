@@ -3,6 +3,19 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-05 23:15 Pacific (PC clock 00:15): install deferred about 1.5h for Power Recirculation Core.**
+Live (autosave summary, `ps`, readiness, metrics 23:15): BN10, cash $1.76t, hacking 595, combat 123-137, karma -13.8k,
+27 installed, 0 queued, all residents running (MCP, crawler, money, stacks, steward, capital_manager, HUD, run_report,
+xp_filler, dnet_root, sleeve_controller, faction_join, player controller, metrics_logger, cct_watcher). World Daemon: not
+present (no Daedalus, Red Pill not installed). Live `capital_policy.json` reserve $2t (read back). Player on Tetrads field
+work. HemoRecirculator is now rep-ready: install plan DataJack + HemoRecirculator, $2.68b. Measured, 12 samples 22:20 to
+23:15: Tetrads 14.2k rep/h, NiteSec 9.6k, Tian Di Hui 8.4k, CyberSec 7.2k, hacking exp 7.6b/h, karma -814/h, cash
+1.24t/h, MCP average 309m/s, rate 362m/s. Trend: cash ACCELERATING (reserve now holding cash), MCP ACCELERATING,
+hacking exp ACCELERATING, Tetrads rep SWITCH. Advisor: wait 1.5h for Power Recirculation Core (Tetrads, 22.2k rep gap,
++7.8%/h against the cycle's +1.1%/h); decision: **wait, agree**. Nothing is decelerating, Tetrads favor is 0 so the rep
+rate does not fall before reset, and cash keeps building at the $2t reserve. Install when Power Recirculation Core is
+rep-ready (about 00:45 to 01:15 Pacific), backup first; reserve stays $2t until then.
+
 **Hourly check, 2026-11-05 22:15 Pacific (PC clock 23:15): NiteSec favor push done; cash held for an install.** Live
 (autosave summary, `ps`, status files, metrics 22:10): BN10, cash $366b to $530b (sawtooth), hacking 585, combat 115-128,
 karma -13.0k, 27 installed, 0 queued, all residents running, 1 sleeve on Homicide for karma. World Daemon: not present

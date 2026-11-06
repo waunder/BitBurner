@@ -3,6 +3,16 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-06 00:15 Pacific (PC clock 01:15): steady, install due next run.** Live (autosave summary,
+`ps`, readiness, metrics 00:10): BN10, cash $2.52t, hacking 602, combat 129-143, karma -14.7k, 27 installed, 0 queued,
+all residents running (`ps` 00:16). World Daemon: not present (no Daedalus, Red Pill not installed). Player on Tetrads
+field work; Power Recirculation Core rep gap 7.7k (Tetrads 42.3k/50k). Measured, 12 samples 23:15 to 00:10: Tetrads
+14.6k rep/h, NiteSec 8.9k, Tian Di Hui 8.6k, CyberSec 7.4k, hacking exp 7.57b/h, karma -885/h, cash 738b/h, MCP average
+316m/s, rate 298m/s. Trend: cash STEADY, MCP STEADY, hacking exp STEADY, Tetrads rep SWITCH. Advisor: wait 31m for Power
+Recirculation Core (+25.1%/h against the cycle's +1.0%/h); decision: **wait, agree**. Nothing changed. Next run (about
+01:15 Pacific): Power Recirculation Core should be rep-ready; back up the save and install (plan then DataJack,
+HemoRecirculator, Power Recirculation Core, about $3.6b plus NeuroFlux), banking NiteSec 153, Tetrads 50.
+
 **Hourly check, 2026-11-05 23:15 Pacific (PC clock 00:15): install deferred about 1.5h for Power Recirculation Core.**
 Live (autosave summary, `ps`, readiness, metrics 23:15): BN10, cash $1.76t, hacking 595, combat 123-137, karma -13.8k,
 27 installed, 0 queued, all residents running (MCP, crawler, money, stacks, steward, capital_manager, HUD, run_report,

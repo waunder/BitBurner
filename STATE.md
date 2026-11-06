@@ -3,6 +3,24 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**BN10 install 8 ran 2026-11-06 about 09:29 Pacific (PC clock 10:29), hourly task.** Before (autosave summary 09:14
+and 09:28, readiness 09:26, metrics 09:10, `ps` 09:16): BN10, cash $3.10t to $4.39t, hacking 841 to 844, combat
+179-204, karma -23.2k, 33 installed, 0 queued, all 17 residents running. World Daemon: not present (no Daedalus, Red
+Pill not installed). Player on Tetrads field work until Bionic Arms (125k) was rep-ready at about 09:26. Measured, 12
+samples 08:15 to 09:10: Tetrads 38.7k rep/h, NiteSec 20.4k, The Black Hand 17.1k, Tian Di Hui 16.3k, CyberSec 15.4k,
+Slum Snakes 12.8k, BitRunners 2.77k, hacking exp 6.9b/h, karma -937/h, cash -1.91t/h (cloud buying), MCP average
+1.13b/s, rate 1.3b/s, share 1.56. Trend: `cash/h 279b>1.95t>-1.91t STEADY | MCP 713m>1.77b>1.3b STEADY | hackExp/h
+7.4b>6.77b>6.9b STEADY | rep work Tetrads 32.4k>36.8k>38.7k STEADY | rep best Tetrads STEADY`; nothing decelerating.
+Advisor: **install** (best next Neural Accelerator +1.2%/h, under the cycle's +13.3%/h); decision: **install, agree**:
+the next weighted augmentation (ENM Core Implant) is about 294k rep away, 7h+ at the measured rate. Backup
+`saves/bitburnerSave_pre-install8_BN10_2026-11-06.json.gz` (gzip checked, player parsed, node 10, 33 augs, 0 queued,
+SHA-256 ae496ae8e0f2d950173b0c1e0e95ac06357bac5afdc5c0dcc6dcb428b10f1bb9). `aug_install.js --install`
+(`aug_install_status.json`) bought Glibness Enhancement and Bionic Arms, no failures, plus 8 NeuroFlux ($501b donated
+for NeuroFlux rep); home 128TB (was 32TB), 4 cores. After (`ps` 09:30): every resident back from PID 2. Expected 35
+installed plus NeuroFlux levels (not yet read back). `metrics.py cycles`: pending, no sample from the new cycle yet.
+Share relaunches itself via `xp_filler.js` as cloud servers rebuild. Covenant: installs met; still needs hacking 850
+(reached 844 before the reset) and combat 850 (the long pole). Share A/B still not run (install hour).
+
 **Hourly check, 2026-11-06 08:15 Pacific (PC clock 09:15): steady, no changes.** Live (autosave summary, `ps` 08:16,
 readiness, metrics 08:10): BN10, cash $2.41t to $2.78t, hacking 824, combat 170-193, karma -22.1k, 33 installed, 0 queued,
 all 17 residents running. World Daemon: not present (no Daedalus, Red Pill not installed). Player on Tetrads field work:

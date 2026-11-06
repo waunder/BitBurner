@@ -3,6 +3,16 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Install advisor in shadow mode, 2026-11-05 about 16:35 Pacific (PC clock 17:35).** At Ken's request: install timing
+as optimal foraging (wait while the next augmentation's multiplier gain per hour beats the cycle's average, else
+install), in `augmentation_readiness.json` `advice`, on the HUD, and in the hourly report; nothing acts on it. Steward
+restarted for its new copy list. **Install 5 confirmed live: 27 installed, 0 queued.** First live verdict: build, with
+no valued augmentation in joined factions: NiteSec, Tian Di Hui and CyberSec have only DataJack and Neuroreceptor left
+(no hacking, combat or rep mults), yet the controller works NiteSec toward DataJack (225k rep). Value now lies in
+rejoining The Black Hand, Slum Snakes, BitRunners and others. Covenant needs a hacking mult x1.73 above today's to
+reach 850 in a 24h cycle (hacking exp about 7.1e7/h, modelled). Combat is 6. **Next:** compare the advisor with the
+hourly task's calls for a day; candidate fix: rep target by value per hour instead of smallest gap.
+
 **BN10 install 5 ran 2026-11-05 about 16:15 Pacific (PC clock 17:15), hourly task.** Before (autosave, game `ps`,
 `augmentation_readiness.json`, `player_activity_status.json`): BN10, about $327b (autosave; $345b live at install),
 hacking 479, karma -8042, 23 installed, 1 queued (The W1ngs of Icarus), same five factions, player on The Black Hand

@@ -113,6 +113,8 @@ export function runTargetView(config, live, compact) {
     compactText = `${now.label}${lead ? ` · ${lead.text}` : ""}`
   }
   if (live.work) lines.push(`Work: ${live.work}`)
+  // Shadow-mode install advice from augmentation_readiness.json; nothing acts on it yet.
+  if (live.advice) lines.push(`Advice: ${live.advice}`)
   if (config.updated) lines.push(`Plan updated ${config.updated}`)
   return { compact: compactText, lines }
 }

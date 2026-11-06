@@ -1368,6 +1368,15 @@ Running `gang-controller.js` again now kills older copies on home before
 continuing, preventing duplicate controllers from assigning tasks or
 overwriting status.
 
+**Install advisor (shadow mode, `install_advisor_logic.js`, pure, tested).** `augmentation_readiness.js` writes
+`advice` each run: an install ends a foraging cycle, so it advises waiting while the next augmentation's weighted log
+multiplier gain per hour (rep gap / best observed rep rate) beats the cycle's average since `lastAugReset` (rebuild
+included), else installing. Weights: `run_target.json` `augWeights`, default hacking 1, each combat stat 0.25, exp
+mults 0.1/0.025, faction_rep 0.5 (level mults dominate exp mults). Rates come from the previous status, which the
+steward now copies to the worker with `install_advisor_logic.js` and `run_target.json`. Also reports
+`covenantHackingFactor24h`, the hacking multiplier factor still needed to reach 850 in a 24h cycle. Shown on the HUD
+as Advice. Nothing acts on it: the hourly task records whether it agreed, for Ken's review.
+
 **Run report (`run_report.js`, resident, tail window "Run report").** Shows `run_report.json`
 (`{ts, title, lines}`), which the hourly scheduled task writes to `runtime/run_report.json` and pushes with `ctl-push`.
 Rereads it every 10 seconds, so a new report needs no restart; shows its age and "overdue" past 2 hours. Closing the window does not stop the script; each new report reopens it, and meanwhile the HUD shows a "Run report: hidden" line. Started by

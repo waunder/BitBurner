@@ -454,6 +454,8 @@ function runTargetStatus(ns, now) {
     karma,
     installed: readiness?.ok ? readiness.installedCount : undefined,
     installPlan: readiness?.ok ? readiness.installPlan : undefined,
+    advice: readiness?.ok && readiness.advice ? readiness.advice.reason
+      + (readiness.advice.covenantHackingFactor24h > 1 ? `; Covenant needs hacking mult x${readiness.advice.covenantHackingFactor24h.toFixed(2)} (24h cycle)` : "") : undefined,
     gate: activityFresh ? activity.gate : undefined,
     work: activityFresh ? activity.decision?.reason || activity.decision?.action : "controller status stale",
   }

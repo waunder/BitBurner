@@ -12,6 +12,7 @@
  */
 
 import { planPurchases } from "./aug_install_logic.js"
+import { DEFAULT_WEIGHTS, augValue, bestRepRate, installAdvice, multFactorNeeded } from "./install_advisor_logic.js"
 
 const STATUS = "augmentation_readiness.json"
 const POLL_MS = 120_000
@@ -31,7 +32,41 @@ function unique(values) {
   return [...new Set(values)].sort((a, b) => a.localeCompare(b))
 }
 
-function assess(ns) {
+// Shadow-mode install advice (install_advisor_logic.js). `previous` is the last
+// status, read before this run overwrites it, so rep and exp rates come from two samples.
+function advise(ns, { now, player, previous, factionRep, queued, plan, candidates }) {
+  let weights = DEFAULT_WEIGHTS
+  try { weights = JSON.parse(ns.read("run_target.json") || "{}").augWeights || DEFAULT_WEIGHTS } catch {}
+  const statsCache = new Map()
+  const value = (name) => {
+    if (!statsCache.has(name)) statsCache.set(name, augValue(ns.singularity.getAugmentationStats(name), weights))
+    return statsCache.get(name)
+  }
+  const inBatch = new Set([...queued, ...plan.map((item) => item.name)])
+  const batch = [...inBatch].map((name) => ({ name, value: value(name) }))
+  const gaps = new Map()
+  for (const item of candidates) {
+    if (inBatch.has(item.name) || !item.canWorkForRep) continue
+    gaps.set(item.name, Math.min(gaps.get(item.name) ?? Infinity, item.repGap))
+  }
+  const sampleHours = previous?.ok && previous.ts > 0 ? (now - previous.ts) / 3_600_000 : 0
+  const repPerHour = bestRepRate(previous?.factionRep, factionRep, sampleHours)
+  const reset = resetAt(ns)
+  const advice = installAdvice({
+    batch, cycleHours: reset ? (now - reset) / 3_600_000 : 0, repPerHour,
+    candidates: [...gaps].map(([name, repGap]) => ({ name, repGap, value: value(name) })),
+  })
+  // Hacking exp rate only between samples within one cycle (an install resets exp).
+  const prevExp = Number(previous?.hackingExp)
+  const hackExpPerHour = sampleHours > 0 && previous?.resetAt === reset && player.exp.hacking > prevExp
+    ? (player.exp.hacking - prevExp) / sampleHours : null
+  const covenant = hackExpPerHour ? multFactorNeeded({
+    level: player.skills.hacking, exp: player.exp.hacking, target: 850, expPerHour: hackExpPerHour, cycleHours: 24,
+  }) : null
+  return { ...advice, weightsFrom: weights === DEFAULT_WEIGHTS ? "default" : "run_target.json", hackExpPerHour, covenantHackingFactor24h: covenant }
+}
+
+function assess(ns, previous = null) {
   const now = Date.now()
   const player = ns.getPlayer()
   // Keep calls directly qualified. Netscript's static RAM analyser charges
@@ -84,8 +119,11 @@ function assess(ns) {
       names: plan.map((item) => item.name), cost: money - left,
       factions: [...new Set(plan.map((item) => item.faction))],
     }
+    const factionRep = Object.fromEntries(factions.map((faction) => [faction, Number(ns.singularity.getFactionRep(faction)) || 0]))
+    let advice
+    try { advice = advise(ns, { now, player, previous, factionRep, queued, plan, candidates }) } catch (error) { advice = { verdict: "error", reason: String(error?.message || error) } }
     return {
-      ts: now, ok: true, resetAt: resetAt(ns), money,
+      ts: now, ok: true, resetAt: resetAt(ns), money, factionRep, hackingExp: Number(player?.exp?.hacking) || 0, advice,
       installedCount: installed.length, queuedCount: queued.length, queued, installPlan,
       factionCount: factions.length, candidate, workCandidate,
       workCandidates: candidates.filter((item) => item.canWorkForRep),
@@ -100,13 +138,16 @@ export async function main(ns) {
   ns.disableLog("ALL")
   // Leave an immediate, durable launch marker.  It distinguishes inability to
   // allocate this optional observer from a later live-API assessment error.
+  let previous = null
+  try { previous = JSON.parse(ns.read(STATUS)) } catch { /* first run */ }
   writeStatus(ns, { ts: Date.now(), ok: false, starting: true, resetAt: resetAt(ns) })
   if (ns.args.some((arg) => String(arg) === "--once")) {
-    writeStatus(ns, assess(ns))
+    writeStatus(ns, assess(ns, previous))
     return
   }
   while (true) {
-    writeStatus(ns, assess(ns))
+    previous = assess(ns, previous)
+    writeStatus(ns, previous)
     await ns.sleep(POLL_MS)
   }
 }

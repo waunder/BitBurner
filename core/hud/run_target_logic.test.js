@@ -54,6 +54,7 @@ test("view shows Now with a bar, Next and the controller's work", () => {
   assert.match(view.lines[2], /hack 207\/211 .* 98%/)
   assert.equal(view.lines[3], "Next: First install")
   assert.ok(view.lines.includes("Work: Sector-12 rep"))
+  assert.ok(runTargetView(config, { advice: "wait 1.0h for X" }, compact).lines.includes("Advice: wait 1.0h for X"))
   assert.equal(view.compact, "NiteSec gate · hack 207/211")
 })
 

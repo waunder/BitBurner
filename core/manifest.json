@@ -48,6 +48,7 @@
     "capital_bootstrap.js": "core/capital/capital_bootstrap.js",
     "aug_install.js": "core/player/aug_install.js",
     "aug_install_logic.js": "core/player/aug_install_logic.js",
+    "install_advisor_logic.js": "core/player/install_advisor_logic.js",
     "capital_logic.js": "core/capital/capital_logic.js",
     "capital_manager.js": "core/capital/capital_manager.js",
     "xp_filler.js": "core/mcp/xp_filler.js",

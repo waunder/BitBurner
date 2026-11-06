@@ -3,6 +3,24 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Measurement regime live, 2026-11-05 about 18:00 Pacific (PC clock 19:00).** New resident `metrics_logger.js`
+(`metrics_logic.js`, tests beside it) appends one JSON sample every 5 minutes, on the clock, to the game's
+`metrics_log.txt` (money, sinceInstall income, skills, exp, karma, city, share power, work and controller reason, faction
+rep, favor, installs, advisor verdict, MCP rate, RAM); stale status files (over 10 min) are listed in `stale`, not copied;
+trimmed to the last 1500 lines (about 5 days, up to about 2MB in the save). Registered in `core/manifest.json`, `startup.js`
+and `capital_manager.js` `MANAGERS` (the running manager keeps its old list until restarted; the logger was started by
+hand with `game_terminal.py`). `bb_remote.py` pulls it to `runtime/` after its next restart (not restarted); until then
+`tools/metrics.py pull` fetches it. `tools/metrics.py summary | cycles | rates | trend` give least-squares rates within one
+install cycle, per-install rows (rebuild hours, rep earned, favor banked), experiment windows and, at Ken's request, a
+one-line trend: three 60-minute windows for cash/h, MCP rate, hacking exp/h (levels/h for context), rep/h of the work and
+best faction, flagged DECELERATING / STEADY / ACCELERATING / SWITCH / n/a. **Verified live:** 4 samples 17:45 to 18:00, no
+stale sources; over them (measured, 4 samples): NiteSec 7.0k rep/h, Tian Di Hui 6.7k, CyberSec 5.8k while the player is in
+the gym (rep grows for every faction without faction work), hacking exp 1.9b/h (48 levels/h), karma -860/h, MCP average
+221m/s, share 1.46. Trend reads n/a until three full hours exist this cycle. `docs/experiments.md` holds today's four
+changes (point-read baselines only) and a planned share A/B; the hourly task's prompt now pulls, quotes measured rates and
+the trend line, explains decelerations and weighs them in install calls, adds `cycles` after installs, and runs the A/B once.
+520 node tests in `build/bn10` and 43 Python tests pass.
+
 **Faction value survey, 2026-11-05 about 17:50 Pacific (PC clock 18:50): Tetrads before company factions.** One-shot
 `core/dev/faction_value_survey.js` (`faction_value_survey.json`, advisor weights): every company's best eligible job is IT
 Intern at 9.1 company rep/s (Formulas), so a 400k invite is about 12h and resets each install; Clarke is 0.626 value for

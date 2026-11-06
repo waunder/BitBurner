@@ -107,6 +107,8 @@
     "cct_logic.js": "core/contracts/cct_logic.js",
     "automation_review.js": "core/maintenance/automation_review.js",
     "automation_review_logic.js": "core/maintenance/automation_review_logic.js",
+    "metrics_logger.js": "core/maintenance/metrics_logger.js",
+    "metrics_logic.js": "core/maintenance/metrics_logic.js",
     "lsf.js": "core/lib/lsf.js",
     "sync_from_github.js": "core/startup/sync_from_github.js",
     "startup_browser.js": "core/startup/startup_browser.js",

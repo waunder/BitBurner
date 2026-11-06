@@ -2103,6 +2103,35 @@ cost stay in `money.js`; `hud_consolidated.js` is separate.
   `mcp_launch.js` with its own constant; until that constant is updated the
   launcher restarts the panel on each launch (tail position is kept).
 
+### `metrics_logger.js`
+
+Resident time series for measured rates (added 2026-11-05). Every 5 minutes, on
+the wall-clock boundary, appends one JSON line to `metrics_log.txt`: `ts`,
+`resetAt` (`getResetInfo().lastAugReset`), `money`, `income` (`getMoneySources().sinceInstall`
+hacking/servers/augmentations/darknet/codingcontract/total), `skills`, `exp`
+(hacking and combat), `karma`, `city`, `sharePower`, `work` and `reason` (from
+`player_activity_status.json`), `factionRep`, `favor`, `installedCount`,
+`queuedCount`, `verdict` (from `augmentation_readiness.json`), `mcpRate` and
+`mcpAvgRate` (from `mcp_status.json`), and `ramMax`/`ramUsed` over home plus cloud.
+
+- **Stale sources:** a status file older than 10 minutes (or missing) leaves its
+  fields null and appears in `stale` as `{source: ageSeconds}`; values are never copied forward.
+- **Bounded:** after each append, rewrites the file to the last 1500 lines (about
+  5 days) once it passes 1600. About 1.4KB a line, so up to about 2MB inside the save.
+- **Lifecycle:** started by `startup.js` and kept alive by `capital_manager.js`
+  (`MANAGERS`). A new copy kills any older one. Opens no tail window.
+- **Logic:** `metrics_logic.js` (`buildSample`, `trimLog`, `msToNextTick`), tests beside it.
+- **Local side:** `tools/bb_remote.py` pulls it to `runtime/metrics_log.txt` (slow pull set,
+  after a daemon restart); until then `tools/metrics.py pull` fetches it with `ctl-get`.
+  `metrics.py summary [--window MIN]` prints latest values and least-squares rates this cycle;
+  `cycles` one row per install (length, rebuild hours, rep earned, favor banked, installed delta);
+  `rates --from ISO --to ISO [--before MIN]` an experiment window against the one before it;
+  `trend [--windows 3] [--window 60]` (also the last line of `summary`) compares consecutive
+  windows this cycle for cash/h, MCP rate, hacking exp/h, levels/h (context only), and rep/h of
+  the work faction and the best faction: DECELERATING or ACCELERATING when the last two
+  window-to-window changes both exceed 10%, SWITCH when the faction changed, n/a when short.
+  Times are Pacific. Experiments are logged in `docs/experiments.md`.
+
 ### `maintenance_steward.js` and `cct_watcher.js`
 
 The persistent maintenance steward starts with `mcp_launch.js` and `startup.js`.
@@ -3216,6 +3245,7 @@ so it must not grow without bound.
 | `mcp_status_log.txt` | `mcp.js`, on state change | Appended. Logging every tick grew this ~800KB/day inside the save, burying the transitions that actually explain behaviour. |
 | `mcp_target_state.json` | `mcp.js`, every tick | Exclusions, so a restart doesn't relearn them. |
 | `mcp_restart.txt` | outside the game | Restart trigger. |
+| `metrics_log.txt` | `metrics_logger.js`, every 5 minutes | Appended; trimmed to the last 1500 lines (about 5 days). Read with `tools/metrics.py`. |
 
 `mcp_config.json` is **not** generated and **is** committed — it is an input we
 author, and it needs to be in the repo to sync into the game.

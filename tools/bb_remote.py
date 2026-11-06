@@ -857,6 +857,7 @@ PULL_FILES = [
     "purchased_worker_status.json",
     "automation_review.json",
     "automation_review.txt",
+    "metrics_log.txt",
 ]
 
 # Pulled telemetry is generated output, not source: it lands in runtime/<game path>
@@ -864,7 +865,7 @@ PULL_FILES = [
 PULL_DIR = "runtime"
 PULL_POLL_S = 2.0
 LOG_PULL_POLL_S = 60.0
-SLOW_PULL_FILES = {"mcp_status_log.txt", "mcp_events.txt", "mcp_multi_status_log.txt", "mcp_multi_events.txt"}
+SLOW_PULL_FILES = {"mcp_status_log.txt", "mcp_events.txt", "mcp_multi_status_log.txt", "mcp_multi_events.txt", "metrics_log.txt"}
 # `ctl-push` transports a complete source file as one local JSON line. MCP is
 # already larger than asyncio's default 64 KiB stream limit, so keep a bounded
 # release-sized allowance on both ends of this loopback-only protocol.

@@ -3,6 +3,23 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-05 22:15 Pacific (PC clock 23:15): NiteSec favor push done; cash held for an install.** Live
+(autosave summary, `ps`, status files, metrics 22:10): BN10, cash $366b to $530b (sawtooth), hacking 585, combat 115-128,
+karma -13.0k, 27 installed, 0 queued, all residents running, 1 sleeve on Homicide for karma. World Daemon: not present
+(no Daedalus, Red Pill not installed). NiteSec favor 113.2 +38.0 pending = 151, past 150; the controller left NiteSec at
+about 21:20 for Tetrads field work toward HemoRecirculator (about 6.5k rep gap at 22:15). Measured, 13 samples 21:10 to
+22:10: Tetrads 12k rep/h (14k over the last 30 min), NiteSec 12.6k, hacking exp 6.0b/h, karma -829/h, cash -36b/h, MCP
+average 299m/s, rate 217m/s. Trend: cash STEADY, MCP DECELERATING, hacking exp STEADY, Tetrads rep SWITCH, NiteSec STEADY.
+MCP deceleration: not RAM (utilization 0.73, 4.8m of 6.6m GB used); likely target money falling as cohorts spread over
+more servers, not traced. **Cash traced:** `capital_manager.js` has been upgrading cloud servers to 512TB at $271.5b each
+every 12-15 min (workers 0-9 done, 10-14 left, about $1.36t), which is the -36b/h. **Changed:** `capital_policy.json`
+`reserve` $0 to $2t (pushed, read back), so cash builds for the install instead (income about $1.3t/h by the manager's
+estimate). Reason: cloud servers are lost at install and RAM is not limiting MCP; cash at install buys augmentations,
+NeuroFlux via NiteSec donations, and home RAM/cores, which persist. Advisor: build; decision: **install next run** once
+HemoRecirculator is rep-ready (backup first), agreeing with the advisor now. Tetrads field work at 14k/h makes Power
+Recirculation Core and Bionic Arms many hours away, while the install banks NiteSec 151, Tetrads +21.8, The Black Hand
++18.9. If the next run does not install, set `reserve` back to 0.
+
 **Hourly check, 2026-11-05 21:15 Pacific (PC clock 22:15): share A/B done, share stays on.** Live (autosave summary,
 `ps`, metrics 21:10): BN10, cash $449b to $509b, hacking 574, combat 104-115, karma -12.1k, 27 installed, 0 queued,
 all residents running. World Daemon: not present (no Daedalus, Red Pill not installed). Player on NiteSec hacking

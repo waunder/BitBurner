@@ -3,6 +3,20 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-06 03:15 Pacific (PC clock 04:15): share restored, otherwise steady.** Live (autosave
+summary, `ps` 03:15, readiness, metrics 03:10/03:20): BN10, cash $132b to $222b, hacking 622, combat 129-143, karma
+-17.4k, 30 installed, 0 queued, all 17 residents running. **BitRunners joined** (rep 650, favor 10.2). World Daemon:
+not present (no Daedalus, Red Pill not installed). Player on The Black Hand hacking work: Neuralstimulator 76.8k/100k,
+23.2k gap, about 25 min at the measured rate. **Fixed:** share power read 1.00 since install 6 (install kills share
+threads, and nothing relaunches them); ran `home; run share_deploy.js cloud 8` at 03:15, and the 03:20 sample reads
+share power 1.53 (the A/B measured x1.48 rep with share on). Measured, 12 samples 02:15 to 03:10 (share off): The Black
+Hand 59.9k rep/h, NiteSec 7.7k, Tian Di Hui 6.7k, CyberSec 6.2k, Slum Snakes 5.0k, Tetrads 3.1k, BitRunners 0.7k,
+hacking exp 4.91b/h, karma -875/h, cash 154b/h, MCP average 389m/s, rate 638m/s. Trend: all n/a (cycle 1.9h). Advisor:
+**build** (best next The Black Hand augmentation in 2.0h); decision: **build, agree**: Neuralstimulator is under an
+hour away and The Black Hand / Enhanced Myelin Sheathing (200k) about 2h with share on, so an install around 05:15 to
+06:15 Pacific looks right. Covenant: 30/20 installs met; still needs hacking 850, combat 850. Next run: confirm The
+Black Hand rep/h rises with share; after every install, relaunch `share_deploy.js cloud 8`.
+
 **Hourly check, 2026-11-06 02:15 Pacific (PC clock 03:15): install 6 confirmed, steady, no changes.** Live (autosave
 summary, `ps` 02:16, readiness, metrics 02:10): BN10, cash $59b to $95b (cloud buying again at reserve 0), hacking 548,
 combat 127-140, karma -16.5k, **30 installed** (install 6 confirmed), 0 queued, all 17 residents running. Favor after

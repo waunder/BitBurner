@@ -45,8 +45,16 @@ treat their "before" numbers as rough.
   8 cloud servers from `xp_filler.js`); MCP average unchanged.
 - **Baseline window**: hour A, from the first 5-minute sample after `stop`
   (2026-11-05 19:20 to 20:20 Pacific).
-- **After window**: hour B, from the first sample after `cloud 8`.
-- **Result**: pending. Fill in with `metrics.py rates --from <B start> --to <B end> --before 60`,
+- **After window**: hour B, from the first sample after `cloud 8`. Started
+  2026-11-05 20:14 Pacific (hourly task, `home; run share_deploy.js cloud 8`),
+  so hour B is 2026-11-05 20:20 to 21:15 Pacific. Leave share on after it.
+  The 20:15 sample read share power 1.53.
+- **Hour A measured** (11 samples, 19:20 to 20:10 Pacific, share 1.00): NiteSec
+  56.2k rep/h, hacking exp 7.37b/h, MCP average 277m/s. Against the hour before
+  (12 samples, 18:20 to 19:15, share 1.46): NiteSec 77.5k rep/h, so share-on was
+  x1.38 rep (share power predicts x1.46). Exp is confounded: it more than doubled
+  while the MCP rate rose 211m to 327m/s, so most of that rise is MCP, not the 8 servers.
+- **Result**: pending hour B. Fill in with `metrics.py rates --from <B start> --to <B end> --before 60`,
   skipping the first sample after each switch. Decide: keep share on if rep/h
   gain beats the exp loss for the current goal.
 

@@ -3,6 +3,18 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-05 20:15 Pacific (PC clock 21:15): share A/B hour B started.** Live (autosave summary,
+`ps`, metrics 20:15): BN10, cash $422b, hacking 567, karma -11.2k, 27 installed, 0 queued, all residents running
+(MCP, crawler, money, stacks, steward, capital_manager, HUD, run_report, xp_filler, dnet_root, sleeve_controller,
+faction_join, player controller, metrics_logger). World Daemon: not present (no Daedalus, Red Pill not installed).
+Player on NiteSec hacking work, favor 113 +27.1 pending toward 150. Measured, 13 samples 19:10 to 20:10 (share off):
+NiteSec 56.9k rep/h, hacking exp 7.1b/h, karma -793/h, cash 240b/h, MCP average 275m/s. Trend: cash STEADY, MCP
+ACCELERATING, hacking exp ACCELERATING, NiteSec rep n/a (share was off, so the -27% is the experiment, not a slowdown).
+Advisor: build (HemoRecirculator at Tetrads, 20m modelled); decision: no install, agree (nothing queued). **Share A/B:**
+hour A measured NiteSec 56.2k rep/h with share off against 77.5k the hour before with share 1.46 (x1.38); hour B
+(`share_deploy.js cloud 8`) from 20:14, share power 1.53 at 20:15. Next run: fill in hour B with
+`metrics.py rates --from 2026-11-05T20:20 --to 2026-11-05T21:15 --before 0` in `docs/experiments.md`; leave share on.
+
 **Hourly check, 2026-11-05 19:15 Pacific (PC clock 20:15): share A/B hour A started.** Live (save summary and
 `ps`, 19:14): BN10, cash $217b, hacking 540, karma -10.4k, 27 installed, 0 queued, all residents running. World
 Daemon: not present (no Daedalus, Red Pill not installed). Player on NiteSec hacking work, favor 113 +19.3 pending

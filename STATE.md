@@ -5,7 +5,7 @@ DevTools, Remote API status files.
 
 **Hourly check, 2026-11-06 14:15 Pacific (PC clock 15:15): steady, no changes.** Live (autosave summary, `ps` 14:16,
 readiness 14:14, sleeve status 14:14, metrics 14:15): BN10, cash $12.8t, hacking 919, combat 237/174/234/160, karma
--27.9k, 35 installed, **1 queued: The B00ts of Perseus** (darknet lab reward, new since 13:15; not bought by a script),
+-27.9k, 35 installed, **1 queued: The B00ts of Perseus** (new since 13:15; in BN15 it was the cruel-lab reward, likely the darknet again; source not checked),
 all 17 residents running, 1 sleeve on Homicide for karma (shock 0, sync 99). World Daemon: not present (no Daedalus,
 Red Pill not installed). Player on BitRunners hacking work (346k rep). Measured, 10 samples 13:30 to 14:15: BitRunners
 112k rep/h, NiteSec 26.9k, The Black Hand 20.8k, Tian Di Hui 19.5k, CyberSec 18.6k, Tetrads 16.6k, Slum Snakes 15.8k,

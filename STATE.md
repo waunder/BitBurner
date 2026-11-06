@@ -3,6 +3,17 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**BN10 install 5 ran 2026-11-05 about 16:15 Pacific (PC clock 17:15), hourly task.** Before (autosave, game `ps`,
+`augmentation_readiness.json`, `player_activity_status.json`): BN10, about $327b (autosave; $345b live at install),
+hacking 479, karma -8042, 23 installed, 1 queued (The W1ngs of Icarus), same five factions, player on The Black Hand
+hacking work. Install plan fully rep-ready: Cranial Signal Processors Gen III and CRTX42-AA (NiteSec), SmartSonar Implant
+(Slum Snakes). Backup `saves/bitburnerSave_pre-install5_BN10_2026-11-05.json.gz` (gzip checked, player parsed, node 10,
+23 augs, no Red Pill, SHA-256 c66eb2d65489eb5853491d2e73808044ccabe1f450091bce5387b176de6125dd). `aug_install.js
+--install` (`aug_install_status.json`) bought all three, no failures, plus 6 NeuroFlux; **home 16TB -> 32TB**, 3 cores.
+After (game `ps`): all 16 resident scripts and run_report back; the player controller chose crime for cash. Expected 27
+installed (readiness file not yet refreshed, so not read back live). No Red Pill, so no World Daemon. **Next:** confirm
+27 installed and the planner's next rep target; Covenant still gated on 850 hacking and combat (see 10:15 entry).
+
 **Hourly check, 2026-11-05 about 15:15 Pacific (PC clock 16:15): install deferred one hour.** Live (autosave, game
 `ps`, `augmentation_readiness.json`, `player_activity_status.json`, `sleeve_status.json` over the API): BN10, about
 $485b, hacking 472, karma -7293, 23 installed, 1 queued (The W1ngs of Icarus), same five factions. All 16 resident

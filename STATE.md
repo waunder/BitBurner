@@ -3,6 +3,20 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Hourly check, 2026-11-06 12:15 Pacific (PC clock 13:15): steady, no changes.** Live (autosave summary, `ps` 12:16,
+readiness 12:15, activity status 12:14, sleeve status 12:15, metrics 12:15): BN10, cash $2.81t, hacking 878 (past the
+Covenant's 850), combat 231/170/229/156, karma -26.0k, 35 installed, 0 queued, all 17 residents running, 1 sleeve on
+Homicide for karma (shock 0, sync 99). World Daemon: not present (no Daedalus, Red Pill not installed). Neuroreceptor
+Management Implant is rep-ready (Tian Di Hui 166k; readiness `installPlan` lists it, $2.75b, not yet bought); the
+controller moved the player to BitRunners hacking work at about 11:45 for Artificial Bio-neural Network Implant (422k
+rep away). Measured, 12 samples 11:20 to 12:15: Tian Di Hui 96.6k rep/h, BitRunners 60.7k, NiteSec 26.9k, The Black Hand
+20.4k, CyberSec 18.8k, Tetrads 16.2k, Slum Snakes 15.4k, hacking exp 7.62b/h, karma -995/h, cash 2.64t/h, MCP average
+959m/s, rate 1.11b/s, share 1.55. Trend: `cash/h -->367b>2.64t n/a | MCP -->1.24b>1.11b n/a | hackExp/h -->4b>7.62b n/a
+| rep work Tian Di Hui SWITCH | rep best Tian Di Hui SWITCH` (cycle 2.8h, nothing flagged DECELERATING). Advisor:
+**build** (best next Neural Accelerator, 268k rep, about 2.4h); decision: **build, agree**: installing now would bank
+only Neuroreceptor, and Neural Accelerator plus Cranial Signal Processors Gen IV (BitRunners, 118k away) land within
+the next few hours. `priorityAugs` keeps Neuroreceptor until it is bought at the next install.
+
 **Neuroreceptor Management Implant is the player target, 2026-11-06 about 10:40 Pacific (PC clock 11:40).** Ken: once
 Bionic Arms is done, shift to Neuroreceptor. BN10 `player_activity_config.json` `priorityAugs` is now Bionic Arms (bought
 in install 8) and Neuroreceptor Management Implant. Read live: the controller reason is "Tian Di Hui needs +127053 rep for

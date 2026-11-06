@@ -3,6 +3,26 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**BN10 install 7 ran 2026-11-06 about 05:15 Pacific (PC clock 06:15), hourly task.** Before (autosave summary,
+`augmentation_readiness.json`, metrics 05:10, `ps` 05:14): BN10, cash $459b, hacking 662, combat 141-157, karma -19.2k,
+30 installed, 0 queued, all 17 residents running. World Daemon: not present (no Daedalus, Red Pill not installed). Player
+had moved to Tetrads field work (Bionic Arms, 96k gap); The Black Hand 208.8k, so Neuralstimulator, The Black Hand and
+Enhanced Myelin Sheathing were rep-ready, CSP Gen IV (250k) 41k away. Measured, 13 samples 04:10 to 05:10: The Black Hand
+42.3k rep/h, Tetrads 18.9k, NiteSec 14.1k, CyberSec 12.5k, Tian Di Hui 10.9k, Slum Snakes 8.0k, BitRunners 1.1k, hacking
+exp 7.32b/h, karma -921/h, cash -31.4b/h (cloud buying), MCP average 505m/s, rate 518m/s, share 1.41. Trend: `cash/h
+163b>299b>-31.4b STEADY | MCP 640m>447m>518m STEADY | hackExp/h 4.56b>3.6b>7.32b STEADY | rep work Tetrads
+58.8k>91.7k>18.9k SWITCH | rep best The Black Hand 58.8k>91.7k>42.3k STEADY`; The Black Hand's fall is the player
+leaving it for Tetrads, not a slowdown. Advisor: **install** (best next Bionic Arms +3.9%/h, under the cycle's +6.9%/h);
+decision: **install, agree**: three augmentations were ready, CSP Gen IV is weighted 0 and would not lift The Black Hand
+favor past 150 (97 + 40 now). Backup `saves/bitburnerSave_pre-install7_BN10_2026-11-06.json.gz` (gzip checked, player
+parsed, node 10, 30 augs, 0 queued, SHA-256 d2b028ef1545a7dbb56e313d01056a91271848e84206db0a1eeb6e5512c7cac8).
+`aug_install.js --install` (`aug_install_status.json`) bought Neuralstimulator, Enhanced Myelin Sheathing and The Black
+Hand, no failures, plus 5 NeuroFlux ($179b donated for NeuroFlux rep); home 32TB, 4 cores. After (`ps` 05:15): every
+resident back from PID 2. `run share_deploy.js cloud 8` at 05:16 launched nothing (install removes the cloud servers);
+**next run: relaunch it once capital_manager has rebuilt cloud servers.** Expected 33 installed plus NeuroFlux levels
+(not yet read back; the autosave predates the install). `metrics.py cycles`: pending, no sample from the new cycle yet.
+Covenant: installs met; still needs hacking 850, combat 850.
+
 **Hourly check, 2026-11-06 04:15 Pacific (PC clock 05:15): steady, no changes; install due next run.** Live (autosave
 summary, `ps` 04:20, readiness, metrics 04:10): BN10, cash $356b to $487b, hacking 640, combat 131-145, karma -18.2k,
 30 installed, 0 queued, all 17 residents running. World Daemon: not present (no Daedalus, Red Pill not installed). Player

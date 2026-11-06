@@ -1375,7 +1375,8 @@ included), else installing. Weights: `run_target.json` `augWeights`, default hac
 mults 0.1/0.025, faction_rep 0.5 (level mults dominate exp mults). Rates come from the previous status, which the
 steward now copies to the worker with `install_advisor_logic.js` and `run_target.json`. Also reports
 `covenantHackingFactor24h`, the hacking multiplier factor still needed to reach 850 in a 24h cycle. Shown on the HUD
-as Advice. No script acts on it: installs stay with the hourly task's judgement (Ken, 2026-11-05), which weighs the
+as Advice. Readiness also tags each candidate with `value`; `player_activity_logic.js` `repTarget` ranks cash-ready
+candidates by value per rep and skips zero-value ones (named priority and charisma lists keep the old order). No script installs on it: installs stay with the hourly task's judgement (Ken, 2026-11-05), which weighs the
 advice as one input and records its decision beside the verdict.
 
 **Run report (`run_report.js`, resident, tail window "Run report").** Shows `run_report.json`

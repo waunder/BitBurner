@@ -131,6 +131,24 @@ test("with cash ready, faction work takes the smallest rep gap over the cheapest
   assert.equal(result.augmentation, "Embedded Netburner Module")
 })
 
+test("valued candidates rank by value per rep, and zero-value ones are skipped", () => {
+  const ready = { money: 5e11, factions: ["NiteSec", "Tian Di Hui"], skills: { hacking: 309, charisma: 192 } }
+  const workCandidates = [
+    { faction: "NiteSec", name: "DataJack", repGap: 224865, cashReady: true, price: 4.5e9, value: 0 },
+    { faction: "Tian Di Hui", name: "Small", repGap: 1000, cashReady: true, price: 1e8, value: 0.001 },
+    { faction: "Tian Di Hui", name: "Big", repGap: 20000, cashReady: true, price: 1e9, value: 0.1 },
+  ]
+  const result = choosePlayerActivity({ player: ready, augmentation: { ok: true, workCandidates }, config: { physicalTarget: 0 } })
+  assert.equal(result.augmentation, "Big")
+  // Only worthless targets left: no rep work, so the next gate or karma decides instead.
+  const none = choosePlayerActivity({
+    player: ready, augmentation: { ok: true, workCandidates: workCandidates.slice(0, 1) },
+    nextGate: { host: "run4theh111z", required: 505 }, config: { physicalTarget: 0, repBeforeGates: true },
+  })
+  assert.equal(none.action, "algorithms")
+  assert.equal(none.host, "run4theh111z")
+})
+
 test("crime is picked by money rate when cash is short and karma rate otherwise", () => {
   const rows = [
     { crime: "Shoplift", chance: 0.5, time: 2000, karma: 0.01, money: 15000 },

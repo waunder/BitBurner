@@ -42,6 +42,8 @@ function advise(ns, { now, player, previous, factionRep, queued, plan, candidate
     if (!statsCache.has(name)) statsCache.set(name, augValue(ns.singularity.getAugmentationStats(name), weights))
     return statsCache.get(name)
   }
+  // The player controller ranks rep targets by this value per rep (player_activity_logic.js).
+  for (const item of candidates) item.value = value(item.name)
   const inBatch = new Set([...queued, ...plan.map((item) => item.name)])
   const batch = [...inBatch].map((name) => ({ name, value: value(name) }))
   const gaps = new Map()

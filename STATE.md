@@ -3,6 +3,13 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Rep target by value per rep, 2026-11-05 about 16:55 Pacific (PC clock 17:55).** `augmentation_readiness.js` tags
+each candidate with the advisor's weighted `value`; the player controller now ranks cash-ready candidates by value per
+rep and skips zero-value ones (named `priorityAugs`/`charismaAugs` keep the old order). With nothing valued it falls
+through to the next gate, then karma. Seen live after `restart_player.js`: the player moved from NiteSec (DataJack, value 0)
+to The Black Hand hacking work for The Black Hand (value 0.165, 192.8k rep gap, about 7.1h at the sampled rate,
+modelled). The Black Hand had been rejoined since install 5. 512 tests pass in `build/bn10`.
+
 **Install advisor in shadow mode, 2026-11-05 about 16:35 Pacific (PC clock 17:35).** At Ken's request: install timing
 as optimal foraging (wait while the next augmentation's multiplier gain per hour beats the cycle's average, else
 install), in `augmentation_readiness.json` `advice`, on the HUD, and in the hourly report; nothing acts on it. Steward

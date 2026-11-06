@@ -243,8 +243,13 @@ function repTarget(player, augmentation, config, only = null) {
   return targets
     .filter((item) => (!only || only.has(item.name)) && !repReady.has(item.name) && item.canWorkForRep !== false && number(item.repGap) > 0 && item.faction
       && (item.cashReady || number(item.price) <= repPriceLimit))
-    // With cash in hand, rep time is the cost, so take the smallest gap; otherwise the cheapest.
+    // Valued candidates (augmentation_readiness.js, install_advisor_logic.js weights) rank by value per rep,
+    // since rep time is the cost; a zero-value one is not worth the time. Named lists (`only`) and
+    // unvalued data keep the old order: with cash in hand the smallest gap, otherwise the cheapest.
+    .filter((item) => only || !Number.isFinite(item.value) || item.value > 0)
     .sort((a, b) => Number(b.cashReady) - Number(a.cashReady)
+      || (!only && Number.isFinite(a.value) && Number.isFinite(b.value)
+        ? b.value / number(b.repGap) - a.value / number(a.repGap) : 0)
       || (a.cashReady
         ? number(a.repGap) - number(b.repGap) || number(a.price) - number(b.price)
         : number(a.price) - number(b.price) || number(a.repGap) - number(b.repGap)))[0]

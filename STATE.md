@@ -3,6 +3,19 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**BN10 hourly check 2026-11-06 19:15 Pacific (PC clock 20:15), hourly task: The Syndicate joined, steady.** Live
+(autosave summary, game `ps`, readiness 19:14, metrics 19:10): BN10, cash $934t, hacking 2246, combat 296/218/312/200,
+karma -37.4k, 44 installed, 0 queued, all 17 residents running, player on The Syndicate hacking work (rep 21.0k, favor 0,
+so no donations there). The `faction_join.js` change from 18:16 is now observed: The Syndicate invite was accepted.
+World Daemon: not present (no Daedalus, hacking 2246/2500 for it; Red Pill not installed). Measured, 12 samples 18:15
+to 19:10: cash 599t/h, hacking exp 15.7b/h (113 levels/h), karma -4.61k/h, MCP rate 245b/s average 122b/s, share 1.56;
+rep/h BitRunners 86.6k, NiteSec 78.6k, Tian Di Hui 62.9k, The Black Hand 56.9k, CyberSec 53k, Tetrads 50.6k, Slum Snakes
+49.4k. Trend: `cash/h n/a | MCP n/a | hackExp/h n/a | rep work The Syndicate SWITCH | rep best BitRunners n/a` (cycle
+1.9h). Advisor: **wait** (BrachiBlades 4.0k rep away, then Combat Rib II, Bionic Spine 90k, Bionic Legs 300k at about
+223k rep/h); decision: **wait, agree**: buy The Syndicate's combat augmentations as rep allows and install them in one
+batch. No changes made. Next: Syndicate rep, Daedalus at hacking 2500 (about 2h at this rate), The Dark Army at combat
+300 (defense and agility short), gang at karma -54k (about 3.6h).
+
 **BN10 hourly check 2026-11-06 18:16 Pacific (PC clock 19:16), hourly task: Syndicate and Dark Army gates added.** Live
 (autosave summary, `ps`, metrics 18:10): BN10, cash $336t, hacking 2133, combat 273/201/288/184, karma -33.0k, 44
 installed, 0 queued, all 17 residents running, player on Homicide for karma. World Daemon: not present (no Daedalus, Red

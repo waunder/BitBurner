@@ -3,6 +3,26 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**BN10 install 11 ran 2026-11-06 21:15 Pacific (PC clock 22:15), hourly task.** Before (autosave summary 21:14,
+readiness 21:13, metrics 21:10): BN10, cash $2.09q, hacking 2344, combat 301/221/316/203, karma -39.4k, 44 installed, 0
+queued, all 17 residents running, player on The Syndicate hacking work (rep 475k to 483k, favor gain 151.3). World
+Daemon: not present (no Daedalus, Red Pill not installed). Measured, 13 samples 20:10 to 21:10: cash 582t/h, hacking exp
+15.6b/h (41 levels/h), karma -1.01k/h, MCP rate 146b/s average 146b/s, share 1.55; rep/h The Syndicate 235k, BitRunners
+93.9k, NiteSec 85.3k, Tian Di Hui 64.1k, The Black Hand 62k, CyberSec 60.1k. Trend: `cash/h 599t>575t>582t STEADY | MCP
+245b>147b>141b STEADY | hackExp/h 15.7b>15.6b>15.6b STEADY | rep work The Syndicate SWITCH | rep best The Syndicate
+SWITCH` (cycle 3.9h). Advisor: **install** (NEMEAN Weave +15.5%/h under the cycle's +59.2%/h). **Decision: install,
+agree:** the Syndicate favor-150 hold from 20:15 was met. Backup `saves/bitburnerSave_pre-install11_BN10_2026-11-06.json.gz`
+(gzip checked, player parsed, node 10, 44 augs, 0 queued, SHA-256
+ebf3a45ce2b0e901e401514381adc2ffaab1d83e5af47cbed71c0b44161224cc). `aug_install.js` bought The Illustrated Primer, The
+Shadow's Simulacrum, Bionic Legs, Bionic Spine, BrachiBlades, Combat Rib II and III, Augmented Targeting II and III, then
+6 NeuroFlux ($5.78t donated for NeuroFlux rep); `--install` put the remaining $1.08q into home RAM (2,097,152GB) and a 7th
+core, then installed. After: game `ps` 22:16 PC clock shows all 17 residents from PID 2; autosave summary **53 installed,
+0 queued**, karma -39.4k. The game_terminal call for `--install` timed out on the websocket (the install reloads the
+page); state confirmed afterwards. Capital (AGENTS.md rule): about $1q on augmentations, NeuroFlux and home. Expected
+payoff: combat multipliers toward the Covenant's 850 and Syndicate favor 151 (donations open). Outcome: pending next
+check. `metrics.py cycles` pending (no new-cycle sample yet). Next: factions rejoin, buy NEMEAN Subdermal Weave (1.75m
+rep) by Syndicate donation, then Daedalus at hacking 2500 and combat toward 850.
+
 **BN10 hourly check 2026-11-06 20:15 Pacific (PC clock 21:15), hourly task: install held for Syndicate favor 150.** Live
 (autosave summary, game `ps` 20:16, readiness 20:14, sleeve status 20:14, metrics 20:10): BN10, cash $1.51q, hacking 2304,
 combat 298/219/314/202, karma -38.3k, 44 installed, 0 queued, all 17 residents running, player on The Syndicate hacking

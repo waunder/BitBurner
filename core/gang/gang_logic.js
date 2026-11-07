@@ -196,3 +196,14 @@ export function canBuildTerritoryPower({ objective, cleanupMode, territory, rost
   return objective === "money" && !cleanupMode && territory < 0.99 && rosterFull && hasRivals
     && taskAvailable && combatReady && riskAllowed;
 }
+
+/**
+ * Gear worth buying on cash alone: it costs at most `fraction` of cash and raises a stat the
+ * gang's tasks use (hacking gang: hack and cha; combat gang: str, def, dex, agi; bitburner-src
+ * src/Gang/data/tasks.ts weights). Money payback cannot value respect or faction rep.
+ */
+export function cheapGearQualifies({ cost, stats = {}, cash, isHacking, fraction = 0.0001 }) {
+  const used = isHacking ? ["hack", "cha"] : ["str", "def", "dex", "agi"];
+  const helps = used.some((stat) => Number(stats[stat]) > 1);
+  return helps && Number.isFinite(Number(cost)) && Number(cost) > 0 && Number(cost) <= Number(cash) * fraction;
+}

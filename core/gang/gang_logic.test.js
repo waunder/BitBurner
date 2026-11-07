@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { canBuildTerritoryPower, moneyModePriority, planMoneyTasks, planReputationTasks,
-  planTerritoryPower, shouldAscendMember, shouldEngageTerritoryClashes, wantedCleanupPolicy } from "./gang_logic.js";
+  planTerritoryPower, shouldAscendMember, shouldEngageTerritoryClashes, wantedCleanupPolicy, cheapGearQualifies } from "./gang_logic.js";
 
 test("money mode prioritizes wanted recovery over blocked recruitment growth", () => {
   assert.equal(moneyModePriority(true, true, true), "wanted-recovery");
@@ -187,4 +187,13 @@ test("untrained members retain their training assignment", () => {
   const result = planReputationTasks([trainee], 1000, 0.001);
   assert.equal(result.assignments[0].choice.task, "Train Hacking");
   assert.equal(result.projectedRespectRate, 0);
+});
+
+test("cheap gear qualifies only below the cash share and only for stats the gang uses", () => {
+  const cash = 1e15;
+  assert.equal(cheapGearQualifies({ cost: 5e6, stats: { hack: 1.05 }, cash, isHacking: true }), true);
+  assert.equal(cheapGearQualifies({ cost: 5e6, stats: { str: 1.3 }, cash, isHacking: true }), false);
+  assert.equal(cheapGearQualifies({ cost: 5e6, stats: { agi: 1.04, cha: 1.04 }, cash, isHacking: true }), true);
+  assert.equal(cheapGearQualifies({ cost: 2e11, stats: { hack: 1.15 }, cash, isHacking: true }), false);
+  assert.equal(cheapGearQualifies({ cost: 5e6, stats: { str: 1.3 }, cash, isHacking: false }), true);
 });

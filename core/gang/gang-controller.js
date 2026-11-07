@@ -1,5 +1,5 @@
 import { canBuildTerritoryPower, moneyModePriority, planMoneyTasks, planReputationTasks, planTerritoryPower,
-  shouldAscendMember, shouldEngageTerritoryClashes, wantedCleanupPolicy } from "./gang_logic.js";
+  shouldAscendMember, shouldEngageTerritoryClashes, wantedCleanupPolicy, cheapGearQualifies } from "./gang_logic.js";
 
 /**
  * Gang v2: formula-driven money or faction-reputation, wanted, and territory control.
@@ -38,6 +38,8 @@ const C = {
   equipmentMasterEnabled: true,
   equipmentCashFraction: 0.01,
   equipmentMaxPaybackSeconds: 30 * 60,
+  // Useful gear under this share of cash is bought without a money payback (cheapGearQualifies).
+  equipmentCheapFraction: 0.0001,
   cashRateWindowMs: 60_000,
   statusFile: "gang_status.json",
 };
@@ -276,14 +278,21 @@ export async function main(ns) {
         paybackSeconds: gain ? item.cost / gain : Infinity,
         phaseDelaySeconds: observedCashRate > 0 ? item.cost / observedCashRate : null };
     }));
-    const bestEquipment = candidates.sort((a, b) => a.paybackSeconds - b.paybackSeconds)[0] || null;
     const cashBudget = cash * C.equipmentCashFraction;
+    for (const c of candidates) {
+      const item = equipment.find((e) => e.item === c.item);
+      c.cheap = cheapGearQualifies({ cost: c.cost, stats: item?.stats, cash, isHacking: gang.isHacking, fraction: C.equipmentCheapFraction });
+    }
+    // Money payback first; otherwise the cheapest useful item, which carries respect and rep too.
+    const paying = candidates.filter((c) => c.paybackSeconds <= C.equipmentMaxPaybackSeconds && c.cost <= cashBudget)
+      .sort((a, b) => a.paybackSeconds - b.paybackSeconds);
+    const cheap = candidates.filter((c) => c.cheap).sort((a, b) => a.cost - b.cost);
+    const bestEquipment = paying[0] || cheap[0] || candidates.sort((a, b) => a.paybackSeconds - b.paybackSeconds)[0] || null;
     const phaseAllowsEquipment = capitalPolicy.phase === "earning-capacity";
     const augmentationTarget = capitalPolicy.augmentationCashTarget;
     const reservePreserved = augmentationTarget === null || cash - bestEquipment?.cost >= augmentationTarget;
     const roiQualified = bestEquipment
-      && bestEquipment.paybackSeconds <= C.equipmentMaxPaybackSeconds
-      && bestEquipment.cost <= cashBudget
+      && ((bestEquipment.paybackSeconds <= C.equipmentMaxPaybackSeconds && bestEquipment.cost <= cashBudget) || bestEquipment.cheap)
       && reservePreserved;
     const purchaseAllowed = Boolean(C.equipmentMasterEnabled && capitalPolicy.allowEquipmentPurchases
       && phaseAllowsEquipment && roiQualified);
@@ -291,7 +300,7 @@ export async function main(ns) {
       : !capitalPolicy.allowEquipmentPurchases ? "policy purchase flag disabled"
         : !phaseAllowsEquipment ? `${capitalPolicy.phase} phase does not buy equipment`
           : !bestEquipment ? "no unowned equipment candidate"
-            : !roiQualified ? "candidate fails payback, cash-slice, or reserve limit" : null;
+            : !roiQualified ? "candidate fails payback, cash-slice, cheap-gear, or reserve limit" : null;
     const bought = purchaseAllowed && ns.gang.purchaseEquipment(bestEquipment.member, bestEquipment.item) ? bestEquipment : null;
     const status = { ts: statusNow, mode, gangObjective, factionRep: Number.isFinite(factionRep) ? factionRep : null,
       observedFactionRepRate, projectedRespectPerCycle: plans.reduce((sum, p) => sum + (p.choice?.respect || 0), 0),

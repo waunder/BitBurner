@@ -1267,6 +1267,13 @@ printed and retried next poll. The faction choice is permanent for the BitNode.
 
 ### `gang-controller.js` and `gang-status.js`
 
+**Gear (2026-11-07).** Equipment needs `allowEquipmentPurchases` and phase `earning-capacity` in
+`gang_capital_policy.json` (bn10 overrides it: on). An item qualifies by money payback (30 min,
+1% cash slice) or, since money cannot value respect or rep, by `cheapGearQualifies`
+(gang_logic.js): it raises a stat the gang's tasks use (hacking gang: hack, cha) and costs at most
+`equipmentCheapFraction` (0.01%) of cash. One item per update, cheapest useful first. BN10 runs
+the `reputation` objective (`set_gang_objective.js reputation`).
+
 Gang v2 is the formula-driven gang control loop. It requires `Formulas.exe`,
 recruits immediately, scores every valid productive task with
 `ns.formulas.gang`, and allocates trained members to the best money task

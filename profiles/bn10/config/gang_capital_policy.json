@@ -1,0 +1,8 @@
+{
+  "phase": "earning-capacity",
+  "objective": "BN10: grow respect for gang-faction rep (The Black Hand sells almost every augmentation); buy useful gear under 0.01% of cash",
+  "allowEquipmentPurchases": true,
+  "augmentationCashTarget": null,
+  "territoryEnabled": false,
+  "updatedAt": "2026-11-07"
+}

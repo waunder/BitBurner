@@ -128,7 +128,7 @@
     "reputation_config.json": "core/config/reputation_config.json",
     "mcp_config.json": "core/config/mcp_config.json",
     "mcp_multi_config.json": "core/config/mcp_multi_config.json",
-    "gang_capital_policy.json": "core/config/gang_capital_policy.json",
+    "gang_capital_policy.json": "profiles/bn10/config/gang_capital_policy.json",
     "player_activity_config.json": "profiles/bn10/config/player_activity_config.json",
     "run_target.json": "profiles/bn10/config/run_target.json",
     "dnet_probe.js": "profiles/bn15/dnet/dnet_probe.js",

@@ -16,7 +16,8 @@
   },
   "config": {
     "player_activity_config.json": "profiles/bn10/config/player_activity_config.json",
-    "run_target.json": "profiles/bn10/config/run_target.json"
+    "run_target.json": "profiles/bn10/config/run_target.json",
+    "gang_capital_policy.json": "profiles/bn10/config/gang_capital_policy.json"
   },
   "startup": [
     "sleeve_controller.js"

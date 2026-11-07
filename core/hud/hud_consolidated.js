@@ -1,6 +1,7 @@
 import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./tail_geometry.js"
 import { formatRamGroup, readFleetRam } from "./fleet_ram.js"
 import { runTargetView } from "./run_target_logic.js"
+import { wrapText } from "./wrap_text.js"
 /** Consolidated Interactive HUD - Clickable Sections
  *
  * Single summary window showing MCP, Darknet, Augmentation, System status.
@@ -17,6 +18,8 @@ import { runTargetView } from "./run_target_logic.js"
 
 const DEFAULT_X = 0    // Top-left, resolution-agnostic
 const DEFAULT_Y = 0
+// Every line is wrapped to this many characters, which also fixes the window width.
+const HUD_CHARS = 48
 const DEFAULT_W = 360
 const DEFAULT_H = 280
 const POLL_MS = 5000
@@ -482,7 +485,8 @@ function buildDisplay(ns, state, pos) {
   lines.push(COLORS.HEADER + "╚═══════════════════════════════════╝" + COLORS.RESET)
   const target = runTargetStatus(ns, now)
   for (const [i, line] of target.lines.entries()) {
-    lines.push((i === 0 || line.startsWith("Now:") ? COLORS.HEADER : COLORS.HEALTHY) + line + COLORS.RESET)
+    const color = i === 0 || line.startsWith("Now:") ? COLORS.HEADER : COLORS.HEALTHY
+    for (const part of wrapText(line, HUD_CHARS)) lines.push(color + part + COLORS.RESET)
   }
   lines.push(COLORS.HEADER + "─".repeat(37) + COLORS.RESET)
 
@@ -492,19 +496,25 @@ function buildDisplay(ns, state, pos) {
     const isExpanded = state.expanded === section.key
     const indicator = isExpanded ? "▼" : "▶"
     const keyHint = { mcp: "hm", darknet: "hd", cct: "hc", gang: "hg", ipvgo: "hi", aug: "ha", sleeves: "hl", system: "hs" }[section.key]
-    const hint = COLORS.HEADER + `[${keyHint}]` + COLORS.RESET
-    const sectionHeader = COLORS.HEADER + `${indicator} ${section.label}` + COLORS.RESET
-    const compactLine = sectionHeader + COLORS.HEALTHY + " " + section.data.compact + " " + hint
-
-    lines.push(compactLine)
-    lineNum++
+    // Wrapped plain, then coloured: the label stays header-coloured on the first line.
+    const label = `${indicator} ${section.label}`
+    // A no-break space keeps the [key] hint on the line with the word before it.
+    const parts = wrapText(`${label} ${section.data.compact} [${keyHint}]`, HUD_CHARS)
+    for (const [i, part] of parts.entries()) {
+      lines.push(i === 0
+        ? COLORS.HEADER + label + COLORS.RESET + COLORS.HEALTHY + part.slice(label.length) + COLORS.RESET
+        : COLORS.HEALTHY + part + COLORS.RESET)
+      lineNum++
+    }
 
     if (isExpanded) {
       lines.push(COLORS.HEADER + "  " + "─".repeat(30) + COLORS.RESET)
       lineNum++
       for (const detail of section.data.expanded) {
-        lines.push(COLORS.HEALTHY + "  " + detail + COLORS.RESET)
-        lineNum++
+        for (const part of wrapText("  " + detail, HUD_CHARS)) {
+          lines.push(COLORS.HEALTHY + part + COLORS.RESET)
+          lineNum++
+        }
       }
       lines.push("")
       lineNum++
@@ -513,8 +523,9 @@ function buildDisplay(ns, state, pos) {
 
   // A closed tail has no tailProperties; say how to get the report back.
   const report = ns.ps("home").find((proc) => proc.filename.replace(/^\//, "") === "run_report.js")
-  if (!report) lines.push(COLORS.HEADER + "Run report: not running (run run_report.js)" + COLORS.RESET)
-  else if (!ns.getRunningScript(report.pid)?.tailProperties) lines.push(COLORS.HEADER + "Run report: hidden until the next report (run run_report.js)" + COLORS.RESET)
+  const reportNote = !report ? "Run report: not running (run run_report.js)"
+    : !ns.getRunningScript(report.pid)?.tailProperties ? "Run report: hidden until the next report (run run_report.js)" : null
+  if (reportNote) for (const part of wrapText(reportNote, HUD_CHARS)) lines.push(COLORS.HEADER + part + COLORS.RESET)
   lines.push(COLORS.HEADER + `Updated: ${new Date().toLocaleTimeString()}` + COLORS.RESET)
 
   return lines
@@ -553,15 +564,13 @@ function resizeTail(ns, lines, size) {
     // Fallback to 16px if styles unavailable
   }
 
+  // Fixed width: lines are wrapped to HUD_CHARS, so opening a section changes only the height.
   const styles = ns.ui.getStyles?.() || {}
   const charWidth = styles.tailFontSize ? styles.tailFontSize * 0.6 : 8
-  const widestLine = Math.max(0, ...lines.map((line) =>
-    String(line).replace(/\x1b\[[0-9;]*m/g, "").length
-  ))
-  const calculatedWidth = Math.ceil(widestLine * charWidth) + 60
+  const calculatedWidth = Math.ceil(HUD_CHARS * charWidth) + 60
   const calculatedHeight = Math.ceil((lines.length + 1) * lineHeight) + 40
 
-  ns.ui.resizeTail(Math.max(size.w, calculatedWidth), calculatedHeight)
+  ns.ui.resizeTail(calculatedWidth, calculatedHeight)
 }
 
 export async function main(ns) {

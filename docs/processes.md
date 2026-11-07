@@ -1427,6 +1427,10 @@ install's reset does not move it back. It also shows Next and the controller's `
 profile config (`core/config` default, `profiles/bn10/config` for BN10): edit it as the plan changes, rebuild the manifest,
 push it; the HUD rereads it every 5 seconds, so no restart is needed.
 
+`hud_consolidated.js` wraps every line to `HUD_CHARS` (48) at spaces with `wrap_text.js` (pure,
+tested), continuation lines indented, and keeps the window at that width, so opening a section
+changes only its height (Ken, 2026-11-07).
+
 `hud_consolidated.js` is the default operator view: the Gang summary shows the
 current capital phase even when `gang-controller.js` is stopped, and its
 expanded section includes the objective, policy state, latest ROI candidate,

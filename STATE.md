@@ -21,7 +21,8 @@ residents back from PID 2; autosave summary 16:15: **42 installed, 0 queued**, h
 should be about 41 to 163 (readiness predicted +122; not yet read back, the readiness assessor runs on cloud servers and
 had not refreshed). `metrics.py cycles`: closed cycle 09:28 to 16:14, 6.77h, rebuild hacking 2.02h; rep earned
 BitRunners 561k, Tian Di Hui 241k, NiteSec 172k, The Black Hand 134k, CyberSec 114k, Tetrads 97.1k, Slum Snakes 96.2k;
-favor banked pending (new cycle has one sample). **Next:** confirm cash recovers and favor; Covenant still needs every
+favor banked pending (new cycle has two samples). Recovered by metrics 16:20: cash $1.98b, hacking 1037 (past the
+pre-install 942), RAM 295k GB, advisor `build`. **Next:** confirm BitRunners favor; Covenant still needs every
 combat stat 850 (`covenantTarget` true); first Covenant sleeve $10t after the invite.
 
 **Hourly check, 2026-11-06 15:15 Pacific (PC clock 16:15): no changes by me; capital_manager bought home RAM.** Live

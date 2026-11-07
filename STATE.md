@@ -15,6 +15,23 @@ DevTools, Remote API status files.
 
 **Gang created 2026-11-07 about 09:26 Pacific (Claude Code session, Ken's choice).** New `gang_create.js` (core/gang, in `startup.js` in place of `gang-controller.js`) created The Black Hand hacking gang at karma -54k and started `gang-controller.js` (3 members training hacking, respect mode). **Discovery:** creating a gang sets that faction's rep to 0 (bitburner-src `PlayerObjectGangMethods.ts` `startGang`: `fac.playerReputation = 0`). The Black Hand lost about 1.09m rep and its pending +38.8 favor; its 183 favor stays, so donations still work. In practice nothing was lost: all 10 augmentations The Black Hand sells were already owned (save export checked against bitburner-src `Augmentations.ts`), and NeuroFlux is sold by factions with more rep. As the gang faction it now offers most augmentations, paid for with gang respect or donation. In a future BitNode, check what the faction still sells first.
 
+**BN10 check 2026-11-07 11:15 Pacific (PC clock 12:15), 2-hourly task: Covenant gym, steady, no changes.** Not a
+stand-aside run (no session running). Live (autosave summary, readiness/MCP/player/maintenance status 11:15, metrics
+11:10): BN10, cash $6.18q, hacking 3053, combat 861/1040/849/844, karma -54.0k, **54 installed, 0 queued**, 11
+factions, player at Powerhouse Gym on agility (covenantTarget). Gang (The Black Hand, created 09:26) karma gain has
+stopped as expected (-18/h). Game `ps` via game_terminal.py returned no lines in three tries (player focused at the gym),
+so residents were judged from fresh status files (MCP, player, readiness, maintenance, CCT all under 10 min old);
+`gang-controller.js` not directly confirmed. World Daemon: Red Pill not installed, hacking 3053; not ready. Measured, 13
+samples 10:10 to 11:10: cash 493t/h, hacking exp 29.3b/h (13 levels/h), MCP rate 91.1b/s average 134b/s, share 1.56;
+rep/h BitRunners 212k, NiteSec 149k, The Syndicate 133k, CyberSec 125k, Tian Di Hui 117k (no faction worked). Trend:
+`cash/h 462t>492t>493t STEADY | MCP 173b>109b>91.1b DECELERATING | hackExp/h 29.1b>28.7b>29.3b STEADY | rep work n/a |
+rep best BitRunners 203k>210k>212k STEADY` (cycle 12.6h). The MCP deceleration is in the instantaneous rate only
+(average 134b/s, cash/h flat), so it reads as target rotation noise, not lost income. Advisor: **wait** (Synfibril
+Muscle in 1.6h); decision: **no install, agree** (an install would reset the gym stats one level short of the
+invite). Covenant: agility 844/850 and dexterity 849/850, strength and defence done: **invite expected within about
+an hour**; next run joins-check and starts `sleeve_buyer.js` (exits harmlessly before membership). Share A/B not run
+(player not on faction work).
+
 **BN10 check 2026-11-07 09:15 Pacific (PC clock 10:15), 2-hourly task: Covenant gym, steady, no changes.** Not a
 stand-aside run (no session running). Live (autosave summary, readiness/MCP/player status 09:14, metrics 09:10, game
 `ps` read): BN10, cash $5.19q, hacking 3027, combat 836/1038/848/824, karma -53.8k, **54 installed, 0 queued**, 11

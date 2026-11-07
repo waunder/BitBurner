@@ -3,6 +3,22 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**BN10 hourly check 2026-11-06 20:15 Pacific (PC clock 21:15), hourly task: install held for Syndicate favor 150.** Live
+(autosave summary, game `ps` 20:16, readiness 20:14, sleeve status 20:14, metrics 20:10): BN10, cash $1.51q, hacking 2304,
+combat 298/219/314/202, karma -38.3k, 44 installed, 0 queued, all 17 residents running, player on The Syndicate hacking
+work (rep 249k, favor 0), sleeve 0 on Homicide (shock 0, sync 99). World Daemon: not present (no Daedalus, Red Pill not
+installed). Measured, 12 samples 19:15 to 20:10: cash 575t/h, hacking exp 15.6b/h (59 levels/h), karma -961/h, MCP rate
+147b/s average 140b/s, share 1.56; rep/h The Syndicate 227k, BitRunners 93.1k, NiteSec 82.5k, Tian Di Hui 60.5k, The
+Black Hand 60k, CyberSec 56k. Trend: `cash/h n/a | MCP n/a | hackExp/h n/a | rep work The Syndicate SWITCH | rep best The
+Syndicate SWITCH` (cycle 2.9h; MCP rate fell 245b to 147b/s and levels/h 113 to 59, the latter expected as level follows
+log of exp). Advisor: **wait** 13m for Bionic Legs (300k). **Decision: wait, agree, but longer than advised:** keep
+working The Syndicate to about 465k rep (favor gain 150, from 25000*(1.02^f-1)), about 55 min past Bionic Legs, then install.
+Next cycle The Syndicate is then donatable, so NEMEAN Subdermal Weave (1.75m rep, the best value left, 0.79) and The
+Illustrated Primer can be bought by donation at once instead of about 3.5h more work and another install. Install plan
+then: Shadow's Simulacrum, Bionic Spine, BrachiBlades, Combat Rib II, Augmented Targeting II, Bionic Legs, NeuroFlux.
+Daedalus estimate corrected: hacking 2500 needs about 2e11 exp (about 126 levels per e-fold of exp), about 10h at
+15.6b/h without an install, not 2h. No changes made. Next: install at Syndicate rep >= 465k (about 21:15 Pacific).
+
 **BN10 hourly check 2026-11-06 19:15 Pacific (PC clock 20:15), hourly task: The Syndicate joined, steady.** Live
 (autosave summary, game `ps`, readiness 19:14, metrics 19:10): BN10, cash $934t, hacking 2246, combat 296/218/312/200,
 karma -37.4k, 44 installed, 0 queued, all 17 residents running, player on The Syndicate hacking work (rep 21.0k, favor 0,

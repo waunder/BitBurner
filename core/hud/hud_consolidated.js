@@ -568,7 +568,14 @@ function resizeTail(ns, lines, size) {
   const styles = ns.ui.getStyles?.() || {}
   const charWidth = styles.tailFontSize ? styles.tailFontSize * 0.6 : 8
   const calculatedWidth = Math.ceil(HUD_CHARS * charWidth) + 60
-  const calculatedHeight = Math.ceil((lines.length + 1) * lineHeight) + 40
+  let calculatedHeight = Math.ceil((lines.length + 1) * lineHeight) + 40
+  // Keep the bottom edge (and its resize handle) on screen; the tail scrolls past that.
+  try {
+    const [, windowHeight] = ns.ui.windowSize()
+    const top = ns.getRunningScript()?.tailProperties?.y ?? 0
+    const room = windowHeight - Math.max(0, top) - 12
+    if (Number.isFinite(room)) calculatedHeight = Math.max(120, Math.min(calculatedHeight, room))
+  } catch { /* no window size: keep the line-count height */ }
 
   ns.ui.resizeTail(calculatedWidth, calculatedHeight)
 }

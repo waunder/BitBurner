@@ -12,7 +12,7 @@
  */
 
 import { planPurchases } from "./aug_install_logic.js"
-import { DEFAULT_WEIGHTS, augValue, bestRepRate, installAdvice, multFactorNeeded } from "./install_advisor_logic.js"
+import { DEFAULT_WEIGHTS, augValue, bestRepRate, installAdvice, multFactorNeeded, withDonations } from "./install_advisor_logic.js"
 
 const STATUS = "augmentation_readiness.json"
 const POLL_MS = 120_000
@@ -46,17 +46,23 @@ function advise(ns, { now, player, previous, factionRep, queued, plan, candidate
   for (const item of candidates) item.value = value(item.name)
   const inBatch = new Set([...queued, ...plan.map((item) => item.name)])
   const batch = [...inBatch].map((name) => ({ name, value: value(name) }))
+  // Per name, the smallest gap a faction we can work for leaves; a name sold only by
+  // donating factions stays `donatable` (cash-limited, never a work target).
   const gaps = new Map()
   for (const item of candidates) {
     if (inBatch.has(item.name) || !item.canWorkForRep) continue
-    gaps.set(item.name, Math.min(gaps.get(item.name) ?? Infinity, item.repGap))
+    const seen = gaps.get(item.name)
+    const donatable = Boolean(item.donatable)
+    if (!seen || (seen.donatable && !donatable) || (seen.donatable === donatable && item.repGap < seen.repGap)) {
+      gaps.set(item.name, { repGap: item.repGap, donatable })
+    }
   }
   const sampleHours = previous?.ok && previous.ts > 0 ? (now - previous.ts) / 3_600_000 : 0
   const repPerHour = bestRepRate(previous?.factionRep, factionRep, sampleHours)
   const reset = resetAt(ns)
   const advice = installAdvice({
     batch, cycleHours: reset ? (now - reset) / 3_600_000 : 0, repPerHour,
-    candidates: [...gaps].map(([name, repGap]) => ({ name, repGap, value: value(name) })),
+    candidates: [...gaps].map(([name, { repGap, donatable }]) => ({ name, repGap, donatable, value: value(name) })),
   })
   // Hacking exp rate only between samples within one cycle (an install resets exp).
   const prevExp = Number(previous?.hackingExp)
@@ -111,29 +117,36 @@ function assess(ns, previous = null) {
       a.repGap - b.repGap || Number(b.cashReady) - Number(a.cashReady) ||
       a.price - b.price || a.name.localeCompare(b.name) || a.faction.localeCompare(b.faction))
     const candidate = candidates[0] || null
-    const workCandidate = candidates.find((item) => item.canWorkForRep) || null
-    // What `aug_install.js` would buy right now, before NeuroFlux and home upgrades.
-    let priority = []
-    try { priority = JSON.parse(ns.read("player_activity_config.json") || "{}").priorityAugs || [] } catch {}
-    const money = Number(player?.money) || 0
-    const { plan, left } = planPurchases(candidates, includingQueued, money, 1.9, priority)
-    const installPlan = {
-      names: plan.map((item) => item.name), cost: money - left,
-      factions: [...new Set(plan.map((item) => item.faction))],
-    }
     const factionRep = Object.fromEntries(factions.map((faction) => [faction, Number(ns.singularity.getFactionRep(faction)) || 0]))
     // Favor now and what an install would add; the player controller's favor push reads it.
     const favor = Object.fromEntries(factions.map((faction) => [faction, {
       favor: Number(ns.singularity.getFactionFavor(faction)) || 0, gain: Number(ns.singularity.getFactionFavorGain(faction)) || 0,
     }]))
     const favorToDonate = Number(ns.getFavorToDonate()) || 150
+    // At favor 150 rep is bought with cash (aug_install.js donates first), so plan and advise on
+    // the candidates as they stand after those donations. A gang faction takes no donations.
+    const donating = factions.filter((faction) => faction !== gangFaction && favor[faction].favor >= favorToDonate)
+    // What `aug_install.js` would buy right now, before NeuroFlux and home upgrades.
+    let priority = []
+    try { priority = JSON.parse(ns.read("player_activity_config.json") || "{}").priorityAugs || [] } catch {}
+    const money = Number(player?.money) || 0
+    const donated = withDonations(candidates, { money, repMult: Number(player?.mults?.faction_rep) || 0, donating, owned: includingQueued })
+    const { plan, left } = planPurchases(donated.candidates, includingQueued, donated.left, 1.9, priority)
+    const installPlan = {
+      names: plan.map((item) => item.name), cost: money - left,
+      factions: [...new Set(plan.map((item) => item.faction))],
+      donations: donated.gifts.map((gift) => [gift.faction, gift.amount]),
+    }
     let advice
-    try { advice = advise(ns, { now, player, previous, factionRep, queued, plan, candidates }) } catch (error) { advice = { verdict: "error", reason: String(error?.message || error) } }
+    try { advice = advise(ns, { now, player, previous, factionRep, queued, plan, candidates: donated.candidates }) } catch (error) { advice = { verdict: "error", reason: String(error?.message || error) } }
+    // After advise(), which sets each one's value. Donatable ones stay listed, marked, so the
+    // player controller can see them and skip them.
+    const workCandidates = donated.candidates.filter((item) => item.canWorkForRep)
+    const workCandidate = workCandidates.find((item) => !item.donatable) || null
     return {
       ts: now, ok: true, resetAt: resetAt(ns), money, factionRep, favor, favorToDonate, hackingExp: Number(player?.exp?.hacking) || 0, advice,
       installedCount: installed.length, queuedCount: queued.length, queued, installPlan,
-      factionCount: factions.length, candidate, workCandidate,
-      workCandidates: candidates.filter((item) => item.canWorkForRep),
+      factionCount: factions.length, candidate, workCandidate, workCandidates, donating,
       gangFaction, candidatesConsidered: candidates.length,
     }
   } catch (error) {

@@ -252,3 +252,18 @@ test("covenantTarget falls through to hacking, then stops once the faction is jo
   const joined = { ...covenantBase.player, factions: ["The Covenant"] }
   assert.notEqual(choosePlayerActivity({ ...covenantBase, player: joined }).action, "gym")
 })
+
+test("a donating faction's augmentation is bought with cash, not worked for", () => {
+  const ready = { money: 3.79e14, skills: { hacking: 2400, strength: 300, defense: 300, dexterity: 300, agility: 300 } }
+  const syndicate = { faction: "The Syndicate", name: "NEMEAN Subdermal Weave", repGap: 1542048, price: 1.625e10, cashReady: true, value: 0.79, donatable: true }
+  const nitesec = { faction: "NiteSec", name: "Neural Thing", repGap: 27351, price: 1e9, cashReady: true, value: 0.01 }
+  const config = { physicalTarget: 30 }
+  const both = choosePlayerActivity({ player: ready, augmentation: { ok: true, workCandidates: [syndicate, nitesec] }, config })
+  assert.equal(both.action, "faction")
+  assert.equal(both.faction, "NiteSec")
+  const onlyDonatable = choosePlayerActivity({ player: ready, augmentation: { ok: true, workCandidates: [syndicate] }, config })
+  assert.notEqual(onlyDonatable.faction, "The Syndicate")
+  // A priority name sold only by a donating faction is not worked for either.
+  const priority = choosePlayerActivity({ player: ready, augmentation: { ok: true, workCandidates: [syndicate] }, config: { ...config, priorityAugs: [syndicate.name] } })
+  assert.notEqual(priority.faction, "The Syndicate")
+})

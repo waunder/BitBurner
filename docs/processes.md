@@ -1383,6 +1383,14 @@ cheaper one there), so a faction selling several wanted augmentations beats one 
 `favorTarget` (player_activity_config.json) runs before them: the controller works that faction until favor plus
 pending gain (readiness `favor`) reaches `favorToDonate`, after which `aug_install.js` donates for rep and NeuroFlux. No script installs on it: installs stay with the hourly task's judgement (Ken, 2026-11-05), which weighs the
 advice as one input and records its decision beside the verdict.
+**Donations (2026-11-06, after install 11).** At favor `favorToDonate` (150) rep is bought with cash, so readiness
+plans as `aug_install.js` acts: `withDonations` (install_advisor_logic.js) runs the same `donationPlan` (25% of cash)
+over the joined non-gang factions at the threshold (readiness `donating`). Candidates a gift covers read as rep-ready
+(`repGap` 0, `donation`), join `installPlan` (which now lists `donations` as `[faction, amount]`, with `cost` including
+them), and so count in the advisor's batch. Every candidate of a donating faction is marked `donatable`: the advisor
+never scores it as a wait-for-rep target (ones cash cannot yet cover are listed in `advice.cashLimited`), `workCandidate`
+skips it, and `repTarget` (player_activity_logic.js) never sends the player to work for it, priority names included.
+Before this, The Syndicate at favor 152 still read "build, NEMEAN in 2.2h" and the controller ground its rep.
 
 **Run report (`run_report.js`, resident, tail window "Run report").** Shows `run_report.json`
 (`{ts, title, lines}`), which the hourly scheduled task writes to `runtime/run_report.json` and pushes with `ctl-push`.

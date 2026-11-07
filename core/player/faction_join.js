@@ -14,8 +14,18 @@ const POLL_MS = 60_000
 const CITY_GATED = [
   { faction: "Tian Di Hui", city: "Chongqing", ready: (p) => p.skills.hacking >= 50 && p.money >= 1.5e6 },
   { faction: "Tetrads", city: "Chongqing",
-    ready: (p) => ["strength", "defense", "dexterity", "agility"].every((s) => p.skills[s] >= 75) && p.karma <= -18 && p.money >= 2e5 },
+    ready: (p) => combat(p, 75) && p.karma <= -18 && p.money >= 2e5 },
+  // The Syndicate: Aevum or Sector-12, hacking 200, combat 200 each, karma -90, $10m. The Dark Army: Chongqing,
+  // hacking 300, combat 300 each, 5 kills, karma -45. Both sell combat augmentations toward the Covenant's 850.
+  { faction: "The Syndicate", city: "Sector-12",
+    ready: (p) => p.skills.hacking >= 200 && combat(p, 200) && p.karma <= -90 && p.money >= 1.1e7 },
+  { faction: "The Dark Army", city: "Chongqing",
+    ready: (p) => p.skills.hacking >= 300 && combat(p, 300) && p.numPeopleKilled >= 5 && p.karma <= -45 },
 ]
+
+function combat(p, level) {
+  return ["strength", "defense", "dexterity", "agility"].every((s) => p.skills[s] >= level)
+}
 
 function seekCityFactions(ns) {
   const player = ns.getPlayer()

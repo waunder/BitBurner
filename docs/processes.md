@@ -405,7 +405,8 @@ through `startup.js`. Back up the save first.
 
 Accepts faction invitations every minute, except the six city factions, which lock
 each other out. Until Tian Di Hui is joined it travels to Chongqing once hacking is 50 and
-cash $1.5m, because that faction invites only there. The player controller moves the player on for Leadership;
+cash $1.5m, because that faction invites only there. The same rule covers Tetrads (Chongqing, combat 75), The Syndicate (Sector-12, hacking and combat 200,
+karma -90) and The Dark Army (Chongqing, hacking and combat 300, 5 kills), in that order, once each is ready. The player controller moves the player on for Leadership;
 the invite stays. Started by `startup.js`. Writes `faction_join_status.json`. The game's
 invitation dialog stays open after a script join (Bachman, 14:03 to 16:00 on 2026-11-02);
 scripts and work ran on behind it, and Decide later closes it.

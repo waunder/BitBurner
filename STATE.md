@@ -3,6 +3,20 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**BN10 hourly check 2026-11-06 18:16 Pacific (PC clock 19:16), hourly task: Syndicate and Dark Army gates added.** Live
+(autosave summary, `ps`, metrics 18:10): BN10, cash $336t, hacking 2133, combat 273/201/288/184, karma -33.0k, 44
+installed, 0 queued, all 17 residents running, player on Homicide for karma. World Daemon: not present (no Daedalus, Red
+Pill not installed). Measured, 11 samples 17:20 to 18:10: cash 379t/h, hacking exp 12.7b/h (876 levels/h), karma -1.8k/h,
+MCP rate 130b/s average 41.6b/s, share 1.5; rep/h BitRunners 75.4k, NiteSec 68.4k, Tian Di Hui 49.6k, The Black Hand
+49.5k (no faction is being worked). Trend: all n/a (cycle 0.9h). Advisor: **build** (nothing valued in joined factions);
+decision: **build, agree**. NeuroFlux by donation is affordable but waits to share an install with the new factions'
+augmentations, since each queued purchase raises later prices about 1.9x. **Changed:** `faction_join.js` now travels to
+Sector-12 for The Syndicate (hacking and combat 200, karma -90) and back to Chongqing for The Dark Army (hacking and
+combat 300, 5 kills), requirements read from bitburner-src `FactionInfo.tsx`; both sell combat augmentations toward the
+Covenant's 850. 522 tests pass; restarted in game (PID 79480). Agility (184) is the only Syndicate blocker and rises
+about 1 level per 5 minutes from Homicide, so the invite is expected in about 80 minutes; not yet observed. Next:
+Daedalus at hacking 2500, gang at karma -54k (about 12h), Syndicate augmentations then an install.
+
 **BN10 install 10 ran 2026-11-06 17:17 Pacific (PC clock 18:17), hourly task.** Before (metrics 17:10, readiness
 17:13, autosave summary 17:14): BN10, cash $138t to $155t, hacking 1470, combat 233/172/247/158, karma -31.0k, 42
 installed, 0 queued, all 17 residents running. World Daemon: not present (no Daedalus, Red Pill not installed).

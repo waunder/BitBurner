@@ -41,17 +41,10 @@
       ]
     },
     {
-      "label": "First Covenant sleeve",
+      "label": "Fourth Covenant sleeve (3 bought 2026-11-07)",
       "metric": {
         "kind": "money",
-        "target": 10000000000000.0
-      }
-    },
-    {
-      "label": "Second Covenant sleeve",
-      "metric": {
-        "kind": "money",
-        "target": 100000000000000.0
+        "target": 1e+16
       }
     },
     {
@@ -68,18 +61,18 @@
       "label": "World Daemon: stop for Ken"
     }
   ],
-  "augWeightsWhy": "Covenant needs every combat stat 850; at the about 1.4 combat mult that is about 1e11 exp each, while hacking reaches 850 in hours. Combat level mults weigh as much as hacking until the combat gate is met; covenantTraining starts the gym once about 3.6 is reached (48h at 20 exp/s).",
+  "augWeightsWhy": "Covenant gate met 2026-11-07 (joined, 3 sleeves bought, memory 100). Next gates are Daedalus for The Red Pill and hacking 6000 for the World Daemon, so hacking and faction rep lead; combat now weighs little.",
   "augWeights": {
     "hacking": 1,
-    "strength": 1,
-    "defense": 1,
-    "dexterity": 1,
-    "agility": 1,
-    "hacking_exp": 0.1,
-    "strength_exp": 0.1,
-    "defense_exp": 0.1,
-    "dexterity_exp": 0.1,
-    "agility_exp": 0.1,
+    "strength": 0.2,
+    "defense": 0.2,
+    "dexterity": 0.2,
+    "agility": 0.2,
+    "hacking_exp": 0.3,
+    "strength_exp": 0.02,
+    "defense_exp": 0.02,
+    "dexterity_exp": 0.02,
+    "agility_exp": 0.02,
     "faction_rep": 0.5
   }
 }

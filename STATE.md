@@ -15,6 +15,28 @@ DevTools, Remote API status files.
 
 **Gang created 2026-11-07 about 09:26 Pacific (Claude Code session, Ken's choice).** New `gang_create.js` (core/gang, in `startup.js` in place of `gang-controller.js`) created The Black Hand hacking gang at karma -54k and started `gang-controller.js` (3 members training hacking, respect mode). **Discovery:** creating a gang sets that faction's rep to 0 (bitburner-src `PlayerObjectGangMethods.ts` `startGang`: `fac.playerReputation = 0`). The Black Hand lost about 1.09m rep and its pending +38.8 favor; its 183 favor stays, so donations still work. In practice nothing was lost: all 10 augmentations The Black Hand sells were already owned (save export checked against bitburner-src `Augmentations.ts`), and NeuroFlux is sold by factions with more rep. As the gang faction it now offers most augmentations, paid for with gang respect or donation. In a future BitNode, check what the faction still sells first.
 
+**BN10 check 2026-11-07 13:15 Pacific (PC clock 14:15), 2-hourly task: joined The Covenant, 3 Covenant sleeves
+bought.** Not a stand-aside run (no session running). Live (autosave summary, status files and metrics 13:15): BN10,
+cash $7.17q before purchases, hacking 3075, combat 861/1040/880/850, karma -54.1k, **54 installed, 0 queued**, 12
+factions: **The Covenant joined** (invite came after the 11:15 check) and the player works for it (hacking). Started
+`sleeve_buyer.js` via game_terminal.py at about 13:15: it **bought 3 Covenant sleeves ($10t, $100t, $1q) and 99 memory
+points on each of the 4 sleeves (memory 1 to 100), $2.33q in all, every purchase `ok`** (`sleeve_buyer_status.json`,
+43 records with cost, payoff model and cash before/after; the model's payback hours are an assumption, the real
+payoff is that sleeves and memory persist into later BitNodes). Cash after: $4.85q. The buyer now saves for the 4th
+Covenant sleeve ($10q, about 10h at the measured cash rate). `sleeve_controller.js` picked up the new sleeves at once:
+sleeves 1-3 on shock recovery (shock 100, about 18 game hours), sleeve 0 on Speakers for the Dead rep. Status shows
+reserve 0 although the pulled `capital_policy.json` says $70b; harmless at this cash, not investigated. Game `ps`
+again returned no lines (player focused), so `run_report.js` and other residents were judged from fresh status files.
+World Daemon: Red Pill not installed, hacking 3075; not ready. Measured, 12 samples 12:20 to 13:15: cash 494t/h,
+hacking exp 29.2b/h (10.9 levels/h), karma -18.6/h, MCP rate 47.8b/s average 136b/s, share 1.56; rep/h The Covenant
+411k, BitRunners 215k, NiteSec 152k, The Syndicate 139k. Trend: `cash/h 493t>494t>494t STEADY | MCP 130b>214b>47.8b
+STEADY | hackExp/h 29.3b>29.1b>29.2b STEADY | rep work The Covenant -->349k>411k SWITCH | rep best The Covenant
+212k>349k>411k SWITCH` (cycle 14.7h). Advisor: **wait** (Synfibril Muscle from The Covenant in 34m); decision: **no
+install, agree** (Covenant rep at 411k/h is the best source; SPTN-97 needs +2.0m). Run target updated: sleeve
+milestones replaced by "Fourth Covenant sleeve ($10q)"; aug weights moved from combat to hacking (combat 0.2,
+hacking_exp 0.3) since the combat gate is met and Red Pill/hacking 6000 come next. Share A/B not run (faction work
+only just started; first quiet two-hour stretch on Covenant work is a candidate).
+
 **BN10 check 2026-11-07 11:15 Pacific (PC clock 12:15), 2-hourly task: Covenant gym, steady, no changes.** Not a
 stand-aside run (no session running). Live (autosave summary, readiness/MCP/player/maintenance status 11:15, metrics
 11:10): BN10, cash $6.18q, hacking 3053, combat 861/1040/849/844, karma -54.0k, **54 installed, 0 queued**, 11

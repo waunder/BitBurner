@@ -3,6 +3,16 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+> **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
+> **Code** session on the PC, in the Claude desktop app's Code tab, with the folder `C:\Users\kenne\BitBurner`. Such a
+> session has a shell, git, `tools/game_terminal.py` and the scheduled task's tools. If you are a plain **chat** session
+> (claude.ai or the desktop Chat tab, no shell or repo folder), do not try to run, debug or change the game or the
+> scheduled task from here. Tell Ken plainly: "This is a chat session. For BitBurner work, open the Claude desktop app,
+> go to the Code tab, and start a session in C:\Users\kenne\BitBurner." Then help only with questions that need no
+> game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
+> sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
+> unrecorded install.)
+
 **The 22:32 Pacific install is explained, 2026-11-07 about 01:00 Pacific.** Ken: it came from a chat session while
 he was working out why the scheduled task would not run there (the wrong environment for it). So it was not a rogue
 automated run. It stays unrecorded: NEMEAN Subdermal Weave installed (53 to 54), no `pre-install12` backup, no metrics

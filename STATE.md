@@ -13,6 +13,24 @@ DevTools, Remote API status files.
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
 
+**BN10 check 2026-11-07 01:20 Pacific (PC clock 02:20), 2-hourly task: Covenant gym, steady, no changes.** Not a
+stand-aside run (no session running). Live (autosave summary, player status 01:13, readiness 01:13, sleeve status
+01:14, metrics 01:10): BN10, cash $1.23q, hacking 2814, combat 694/970/735/658, karma -45.0k, **54 installed, 0
+queued**, 11 factions (Daedalus rep 9.8k, favor 0), player at Powerhouse Gym on agility (covenantTarget), sleeve 0 on
+Homicide (shock 0, sync 99). MCP, steward, controller, readiness and metrics files are all fresh; game `ps` through
+game_terminal.py returned no output this run, so the resident list was not read directly. World Daemon: Red Pill not
+installed, not ready. Measured, 26 samples 23:10 to 01:10: cash 508t/h, hacking exp 29b/h (112 levels/h), karma
+-1.06k/h, MCP rate 159b/s average 116b/s, share 1.55; rep/h BitRunners 200k, NiteSec 136k, The Syndicate 122k, Tian Di
+Hui 106k (no faction worked). Trend: `cash/h 504t>508t n/a | MCP 194b>130b n/a | hackExp/h 29.1b>29b n/a | rep work n/a
+| rep best BitRunners 187k>199k n/a` (cycle 2.6h). Advisor: **build** (Graphene BrachiBlades in 1.8h); decision: **no
+install, agree**: an install would reset the gym progress. **Covenant ETA revised down from 35h:** from the metrics,
+agility (level multiplier 3.28) needs 1.70m exp for 850 against 265k now, and gained about 122k exp/h over the last
+0.9h (part of that hour went to dexterity), so about 10 to 11h of gym; strength (needs 148k, has 52k) and dexterity
+(126k, has 60k) add under 1h. The open decision from 23:17 is settled: keep the gym, no installs until the invite. Cash
+already covers Covenant sleeves 1 to 3 ($10t + $100t + $1q); the 4th is $10q. `capital_policy.json` reserve stays 0,
+since `sleeve_buyer.js` spends cash above the reserve and cash is accumulating. Share A/B not run (player not on faction
+work). Next: Covenant invite in about 11h, then start `sleeve_buyer.js`.
+
 **The 22:32 Pacific install is explained, 2026-11-07 about 01:00 Pacific.** Ken: it came from a chat session while
 he was working out why the scheduled task would not run there (the wrong environment for it). So it was not a rogue
 automated run. It stays unrecorded: NEMEAN Subdermal Weave installed (53 to 54), no `pre-install12` backup, no metrics

@@ -1,6 +1,14 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { donationRows } from "./donation_view.js"
+import { donationRows, splitOther } from "./donation_view.js"
+
+test("other splits into donations from this cycle's aug_install run and the rest", () => {
+  const last = { ts: 50, donations: [["NiteSec", 30]], fluxDonated: 20 }
+  assert.deepEqual(splitOther(-90, last, 10), [{ key: "donations", value: -50 }, { key: "programs/TOR", value: -40 }])
+  // A run before the last install is in the previous cycle's totals.
+  assert.deepEqual(splitOther(-90, last, 60), [{ key: "donations", value: -0 }, { key: "programs/TOR", value: -90 }])
+  assert.deepEqual(splitOther(-90, last, undefined), [{ key: "donations/TOR/other", value: -90 }])
+})
 
 const money = (n) => `$${n}`
 const ago = () => "1h"

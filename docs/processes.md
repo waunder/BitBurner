@@ -1219,8 +1219,11 @@ tail window — answering a different question: not "is the bot healthy" but
 whole-player accounting, not specific to the bot's own target, so there's no
 orchestrator-disagreement risk to design around).
 
-The game books faction donations as `other` (bitburner-src `donation.ts`), so that row reads
-"donations+other". Below the sources, a **donations** section (`donation_view.js`, tested) shows
+The game books faction donations as `other` (bitburner-src `donation.ts`), together with TOR,
+dark-web programs, the Darkscape Navigator and augmentation starting money. The panel splits that
+row (`splitOther`): "donations" is what `aug_install_status.json` recorded, when that run falls after
+the last install (readiness `resetAt`), and "programs/TOR" is the rest. A donation made by hand is
+not recorded and shows under "programs/TOR". Without `resetAt` the row stays whole. Below the sources, a **donations** section (`donation_view.js`, tested) shows
 the factions open to donation (favor 150+), what the next install would donate
 (`augmentation_readiness.json` `installPlan.donations`), the closest faction to opening, and what
 the last `aug_install.js` run donated, NeuroFlux included (`aug_install_status.json`). Donations only

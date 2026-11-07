@@ -6,6 +6,23 @@
 const FRESH_MS = 5 * 60 * 1000
 
 /**
+ * Split getMoneySources()'s "other" into donations and the rest. The game also books TOR,
+ * dark-web programs, the Darkscape Navigator and augmentation starting money as "other".
+ * Donations are taken from aug_install.js's record when that run falls in this cycle;
+ * a donation made by hand is not recorded and stays in "programs/TOR".
+ * Without a reset time the row stays whole, labelled for what it may hold.
+ */
+export function splitOther(other, last, resetAt) {
+  const value = Number(other) || 0
+  if (!Number.isFinite(Number(resetAt))) return [{ key: "donations/TOR/other", value }]
+  const inCycle = last && Number.isFinite(last.ts) && last.ts >= Number(resetAt)
+  const donated = inCycle
+    ? (last.donations || []).reduce((s, [, a]) => s + Number(a), 0) + (Number(last.fluxDonated) || 0)
+    : 0
+  return [{ key: "donations", value: -donated }, { key: "programs/TOR", value: value + donated }]
+}
+
+/**
  * @param {object|null} readiness augmentation_readiness.json
  * @param {object|null} last aug_install_status.json, written by each aug_install.js run
  * @param {(n:number)=>string} money formatter

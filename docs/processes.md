@@ -441,7 +441,7 @@ upgrade within `saveWindowSec` (default 300), and always below `homeRamFloor`
 (default 128). It also starts waiting managers once they fit, one per pass in order:
 steward, `money.js`, `stack_manager.js`, `faction_join.js`, HUD, `player_activity_controller.js`,
 `dnet_root.js`, the profile's `startup` scripts (bn10: `sleeve_controller.js`), then `xp_filler.js`.
-`gang-controller.js` is left to `startup.js` because it exits at once without a gang. It
+`gang_create.js` (which starts `gang-controller.js`) is left to `startup.js`. It
 never touches augmentations.
 
 - **Reads:** `capital_policy.json` every pass (`enabled`, `reserve`,
@@ -1243,6 +1243,17 @@ orchestrator-disagreement risk to design around).
 |x=1050                   y=430|
 +------------------------------+
 ```
+
+### `gang_create.js`
+
+Creates the gang and hands over to `gang-controller.js`. Started by `startup.js`; by hand:
+`run gang_create.js [faction]` (default The Black Hand, a hacking gang, chosen by Ken
+2026-11-07). Every 60 seconds: if a gang exists, start `gang-controller.js` unless it is
+running, then exit; otherwise, once karma is at or below -54,000 (no karma gate in BN2) and
+the player is in the faction, call `ns.gang.createGang`. Pure decision in
+`gang_create_logic.js` (tested). Reads karma, factions and BitNode; writes nothing but
+terminal lines. Failures: createGang refused or controller launch failing for RAM are
+printed and retried next poll. The faction choice is permanent for the BitNode.
 
 ### `gang-controller.js` and `gang-status.js`
 
@@ -2384,7 +2395,7 @@ the host, then launches, in priority order, `mcp_supervisor.js`,
 `hacking/crawler.js`, `mcp.js`, `maintenance_steward.js` (the MCP watchdog),
 `mcp_xp.js`, `mcp_money.js` (added 2026-11-01 at Ken's request),
 `hud_consolidated.js`, `player_activity_controller.js`, `xp_filler.js`,
-`faction_join.js`, `gang-controller.js` and, last, `dnet_root.js` (resident, and
+`faction_join.js`, `gang_create.js` and, last, `dnet_root.js` (resident, and
 the largest of the optional ones because of the darknet library, so on a small
 home such as BN10's it cannot take RAM from the others). `dnet_root.js` and
 `gang-controller.js` may exit at once (no Darkscape, no gang)

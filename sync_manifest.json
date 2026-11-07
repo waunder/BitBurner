@@ -35,6 +35,8 @@
     "money_logic.js": "core/capital/money_logic.js",
     "select_gang_policy.js": "core/gang/select_gang_policy.js",
     "gang-controller.js": "core/gang/gang-controller.js",
+    "gang_create.js": "core/gang/gang_create.js",
+    "gang_create_logic.js": "core/gang/gang_create_logic.js",
     "gang_logic.js": "core/gang/gang_logic.js",
     "set_gang_objective.js": "core/gang/set_gang_objective.js",
     "gang-status.js": "core/gang/gang-status.js",

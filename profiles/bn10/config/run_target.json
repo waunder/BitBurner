@@ -1,6 +1,6 @@
 {
   "goal": "BN10: SF10.1 and Covenant sleeves (first $10t)",
-  "updated": "2026-11-06",
+  "updated": "2026-11-07",
   "steps": [
     {
       "label": "NiteSec gate",
@@ -45,6 +45,23 @@
       "metric": {
         "kind": "money",
         "target": 10000000000000.0
+      }
+    },
+    {
+      "label": "Second Covenant sleeve",
+      "metric": {
+        "kind": "money",
+        "target": 100000000000000.0
+      }
+    },
+    {
+      "label": "Red Pill: Daedalus favor 150, install, donate for 5m rep"
+    },
+    {
+      "label": "World Daemon hacking 6000",
+      "metric": {
+        "kind": "hacking",
+        "target": 6000
       }
     },
     {

@@ -3,6 +3,30 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**BN10 install 10 ran 2026-11-06 17:17 Pacific (PC clock 18:17), hourly task.** Before (metrics 17:10, readiness
+17:13, autosave summary 17:14): BN10, cash $138t to $155t, hacking 1470, combat 233/172/247/158, karma -31.0k, 42
+installed, 0 queued, all 17 residents running. World Daemon: not present (no Daedalus, Red Pill not installed).
+BitRunners favor read back **163** (install 9 confirmed), NiteSec 260, Tian Di Hui 161, The Black Hand 159: past the 150
+donation threshold. Measured, 12 samples 16:15 to 17:10 (new cycle): hacking exp 4.77b/h, karma -1.02k/h, cash 98.5t/h
+(MCP rate 56.9b/s, average 8.48b/s, share 1.43; about 17x last cycle's 5.6t/h after CSP Gen V and the ENM Core
+Implant); rep/h negative for every faction (the install reset). Trend: all n/a (cycle 0.9h). Advisor: **build** (Neurolink
+1.6m rep, about 4.7h by work), blind to donations. **Decision: buy by donation, then install, disagree.** `aug_install.js`
+(no `--install`) donated $661b to BitRunners and bought Embedded Netburner Module Core V2 Upgrade and BitRunners
+Neurolink, then 11 NeuroFlux ($2.28t donated for NeuroFlux rep), cash $155t to $28.7t. That left every joined faction
+with nothing to sell, so BitRunners work only added hacking exp. I installed at once rather than bank cash for more
+NeuroFlux: 13 queued purchases multiply every later price by about 1.9 each, and the gang augmentations bought after
+karma -54k must not pay that. Backup `saves/bitburnerSave_pre-install10_BN10_2026-11-06.json.gz` (gzip checked, player
+parsed, node 10, 42 augs, 13 queued, SHA-256 3190b5278ff9f3714dcb0894dcacd8bc4687ba9ac79183dbd0229930a2c6d8ca).
+`aug_install.js --install` (`aug_install_status.json`): nothing more to buy, $34t to home cores (6, was 5), installed.
+After: game `ps` 17:20 shows all 17 residents from PID 2; autosave summary: **44 installed, 0 queued**, karma -31.1k,
+hacking already **1180 at 5.8m exp** (implied hacking mult about 3.95, was about 2.85). At that mult Daedalus's hacking
+2500 needs about 2e11 exp, a day or two at this cycle's exp rate. Worth watching (Daedalus leads to The Red Pill and the
+World Daemon stop). Player controller 17:19: gym, agility 2/75 baseline; not yet observed after it: crime
+for karma toward -54k, the gang that should sell combat augmentations). `metrics.py cycles` pending (no new-cycle
+sample yet). Capital (AGENTS.md rule): about $155t on augmentations and NeuroFlux, $34t on a home core. Expected payoff:
++11% every multiplier and the hacking jump above. Outcome: hacking 1180 on 5.8m exp, read in the autosave right after
+the install.
+
 **BN10 install 9 ran 2026-11-06 about 16:14 Pacific (PC clock 17:14), hourly task.** Before (metrics 16:10, readiness
 16:12, autosave summary 16:14): BN10, cash $9.04t, hacking 942, combat 242/178/239/163, karma -29.9k, 35 installed, 1
 queued (The B00ts of Perseus), all 17 residents running, sleeve on Homicide. World Daemon: not present (no Daedalus, Red

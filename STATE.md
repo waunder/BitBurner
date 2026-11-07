@@ -13,6 +13,20 @@ DevTools, Remote API status files.
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
 
+**BN10 check 2026-11-07 03:16 Pacific (PC clock 04:16), 2-hourly task: Covenant gym, steady, no changes.** Not a
+stand-aside run (no session running). Live (autosave summary, readiness 03:13, MCP status 03:15, metrics 03:10): BN10,
+cash $2.26q, hacking 2901, combat 756/989/740/729, karma -47.2k, **54 installed, 0 queued**, 11 factions (Daedalus rep
+18.7k, favor 0), player at Powerhouse Gym on agility (covenantTarget). MCP fresh; game `ps` through game_terminal.py
+again returned no output (player focused at the gym), so residents were judged from fresh status files only. World
+Daemon: Red Pill not installed, not ready. Measured, 12 samples 02:15 to 03:10: cash 518t/h, hacking exp 29.2b/h (37.6
+levels/h), karma -1.05k/h, MCP rate 179b/s average 133b/s, share 1.56; rep/h BitRunners 204k, NiteSec 144k, The
+Syndicate 128k, Tian Di Hui 112k (no faction worked). Trend: `cash/h 507t>512t>518t STEADY | MCP 140b>203b>179b STEADY |
+hackExp/h 29.1b>29b>29.2b STEADY | rep work n/a | rep best BitRunners 201k>201k>204k STEADY` (cycle 4.6h). Advisor:
+**build** (Graphene BrachiBlades in 1.3h); decision: **no install, agree** (an install resets the gym). Covenant ETA
+from the metrics: agility exp 538k of about 1.70m, gaining 147k/h over the last hour, so about 8h; strength (79k of
+148k) and dexterity (62k of 126k) add about 1h. **Invite expected about 12:00 Pacific**, then start `sleeve_buyer.js`.
+Share A/B not run (player not on faction work).
+
 **BN10 check 2026-11-07 01:20 Pacific (PC clock 02:20), 2-hourly task: Covenant gym, steady, no changes.** Not a
 stand-aside run (no session running). Live (autosave summary, player status 01:13, readiness 01:13, sleeve status
 01:14, metrics 01:10): BN10, cash $1.23q, hacking 2814, combat 694/970/735/658, karma -45.0k, **54 installed, 0

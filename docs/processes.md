@@ -1219,6 +1219,13 @@ tail window — answering a different question: not "is the bot healthy" but
 whole-player accounting, not specific to the bot's own target, so there's no
 orchestrator-disagreement risk to design around).
 
+The game books faction donations as `other` (bitburner-src `donation.ts`), so that row reads
+"donations+other". Below the sources, a **donations** section (`donation_view.js`, tested) shows
+the factions open to donation (favor 150+), what the next install would donate
+(`augmentation_readiness.json` `installPlan.donations`), the closest faction to opening, and what
+the last `aug_install.js` run donated, NeuroFlux included (`aug_install_status.json`). Donations only
+happen inside `aug_install.js`, so between installs the last-run figures do not change.
+
 - **Start:** `run mcp_money.js` — optional `x= y= w= h=`, same as `mcp_hud.js`,
   same echo-row substitute for the missing position getter
 - **Cost:** 3.3GB (1.6GB baseline + `ns.getMoneySources` 1.0GB + `ns.ps`

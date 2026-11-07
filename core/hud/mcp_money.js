@@ -1,4 +1,5 @@
 import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./tail_geometry.js"
+import { donationRows } from "./donation_view.js"
 /**
  * Terse money sources/sinks panel — a second small log window alongside
  * mcp_hud.js, independently startable/closeable/rollup-able like any tail
@@ -102,8 +103,13 @@ function buildLines(ns, pos) {
   if (entries.length === 0) {
     lines.push(row("(nothing yet)", ""))
   } else {
-    for (const { key, value } of entries) lines.push(row(key === "other" ? "hacking costs" : key, money(value)))
+    for (const { key, value } of entries) lines.push(row(key === "other" ? "donations+other" : key, money(value)))
   }
+  // ns.read is 0GB; a missing or partial file reads as no record.
+  const readJson = (file) => { try { return JSON.parse(ns.read(file) || "null") } catch { return null } }
+  const ago = (ts) => { const m = Math.max(0, (Date.now() - ts) / 60000); return m < 90 ? `${m.toFixed(0)}m ago` : `${(m / 60).toFixed(1)}h ago` }
+  lines.push(row("-".repeat(WIDTH_CHARS), ""))
+  for (const [left, right] of donationRows(readJson("augmentation_readiness.json"), readJson("aug_install_status.json"), Date.now(), money, ago)) lines.push(row(left, right))
   lines.push(row("x=" + pos.x, "y=" + pos.y))
   return lines
 }

@@ -42,6 +42,7 @@
     "gang-status.js": "core/gang/gang-status.js",
     "mcp_xp.js": "core/mcp/mcp_xp.js",
     "crime_returns.js": "core/hud/crime_returns.js",
+    "donation_view.js": "core/hud/donation_view.js",
     "tail_geometry.js": "core/lib/tail_geometry.js",
     "progression_guidance_logic.js": "core/mcp/progression_guidance_logic.js",
     "mcp_stock_trader.js": "core/capital/mcp_stock_trader.js",

@@ -3,6 +3,27 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**BN10 install 9 ran 2026-11-06 about 16:14 Pacific (PC clock 17:14), hourly task.** Before (metrics 16:10, readiness
+16:12, autosave summary 16:14): BN10, cash $9.04t, hacking 942, combat 242/178/239/163, karma -29.9k, 35 installed, 1
+queued (The B00ts of Perseus), all 17 residents running, sleeve on Homicide. World Daemon: not present (no Daedalus, Red
+Pill not installed). Measured, 12 samples 15:15 to 16:10: BitRunners 114k rep/h, NiteSec 28.6k, The Black Hand 19.7k,
+Tian Di Hui 18.9k, CyberSec 17.9k, Tetrads 17.1k, Slum Snakes 16.3k, hacking exp 7.91b/h, karma -982/h, cash 5.6t/h, MCP
+average 1.52b/s, rate 2.42b/s. Trend: `cash/h 4.89t>-16.4t>5.6t STEADY | MCP 773m>1.05b>2.42b ACCELERATING | hackExp/h
+7.35b>7.83b>7.91b STEADY | rep work BitRunners 107k>112k>114k STEADY | rep best BitRunners STEADY`. Advisor: **install**
+(next, BitRunners Neurolink, is 1.18m rep and about 10h away, +1.5%/h against the cycle's +5.4%/h); decision: **install,
+agree**. Backup `saves/bitburnerSave_pre-install9_BN10_2026-11-06.json.gz` (gzip checked, player parsed, node 10, 35
+augs, 1 queued, SHA-256 f4031e2a0324c0b435ad11b366147d2894b1b1d6f2eabb012350906d59573b20). `aug_install.js --install`
+(`aug_install_status.json`) bought Artificial Bio-neural Network Implant, Embedded Netburner Module Core Implant, Neural
+Accelerator, Cranial Signal Processors Gen IV and **Gen V** (added to the plan since last hour), Neuroreceptor Management
+Implant, no failures, plus 3 NeuroFlux ($663b donated); home 256TB, 5 cores. After: game `ps` 16:15 shows all 17
+residents back from PID 2; autosave summary 16:15: **42 installed, 0 queued**, hacking 30, player at Powerhouse Gym
+(defense baseline 75 for Slum Snakes), cash slightly negative from gym fees (-$47k) while MCP starts. BitRunners favor
+should be about 41 to 163 (readiness predicted +122; not yet read back, the readiness assessor runs on cloud servers and
+had not refreshed). `metrics.py cycles`: closed cycle 09:28 to 16:14, 6.77h, rebuild hacking 2.02h; rep earned
+BitRunners 561k, Tian Di Hui 241k, NiteSec 172k, The Black Hand 134k, CyberSec 114k, Tetrads 97.1k, Slum Snakes 96.2k;
+favor banked pending (new cycle has one sample). **Next:** confirm cash recovers and favor; Covenant still needs every
+combat stat 850 (`covenantTarget` true); first Covenant sleeve $10t after the invite.
+
 **Hourly check, 2026-11-06 15:15 Pacific (PC clock 16:15): no changes by me; capital_manager bought home RAM.** Live
 (metrics 15:10, readiness 15:12, `ps` 15:18, `capital_status.json` 15:14): BN10, cash $3.06t, hacking 931, combat
 239/176/237/162, karma -28.9k, 35 installed, 1 queued (The B00ts of Perseus), all 17 residents running, sleeve on

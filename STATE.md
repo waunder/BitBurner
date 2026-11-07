@@ -3,6 +3,14 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**The 22:32 Pacific install is explained, 2026-11-07 about 01:00 Pacific.** Ken: it came from a chat session while
+he was working out why the scheduled task would not run there (the wrong environment for it). So it was not a rogue
+automated run. It stays unrecorded: NEMEAN Subdermal Weave installed (53 to 54), no `pre-install12` backup, no metrics
+before it. Nothing to fix; later checks need not flag it. **Stand-aside rule changed** in the scheduled task: a run now
+stands aside only when another BitBurner session or run of the task shows `isRunning` true in the app's session list,
+not on a commit under 30 minutes old (4 of the last 20 runs stood aside for idle sessions). Schedule is now every 2nd
+hour (7 past odd hours, PC clock).
+
 **Augmentations sold by several factions, 2026-11-07 about 00:35 Pacific (PC clock 01:35).** Ken: make sure the
 code treats an augmentation offered by more than one faction as one choice and picks the best route. Changes:
 `donationPlan` (aug_install_logic.js) no longer sizes a faction's gift by a name already rep-ready elsewhere, and a name

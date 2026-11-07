@@ -13,6 +13,20 @@ DevTools, Remote API status files.
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
 
+**BN10 check 2026-11-07 09:15 Pacific (PC clock 10:15), 2-hourly task: Covenant gym, steady, no changes.** Not a
+stand-aside run (no session running). Live (autosave summary, readiness/MCP/player status 09:14, metrics 09:10, game
+`ps` read): BN10, cash $5.19q, hacking 3027, combat 836/1038/848/824, karma -53.8k, **54 installed, 0 queued**, 11
+factions, player at Powerhouse Gym on agility (covenantTarget). All residents running, including `run_report.js`,
+`metrics_logger.js` and the new `gang_create.js` (commit 40f7d15); at -1.14k karma/h it should create The Black Hand
+gang about 09:25 Pacific and start `gang-controller.js` (not observed yet). World Daemon: Red Pill not installed,
+hacking 3027; not ready. Measured, 11 samples 08:15 to 09:10: cash 462t/h, hacking exp 29.1b/h (15.3 levels/h), karma
+-1.14k/h, MCP rate 173b/s average 119b/s, share 1.56; rep/h BitRunners 203k, NiteSec 143k, The Syndicate 128k, Tian
+Di Hui 111k, The Black Hand 110k (no faction worked). Trend: `cash/h 486t>488t>462t STEADY | MCP 105b>164b>173b STEADY |
+hackExp/h 29.4b>28.9b>29.1b STEADY | rep work n/a | rep best BitRunners 212k>212k>203k STEADY` (cycle 10.6h). Advisor:
+**build** (Graphene BrachiBlades in 1m); decision: **no install, agree** (an install resets the gym). Covenant: agility
+824/850 (+22 levels in 2h), strength 836, dexterity 848, defence done: **invite expected about 11:30 to 12:30 Pacific**,
+then start `sleeve_buyer.js`. Share A/B not run (player not on faction work).
+
 **BN10 check 2026-11-07 07:15 Pacific (PC clock 08:15), 2-hourly task: Covenant gym, steady, no changes.** Not a
 stand-aside run (no session running). Live (autosave summary, readiness/MCP/maintenance status 07:14, metrics 07:10):
 BN10, cash $4.24q, hacking 2995, combat 816/1023/805/802, karma -51.5k, **54 installed, 0 queued**, 11 factions

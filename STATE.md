@@ -3,6 +3,25 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**BN10 hourly check 2026-11-06 23:17 Pacific (PC clock 00:17 on 11-07), hourly task: Covenant gym, run target
+extended.** Not a stand-aside run (last commit 22:25 Pacific). Live (autosave summary 23:14, readiness 23:13, sleeve
+status 23:14, game `ps`, metrics 23:15): BN10, cash $222t, hacking 2584, combat 587/849/625/437, karma -42.8k, **54
+installed**, 0 queued, Daedalus joined (rep 1.7k, favor 0), player at Powerhouse Gym on agility (covenantTarget),
+sleeve 0 on Homicide (shock 0, sync 99), MCP fresh, residents and run_report.js running. **Unrecorded install:** a new
+cycle began 22:32 Pacific and NEMEAN Subdermal Weave is now installed (53 to 54); no STATE entry, commit or
+`saves/pre-install12` backup exists for it, so whichever session did it skipped the backup and the record. World Daemon:
+in the save but not linked (Red Pill not installed), requires hacking 6000; not ready. Measured, 9 samples 22:35 to
+23:15: cash 356t/h, hacking exp 25.9b/h (905 levels/h), karma -956/h, MCP rate 127b/s average 43.6b/s, share 1.49;
+rep/h Tian Di Hui 20.5k, NiteSec 19.7k, Slum Snakes 17.3k, CyberSec 16.3k (no faction worked). Trend: all n/a (cycle
+0.7h). Advisor: **build** (Graphene BrachiBlades in 2.2h); decision: **no install, agree**. Covenant ETA: agility is the
+long pole. From the samples, agility's level multiplier is about 3.3, so 850 needs about 1.7m exp against about 33k
+now, and it gained about 8k exp in 10 min: roughly 35h of gym, and any install resets it. Strength (about 150k exp) and
+dexterity (about 120k) are short. Red Pill: 5m Daedalus rep (x2 in BN10). Route: work Daedalus to favor 150 (about 465k
+rep), install, then donate for the rest. Changed: `run_target.json` gains Second Covenant sleeve ($100t), Red Pill and
+World Daemon hacking 6000 steps (528 tests pass, pushed to the game). **Open decision for the next runs:** 35h of
+install-free gym for the Covenant versus Daedalus favor and the Red Pill first. Weigh agility augmentations, and whether
+the gym estimate drops as agility exp grows.
+
 **BN10 install 11 ran 2026-11-06 21:15 Pacific (PC clock 22:15), hourly task.** Before (autosave summary 21:14,
 readiness 21:13, metrics 21:10): BN10, cash $2.09q, hacking 2344, combat 301/221/316/203, karma -39.4k, 44 installed, 0
 queued, all 17 residents running, player on The Syndicate hacking work (rep 475k to 483k, favor gain 151.3). World

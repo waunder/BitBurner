@@ -1,4 +1,4 @@
-import { NEUROFLUX, donationFor, donationPlan, nextHomeUpgrade, planPurchases } from "./aug_install_logic.js"
+import { NEUROFLUX, donationFor, donationPlan, fluxSeller, nextHomeUpgrade, planPurchases } from "./aug_install_logic.js"
 
 /** Buys what rep and cash allow, then installs on --install. See docs/processes.md. @param {NS} ns */
 export async function main(ns) {
@@ -25,8 +25,7 @@ export async function main(ns) {
   if (!flags.dry) {
     for (const item of plan) (s.purchaseAugmentation(item.faction, item.name) ? status.bought : status.failed).push(item.name)
     const sellers = player.factions.filter((faction) => s.getAugmentationsFromFaction(faction).includes(NEUROFLUX))
-    const fluxFaction = sellers.find((faction) => donating.includes(faction))
-      || sellers.sort((a, b) => s.getFactionRep(b) - s.getFactionRep(a))[0]
+    const fluxFaction = fluxSeller(sellers.map((faction) => ({ faction, rep: s.getFactionRep(faction) })), donating)
     while (fluxFaction && status.neuroflux < 100) {
       // Each level asks more rep; a donating faction buys the gap when cash covers it and the price.
       const gap = s.getAugmentationRepReq(NEUROFLUX) - s.getFactionRep(fluxFaction)

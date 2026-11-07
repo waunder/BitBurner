@@ -121,6 +121,36 @@ test("no faction work for an augmentation another faction already sells", () => 
   assert.equal(result.augmentation, "BitRunners Neurolink")
 })
 
+test("an augmentation sold by several factions is worked where its rep gap is smallest", () => {
+  const ready = { money: 1e15, factions: ["The Syndicate", "Tian Di Hui"], skills: { hacking: 2000, charisma: 500 } }
+  const augmentation = { ok: true, workCandidates: [
+    { faction: "Tian Di Hui", name: "Shared", repGap: 900000, cashReady: true, price: 1e12, value: 0.2 },
+    { faction: "The Syndicate", name: "Shared", repGap: 100000, cashReady: true, price: 1e12, value: 0.2 },
+    { faction: "Tian Di Hui", name: "Other", repGap: 300000, cashReady: true, price: 1e12, value: 0.1 },
+  ] }
+  const result = choosePlayerActivity({ player: ready, augmentation, config: { physicalTarget: 0 } })
+  assert.equal(result.faction, "The Syndicate")
+  assert.equal(result.augmentation, "Shared")
+  // But a faction whose climb reaches the shared name on the way to a second one is the better route.
+  const both = choosePlayerActivity({ player: ready, config: { physicalTarget: 0 }, augmentation: { ok: true, workCandidates: [
+    { faction: "The Syndicate", name: "Shared", repGap: 500000, cashReady: true, price: 1e12, value: 0.5 },
+    { faction: "Tian Di Hui", name: "Shared", repGap: 550000, cashReady: true, price: 1e12, value: 0.5 },
+    { faction: "Tian Di Hui", name: "Big", repGap: 600000, cashReady: true, price: 1e12, value: 0.2 },
+  ] } })
+  assert.equal(both.faction, "Tian Di Hui")
+})
+
+test("no faction work for an augmentation a donating faction also sells", () => {
+  const ready = { money: 1e15, factions: ["The Syndicate", "Daedalus"], skills: { hacking: 2600, charisma: 500 } }
+  const augmentation = { ok: true, workCandidates: [
+    { faction: "The Syndicate", name: "Shared", repGap: 500000, cashReady: true, price: 1e12, value: 0.5, donatable: true },
+    { faction: "Daedalus", name: "Shared", repGap: 100000, cashReady: true, price: 1e12, value: 0.5 },
+    { faction: "Daedalus", name: "Other", repGap: 400000, cashReady: true, price: 1e12, value: 0.1 },
+  ] }
+  const result = choosePlayerActivity({ player: ready, augmentation, config: { physicalTarget: 0 } })
+  assert.equal(result.augmentation, "Other")
+})
+
 test("with cash ready, faction work takes the smallest rep gap over the cheapest augmentation", () => {
   const ready = { money: 9.7e10, factions: ["NiteSec", "Tian Di Hui"], skills: { hacking: 257, charisma: 192 } }
   const augmentation = { ok: true, workCandidates: [

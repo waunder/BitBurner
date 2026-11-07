@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { donationFor, donationPlan, nextHomeUpgrade, planPurchases } from "./aug_install_logic.js"
+import { donationFor, donationPlan, fluxSeller, nextHomeUpgrade, planPurchases } from "./aug_install_logic.js"
 
 const offer = (name, price, extra = {}) => ({ name, faction: "F", rep: 10, repRequired: 5, price, prerequisites: [], ...extra })
 
@@ -50,4 +50,29 @@ test("a donation is skipped when the cash left cannot buy anything it unlocks (B
 test("the cheapest unlocked offer decides, so a dear one beside an affordable one still gets its gift", () => {
   const offers = [offer("cheap", 1e8, { faction: "D", rep: 0, repRequired: 100 }), offer("dear", 5e9, { faction: "D", rep: 0, repRequired: 200 })]
   assert.equal(donationPlan(offers, [], 1e9, 1e6, ["D"]).length, 1)
+})
+
+test("a donation is not sized by an augmentation another faction already sells rep-ready", () => {
+  const offers = [
+    { name: "Shared", faction: "A", rep: 0, repRequired: 1e6, price: 1, prerequisites: [] },
+    { name: "Shared", faction: "B", rep: 2e6, repRequired: 1e6, price: 1, prerequisites: [] },
+    { name: "Own", faction: "A", rep: 0, repRequired: 1e3, price: 1, prerequisites: [] },
+  ]
+  assert.deepEqual(donationPlan(offers, [], 1e20, 1, ["A"]).map((gift) => gift.rep), [1e3])
+})
+
+test("an augmentation sold by two donating factions is donated for where the gap is smaller", () => {
+  const offers = [
+    { name: "Shared", faction: "A", rep: 0, repRequired: 1e6, price: 1, prerequisites: [] },
+    { name: "Shared", faction: "B", rep: 9e5, repRequired: 1e6, price: 1, prerequisites: [] },
+  ]
+  const plan = donationPlan(offers, [], 1e20, 1, ["A", "B"])
+  assert.deepEqual(plan.map((gift) => [gift.faction, gift.rep]), [["B", 1e6]])
+})
+
+test("NeuroFlux is bought from a donating faction first, then the one with most rep", () => {
+  const sellers = [{ faction: "A", rep: 5 }, { faction: "B", rep: 9 }, { faction: "C", rep: 1 }]
+  assert.equal(fluxSeller(sellers, ["C"]), "C")
+  assert.equal(fluxSeller(sellers, []), "B")
+  assert.equal(fluxSeller([], []), null)
 })

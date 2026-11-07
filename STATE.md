@@ -3,6 +3,18 @@
 Last refreshed: 2026-11-04 01:15 PST (02:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
+**Augmentations sold by several factions, 2026-11-07 about 00:35 Pacific (PC clock 01:35).** Ken: make sure the
+code treats an augmentation offered by more than one faction as one choice and picks the best route. Changes:
+`donationPlan` (aug_install_logic.js) no longer sizes a faction's gift by a name already rep-ready elsewhere, and a name
+sold by several donating factions is donated for only where its rep gap is smallest; `fluxSeller` buys NeuroFlux from a
+donating seller, then the one with most rep (was the first donating one found); the player controller
+(player_activity_logic.js `repTarget`) skips work for a name any donating faction sells (cash buys that rep), and keeps
+its bundle scoring, which credits a faction with every name its climb reaches, so a shared name goes to the cheaper
+route; the readiness advisor counts such names as cash-limited, and skips names rep-ready anywhere. 533 tests pass;
+files synced (`profile.py check --content` 0 differ); controller restarted (`restart_player.js`), readiness re-runs each
+2 min via the steward; both read back ok at 00:33/00:34. Live example: Synfibril Muscle and Synthetic Heart are sold by
+both Speakers for the Dead and Daedalus.
+
 **BN10 hourly check 2026-11-06 23:17 Pacific (PC clock 00:17 on 11-07), hourly task: Covenant gym, run target
 extended.** Not a stand-aside run (last commit 22:25 Pacific). Live (autosave summary 23:14, readiness 23:13, sleeve
 status 23:14, game `ps`, metrics 23:15): BN10, cash $222t, hacking 2584, combat 587/849/625/437, karma -42.8k, **54

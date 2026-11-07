@@ -46,14 +46,16 @@ function advise(ns, { now, player, previous, factionRep, queued, plan, candidate
   for (const item of candidates) item.value = value(item.name)
   const inBatch = new Set([...queued, ...plan.map((item) => item.name)])
   const batch = [...inBatch].map((name) => ({ name, value: value(name) }))
-  // Per name, the smallest gap a faction we can work for leaves; a name sold only by
-  // donating factions stays `donatable` (cash-limited, never a work target).
+  // Many augmentations are sold by several factions, so advice is per name: rep-ready at any
+  // faction means no wait; sold by any donating faction means cash buys its rep (`donatable`,
+  // never a work target, as in player_activity_logic.js); otherwise the smallest workable gap.
+  const ready = new Set(candidates.filter((item) => item.repGap <= 0).map((item) => item.name))
   const gaps = new Map()
   for (const item of candidates) {
-    if (inBatch.has(item.name) || !item.canWorkForRep) continue
+    if (inBatch.has(item.name) || ready.has(item.name) || !item.canWorkForRep) continue
     const seen = gaps.get(item.name)
     const donatable = Boolean(item.donatable)
-    if (!seen || (seen.donatable && !donatable) || (seen.donatable === donatable && item.repGap < seen.repGap)) {
+    if (!seen || (donatable && !seen.donatable) || (seen.donatable === donatable && item.repGap < seen.repGap)) {
       gaps.set(item.name, { repGap: item.repGap, donatable })
     }
   }

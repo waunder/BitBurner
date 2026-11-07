@@ -13,6 +13,20 @@ DevTools, Remote API status files.
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
 
+**BN10 check 2026-11-07 05:15 Pacific (PC clock 06:15), 2-hourly task: Covenant gym, steady, no changes.** Not a
+stand-aside run (no session running). Live (autosave summary, readiness/MCP/player status 05:14, metrics 05:10): BN10,
+cash $3.24q, hacking 2954, combat 799/1007/802/769, karma -49.4k, **54 installed, 0 queued**, 11 factions (Daedalus rep
+27.5k, favor 0), player at Powerhouse Gym on agility (covenantTarget). Game `ps` via game_terminal.py again returned no
+output (player focused at the gym); residents judged from fresh status files (MCP, player, readiness, maintenance, CCT,
+dnet all 05:05 to 05:14). World Daemon: Red Pill not installed, hacking 2954 vs 6000; not ready. Measured, 13 samples
+04:10 to 05:10: cash 492t/h, hacking exp 28.9b/h (25.2 levels/h), karma -1.16k/h, MCP rate 268b/s average 137b/s,
+share 1.56; rep/h BitRunners 207k, NiteSec 146k, The Syndicate 130k, Tian Di Hui 113k (no faction worked). Trend:
+`cash/h 518t>522t>492t STEADY | MCP 186b>131b>268b STEADY | hackExp/h 29.2b>28.9b>28.9b STEADY | rep work n/a | rep best
+BitRunners 203k>205k>207k STEADY` (cycle 6.6h). Advisor: **build** (Graphene BrachiBlades in 52m); decision: **no
+install, agree** (an install resets the gym). Covenant ETA from the metrics: agility exp 786k of about 1.70m, +124k in
+the last hour (strength also took +26k, now 106k of 148k; dexterity 93k of 126k), so about 6 to 7h more: **invite
+expected about 12:00 to 13:00 Pacific**, then start `sleeve_buyer.js`. Share A/B not run (player not on faction work).
+
 **BN10 check 2026-11-07 03:16 Pacific (PC clock 04:16), 2-hourly task: Covenant gym, steady, no changes.** Not a
 stand-aside run (no session running). Live (autosave summary, readiness 03:13, MCP status 03:15, metrics 03:10): BN10,
 cash $2.26q, hacking 2901, combat 756/989/740/729, karma -47.2k, **54 installed, 0 queued**, 11 factions (Daedalus rep

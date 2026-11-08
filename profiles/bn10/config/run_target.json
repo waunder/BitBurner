@@ -1,7 +1,14 @@
 {
-  "goal": "BN10: SF10.1 and Covenant sleeves (first $10t)",
+  "goal": "BN10 run 2: SF10.2 (a 3rd base sleeve elsewhere), gang early, 5th Covenant sleeve if cash allows",
   "updated": "2026-11-08",
   "steps": [
+    {
+      "label": "Gang: karma -54k (6 sleeves on crime from the start)",
+      "metric": {
+        "kind": "karma",
+        "target": -54000
+      }
+    },
     {
       "label": "NiteSec gate",
       "metric": {
@@ -20,19 +27,35 @@
       }
     },
     {
-      "label": "Fourth Covenant sleeve (bought 2026-11-07 23:33, memory 100)",
+      "label": "Covenant invite (sleeve 6 memory, 5th sleeve)",
+      "metrics": [
+        {
+          "kind": "installed",
+          "target": 20
+        },
+        {
+          "kind": "money",
+          "target": 75000000000.0
+        },
+        {
+          "kind": "hacking",
+          "target": 850
+        },
+        {
+          "kind": "combat",
+          "target": 850
+        }
+      ]
+    },
+    {
+      "label": "Fifth Covenant sleeve ($100q, a bonus, not a gate)",
       "metric": {
         "kind": "money",
-        "target": 1e+16
-      },
-      "done": true
+        "target": 1e+17
+      }
     },
     {
-      "label": "Red Pill installed 2026-11-08 01:16 (install 13)",
-      "done": true
-    },
-    {
-      "label": "Rejoin Illuminati (favor ~178 after install 14), donate, buy QLink, install"
+      "label": "Red Pill: Daedalus favor 150, install, donate for 5m rep"
     },
     {
       "label": "World Daemon hacking 6000",
@@ -45,18 +68,18 @@
       "label": "World Daemon: stop for Ken"
     }
   ],
-  "augWeightsWhy": "Four Covenant sleeves bought and The Red Pill installed (2026-11-08). Only hacking 6000 for the World Daemon remains, so the hacking multiplier leads (level scales with it linearly, with exp only logarithmically); faction rep next, combat little.",
+  "augWeightsWhy": "Run 2 start: hacking leads (MCP income, NiteSec, the 6000 gate); faction rep for Daedalus; combat counts for the Covenant's 850 gate, which run 1 reached by a long gym grind at the 0.4 level multiplier.",
   "augWeights": {
     "hacking": 1,
-    "strength": 0.2,
-    "defense": 0.2,
-    "dexterity": 0.2,
-    "agility": 0.2,
+    "strength": 0.4,
+    "defense": 0.4,
+    "dexterity": 0.4,
+    "agility": 0.4,
     "hacking_exp": 0.3,
-    "strength_exp": 0.02,
-    "defense_exp": 0.02,
-    "dexterity_exp": 0.02,
-    "agility_exp": 0.02,
+    "strength_exp": 0.1,
+    "defense_exp": 0.1,
+    "dexterity_exp": 0.1,
+    "agility_exp": 0.1,
     "faction_rep": 0.5
   }
 }

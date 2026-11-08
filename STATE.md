@@ -70,6 +70,19 @@ cycle at about 43b/h gives roughly 1.1t exp, which at the new multiplier (about 
 Black Hand's via gang rep) and long cycles, since exp counts only logarithmically. Next runs should judge installs by
 hacking multiplier gained against hacking exp lost.
 
+**BN10 run 2 entered 2026-11-08 (Ken destroyed the World Daemon and chose BN10 himself, in his session).**
+Save backup before the daemon: `saves/bitburnerSave_pre-worlddaemon_BN10_2026-11-08.json.gz` (node 10, hacking 8032,
+79 installed). Live after entry (autosave): BN10, SF 1.2, 2.1, 4.3, 5.3, 10.1, 15.1; $82k, home 32GB, karma -0.8;
+player on Shoplift (Ken). **6 sleeves** (min(3, SF10 1 + 1 in BN10) + 4 Covenant): 5 at memory 100 and sync 100, the new
+6th at memory 1 and sync 25; all at shock 24.9 (BN10 entry caps shock at 25). Same 32GB squeeze as run 1, so as
+then: killed `mcp.js` (17GB); `sleeve_crime_now.js` (new, core/dev, pushed by hand) put all 6 sleeves on Shoplift
+for money and karma, since `sleeve_controller.js` (26GB) does not fit; `capital_bootstrap.js` runs (buys home RAM);
+`early_spread.js joesguns` rooted 5 and started 41 loop threads, plus 6 on home. **Next: as home grows, kill the
+weakenGrowHack loops and `run startup.js`; sleeve_controller then takes the sleeves (it recovers shock to 5 first).**
+`run_target.json` rewritten for run 2: gang first (karma -54k), NiteSec, Covenant (6th sleeve memory, $100q 5th
+sleeve as a bonus), Red Pill, World Daemon. Authority: run 1's handover terms (installs approved with a backup,
+stop at the World Daemon or any reset) are assumed to carry over; Ken to confirm.
+
 **Gang change 2026-11-08 (Ken session; Ken away overnight, left it in the agent's hands).** In reputation mode the
 gang had spent over 95% of its time with all 9 members on Ethical Hacking: 1.9 respect/s. That was the 0.998/0.999
 attainable-penalty cleanup band, tuned for the old 13m-respect gang. Reputation mode now uses an absolute

@@ -21,6 +21,10 @@ then hands the cutover to the agent. From that handover, BN10 runs under the sam
 as BN15: installs approved up to readiness to complete BN10, with a save backup before
 each, and a stop again at its World Daemon or any other reset.
 
+BN10 run 2 (Ken, 2026-11-08): Ken entered BN10 again himself and confirmed the same terms:
+installs approved up to readiness to complete it, a save backup before each, and a stop at
+its World Daemon or any other reset.
+
 For everything else, proceed without asking: deploy capital (including stock
 capital), change automation, commit/push, restart scripts, and use reversible
 feature flags when their risk and ROI justify it. Complete authorized

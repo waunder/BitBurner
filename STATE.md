@@ -80,8 +80,8 @@ for money and karma, since `sleeve_controller.js` (26GB) does not fit; `capital_
 `early_spread.js joesguns` rooted 5 and started 41 loop threads, plus 6 on home. **Next: as home grows, kill the
 weakenGrowHack loops and `run startup.js`; sleeve_controller then takes the sleeves (it recovers shock to 5 first).**
 `run_target.json` rewritten for run 2: gang first (karma -54k), NiteSec, Covenant (6th sleeve memory, $100q 5th
-sleeve as a bonus), Red Pill, World Daemon. Authority: run 1's handover terms (installs approved with a backup,
-stop at the World Daemon or any reset) are assumed to carry over; Ken to confirm.
+sleeve as a bonus), Red Pill, World Daemon. Authority: Ken confirmed run 1's terms carry over (installs approved with a
+backup, stop at the World Daemon or any reset); recorded in `AGENTS.md`.
 
 **Gang change 2026-11-08 (Ken session; Ken away overnight, left it in the agent's hands).** In reputation mode the
 gang had spent over 95% of its time with all 9 members on Ethical Hacking: 1.9 respect/s. That was the 0.998/0.999

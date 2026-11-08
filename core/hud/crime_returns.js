@@ -1,4 +1,8 @@
 import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./tail_geometry.js"
+
+// Ken's BC time, UTC-7 year-round. The game browser's older time zone data shows Vancouver an hour
+// behind, so toLocaleTimeString() is wrong here (same fix as money.js).
+const bcTime = (ms) => new Date(ms - 7 * 3600000).toISOString().slice(11, 19)
 /**
  * Live expected crime returns per minute for this player's current stats.
  * Run with: run crime_returns.js [column] [h|l]
@@ -121,7 +125,7 @@ export async function main(ns) {
       const values = [row.crime.name, `${(row.chance*100).toFixed(0)}%`, ...row.values.map((v,i)=>compact(v,i===0))]
       ns.print(values.map(cell).join(" "))
     }
-    ns.print(`Updated ${new Date().toLocaleTimeString()}  ·  sort: ${sortInfo.label} ${sort.direction === "desc" ? "↓" : "↑"}`)
+    ns.print(`Updated ${bcTime(Date.now())}  ·  sort: ${sortInfo.label} ${sort.direction === "desc" ? "↓" : "↑"}`)
     const running = ns.getRunningScript(ns.pid)
     if (usableWindow(running?.tailProperties))
       await ns.write(WINDOW_FILE, JSON.stringify(running.tailProperties), "w")

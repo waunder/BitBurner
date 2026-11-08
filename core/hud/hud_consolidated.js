@@ -2,6 +2,10 @@ import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./
 import { formatRamGroup, readFleetRam } from "./fleet_ram.js"
 import { runTargetView } from "./run_target_logic.js"
 import { wrapText } from "./wrap_text.js"
+
+// Ken's BC time, UTC-7 year-round. The game browser's older time zone data shows Vancouver an hour
+// behind, so toLocaleTimeString() is wrong here (same fix as money.js).
+const bcTime = (ms) => new Date(ms - 7 * 3600000).toISOString().slice(11, 19)
 /** Consolidated Interactive HUD - Clickable Sections
  *
  * Single summary window showing MCP, Darknet, Augmentation, System status.
@@ -144,7 +148,7 @@ function mcpStatus(ns, now) {
       `Status: ${running ? "RUNNING" : "STOPPED"}`,
       `Objective: ${objective}${running ? "" : " (last reported)"}`,
       ...(status.targets ? [`Targets: ${status.targets.length} (${status.targets.filter(t=>t.phase==='harvest').length} harvesting, ${status.targets.filter(t=>t.phase!=='harvest').length} preparing) — see MCP target stats`,
-        `Cloud: ${Math.round(status.cloudControl?.effectiveFraction*100)}% withdrawal; expires ${new Date(status.cloudControl?.expiresAt).toLocaleTimeString()}`] : [`Target: ${target}`]),
+        `Cloud: ${Math.round(status.cloudControl?.effectiveFraction*100)}% withdrawal; expires ${bcTime(status.cloudControl?.expiresAt)}`] : [`Target: ${target}`]),
       `Phase: ${phase}${status.holdGrowth ? " (growth held at money threshold)" : ""}${plan === "weaken" ? `; ${status.activeTargetWeaken || 0} weaken threads` : ""}`,
       `Rate: ${compact(rate, 2)}/s (avg ${compact(avgRate, 2)}/s)`,
       `Total hacked: ${compact(money)}`,
@@ -526,7 +530,7 @@ function buildDisplay(ns, state, pos) {
   const reportNote = !report ? "Run report: not running (run run_report.js)"
     : !ns.getRunningScript(report.pid)?.tailProperties ? "Run report: hidden until the next report (run run_report.js)" : null
   if (reportNote) for (const part of wrapText(reportNote, HUD_CHARS)) lines.push(COLORS.HEADER + part + COLORS.RESET)
-  lines.push(COLORS.HEADER + `Updated: ${new Date().toLocaleTimeString()}` + COLORS.RESET)
+  lines.push(COLORS.HEADER + `Updated: ${bcTime(Date.now())}` + COLORS.RESET)
 
   return lines
 }

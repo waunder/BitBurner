@@ -1,4 +1,8 @@
 import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./tail_geometry.js"
+
+// Ken's BC time, UTC-7 year-round. The game browser's older time zone data shows Vancouver an hour
+// behind, so toLocaleTimeString() is wrong here (same fix as money.js).
+const bcTime = (ms) => new Date(ms - 7 * 3600000).toISOString().slice(11, 19)
 /** Run report tail window.
  *
  * Shows run_report.json, which the hourly scheduled task writes and pushes:
@@ -27,7 +31,7 @@ function readReport(ns) {
 
 function render(report, now) {
   if (!report || !Array.isArray(report.lines)) return ["No run report yet (run_report.json missing or invalid)."]
-  const posted = Number.isFinite(report.ts) ? new Date(report.ts).toLocaleTimeString() : "unknown time"
+  const posted = Number.isFinite(report.ts) ? bcTime(report.ts) : "unknown time"
   const overdue = Number.isFinite(report.ts) && now - report.ts > OVERDUE_MS ? "  ⚠ overdue" : ""
   return [
     `${report.title || "Run report"}`,

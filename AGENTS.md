@@ -84,6 +84,10 @@ real in-game/manual action requires Ken; check it off after confirmation.
 - To run a terminal command in the Steam game, use `tools/game_terminal.py`.
   Never send DevTools `Input.*` commands to it: a malformed one crashed the
   whole game on 2026-11-03 (see `docs/processes.md`, CDP section).
+- On the Windows PC, run repo tools with `.venv/Scripts/python.exe` (system Python lacks
+  `websockets`), and set `PYTHONIOENCODING=utf-8` for CDP output. `tools/remote_api_monitor.py`
+  fails there (`fcntl`); use `tools/bb_remote.py ctl-status`. `gh` is not installed: read
+  bitburner-src with `curl` from `raw.githubusercontent.com/bitburner-official/bitburner-src/dev/src/...`.
 - `sync_manifest.json` is the single source of truth for scripts delivered to
   the game, but it is generated: it maps game path to repo path for the active
   profile (`tools/profile.py build <profile>`). Add a new live script to

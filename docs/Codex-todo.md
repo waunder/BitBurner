@@ -10,6 +10,19 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
 
 ## Active work
 
+- Open items from the 2026-11-07/08 Claude session (BN10 run 1 end, run 2 start):
+  - Gang, reputation mode: rank gear by respect added per dollar, not money payback; allow
+    ascension (disabled in reputation mode, which caps member growth). Retune the
+    `reputationCleanupEnter/Exit` band (bn10 0.80/0.90) as members strengthen.
+  - `sleeve_controller.js` resumes work at shock 5 (`shockResumeBelow`), but sleeve
+    augmentations need shock 0, so `sleeve_buyer.js` waits about 3h more of passive decay.
+    Weigh recovering to 0 for sleeves with augmentations still to buy.
+  - HUD: the System line shows "API ⚠" while the Remote API is connected; the gang "wanted %"
+    label is misleading (it shows the penalty). Neither checked yet.
+  - Run 2 start: `sleeve_crime_now.js` and `early_spread.js` (core/dev, pushed by hand) bridge
+    the 32GB home. Consider putting sleeves on crime from `startup.js` when
+    `sleeve_controller.js` does not fit.
+
 - Validate the severe-wanted cleanup band after deployment. It enters below a
   5% wanted multiplier, targets 4% wanted reduction per ten-cycle update, and
   exits at 10%. Confirm cleanup exits at 99.5% of the respect-dependent maximum

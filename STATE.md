@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-07 15:15 PST (16:15 on the PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-07 17:15 PST (18:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -12,6 +12,20 @@ DevTools, Remote API status files.
 > game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
+
+**BN10 check 2026-11-07 17:15 Pacific (PC clock 18:15), 2-hourly task: steady on Covenant work, no changes.** Not a
+stand-aside run (no session running). Live (autosave summary, sleeve/buyer/readiness status 17:15, metrics 17:10): BN10,
+cash $6.83q, hacking 3111, combat 861/1040/880/850, karma -54.2k, **54 installed, 0 queued**, 12 factions, player on The
+Covenant hacking work. Sleeves: 0 on The Dark Army rep (shock 0, sync 99), 1-3 on shock recovery (shock 78.4, down 10.8
+in 2h, so about 14h more). `sleeve_buyer.js` saving for the 4th Covenant sleeve ($10q, $3.2q short, about 6.4h at
+499t/h, so near 23:40 Pacific); no purchase since 13:15. World Daemon: Red Pill not installed, hacking 3111; not ready.
+Measured, 12 samples 16:15 to 17:10: cash 499t/h, hacking exp 29.3b/h (8.2 levels/h), karma -18.6/h, MCP rate 5.61b/s
+average 137b/s, share 1.55; rep/h The Covenant 417k, BitRunners 218k, NiteSec 153k, The Syndicate 137k. Trend: `cash/h
+497t>498t>499t STEADY | MCP 98.7b>156b>5.61b STEADY | hackExp/h 29b>28.8b>29.3b STEADY | rep work The Covenant
+420k>416k>417k STEADY | rep best The Covenant 420k>416k>417k STEADY` (cycle 18.6h; the low MCP figure is the
+instantaneous rate during target rotation, cash/h is flat). Advisor: **wait** (Graphene Bone Lacings from The Covenant
+in 11m); decision: **no install, agree**; keep holding installs until the 4th Covenant sleeve is bought. SPTN-97 needs
++370k Covenant rep (about 53m).
 
 **BN10 check 2026-11-07 15:15 Pacific (PC clock 16:15), 2-hourly task: steady on Covenant work, no changes.** Not a
 stand-aside run (no session running). Live (autosave summary, sleeve/buyer/readiness status 15:15, metrics 15:15):

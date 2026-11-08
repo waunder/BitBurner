@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-08 03:20 PST (04:20 on the PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-08 05:20 PST (06:20 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -12,6 +12,10 @@ DevTools, Remote API status files.
 > game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
+
+**2026-11-08 05:20 PST (06:20 PC clock): BN10 World Daemon ready, Ken notified (2-hourly task).** Hacking **6070 of the required 6000** (`w0r1d_d43m0n` `requiredHackingSkill` 6000 from the autosave; live gate scan `gateScanOk` true). The daemon is **not rooted, not backdoored, not destroyed; no BitNode chosen.** The push notification was sent to the desktop; the phone push was not sent (Remote Control inactive). **Next: Ken opens a BitBurner session to choose the next BitNode. The 2-hourly task makes no further changes.**
+
+**BN10 install 15 ran 2026-11-08 05:16 Pacific (PC clock 06:16), 2-hourly task: QLink, which crossed the 6000 gate.** Not a stand-aside run (no session running). Before (autosave summary 05:15, readiness 05:14, metrics to 05:10): BN10, cash $957t, hacking 4187, karma -54.6k, 76 installed, 1 queued (The St4ff of Asclepius, bought earlier this cycle by an unrecorded run), 13 factions, Illuminati re-joined (favor 179), player in the Algorithms class. Measured, 13 samples 04:10 to 05:10: rep/h Daedalus 463k, BitRunners 396k, NiteSec 301k, Illuminati 211k; hacking exp 74b/h, karma -222/h, cash 531t/h, MCP rate 186b/s average 130b/s, share 1.56. Trend: `n/a` on every line (cycle 1.9h, too short). Advisor: **install** ("nothing left worth waiting for"); decision: **install, agree**. QLink's +75% hacking was the step to 6000 (estimate from the level formula: about 2b exp needed afterwards). Backup `saves/bitburnerSave_pre-install15_BN10_2026-11-08.json.gz` (gzip checked, player parsed, node 10, 76 augs, 1 queued, 5 sleeves, SHA-256 1cbb81da6aa7017d05b2b73b24f6e8c9b031a693b4161c57896c5c85e8216360). `aug_install.js` (buy only): donated $595b to Illuminati, bought **QLink** and **PCMatrix**, then 5 NeuroFlux levels ($140.8t donated for them); then `aug_install.js --install`: installed. After (game `ps` 05:18, readiness, autosave): **79 installed, 0 queued**; all residents running (MCP, supervisor, crawler, steward, money, stack_manager, HUD, run_report, player controller, xp_filler, faction_join, metrics_logger, dnet_root, sleeve_controller, sleeve_buyer, capital_manager, gang-controller, cct_watcher). Hacking 5727 at 0.96b exp right after install, **6070 at 2.28b exp by 05:19**. `metrics.py pull` failed again (chunk limit, `metrics_log.txt` 1.0MB); the daemon's own pull kept `runtime/metrics_log.txt` current. New cycle not yet sampled, so no `metrics.py cycles` row for it.
 
 **BN10 install 14 ran 2026-11-08 03:16 Pacific (PC clock 04:16), 2-hourly task: for Illuminati favor, toward QLink.**
 Not a stand-aside run (no session running). Before (autosave summary 03:15, readiness and metrics 03:10-03:15): BN10,

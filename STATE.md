@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-07 17:15 PST (18:15 on the PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-07 19:15 PST (20:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -12,6 +12,23 @@ DevTools, Remote API status files.
 > game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
+
+**BN10 check 2026-11-07 19:15 Pacific (PC clock 20:15), 2-hourly task: steady, no changes.** Not a stand-aside run
+(no session running; Ken's 18:29 session had ended). Live (autosave summary, sleeve/buyer/readiness/player status
+19:14, metrics 19:15): BN10, cash $7.84q, hacking 3127, combat 861/1040/880/850, karma -54.2k, **54 installed, 0
+queued**, 12 factions. The player controller moved the player from The Covenant to **The Dark Army** hacking work
+(Graphene Bionic Arms Upgrade, +369k rep; Covenant rep 2.52m). Sleeves: 0 on The Dark Army rep (shock 0, sync 99,
+memory 100), 1-3 on shock recovery (shock 67.6, down 10.8 in 2h, so about 12.5h more). `sleeve_buyer.js` (new
+version with sleeve augmentations, Ken's 19:29 commit) is saving for the 4th Covenant sleeve ($10q, $2.17q short,
+about 4.3h at 501t/h, so near 23:35 Pacific); no purchases since 13:15 (sleeve 0 already has every augmentation,
+1-3 are not at shock 0). World Daemon: Red Pill not installed (Daedalus rep 87k), hacking 3127; not ready.
+Measured, 12 samples 18:20 to 19:15: cash 501t/h, hacking exp 29.2b/h (7.4 levels/h), karma -18.8/h, MCP rate
+114b/s average 137b/s, share 1.56; rep/h The Dark Army 440k, BitRunners 222k, NiteSec 156k, The Syndicate 139k.
+Trend: `cash/h 499t>500t>501t STEADY | MCP 5.61b>111b>114b STEADY | hackExp/h 29.3b>29.3b>29.2b STEADY | rep work
+The Dark Army 417k>376k>440k SWITCH | rep best The Dark Army 417k>376k>440k SWITCH` (cycle 20.7h; SWITCH is the
+Covenant to Dark Army move, not a slowdown). Advisor: **wait** (Graphene Bionic Arms Upgrade in 50m, +34%/h beats
+the cycle's +6.1%/h); decision: **no install, agree**; keep holding until the 4th Covenant sleeve is bought, then
+install (13 augmentations plannable for $2.7t).
 
 **BN10 check 2026-11-07 17:15 Pacific (PC clock 18:15), 2-hourly task: steady on Covenant work, no changes.** Not a
 stand-aside run (no session running). Live (autosave summary, sleeve/buyer/readiness status 17:15, metrics 17:10): BN10,

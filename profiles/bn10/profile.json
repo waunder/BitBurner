@@ -20,7 +20,8 @@
     "gang_capital_policy.json": "profiles/bn10/config/gang_capital_policy.json"
   },
   "startup": [
-    "sleeve_controller.js"
+    "sleeve_controller.js",
+    "sleeve_buyer.js"
   ],
-  "notes": "Extends bn15 for the darknet scripts and dnet_root.js; bn10 config overrides bn15 BN15-tuned player_activity_config.json with the neutral one. startup.js launches the manifest startup list (dnet_root.js, then sleeve_controller.js, about 26GB) after core. Start sleeve_buyer.js after joining The Covenant; set covenantTarget true near 20 installs."
+  "notes": "Extends bn15 for the darknet scripts and dnet_root.js; bn10 config overrides bn15 BN15-tuned player_activity_config.json with the neutral one. startup.js launches the manifest startup list (dnet_root.js, then sleeve_controller.js, about 26GB) after core. sleeve_buyer.js (startup) buys sleeve augmentations at once and Covenant sleeves and memory after joining; set covenantTarget true near 20 installs."
 }

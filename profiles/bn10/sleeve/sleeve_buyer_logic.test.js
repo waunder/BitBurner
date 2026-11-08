@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { chooseSleevePurchase, eligibility, memoryCost, payoff, smoothIncome } from "./sleeve_buyer_logic.js"
+import { chooseNextPurchase, chooseSleeveAug, chooseSleevePurchase, eligibility, memoryCost, payoff, smoothIncome } from "./sleeve_buyer_logic.js"
 
 test("memory cost follows the game formula", () => {
   assert.equal(memoryCost(1, 1), 1e12)
@@ -52,4 +52,21 @@ test("payoff is zero-safe", () => {
 test("income smoothing ignores spending", () => {
   assert.equal(smoothIncome({ cash: 1100, lastCash: 1000, spent: 0, seconds: 10 }), 10)
   assert.equal(smoothIncome({ cash: 500, lastCash: 1000, spent: 500, seconds: 10 }), 0)
+})
+
+test("sleeve augmentations: shock 0 only, cheapest first, within the cash share", () => {
+  const sleeves = [
+    { index: 0, shock: 0, augs: [{ name: "B", cost: 3e9 }, { name: "A", cost: 1e9 }] },
+    { index: 1, shock: 5, augs: [{ name: "C", cost: 1e6 }] },
+  ]
+  assert.deepEqual([chooseSleeveAug({ sleeves, spendable: 1e12 })].map((p) => [p.sleeve, p.name]), [[0, "A"]])
+  assert.equal(chooseSleeveAug({ sleeves, spendable: 1e10 }), null)
+})
+
+test("purchase order: Covenant sleeve, then augmentation, then memory", () => {
+  const aug = { kind: "aug", name: "A" }
+  assert.equal(chooseNextPurchase({ covenant: { kind: "sleeve" }, aug }).kind, "sleeve")
+  assert.equal(chooseNextPurchase({ covenant: { kind: "memory" }, aug }).kind, "aug")
+  assert.equal(chooseNextPurchase({ covenant: { kind: "memory" } }).kind, "memory")
+  assert.equal(chooseNextPurchase({}).kind, "save")
 })

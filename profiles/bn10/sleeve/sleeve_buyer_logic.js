@@ -84,3 +84,30 @@ export function smoothIncome({ previous = 0, cash, lastCash, spent = 0, seconds,
   const weight = 1 - Math.exp(-seconds / windowSec)
   return previous ? previous + (sample - previous) * weight : sample
 }
+
+/**
+ * Next sleeve augmentation, or null. Rules (bitburner-src dev, src/PersonObjects/Sleeve/Sleeve.ts):
+ * the sleeve's shock must be 0, the list is getSleevePurchasableAugs (factions' augs the player has
+ * rep for, sleeve-valid multipliers only), the price is the augmentation's base cost, and every
+ * player install wipes sleeve augmentations (Sleeve.prestige), so they are bought again after it.
+ * Cheapest first, each costing at most `augShare` of spendable. No Covenant membership needed.
+ * sleeves: [{ index, shock, augs: [{ name, cost }] }]
+ */
+export function chooseSleeveAug({ sleeves = [], spendable, augShare = 0.05 } = {}) {
+  const limit = Math.max(0, Number(spendable) || 0) * augShare
+  const options = sleeves.filter((s) => Number(s.shock) === 0)
+    .flatMap((s) => (s.augs || []).map((aug) => ({ sleeve: s.index, name: aug.name, cost: Number(aug.cost) })))
+    .filter((o) => Number.isFinite(o.cost) && o.cost <= limit)
+    .sort((a, b) => a.cost - b.cost || a.sleeve - b.sleeve)
+  if (!options.length) return null
+  const pick = options[0]
+  return { kind: "aug", ...pick, model: "sleeve augmentation: multiplies the sleeve's stats and gains until the next install", paybackHours: null }
+}
+
+/** A Covenant sleeve first, then augmentations, then memory; `covenant` is null outside The Covenant. */
+export function chooseNextPurchase({ covenant = null, aug = null } = {}) {
+  if (covenant?.kind === "sleeve") return covenant
+  if (aug) return aug
+  if (covenant) return covenant
+  return { kind: "save", reason: "no affordable sleeve augmentation; not a member of The Covenant" }
+}

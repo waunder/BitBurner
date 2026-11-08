@@ -8,7 +8,8 @@
   ],
   "startup": [
     "dnet_root.js",
-    "sleeve_controller.js"
+    "sleeve_controller.js",
+    "sleeve_buyer.js"
   ],
   "files": {
     "sync_manifest.json": "sync_manifest.json",

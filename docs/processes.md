@@ -1635,13 +1635,19 @@ and is assumed to be 1, so chances can be slightly optimistic.
 
 ### `sleeve_buyer.js`
 
-BN10 only; in `profiles/bn10/sleeve/`, so shipped by the bn10 profile only. Buys Covenant sleeves, then sleeve
-memory, with cash above the `reserve` in `capital_policy.json`. Pure rules in
+BN10 only; in `profiles/bn10/sleeve/`, so shipped by the bn10 profile only. Buys Covenant sleeves, sleeve
+augmentations and sleeve memory, in that order, with cash above the `reserve` in `capital_policy.json`.
+**Augmentations (2026-11-07, Ken):** need no Covenant membership, only a sleeve at shock 0; the list is
+`getSleevePurchasableAugs`, priced at base cost; cheapest first, each at most `sleeveAugShare` (policy
+key, default 0.05) of spendable (`chooseSleeveAug`). Every player install wipes them (bitburner-src
+`Sleeve.prestige`), so the bn10 profile starts this from `startup.js` to buy them again. Pure rules in
 `sleeve_buyer_logic.js`; game rules in `docs/bn10-plan.md` package B. Four `ns.sleeve` calls
-(`getSleeveCost`, `getSleeve`, `purchaseSleeve`, `upgradeMemory`), about 16GB by the 4GB rule.
+(`getSleeveCost`, `getSleeve`, `purchaseSleeve`, `upgradeMemory`, `getSleevePurchasableAugs`,
+`purchaseSleeveAug`), about 24GB by the 4GB rule.
 
-- **Start:** `run sleeve_buyer.js`, after joining The Covenant. If it is not BN10 or the player is
-  not yet a member it writes the reason to `sleeve_buyer_status.json` and exits; rerun after joining.
+- **Start:** `startup.js` (bn10 profile), or `run sleeve_buyer.js`; a rerun replaces the running copy.
+  Outside BN10 it writes the reason to `sleeve_buyer_status.json` and exits. Before The Covenant it
+  buys augmentations only and reports `covenant` with the reason; sleeves and memory begin on joining.
 - **Policy:** a sleeve whenever spendable (cash minus reserve) covers `getSleeveCost()`. Memory only
   after the first Covenant sleeve, on the lowest-memory sleeve, the largest batch of up to 10
   points that spendable covers. Memory cost is computed locally from the game formula.

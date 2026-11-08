@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-07 19:15 PST (20:15 on the PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-07 21:15 PST (22:15 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -12,6 +12,21 @@ DevTools, Remote API status files.
 > game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
+
+**BN10 check 2026-11-07 21:15 Pacific (PC clock 22:15), 2-hourly task: steady, no changes.** Not a stand-aside
+run (no session running). Live (autosave summary, sleeve/buyer/readiness status and metrics 21:15): BN10, cash
+$8.84q, hacking 3141, combat 861/1040/880/850, karma -54.2k, **54 installed, 0 queued**, 12 factions; player back on
+**The Covenant** hacking work (Embedded Netburner Module Core V3 Upgrade, +506k rep). Sleeves: 0 on The Covenant rep
+(shock 0, sync 99, memory 100), 1-3 on shock recovery (shock 56.9, down 10.7 in 2h, so about 10.5h more).
+`sleeve_buyer.js` bought sleeve 0's remaining augmentation (Graphene Bionic Arms Upgrade, $3.75b, ok, about 20:05) and
+is saving for the 4th Covenant sleeve ($10q, $1.16q short, about 2.3h at 502t/h, so near 23:35 Pacific). World
+Daemon: Red Pill not installed, hacking 3141; not ready. Measured, 12 samples 20:20 to 21:15: cash 502t/h, hacking exp
+29.3b/h (6.8 levels/h), karma -18.7/h, MCP rate 115b/s average 138b/s, share 1.55; rep/h The Covenant 420k,
+BitRunners 216k, NiteSec 151k, The Syndicate 135k. Trend: `cash/h 501t>502t>502t STEADY | MCP 114b>204b>115b STEADY |
+hackExp/h 29.2b>29.3b>29.3b STEADY | rep work The Covenant 440k>412k>420k SWITCH | rep best The Covenant
+440k>412k>420k SWITCH` (cycle 22.7h; SWITCH is the Dark Army to Covenant move). Advisor: **wait** (Embedded Netburner
+Module Core V3 Upgrade in 1.1h, +15.3%/h beats the cycle's +6.7%/h); decision: **no install, agree**; the next check
+(about 23:15) falls just before the 4th sleeve purchase, so install at the check after it lands.
 
 **BN10 check 2026-11-07 19:15 Pacific (PC clock 20:15), 2-hourly task: steady, no changes.** Not a stand-aside run
 (no session running; Ken's 18:29 session had ended). Live (autosave summary, sleeve/buyer/readiness/player status

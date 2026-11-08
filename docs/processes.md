@@ -442,7 +442,10 @@ upgrade within `saveWindowSec` (default 300), and always below `homeRamFloor`
 steward, `money.js`, `stack_manager.js`, `faction_join.js`, HUD, `player_activity_controller.js`,
 `dnet_root.js`, the profile's `startup` scripts (bn10: `sleeve_controller.js`), then `xp_filler.js`.
 `gang_create.js` (which starts `gang-controller.js`) is left to `startup.js`. It
-never touches augmentations.
+never touches augmentations. While `mcp.js` is not running on home, it holds back
+`mcp.js`'s RAM from that count, so the steward's MCP recovery can still start it
+(2026-11-08: on a 128GB home the residents took 127.95GB and MCP stayed down 2.6h).
+`mcp.js` itself is not on its list.
 
 - **Reads:** `capital_policy.json` every pass (`enabled`, `reserve`,
   `homeRamTarget` default 512, `cloudFraction` default 0.5, `cloudDemandFloor` default 0.5). Set `enabled` false

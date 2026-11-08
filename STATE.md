@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-08 05:20 PST (06:20 on the PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-08 12:18 Pacific (PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -12,6 +12,21 @@ DevTools, Remote API status files.
 > game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
+
+**2026-11-08 12:18 Pacific, 2-hourly task, BN10 run 2: MCP was down; fixed.** Not a stand-aside run (no session
+running). Live (autosave 12:14, `player_activity_status.json` 12:14, game `ps`/`free` 12:15): BN10, $15.7m, hacking 79,
+karma -3.07k, 0 installed, 0 queued, factions Slum Snakes and Tian Di Hui. Home **128GB**, but the residents
+(player controller 36.8GB, capital_manager 17.25, HUD 15.45, stack_manager 11.05, faction_join 10.1 and the rest) used
+127.95GB, so `mcp.js` (16.95GB) had not run since about 09:38 (steward recovery count 207). **Fix:** killed HUD and
+`cct_watcher.js`, restarted `capital_manager.js`, started `mcp.js` (running at 12:16, 4.4GB free); `capital_manager.js`
+now holds back `mcp.js`'s RAM while MCP is down (547 tests pass in build/bn10). Swapped `dnet_root.js` (registry empty,
+darknet idle) for `metrics_logger.js`. Run 1's 1MB `metrics_log.txt` (which broke `metrics.py pull`) renamed in game to
+`metrics_log_bn10run1.txt` (local copy `runtime/metrics_log_bn10run1.txt`), so run 2's log starts fresh. **No measured
+rates or trend line this run** (no run 2 samples yet). Player controller has the player at Powerhouse Gym toward its 75
+combat baseline (strength 68/75), not on Homicide (its candidate: 59% chance, about 0.59 karma/s); left as is. Advisor:
+**build** ("nothing to install yet; best next Wired Reflexes in 7.2h"); decision: no install, agree. World Daemon: not
+present in run 2 (needs The Red Pill). Still off for RAM: HUD, `cct_watcher.js`, `dnet_root.js`, `sleeve_controller.js`,
+`xp_filler.js`; they return as home grows (256GB next). **Next:** check MCP income and the first run 2 metrics samples.
 
 **2026-11-08 10:26 Pacific, BN10 run 2 (Ken session): player on Homicide, sleeves on Shoplift.** Home grew to 64GB
 (capital_bootstrap handed over to capital_manager; the steward fills spare RAM at once, so a one-shot needs a

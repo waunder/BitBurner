@@ -63,7 +63,11 @@ function buy(ns, action, serverCount) {
 function startWaitingManager(ns) {
   const home = "home"
   const scripts = managerList(ns).map(name => ({ name, running: ns.scriptRunning(name, home), ram: ns.getScriptRam(name, home) }))
-  const name = nextScriptToStart(scripts, ns.getServerMaxRam(home) - ns.getServerUsedRam(home))
+  // mcp.js is started by the steward's recovery, not from this list; while it is
+  // down, keep its RAM free so residents cannot crowd out the income engine
+  // (BN10 run 2, 128GB home: residents filled 127.95GB and MCP was down 2.6h).
+  const mcpHold = ns.scriptRunning("mcp.js", home) ? 0 : ns.getScriptRam("mcp.js", home)
+  const name = nextScriptToStart(scripts, ns.getServerMaxRam(home) - ns.getServerUsedRam(home) - mcpHold)
   return name && ns.run(name) ? name : null
 }
 

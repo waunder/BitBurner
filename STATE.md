@@ -13,6 +13,15 @@ DevTools, Remote API status files.
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
 
+**Gang change 2026-11-08 (Ken session; Ken away overnight, left it in the agent's hands).** In reputation mode the
+gang had spent over 95% of its time with all 9 members on Ethical Hacking: 1.9 respect/s. That was the 0.998/0.999
+attainable-penalty cleanup band, tuned for the old 13m-respect gang. Reputation mode now uses an absolute
+wanted-penalty band from `gang_capital_policy.json` (`reputationCleanupEnter`/`Exit`). Results: bn10 at 0.90/0.95
+measured about 50 respect/s and 8 Black Hand rep/s; at 0.80/0.90 (kept) about 74 respect/s and 12 rep/s, with 10
+members. Ken: money should not weigh in gang work now; reputation (Daedalus for the Red Pill, Black Hand for augs) is
+the focus. Not done: rank gear by respect rather than money payback in reputation mode; allow ascension in reputation
+mode (disabled now). Also check whether Daedalus or The Covenant rep work serves the Red Pill route better.
+
 **BN10 check 2026-11-07 21:15 Pacific (PC clock 22:15), 2-hourly task: steady, no changes.** Not a stand-aside
 run (no session running). Live (autosave summary, sleeve/buyer/readiness status and metrics 21:15): BN10, cash
 $8.84q, hacking 3141, combat 861/1040/880/850, karma -54.2k, **54 installed, 0 queued**, 12 factions; player back on

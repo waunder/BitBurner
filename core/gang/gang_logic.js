@@ -151,6 +151,16 @@ export function wantedCleanupPolicy(wantedPenalty, severeMode, cleanupMode, resp
     attainablePenalty };
 }
 
+/**
+ * Reputation-mode cleanup band on the absolute wanted penalty. The attainable-penalty band above
+ * (0.998/0.999) suits a large gang; for a young one each respect batch adds more wanted than nine
+ * cleaners remove, so that band kept every member on cleanup >95% of the time (2026-11-08).
+ * Enter cleanup below `enter`, leave it at `exit` or above.
+ */
+export function reputationCleanupMode(wantedPenalty, cleanupMode, enter = 0.90, exit = 0.95) {
+  return cleanupMode ? wantedPenalty < exit : wantedPenalty < enter;
+}
+
 /** Keep clash exposure behind both per-rival and territory-weighted odds gates. */
 export function shouldEngageTerritoryClashes(territory, chances, minWin = 0.58, weightedMin = 0.65) {
   const eligible = chances.filter((item) => (item.territory || 0) > 0);

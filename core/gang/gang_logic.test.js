@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { canBuildTerritoryPower, moneyModePriority, planMoneyTasks, planReputationTasks,
-  planTerritoryPower, shouldAscendMember, shouldEngageTerritoryClashes, wantedCleanupPolicy, cheapGearQualifies } from "./gang_logic.js";
+  planTerritoryPower, shouldAscendMember, shouldEngageTerritoryClashes, wantedCleanupPolicy, cheapGearQualifies, reputationCleanupMode } from "./gang_logic.js";
 
 test("money mode prioritizes wanted recovery over blocked recruitment growth", () => {
   assert.equal(moneyModePriority(true, true, true), "wanted-recovery");
@@ -27,6 +27,15 @@ test("severe cleanup escalates by 40x with hysteresis and feasible exit threshol
   policy = wantedCleanupPolicy(attainable * 0.996, false, policy.cleanupMode, 6);
   assert.equal(policy.cleanupMode, false);
   assert.equal(wantedCleanupPolicy(0.8, false, false, 6).reductionFraction, 0.001);
+});
+
+test("reputation cleanup band uses the absolute penalty with hysteresis", () => {
+  assert.equal(reputationCleanupMode(0.997, false), false);
+  assert.equal(reputationCleanupMode(0.92, false), false);
+  assert.equal(reputationCleanupMode(0.89, false), true);
+  assert.equal(reputationCleanupMode(0.93, true), true);
+  assert.equal(reputationCleanupMode(0.95, true), false);
+  assert.equal(reputationCleanupMode(0.75, false, 0.7, 0.8), false);
 });
 
 test("territory power policy builds only in safe idle money mode", () => {

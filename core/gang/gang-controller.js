@@ -1,5 +1,6 @@
 import { canBuildTerritoryPower, moneyModePriority, planMoneyTasks, planReputationTasks, planTerritoryPower,
-  shouldAscendMember, shouldEngageTerritoryClashes, wantedCleanupPolicy, cheapGearQualifies } from "./gang_logic.js";
+  shouldAscendMember, shouldEngageTerritoryClashes, wantedCleanupPolicy, cheapGearQualifies,
+  reputationCleanupMode } from "./gang_logic.js";
 
 /**
  * Gang v2: formula-driven money or faction-reputation, wanted, and territory control.
@@ -75,11 +76,16 @@ function withEquipment(member, stats) {
 
 function readCapitalPolicy(ns) {
   const safe = { phase: "augmentation", objective: "Accumulate cash for the final augmentation purchase review",
-    allowEquipmentPurchases: false, augmentationCashTarget: null, territoryEnabled: false };
+    allowEquipmentPurchases: false, augmentationCashTarget: null, territoryEnabled: false,
+    reputationCleanupEnter: 0.90, reputationCleanupExit: 0.95 };
+  const penalty = (value, fallback) => Number.isFinite(value) && value > 0 && value < 1 ? value : fallback;
   try {
     const raw = JSON.parse(ns.read(C.policyFile));
     const phases = new Set(["progression", "earning-capacity", "augmentation"]);
+    const enter = penalty(raw.reputationCleanupEnter, safe.reputationCleanupEnter);
     return {
+      reputationCleanupEnter: enter,
+      reputationCleanupExit: Math.max(enter, penalty(raw.reputationCleanupExit, safe.reputationCleanupExit)),
       phase: phases.has(raw.phase) ? raw.phase : safe.phase,
       objective: typeof raw.objective === "string" && raw.objective ? raw.objective : safe.objective,
       allowEquipmentPurchases: raw.allowEquipmentPurchases === true,
@@ -141,7 +147,11 @@ export async function main(ns) {
     const wantedPolicy = wantedCleanupPolicy(gang.wantedPenalty, severeWantedMode, cleanupMode,
       gang.respect, C.severeWantedEnter, C.severeWantedExit, C.wantedReductionFraction,
       C.severeWantedReductionFraction, C.cleanupEnterAttainablePenalty, C.cleanupExitAttainablePenalty);
-    cleanupMode = wantedPolicy.cleanupMode;
+    // Reputation mode uses an absolute penalty band (policy file), so a young gang earns respect
+    // instead of cleaning a sub-1% penalty; money mode keeps the attainable-penalty band.
+    cleanupMode = gangObjective === "reputation"
+      ? reputationCleanupMode(gang.wantedPenalty, cleanupMode, capitalPolicy.reputationCleanupEnter, capitalPolicy.reputationCleanupExit)
+      : wantedPolicy.cleanupMode;
     severeWantedMode = wantedPolicy.severeMode;
 
     const plans = members.map((member) => {
@@ -319,7 +329,9 @@ export async function main(ns) {
         cyclesPerUpdate: C.wantedUpdateCycles },
       cleanupMode, wantedCleanup: { severeMode: severeWantedMode,
         reductionFractionPerUpdate: wantedPolicy.reductionFraction,
-        attainablePenalty: wantedPolicy.attainablePenalty },
+        attainablePenalty: wantedPolicy.attainablePenalty,
+        reputationBand: gangObjective === "reputation"
+          ? { enter: capitalPolicy.reputationCleanupEnter, exit: capitalPolicy.reputationCleanupExit } : null },
       territory: { policyEnabled: territoryEnabled, fight, weightedChance, rivals: clashes.length,
         lowestCombat: Math.min(...members.map(combatFloor)), clashChance: gang.territoryClashChance },
       capital: { phase: capitalPolicy.phase, objective: capitalPolicy.objective, cash, observedCashRate,

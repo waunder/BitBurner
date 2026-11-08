@@ -4,5 +4,7 @@
   "allowEquipmentPurchases": true,
   "augmentationCashTarget": null,
   "territoryEnabled": false,
-  "updatedAt": "2026-11-07"
+  "reputationCleanupEnter": 0.80,
+  "reputationCleanupExit": 0.90,
+  "updatedAt": "2026-11-08"
 }

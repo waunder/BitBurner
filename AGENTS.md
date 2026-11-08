@@ -81,7 +81,9 @@ real in-game/manual action requires Ken; check it off after confirmation.
   Do not ask Ken to perform the routine connect/sync steps when UI automation
   and the local daemon are available. A reconnect resync must be verified
   before relying on it.
-- To run a terminal command in the Steam game, use `tools/game_terminal.py`.
+- To run a terminal command in the Steam game, use `tools/game_terminal.py`. If it returns
+  `"output": []` for a command that prints, the terminal scrollback is at its line cap (the
+  tool counts new lines): run `clear` first, then repeat the command.
   Never send DevTools `Input.*` commands to it: a malformed one crashed the
   whole game on 2026-11-03 (see `docs/processes.md`, CDP section).
 - On the Windows PC, run repo tools with `.venv/Scripts/python.exe` (system Python lacks

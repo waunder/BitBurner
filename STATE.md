@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-07 21:15 PST (22:15 on the PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-08 00:20 PST (01:20 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -21,6 +21,35 @@ measured about 50 respect/s and 8 Black Hand rep/s; at 0.80/0.90 (kept) about 74
 members. Ken: money should not weigh in gang work now; reputation (Daedalus for the Red Pill, Black Hand for augs) is
 the focus. Not done: rank gear by respect rather than money payback in reputation mode; allow ascension in reputation
 mode (disabled now). Also check whether Daedalus or The Covenant rep work serves the Red Pill route better.
+
+**BN10 install 12 ran 2026-11-08 00:14 Pacific (PC clock 01:14), 2-hourly task, after the 4th Covenant sleeve.**
+Not a stand-aside run (no session running). Before (autosave summary, sleeve/buyer/readiness status, metrics 23:13 to
+00:13): BN10, cash $9.85q, hacking 3154, karma -54.3k, 54 installed, 0 queued, 12 factions, player on Daedalus hacking
+work (Red Pill gap 4.77m rep). **`sleeve_buyer.js` bought the 4th Covenant sleeve at 23:33 ($10q, ok, cash to $378b)**,
+then memory for it, 2 points per poll, to **memory 100 at 00:10** (about $210t; the 5th sleeve costs $100q, out of reach
+at about 500t/h). My `kill sleeve_buyer.js` at 23:42 did not take (status kept updating, purchases kept landing); I let
+it finish, since memory can only be bought in BN10 and is permanent. World Daemon: Red Pill not installed; not ready.
+Measured, 23 samples 22:15 to 00:05: rep/h Daedalus 291k, BitRunners 224k, NiteSec 157k, The Covenant 147k, The
+Syndicate 140k; hacking exp 29.2b/h, karma -18.9/h, MCP rate 96.5b/s average 138b/s, share 1.56 (cash/h negative from
+the sleeve purchase). Trend at 23:15: `cash/h 502t>503t>504t STEADY | MCP 144b>122b>82.7b DECELERATING | hackExp/h
+29.3b>29.3b>29.2b STEADY | rep work The Covenant 420k>435k>331k SWITCH | rep best STEADY` (MCP figure is the
+instantaneous rate during target rotation; cash/h was flat). Advisor: **install** ("nothing left worth waiting for");
+decision: **install, agree**, once the sleeve and its memory landed: Daedalus favor would bank about +117 (rep x2.2
+next cycle) and The Covenant +253. Backup `saves/bitburnerSave_pre-install12_BN10_2026-11-07.json.gz` (00:13, gzip
+checked, player parsed, node 10, 54 augs, 0 queued, 5 sleeves, 4 from The Covenant, memory all 100, SHA-256
+fc6aee08dbc59ad4a8eb67d9c595442f63d1647342efd935126906fedae915b0). `aug_install.js --install` with $40.8t
+(`aug_install_status.json`): donated $743b to The Black Hand, bought 17 (ENM Core V3, ENM DMA, ENM Analyze Engine,
+Unstable Circadian Modulator, SPTN-97, Graphene Bone Lacings, Graphene Bionic Arms, Synthetic Heart, Graphene
+BrachiBlades, Synfibril Muscle, Eloquence, Neurotrainer III, Golden Tongue, three Hacknet, INFRARET), none failed, no
+NeuroFlux; home 2PB, 7 cores; installed. After (autosave 00:17-00:19, status files): **71 installed, 0 queued**,
+hacking 2702 five minutes in, cash $3.6b; sleeves, player controller, MCP, capital and buyer status all fresh; player at
+the gym for the 75 physical baseline (normal rebuild). `metrics.py cycles`: previous cycle 25.7h, rebuild hacking 0.29h,
+rep rate 13.6h; rep earned BitRunners 5.4m, NiteSec 3.79m, The Covenant 3.74m, The Syndicate 3.35m, Daedalus 635k;
+favor banked (tracked) The Syndicate +74.4, BitRunners +67.2, Speakers +59.1. New cycle not yet measured. **Config
+(bn10 profile, pushed):** `covenantTarget` false (nothing left to buy there; its training ranks above faction work);
+`favorTarget` Daedalus, so the controller works Daedalus to favor 150, then the next install donates for The Red
+Pill's rep; run target marks the 4th sleeve done and drops the Covenant invite step. Next: rejoin Daedalus ($100b),
+read its favor, work it to 150, install, donate, buy The Red Pill.
 
 **BN10 check 2026-11-07 21:15 Pacific (PC clock 22:15), 2-hourly task: steady, no changes.** Not a stand-aside
 run (no session running). Live (autosave summary, sleeve/buyer/readiness status and metrics 21:15): BN10, cash

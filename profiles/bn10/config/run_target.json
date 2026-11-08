@@ -1,6 +1,6 @@
 {
   "goal": "BN10: SF10.1 and Covenant sleeves (first $10t)",
-  "updated": "2026-11-07",
+  "updated": "2026-11-08",
   "steps": [
     {
       "label": "NiteSec gate",
@@ -20,35 +20,15 @@
       }
     },
     {
-      "label": "Covenant invite",
-      "metrics": [
-        {
-          "kind": "installed",
-          "target": 20
-        },
-        {
-          "kind": "money",
-          "target": 75000000000.0
-        },
-        {
-          "kind": "hacking",
-          "target": 850
-        },
-        {
-          "kind": "combat",
-          "target": 850
-        }
-      ]
-    },
-    {
-      "label": "Fourth Covenant sleeve (3 bought 2026-11-07)",
+      "label": "Fourth Covenant sleeve (bought 2026-11-07 23:33, memory 100)",
       "metric": {
         "kind": "money",
         "target": 1e+16
-      }
+      },
+      "done": true
     },
     {
-      "label": "Red Pill: Daedalus favor 150, install, donate for 5m rep"
+      "label": "Red Pill: Daedalus favor 150 (work), install, donate for 5m rep"
     },
     {
       "label": "World Daemon hacking 6000",
@@ -61,7 +41,7 @@
       "label": "World Daemon: stop for Ken"
     }
   ],
-  "augWeightsWhy": "Covenant gate met 2026-11-07 (joined, 3 sleeves bought, memory 100). Next gates are Daedalus for The Red Pill and hacking 6000 for the World Daemon, so hacking and faction rep lead; combat now weighs little.",
+  "augWeightsWhy": "All four affordable Covenant sleeves bought by 2026-11-07 (5th is $100q). Remaining gates: Daedalus favor and rep for The Red Pill, then hacking 6000 for the World Daemon, so hacking and faction rep lead; combat weighs little.",
   "augWeights": {
     "hacking": 1,
     "strength": 0.2,

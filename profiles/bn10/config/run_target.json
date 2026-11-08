@@ -28,7 +28,8 @@
       "done": true
     },
     {
-      "label": "Red Pill: Daedalus favor 150 (work), install, donate for 5m rep"
+      "label": "Red Pill installed 2026-11-08 01:16 (install 13)",
+      "done": true
     },
     {
       "label": "World Daemon hacking 6000",
@@ -41,7 +42,7 @@
       "label": "World Daemon: stop for Ken"
     }
   ],
-  "augWeightsWhy": "All four affordable Covenant sleeves bought by 2026-11-07 (5th is $100q). Remaining gates: Daedalus favor and rep for The Red Pill, then hacking 6000 for the World Daemon, so hacking and faction rep lead; combat weighs little.",
+  "augWeightsWhy": "Four Covenant sleeves bought and The Red Pill installed (2026-11-08). Only hacking 6000 for the World Daemon remains, so the hacking multiplier leads (level scales with it linearly, with exp only logarithmically); faction rep next, combat little.",
   "augWeights": {
     "hacking": 1,
     "strength": 0.2,

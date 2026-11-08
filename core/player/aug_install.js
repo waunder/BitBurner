@@ -12,16 +12,20 @@ export async function main(ns) {
   })))
   const config = JSON.parse(ns.read("player_activity_config.json") || "{}")
   // Factions past the favor threshold sell rep for cash, so rep stops limiting their augmentations.
-  const donating = player.factions.filter((faction) => s.getFactionFavor(faction) >= ns.getFavorToDonate())
+  // The game refuses donations to the gang's own faction; the readiness file names it (no ns.gang RAM here).
+  const gangFaction = JSON.parse(ns.read("augmentation_readiness.json") || "{}").gangFaction ?? null
+  const donating = player.factions.filter((faction) => faction !== gangFaction && s.getFactionFavor(faction) >= ns.getFavorToDonate())
   const donations = donationPlan(offers, owned, player.money, player.mults.faction_rep, donating)
   let money = player.money
+  const made = []
   for (const gift of donations) {
     if (!flags.dry && !s.donateToFaction(gift.faction, gift.amount)) continue
+    made.push([gift.faction, gift.amount])
     money -= gift.amount
     for (const item of offers) if (item.faction === gift.faction) item.rep = flags.dry ? gift.rep : s.getFactionRep(gift.faction)
   }
   const { plan } = planPurchases(offers, owned, money, 1.9, config.priorityAugs || [])
-  const status = { ts: Date.now(), money: player.money, donations: donations.map((gift) => [gift.faction, gift.amount]), plan: plan.map((item) => [item.name, item.faction, item.price]), bought: [], failed: [], neuroflux: 0, fluxDonated: 0, homeRam: 0, homeCores: 0, installed: false }
+  const status = { ts: Date.now(), money: player.money, donations: made, plan: plan.map((item) => [item.name, item.faction, item.price]), bought: [], failed: [], neuroflux: 0, fluxDonated: 0, homeRam: 0, homeCores: 0, installed: false }
   if (!flags.dry) {
     for (const item of plan) (s.purchaseAugmentation(item.faction, item.name) ? status.bought : status.failed).push(item.name)
     const sellers = player.factions.filter((faction) => s.getAugmentationsFromFaction(faction).includes(NEUROFLUX))

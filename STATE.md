@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-08 00:20 PST (01:20 on the PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-08 01:20 PST (02:20 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -12,6 +12,36 @@ DevTools, Remote API status files.
 > game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
+
+**BN10 install 13 ran 2026-11-08 01:16 Pacific (PC clock 02:16), 2-hourly task: The Red Pill installed.** Not a
+stand-aside run (no session running). Before (autosave summary, readiness 01:14, metrics 01:15): BN10, cash $315t,
+hacking 3444, karma -54.3k, 71 installed, 0 queued, 9 factions, player idle at the gym (strength; no actionable target).
+**Daedalus favor was already 168** (above 150), so the readiness plan was "donate $1.14t to Daedalus, buy The Red Pill".
+Measured, 12 samples 00:20 to 01:15: rep/h BitRunners 233k, NiteSec 176k, The Syndicate 172k, Daedalus 121k; hacking exp
+43.1b/h, karma -28.4/h, cash 361t/h, MCP rate 77.2b/s average 63.9b/s, share 1.55. Trend: `n/a` on every line (cycle
+1.0h, too short). Advisor: **build** ("nothing to install; value lies in factions not yet joined"); decision:
+**install, differs**: The Red Pill is the last gate before the World Daemon and the cycle was only 1h old, so the install
+cost about 40b hacking exp. Backup `saves/bitburnerSave_pre-install13_BN10_2026-11-08.json.gz` (gzip checked, player
+parsed, node 10, 71 augs, 0 queued, 5 sleeves, SHA-256 8ae011f49accbf4960baeb380a1c258a96cdb0da47999b58fe40ba5034624b26).
+`aug_install.js --install` (`aug_install_status.json`): donated to Daedalus, bought **The Red Pill**, then **8 NeuroFlux**
+levels ($50.9t donated for them), home 2PB / 7 cores unchanged; installed. The dry run had also planned 13 Black Hand
+augmentations (Hydroflame Left Arm and others) after a $742b Black Hand donation, but the live donation was refused (The
+Black Hand is the gang's faction, and the game refuses donations to it), so they dropped out. Install 12's record of a
+"$743b Black Hand donation" was the same planned-not-made entry. **Fixed** `core/player/aug_install.js`: the gang faction
+(read from `augmentation_readiness.json`, no ns.gang RAM) is no longer a donation target, and `donations` in the status
+now lists only donations that went through; 547 tests pass in build/bn10. After (autosave 01:18, game `ps` 01:18): **72
+installed, 0 queued, The Red Pill installed**; all residents running (MCP, steward, money, stack_manager, HUD, run_report,
+player controller, xp_filler, faction_join, metrics_logger, dnet_root, sleeve_controller, sleeve_buyer, capital_manager,
+gang-controller, cct_watcher). **World Daemon: `w0r1d_d43m0n` now exists in the save, required hacking 6000, not rooted;
+not ready.** `metrics.py cycles`: the closed cycle ran 1.01h (00:14 to 01:16); new cycle not yet sampled. Run target:
+Red Pill step marked done, pushed.
+
+**Planning note for the 6000 gate (estimate from the hacking formula, not measured).** Level is about
+mult x (32 ln(exp) - 200). At 40.4b exp and level 3444 the multiplier is about 5.9 (before the +8% from NeuroFlux). A 26h
+cycle at about 43b/h gives roughly 1.1t exp, which at the new multiplier (about 6.4) is still only about 4400. Reaching
+6000 needs the hacking multiplier up by roughly 35-50% more (NeuroFlux levels, the remaining hacking augmentations, The
+Black Hand's via gang rep) and long cycles, since exp counts only logarithmically. Next runs should judge installs by
+hacking multiplier gained against hacking exp lost.
 
 **Gang change 2026-11-08 (Ken session; Ken away overnight, left it in the agent's hands).** In reputation mode the
 gang had spent over 95% of its time with all 9 members on Ethical Hacking: 1.9 respect/s. That was the 0.998/0.999

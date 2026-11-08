@@ -44,6 +44,8 @@ about 8.4h at 497t/h, so near 23:40 Pacific) unless rep gain decelerates sharply
 BitNode, an extra install cycle does not. Share A/B: already run 2026-11-05 (docs/experiments.md, x1.48 rep, kept
 on); the task prompt's "not yet run" note is stale.
 
+**Sleeve 0 augmentations bought by Ken, 2026-11-07 morning Pacific (manual).** Ken bought every augmentation available to the first sleeve. No script buys sleeve augmentations (no `purchaseSleeveAug` anywhere), so a cash dip around then is this. Same session: gang objective set to reputation, gang gear buying on (bn10 `gang_capital_policy.json`, cheap useful gear under 0.01% of cash), `mcp_money` shows donations, HUD wraps at 48 characters and caps its height to the game window.
+
 **Gang created 2026-11-07 about 09:26 Pacific (Claude Code session, Ken's choice).** New `gang_create.js` (core/gang, in `startup.js` in place of `gang-controller.js`) created The Black Hand hacking gang at karma -54k and started `gang-controller.js` (3 members training hacking, respect mode). **Discovery:** creating a gang sets that faction's rep to 0 (bitburner-src `PlayerObjectGangMethods.ts` `startGang`: `fac.playerReputation = 0`). The Black Hand lost about 1.09m rep and its pending +38.8 favor; its 183 favor stays, so donations still work. In practice nothing was lost: all 10 augmentations The Black Hand sells were already owned (save export checked against bitburner-src `Augmentations.ts`), and NeuroFlux is sold by factions with more rep. As the gang faction it now offers most augmentations, paid for with gang respect or donation. In a future BitNode, check what the faction still sells first.
 
 **BN10 check 2026-11-07 13:15 Pacific (PC clock 14:15), 2-hourly task: joined The Covenant, 3 Covenant sleeves

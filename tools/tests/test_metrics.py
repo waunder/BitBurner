@@ -176,7 +176,7 @@ class TextTests(unittest.TestCase):
         self.assertNotIn("before:", M.rates_text(s, R1 + HOUR, R1 + 2 * HOUR, 0))
 
     def test_parse_time_defaults_to_pacific(self):
-        self.assertEqual(M.parse_time("2026-11-05T17:30"), M.parse_time("2026-11-06T01:30+00:00"))
+        self.assertEqual(M.parse_time("2026-11-05T17:30"), M.parse_time("2026-11-06T00:30+00:00"))
         self.assertEqual(M.pt(M.parse_time("2026-11-05T17:30")), "2026-11-05 17:30 PT")
 
     def test_load_missing_file(self):

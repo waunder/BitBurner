@@ -9,7 +9,7 @@ in the game's `metrics_log.txt`), read with `tools/metrics.py`:
 
 `rates` prints the window and, by default, the equal-length window just before
 it (`--before MIN` changes that; `--before 0` drops it). Times without an
-offset are Pacific (UTC-8). A window that crosses an install keeps only the
+offset are BC time (UTC-7 year-round, the PC clock). A window that crosses an install keeps only the
 later cycle. Compare windows on the same activity and faction; note anything
 else that changed in between.
 

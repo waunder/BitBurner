@@ -1,7 +1,8 @@
 """Measured rates from the game's metrics time series (metrics_logger.js).
 
 Reads runtime/metrics_log.txt: one JSON sample every 5 minutes. Times print in
-Pacific (UTC-8; the PC clock is BC time, UTC-7). Rates are least-squares
+Ken's local time, BC time (UTC-7 year-round; BC no longer changes clocks), the same as the PC
+clock. Rates are least-squares
 slopes over the samples in a window, within one install cycle only.
 
     python tools/metrics.py pull                      fetch the log via the bb_remote daemon
@@ -23,7 +24,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 LOG = REPO / "runtime" / "metrics_log.txt"
-PACIFIC = timezone(timedelta(hours=-8), "PT")
+PACIFIC = timezone(timedelta(hours=-7), "PT")  # BC time, UTC-7 year-round; matches the PC clock
 HOUR_MS = 3_600_000
 ROLL_MS = 30 * 60_000
 

@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-08 01:20 PST (02:20 on the PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-08 03:20 PST (04:20 on the PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -12,6 +12,29 @@ DevTools, Remote API status files.
 > game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
+
+**BN10 install 14 ran 2026-11-08 03:16 Pacific (PC clock 04:16), 2-hourly task: for Illuminati favor, toward QLink.**
+Not a stand-aside run (no session running). Before (autosave summary 03:15, readiness and metrics 03:10-03:15): BN10,
+cash $1.07q, hacking 3893 (required for `w0r1d_d43m0n` 6000; World Daemon not ready), karma -54.4k, 72 installed, 1
+queued (The H4mmer of Daedalus), 11 factions; **Illuminati joined this cycle**, player on Illuminati hacking work (rep 829k,
+QLink gap 2.9m, about 5h). Measured, 12 samples 02:15 to 03:10: rep/h Illuminati 570k, Daedalus 317k, BitRunners 300k,
+NiteSec 226k, The Syndicate 214k; hacking exp 47.5b/h, karma -32/h, cash 604t/h, MCP rate 324b/s average 144b/s, share
+1.55. Trend: `n/a` on every line (cycle 1.9h, too short). Advisor: **install** ("best next QLink adds +11.7%/h, under the
+cycle's +12.3%/h"); decision: **install, agree**, for a reason it does not weigh: Illuminati favor 0 banks about +178,
+so next cycle a donation buys QLink (+75% hacking) at once instead of 5h of rep work. By the level formula
+(mult x (32 ln exp - 200), multiplier about 6.4 now) 6000 is out of reach by exp alone (about 2.5e15 needed); with QLink
+(about 11.2) roughly 10b exp suffices, a few hours of rebuild. Backup `saves/bitburnerSave_pre-install14_BN10_2026-11-08.json.gz`
+(gzip checked, player parsed, node 10, 72 augs, 1 queued, 5 sleeves, SHA-256
+0b1b380e9e28c968b6648f8eef325001b9290553f2fc7a0716b26fee26a6ecb8). `aug_install.js --install` (`aug_install_status.json`):
+bought FocusWire, ADR-V2 Pheromone Gene, Neuregen Gene Modification (The Black Hand), **5 NeuroFlux** ($92.5t donated
+for them), home 2PB / 7 cores unchanged; installed. After (game `ps` 03:19, readiness 03:17): **76 installed, 0 queued**,
+cash $574m; all residents running (MCP, supervisor, crawler, steward, money, stack_manager, HUD, run_report, player
+controller, xp_filler, faction_join, metrics_logger, dnet_root, sleeve_controller, sleeve_buyer, capital_manager,
+gang-controller, cct_watcher). New cycle not yet sampled (`metrics.py cycles` next run). **Next:** once Illuminati
+re-invites (hacking 1500, combat 1200, $150b; last cycle this took under 2h), run `aug_install.js` (no flag buys
+without installing) to donate and buy QLink and anything else Illuminati offers, then install. Run target: step added.
+Note: `metrics.py pull` failed ("Separator is found, but chunk is longer than limit"; `metrics_log.txt` is 1.0MB), but
+the daemon's own pull kept `runtime/metrics_log.txt` current (sample age 5 min), so the summary is valid.
 
 **BN10 install 13 ran 2026-11-08 01:16 Pacific (PC clock 02:16), 2-hourly task: The Red Pill installed.** Not a
 stand-aside run (no session running). Before (autosave summary, readiness 01:14, metrics 01:15): BN10, cash $315t,

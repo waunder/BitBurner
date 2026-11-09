@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-08 20:16 Pacific (PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-08 22:20 Pacific (PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -12,6 +12,22 @@ DevTools, Remote API status files.
 > game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
+
+**2026-11-08 22:20 Pacific, 2-hourly task, BN10 run 2: NiteSec joined; first install held one more check.** Not a
+stand-aside run (no session running). Live (autosave summary, game `ps`, readiness and sleeve status 22:14-22:18): BN10,
+$62.7b, hacking 214, karma -41.2k, 0 installed, 0 queued, factions **NiteSec** (rep 934), Tetrads, Slum Snakes, Tian Di
+Hui, CyberSec; player on Tetrads field work for Bionic Arms (96k rep short). Every resident running (same list as
+20:16). Sleeves 0-4 on Homicide (29% chance, shock 1.9). Measured, 13 samples 21:15 to 22:15: rep/h Tetrads 3.99k,
+NiteSec 1.32k, CyberSec 1.3k, Tian Di Hui 1.3k, Slum Snakes 151; hacking exp 117m/h (5.01 levels/h), karma -5.15k/h,
+cash 7.24b/h, MCP rate 38.2m/s average 36.4m/s, share 1.47. Trend: `cash/h -12.7b>-7.76b>7.24b ACCELERATING | MCP
+41.2m>31.5m>38.2m STEADY | hackExp/h 60.3m>116m>117m STEADY | lvl/h 6.98>8.27>5.01 context | rep work Tetrads
+3.08k>3.63k>3.99k ACCELERATING | rep best Tetrads ACCELERATING`. Nothing decelerating. Advisor: **wait** (31m for S.N.A,
++14.7%/h vs cycle +2.4%/h); installPlan 7 augs, $2.57b (Tetrads, Tian Di Hui, CyberSec), no factions held. Decision:
+**no install yet**, agree. Why: rep is still accelerating, the next aug is 31m out, NiteSec rep is only 934 (none of its
+augs reachable this cycle anyway), and karma reaches -54k for the gang in about 2.5h at -5.15k/h; an install now also
+throws away the purchased-server fleet (rebuild took about 6h last cycle) for a +30% weighted batch. Plan: install at the
+next check (about 00:15) unless the advisor still shows a better-than-cycle next aug; export and validate the save
+first. World Daemon: not present (0 installed, no Red Pill). Share A/B not run (install due next check).
 
 **2026-11-08 20:16 Pacific, 2-hourly task, BN10 run 2: steady, no changes.** Not a stand-aside run (no session
 running). Live (autosave summary, game `ps`, readiness and sleeve status 20:14-20:16): BN10, $47.4b, hacking 201, karma

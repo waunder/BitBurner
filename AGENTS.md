@@ -63,6 +63,9 @@ real in-game/manual action requires Ken; check it off after confirmation.
 
 ## Operating facts worth keeping in working memory
 
+- Shared words with Ken (use them exactly): a **run** is one whole BitNode playthrough (e.g. BN10 run 2);
+  a **cycle** is install to install. "Next install" ends the cycle; "next run" means a new BitNode.
+  Experiments compare cycles within one run unless stated.
 - The Steam save is the live environment; use the disposable browser save for
   new or destructive-path testing whenever practical.
 - Netscript does not hot-reload. Source changes require the relevant restart

@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-09 12:16 Pacific (PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-09 14:18 Pacific (PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -12,6 +12,38 @@ DevTools, Remote API status files.
 > game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
+
+**BN10 run 2, install 2 ran 2026-11-09 14:16 Pacific, 2-hourly task: 9 augmentations, 23 installed.** Not a
+stand-aside run (no session running). Before (metrics sample 14:10, game `ps` 14:15, readiness 14:14, autosave): BN10,
+$170b to $177b, hacking 270, str/def/dex/agi 103/103/109/114, karma -58.7k, 14 installed, 0 queued. Every resident
+running (19 plus gang-controller). Player on Tetrads field work for Bionic Arms (+54.6k rep to go). Measured, 13
+samples 13:10 to 14:10: rep/h NiteSec 37.4k (gang), Tetrads 11.8k, Tian Di Hui 2.54k, CyberSec 2.25k, Slum Snakes
+1.31k; hacking exp 306m/h (6.92 levels/h), karma -288/h, cash 51.1b/h, MCP rate 72.8m/s average 65m/s, share 1.5.
+Trend: `cash/h -1.53b>7.26b>51.1b ACCELERATING | MCP 58.2m>103m>72.8m STEADY | hackExp/h 146m>268m>306m ACCELERATING |
+lvl/h 9.05>9.52>6.92 context | rep work Tetrads 12.1k>11.3k>11.8k STEADY | rep best NiteSec SWITCH`. Nothing
+decelerating. Advisor: **wait** 1.2h for Bionic Arms (+19.2%/h vs cycle +6.9%/h; batch +48.5%, cycle 7.3h).
+Decision: **install, disagree**. The advisor's 1.2h divides the gap by `repPerHour` 45.8k, which is the sum over
+factions; Bionic Arms is Tetrads rep at 11.8k/h, so about 4.6h, and +21% over 4.6h is below the cycle's +6.9%/h. As a
+10th purchase it would also cost about 1.9^9 times its base, out of reach of $51b/h. Installing now also meets the
+Covenant's 20-installed gate. (Advisor follow-up: it should use the next augmentation's faction rate, not the total.)
+`capital_manager.js` killed 14:15 so it would not spend the cash. Backup
+`saves/bitburnerSave_pre-install2_BN10run2_2026-11-09.json.gz` (gzip checked, player parsed, node 10, 14 augs, 0 queued,
+6 sleeves, $177b, hacking 270, SHA-256 1c10bd6f2f979eac4098c2adb3e2aec91032a8c6eec895c31f4f5b4db08c1bde).
+`aug_install.js` (buy only) bought The Shadow's Simulacrum, Neural-Retention Enhancement, Embedded Netburner Module,
+Eloquence Module, Magnetism Amplifier, Neurotrainer III, Nanofiber Weave, Cranial Signal Processors - Gen II and
+DermaForce Particle Barrier, all from NiteSec; no donations, no NeuroFlux. `--install` then installed (home stays 16TB,
+2 cores). After (game `ps` 14:16, autosave 14:17): **23 installed, 0 queued**, BN10, $0.6m, hacking 1, karma -58.7k,
+NiteSec still joined (gang), player in Powerhouse Gym (strength, physicalTarget 75). Every resident restarted: MCP,
+supervisor, crawler, steward, mcp_xp, money, stack_manager, HUD, run_report, player controller, xp_filler,
+faction_join, metrics_logger, dnet_root, sleeve_controller, sleeve_buyer, capital_manager, gang-controller,
+cct_watcher. **`covenantTarget` set true** in `profiles/bn10/config/player_activity_config.json` (23 installs; build
+548/548 tests pass; the game copy already matched after the daemon sync). It stays inactive until cash reaches $37.5b
+and the gym estimate to 850 combat is under 48h, so it does not pull the player off faction work yet; the controller's
+14:17 status still showed false (written before the sync), not rechecked. `metrics.py cycles`: cycle 2 closed at
+7.27h, rebuild hacking 3.77h, rep rate 0.77h, rep earned NiteSec 75.8k, Tetrads 70.4k, Tian Di Hui 27.7k, CyberSec
+23.1k, Slum Snakes 13.2k; favor banked not yet computed (no new-cycle sample at 14:18). **Next:** check the rebuild
+and the cycle-2 favor line; Bionic Arms via NiteSec or Tetrads. World Daemon: not present (no Red Pill). Share A/B:
+already recorded 2026-11-05; not repeated.
 
 **2026-11-09 12:16 Pacific, 2-hourly task, BN10 run 2: steady, no changes.** Not a stand-aside run (no session
 running). Live (metrics sample 12:15, game `ps` 12:16, readiness 12:15): BN10, $59.7b, hacking 254, str/def/dex/agi

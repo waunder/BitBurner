@@ -3,7 +3,7 @@
   "override": "auto",
   "physicalTarget": 75,
   "charismaTarget": 0,
-  "covenantTarget": false,
+  "covenantTarget": true,
   "covenantCloseFraction": 0.5,
   "priorityAugs": ["Bionic Arms", "Neuroreceptor Management Implant"],
   "favorTarget": "Daedalus",

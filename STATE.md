@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-09 04:20 Pacific (PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-09 07:05 Pacific (PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -12,6 +12,38 @@ DevTools, Remote API status files.
 > game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
+
+**BN10 run 2, install 1 ran 2026-11-09 06:59 Pacific, 2-hourly task: 13 augmentations and 2 NeuroFlux levels.** Not a
+stand-aside run (no session running). Before (metrics sample 06:15, game `ps` 06:15, readiness 06:14-06:58, gang
+status 06:15): BN10, $209b at 06:15, hacking 239, combat 97-98, karma -55.5k, 0 installed, 0 queued; player on Tetrads
+field work. Every resident running. Gang (NiteSec): 6 members, respect 578, wanted 72.8, penalty 0.89, members cycling
+through cleanup as designed after the 04:16 fix. Measured, 12 samples 05:20 to 06:15: rep/h Tetrads 6.08k, Tian Di Hui
+2.29k, CyberSec 2.29k, Slum Snakes 1.84k; hacking exp 222m/h (1.93 levels/h), karma -392/h, cash 144b/h, MCP rate
+28.9m/s average 39.3m/s, share 1.5. Trend: `cash/h -12.9b>-79.8b>144b STEADY | MCP 56.5m>38.5m>28.9m DECELERATING |
+hackExp/h 220m>222m>222m STEADY | lvl/h 2.7>2.29>1.93 context | rep work Tetrads 5.17k>5.84k>6.08k STEADY | rep best
+Tetrads STEADY`. MCP decelerating: cause not checked (likely the target drained or retargeted as hacking crept up); it
+did not matter, since the install resets the targets. Advisor at 06:14: **wait** 20m for Cranial Signal Processors -
+Gen I (CyberSec, +4.9% weighted). Waited: CyberSec rep came at about 2.4k/h, not the 6.1k/h the advisor assumed (that
+is Tetrads' rate), so it took about 40m. Cash fell $209b to $125b from 06:15 to 06:35 while capital_manager bought cloud
+servers the install would discard, so `capital_manager.js` was killed at 06:35 (startup.js restarted it after the
+install). By 06:58 Cranial Signal Processors was in the plan; the advisor then said **wait** 8m for Augmented Targeting
+I (+3.8%, combat). Decision: **install, disagree**. Every short wait turns up another small augmentation, Augmented
+Targeting adds little to the run target, and the cycle (21.4h, batch +65.7% weighted) had run long. Backup
+`saves/bitburnerSave_pre-install1_BN10run2_2026-11-09.json.gz` (gzip checked, player parsed, node 10, 0 augs, 0 queued,
+6 sleeves, $186b, SHA-256 2d76a516c2342c9d71c436395b7bd20a860c607b4467d527a1c2e3fe605ded8e). `aug_install.js` (buy
+only, 06:58) bought Power Recirculation Core, Cranial Signal Processors - Gen I, Speech Processor Implant,
+HemoRecirculator, S.N.A, Nuoptimal Nootropic Injector, ADR-V1 Pheromone Gene, Speech Enhancement, BitWire, Synaptic
+Enhancement Implant, LuminCloaking-V1, Neurotrainer I and Wired Reflexes, plus 2 NeuroFlux levels; no donations (no
+favor yet). `aug_install.js --install` then spent the remaining $34b on home RAM and cores (**home 16TB, 2 cores**) and
+installed. After (game `ps` 07:00, autosave 07:02): **14 installed, 0 queued**, karma -55.9k, hacking 85, cash $1.7m,
+the player in Powerhouse Gym for strength (controller's physicalTarget 75), and every resident running (MCP, supervisor,
+crawler, steward, mcp_xp, money, stack_manager, HUD, run_report, player controller, xp_filler, faction_join,
+metrics_logger, dnet_root, sleeve_controller, sleeve_buyer, gang-controller, cct_watcher, capital_manager). `metrics.py
+cycles`: cycle 1 closed at 21.39h (logged 87%), rep earned Tetrads 69.7k, Tian Di Hui 23.8k, CyberSec 22.2k, Slum
+Snakes 9.27k, NiteSec 2.24k, favor banked none; the new cycle has no rebuild figures yet. **Next:** watch the rebuild
+(hacking, MCP, faction rejoin); the install set sleeves back to shock 100 with no stats (`Sleeve.prestige`), so sleeve work restarts slowly. Gang
+respect and members survive. World Daemon: not present (14 installed, no Red Pill). Share A/B not run (install this
+check).
 
 **2026-11-09 04:20 Pacific, 2-hourly task, BN10 run 2: gang cleanup deadlock fixed; install at next check.** Not a
 stand-aside run (no session running). Live (metrics sample 04:15, game `ps` 04:15, readiness 04:12, gang status

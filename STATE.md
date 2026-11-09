@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-09 14:18 Pacific (PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-09 16:16 Pacific (PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -19,6 +19,17 @@ DevTools, Remote API status files.
 > assessment): installs every ~2h cap NiteSec rep near 0.4-0.8m and shut out the 15 augs above 1m rep (~62% of
 > NiteSec's value); gang rep cannot be bought with donations. At >=550k: install, buying at least 7 augs (Daedalus
 > needs 30 installed). Keep cash for that batch. The session that lands the advisor fix removes this note.
+
+**2026-11-09 16:16 Pacific, 2-hourly task, BN10 run 2: steady, no changes; install hold kept.** Not a stand-aside
+run (no session running; the Ken session that set the hold had stopped). Live (metrics sample 16:10, game `ps` 16:15,
+readiness 16:12, autosave): BN10, $16.8b to $19.9b, hacking 257-260, str/def/dex/agi 103/145/94/97, karma -64.8k, 23
+installed, 0 queued. Every resident running (19 plus gang-controller and cct_watcher). Player on Tetrads field work for
+Bionic Arms (+105k rep to go). Measured, 12 samples 15:15 to 16:10: rep/h NiteSec 136k (gang), Tetrads 16.3k, Tian Di
+Hui 4.03k, Slum Snakes 3.09k, CyberSec 1.41k; hacking exp 59.9m/h (30.7 levels/h), karma -1.99k/h, cash 13.9b/h, MCP
+rate 95.3m/s average 35.5m/s, share 1.41. Trend: `n/a` on every series (cycle 1.9h old). Advisor: **install** ("nothing
+left worth waiting for", batch +35.6%). Decision: **no install, disagree**, per the NiteSec hold: NiteSec rep 236k of
+the 550k gate; at the measured 136k/h that is about 2.3h, so the gate should clear around 18:30. World Daemon: not
+present (no Daedalus, no Red Pill). Share A/B: already recorded 2026-11-05; not repeated.
 
 **BN10 run 2, install 2 ran 2026-11-09 14:16 Pacific, 2-hourly task: 9 augmentations, 23 installed.** Not a
 stand-aside run (no session running). Before (metrics sample 14:10, game `ps` 14:15, readiness 14:14, autosave): BN10,

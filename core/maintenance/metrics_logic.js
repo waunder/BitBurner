@@ -34,11 +34,35 @@ export function workSummary(work) {
   }
 }
 
+/** Gang fields from a fresh gang_status.json (gang-controller.js), or null. */
+export function gangSummary(status) {
+  const g = status?.gang
+  if (!g) return null
+  const last = status.lastAscension
+  return {
+    faction: g.faction ?? null,
+    mode: status.mode ?? null,
+    cleanup: Boolean(status.cleanupMode),
+    members: num(status.members),
+    respect: num(g.respect),
+    respectGainRate: num(g.respectGainRate),
+    wanted: num(g.wantedLevel),
+    wantedGainRate: num(g.wantedLevelGainRate),
+    penalty: num(g.wantedPenalty),
+    territory: num(g.territory),
+    power: num(g.power),
+    factionRep: num(status.factionRep),
+    factionRepRate: num(status.observedFactionRepRate),
+    lastAscension: last ? { ts: num(last.ts), name: last.name ?? null, mult: num(last.mult) } : null,
+    equipmentBought: status.equipment?.bought ?? null,
+  }
+}
+
 /**
  * One sample. Stale or missing sources leave their fields null and are listed
  * in `stale` with their age in seconds (null age = missing), never copied.
  */
-export function buildSample({ now, resetAt, money, sources, player, sharePower, readiness, activity, mcp, ram, staleMs = STALE_MS }) {
+export function buildSample({ now, resetAt, money, sources, player, sharePower, readiness, activity, mcp, gang = null, ram, staleMs = STALE_MS }) {
   const stale = {}
   const readyOk = fresh(now, readiness, staleMs)
   const actOk = fresh(now, activity, staleMs)
@@ -46,6 +70,9 @@ export function buildSample({ now, resetAt, money, sources, player, sharePower, 
   if (!readyOk) stale.readiness = ageS(now, readiness)
   if (!actOk) stale.activity = ageS(now, activity)
   if (!mcpOk) stale.mcp = ageS(now, mcp)
+  // No gang status is normal before a gang exists: listed as stale only when the file is there but old.
+  const gangOk = fresh(now, gang, staleMs)
+  if (gang && !gangOk) stale.gang = ageS(now, gang)
   const favor = readyOk
     ? Object.fromEntries(Object.entries(readiness.favor || {}).map(([f, v]) => [f, num(typeof v === "object" ? v?.favor : v)]))
     : null
@@ -68,6 +95,7 @@ export function buildSample({ now, resetAt, money, sources, player, sharePower, 
     verdict: readyOk ? readiness.advice?.verdict ?? null : null,
     mcpRate: mcpOk ? num(mcp.rate) : null,
     mcpAvgRate: mcpOk ? num(mcp.avgRate) : null,
+    gang: gangOk ? gangSummary(gang) : null,
     ramMax: num(ram?.max),
     ramUsed: num(ram?.used),
     stale,

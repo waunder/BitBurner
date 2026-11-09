@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { buildSample, trimLog, msToNextTick, workSummary, fresh } from "./metrics_logic.js"
+import { gangSummary, buildSample, trimLog, msToNextTick, workSummary, fresh } from "./metrics_logic.js"
 
 const NOW = 1_000_000_000
 const base = {
@@ -83,4 +83,24 @@ test("trimLog keeps the tail only past keep + slack", () => {
 test("msToNextTick aligns to the interval", () => {
   assert.equal(msToNextTick(1000, 300), 200)
   assert.equal(msToNextTick(900, 300), 300)
+})
+
+test("gang status is summarised when fresh, nulled and listed when stale, ignored when absent", () => {
+  const now = 1_000_000_000
+  const gang = { ts: now - 1000, mode: "reputation", cleanupMode: false, members: 12, factionRep: 214511, observedFactionRepRate: 37.7,
+    lastAscension: { ts: now - 5000, name: "op-1", mult: 1.5, respect: 9 },
+    gang: { faction: "NiteSec", respect: 2.85e6, respectGainRate: 178, wantedLevel: 3.1e5, wantedLevelGainRate: 1.6, wantedPenalty: 0.9, territory: 0.14, power: 1 } }
+  const s = buildSample({ now, gang })
+  assert.equal(s.gang.faction, "NiteSec")
+  assert.equal(s.gang.respect, 2.85e6)
+  assert.equal(s.gang.penalty, 0.9)
+  assert.deepEqual(s.gang.lastAscension, { ts: now - 5000, name: "op-1", mult: 1.5 })
+  assert.equal(s.stale.gang, undefined)
+  const old = buildSample({ now, gang: { ...gang, ts: now - 20 * 60_000 } })
+  assert.equal(old.gang, null)
+  assert.equal(old.stale.gang, 1200)
+  const none = buildSample({ now })
+  assert.equal(none.gang, null)
+  assert.equal("gang" in none.stale, false)
+  assert.equal(gangSummary({}), null)
 })

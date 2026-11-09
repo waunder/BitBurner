@@ -4,11 +4,12 @@
  * Every 5 minutes, on the wall-clock boundary, appends one JSON line: money
  * and sinceInstall income, skills/exp/karma/city, share power, current work
  * and the controller's reason, faction rep/favor/installs/verdict from
- * augmentation_readiness.json, MCP rate, and RAM over home plus cloud.
+ * augmentation_readiness.json, MCP rate, gang respect/wanted/penalty/ascension
+ * from gang_status.json, and RAM over home plus cloud.
  * Stale source files are listed in `stale`, never copied.
  *
  * Writes: metrics_log.txt (bounded to the last KEEP lines, about 5 days).
- * Reads:  augmentation_readiness.json, player_activity_status.json, mcp_status.json.
+ * Reads:  augmentation_readiness.json, player_activity_status.json, mcp_status.json, gang_status.json.
  * Start:  run metrics_logger.js (opens no tail window; replaces a prior copy)
  * Local:  tools/metrics.py pull | summary | cycles | rates
  *
@@ -51,6 +52,7 @@ function sample(ns) {
     readiness: readJson(ns, "augmentation_readiness.json"),
     activity: readJson(ns, "player_activity_status.json"),
     mcp: readJson(ns, "mcp_status.json"),
+    gang: readJson(ns, "gang_status.json"),
     ram: ramTotals(ns),
   })
 }

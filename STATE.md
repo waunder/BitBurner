@@ -13,6 +13,13 @@ DevTools, Remote API status files.
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
 
+> **INSTALL HOLD for NiteSec rep (set 2026-11-09 16:20 PC clock, Ken session).** Do not install this cycle (started
+> 14:16) until **NiteSec rep is at least 550k** (check `augmentation_readiness.json` `factionRep.NiteSec`), even when
+> the advisor says "install now": the advisor ignores gang-faction rep gaps (known bug, fix pending). Reason (planner
+> assessment): installs every ~2h cap NiteSec rep near 0.4-0.8m and shut out the 15 augs above 1m rep (~62% of
+> NiteSec's value); gang rep cannot be bought with donations. At >=550k: install, buying at least 7 augs (Daedalus
+> needs 30 installed). Keep cash for that batch. The session that lands the advisor fix removes this note.
+
 **BN10 run 2, install 2 ran 2026-11-09 14:16 Pacific, 2-hourly task: 9 augmentations, 23 installed.** Not a
 stand-aside run (no session running). Before (metrics sample 14:10, game `ps` 14:15, readiness 14:14, autosave): BN10,
 $170b to $177b, hacking 270, str/def/dex/agi 103/103/109/114, karma -58.7k, 14 installed, 0 queued. Every resident

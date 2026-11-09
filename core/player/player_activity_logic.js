@@ -247,6 +247,8 @@ function repTarget(player, augmentation, config, only = null) {
   // A faction at the donation threshold sells rep for cash (aug_install.js), so working it, or any
   // other faction selling the same augmentation, for that rep wastes the time.
   const cashBought = new Set(targets.filter((item) => item.donatable === true).map((item) => item.name))
+  // The gang faction sells these; its rep comes from the gang, never from player work.
+  for (const name of augmentation?.gangSells || []) cashBought.add(name)
   // A name sold by several workable factions keeps a row per faction: the bundle score below
   // credits a faction with every name its rep reaches, so the cheapest route wins on value per rep.
   const eligible = targets

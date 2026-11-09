@@ -75,7 +75,7 @@ B2. **Gear in reputation mode.** Score items by projected respect gain per dolla
 (NUKE, Soulstealer, Hmap Node, Demon, Jack the Ripper) and the cha vehicles for every trained member whenever the
 item costs <= 1% of cash; rebuy straight after an ascension. Skip ordinary gear for a member whose next ascension
 ratio is within 0.05 of the threshold. Gang augmentations (Neuralstimulator > DataJack > BitWire, by respect per $)
-from a separate budget, policy field `gangAugCashFraction` (default 0.05 of cash per purchase decision). Money
+from a separate budget, policy field `gangAugCashFraction` (default 0.05; BN10 0.3, because cash sits near $20b while capital_manager spends, and a $6.4b Neuralstimulator would otherwise need $128b on hand). Money
 mode keeps its payback rule.
 
 B3. **Wanted band.** Policy `reputationCleanupEnter` 0.97, `reputationCleanupExit` 0.985. Ascension penalty floor
@@ -98,8 +98,24 @@ ascension count this cycle, our territory power and the strongest rival's power.
 | M6 | Advisor | says "wait" while a valued gang aug is within 12h; no install advice before 4h; next cycle reaches >= 1.5m gang rep |
 | M7 | No regression | all tests pass; cash rate within 10% of baseline; no script errors in 3h |
 
+Expected at deploy (not a fault): at 16:26 seven members were already past x1.25 (x1.28-x1.48), so the new
+controller ascends about seven in a row, at least 90 s apart, each followed by a rootkit rebuy. Only one
+ascension was logged 16:20-16:26 under the x1.5 rule (...4767 x1.50 at 16:19; multipliers now x16.7-x28.8).
+The new scripts start after the install, so no ascension lands just before it (the install cuts ascension
+points by 5%).
+
 ## Deploy
 
 At NiteSec >= 550k this cycle: merge `gang-planner` into main, push changed scripts (daemon sync), restart
 gang-controller, augmentation_readiness, player and sleeve controllers, then run the install per STATE (backup
 first). Remove the STATE install hold in the same commit as A2. Record results in STATE and here.
+
+## Review notes (2026-11-09, before merge)
+
+- Coder A left the advisor's cash rate unwired (money only). Wired from `gang_status.json`
+  `capital.observedCashRate` (fresh within 10 min); falls back to money only.
+- BN10 `gangAugCashFraction` raised 0.05 -> 0.3 (see B2). `planReputationGear` keeps a running balance.
+- Not covered by tests: the controller wiring (gear loop, ascension cooldown, status fields). Watch the first
+  minutes after deploy: `gang_status.json` `equipment.boughtItems`, `gearTotals`, `ascensionCount`.
+- A3's batch stop is in `planPurchases` but `aug_install.js` still calls it with defaults (unchanged behaviour).
+- 563 tests pass in the staged bn10 copy.

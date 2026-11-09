@@ -12,7 +12,7 @@
  */
 
 import { planPurchases } from "./aug_install_logic.js"
-import { DEFAULT_WEIGHTS, augValue, bestRepRate, installAdvice, multFactorNeeded, withDonations } from "./install_advisor_logic.js"
+import { DEFAULT_WEIGHTS, augValue, bestRepRate, factionRepRates, gangRepPerHour, installAdvice, multFactorNeeded, withDonations } from "./install_advisor_logic.js"
 
 const STATUS = "augmentation_readiness.json"
 const POLL_MS = 120_000
@@ -34,7 +34,7 @@ function unique(values) {
 
 // Shadow-mode install advice (install_advisor_logic.js). `previous` is the last
 // status, read before this run overwrites it, so rep and exp rates come from two samples.
-function advise(ns, { now, player, previous, factionRep, queued, plan, candidates }) {
+function advise(ns, { now, player, previous, factionRep, queued, plan, candidates, gangFaction = null }) {
   let weights = DEFAULT_WEIGHTS
   try { weights = JSON.parse(ns.read("run_target.json") || "{}").augWeights || DEFAULT_WEIGHTS } catch {}
   const statsCache = new Map()
@@ -56,15 +56,35 @@ function advise(ns, { now, player, previous, factionRep, queued, plan, candidate
     const seen = gaps.get(item.name)
     const donatable = Boolean(item.donatable)
     if (!seen || (donatable && !seen.donatable) || (seen.donatable === donatable && item.repGap < seen.repGap)) {
-      gaps.set(item.name, { repGap: item.repGap, donatable })
+      gaps.set(item.name, { repGap: item.repGap, donatable, faction: item.faction })
     }
   }
   const sampleHours = previous?.ok && previous.ts > 0 ? (now - previous.ts) / 3_600_000 : 0
   const repPerHour = bestRepRate(previous?.factionRep, factionRep, sampleHours)
+  const rates = factionRepRates(previous?.factionRep, factionRep, sampleHours)
   const reset = resetAt(ns)
+  // Gang tier: gang-faction gaps are timed by the gang's measured rate (gang_status.json).
+  let gangStatus = null
+  try { gangStatus = JSON.parse(ns.read("gang_status.json") || "null") } catch {}
+  const gangRate = gangFaction ? gangRepPerHour(gangStatus) : null
+  const gangGaps = new Map()
+  if (gangFaction) {
+    for (const item of candidates) {
+      if (item.faction !== gangFaction || inBatch.has(item.name) || ready.has(item.name) || item.repGap <= 0) continue
+      const seen = gangGaps.get(item.name)
+      if (!seen || item.repGap < seen.repGap) gangGaps.set(item.name, { name: item.name, repGap: item.repGap, price: item.price, value: value(item.name) })
+    }
+  }
+  // Cash rate: gang-controller.js measures it (capital.observedCashRate, $/s); a money delta here would be
+  // corrupted by spending. Without a fresh gang status, affordability falls back to money only.
+  const cashRate = Number(gangStatus?.capital?.observedCashRate)
+  const cashFresh = Number(gangStatus?.ts) > now - 10 * 60_000
+  const cashPerHour = cashFresh && Number.isFinite(cashRate) && cashRate > 0 ? cashRate * 3600 : null
   const advice = installAdvice({
     batch, cycleHours: reset ? (now - reset) / 3_600_000 : 0, repPerHour,
-    candidates: [...gaps].map(([name, { repGap, donatable }]) => ({ name, repGap, donatable, value: value(name) })),
+    candidates: [...gaps].map(([name, { repGap, donatable, faction }]) => ({ name, repGap, donatable, value: value(name), repPerHour: rates[faction] || null })),
+    gang: gangFaction ? { rate: gangRate, candidates: [...gangGaps.values()] } : null,
+    money: Number(player?.money) || 0, cashPerHour,
   })
   // Hacking exp rate only between samples within one cycle (an install resets exp).
   const prevExp = Number(previous?.hackingExp)
@@ -140,16 +160,20 @@ function assess(ns, previous = null) {
       donations: donated.gifts.map((gift) => [gift.faction, gift.amount]),
     }
     let advice
-    try { advice = advise(ns, { now, player, previous, factionRep, queued, plan, candidates: donated.candidates }) } catch (error) { advice = { verdict: "error", reason: String(error?.message || error) } }
+    try { advice = advise(ns, { now, player, previous, factionRep, queued, plan, candidates: donated.candidates, gangFaction }) } catch (error) { advice = { verdict: "error", reason: String(error?.message || error) } }
     // After advise(), which sets each one's value. Donatable ones stay listed, marked, so the
     // player controller can see them and skip them.
     const workCandidates = donated.candidates.filter((item) => item.canWorkForRep)
+    // Names the gang faction sells that we neither own nor have queued: its rep is the gang's, so
+    // player and sleeve work must not chase them (workCandidates drops those rows).
+    const gangSells = gangFaction ? unique(candidates.filter((item) => item.faction === gangFaction).map((item) => item.name)) : []
+    const gangRep = gangFaction ? factionRep[gangFaction] ?? null : null
     const workCandidate = workCandidates.find((item) => !item.donatable) || null
     return {
       ts: now, ok: true, resetAt: resetAt(ns), money, factionRep, favor, favorToDonate, hackingExp: Number(player?.exp?.hacking) || 0, advice,
       installedCount: installed.length, queuedCount: queued.length, queued, installPlan,
       factionCount: factions.length, candidate, workCandidate, workCandidates, donating,
-      gangFaction, candidatesConsidered: candidates.length,
+      gangFaction, gangSells, gangRep, candidatesConsidered: candidates.length,
     }
   } catch (error) {
     return { ts: now, ok: false, reason: String(error?.message || error), resetAt: resetAt(ns) }

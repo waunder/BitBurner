@@ -186,7 +186,7 @@ export function shouldEngageTerritoryClashes(territory, chances, minWin = 0.58, 
  * or above penaltyFloor (the caller passes the reputation band's cleanup entry in reputation mode).
  */
 export function shouldAscendMember({ cleanupMode, severeMode, territoryPowerMode,
-  multiplier, threshold = 1.5, respect, respectToDeduct, wantedLevel, penaltyFloor = 0.8 }) {
+  multiplier, threshold = 1.25, respect, respectToDeduct, wantedLevel, penaltyFloor = 0.8 }) {
   if (cleanupMode || severeMode || territoryPowerMode
     || !Number.isFinite(multiplier) || multiplier < threshold) return false;
   const projectedRespect = Math.max(1, respect - Math.max(0, respectToDeduct || 0));
@@ -222,4 +222,79 @@ export function cheapGearQualifies({ cost, stats = {}, cash, isHacking, fraction
   const used = isHacking ? ["hack", "cha"] : ["str", "def", "dex", "agi"];
   const helps = used.some((stat) => Number(stats[stat]) > 1);
   return helps && Number.isFinite(Number(cost)) && Number(cost) > 0 && Number(cost) <= Number(cash) * fraction;
+}
+
+const STAT_KEYS = ["hack", "str", "def", "dex", "agi", "cha"];
+
+/**
+ * Project a member with a piece of gear applied. Gear stats are multipliers (1.05 = +5%). A stat
+ * level is proportional to its multiplier at fixed exp (GangMember.updateSkillLevels:
+ * floor(mult x (32 ln(exp + 534.6) - 200))), so scaling the level by the item multiplier
+ * approximates the game's own recomputation. (The old version ADDED the multiplier to the level.)
+ */
+export function withEquipment(member, stats = {}) {
+  const boosted = { ...member };
+  for (const stat of STAT_KEYS) {
+    const mult = Number(stats[stat]);
+    if (Number.isFinite(mult) && mult > 0 && mult !== 1) boosted[stat] = (Number(boosted[stat]) || 0) * mult;
+  }
+  return boosted;
+}
+
+/** Equipment names by gang upgrade type (bitburner-src Gang/data/upgrades.ts, Enums.ts). */
+export const GANG_ROOTKITS = ["NUKE Rootkit", "Soulstealer Rootkit", "Hmap Node", "Demon Rootkit", "Jack the Ripper"];
+export const GANG_VEHICLES = ["Herrera Outlaw GTS", "Yaiba ASM-R250 Muramasa", "Rayfield Caliburn", "Quadra Sport R-7"];
+export const GANG_AUGMENTATIONS = ["Bionic Arms", "Bionic Legs", "Bionic Spine", "Brachi Blades", "Nanofiber Weave",
+  "Synthetic Heart", "Synfibril Muscle", "BitWire", "Neuralstimulator", "DataJack", "Graphene Bone Lacings"];
+
+export function equipmentCategory(name) {
+  if (GANG_ROOTKITS.includes(name)) return "rootkit";
+  if (GANG_VEHICLES.includes(name)) return "vehicle";
+  if (GANG_AUGMENTATIONS.includes(name)) return "augmentation";
+  return "other";
+}
+
+/** Count rootkits and gang augmentations a member (getMemberInformation) owns. */
+export function gearCounts(member) {
+  const owned = [...(member?.upgrades || []), ...(member?.augmentations || [])];
+  return { rootkits: owned.filter((n) => GANG_ROOTKITS.includes(n)).length,
+    augs: owned.filter((n) => GANG_AUGMENTATIONS.includes(n)).length };
+}
+
+/**
+ * Reputation-mode gear selection. Candidates: { item, member, cost, gain (projected respect gain),
+ * ascRatio (member's next ascension multiplier) }. Rules, spending against a running cash balance:
+ * - rootkits (and, for a hacking gang, charisma vehicles): bought for every member when cost <=
+ *   rootkitFraction x cash; any other ordinary gear only when it adds projected respect.
+ * - ordinary (non-augmentation) gear is skipped for a member within `ascendMargin` of ascending
+ *   (ascension wipes it).
+ * - gang augmentations: bought when cost <= augFraction x cash and they add respect.
+ * Ranked by respect gain per dollar (gain-less rootkits last, cheapest first); at most `maxPurchases`.
+ */
+export function planReputationGear(candidates, { cash, isHacking = true, rootkitFraction = 0.01,
+  augFraction = 0.05, ascendAt = 1.25, ascendMargin = 0.05, maxPurchases = 24, reserve = 0 } = {}) {
+  const score = (c) => (c.gain > 0 && c.cost > 0 ? c.gain / c.cost : 0);
+  const pool = candidates.filter((c) => Number.isFinite(c.cost) && c.cost > 0)
+    .map((c) => ({ ...c, category: equipmentCategory(c.item) }))
+    .filter((c) => c.category === "augmentation" || !(c.ascRatio >= ascendAt - ascendMargin))
+    .sort((a, b) => score(b) - score(a) || a.cost - b.cost);
+  const picked = [];
+  let balance = cash;
+  for (const c of pool) {
+    if (picked.length >= maxPurchases) break;
+    if (balance - c.cost < reserve) continue;
+    const auto = c.category === "rootkit" || (isHacking && c.category === "vehicle");
+    const ok = c.category === "augmentation"
+      ? c.gain > 0 && c.cost <= augFraction * balance
+      : (auto || c.gain > 0) && c.cost <= rootkitFraction * balance;
+    if (!ok) continue;
+    picked.push(c);
+    balance -= c.cost;
+  }
+  return picked;
+}
+
+/** True when at least minMs has passed since the last ascension (or none has happened). */
+export function ascensionCooldownElapsed(lastTs, now, minMs = 90_000) {
+  return !Number.isFinite(lastTs) || now - lastTs >= minMs;
 }

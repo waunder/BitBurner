@@ -1,6 +1,7 @@
 import { canBuildTerritoryPower, moneyModePriority, planMoneyTasks, planReputationTasks, planTerritoryPower,
   shouldAscendMember, shouldEngageTerritoryClashes, wantedCleanupPolicy, cheapGearQualifies,
-  reputationCleanupMode } from "./gang_logic.js";
+  reputationCleanupMode, withEquipment, planReputationGear, gearCounts, ascensionCooldownElapsed,
+  GANG_ROOTKITS } from "./gang_logic.js";
 
 /**
  * Gang v2: formula-driven money or faction-reputation, wanted, and territory control.
@@ -13,7 +14,9 @@ import { canBuildTerritoryPower, moneyModePriority, planMoneyTasks, planReputati
  */
 const C = {
   trainStat: 75,
-  ascendAt: 1.5,   // ascension resets exp and costs the member's respect; smaller gains are not worth it
+  ascendAt: 1.25,  // ascension resets exp and costs the member's respect; smaller gains are not worth it
+  ascendCooldownMs: 90_000,  // minimum time between ascensions (each deducts respect and wipes gear)
+  maxGearPurchasesPerLoop: 24,
   wantedReductionFraction: 0.001,
   severeWantedEnter: 0.05,
   severeWantedExit: 0.10,
@@ -66,24 +69,19 @@ function combatFloor(member) {
   return Math.min(member.str, member.def, member.dex, member.agi);
 }
 
-function withEquipment(member, stats) {
-  const boosted = { ...member };
-  for (const stat of ["hack", "str", "def", "dex", "agi", "cha"]) {
-    boosted[stat] = (boosted[stat] || 0) + (stats[stat] || 0);
-  }
-  return boosted;
-}
-
 function readCapitalPolicy(ns) {
   const safe = { phase: "augmentation", objective: "Accumulate cash for the final augmentation purchase review",
     allowEquipmentPurchases: false, augmentationCashTarget: null, territoryEnabled: false,
-    reputationCleanupEnter: 0.90, reputationCleanupExit: 0.95 };
+    reputationCleanupEnter: 0.90, reputationCleanupExit: 0.95, rootkitCashFraction: 0.01, gangAugCashFraction: 0.05 };
   const penalty = (value, fallback) => Number.isFinite(value) && value > 0 && value < 1 ? value : fallback;
   try {
     const raw = JSON.parse(ns.read(C.policyFile));
     const phases = new Set(["progression", "earning-capacity", "augmentation"]);
     const enter = penalty(raw.reputationCleanupEnter, safe.reputationCleanupEnter);
+    const fraction = (value, fallback) => Number.isFinite(value) && value > 0 && value <= 1 ? value : fallback;
     return {
+      rootkitCashFraction: fraction(raw.rootkitCashFraction, safe.rootkitCashFraction),
+      gangAugCashFraction: fraction(raw.gangAugCashFraction, safe.gangAugCashFraction),
       reputationCleanupEnter: enter,
       reputationCleanupExit: Math.max(enter, penalty(raw.reputationCleanupExit, safe.reputationCleanupExit)),
       phase: phases.has(raw.phase) ? raw.phase : safe.phase,
@@ -124,12 +122,14 @@ export async function main(ns) {
   let factionRep = null;
   let factionRepReadAt = 0;
   let lastAscension = null;
+  let ascensionCount = 0; // since this script started (an install restarts it), so roughly per cycle
   while (true) {
     while (ns.gang.canRecruitMember()) ns.gang.recruitMember(`operator-${Date.now()}`);
 
     const gang = ns.gang.getGangInformation();
-    const rivals = Object.entries(ns.gang.getAllGangInformation())
-      .filter(([name, info]) => name !== gang.faction && info.territory > 0);
+    const otherGangs = Object.entries(ns.gang.getAllGangInformation()).filter(([name]) => name !== gang.faction);
+    const strongestRivalPower = otherGangs.reduce((max, [, info]) => Math.max(max, Number(info.power) || 0), 0);
+    const rivals = otherGangs.filter(([, info]) => info.territory > 0);
     const clashes = rivals.map(([name, info]) => ({ territory: info.territory,
       chance: ns.gang.getChanceToWinClash(name) }));
     const clashPolicy = shouldEngageTerritoryClashes(gang.territory, clashes,
@@ -242,19 +242,25 @@ export async function main(ns) {
     // (the band deliberately runs well below the old 0.998 floor), else the old
     // attainable-penalty floor.
     const penaltyFloor = gangObjective === "reputation"
-      ? capitalPolicy.reputationCleanupEnter
+      ? capitalPolicy.reputationCleanupEnter - 0.02
       : (gang.respect / (gang.respect + 1)) * C.cleanupEnterAttainablePenalty;
     let ascendBest = null;
+    const ascRatios = new Map();
+    const cooledDown = ascensionCooldownElapsed(lastAscension?.ts, Date.now(), C.ascendCooldownMs);
     for (const plan of plans) {
       if (plan.choice?.task && plan.member.task !== plan.choice.task) ns.gang.setMemberTask(plan.member.name, plan.choice.task);
       const asc = ns.gang.getAscensionResult(plan.member.name);
       const mult = asc && (gang.isHacking ? asc.hack : asc.str);
-      const mayAscend = shouldAscendMember({ cleanupMode, severeMode: severeWantedMode,
+      ascRatios.set(plan.member.name, mult);
+      const mayAscend = cooledDown && shouldAscendMember({ cleanupMode, severeMode: severeWantedMode,
         territoryPowerMode: mode === "territory-power", multiplier: mult, threshold: C.ascendAt,
         respect: gang.respect, respectToDeduct: asc?.respect, wantedLevel: gang.wantedLevel, penaltyFloor });
       if (mayAscend && (!ascendBest || mult > ascendBest.mult)) ascendBest = { name: plan.member.name, mult, respect: asc.respect };
     }
-    if (ascendBest && ns.gang.ascendMember(ascendBest.name)) lastAscension = { ts: Date.now(), ...ascendBest };
+    if (ascendBest && ns.gang.ascendMember(ascendBest.name)) {
+      lastAscension = { ts: Date.now(), ...ascendBest };
+      ascensionCount++;
+    }
 
     const weightedChance = clashPolicy.weightedChance;
     const fight = territoryEnabled && mode === "territory-power" && clashPolicy.engage;
@@ -316,8 +322,50 @@ export async function main(ns) {
         : !phaseAllowsEquipment ? `${capitalPolicy.phase} phase does not buy equipment`
           : !bestEquipment ? "no unowned equipment candidate"
             : !roiQualified ? "candidate fails payback, cash-slice, cheap-gear, or reserve limit" : null;
-    const bought = purchaseAllowed && ns.gang.purchaseEquipment(bestEquipment.member, bestEquipment.item) ? bestEquipment : null;
-    const status = { ts: statusNow, mode, gangObjective, lastAscension, factionRep: Number.isFinite(factionRep) ? factionRep : null,
+    let bought = null;
+    let boughtItems = [];
+    let reputationGear = false;
+    if (gangObjective === "reputation") {
+      // Reputation mode: respect gain per dollar, several purchases per loop (see planReputationGear).
+      reputationGear = true;
+      const gate = Boolean(C.equipmentMasterEnabled && capitalPolicy.allowEquipmentPurchases && phaseAllowsEquipment);
+      if (gate && cash > 0) {
+        const maxFraction = Math.max(capitalPolicy.rootkitCashFraction, capitalPolicy.gangAugCashFraction);
+        const repCandidates = [];
+        for (const item of equipment) {
+          if (item.cost > cash * maxFraction) continue;
+          for (const member of members) {
+            if (isOwned(member, item.item)) continue;
+            const plan = plans.find((p) => p.member.name === member.name);
+            if (!plan?.trained) continue;
+            // Current task's respect, or the member's best respect task while they are on cleanup.
+            const taskName = plan.choice?.respect > 0 ? plan.choice.task : plan.respect?.task;
+            const taskInfo = tasks.find((t) => t.name === taskName);
+            const gain = taskInfo
+              ? projected(ns, gang, withEquipment(member, item.stats), taskInfo).respect - projected(ns, gang, member, taskInfo).respect
+              : 0;
+            repCandidates.push({ item: item.item, cost: item.cost, member: member.name, gain: Math.max(0, gain),
+              ascRatio: ascRatios.get(member.name) });
+          }
+        }
+        const picks = planReputationGear(repCandidates, { cash, isHacking: gang.isHacking,
+          rootkitFraction: capitalPolicy.rootkitCashFraction, augFraction: capitalPolicy.gangAugCashFraction,
+          ascendAt: C.ascendAt, maxPurchases: C.maxGearPurchasesPerLoop, reserve: augmentationTarget ?? 0 });
+        for (const pick of picks) {
+          if (ns.gang.purchaseEquipment(pick.member, pick.item)) boughtItems.push({ item: pick.item, member: pick.member, cost: pick.cost });
+        }
+        bought = boughtItems[0] || null;
+      }
+    } else {
+      bought = purchaseAllowed && ns.gang.purchaseEquipment(bestEquipment.member, bestEquipment.item) ? bestEquipment : null;
+      if (bought) boughtItems = [bought];
+    }
+    const gear = members.map((m) => ({ member: m.name, ...gearCounts(m) }));
+    const gearTotals = { rootkits: gear.reduce((s, g) => s + g.rootkits, 0), augs: gear.reduce((s, g) => s + g.augs, 0),
+      rootkitsPossible: members.length * GANG_ROOTKITS.length };
+    const status = { ts: statusNow, mode, gangObjective, lastAscension, ascensionCount, gear, gearTotals,
+      power: { ours: gang.power, strongestRival: strongestRivalPower },
+      ascendAt: C.ascendAt, factionRep: Number.isFinite(factionRep) ? factionRep : null,
       observedFactionRepRate, projectedRespectPerCycle: plans.reduce((sum, p) => sum + (p.choice?.respect || 0), 0),
       projectedWantedRate: wanted, reputationPlan: reputationPlan && {
         targetWantedRate: reputationPlan.targetWantedRate, projectedWantedRate: reputationPlan.projectedWantedRate,
@@ -343,7 +391,7 @@ export async function main(ns) {
         augmentationCashTarget: augmentationTarget, policyAllowsPurchases: capitalPolicy.allowEquipmentPurchases,
         sourceMasterEnabled: C.equipmentMasterEnabled, purchaseAllowed, blockedReason,
         candidate: bestEquipment, cashBudget },
-      equipment: { enabled: C.equipmentMasterEnabled && capitalPolicy.allowEquipmentPurchases, allowed: purchaseAllowed, nextItem, bestEquipment, bought,
+      equipment: { enabled: C.equipmentMasterEnabled && capitalPolicy.allowEquipmentPurchases, allowed: reputationGear ? boughtItems.length > 0 : purchaseAllowed, nextItem, bestEquipment, bought, boughtItems,
         cashBudget, maxPaybackSeconds: C.equipmentMaxPaybackSeconds } };
     ns.write(C.statusFile, JSON.stringify(status), "w");
     await ns.gang.nextUpdate();

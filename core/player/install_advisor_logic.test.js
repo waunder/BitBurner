@@ -109,3 +109,59 @@ test("live case: with Syndicate favor 152, NEMEAN joins the install batch instea
   const before = installAdvice({ batch: [], candidates: [{ name: nemean.name, repGap: nemean.repGap, value }], cycleHours: 0.81, repPerHour: 711589 })
   assert.equal(before.verdict, "build")
 })
+
+import { factionRepRates, gangAdvice, gangRepPerHour } from "./install_advisor_logic.js"
+
+test("hacking_money/grow/chance/speed count in augValue by default", () => {
+  assert.ok(augValue({ hacking_money: 2 }) > 0)
+  assert.ok(augValue({ hacking_chance: 1.3, hacking_speed: 1.3, hacking_grow: 1.3 }) > 0)
+})
+
+test("gang rate is rep/s x 3600; per-faction rates keep only risers", () => {
+  assert.equal(gangRepPerHour({ observedFactionRepRate: 10 }), 36000)
+  assert.equal(gangRepPerHour({ observedFactionRepRate: null }), null)
+  assert.deepEqual(factionRepRates({ A: 0, B: 5 }, { A: 100, B: 5 }, 2), { A: 50 })
+})
+
+const gangItems = [{ name: "G1", repGap: 200000, price: 1e9, value: 0.1 }]
+
+test("gang: minimum cycle forces wait before 4h", () => {
+  const a = installAdvice({ batch, candidates: [], cycleHours: 2, repPerHour: 1000, gang: { rate: null, candidates: [] } })
+  assert.equal(a.verdict, "wait")
+  assert.match(a.reason, /minimum/)
+})
+
+
+test("gang: waits for a reachable, affordable gang aug; money-only note without cash rate", () => {
+  const a = installAdvice({ batch, candidates: [], cycleHours: 5, repPerHour: 1000, money: 5e9, gang: { rate: 100000, candidates: gangItems } })
+  assert.equal(a.verdict, "wait")
+  assert.match(a.reason, /gang aug G1.*money only/)
+})
+
+test("gang: beyond the 12h cap or unaffordable at its batch position is no reason to wait", () => {
+  const far = [{ name: "G1", repGap: 900000, price: 1e9, value: 0.1 }]
+  assert.notEqual(installAdvice({ batch, candidates: [], cycleHours: 5, repPerHour: 1000, money: 5e9, gang: { rate: 100000, candidates: far } }).reason.startsWith("wait"), true)
+  // 1e9 x 1.9 = 1.9e9 > 1e9 cash with one batch item; arrives affordable with cash income.
+  const poor = installAdvice({ batch, candidates: [], cycleHours: 5, repPerHour: 1000, money: 1e9, gang: { rate: 100000, candidates: gangItems } })
+  assert.equal(poor.verdict, "install")
+  const rich = installAdvice({ batch, candidates: [], cycleHours: 5, repPerHour: 1000, money: 1e9, cashPerHour: 1e9, gang: { rate: 100000, candidates: gangItems } })
+  assert.equal(rich.verdict, "wait")
+})
+
+test("gangAdvice without a gang has no opinion; own-faction rate times a candidate", () => {
+  assert.equal(gangAdvice({ gang: null, cycleHours: 1 }), null)
+  const a = installAdvice({ batch, cycleHours: 8, repPerHour: 1000, candidates: [{ name: "X", repGap: 30000, value: 0.1, repPerHour: 30000 }] })
+  assert.equal(a.verdict, "wait")
+  assert.match(a.reason, /^wait 1\.0h/)
+})
+
+test("planPurchases batch stop skips dear low-value offers, default unchanged", () => {
+  const offers = [
+    { name: "A", faction: "F", rep: 1, repRequired: 0, price: 100, prerequisites: [], value: 0 },
+    { name: "B", faction: "F", rep: 1, repRequired: 0, price: 10, prerequisites: [], value: 0 },
+  ]
+  assert.deepEqual(planPurchases(offers, [], 1e6).plan.map((o) => o.name), ["A", "B"])
+  // Both exceed 5 and are worthless, so both are skipped.
+  assert.deepEqual(planPurchases(offers, [], 1e6, 1.9, [], { maxStepPrice: 5, minValue: 0.01 }).plan.map((o) => o.name), [])
+  assert.deepEqual(planPurchases(offers, [], 1e6, 1.9, [], { maxStepPrice: 50, minValue: 0.01 }).plan.map((o) => o.name), ["B"])
+})

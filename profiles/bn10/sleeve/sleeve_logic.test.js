@@ -148,3 +148,8 @@ test("the unavailable-API error is recognised", () => {
   assert.equal(sleeveApiUnavailable(new Error("sleeve.getSleeve: You do not have access to the Sleeve API. This is either because you are not in BitNode-10 or because you do not have Source-File 10.")), true)
   assert.equal(sleeveApiUnavailable(new Error("Invalid sleeve number: 3")), false)
 })
+
+test("sleeve faction targets skip names the gang faction sells", () => {
+  const list = readiness([cand("Tetrads", "Bionic Arms", 100), cand("Slum Snakes", "Other", 200)], { gangSells: ["Bionic Arms"] })
+  assert.deepEqual(factionTargets(list, { money: 1e6 }).map((t) => t.faction), ["Slum Snakes"])
+})

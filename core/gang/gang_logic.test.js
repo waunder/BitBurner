@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { canBuildTerritoryPower, moneyModePriority, planMoneyTasks, planReputationTasks,
-  planTerritoryPower, shouldAscendMember, shouldEngageTerritoryClashes, wantedCleanupPolicy, cheapGearQualifies, reputationCleanupMode } from "./gang_logic.js";
+  planTerritoryPower, shouldAscendMember, shouldEngageTerritoryClashes, wantedCleanupPolicy, cheapGearQualifies, reputationCleanupMode,
+  withEquipment, planReputationGear, equipmentCategory, gearCounts, ascensionCooldownElapsed } from "./gang_logic.js";
 
 test("money mode prioritizes wanted recovery over blocked recruitment growth", () => {
   assert.equal(moneyModePriority(true, true, true), "wanted-recovery");
@@ -91,14 +92,18 @@ test("clashes require both a per-rival floor and weighted expected odds", () => 
 
 test("ascension is suppressed during cleanup and territory power, and limited by the penalty floor", () => {
   // Live 2026-11-09: respect 47.6k, wanted 7.4k (penalty 0.866), top member x5.12 losing 10.4k respect.
-  const candidate = { multiplier: 5.12, threshold: 1.5, respect: 47_600, respectToDeduct: 10_400,
+  const candidate = { multiplier: 5.12, threshold: 1.25, respect: 47_600, respectToDeduct: 10_400,
     wantedLevel: 7_400, penaltyFloor: 0.80 };
   assert.equal(shouldAscendMember(candidate), true); // 37.2k / 44.6k = 0.834
   assert.equal(shouldAscendMember({ ...candidate, cleanupMode: true }), false);
   assert.equal(shouldAscendMember({ ...candidate, severeMode: true }), false);
   assert.equal(shouldAscendMember({ ...candidate, territoryPowerMode: true }), false);
   assert.equal(shouldAscendMember({ ...candidate, respectToDeduct: 25_000 }), false); // 22.6k / 30k = 0.75
-  assert.equal(shouldAscendMember({ ...candidate, multiplier: 1.4 }), false);
+  assert.equal(shouldAscendMember({ ...candidate, multiplier: 1.2 }), false);
+  assert.equal(shouldAscendMember({ ...candidate, multiplier: 1.3 }), true);
+  const { threshold, ...noThreshold } = candidate;
+  assert.equal(shouldAscendMember({ ...noThreshold, multiplier: 1.26 }), true); // default threshold 1.25
+  assert.equal(shouldAscendMember({ ...noThreshold, multiplier: 1.24 }), false);
   assert.equal(shouldAscendMember({ ...candidate, multiplier: undefined }), false);
   // Money mode passes the old near-1 floor: wanted at its minimum allows it, real wanted does not.
   assert.equal(shouldAscendMember({ ...candidate, wantedLevel: 1, penaltyFloor: 0.998 }), true);
@@ -214,4 +219,61 @@ test("cheap gear qualifies only below the cash share and only for stats the gang
   assert.equal(cheapGearQualifies({ cost: 5e6, stats: { agi: 1.04, cha: 1.04 }, cash, isHacking: true }), true);
   assert.equal(cheapGearQualifies({ cost: 2e11, stats: { hack: 1.15 }, cash, isHacking: true }), false);
   assert.equal(cheapGearQualifies({ cost: 5e6, stats: { str: 1.3 }, cash, isHacking: false }), true);
+});
+
+test("withEquipment multiplies the stat level by the item multiplier", () => {
+  const member = { hack: 1000, cha: 200, str: 50 };
+  const boosted = withEquipment(member, { hack: 1.15, cha: 1.0 });
+  assert.equal(boosted.hack, 1150);
+  assert.equal(boosted.cha, 200);
+  assert.equal(boosted.str, 50);
+  assert.equal(member.hack, 1000);
+  assert.deepEqual(withEquipment(member, {}), member);
+});
+
+test("equipment categories and gear counts", () => {
+  assert.equal(equipmentCategory("NUKE Rootkit"), "rootkit");
+  assert.equal(equipmentCategory("Quadra Sport R-7"), "vehicle");
+  assert.equal(equipmentCategory("DataJack"), "augmentation");
+  assert.equal(equipmentCategory("Katana"), "other");
+  assert.deepEqual(gearCounts({ upgrades: ["NUKE Rootkit", "Katana", "Hmap Node"], augmentations: ["BitWire"] }),
+    { rootkits: 2, augs: 1 });
+});
+
+test("reputation gear: rootkits and vehicles at 1% of cash, augmentations at 5%, ranked by respect per dollar", () => {
+  const cands = [
+    { item: "NUKE Rootkit", cost: 100_000, member: "a", gain: 5, ascRatio: 1 },
+    { item: "Demon Rootkit", cost: 20_000_000, member: "a", gain: 50, ascRatio: 1 },   // 2% of cash: too dear
+    { item: "Jack the Ripper", cost: 900_000, member: "a", gain: 0, ascRatio: 1 },     // no gain but a rootkit
+    { item: "Quadra Sport R-7", cost: 500_000, member: "a", gain: 0, ascRatio: 1 },
+    { item: "Katana", cost: 100_000, member: "a", gain: 0, ascRatio: 1 },              // ordinary, no respect
+    { item: "Neuralstimulator", cost: 40_000_000, member: "a", gain: 400, ascRatio: 1 }, // 4% of cash
+    { item: "DataJack", cost: 60_000_000, member: "a", gain: 300, ascRatio: 1 },         // 6%: too dear
+  ];
+  const picks = planReputationGear(cands, { cash: 1_000_000_000 });
+  assert.deepEqual(picks.map((p) => p.item).sort(), ["Jack the Ripper", "NUKE Rootkit", "Neuralstimulator", "Quadra Sport R-7"]);
+  assert.ok(picks.some((p) => p.item === "Neuralstimulator"));
+  assert.ok(!picks.some((p) => ["Demon Rootkit", "DataJack", "Katana"].includes(p.item)));
+  assert.equal(picks[0].item, "NUKE Rootkit"); // 5/100k beats 400/40m
+});
+
+test("reputation gear: skip ordinary gear near ascension but still buy augmentations; cap and reserve", () => {
+  const cands = [
+    { item: "NUKE Rootkit", cost: 100_000, member: "a", gain: 5, ascRatio: 1.21 },
+    { item: "BitWire", cost: 100_000, member: "a", gain: 5, ascRatio: 1.21 },
+    { item: "NUKE Rootkit", cost: 100_000, member: "b", gain: 5, ascRatio: 1.1 },
+  ];
+  const picks = planReputationGear(cands, { cash: 1e9, ascendAt: 1.25 });
+  assert.deepEqual(picks.map((p) => p.member + ":" + p.item).sort(), ["a:BitWire", "b:NUKE Rootkit"]);
+  const many = Array.from({ length: 40 }, (_, i) => ({ item: "NUKE Rootkit", cost: 1000, member: "m" + i, gain: 1, ascRatio: 1 }));
+  assert.equal(planReputationGear(many, { cash: 1e9 }).length, 24);
+  assert.equal(planReputationGear(many, { cash: 1e9, maxPurchases: 3 }).length, 3);
+  assert.equal(planReputationGear(cands, { cash: 1e9, reserve: 1e9 - 150_000 }).length, 1);
+  assert.equal(planReputationGear(cands, { cash: 5_000 }).length, 0);
+});
+
+test("ascension cooldown", () => {
+  assert.equal(ascensionCooldownElapsed(null, 1000), true);
+  assert.equal(ascensionCooldownElapsed(0, 89_999), false);
+  assert.equal(ascensionCooldownElapsed(0, 90_000), true);
 });

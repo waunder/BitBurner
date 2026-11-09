@@ -80,6 +80,10 @@
     "defense_exp": 0.1,
     "dexterity_exp": 0.1,
     "agility_exp": 0.1,
-    "faction_rep": 0.5
+    "faction_rep": 0.5,
+    "hacking_money": 0.3,
+    "hacking_grow": 0.2,
+    "hacking_chance": 0.2,
+    "hacking_speed": 0.3
   }
 }

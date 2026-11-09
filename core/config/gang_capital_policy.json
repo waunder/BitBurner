@@ -4,5 +4,7 @@
   "allowEquipmentPurchases": false,
   "augmentationCashTarget": null,
   "territoryEnabled": false,
+  "rootkitCashFraction": 0.01,
+  "gangAugCashFraction": 0.05,
   "updatedAt": "2026-10-07"
 }

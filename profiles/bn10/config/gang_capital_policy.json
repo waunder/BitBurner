@@ -1,6 +1,6 @@
 {
   "phase": "earning-capacity",
-  "objective": "BN10: grow respect for gang-faction rep (The Black Hand sells almost every augmentation); buy useful gear under 0.01% of cash",
+  "objective": "BN10: grow respect for gang-faction rep (the gang faction, NiteSec in run 2, sells almost every augmentation); buy useful gear under 0.01% of cash",
   "allowEquipmentPurchases": true,
   "augmentationCashTarget": null,
   "territoryEnabled": false,

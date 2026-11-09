@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-09 00:17 Pacific (PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-09 02:20 Pacific (PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -12,6 +12,28 @@ DevTools, Remote API status files.
 > game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
+
+**2026-11-09 02:20 Pacific, 2-hourly task, BN10 run 2: gang created with NiteSec; install still waits.** Not a
+stand-aside run (no session running). Live (metrics sample 02:15, game `ps` 02:15, gang, sleeve and readiness status
+02:16-02:18): BN10, $72.5b, hacking 230, combat 92, karma -54.1k, 0 installed, 0 queued; player on Tetrads field work for
+Bionic Arms (81k rep short). Every resident running. Measured, 13 samples 01:15 to 02:15: rep/h Tetrads 4.44k, Slum
+Snakes 412, Tian Di Hui 382, CyberSec 379, NiteSec 379; hacking exp 221m/h (3.96 levels/h), karma -2.68k/h, cash
+-13.3b/h, MCP rate 33.4m/s average 38.8m/s, share 1.48. Trend: `cash/h 9.47b>-8.57b>-13.3b DECELERATING | MCP
+36.7m>54.5m>33.4m STEADY | hackExp/h 123m>180m>221m ACCELERATING | lvl/h 3.48>3.49>3.96 context | rep work Tetrads
+3.47k>3.21k>4.44k STEADY | rep best Tetrads SWITCH`. Cash/h is net of spending: total RAM is now 1.65m GB (664k at
+20:16), so capital_manager is buying capacity while cash still rose ($65.6b to $72.5b since 00:17); not a falling
+income. **Gang:** karma passed -54k, but `gang_create.js` defaults to The Black Hand (Ken's run 1 choice), whose invite
+needs a backdoor on I.I.I.I (bitburner-src `FactionInfo.tsx`), out of reach at hacking 230. NiteSec is the other hacking
+gang (`Gang/data/Constants.ts`) and the player was already a member, so `run gang_create.js NiteSec` created it at
+about 02:16 (karma -54109) and started `gang-controller.js` (3 members training hacking, reputation mode). NiteSec's
+small rep reset to 0 (startGang). The choice is permanent for this BitNode. Side effect fixed by itself: sleeve 1 was
+still on NiteSec targets and the game refused it ("started a gang with them") until the readiness file named the gang
+faction (02:17); from 02:17:44 it takes money crime. Run target first step relabelled, gang policy objective text no
+longer names The Black Hand (both pushed). Advisor: **wait** (1.1h for Power Recirculation Core, +19.0%/h vs cycle
++2.5%/h; plan 10 augs $15.0b, Tetrads, Tian Di Hui, CyberSec). Decision: **no install, agree**; the gang now exists, so
+the last check's hold is lifted. Install once the advisor turns or by the next check, after some gang respect has built
+(gang members and respect survive an install; the gang faction's rep does not), with a save export first. World Daemon:
+not present (0 installed, no Red Pill). Share A/B not run (install due within hours).
 
 **2026-11-09 00:17 Pacific, 2-hourly task, BN10 run 2: sleeve-aug bug fixed; install held for the gang.** Not a
 stand-aside run (no session running). Live (autosave summary, game `ps`, readiness and sleeve status 00:15-00:16): BN10,

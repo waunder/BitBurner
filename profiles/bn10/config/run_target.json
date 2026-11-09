@@ -1,9 +1,9 @@
 {
   "goal": "BN10 run 2: SF10.2 (a 3rd base sleeve elsewhere), gang early, 5th Covenant sleeve if cash allows",
-  "updated": "2026-11-08",
+  "updated": "2026-11-09",
   "steps": [
     {
-      "label": "Gang: karma -54k (6 sleeves on crime from the start)",
+      "label": "Gang: NiteSec hacking gang, created 2026-11-09 02:16",
       "metric": {
         "kind": "karma",
         "target": -54000

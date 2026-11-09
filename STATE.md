@@ -13,6 +13,18 @@ DevTools, Remote API status files.
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
 
+**2026-11-09 10:15 Pacific, 2-hourly task, BN10 run 2: steady, no changes.** Not a stand-aside run (no session
+running). Live (metrics sample 10:15, game `ps` 10:15, readiness 10:14): BN10, $41.8b, hacking 233, str/def/dex/agi
+92/92/94/98, karma -57.4k, 14 installed, 0 queued. Every resident running (19, unchanged). Player on Tetrads field work
+for Bionic Arms (+101k rep; priority aug), since about 08:19. Measured, 12 samples 09:20 to 10:15: rep/h Tetrads 12.6k,
+Tian Di Hui 3.73k, CyberSec 3.65k, Slum Snakes 2.44k, NiteSec 433; hacking exp 83.6m/h (15.9 levels/h), karma -390/h,
+cash 6.47b/h, MCP rate 87.2m/s average 49.1m/s, share 1.45. Trend: `cash/h 8.74b>20.1b>6.47b STEADY | MCP
+36.1m>102m>87.2m STEADY | hackExp/h 17.3m>42.6m>83.6m ACCELERATING | lvl/h 41.2>21.4>15.9 context | rep work Tetrads
+-->11.5k>12.6k n/a | rep best Tetrads SWITCH`. Nothing decelerating. Advisor: **wait** 17m for Augmented Targeting I
+(+14.2%/h vs cycle +2.4%/h; batch +7.6%, just LuminCloaking-V2). Decision: **no install, agree** (cycle 3.3h, batch
+tiny). Next gate crush-fitness at hacking 270. World Daemon: not present (14 installed, no Red Pill). Share A/B: already
+run and recorded 2026-11-05 (docs/experiments.md, result x1.48 rep, kept on); not repeated.
+
 **2026-11-09 08:20 Pacific, 2-hourly task, BN10 run 2: rebuild after install 1 healthy; no changes.** Not a
 stand-aside run (no session running). Live (metrics sample 08:15, game `ps` 08:15, readiness 08:14, gang and sleeve
 status 08:15-08:16): BN10, $7.5b to $9.5b, hacking 195 (85 at install), str/def/dex/agi 79/77/77/81, karma -56.6k,

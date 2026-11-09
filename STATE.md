@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-09 07:05 Pacific (PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-09 08:20 Pacific (PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -12,6 +12,23 @@ DevTools, Remote API status files.
 > game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
+
+**2026-11-09 08:20 Pacific, 2-hourly task, BN10 run 2: rebuild after install 1 healthy; no changes.** Not a
+stand-aside run (no session running). Live (metrics sample 08:15, game `ps` 08:15, readiness 08:14, gang and sleeve
+status 08:15-08:16): BN10, $7.5b to $9.5b, hacking 195 (85 at install), str/def/dex/agi 79/77/77/81, karma -56.6k,
+14 installed, 0 queued, home 16TB. Every resident running (MCP, supervisor, crawler, steward, mcp_xp, money,
+stack_manager, HUD, run_report, player controller, xp_filler, faction_join, metrics_logger, dnet_root,
+sleeve_controller, sleeve_buyer, gang-controller, cct_watcher, capital_manager). Player in Powerhouse Gym (defense);
+the controller has already decided Tetrads field work for Bionic Arms (+125k rep) and switches when its cooldown ends.
+Sleeves: all 6 at shock 0 (sleeve 5 sync 72), on Slum Snakes, CyberSec, Tian Di Hui, Tetrads faction work and two on
+Mug. Gang (NiteSec): 8 members on Plant Virus, respect 8.37k, wanted 1077, penalty 0.886, NiteSec rep 153 (about
+380/h). Measured, 13 samples 07:15 to 08:15: rep/h Tian Di Hui 10.6k, CyberSec 3.62k, Slum Snakes 1.67k, NiteSec 136;
+hacking exp 16.6m/h (44 levels/h), karma -598/h, cash 7.95b/h, MCP rate 33.4m/s average 10.1m/s, share 1.3. Trend:
+`n/a` on every series (cycle 1.3h old, too short). Advisor: **build** (nothing to install; best next LuminCloaking-V2
+in 2.6h). Decision: **no install, agree** (one hour into the cycle). Next gate avmnite-02h at hacking 210, about 20
+minutes away at the current rate. World Daemon: not present (14 installed, no Red Pill). Share A/B not run (player not
+yet settled on one faction's work; next quiet hour). `metrics.py cycles` for the new cycle: still too young for
+rebuild figures.
 
 **BN10 run 2, install 1 ran 2026-11-09 06:59 Pacific, 2-hourly task: 13 augmentations and 2 NeuroFlux levels.** Not a
 stand-aside run (no session running). Before (metrics sample 06:15, game `ps` 06:15, readiness 06:14-06:58, gang

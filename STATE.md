@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-09 08:20 Pacific (PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-09 12:16 Pacific (PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -12,6 +12,18 @@ DevTools, Remote API status files.
 > game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
+
+**2026-11-09 12:16 Pacific, 2-hourly task, BN10 run 2: steady, no changes.** Not a stand-aside run (no session
+running). Live (metrics sample 12:15, game `ps` 12:16, readiness 12:15): BN10, $59.7b, hacking 254, str/def/dex/agi
+98/98/102/108, karma -58.2k, 14 installed, 0 queued. Every resident running (19 plus gang-controller). Player on
+Tetrads field work for Bionic Arms (+77.9k rep to go). Measured, 13 samples 11:15 to 12:15: rep/h Tetrads 12.1k,
+NiteSec 11.1k, CyberSec 4.11k, Tian Di Hui 2.97k, Slum Snakes 1.83k; hacking exp 160m/h (9.6 levels/h), karma -322/h,
+cash -8.48b/h (capital_manager buying servers; money still up from $41.8b at 10:15), MCP rate 58.7m/s average
+59.5m/s, share 1.47. Trend: `cash/h 4.41b>53.7b>-8.48b STEADY | MCP 86.9m>85.1m>58.7m STEADY | hackExp/h
+76.9m>111m>160m ACCELERATING | lvl/h 16.1>11>9.63 context | rep work Tetrads 12.4k>11.6k>12.1k STEADY | rep best
+Tetrads STEADY`. Nothing decelerating. Advisor: **wait** 14m for Combat Rib I (+37.7%/h vs cycle +2.5%/h; batch
++12.9%, cycle 5.3h). Decision: **no install, agree** (batch small, Bionic Arms still to come). World Daemon: not
+present (no Red Pill). Share A/B: already recorded 2026-11-05; not repeated.
 
 **2026-11-09 10:15 Pacific, 2-hourly task, BN10 run 2: steady, no changes.** Not a stand-aside run (no session
 running). Live (metrics sample 10:15, game `ps` 10:15, readiness 10:14): BN10, $41.8b, hacking 233, str/def/dex/agi

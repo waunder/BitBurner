@@ -36,6 +36,11 @@ test("reputation cleanup band uses the absolute penalty with hysteresis", () => 
   assert.equal(reputationCleanupMode(0.93, true), true);
   assert.equal(reputationCleanupMode(0.95, true), false);
   assert.equal(reputationCleanupMode(0.75, false, 0.7, 0.8), false);
+
+  // New gang at the wanted floor: respect 1, wanted 1, penalty 0.5 = attainable; no cleanup.
+  assert.equal(reputationCleanupMode(0.5, true, 0.9, 0.95, 0.5), false);
+  assert.equal(reputationCleanupMode(0.5, false, 0.9, 0.95, 0.5), false);
+  assert.equal(reputationCleanupMode(0.4, false, 0.9, 0.95, 0.5), true);
 });
 
 test("territory power policy builds only in safe idle money mode", () => {

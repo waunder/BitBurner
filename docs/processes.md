@@ -1298,7 +1298,9 @@ review. This is a policy target, not a promised observed reduction; if no
 allocation meets it, the planner selects the strongest available reduction.
 **Reputation-mode band (2026-11-08):** with the `reputation` objective, cleanup instead uses the
 absolute wanted penalty: enter below `reputationCleanupEnter`, leave at `reputationCleanupExit` or
-above (`gang_capital_policy.json`, defaults 0.90/0.95; `reputationCleanupMode`). The attainable band
+above (`gang_capital_policy.json`, defaults 0.90/0.95; `reputationCleanupMode`). Since 2026-11-09 both
+thresholds are multiplied by the attainable penalty respect/(respect+1): wanted cannot fall below 1,
+so a new gang (respect 1, penalty 0.5) otherwise stayed in cleanup forever and earned nothing. The attainable band
 above kept a young 9-member gang (44k respect) on all-Ethical-Hacking over 95% of the time, because
 one respect batch added more wanted than nine cleaners removed in a minute: 1.9 respect/s. The
 0.90/0.95 band measured about 50 respect/s and 8 Black Hand rep/s over 10 minutes; bn10 then set

@@ -150,7 +150,8 @@ export async function main(ns) {
     // Reputation mode uses an absolute penalty band (policy file), so a young gang earns respect
     // instead of cleaning a sub-1% penalty; money mode keeps the attainable-penalty band.
     cleanupMode = gangObjective === "reputation"
-      ? reputationCleanupMode(gang.wantedPenalty, cleanupMode, capitalPolicy.reputationCleanupEnter, capitalPolicy.reputationCleanupExit)
+      ? reputationCleanupMode(gang.wantedPenalty, cleanupMode, capitalPolicy.reputationCleanupEnter, capitalPolicy.reputationCleanupExit,
+        wantedPolicy.attainablePenalty)
       : wantedPolicy.cleanupMode;
     severeWantedMode = wantedPolicy.severeMode;
 

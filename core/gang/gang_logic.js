@@ -155,10 +155,14 @@ export function wantedCleanupPolicy(wantedPenalty, severeMode, cleanupMode, resp
  * Reputation-mode cleanup band on the absolute wanted penalty. The attainable-penalty band above
  * (0.998/0.999) suits a large gang; for a young one each respect batch adds more wanted than nine
  * cleaners remove, so that band kept every member on cleanup >95% of the time (2026-11-08).
- * Enter cleanup below `enter`, leave it at `exit` or above.
+ * Enter cleanup below `enter`, leave it at `exit` or above, both scaled by the attainable penalty
+ * respect/(respect+1): wanted level cannot go below 1, so a new gang (respect 1, penalty 0.5) sat
+ * in cleanup with no way out and earned no respect for hours (BN10 run 2, 2026-11-09).
  */
-export function reputationCleanupMode(wantedPenalty, cleanupMode, enter = 0.90, exit = 0.95) {
-  return cleanupMode ? wantedPenalty < exit : wantedPenalty < enter;
+export function reputationCleanupMode(wantedPenalty, cleanupMode, enter = 0.90, exit = 0.95,
+  attainablePenalty = 1) {
+  const scale = attainablePenalty > 0 ? attainablePenalty : 1;
+  return cleanupMode ? wantedPenalty < exit * scale : wantedPenalty < enter * scale;
 }
 
 /** Keep clash exposure behind both per-rival and territory-weighted odds gates. */

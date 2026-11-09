@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-09 02:20 Pacific (PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-09 04:20 Pacific (PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -12,6 +12,27 @@ DevTools, Remote API status files.
 > game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
+
+**2026-11-09 04:20 Pacific, 2-hourly task, BN10 run 2: gang cleanup deadlock fixed; install at next check.** Not a
+stand-aside run (no session running). Live (metrics sample 04:15, game `ps` 04:15, readiness 04:12, gang status
+04:15-04:19): BN10, $76.2b, hacking 235, combat 94-95, karma -54.7k, 0 installed, 0 queued; player on Tetrads field work
+for Bionic Arms (71k rep short). Every resident running, `gang-controller.js` included. Measured, 13 samples 03:15 to
+04:15: rep/h Tetrads 5.17k, Tian Di Hui 1.43k, CyberSec 1.42k, Slum Snakes 1.05k; hacking exp 220m/h (2.7 levels/h),
+karma -303/h, cash -12.9b/h (net of capital_manager buying RAM; cash still rose $72.5b to $76.2b since 02:20), MCP rate
+56.5m/s average 39.1m/s, share 1.5. Trend: `cash/h -8.98b>-856m>-12.9b STEADY | MCP 32.6m>42.5m>56.5m ACCELERATING |
+hackExp/h 221m>218m>220m STEADY | lvl/h 3.78>2.69>2.7 context | rep work Tetrads 4.36k>5.11k>5.17k STEADY | rep best
+Tetrads STEADY`. **Bug found and fixed:** the gang earned nothing for two hours. At 04:15 it had respect 1, wanted 1, all
+three members on Ethical Hacking in `wanted-recovery`. Reputation mode entered cleanup below an absolute penalty of 0.80
+(bn10 policy), but penalty is respect/(respect+wanted) and wanted cannot go below 1, so at respect 1 the penalty is
+stuck at 0.5 and cleanup never ended. `reputationCleanupMode` now scales both thresholds by the attainable penalty
+respect/(respect+1) (unchanged for a large gang); test added, 548 pass in build/bn10; game copy verified, controller
+restarted 04:16. Observed after: respect 1 to 2.5 (04:17) to 4.4 (04:18), cycling between respect work and cleanup as
+designed; first recruit at respect 5. Advisor: **wait** (1.2h for Cranial Signal Processors - Gen I, +4.3%/h vs cycle
++3.3%/h; plan 12 augs $55.4b, batch +60.8% weighted, Tetrads, Tian Di Hui, CyberSec). Decision: **no install, agree**:
+the margin is small, but gang rep from a 4-respect gang is negligible so waiting loses little, and the next aug lands
+before the next check. **Install at the next check (about 06:15)** unless the advisor's next aug is under 30 minutes away;
+save export first. Gang respect and members survive the install, so the gang keeps growing through it. World Daemon:
+not present (0 installed, no Red Pill). Share A/B not run (install due next check).
 
 **2026-11-09 02:20 Pacific, 2-hourly task, BN10 run 2: gang created with NiteSec; install still waits.** Not a
 stand-aside run (no session running). Live (metrics sample 02:15, game `ps` 02:15, gang, sleeve and readiness status

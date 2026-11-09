@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-08 22:20 Pacific (PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-09 00:17 Pacific (PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -12,6 +12,26 @@ DevTools, Remote API status files.
 > game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
+
+**2026-11-09 00:17 Pacific, 2-hourly task, BN10 run 2: sleeve-aug bug fixed; install held for the gang.** Not a
+stand-aside run (no session running). Live (autosave summary, game `ps`, readiness and sleeve status 00:15-00:16): BN10,
+$65.6b, hacking 222, karma -48.2k, 0 installed, 0 queued, factions NiteSec, Tetrads, Slum Snakes, Tian Di Hui, CyberSec;
+player on Tetrads field work for Bionic Arms (89k rep short). Every resident running. Measured, 12 samples 23:20 to
+00:15: rep/h Tetrads 3.47k, CyberSec 2.21k, NiteSec 1.39k, Tian Di Hui 1.39k, Slum Snakes 151; hacking exp 123m/h (3.48
+levels/h), karma **-1.53k/h** (was -5.15k/h), cash 9.47b/h, MCP rate 36.7m/s average 38.7m/s, share 1.48. Trend:
+`cash/h 7.24b>-2.41b>9.47b STEADY | MCP 38.2m>52.3m>36.7m STEADY | hackExp/h 117m>121m>123m STEADY | lvl/h
+5.01>4.11>3.48 context | rep work Tetrads 3.99k>3.48k>3.47k STEADY | rep best Tetrads SWITCH`. **Bug found and fixed:**
+`sleeve_buyer.js` bought 30 sleeve augmentations (S.N.A, Speech Enhancement, BitWire and others, $30m-class) about
+23:20-23:30, and each purchase zeroes that sleeve's exp (bitburner-src `Sleeve.installAugmentation`): all six sleeves fell
+to 3265 combat exp each (save check 00:16), sleeve Homicide chance 29% to 15%, karma stalled 23:20-23:35. The buyer now
+holds sleeve augs while karma is above `crimeKarmaTarget` unless the sleeve's combat exp is under 1000 (just after an
+install); 548 tests pass in build/bn10; restarted in game 00:16 and the game copy carries the change (status 00:16:
+`save`). Advisor: **wait** (3.4h for Power Recirculation Core, +5.8%/h vs cycle +2.9%/h; plan 10 augs $15.0b, batch
++41% weighted). Decision: **no install, agree**, and this changes the last check's plan to install now: an install sets
+every sleeve back to shock 100 with no stats (`Sleeve.prestige`), which would stall sleeve karma for many hours with the
+gang 5.8k karma away (about 4h at the measured rate, sooner as sleeve exp regrows). Install once the gang exists
+(`gang-controller.js` via `startup.js`), with a save export first. World Daemon: not present (0 installed, no Red Pill).
+Share A/B not run (install due within hours). Save check `saves/check_BN10run2_2026-11-09_0020.json.gz`.
 
 **2026-11-08 22:20 Pacific, 2-hourly task, BN10 run 2: NiteSec joined; first install held one more check.** Not a
 stand-aside run (no session running). Live (autosave summary, game `ps`, readiness and sleeve status 22:14-22:18): BN10,

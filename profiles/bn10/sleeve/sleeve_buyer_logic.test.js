@@ -70,3 +70,13 @@ test("purchase order: Covenant sleeve, then augmentation, then memory", () => {
   assert.equal(chooseNextPurchase({ covenant: { kind: "memory" } }).kind, "memory")
   assert.equal(chooseNextPurchase({}).kind, "save")
 })
+
+test("sleeve augmentations wait while karma is needed, unless the sleeve's exp is fresh", () => {
+  const sleeves = [
+    { index: 0, shock: 0, exp: 13000, augs: [{ name: "A", cost: 1e9 }] },
+    { index: 1, shock: 0, exp: 200, augs: [{ name: "B", cost: 2e9 }] },
+  ]
+  assert.deepEqual([chooseSleeveAug({ sleeves, spendable: 1e12, karmaNeeded: true })].map((p) => [p.sleeve, p.name]), [[1, "B"]])
+  assert.equal(chooseSleeveAug({ sleeves: sleeves.slice(0, 1), spendable: 1e12, karmaNeeded: true }), null)
+  assert.deepEqual([chooseSleeveAug({ sleeves, spendable: 1e12 })].map((p) => [p.sleeve, p.name]), [[0, "A"]])
+})

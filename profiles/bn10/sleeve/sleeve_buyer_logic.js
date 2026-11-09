@@ -91,11 +91,16 @@ export function smoothIncome({ previous = 0, cash, lastCash, spent = 0, seconds,
  * rep for, sleeve-valid multipliers only), the price is the augmentation's base cost, and every
  * player install wipes sleeve augmentations (Sleeve.prestige), so they are bought again after it.
  * Cheapest first, each costing at most `augShare` of spendable. No Covenant membership needed.
- * sleeves: [{ index, shock, augs: [{ name, cost }] }]
+ * Sleeve.installAugmentation zeroes the sleeve's exp, so while karma is still needed (sleeves on
+ * crime, whose chance follows their stats) only sleeves whose combat exp is below `freshExp` (just
+ * after a player install) buy; the rest wait for the karma gate. On 2026-11-08 about 23:00 thirty
+ * purchases reset every sleeve and halved Homicide chance (29% to 15%).
+ * sleeves: [{ index, shock, exp, augs: [{ name, cost }] }]
  */
-export function chooseSleeveAug({ sleeves = [], spendable, augShare = 0.05 } = {}) {
+export function chooseSleeveAug({ sleeves = [], spendable, augShare = 0.05, karmaNeeded = false, freshExp = 1000 } = {}) {
   const limit = Math.max(0, Number(spendable) || 0) * augShare
   const options = sleeves.filter((s) => Number(s.shock) === 0)
+    .filter((s) => !karmaNeeded || (Number(s.exp) || 0) < freshExp)
     .flatMap((s) => (s.augs || []).map((aug) => ({ sleeve: s.index, name: aug.name, cost: Number(aug.cost) })))
     .filter((o) => Number.isFinite(o.cost) && o.cost <= limit)
     .sort((a, b) => a.cost - b.cost || a.sleeve - b.sleeve)

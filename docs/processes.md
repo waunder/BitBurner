@@ -1654,7 +1654,11 @@ augmentations and sleeve memory, in that order, with cash above the `reserve` in
 **Augmentations (2026-11-07, Ken):** need no Covenant membership, only a sleeve at shock 0; the list is
 `getSleevePurchasableAugs`, priced at base cost; cheapest first, each at most `sleeveAugShare` (policy
 key, default 0.05) of spendable (`chooseSleeveAug`). Every player install wipes them (bitburner-src
-`Sleeve.prestige`), so the bn10 profile starts this from `startup.js` to buy them again. Pure rules in
+`Sleeve.prestige`), so the bn10 profile starts this from `startup.js` to buy them again. **Each
+purchase zeroes that sleeve's exp** (`Sleeve.installAugmentation`), so while the player's karma is above
+`crimeKarmaTarget` (`player_activity_config.json`, default -54000) only sleeves with combat exp below
+1000 buy (right after an install); the rest wait for the gang gate (2026-11-09: thirty purchases on
+2026-11-08 about 23:00 halved sleeve Homicide chance). Karma via `ns.heart.break()`. Pure rules in
 `sleeve_buyer_logic.js`; game rules in `docs/bn10-plan.md` package B. Four `ns.sleeve` calls
 (`getSleeveCost`, `getSleeve`, `purchaseSleeve`, `upgradeMemory`, `getSleevePurchasableAugs`,
 `purchaseSleeveAug`), about 24GB by the 4GB rule.

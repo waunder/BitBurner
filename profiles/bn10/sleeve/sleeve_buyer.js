@@ -25,7 +25,8 @@ function sleeves(ns) {
   for (let index = 0; index < 8; index++) {
     try {
       const sleeve = ns.sleeve.getSleeve(index)
-      list.push({ index, memory: sleeve.memory, shock: sleeve.shock })
+      const e = sleeve.exp || {}
+      list.push({ index, memory: sleeve.memory, shock: sleeve.shock, exp: (e.strength || 0) + (e.defense || 0) + (e.dexterity || 0) + (e.agility || 0) })
     } catch { break }
   }
   return list
@@ -59,8 +60,13 @@ export async function main(ns) {
         sleeveShare: Number(policy.sleeveShare) || 0.25,
       })
     }
-    const augs = list.map((s) => ({ ...s, augs: s.shock === 0 ? ns.sleeve.getSleevePurchasableAugs(s.index) : [] }))
-    const pick = chooseNextPurchase({ covenant, aug: chooseSleeveAug({ sleeves: augs, spendable, augShare: Number(policy.sleeveAugShare) || 0.05 }) })
+    // An aug purchase zeroes the sleeve's exp; hold them while sleeves do karma crime (see chooseSleeveAug).
+    let karma = null
+    try { karma = Number(ns.heart.break()) } catch { /* unknown: treated as not needed */ }
+    const karmaTarget = Number(readJson(ns, "player_activity_config.json", {})?.crimeKarmaTarget ?? -54000)
+    const karmaNeeded = Number.isFinite(karma) && karma > karmaTarget
+    const augs = list.map((s) => ({ ...s, augs: s.shock === 0 && (!karmaNeeded || s.exp < 1000) ? ns.sleeve.getSleevePurchasableAugs(s.index) : [] }))
+    const pick = chooseNextPurchase({ covenant, aug: chooseSleeveAug({ sleeves: augs, spendable, augShare: Number(policy.sleeveAugShare) || 0.05, karmaNeeded }) })
     let outcome = null
     if (pick.kind !== "save") {
       const result = pick.kind === "sleeve" ? ns.sleeve.purchaseSleeve()

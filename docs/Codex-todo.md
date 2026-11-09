@@ -11,8 +11,8 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
 ## Active work
 
 - Open items from the 2026-11-07/08 Claude session (BN10 run 1 end, run 2 start):
-  - Gang, reputation mode: rank gear by respect added per dollar, not money payback; allow
-    ascension (disabled in reputation mode, which caps member growth). Retune the
+  - Gang, reputation mode: rank gear by respect added per dollar, not money payback
+    (ascension removes bought gear, so weigh that too). Ascension allowed 2026-11-09. Retune the
     `reputationCleanupEnter/Exit` band (bn10 0.80/0.90) as members strengthen.
   - `sleeve_controller.js` resumes work at shock 5 (`shockResumeBelow`), but sleeve
     augmentations need shock 0, so `sleeve_buyer.js` waits about 3h more of passive decay.

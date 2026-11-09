@@ -13,7 +13,7 @@ import { canBuildTerritoryPower, moneyModePriority, planMoneyTasks, planReputati
  */
 const C = {
   trainStat: 75,
-  ascendAt: 1.25,
+  ascendAt: 1.5,   // ascension resets exp and costs the member's respect; smaller gains are not worth it
   wantedReductionFraction: 0.001,
   severeWantedEnter: 0.05,
   severeWantedExit: 0.10,
@@ -123,6 +123,7 @@ export async function main(ns) {
   let observedFactionRepRate = null;
   let factionRep = null;
   let factionRepReadAt = 0;
+  let lastAscension = null;
   while (true) {
     while (ns.gang.canRecruitMember()) ns.gang.recruitMember(`operator-${Date.now()}`);
 
@@ -235,22 +236,25 @@ export async function main(ns) {
       mode = "territory-power";
     }
 
-    let ascensionUsed = false;
+    // Ascension reduces stored gang respect, so at most one member ascends per
+    // evaluation (the largest gain); the next loop re-reads the game state first.
+    // The penalty floor is the reputation band's cleanup entry in reputation mode
+    // (the band deliberately runs well below the old 0.998 floor), else the old
+    // attainable-penalty floor.
+    const penaltyFloor = gangObjective === "reputation"
+      ? capitalPolicy.reputationCleanupEnter
+      : (gang.respect / (gang.respect + 1)) * C.cleanupEnterAttainablePenalty;
+    let ascendBest = null;
     for (const plan of plans) {
       if (plan.choice?.task && plan.member.task !== plan.choice.task) ns.gang.setMemberTask(plan.member.name, plan.choice.task);
       const asc = ns.gang.getAscensionResult(plan.member.name);
       const mult = asc && (gang.isHacking ? asc.hack : asc.str);
-      const mayAscend = shouldAscendMember({ objective: gangObjective, cleanupMode, severeMode: severeWantedMode,
+      const mayAscend = shouldAscendMember({ cleanupMode, severeMode: severeWantedMode,
         territoryPowerMode: mode === "territory-power", multiplier: mult, threshold: C.ascendAt,
-        respect: gang.respect, respectToDeduct: asc?.respect, wantedLevel: gang.wantedLevel,
-        cleanupEnterRatio: C.cleanupEnterAttainablePenalty });
-      // Ascension reduces stored gang respect. At most one member ascends per
-      // evaluation; the next loop re-reads the game state before another.
-      if (!ascensionUsed && mayAscend) {
-        ns.gang.ascendMember(plan.member.name);
-        ascensionUsed = true;
-      }
+        respect: gang.respect, respectToDeduct: asc?.respect, wantedLevel: gang.wantedLevel, penaltyFloor });
+      if (mayAscend && (!ascendBest || mult > ascendBest.mult)) ascendBest = { name: plan.member.name, mult, respect: asc.respect };
     }
+    if (ascendBest && ns.gang.ascendMember(ascendBest.name)) lastAscension = { ts: Date.now(), ...ascendBest };
 
     const weightedChance = clashPolicy.weightedChance;
     const fight = territoryEnabled && mode === "territory-power" && clashPolicy.engage;
@@ -313,7 +317,7 @@ export async function main(ns) {
           : !bestEquipment ? "no unowned equipment candidate"
             : !roiQualified ? "candidate fails payback, cash-slice, cheap-gear, or reserve limit" : null;
     const bought = purchaseAllowed && ns.gang.purchaseEquipment(bestEquipment.member, bestEquipment.item) ? bestEquipment : null;
-    const status = { ts: statusNow, mode, gangObjective, factionRep: Number.isFinite(factionRep) ? factionRep : null,
+    const status = { ts: statusNow, mode, gangObjective, lastAscension, factionRep: Number.isFinite(factionRep) ? factionRep : null,
       observedFactionRepRate, projectedRespectPerCycle: plans.reduce((sum, p) => sum + (p.choice?.respect || 0), 0),
       projectedWantedRate: wanted, reputationPlan: reputationPlan && {
         targetWantedRate: reputationPlan.targetWantedRate, projectedWantedRate: reputationPlan.projectedWantedRate,

@@ -180,16 +180,18 @@ export function shouldEngageTerritoryClashes(territory, chances, minWin = 0.58, 
     && weightedChance >= weightedMin, weightedChance };
 }
 
-/** Avoid ascensions that undermine cleanup, power building, or the wanted floor. */
-export function shouldAscendMember({ objective, cleanupMode, severeMode, territoryPowerMode,
-  multiplier, threshold = 1.25, respect, respectToDeduct, wantedLevel,
-  cleanupEnterRatio = 0.99 }) {
-  if (objective === "reputation" || cleanupMode || severeMode || territoryPowerMode
+/**
+ * Ascend when the stat multiplier gain reaches the threshold, outside cleanup, severe-wanted and
+ * territory-power modes, and only if the wanted penalty after losing the member's respect stays at
+ * or above penaltyFloor (the caller passes the reputation band's cleanup entry in reputation mode).
+ */
+export function shouldAscendMember({ cleanupMode, severeMode, territoryPowerMode,
+  multiplier, threshold = 1.5, respect, respectToDeduct, wantedLevel, penaltyFloor = 0.8 }) {
+  if (cleanupMode || severeMode || territoryPowerMode
     || !Number.isFinite(multiplier) || multiplier < threshold) return false;
   const projectedRespect = Math.max(1, respect - Math.max(0, respectToDeduct || 0));
   const projectedPenalty = projectedRespect / (projectedRespect + Math.max(0, wantedLevel || 0));
-  const usefulPenaltyFloor = (respect / (respect + 1)) * cleanupEnterRatio;
-  return projectedPenalty >= usefulPenaltyFloor;
+  return projectedPenalty >= penaltyFloor;
 }
 
 /** Assign only the lowest-value cash cohort to build territory power. */

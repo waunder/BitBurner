@@ -226,6 +226,18 @@ combat baseline (strength 68/75), not on Homicide (its candidate: 59% chance, ab
 present in run 2 (needs The Red Pill). Still off for RAM: HUD, `cct_watcher.js`, `dnet_root.js`, `sleeve_controller.js`,
 `xp_filler.js`; they return as home grows (256GB next). **Next:** check MCP income and the first run 2 metrics samples.
 
+**2026-11-09 10:41 (PC clock), BN10 run 2 (Ken session): gang ascension enabled.** The gang (NiteSec, 9 members,
+karma -57.6k, formed overnight) had never ascended: `shouldAscendMember` refused in reputation mode, and its 0.998
+penalty floor could not be met while the 0.80/0.90 reputation band runs the penalty near 0.86. Every member qualified
+at x2.5 to x5.1 hacking multiplier (formula sqrt((exp-1000)/2000)). Ken approved the change: ascend in either mode
+outside cleanup/severe/territory-power, threshold x1.5 (was 1.25), penalty floor = the band's `reputationCleanupEnter`
+in reputation mode (old floor kept for money mode), one per loop, largest gain first; `gang_status.json` reports
+`lastAscension`. 548 tests pass. Live: **...4769 ascended x5.16, then ...9467 x3.28** (the next largest that kept the
+penalty at 0.80); respect 49.3k -> 36.1k, cleanup entered at 0.80 and was recovering (0.818 by 10:41). Both were back
+over hacking 75 within 2 minutes (117, 88). Ascension also strips bought gear (augmentations stay): each lost 4
+items. **Next:** watch that ascensions and cleanup alternate rather than hold the gang at the floor; if respect
+growth stalls, raise the threshold or the floor.
+
 **2026-11-08 10:26 Pacific, BN10 run 2 (Ken session): player on Homicide, sleeves on Shoplift.** Home grew to 64GB
 (capital_bootstrap handed over to capital_manager; the steward fills spare RAM at once, so a one-shot needs a
 `kill <pid>; run ...` on one line). BN10 stat levels are about 0.4x: 6.7k strength exp gave strength 41, so the

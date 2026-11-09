@@ -89,16 +89,20 @@ test("clashes require both a per-rival floor and weighted expected odds", () => 
   ], 0.90, 0.90).engage, false);
 });
 
-test("ascension is suppressed during cleanup and territory power, and limited by wanted slack", () => {
-  const candidate = { objective: "money", multiplier: 1.5, threshold: 1.25,
-    respect: 100, respectToDeduct: 10, wantedLevel: 1, cleanupEnterRatio: 0.99 };
+test("ascension is suppressed during cleanup and territory power, and limited by the penalty floor", () => {
+  // Live 2026-11-09: respect 47.6k, wanted 7.4k (penalty 0.866), top member x5.12 losing 10.4k respect.
+  const candidate = { multiplier: 5.12, threshold: 1.5, respect: 47_600, respectToDeduct: 10_400,
+    wantedLevel: 7_400, penaltyFloor: 0.80 };
+  assert.equal(shouldAscendMember(candidate), true); // 37.2k / 44.6k = 0.834
   assert.equal(shouldAscendMember({ ...candidate, cleanupMode: true }), false);
   assert.equal(shouldAscendMember({ ...candidate, severeMode: true }), false);
   assert.equal(shouldAscendMember({ ...candidate, territoryPowerMode: true }), false);
-  assert.equal(shouldAscendMember({ ...candidate, objective: "reputation" }), false);
-  assert.equal(shouldAscendMember({ ...candidate, respectToDeduct: 1, wantedLevel: 1 }), true);
-  assert.equal(shouldAscendMember({ ...candidate, respectToDeduct: 99, wantedLevel: 1 }), false);
-  assert.equal(shouldAscendMember({ ...candidate, multiplier: 1.2 }), false);
+  assert.equal(shouldAscendMember({ ...candidate, respectToDeduct: 25_000 }), false); // 22.6k / 30k = 0.75
+  assert.equal(shouldAscendMember({ ...candidate, multiplier: 1.4 }), false);
+  assert.equal(shouldAscendMember({ ...candidate, multiplier: undefined }), false);
+  // Money mode passes the old near-1 floor: wanted at its minimum allows it, real wanted does not.
+  assert.equal(shouldAscendMember({ ...candidate, wantedLevel: 1, penaltyFloor: 0.998 }), true);
+  assert.equal(shouldAscendMember({ ...candidate, penaltyFloor: 0.998 }), false);
 });
 
 function plan(name, respect, wanted, cleanRespect, cleanWanted) {

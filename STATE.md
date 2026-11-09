@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-08 18:16 Pacific (PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-08 20:16 Pacific (PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -12,6 +12,20 @@ DevTools, Remote API status files.
 > game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
+
+**2026-11-08 20:16 Pacific, 2-hourly task, BN10 run 2: steady, no changes.** Not a stand-aside run (no session
+running). Live (autosave summary, game `ps`, readiness and sleeve status 20:14-20:16): BN10, $47.4b, hacking 201, karma
+-31.0k, 0 installed, 0 queued, factions Tetrads, Slum Snakes, Tian Di Hui, CyberSec; player on Tetrads field work for
+Bionic Arms (104k rep short). Every resident running (MCP, supervisor, crawler, steward, money, stack_manager,
+run_report, faction_join, player controller, capital_manager, metrics_logger, HUD, dnet_root, cct_watcher,
+sleeve_controller, sleeve_buyer, xp_filler, share). Sleeves 0-4 on Homicide (28% chance, shock 5.5). Measured, 12
+samples 19:20 to 20:15: rep/h Tetrads 3.14k, others 151; hacking exp 62.6m/h (6.88 levels/h), karma -4.63k/h, cash
+-3.56b/h (net spending this hour, cause not verified; total RAM now 664k GB), MCP rate 47.5m/s average 18.5m/s, share
+1.44. Trend: `cash/h 3.05b>10b>-3.56b STEADY | MCP 64.6m>27.8m>47.5m STEADY | hackExp/h 31.2m>53m>62.6m ACCELERATING |
+lvl/h 12.3>9.69>6.88 context | rep work Tetrads 3.77k>3.26k>3.14k STEADY | rep best Tetrads STEADY`. Advisor: **wait**
+(48m for S.N.A, +9.1%/h vs cycle +2.8%/h); decision: **no install**, agree; the run target holds the first install for
+NiteSec (hacking 211, about 1.5h at 6.88 levels/h). World Daemon: not present (no Red Pill). Share A/B not run (first
+install due within hours). **Next:** NiteSec gate (~21:45), then first install; gang at -54k karma in about 5h.
 
 **2026-11-08 18:16 Pacific, 2-hourly task, BN10 run 2: steady, no changes.** Not a stand-aside run (no session
 running). Live (autosave summary, game `ps`, readiness and sleeve status 18:14-18:16): BN10, $22.0b, hacking 184, karma

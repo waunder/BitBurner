@@ -1,20 +1,22 @@
 {
   "goal": "BN10 run 2: SF10.2 (a 3rd base sleeve elsewhere), gang early, 5th Covenant sleeve if cash allows",
-  "updated": "2026-11-09",
+  "updated": "2026-11-10",
   "steps": [
     {
       "label": "Gang: NiteSec hacking gang, created 2026-11-09 02:16",
       "metric": {
         "kind": "karma",
         "target": -54000
-      }
+      },
+      "done": true
     },
     {
       "label": "NiteSec gate",
       "metric": {
         "kind": "hacking",
         "target": 211
-      }
+      },
+      "done": true
     },
     {
       "install": true,
@@ -24,10 +26,11 @@
       "metric": {
         "kind": "installed",
         "target": 1
-      }
+      },
+      "done": true
     },
     {
-      "label": "Covenant invite (sleeve 6 memory, 5th sleeve)",
+      "label": "Covenant joined 2026-11-10 ~16:00 (rejoin at hacking 850 after each install)",
       "metrics": [
         {
           "kind": "installed",
@@ -45,7 +48,8 @@
           "kind": "combat",
           "target": 850
         }
-      ]
+      ],
+      "done": true
     },
     {
       "label": "Fifth Covenant sleeve ($100q, a bonus, not a gate)",

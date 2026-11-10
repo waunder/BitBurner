@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-10 14:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-10 16:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -75,25 +75,28 @@ Covenant in run 1).
 | 5 | 11-10 02:19 | 6 augs + 1 NeuroFlux | 38 |
 | 6 | 11-10 06:20 | 6 augs (all NiteSec) | 44 |
 | 7 | 11-10 12:15 | 9 augs (all NiteSec) + B00ts of Perseus | 54 |
+| 8 | 11-10 16:15 | 9 NiteSec augs + Neural Accelerator + 3 NeuroFlux + H4mmer of Daedalus | 65 |
 
 Cash, not rep, limits each batch now (each aug in a batch costs 1.9x the one before). Backups are
 `saves/bitburnerSave_pre-install<N>_BN10run2_<date>.json.gz`.
 
 ## Latest check
 
-**2026-11-10 14:15 (2-hourly task): steady, no changes.** BN10, $1.97t, hacking 800, str/def/dex/agi
-3369/6919/920/1247 (all past 850), karma -112k, 54 installed, 1 queued (The H4mmer of Daedalus). All
-residents running. Player in Algorithms class toward hacking 850, the last Covenant gate (about 15:00).
-Measured, 13 samples 13:10-14:10: cash 1.77t/h, hacking exp 2.52b/h (93 levels/h), NiteSec 1.06m rep/h,
-MCP avg 684m/s. Trend n/a (cycle 1.9h). Advisor **wait** (gang 4h minimum); agreed. Cycle 7 (5.93h):
-NiteSec 13.4m rep, favor +25.9 NiteSec, +19.3 CyberSec. World Daemon: not present.
+**2026-11-10 16:15 (2-hourly task): install 8, 54 -> 65 installed.** Before (metrics 16:05, readiness 16:13):
+BN10, $5.67t, hacking 852, str/def/dex/agi 3919/8048/1000/1402, karma -113k. **The Covenant joined** (between 15:55
+and 16:00); sleeve_buyer held to 1% of cash (late phase), so nothing spent there. Measured, 12 samples 15:10-16:05:
+cash 4.29t/h, hacking exp 2.74b/h, NiteSec 1.12m rep/h, BitRunners 112k, MCP avg 901m/s. Trend: cash STEADY, MCP
+STEADY, hackExp STEADY, rep work SWITCH (BitRunners), rep best NiteSec STEADY. Advisor **wait** only for the gang 4h
+minimum (ended 16:15); next aug BitRunners Neurolink 6.4h away (0.036/h vs cycle 0.25/h). Decision: **install**.
+Backup `pre-install8` validated. All residents restarted; readiness 16:15: 65 installed, 0 queued.
+World Daemon: not present (no Red Pill).
 
 ## Next
 
-1. Cycle 8 (from 12:15): confirm The Covenant invite is accepted once hacking reaches 850 (about
-   15:00), and what `sleeve_buyer.js` does with it. The Black Hand donations show in readiness.
-   Next install when the advisor and judgement agree (gang 4h minimum ends about 16:15).
-2. Push hacking to 850 for The Covenant, then Daedalus and The Red Pill.
+1. Cycle 9 (from 16:15): rebuild hacking to 850 to rejoin The Covenant (membership was lost at install).
+   Add `metrics.py cycles` for cycle 8 (12:15-16:15) to the check log once a new-cycle sample exists.
+   Next install when the advisor and judgement agree (gang 4h minimum ends about 20:15).
+2. Then Daedalus (hacking 2500 or all combat 1500, $100b) and The Red Pill.
 3. Gang planner metrics M1–M7 (`docs/gang-planner.md`): M1 and M6 are met. Keep checking the
    others at installs.
 

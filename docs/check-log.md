@@ -9,6 +9,34 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN10 run 2
 
+**BN10 run 2, install 8 ran 2026-11-10 16:15 Pacific, 2-hourly task: 10 bought + 3 NeuroFlux, 54 -> 65 installed.**
+Not a stand-aside run (no session running; Ken's session and the allocator-design worktree idle since 15:54). Before
+(metrics sample 16:05, readiness 16:13, game `ps` 16:08): BN10, $4.99t (16:05) to $5.67t (16:15), hacking 852,
+str/def/dex/agi 3919/8048/1000/1402, cha 3304, karma -113k, 54 installed, 1 queued (The H4mmer of Daedalus). Every
+resident running (17 plus gang-controller and cct_watcher, capital_manager and sleeve_buyer restarted 15:20). **The
+Covenant joined** between the 15:55 and 16:00 samples (rep 296 by 16:07). `sleeve_buyer_status.json` 16:06: member,
+late phase, limits lasting $51.5b, wiped 0, action save ("memory upgrade not yet affordable"); 5th sleeve costs $100q.
+Player on BitRunners hacking work for Neural Accelerator. Measured, 12 samples 15:10 to 16:05: rep/h NiteSec 1.12m,
+BitRunners 112k, The Black Hand 39.3k, Tian Di Hui 35.7k, Tetrads 34.4k, CyberSec 29.8k, Slum Snakes 24.6k, The
+Syndicate 6.68k, The Covenant 1.21k; hacking exp 2.74b/h (20.9 levels/h), karma -435/h, cash 4.29t/h, MCP rate 997m/s
+average 901m/s, share 1.53. Trend: `cash/h 1.55t>-1.55t>4.29t STEADY | MCP 1.08b>938m>997m STEADY | hackExp/h
+2.5b>2.65b>2.74b STEADY | lvl/h 97.3>33.8>20.9 context | rep work BitRunners SWITCH | rep best NiteSec
+1.06m>1.1m>1.12m STEADY`. Nothing decelerating (the -1.55t cash window was the $4.74t home RAM buy at 14:53).
+Advisor at 16:13: **wait**, reason "gang cycle minimum: 2m more before an install (min 4h)"; next aug BitRunners
+Neurolink, rep gap 1.33m, 6.4h, rate 0.036/h against cycle average 0.249/h; batch value 0.99; cashLimited none.
+Decision: **install, agree once the minimum passed (16:15)**. Neural Accelerator had just become rep-ready, the next
+gain was 6.4h away, and cash-limited batches grow by about one aug per 2h of income ($9t+ for the next x1.9 step), not
+worth holding the cycle. Lost: Covenant membership (hacking must reach 850 again), dex/agi progress toward Daedalus's
+combat 1500. `capital_manager.js` killed 16:14. Backup `saves/bitburnerSave_pre-install8_BN10run2_2026-11-10.json.gz`
+(gzip and player parsed: node 10, 54 augs, 1 queued, 6 sleeves, $5.63t, no Red Pill; SHA-256
+13af5a3eb7aaa7dc041c764a844c0b961a0e5f8e123d472776425cc537f56738). `aug_install.js --install` at 16:15 ($5.67t) bought
+Embedded Netburner Module Core V2 Upgrade, Embedded Netburner Module Core V3 Upgrade, Glibness Enhancement, PCMatrix,
+Neural Accelerator (BitRunners), Enhanced Myelin Sheathing, Enhanced Social Interaction Implant, Social Dynamics
+Processor, Synfibril Muscle, Bionic Legs, then 3 NeuroFlux; no donations; home 128TB, cores 3. After: startup.js
+"18 started, 0 failed", gang-controller started; readiness 16:15:38 shows **65 installed**, 0 queued, $133m, advisor
+wait. Run target: steps 1-4 marked done (Covenant label notes rejoin after each install), pushed. `metrics.py cycles`
+for cycle 8 left for the next run. World Daemon: not present (no Red Pill). Share A/B: already recorded 2026-11-05.
+
 **Spending ledger live (allocator R0) (2026-11-10 16:15 PC clock, Ken session).** Ken approved the allocator design (`docs/allocator-design.md`: central valuation, scripts still buy, one setting per purchase kind in `valuation_flags.json`) and its answers. Branch `allocator-ledger` (0c3bf99, line endings fixed) merged to main (bd6aa68), design doc added (604df4a). 575 node tests and 29 metrics tests pass. `metrics_logger.js` restarted about 16:12; the 16:15 sample carries `homeRam` 131072, `batchAverage` 0.249 and every spending category (sleeves, gang_expenses, class, other, stock, ...). `metrics.py pull` wrote 51 records to `runtime/spend_history.jsonl`. `metrics.py spend`, baseline B1 (late spend outside the batch, % of late earnings): cycle 6 88%, cycle 7 70%, cycle 8 so far 50% (the 14:55 $4.74t home step). Cycle 7 B2: cash 2.71t, batch 2.71t (9 augs), 2.67b left. Next: R1 shadow allocator on branch `allocator-shadow`.
 
 **Every spender now leaves late-cycle cash to the aug batch (2026-11-10 15:21 PC clock, Ken session).** Audit of every script that spends: capital_manager (cloud, home RAM, programs), sleeve_buyer (sleeve augs, memory, sleeves), gang-controller (gear, gang augs), aug_install (the batch itself), player controller (travel, classes: negligible). New shared `lateCycleLimit` in `capital_logic.js`: in the first `earlyCycleHours` (1.5) no extra limit; after that, 0 for purchases an install wipes and `lateSpendFraction` (1%) of cash per purchase for lasting ones. Applied to home RAM (capital_manager; on top of the demand test) and to sleeve_buyer (augs blocked late; memory and sleeves held to 1%). Before this, once The Covenant joined (hacking 837/850 at 15:05), sleeve_buyer would have spent all cash above the reserve on memory, about $210t across run 1's 4th sleeve. Gang left as is: money mode buys only gear with 30-minute payback within 1% of cash; reputation mode buys the rep the batch is short of. Measured this cycle: sleeves $0, gang gear none since install 7. 573 tests pass (2 new). Both scripts restarted 15:20; live 15:21: capital late, homeDemand 0.0023, no action; sleeve_buyer late, limits lasting $18.8b, wiped 0.

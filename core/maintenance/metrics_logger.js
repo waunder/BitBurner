@@ -54,6 +54,7 @@ function sample(ns) {
     mcp: readJson(ns, "mcp_status.json"),
     gang: readJson(ns, "gang_status.json"),
     ram: ramTotals(ns),
+    homeRam: ns.getServerMaxRam("home"),
   })
 }
 

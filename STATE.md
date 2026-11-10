@@ -18,11 +18,13 @@ DevTools, Remote API status files.
 > an install resets the rep, so it returns to reputation on its own. Nothing to set or undo at installs. Live 09:21:
 > rep 11.2m >= 3.5m, all 12 on Money Laundering, gang money about $50b/h (cash 120b/h before), penalty 0.999.
 > Overnight, cycle 6 had run about 2h past 3.5m on Cyberterrorism for no use. capital_manager is not part of this:
-> it keeps buying cloud servers all cycle (lost at install); pausing it late in a cycle is still a manual call.
+> it now limits cloud buying late in each cycle by itself (next note).
 >
-> **Cloud buying stopped for the rest of cycle 7 (10:14, Ken session). Undo right after the next install:** push
-> game-only `capital_policy.json` back to `{"reserve":0,"homeRamTarget":262144,"cloudDemandFloor":0}`, then read it back.
-> It is now `cloudDemandFloor` 0.5 (home RAM still bought). Evidence, cycle 7 metrics: cloud RAM grew 1.8PB -> 5.5PB
+> **Cloud buying is now automatic by cycle phase (10:16, Ken session; commit 085ffe8). Nothing to undo at installs.**
+> Game-only `capital_policy.json` is `{"reserve":0,"homeRamTarget":262144,"cloudDemandFloor":0,"lateCloudDemandFloor":0.5,
+> "earlyCycleHours":1.5}`: for 1.5h after each install cloud RAM is bought freely (floor 0, fast hacking rebuild), then
+> only while MCP's own jobs fill half of it (in practice, no more cloud buying). Home RAM is bought throughout.
+> `capital_status.json` `cyclePhase` shows the phase; live 10:16: late, floor 0.5, no purchases. Evidence, cycle 7 metrics: cloud RAM grew 1.8PB -> 5.5PB
 > from 07:40 to 10:10 ($5.1t spent this cycle, about 95% of hacking income) while hacking income stayed flat at about
 > $1.7t/h; MCP's own jobs fill 0.2% of cloud RAM, so the extra RAM only fed xp_filler (hack exp 0.9b -> 1.9b/h), which an
 > install wipes. Floor 0 is right early in a cycle (fast hacking rebuild); late in a cycle, cash should go to the batch.

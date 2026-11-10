@@ -428,7 +428,7 @@ with price, rep and factions. Lists every game faction, joined or not. Takes no 
 
 ### `capital_manager.js`
 
-Cloud buying stops while MCP's own jobs in `mcp_status.json` `cloudWorkers` fill under `cloudDemandFloor` of cloud RAM (default 0.5). Set it to 0 in the policy when cash has no better use and the RAM should go to `xp_filler.js` instead. `restart_capital.js` restarts the manager and restores work focus.
+Cloud buying stops while MCP's own jobs in `mcp_status.json` `cloudWorkers` fill under `cloudDemandFloor` of cloud RAM (default 0.5). Set it to 0 in the policy when cash has no better use and the RAM should go to `xp_filler.js` instead. With `lateCloudDemandFloor` set, `cloudDemandFloor` applies only for the first `earlyCycleHours` (default 1.5) after an install and `lateCloudDemandFloor` after that (`cloudDemandFloorFor`; an install deletes cloud servers, and in BN10 run 2 cycle 7 MCP income stopped growing with RAM after about 1.3h). BN10 live policy since 2026-11-10: floor 0, late floor 0.5, 1.5h. `restart_capital.js` restarts the manager and restores work focus.
 
 
 Spends cash on hacking capacity. `capital_bootstrap.js` needs about 5.6GB, so it
@@ -448,9 +448,9 @@ never touches augmentations. While `mcp.js` is not running on home, it holds bac
 `mcp.js` itself is not on its list.
 
 - **Reads:** `capital_policy.json` every pass (`enabled`, `reserve`,
-  `homeRamTarget` default 512, `cloudFraction` default 0.5, `cloudDemandFloor` default 0.5). Set `enabled` false
+  `homeRamTarget` default 512, `cloudFraction` default 0.5, `cloudDemandFloor` default 0.5, optional `lateCloudDemandFloor` and `earlyCycleHours`). Set `enabled` false
   to stop purchases, or raise `reserve` to protect cash for augmentations.
-- **Writes:** `capital_status.json` with the last 50 purchases.
+- **Writes:** `capital_status.json` with the last 50 purchases and `cyclePhase` (floor in use; early, late or fixed).
 - **Failure modes:** a refused purchase is recorded with `ok: false` and retried
   after 10s. Purchases are lost on augmentation install.
 - **Test:** `node --test capital_logic.test.js`

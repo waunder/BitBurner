@@ -9,6 +9,31 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN10 run 2
 
+**BN10 run 2, install 7 ran 2026-11-10 12:15 Pacific, 2-hourly task: 9 bought, 44 -> 54 installed.** Not a
+stand-aside run (no session running; Ken's session idle since 12:01). Before (metrics sample 12:10, readiness 12:14,
+game `ps` 12:15): BN10, $2.52t (12:10) to $2.71t (12:15), hacking 683, str/def/dex/agi 1776/3648/830/1073, cha 907,
+karma -111k, 44 installed, 1 queued (The B00ts of Perseus). Every resident running (17 plus gang-controller and
+cct_watcher). Player in the gym on dexterity (830/850). Measured, 13 samples 11:10 to 12:10: rep/h NiteSec 755k (gang
+on money since 09:21), BitRunners 36.5k, Tian Di Hui 19k, The Black Hand 17.6k, Tetrads 14.3k, CyberSec 12.5k, Slum
+Snakes 7.72k, The Syndicate 3.44k; hacking exp 3.13b/h (13.3 levels/h), karma -441/h, cash 1.84t/h, MCP rate 392m/s
+average 441m/s, share 1.53. Trend: `cash/h 106b>-180b>1.84t STEADY | MCP 349m>406m>392m STEADY | hackExp/h
+1.96b>3.08b>3.13b STEADY | lvl/h 22.2>20.1>13.3 context | rep work SWITCH | rep best NiteSec 1.1m>721k>755k STEADY`.
+Nothing decelerating. Advisor: **install** ("best next Neural Accelerator adds +2.9%/h, under the cycle's +28.2%/h";
+batch +147% vs cycle average +24.8%; cycle 5.9h). Decision: **install, agree**. Cash was the only limit, and $2.7t
+covered all 8 planned NiteSec augs. Lost: dexterity 830 of 850. But hacking binds the Covenant gate (683 of 850 at 13
+levels/h), and this batch adds hacking multipliers. Favor banked (pending gain at 12:14): BitRunners +104 (0 -> ~104),
+The Black Hand +27 (133 -> ~161, past 150, so donations open there next cycle), NiteSec +26 (live after: 363).
+`capital_manager.js` killed 12:15. Backup `saves/bitburnerSave_pre-install7_BN10run2_2026-11-10.json.gz` (gzip and
+player parsed: node 10, 44 augs, 1 queued, 6 sleeves, $2.69t, no Red Pill; SHA-256
+d041e0ef66d12983d6ca6306d883b7d234a24f6ce11cf65a13a3aa4823f4ea9a). `aug_install.js --install` at 12:15 ($2.71t)
+bought PC Direct-Neural Interface Optimization Submodule, Neuralstimulator, Neotra, HyperSight Corneal Implant,
+SmartJaw, Photosynthetic Cells, Embedded Netburner Module Core Implant, CRTX42-AA Gene Modification, Combat Rib I (all
+NiteSec); no NeuroFlux, no donations; home 64TB, 2 cores. After: game `ps` 12:16 shows every resident restarted (17
+plus gang-controller and cct_watcher); readiness 12:16 shows **54 installed**, 0 queued, $184m, advisor wait;
+`capital_status.json` `cyclePhase` early (floor 0); gang back on reputation by itself at 12:17 (17.1k of 3.5m).
+`metrics.py cycles` for cycle 7 (06:20-12:15, 5.9h) is left for the next run, once a new-cycle sample exists. Run
+target unchanged. World Daemon: not present (no Daedalus, no Red Pill). Share A/B: already recorded 2026-11-05.
+
 **Gang objective is `auto` (set 2026-11-10 09:20 PC clock, Ken session; commit 667d2ab).** The gang earns NiteSec
 rep until it covers every aug NiteSec sells (`gangRepNeeded`, 3.5m now), then switches itself to Money Laundering;
 an install resets the rep, so it returns to reputation on its own. Nothing to set or undo at installs. Live 09:21:

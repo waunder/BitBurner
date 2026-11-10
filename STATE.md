@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-10 12:30 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-10 12:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -60,25 +60,26 @@ Covenant in run 1).
 | 4 | 11-09 22:17 | 3 augs + W1ngs of Icarus | 32 |
 | 5 | 11-10 02:19 | 6 augs + 1 NeuroFlux | 38 |
 | 6 | 11-10 06:20 | 6 augs (all NiteSec) | 44 |
+| 7 | 11-10 12:15 | 9 augs (all NiteSec) + B00ts of Perseus | 54 |
 
 Cash, not rep, limits each batch now (each aug in a batch costs 1.9x the one before). Backups are
 `saves/bitburnerSave_pre-install<N>_BN10run2_<date>.json.gz`.
 
 ## Latest check
 
-**2026-11-10 08:15 (2-hourly task): steady, no changes.** BN10, $164b, hacking 584,
-str/def/dex/agi 1406/2888/679/888, karma -110k, 44 installed, 1 queued (The B00ts of Perseus, a
-darknet reward). Joined BitRunners. Every resident running (17 plus gang-controller and cct_watcher).
-Player in the gym on dexterity. Rep/h: NiteSec 3.81m (gang), The Black Hand 82.1k. Cash 120b/h
-before the gang switched to money. Favor: NiteSec 337, The Black Hand 133. Advisor **wait** for the
-gang minimum, which ended about 10:20. Covenant gate: hacking 584/850 binds; dexterity 679/850 is
-the only combat stat short. World Daemon: not present. Full entry: `docs/check-log.md`.
+**2026-11-10 12:15 (2-hourly task): install 7, 9 augs, 44 -> 54 installed.** Before: BN10,
+$2.71t, hacking 683, str/def/dex/agi 1776/3648/830/1073, karma -111k. Measured, 13 samples
+11:10-12:10: cash 1.84t/h, hacking exp 3.13b/h, NiteSec 755k rep/h (gang on money), MCP avg 441m/s.
+Trend STEADY on every series. Advisor **install** (+2.9%/h next vs +28.2%/h cycle); agreed, since
+hacking (683/850) binds the Covenant gate. Backup validated first. After (12:16-12:17): every resident
+restarted, 54 installed, cloud buying in its early phase, gang back on reputation by itself. Favor:
+NiteSec 363, The Black Hand ~161 (donations open), BitRunners ~104. World Daemon: not present.
 
 ## Next
 
-1. Next install, when the advisor and judgement agree. After it, check that early-phase cloud buying
-   runs for the first 1.5h and then stops (`capital_status.json` `cyclePhase`), and that the gang is
-   back on reputation.
+1. Cycle 8 (from 12:15): add `metrics.py cycles` for cycle 7, check that cloud buying stops after
+   1.5h (`cyclePhase` late about 13:45), and that The Black Hand donations show in readiness.
+   Next install when the advisor and judgement agree.
 2. Push hacking to 850 for The Covenant, then Daedalus and The Red Pill.
 3. Gang planner metrics M1–M7 (`docs/gang-planner.md`): M1 and M6 are met. Keep checking the
    others at installs.

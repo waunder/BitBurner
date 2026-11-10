@@ -61,8 +61,10 @@ Covenant in run 1).
   each script still buys, one `own`/`shadow`/`valued`/`sweep`/`never` setting per purchase kind in
   `valuation_flags.json`. Step R0, the spending ledger, merged 2026-11-10 (bd6aa68):
   `metrics.py spend` reports spending per cycle and B1 (late spend outside the batch, % of late
-  earnings: 88%, 70%, 50% over cycles 6-8). Next is R1, a shadow allocator on branch
-  `allocator-shadow` (not started).
+  earnings: 88%, 70%, 50% over cycles 6-8). Step R1, the shadow allocator, merged 2026-11-10 16:40
+  (245363b) and running: `allocator.js` (5.45GB) writes `spend_grants.json` and one line per purchase
+  to `allocator_shadow_log.txt`; it buys nothing and every kind is `own`. It is judged over cycle 9
+  (install 8 at 16:15) on S1-S5 in the design doc before R2 lets any kind obey it.
 
 ## Installs this run
 

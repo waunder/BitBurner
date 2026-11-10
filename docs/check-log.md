@@ -9,6 +9,8 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN10 run 2
 
+**Shadow allocator live (allocator R1) (2026-11-10 16:40 PC clock, Ken session).** Ken: merge now so it watches cycle 9 (install 8 ran 16:15). Reviewed `allocator-shadow` (924f82a): no purchase calls, writes only its own log and status, line endings clean; 600 node tests and the Python tests pass in a detached copy, and on main after merge (245363b). It also fixes `test_bn10_is_bn15_plus_sleeves`, which failed on main once sleeve_buyer joined startup. Started `allocator.js` 16:41: **5.45GB**, over its 5GB S1 target by the 1GB the game's RAM checker charges for the field name `run` (status key and `valuation_flags.json` stamp); rename in R2. Live checks 16:42-16:44: grants 21s old, phase early matches `capital_status.json`, every kind `own` (spenders unchanged), shadow log has 5 lines for capital_manager's cloud upgrades (mcp-worker-4..7, $25.5b each), all `grant`: early phase, rebuild. Readiness runs as a one-shot, so its new `offers` field needs no restart. Judged over cycle 9 on S1-S5 before R2.
+
 **BN10 run 2, install 8 ran 2026-11-10 16:15 Pacific, 2-hourly task: 10 bought + 3 NeuroFlux, 54 -> 65 installed.**
 Not a stand-aside run (no session running; Ken's session and the allocator-design worktree idle since 15:54). Before
 (metrics sample 16:05, readiness 16:13, game `ps` 16:08): BN10, $4.99t (16:05) to $5.67t (16:15), hacking 852,

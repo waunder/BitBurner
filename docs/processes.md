@@ -1403,7 +1403,13 @@ back with `run set_gang_objective.js money` (cash; territory progression also
 requires `territoryEnabled: true` in `gang_capital_policy.json`)
 or `run set_gang_objective.js cash` (cash-first, without territory training
 or power); no restart is required. The default is
-money when no in-game override exists. This is independent of the player's
+money when no in-game override exists. `run set_gang_objective.js auto` (live
+since 2026-11-10) picks each loop: reputation until the gang faction's rep is at
+least `gangRepNeeded` in `augmentation_readiness.json` (the most rep any unowned
+aug it sells needs, prerequisite-locked ones included), then money. An install
+resets that rep to 0, so each cycle starts on reputation; missing or stale (10
+min) readiness keeps reputation. `gang_status.json` `objectiveChoice` records the
+setting, the resolved objective and the reason. This is independent of the player's
 activity and MCP objective. The controller reports current gang-faction
 reputation, its observed rate when available, and projected respect per game
 cycle in `gang_status.json`; the consolidated HUD and focused gang diagnostic

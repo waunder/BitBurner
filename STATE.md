@@ -13,6 +13,13 @@ DevTools, Remote API status files.
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
 
+> **Gang objective is `auto` (set 2026-11-10 09:20 PC clock, Ken session; commit 667d2ab).** The gang earns NiteSec
+> rep until it covers every aug NiteSec sells (`gangRepNeeded`, 3.5m now), then switches itself to Money Laundering;
+> an install resets the rep, so it returns to reputation on its own. Nothing to set or undo at installs. Live 09:21:
+> rep 11.2m >= 3.5m, all 12 on Money Laundering, gang money about $50b/h (cash 120b/h before), penalty 0.999.
+> Overnight, cycle 6 had run about 2h past 3.5m on Cyberterrorism for no use. capital_manager is not part of this:
+> it keeps buying cloud servers all cycle (lost at install); pausing it late in a cycle is still a manual call.
+
 **2026-11-10 08:15 Pacific, 2-hourly task, BN10 run 2: steady, no changes.** Not a stand-aside run (no session
 running). Live (metrics sample 08:10, game `ps` 08:16, readiness 08:13): BN10, $164b, hacking 584, str/def/dex/agi
 1406/2888/679/888, karma -110k, **44 installed** (confirms install 6), **1 queued: The B00ts of Perseus** (darknet

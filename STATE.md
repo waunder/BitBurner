@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-09 16:16 Pacific (PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-09 20:15 Pacific (PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -12,6 +12,19 @@ DevTools, Remote API status files.
 > game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
+
+**2026-11-09 20:15 Pacific, 2-hourly task, BN10 run 2: steady, no changes.** Not a stand-aside run (no session
+running). Live (metrics sample 20:10, game `ps` 20:15, readiness 20:13, gang_status 20:15, autosave): BN10, $40.4b to
+$51.7b, hacking 342-346, str/def/dex/agi 113/147/106/105, karma -96.1k, 28 installed, **1 queued: The W1ngs of Icarus**
+(darknet lab 1 reward, picked up since install 3). Every resident running (19 plus gang-controller and cct_watcher).
+Player on Tian Di Hui hacking work for Neuroreceptor Management Implant (+98.7k rep to go). Measured, 12 samples 19:15
+to 20:10: rep/h NiteSec 870k (gang), Tian Di Hui 34.7k, Tetrads 4.12k, CyberSec 2.06k, Slum Snakes 1.62k; hacking exp
+158m/h (49.7 levels/h), karma -3.44k/h, cash 41.6b/h, MCP rate 123m/s average 79.8m/s, share 1.43. Trend: `n/a` on
+every series (cycle 1.9h old). Gang (planner checks): NiteSec rep 1.35m, penalty 0.989 (out of cleanup), 60/60
+rootkits, 36 gang augs bought, 20 ascensions (last x1.25 at 20:14). M1: 870k/2.71 = about 321k/h at zero favor vs the
+89k/h baseline. Advisor: **wait** ("gang cycle minimum: 2.0h more"; batch +30.8% vs cycle average +15.6%). Decision:
+**no install, agree**; the 4h minimum ends about 22:15, and cash, not rep, will limit the next batch. World Daemon:
+not present (no Daedalus, no Red Pill). Share A/B: already recorded 2026-11-05; not repeated.
 
 **BN10 run 2, install 3 ran 2026-11-09 18:15 Pacific (Ken session): gang-planner deployed; 4 augmentations + 2
 NeuroFlux, 27 installed.** The NiteSec install hold is lifted: the advisor now times gang-faction gaps itself (minimum

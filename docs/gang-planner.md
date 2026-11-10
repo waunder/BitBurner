@@ -125,3 +125,8 @@ first). Remove the STATE install hold in the same commit as A2. Record results i
 Merged 47b5559; install at 18:15 with NiteSec 617k (4 augs + 2 NeuroFlux; cash ran out). Favor after: 171, so the
 M1 zero-favor rate is the measured rate / 2.71. First check 18:18: wanted recovery under the 0.97/0.985 band (penalty
 0.953 rising), 12/60 rootkits, advisor "wait" for the 4h minimum. Results go here.
+
+Check 2026-11-09 20:15 (2-hourly task, cycle 1.9h): penalty 0.989, not in cleanup (M2 on track); 60/60 rootkits
+(M3 met); 36 gang augs bought (M4 met if Neuralstimulator is among them, not checked per item); 20 ascensions, last
+x1.25 at 20:14. NiteSec rep 1.35m; measured 870k/h (12 samples 19:15-20:10), so M1 about 321k/h at zero favor vs
+89k/h baseline (+260%). Cash 41.6b/h measured. Advisor "wait" for the 4h minimum (M6 on track).

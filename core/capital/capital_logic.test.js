@@ -82,3 +82,19 @@ test("late floor stops cloud buying when MCP barely uses its RAM", () => {
   assert.equal(chooseCapitalAction({ ...input, cloudDemandFloor: late }), null)
   assert.notEqual(chooseCapitalAction({ ...input, cloudDemandFloor: 0 }), null)
 })
+
+test("home RAM needs demand, not just a size target", () => {
+  // 2026-11-10: home 65.5TB -> 131TB for $4.74t at 0.23% use. Same input must now buy nothing for home.
+  const input = { ...base, homeRam: 65536, homeRamTarget: 262144, homeRamCost: 4.74e12, spendable: 5e12, homeDemand: 0.0023 }
+  assert.equal(chooseCapitalAction(input), null)
+  assert.equal(chooseCapitalAction({ ...input, homeDemand: 0.6 }).kind, "home")
+  assert.equal(chooseCapitalAction({ ...input, homeDemand: 0.3, homeDemandFloor: 0.25 }).kind, "home")
+})
+test("idle home RAM does not hold cash back from cloud either", () => {
+  const input = { ...base, homeRam: 256, homeRamTarget: 1024, homeRamCost: 1000, cloudQuotes: [{ ram: 8, cost: 1 }], spendable: 100, incomePerSec: 10, homeDemand: 0.1 }
+  assert.equal(chooseCapitalAction(input).kind, "cloud")
+})
+test("below the home RAM floor demand is not needed", () => {
+  const input = { ...base, homeRam: 64, homeRamTarget: 512, homeRamCost: 50, spendable: 100, homeDemand: 0 }
+  assert.equal(chooseCapitalAction(input).kind, "home")
+})

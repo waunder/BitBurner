@@ -3,7 +3,8 @@
  * Buys TOR, port openers, home RAM and cloud RAM; never touches augmentations.
  * `capital_policy.json` is read every pass: enabled, reserve, homeRamTarget,
  * cloudFraction, saveWindowSec, homeRamFloor, cloudDemandFloor, and optionally lateCloudDemandFloor and
- * earlyCycleHours (cloudDemandFloorFor: a stricter floor late in each install-to-install cycle).
+ * earlyCycleHours (cloudDemandFloorFor: a stricter floor late in each install-to-install cycle), and
+ * homeDemandFloor (default 0.5: home RAM is bought only while scripts need that share of it).
  * Writes every purchase, and `cyclePhase`, to `capital_status.json`.
  * Start: `run capital_manager.js` (startup.js launches it).
  * @param {NS} ns
@@ -73,6 +74,19 @@ function startWaitingManager(ns) {
   return name && ns.run(name) ? name : null
 }
 
+/** Share of home RAM that scripts need: everything running there except xp_filler's leftover
+ * workers, plus managers still waiting for room (and mcp.js while it is down). */
+function readHomeDemand(ns) {
+  const home = "home", max = ns.getServerMaxRam(home)
+  if (!(max > 0)) return 1
+  const fillers = new Set(["scripts/xp_weaken.js", "scripts/share.js"])
+  const used = ns.ps(home).filter(p => !fillers.has(p.filename))
+    .reduce((sum, p) => sum + ns.getScriptRam(p.filename, home) * p.threads, 0)
+  const waiting = [...managerList(ns), "mcp.js"].filter(name => !ns.scriptRunning(name, home))
+    .reduce((sum, name) => sum + ns.getScriptRam(name, home), 0)
+  return (used + waiting) / max
+}
+
 /** MCP's and the stacks' demand for cloud RAM; xp_filler.js is excluded because it only uses leftovers. */
 function readUtilization(ns) {
   try {
@@ -99,10 +113,12 @@ export async function main(ns) {
     }
     let spent = 0
     const policy = readPolicy(ns)
-    let action = null, ok = null, cyclePhase = null
+    let action = null, ok = null, cyclePhase = null, homeDemand = null
     if (policy.enabled !== false) {
       cyclePhase = cloudDemandFloorFor(policy, (now - ns.getResetInfo().lastAugReset) / 3.6e6)
-      const input = { ...observe(ns, policy), ramUtilization: readUtilization(ns), incomePerSec, saveWindowSec: Number(policy.saveWindowSec) || 300, homeRamFloor: Number(policy.homeRamFloor) || 128, cloudDemandFloor: cyclePhase.floor }
+      const input = { ...observe(ns, policy), ramUtilization: readUtilization(ns), incomePerSec, saveWindowSec: Number(policy.saveWindowSec) || 300, homeRamFloor: Number(policy.homeRamFloor) || 128, cloudDemandFloor: cyclePhase.floor,
+        homeDemand: readHomeDemand(ns), homeDemandFloor: Number(policy.homeDemandFloor ?? 0.5) }
+      homeDemand = input.homeDemand
       action = chooseCapitalAction(input)
       if (action && action.kind !== "save") {
         ok = buy(ns, action, input.cloud.length)
@@ -113,7 +129,7 @@ export async function main(ns) {
     }
     last = { at: now, cash, spent }
     const started = startWaitingManager(ns)
-    ns.write(STATUS, JSON.stringify({ ts: Date.now(), policy, cyclePhase, incomePerSec, action, ok, started, purchases }), "w")
+    ns.write(STATUS, JSON.stringify({ ts: Date.now(), policy, cyclePhase, homeDemand, incomePerSec, action, ok, started, purchases }), "w")
     // Keep buying while purchases succeed; otherwise wait for income.
     await ns.sleep(ok ? 200 : POLL_MS)
   }

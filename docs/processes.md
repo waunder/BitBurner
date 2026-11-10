@@ -434,7 +434,8 @@ Cloud buying stops while MCP's own jobs in `mcp_status.json` `cloudWorkers` fill
 Spends cash on hacking capacity. `capital_bootstrap.js` needs about 5.6GB, so it
 fits on a fresh 32GB home: it upgrades home RAM until the 17GB manager can run,
 then hands over and exits. Each pass buys the first affordable item: TOR, then
-programs, then home RAM up to `homeRamTarget`, then cloud RAM up to
+programs, then home RAM up to `homeRamTarget` (only while `homeDemand`, the share of home that scripts other than
+xp_filler's workers need, is at least `homeDemandFloor`, default 0.5, or home is under `homeRamFloor`), then cloud RAM up to
 `cloudFraction` of spendable cash. Full cloud slots upgrade the smallest server.
 Cloud buying pauses when ten-minute average income can reach the next program or home
 upgrade within `saveWindowSec` (default 300), and always below `homeRamFloor`
@@ -448,7 +449,7 @@ never touches augmentations. While `mcp.js` is not running on home, it holds bac
 `mcp.js` itself is not on its list.
 
 - **Reads:** `capital_policy.json` every pass (`enabled`, `reserve`,
-  `homeRamTarget` default 512, `cloudFraction` default 0.5, `cloudDemandFloor` default 0.5, optional `lateCloudDemandFloor` and `earlyCycleHours`). Set `enabled` false
+  `homeRamTarget` default 512, `cloudFraction` default 0.5, `cloudDemandFloor` default 0.5, optional `lateCloudDemandFloor` and `earlyCycleHours`, `homeDemandFloor` default 0.5). Set `enabled` false
   to stop purchases, or raise `reserve` to protect cash for augmentations.
 - **Writes:** `capital_status.json` with the last 50 purchases and `cyclePhase` (floor in use; early, late or fixed).
 - **Failure modes:** a refused purchase is recorded with `ok: false` and retried

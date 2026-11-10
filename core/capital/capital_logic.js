@@ -3,7 +3,8 @@ export const PROGRAMS = ["BruteSSH.exe", "FTPCrack.exe", "relaySMTP.exe", "Darks
 
 /**
  * Choose the next purchase, or null to wait. Affordable programs and home RAM come
- * first because they unlock rooted hosts and managers; cloud RAM takes the rest.
+ * first because they unlock rooted hosts and managers; cloud RAM takes the rest. Home RAM
+ * needs demand (homeDemand >= homeDemandFloor) as cloud RAM does (ramUtilization).
  * Input costs of null mean unavailable; `spendable` is cash above the reserve.
  */
 /** Cloud demand floor for this point in the cycle (install to install). An install deletes cloud
@@ -22,11 +23,17 @@ export function cloudDemandFloorFor(policy = {}, hoursSinceInstall = 0) {
 }
 
 export function chooseCapitalAction({ spendable, hasTor, torCost = 200e3, programs = [], homeRam, homeRamTarget, homeRamCost,
-  cloud = [], cloudLimit = 0, cloudQuotes = [], upgradeQuotes = [], cloudFraction = 0.5, incomePerSec = 0, saveWindowSec = 300, homeRamFloor = 128, ramUtilization = 1, cloudDemandFloor = 0.5 }) {
+  cloud = [], cloudLimit = 0, cloudQuotes = [], upgradeQuotes = [], cloudFraction = 0.5, incomePerSec = 0, saveWindowSec = 300, homeRamFloor = 128, ramUtilization = 1, cloudDemandFloor = 0.5,
+  homeDemand = 1, homeDemandFloor = 0.5 }) {
   if (!hasTor) return spendable >= torCost ? { kind: "tor", cost: torCost } : { kind: "save", reason: "TOR", cost: torCost }
   const missing = programs.find(p => !p.owned && Number.isFinite(p.cost) && p.cost > 0)
   if (missing && missing.cost <= spendable) return { kind: "program", name: missing.name, cost: missing.cost }
-  const wantsHome = homeRam < homeRamTarget && Number.isFinite(homeRamCost)
+  // Home RAM is bought only when something would use it: below the floor the managers cannot run;
+  // above it, the scripts that need home (managers, MCP, stacks, waiting managers; not xp_filler's
+  // leftovers) must fill homeDemandFloor of it. BN10 run 2, 2026-11-10 14:53: with only a size target,
+  // $4.74t doubled home to 131TB while 0.23% of it was in use, taking that cash from the aug batch.
+  const homeNeeded = homeRam < homeRamFloor || homeDemand >= homeDemandFloor
+  const wantsHome = homeRam < homeRamTarget && Number.isFinite(homeRamCost) && homeNeeded
   if (wantsHome && homeRamCost <= spendable) return { kind: "home", cost: homeRamCost }
   // Below this floor the managers themselves cannot run, so nothing outranks it.
   if (wantsHome && homeRam < homeRamFloor) return { kind: "save", reason: "home RAM floor", cost: homeRamCost }

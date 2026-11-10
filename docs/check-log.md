@@ -9,6 +9,8 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN10 run 2
 
+**Home RAM now needs demand (2026-11-10 15:14 PC clock, Ken session).** Ken: the 131TB cap is not the fix; make sure it cannot happen again. Root cause: `chooseCapitalAction` bought home RAM whenever home was below `homeRamTarget`, with no check that anything would use it (cloud RAM already had one, `ramUtilization`). Now home RAM is bought only below `homeRamFloor` or while `homeDemand` (home RAM used by everything except xp_filler's leftover workers, plus managers waiting to start and mcp.js if down, over home size) is at least `homeDemandFloor` (0.5). Idle home RAM also no longer holds cash back from cloud. Tests: 3 new, one replays the 14:53 purchase (refused); 571 pass. Deployed, `capital_manager.js` restarted 15:13, `homeRamTarget` back to 262144 as a ceiling; live 15:14: homeDemand 0.0023, no action.
+
 **Home RAM buying stopped (2026-11-10 15:09 PC clock, Ken session).** Ken saw cash fall from over $4t to under $1t. Cause: `capital_manager` upgraded home RAM to 131TB at 14:53 for $4.74t (`capital_status.json` purchases); home RAM was exempt from the late-cycle stop because it survives installs. Live 15:07: home 131.07TB, 299.7GB used (0.23%), so the RAM is idle. The aug batch is cash-limited: 19 gang-sold augs are rep-ready, the plan at $0.88t buys 7, and $4.74t at the x1.9 step would have bought about 3 more. `capital_policy.json` `homeRamTarget` 262144 -> 131072 (pushed, read back 15:09:49). Cloud buying itself stopped on schedule: last cloud upgrade 13:39, late phase from 13:45.
 
 **2026-11-10 14:15 Pacific, 2-hourly task, BN10 run 2: steady, no changes.** Not a stand-aside run (no session

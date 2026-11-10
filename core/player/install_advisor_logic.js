@@ -21,6 +21,7 @@ export const DEFAULT_WEIGHTS = {
   hacking: 1, strength: 0.25, defense: 0.25, dexterity: 0.25, agility: 0.25,
   hacking_exp: 0.1, strength_exp: 0.025, defense_exp: 0.025, dexterity_exp: 0.025, agility_exp: 0.025,
   faction_rep: 0.5,
+  hacking_money: 0.3, hacking_grow: 0.2, hacking_chance: 0.2, hacking_speed: 0.3,
 }
 
 export function augValue(stats, weights = DEFAULT_WEIGHTS) {
@@ -41,6 +42,61 @@ export function bestRepRate(previous, current, hours) {
     if (Number.isFinite(before)) best = Math.max(best, (Number(rep) - before) / hours)
   }
   return best > 0 ? best : null
+}
+
+/** Per-faction rep per hour between two readiness samples (only factions that rose). */
+export function factionRepRates(previous, current, hours) {
+  const rates = {}
+  if (!(hours > 0) || !previous || !current) return rates
+  for (const [faction, rep] of Object.entries(current)) {
+    const before = Number(previous[faction])
+    const rate = (Number(rep) - before) / hours
+    if (Number.isFinite(before) && rate > 0) rates[faction] = rate
+  }
+  return rates
+}
+
+/** Gang rep per hour from gang_status.json (`observedFactionRepRate` is rep/s); null when unsampled. */
+export function gangRepPerHour(status) {
+  const perSecond = Number(status?.observedFactionRepRate)
+  return Number.isFinite(perSecond) && perSecond > 0 ? perSecond * 3600 : null
+}
+
+export const GANG_MIN_CYCLE_HOURS = 4
+export const GANG_CAP_HOURS = 12
+
+/**
+ * Gang-tier wait decision. The gang faction sells nearly everything and its rep is measured, so
+ * its gaps are timed by the gang's own rate. Null means no opinion (use the ordinary rule).
+ * Waits while the cycle is under `minCycleHours` (valued things remain), or while the next valued
+ * gang augmentation is reachable before the cycle hits `capHours` and affordable at its place in
+ * the batch: price x step^(batch size) <= money + cashPerHour x hours (cash rate optional).
+ * @param {{rate:number|null, candidates:{name:string,repGap:number,value:number,price?:number}[]}} gang
+ */
+export function gangAdvice({ gang, batch = [], cycleHours, money = 0, cashPerHour = null, valuedRemains = true,
+  minCycleHours = GANG_MIN_CYCLE_HOURS, capHours = GANG_CAP_HOURS, priceStep = 1.9 }) {
+  if (!gang) return null
+  if (cycleHours < minCycleHours && valuedRemains) {
+    return { verdict: "wait", reason: `gang cycle minimum: ${hours(minCycleHours - cycleHours)} more before an install (min ${minCycleHours}h)` }
+  }
+  const rate = gang.rate
+  if (!(rate > 0)) return null
+  const room = capHours - cycleHours
+  const haveCash = Number.isFinite(cashPerHour) && cashPerHour > 0
+  const cashNote = haveCash ? "" : " (money only, cash rate unavailable)"
+  const reach = (gang.candidates || [])
+    .filter((item) => item.value > 0 && item.repGap > 0)
+    .map((item) => ({ ...item, hours: item.repGap / rate }))
+    .filter((item) => item.hours <= room)
+    .sort((a, b) => a.hours - b.hours)
+  for (const item of reach) {
+    const stepped = Number(item.price || 0) * priceStep ** batch.length
+    const budget = money + (haveCash ? cashPerHour * item.hours : 0)
+    if (stepped <= budget) {
+      return { verdict: "wait", next: item, reason: `wait ${hours(item.hours)} for gang aug ${item.name} at ${(rate / 1000).toFixed(0)}k rep/h${cashNote}` }
+    }
+  }
+  return null
 }
 
 /**
@@ -71,19 +127,23 @@ export function withDonations(candidates, { money, repMult, donating = [], owned
  * @param {{batch:{name:string,value:number}[], candidates:{name:string,repGap:number,value:number}[],
  *          cycleHours:number, repPerHour:number|null}} input
  */
-export function installAdvice({ batch = [], candidates = [], cycleHours, repPerHour }) {
+export function installAdvice({ batch = [], candidates = [], cycleHours, repPerHour, gang = null, money = 0, cashPerHour = null }) {
   const batchValue = batch.reduce((sum, item) => sum + Math.max(0, item.value), 0)
   const average = cycleHours > 0 ? batchValue / cycleHours : 0
   const cashLimited = candidates.filter((item) => item.donatable && item.repGap > 0).map((item) => item.name)
+  // An item may carry its own faction's rate (`repPerHour`); the player's best rate is the fallback.
   const scored = repPerHour > 0
     ? candidates
       .filter((item) => item.value > 0 && item.repGap > 0 && !item.donatable)
-      .map((item) => ({ ...item, hours: item.repGap / repPerHour }))
+      .map((item) => ({ ...item, hours: item.repGap / (item.repPerHour > 0 ? item.repPerHour : repPerHour) }))
       .map((item) => ({ ...item, rate: item.value / item.hours }))
       .sort((a, b) => b.rate - a.rate)
     : []
   const next = scored[0] || null
   const base = { batchValue, average, cycleHours, repPerHour, next, cashLimited }
+  const valuedRemains = batchValue > 0 || scored.length > 0 || (gang?.candidates || []).some((item) => item.value > 0 && item.repGap > 0)
+  const gangVerdict = gangAdvice({ gang, batch, cycleHours, money, cashPerHour, valuedRemains })
+  if (gangVerdict) return { ...base, ...gangVerdict, next: gangVerdict.next || next }
   if (!(repPerHour > 0)) return { ...base, verdict: "unknown", reason: "rep rate not sampled yet" }
   if (batchValue <= 0) {
     return { ...base, verdict: "build", reason: next ? `nothing to install yet; best next ${next.name} in ${hours(next.hours)}` : "nothing to install; no valued augmentation in joined factions (value lies in factions not yet joined)" }

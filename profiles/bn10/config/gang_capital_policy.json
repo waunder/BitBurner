@@ -1,10 +1,12 @@
 {
   "phase": "earning-capacity",
-  "objective": "BN10: grow respect for gang-faction rep (the gang faction, NiteSec in run 2, sells almost every augmentation); buy useful gear under 0.01% of cash",
+  "objective": "BN10: grow respect for gang-faction rep (the gang faction, NiteSec in run 2, sells almost every augmentation); buy rootkits and vehicles under 1% of cash, gang augmentations under 30% (bought one at a time as cash refills)",
   "allowEquipmentPurchases": true,
   "augmentationCashTarget": null,
   "territoryEnabled": false,
-  "reputationCleanupEnter": 0.80,
-  "reputationCleanupExit": 0.90,
-  "updatedAt": "2026-11-08"
+  "reputationCleanupEnter": 0.97,
+  "reputationCleanupExit": 0.985,
+  "rootkitCashFraction": 0.01,
+  "gangAugCashFraction": 0.3,
+  "updatedAt": "2026-11-09"
 }

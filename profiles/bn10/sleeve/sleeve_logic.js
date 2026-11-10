@@ -79,8 +79,10 @@ export function factionTargets(readiness, { gangFaction = null, money = 0, confi
   const list = readiness?.ok ? (readiness.workCandidates || [readiness.workCandidate].filter(Boolean)) : []
   const priceLimit = number(money) * Math.max(1, number(config.repInvestmentMaxPriceMultiple))
   const repReady = new Set(list.filter((item) => number(item.repGap) <= 0).map((item) => item.name))
+  const gangSells = new Set(readiness?.gangSells || [])
   const byFaction = new Map()
   for (const item of list) {
+    if (gangSells.has(item.name)) continue
     if (!item.faction || item.faction === gangFaction || item.canWorkForRep === false) continue
     if (repReady.has(item.name) || number(item.repGap) <= 0) continue
     if (!(item.cashReady || number(item.price) <= priceLimit)) continue

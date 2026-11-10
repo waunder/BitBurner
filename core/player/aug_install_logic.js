@@ -5,8 +5,11 @@
  * @param {{name:string,faction:string,rep:number,repRequired:number,price:number,prerequisites:string[]}[]} offers
  * @param {string[]} owned
  * @param {string[]} priority
+ * @param {{maxStepPrice?:number, minValue?:number}} limits an offer whose stepped price (price x the
+ *   1.9 steps already taken) exceeds `maxStepPrice` and whose `value` is known and under `minValue` is
+ *   skipped, not bought (cheaper ones still are). Defaults (Infinity, 0) change nothing.
  */
-export function planPurchases(offers, owned, money, priceStep = 1.9, priority = []) {
+export function planPurchases(offers, owned, money, priceStep = 1.9, priority = [], { maxStepPrice = Infinity, minValue = 0 } = {}) {
   const best = new Map()
   for (const offer of offers) {
     if (offer.rep < offer.repRequired || offer.name === NEUROFLUX) continue
@@ -30,7 +33,8 @@ export function planPurchases(offers, owned, money, priceStep = 1.9, priority = 
     return cost
   }
   for (let next = ready(); next.length; next = ready()) {
-    const pick = next.find((offer) => offer.price * scale + reserveFor(offer) <= left)
+    const pick = next.find((offer) => offer.price * scale + reserveFor(offer) <= left
+      && !(offer.price * scale > maxStepPrice && Number.isFinite(offer.value) && offer.value < minValue))
     if (!pick) break
     left -= pick.price * scale
     scale *= priceStep

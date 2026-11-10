@@ -297,3 +297,10 @@ test("a donating faction's augmentation is bought with cash, not worked for", ()
   const priority = choosePlayerActivity({ player: ready, augmentation: { ok: true, workCandidates: [syndicate] }, config: { ...config, priorityAugs: [syndicate.name] } })
   assert.notEqual(priority.faction, "The Syndicate")
 })
+
+test("rep work skips augmentations the gang faction sells", () => {
+  const rows = [{ name: "Bionic Arms", faction: "Tetrads", repGap: 100, price: 1, cashReady: true }]
+  const args = { player: { money: 10, skills: { hacking: 300, charisma: 600 } }, nextGate: { host: "x", required: 355 }, config: { physicalTarget: 0, repBeforeGates: true } }
+  assert.equal(choosePlayerActivity({ ...args, augmentation: { ok: true, workCandidates: rows } }).action, "faction")
+  assert.equal(choosePlayerActivity({ ...args, augmentation: { ok: true, workCandidates: rows, gangSells: ["Bionic Arms"] } }).action, "algorithms")
+})

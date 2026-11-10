@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-09 20:15 Pacific (PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-09 22:20 Pacific (PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -12,6 +12,31 @@ DevTools, Remote API status files.
 > game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
+
+**BN10 run 2, install 4 ran 2026-11-09 22:17 Pacific, 2-hourly task: 3 bought + W1ngs of Icarus, 32 installed.**
+Not a stand-aside run (no session running). Before (metrics sample 22:10, game `ps` 22:15, readiness 22:14): BN10,
+$97.6b (22:10) falling to $81b (capital_manager spending), hacking 391, str/def/dex/agi 126/170/121/116, karma -105k,
+28 installed, 1 queued (The W1ngs of Icarus). Every resident running (19 plus gang-controller and cct_watcher). Player
+on Tian Di Hui work; Neuroreceptor Management Implant came rep-ready at about 22:15 (player moved to The Black Hand).
+Measured, 12 samples 21:15 to 22:10: rep/h NiteSec 1.16m (gang), Tian Di Hui 55.2k, The Black Hand 11.7k, Tetrads
+5.09k, CyberSec 3.76k, Slum Snakes 2k; hacking exp 489m/h (16 levels/h), karma -515/h, cash 1.05b/h (spending, not
+income loss: cash rose $40b to $98b over the cycle), MCP rate 103m/s average 114m/s, share 1.47. Trend: `cash/h
+37.2b>53.9b>1.05b STEADY | MCP 121m>148m>103m STEADY | hackExp/h 148m>413m>489m ACCELERATING | lvl/h 50.5>31.8>16
+context | rep work Tian Di Hui 34.2k>39.8k>55.2k ACCELERATING | rep best NiteSec 851k>1m>1.16m ACCELERATING`. Nothing
+decelerating. Advisor: **wait** ("gang cycle minimum: 1m more", 22:14; batch +17.5% vs cycle average +4.4%; next
+valued aug The Black Hand at +2.2%/h, 11h away). Decision: **install, agree in substance**: the 4h minimum was its
+only blocker and passed at 22:16; NiteSec rep (3.4m) already covers what it sells, so only cash limits the batch, and
+the install banks NiteSec favor 171 -> about 258 and Tian Di Hui 69 -> about 115. `capital_manager.js` killed 22:15.
+Backup `saves/bitburnerSave_pre-install4_BN10run2_2026-11-09.json.gz` (gzip and player parsed: node 10, 28 augs, 1
+queued, 6 sleeves, $94.1b, hacking 393; SHA-256 8f3e68c8fedec34859f04499249f420d7ea074d7334f104a59c3951600063703).
+`aug_install.js --install` at 22:17 ($101.7b at run time) bought Embedded Netburner Module Direct Memory Access Upgrade
+($66.5b), FocusWire ($8.55b), both NiteSec, and Neuroreceptor Management Implant ($5.23b, Tian Di Hui); no NeuroFlux;
+home stays 16TB, 2 cores. After (game `ps` about 22:19): every resident restarted (19 plus gang-controller and
+cct_watcher). `metrics.py cycles`: cycle 4 (18:15-22:17) 4.0h, rebuild hacking 1.00h, rep earned NiteSec 3.5m, Tian
+Di Hui 150k, The Black Hand 16.3k, Tetrads 15.9k; favor banked still listed pending (no new-cycle sample yet; next run
+adds it). Gang-planner M1/M6 met (`docs/gang-planner.md`). Run target unchanged. **Next:** cycle-4 favor line; gang
+recovery after install; Covenant gate (hacking and combat 850, $75b) still far. World Daemon: not present (no Daedalus,
+no Red Pill). Share A/B: already recorded 2026-11-05; not repeated.
 
 **2026-11-09 20:15 Pacific, 2-hourly task, BN10 run 2: steady, no changes.** Not a stand-aside run (no session
 running). Live (metrics sample 20:10, game `ps` 20:15, readiness 20:13, gang_status 20:15, autosave): BN10, $40.4b to

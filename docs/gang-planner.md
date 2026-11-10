@@ -130,3 +130,8 @@ Check 2026-11-09 20:15 (2-hourly task, cycle 1.9h): penalty 0.989, not in cleanu
 (M3 met); 36 gang augs bought (M4 met if Neuralstimulator is among them, not checked per item); 20 ascensions, last
 x1.25 at 20:14. NiteSec rep 1.35m; measured 870k/h (12 samples 19:15-20:10), so M1 about 321k/h at zero favor vs
 89k/h baseline (+260%). Cash 41.6b/h measured. Advisor "wait" for the 4h minimum (M6 on track).
+
+Install 4, 2026-11-09 22:17 (2-hourly task, cycle 4.0h): NiteSec rep earned this cycle 3.5m (M6's >= 1.5m met);
+measured 1.16m/h in the last hour (12 samples 21:15-22:10), about 428k/h at zero favor (M1 met). Advisor "wait" only
+for the 4h minimum, never early (M6 met). Cash, not rep, limited the batch: 3 augs for $80b. NiteSec favor 171 ->
+about 258 after the install.

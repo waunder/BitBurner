@@ -57,6 +57,12 @@ Covenant in run 1).
   minimum cycle for the gang faction (cap 12h). Ascension runs in either mode, at x1.5 and at most one
   per loop. Reputation mode uses the 0.80/0.90 wanted-penalty band.
 - Share stays on (A/B recorded 2026-11-05).
+- **Allocator project** (`docs/allocator-design.md`; Ken approved 2026-11-10): central valuation,
+  each script still buys, one `own`/`shadow`/`valued`/`sweep`/`never` setting per purchase kind in
+  `valuation_flags.json`. Step R0, the spending ledger, merged 2026-11-10 (bd6aa68):
+  `metrics.py spend` reports spending per cycle and B1 (late spend outside the batch, % of late
+  earnings: 88%, 70%, 50% over cycles 6-8). Next is R1, a shadow allocator on branch
+  `allocator-shadow` (not started).
 
 ## Installs this run
 

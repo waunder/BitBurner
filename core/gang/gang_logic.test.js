@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { canBuildTerritoryPower, moneyModePriority, planMoneyTasks, planReputationTasks,
+import { autoGangObjective, canBuildTerritoryPower, moneyModePriority, planMoneyTasks, planReputationTasks,
   planTerritoryPower, shouldAscendMember, shouldEngageTerritoryClashes, wantedCleanupPolicy, cheapGearQualifies, reputationCleanupMode,
   withEquipment, planReputationGear, equipmentCategory, gearCounts, ascensionCooldownElapsed } from "./gang_logic.js";
 
@@ -276,4 +276,21 @@ test("ascension cooldown", () => {
   assert.equal(ascensionCooldownElapsed(null, 1000), true);
   assert.equal(ascensionCooldownElapsed(0, 89_999), false);
   assert.equal(ascensionCooldownElapsed(0, 90_000), true);
+});
+
+test("autoGangObjective: reputation until gang rep covers every aug, then money", () => {
+  const now = 1_000_000;
+  assert.equal(autoGangObjective({ ts: now - 1000, gangRep: 2e6, gangRepNeeded: 3.5e6 }, now).objective, "reputation");
+  assert.equal(autoGangObjective({ ts: now - 1000, gangRep: 3.5e6, gangRepNeeded: 3.5e6 }, now).objective, "money");
+  assert.equal(autoGangObjective({ ts: now - 1000, gangRep: 11e6, gangRepNeeded: 3.5e6 }, now).objective, "money");
+  // after an install rep is 0 again
+  assert.equal(autoGangObjective({ ts: now - 1000, gangRep: 0, gangRepNeeded: 3.5e6 }, now).objective, "reputation");
+});
+
+test("autoGangObjective: stale, missing or partial readiness keeps reputation", () => {
+  const now = 10_000_000;
+  assert.equal(autoGangObjective(null, now).objective, "reputation");
+  assert.equal(autoGangObjective({ ts: now - 11 * 60_000, gangRep: 9e6, gangRepNeeded: 1 }, now).objective, "reputation");
+  assert.equal(autoGangObjective({ ts: now, gangRep: 9e6, gangRepNeeded: null }, now).objective, "reputation");
+  assert.equal(autoGangObjective({ ts: now, gangRep: null, gangRepNeeded: 5 }, now).objective, "reputation");
 });

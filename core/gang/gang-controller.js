@@ -1,7 +1,7 @@
 import { canBuildTerritoryPower, moneyModePriority, planMoneyTasks, planReputationTasks, planTerritoryPower,
   shouldAscendMember, shouldEngageTerritoryClashes, wantedCleanupPolicy, cheapGearQualifies,
   reputationCleanupMode, withEquipment, planReputationGear, gearCounts, ascensionCooldownElapsed,
-  GANG_ROOTKITS } from "./gang_logic.js";
+  GANG_ROOTKITS, autoGangObjective } from "./gang_logic.js";
 
 /**
  * Gang v2: formula-driven money or faction-reputation, wanted, and territory control.
@@ -96,9 +96,17 @@ function readCapitalPolicy(ns) {
   }
 }
 
+/** The objective file holds reputation, money, cash or auto (set_gang_objective.js). "auto" resolves
+ * each loop from augmentation_readiness.json (autoGangObjective). Returns { setting, objective, reason }. */
 function readGangObjective(ns) {
   const value = String(ns.read(C.objectiveOverrideFile) || "money").trim().toLowerCase()
-  return value === "reputation" ? "reputation" : value === "cash" ? "cash" : "money"
+  if (value === "auto") {
+    let readiness = null
+    try { readiness = JSON.parse(ns.read("augmentation_readiness.json") || "null") } catch {}
+    return { setting: "auto", ...autoGangObjective(readiness, Date.now()) }
+  }
+  const objective = value === "reputation" ? "reputation" : value === "cash" ? "cash" : "money"
+  return { setting: objective, objective, reason: "set by hand" }
 }
 
 /** @param {NS} ns */
@@ -134,7 +142,8 @@ export async function main(ns) {
       chance: ns.gang.getChanceToWinClash(name) }));
     const clashPolicy = shouldEngageTerritoryClashes(gang.territory, clashes,
       C.territoryMinWin, C.territoryWeightedWin);
-    const gangObjective = readGangObjective(ns);
+    const objectiveChoice = readGangObjective(ns);
+    const gangObjective = objectiveChoice.objective;
     const capitalPolicy = readCapitalPolicy(ns);
     const territoryEnabled = capitalPolicy.territoryEnabled;
     const members = ns.gang.getMemberNames().map((name) => ns.gang.getMemberInformation(name));
@@ -363,7 +372,7 @@ export async function main(ns) {
     const gear = members.map((m) => ({ member: m.name, ...gearCounts(m) }));
     const gearTotals = { rootkits: gear.reduce((s, g) => s + g.rootkits, 0), augs: gear.reduce((s, g) => s + g.augs, 0),
       rootkitsPossible: members.length * GANG_ROOTKITS.length };
-    const status = { ts: statusNow, mode, gangObjective, lastAscension, ascensionCount, gear, gearTotals,
+    const status = { ts: statusNow, mode, gangObjective, objectiveChoice, lastAscension, ascensionCount, gear, gearTotals,
       power: { ours: gang.power, strongestRival: strongestRivalPower },
       ascendAt: C.ascendAt, factionRep: Number.isFinite(factionRep) ? factionRep : null,
       observedFactionRepRate, projectedRespectPerCycle: plans.reduce((sum, p) => sum + (p.choice?.respect || 0), 0),

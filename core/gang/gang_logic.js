@@ -131,6 +131,20 @@ export function planMoneyTasks(plans, wantedLevel, wantedReductionFraction = 0.0
 }
 
 /** Select money-mode priority before applying recruitment growth. */
+/** Objective for the "auto" setting: reputation until the gang faction's rep covers the most any
+ * unowned aug it sells needs (augmentation_readiness.json gangRepNeeded), then money. An install resets
+ * that rep to 0, so the next cycle starts on reputation again. Missing or stale readiness (older than
+ * maxAgeMs) keeps reputation, the safe side. Returns { objective, reason }. */
+export function autoGangObjective(readiness, now, maxAgeMs = 10 * 60_000) {
+  const num = (v) => (v === null || v === undefined || v === "" ? NaN : Number(v))
+  const ts = num(readiness?.ts), rep = num(readiness?.gangRep), needed = num(readiness?.gangRepNeeded)
+  if (!Number.isFinite(ts) || now - ts > maxAgeMs) return { objective: "reputation", reason: "readiness missing or stale" }
+  if (!Number.isFinite(rep) || !Number.isFinite(needed)) return { objective: "reputation", reason: "no gang rep data" }
+  return rep >= needed
+    ? { objective: "money", reason: `gang rep ${Math.round(rep)} covers every aug (${Math.round(needed)})` }
+    : { objective: "reputation", reason: `gang rep ${Math.round(rep)} of ${Math.round(needed)} needed` }
+}
+
 export function moneyModePriority(cleanupMode, hasCleaner, recruitGrowth) {
   if (cleanupMode && hasCleaner) return "wanted-recovery";
   if (recruitGrowth) return "respect";

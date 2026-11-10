@@ -1,5 +1,6 @@
 /** Switch the gang controller between faction-reputation and money goals.
- * Usage: run set_gang_objective.js [reputation|money|cash]
+ * Usage: run set_gang_objective.js [reputation|money|cash|auto]
+ * auto: reputation until the gang faction's rep covers every aug it sells, then money (resets each install).
  * No argument reports the current override. Takes effect on the controller's
  * next update; no restart is needed. This does not start the controller.
  * @param {NS} ns
@@ -12,13 +13,13 @@ export async function main(ns) {
   const current = String(ns.read(FILE) || "money").trim().toLowerCase()
 
   if (!objective) {
-    const normalized = ["reputation", "cash"].includes(current) ? current : "money"
+    const normalized = ["reputation", "cash", "auto"].includes(current) ? current : "money"
     ns.tprint(`Gang objective: ${normalized} (default is money)`)
     ns.tprint(`Controller: ${ns.isRunning("gang-controller.js", "home") ? "running" : "stopped"}`)
     return
   }
-  if (!["reputation", "money", "cash"].includes(objective)) {
-    ns.tprint("Usage: run set_gang_objective.js [reputation|money|cash]")
+  if (!["reputation", "money", "cash", "auto"].includes(objective)) {
+    ns.tprint("Usage: run set_gang_objective.js [reputation|money|cash|auto]")
     return
   }
 

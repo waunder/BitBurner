@@ -115,13 +115,16 @@ function assess(ns, previous = null) {
     let gangFaction = null
     try { if (ns.gang.inGang()) gangFaction = ns.gang.getGangInformation().faction } catch {}
     const candidates = []
+    let gangRepNeeded = 0 // most rep any unowned gang-faction aug needs; the gang's "auto" objective reads it
     for (const faction of factions) {
       const rep = Number(ns.singularity.getFactionRep(faction)) || 0
       for (const name of ns.singularity.getAugmentationsFromFaction(faction) || []) {
         if (owned.has(name) || name === "NeuroFlux Governor") continue
+        const repRequired = Number(ns.singularity.getAugmentationRepReq(name)) || 0
+        // Before the prerequisite filter: a locked aug still needs its rep in a later cycle.
+        if (faction === gangFaction) gangRepNeeded = Math.max(gangRepNeeded, repRequired)
         const prerequisites = ns.singularity.getAugmentationPrereq(name) || []
         if (!prerequisites.every((prereq) => owned.has(prereq))) continue
-        const repRequired = Number(ns.singularity.getAugmentationRepReq(name)) || 0
         const price = Number(ns.singularity.getAugmentationPrice(name)) || 0
         candidates.push({
           name, faction, rep, repRequired, repGap: Math.max(0, repRequired - rep),
@@ -173,7 +176,7 @@ function assess(ns, previous = null) {
       ts: now, ok: true, resetAt: resetAt(ns), money, factionRep, favor, favorToDonate, hackingExp: Number(player?.exp?.hacking) || 0, advice,
       installedCount: installed.length, queuedCount: queued.length, queued, installPlan,
       factionCount: factions.length, candidate, workCandidate, workCandidates, donating,
-      gangFaction, gangSells, gangRep, candidatesConsidered: candidates.length,
+      gangFaction, gangSells, gangRep, gangRepNeeded: gangFaction ? gangRepNeeded : null, candidatesConsidered: candidates.length,
     }
   } catch (error) {
     return { ts: now, ok: false, reason: String(error?.message || error), resetAt: resetAt(ns) }

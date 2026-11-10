@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-10 00:20 Pacific (PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-10 02:22 Pacific (PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -13,14 +13,30 @@ DevTools, Remote API status files.
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
 
-> **MONEY PHASE, cycle 5 (set 2026-11-10 00:24 PC clock, Ken session). Undo both at the next install.** NiteSec rep
-> 3.76m covers every NiteSec aug (highest need 3.5m), so cash is now the only limit on the batch. (1) Gang objective
-> set to `money` (`run set_gang_objective.js money`; 11 Money Laundering + 1 Ethical Hacking, about $27b/h). (2)
-> capital_manager buying paused: game-only `capital_policy.json` now has `"enabled": false` (it still starts waiting
-> scripts). Reason: it had been spending most of a ~$480b/h gross income on cloud upgrades (cash net 31b/h), and an
-> install deletes cloud servers. **Right after the next install:** `run set_gang_objective.js reputation`, and push
-> `capital_policy.json` back to `{"reserve":0,"homeRamTarget":262144,"cloudDemandFloor":0}` (no `enabled`), then
-> check both took effect. Both settings survive an install, so forgetting them stalls the next cycle.
+**BN10 run 2, install 5 ran 2026-11-10 02:19 Pacific, 2-hourly task: 6 bought + 1 NeuroFlux; money phase
+undone.** Not a stand-aside run (no session running). Before (metrics sample 02:10, game `ps` 02:14, readiness
+02:18): BN10, $950b (02:10) to $1.03t (02:19), hacking 394, str/def/dex/agi 147/203/145/146, karma -107k, 32
+installed, 0 queued. Every resident running (17 plus gang-controller and cct_watcher). Player on The Black Hand
+hacking work. Measured, 13 samples 01:10 to 02:10: rep/h NiteSec 366k (gang, on money), The Black Hand 57.2k, Tian
+Di Hui 5.16k, Tetrads 5.14k, CyberSec 2.85k, Slum Snakes 2.24k; hacking exp 433m/h (12.3 levels/h), karma -436/h,
+cash 534b/h, MCP rate 103m/s average 116m/s, share 1.48. Trend: `cash/h 31.3b>389b>534b ACCELERATING | MCP
+128m>138m>103m STEADY | hackExp/h 274m>442m>433m STEADY | lvl/h 62.1>23.3>12.3 context | rep work The Black Hand
+SWITCH | rep best NiteSec 1.83m>590k>366k DECELERATING`. NiteSec's slowdown is the money phase itself (gang off
+reputation), not a fault; it argued for installing on time. The money phase worked: cash went $35b to $1t in 2h with
+capital buying paused. Advisor: **install** at 02:18 ("best next The Black Hand adds +15.2%/h, under the cycle's
++105.3%/h"; batch +288%); at 02:13 it was still wait for the 4h gang minimum. Decision: **install, agree**.
+`capital_manager.js` killed 02:15. Backup `saves/bitburnerSave_pre-install5_BN10run2_2026-11-10.json.gz` (gzip and
+player parsed: node 10, 32 augs, 0 queued, 6 sleeves, $992b, hacking 394; SHA-256
+aef82102d6f800cacc4f3dc6cc30206d8a6a6b3f74812a8a2298f002d02a53e3). `aug_install.js --install` at 02:19 ($1.032t)
+bought Graphene Bionic Spine Upgrade, Embedded Netburner Module Analyze Engine, ECorp HVMind Implant, CordiARC Fusion
+Reactor, SPTN-97 Gene Modification, Synthetic Heart (all NiteSec) and 1 NeuroFlux; home stays 16TB, 2 cores. After
+(game `ps` 02:19): every resident restarted (17 plus gang-controller and cct_watcher). Money phase undone and checked
+live: `set_gang_objective.js reputation` (gang_status 02:19:45 mode reputation), `capital_policy.json` pushed back to
+`{"reserve":0,"homeRamTarget":262144,"cloudDemandFloor":0}` (read back). Player controller on its usual post-install
+gym baseline. Installed count after install not read live yet; next run confirms it and adds the cycle-5 `metrics.py
+cycles` line (cycle 5, 22:17-02:19, 4.0h, rep earned NiteSec 4.43m, The Black Hand 92.3k at 02:16). Run target
+unchanged. **Next:** gang rep rebuild, then the Covenant gate (hacking and combat 850, $75b). World Daemon: not present
+(no Daedalus, no Red Pill). Share A/B: already recorded 2026-11-05; not repeated.
 
 **2026-11-10 00:15 Pacific, 2-hourly task, BN10 run 2: steady, no changes.** Not a stand-aside run (no session
 running). Live (metrics sample 00:10, game `ps` 00:14, readiness 00:12): BN10, $39.7b (to $35.1b at 00:12),

@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-10 02:22 Pacific (PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-10 04:16 Pacific (PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -12,6 +12,21 @@ DevTools, Remote API status files.
 > game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
+
+**2026-11-10 04:15 Pacific, 2-hourly task, BN10 run 2: steady, no changes.** Not a stand-aside run (no session
+running). Live (metrics sample 04:10, game `ps` 04:15, readiness 04:12): BN10, $65.3b (sample) / $98.8b
+(readiness), hacking 425, str/def/dex/agi 757/678/496/734, karma -108k, **38 installed** (confirms install 5), 0 queued.
+Every resident running (17 plus gang-controller and cct_watcher). Player on The Black Hand work (+114k rep for The
+Black Hand, about 1.1h). Favor live: NiteSec 296, The Black Hand 87.4, Tian Di Hui 120, Tetrads 118. Measured, 12
+samples 03:15 to 04:10: rep/h NiteSec 2.74m (gang), The Black Hand 94.5k, Tian Di Hui 5.92k, Tetrads 5.6k, CyberSec
+3.76k, Slum Snakes 2.7k; hacking exp 373m/h (54.5 levels/h), karma -445/h, cash 30.4b/h, MCP rate 101m/s average
+113m/s, share 1.46. Trend: `n/a` on every series (cycle 1.8h old). Cycle 5 (`metrics.py cycles`): 22:17-02:19,
+4.03h, rebuild hacking 3.79h, rep earned NiteSec 4.43m, The Black Hand 92.3k, Tian Di Hui 20.1k; favor banked NiteSec
++88.8, Tian Di Hui +46.8, The Black Hand +27.4, CyberSec +5.9, Slum Snakes +5.1, Tetrads +3.5. Advisor: **wait** (gang
+cycle minimum, 2.1h more; batch +111% vs cycle average +58.6%; plan Graphene Bone Lacings, Xanipher, PCMatrix,
+LuminCloaking-V2, $98.8b). Decision: **no install, agree**; the minimum ends about 06:19, when The Black Hand should
+also be rep-ready. Combat is nearing the Covenant 850 gate; hacking 425 is the binding one. World Daemon: not present
+(no Daedalus, no Red Pill). Share A/B: already recorded 2026-11-05; not repeated.
 
 **BN10 run 2, install 5 ran 2026-11-10 02:19 Pacific, 2-hourly task: 6 bought + 1 NeuroFlux; money phase
 undone.** Not a stand-aside run (no session running). Before (metrics sample 02:10, game `ps` 02:14, readiness

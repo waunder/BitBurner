@@ -33,7 +33,11 @@ test("fresh sources are copied into the sample", () => {
   const s = buildSample(base)
   assert.equal(s.ts, NOW)
   assert.equal(s.resetAt, 900_000_000)
-  assert.deepEqual(s.income, { hacking: 5, servers: -2, augmentations: -1, darknet: 3, codingcontract: 0, total: 5 })
+  assert.deepEqual(s.income, {
+    hacking: 5, servers: -2, augmentations: -1, darknet: 3, codingcontract: 0, total: 5,
+    sleeves: null, gang_expenses: null, other: null, class: null, hospitalization: null, gang: 9,
+    work: null, crime: null, stock: null, hacknet: null, hacknet_expenses: null,
+  })
   assert.equal(s.skills.charisma, 10)
   assert.equal(s.exp.agility, 103)
   assert.equal("charisma" in s.exp, false)
@@ -103,4 +107,26 @@ test("gang status is summarised when fresh, nulled and listed when stale, ignore
   assert.equal(none.gang, null)
   assert.equal("gang" in none.stale, false)
   assert.equal(gangSummary({}), null)
+})
+
+test("spending categories, home RAM and the advisor's batch value are recorded", () => {
+  const s = buildSample({
+    ...base,
+    sources: { ...base.sources, sleeves: -4e9, gang_expenses: -2e8, other: -2e5 },
+    homeRam: 131072,
+    readiness: { ...base.readiness, advice: { verdict: "wait", batchValue: 0.73, average: 0.31 } },
+  })
+  assert.equal(s.income.sleeves, -4e9)
+  assert.equal(s.income.gang_expenses, -2e8)
+  assert.equal(s.income.other, -2e5)
+  assert.equal(s.homeRam, 131072)
+  assert.equal(s.batchValue, 0.73)
+  assert.equal(s.batchAverage, 0.31)
+})
+
+test("batch value is null when readiness is stale, home RAM null when not given", () => {
+  const s = buildSample({ ...base, readiness: { ...base.readiness, ts: NOW - 11 * 60_000 } })
+  assert.equal(s.batchValue, null)
+  assert.equal(s.batchAverage, null)
+  assert.equal(s.homeRam, null)
 })

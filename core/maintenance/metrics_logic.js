@@ -6,7 +6,12 @@
 export const STALE_MS = 10 * 60_000
 export const SKILLS = ["hacking", "strength", "defense", "dexterity", "agility", "charisma"]
 export const EXP = ["hacking", "strength", "defense", "dexterity", "agility"]
-export const INCOME = ["hacking", "servers", "augmentations", "darknet", "codingcontract", "total"]
+// Earning and spending categories of ns.getMoneySources().sinceInstall (bitburner-src
+// src/utils/MoneySourceTracker.ts). Spending is negative: servers (home RAM, cloud), sleeves
+// (sleeve augs, Covenant sleeves, memory), gang_expenses (gang gear and augs), other (TOR,
+// programs, donations), class, hospitalization, augmentations (the batch). tools/metrics.py spend reads them.
+export const INCOME = ["hacking", "servers", "augmentations", "darknet", "codingcontract", "total",
+  "sleeves", "gang_expenses", "other", "class", "hospitalization", "gang", "work", "crime", "stock", "hacknet", "hacknet_expenses"]
 
 const num = (v) => (Number.isFinite(Number(v)) ? Number(v) : null)
 const pick = (obj, keys) => Object.fromEntries(keys.map((k) => [k, num(obj?.[k])]))
@@ -62,7 +67,7 @@ export function gangSummary(status) {
  * One sample. Stale or missing sources leave their fields null and are listed
  * in `stale` with their age in seconds (null age = missing), never copied.
  */
-export function buildSample({ now, resetAt, money, sources, player, sharePower, readiness, activity, mcp, gang = null, ram, staleMs = STALE_MS }) {
+export function buildSample({ now, resetAt, money, sources, player, sharePower, readiness, activity, mcp, gang = null, ram, homeRam = null, staleMs = STALE_MS }) {
   const stale = {}
   const readyOk = fresh(now, readiness, staleMs)
   const actOk = fresh(now, activity, staleMs)
@@ -93,11 +98,16 @@ export function buildSample({ now, resetAt, money, sources, player, sharePower, 
     installedCount: readyOk ? num(readiness.installedCount) : null,
     queuedCount: readyOk ? num(readiness.queuedCount) : null,
     verdict: readyOk ? readiness.advice?.verdict ?? null : null,
+    // The advisor's batch value and its per-cycle-hour average (allocator baseline B3).
+    batchValue: readyOk ? num(readiness.advice?.batchValue) : null,
+    batchAverage: readyOk ? num(readiness.advice?.average) : null,
     mcpRate: mcpOk ? num(mcp.rate) : null,
     mcpAvgRate: mcpOk ? num(mcp.avgRate) : null,
     gang: gangOk ? gangSummary(gang) : null,
     ramMax: num(ram?.max),
     ramUsed: num(ram?.used),
+    // Home RAM separates home upgrades from cloud in the `servers` spending category.
+    homeRam: homeRam === null || homeRam === undefined ? null : num(homeRam),
     stale,
   }
 }

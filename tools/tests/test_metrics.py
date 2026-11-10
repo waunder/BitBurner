@@ -184,5 +184,136 @@ class TextTests(unittest.TestCase):
             self.assertEqual(M.load(Path(d) / "none.txt"), [])
 
 
+def spend_sample(ts, reset, servers=0.0, sleeves=None, hacking=0.0, money=1e12, home=None, batch=None):
+    income = {"hacking": hacking, "servers": -servers, "total": hacking - servers}
+    if sleeves is not None:
+        income["sleeves"] = -sleeves
+    s = {"ts": ts, "resetAt": reset, "money": money, "income": income, "mcpAvgRate": 1e8}
+    if home is not None:
+        s["homeRam"] = home
+    if batch is not None:
+        s["batchAverage"] = batch
+    return s
+
+
+class SpendTests(unittest.TestCase):
+    def test_early_late_split_and_b1(self):
+        # 1t of servers in the first 1.5h, 2t more by 3h; 10t earned, 4t of it after 1.5h.
+        cyc = [spend_sample(R1 + 30 * MIN, R1, servers=0.5e12, hacking=3e12),
+               spend_sample(R1 + 85 * MIN, R1, servers=1e12, hacking=6e12),
+               spend_sample(R1 + 3 * HOUR, R1, servers=3e12, hacking=10e12, batch=0.3)]
+        r = M.cycle_spend(cyc)
+        self.assertEqual(r["categories"]["servers"], {"early": 1e12, "late": 2e12, "total": 3e12})
+        self.assertIsNone(r["categories"]["sleeves"])  # not logged by the older logger
+        self.assertAlmostEqual(r["lateEarn"], 4e12)
+        self.assertAlmostEqual(r["b1"], 0.5)
+        self.assertEqual(r["b3"], 0.3)
+        self.assertTrue(r["open"])
+        self.assertFalse(r["earlyUnknown"])
+
+    def test_home_step_is_told_from_cloud_by_home_ram(self):
+        # Replays 2026-11-10 14:53: home 64TB -> 131TB for $4.74t, after a cloud step.
+        cyc = [spend_sample(R1 + 2 * HOUR, R1, servers=3.39e12, home=65536, money=4e12),
+               spend_sample(R1 + 2 * HOUR + 5 * MIN, R1, servers=3.64e12, home=65536, money=4e12),
+               spend_sample(R1 + 2 * HOUR + 10 * MIN, R1, servers=8.38e12, home=131072, money=4e12)]
+        r = M.cycle_spend(cyc)
+        self.assertAlmostEqual(r["homeCloud"]["home"], 4.74e12)
+        self.assertAlmostEqual(r["homeCloud"]["cloud"], 0.25e12)
+        late = [st for st in r["steps"] if st["phase"] == "late"]
+        self.assertEqual([st["category"] for st in late], ["cloud", "home"])
+
+    def test_without_home_ram_steps_stay_servers(self):
+        cyc = [spend_sample(R1 + 2 * HOUR, R1, servers=0), spend_sample(R1 + 2 * HOUR + 5 * MIN, R1, servers=5e12)]
+        r = M.cycle_spend(cyc)
+        self.assertIsNone(r["homeCloud"])
+        self.assertEqual(r["steps"][0]["category"], "servers")
+
+    def test_small_spends_are_not_steps(self):
+        cyc = [spend_sample(R1 + 2 * HOUR, R1, servers=0, money=1e12),
+               spend_sample(R1 + 2 * HOUR + 5 * MIN, R1, servers=5e9, money=1e12)]  # 0.5% of cash
+        self.assertEqual(M.cycle_spend(cyc)["steps"], [])
+
+    def test_log_starting_after_the_early_phase_is_flagged(self):
+        r = M.cycle_spend([spend_sample(R1 + 5 * HOUR, R1, servers=1e12)])
+        self.assertTrue(r["earlyUnknown"])
+        self.assertEqual(r["categories"]["servers"]["late"], 1e12)
+
+    def test_batch_cost_steps_by_1_9_and_adds_donations(self):
+        status = {"plan": [["A", "NiteSec", 100.0], ["B", "NiteSec", 50.0], ["C", "NiteSec", 10.0]],
+                  "bought": ["A", "C"], "donations": [{"faction": "X", "amount": 7.0}]}
+        self.assertAlmostEqual(M.batch_cost(status), 100 + 10 * 1.9 + 7)
+
+    def test_install_7_batch_cost_matches_its_cash(self):
+        # aug_install_status.json of 2026-11-10 12:15: $2.711t covered 9 augs.
+        plan = [["PC Direct-Neural Interface Optimization Submodule", "NiteSec", 42750000000], ["Neuralstimulator", "NiteSec", 28500000000],
+                ["Neotra", "NiteSec", 27312500000], ["HyperSight Corneal Implant", "NiteSec", 26125000000], ["SmartJaw", "NiteSec", 26125000000],
+                ["Photosynthetic Cells", "NiteSec", 26125000000], ["Embedded Netburner Module Core Implant", "NiteSec", 23750000000],
+                ["CRTX42-AA Gene Modification", "NiteSec", 2137500000], ["Combat Rib I", "NiteSec", 225625000]]
+        status = {"ts": R2, "money": 2711432869600.28, "plan": plan, "bought": [p[0] for p in plan], "installed": True}
+        cost = M.batch_cost(status)
+        self.assertLess(cost, status["money"])
+        self.assertLess(status["money"] - cost, 0.01 * status["money"])
+
+    def test_archive_dedupes_purchases_and_installs(self):
+        status = {"purchases": [{"ts": 1, "ok": True, "kind": "home", "cost": 5.0}, {"ts": 2, "ok": False, "kind": "cloud", "cost": 3.0}]}
+        first = M.archive_records([], "capital_status.json", status, now_ms=10)
+        self.assertEqual([r["type"] for r in first], ["purchase", "pull"])
+        again = M.archive_records(first, "capital_status.json", status, now_ms=20)
+        self.assertEqual([r["type"] for r in again], ["pull"])
+        sleeve = {"purchases": [{"ts": 3, "kind": "memory", "cost": 9.0, "outcome": {"ok": True}}]}
+        self.assertEqual(M.archive_records([], "sleeve_buyer_status.json", sleeve, 10)[0]["source"], "sleeve")
+        inst = {"ts": 5, "installed": True, "money": 10.0, "plan": [["A", "F", 4.0]], "bought": ["A"]}
+        rec = M.archive_records([], "aug_install_status.json", inst, 10)
+        self.assertEqual(rec[0]["batchCost"], 4.0)
+        self.assertEqual(M.archive_records(rec, "aug_install_status.json", inst, 20), [])
+        self.assertEqual(M.archive_records([], "aug_install_status.json", {**inst, "installed": False}, 10), [])
+
+    def test_a_full_purchase_list_newer_than_the_last_pull_is_a_gap(self):
+        full = {"purchases": [{"ts": 100 + i, "ok": True, "cost": 1.0} for i in range(50)]}
+        history = [{"type": "pull", "source": "capital", "ts": 50}]
+        self.assertTrue(M.archive_records(history, "capital_status.json", full, 200)[-1]["gap"])
+        history = [{"type": "pull", "source": "capital", "ts": 120}]
+        self.assertFalse(M.archive_records(history, "capital_status.json", full, 200)[-1]["gap"])
+
+    def test_unattributed_needs_archive_coverage(self):
+        cyc = [spend_sample(R1 + 2 * HOUR, R1, servers=0), spend_sample(R1 + 3 * HOUR, R1, servers=6e12)]
+        self.assertIsNone(M.cycle_spend(cyc, history=[])["unattributed"]["servers"])
+        history = [{"type": "pull", "source": "capital", "ts": R1 - MIN, "gap": False},
+                   {"type": "pull", "source": "capital", "ts": R1 + 3 * HOUR, "gap": False},
+                   {"type": "purchase", "source": "capital", "ts": R1 + 2 * HOUR + MIN, "cost": 4.74e12}]
+        r = M.cycle_spend(cyc, history=history)
+        self.assertAlmostEqual(r["unattributed"]["servers"], 1.26e12)  # e.g. a manual purchase
+        history[1]["gap"] = True
+        self.assertIsNone(M.cycle_spend(cyc, history=history)["unattributed"]["servers"])
+
+    def test_closed_cycle_takes_its_install_record(self):
+        cyc = [spend_sample(R1 + HOUR, R1), spend_sample(R2 - 4 * MIN, R1)]
+        history = [{"type": "install", "ts": R2 - MIN, "money": 10e12, "batchCost": 9e12, "bought": 5}]
+        r = M.cycle_spend(cyc, next_reset=R2, history=history)
+        self.assertAlmostEqual(r["install"]["leftAfterBatch"], 1e12)
+        self.assertIsNone(M.cycle_spend(cyc, next_reset=None, history=history)["install"])
+
+    def test_rows_and_text(self):
+        samples = [spend_sample(R1 + HOUR, R1, servers=1e12), spend_sample(R2 + HOUR, R2, servers=2e12, sleeves=3e9)]
+        rows = M.spend_rows(samples)
+        self.assertEqual(len(rows), 2)
+        self.assertFalse(rows[0]["open"])
+        text = M.spend_text(rows)
+        self.assertIn("servers 1t", text)
+        self.assertIn("sleeves 3b", text)
+        self.assertIn("B2: no aug_install record", text)
+
+    def test_pull_spend_appends_once(self):
+        files = {"capital_status.json": json.dumps({"purchases": [{"ts": 1, "ok": True, "kind": "home", "cost": 5.0}]}),
+                 "aug_install_status.json": "not json"}
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "spend_history.jsonl"
+            M.pull_spend(path, now_ms=10, fetch=files.get)
+            M.pull_spend(path, now_ms=20, fetch=files.get)
+            recs = M.read_history(path)
+        self.assertEqual(sum(1 for r in recs if r["type"] == "purchase"), 1)
+        self.assertEqual(sum(1 for r in recs if r["type"] == "pull"), 2)
+
+
 if __name__ == "__main__":
     unittest.main()

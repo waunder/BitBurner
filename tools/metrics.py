@@ -5,9 +5,11 @@ Ken's local time, BC time (UTC-7 year-round; BC no longer changes clocks), the s
 clock. Rates are least-squares
 slopes over the samples in a window, within one install cycle only.
 
-    python tools/metrics.py pull                      fetch the log via the bb_remote daemon
+    python tools/metrics.py pull                      fetch the log via the bb_remote daemon, and archive spender
+                                                      purchases and installs to runtime/spend_history.jsonl
     python tools/metrics.py summary [--window MIN]    latest values and rates this cycle
     python tools/metrics.py cycles                    one row per install cycle
+    python tools/metrics.py spend [--early-hours H]   spending per cycle by category, early/late (allocator baseline)
     python tools/metrics.py trend [--windows N] [--window MIN]
                                                       DECELERATING/STEADY/ACCELERATING over consecutive windows
     python tools/metrics.py rates --from ISO --to ISO [--before MIN]
@@ -385,6 +387,259 @@ def rates_text(samples: list[dict], start: float, end: float, before_min: float 
 
 # ---------------------------------------------------------------- commands
 
+# ---------------------------------------------------------------- spending ledger (allocator R0)
+#
+# Source of truth: the game's own money counters, ns.getMoneySources().sinceInstall, sampled every
+# 5 minutes into metrics_log.txt (`income`). Spending is negative there. Categories (bitburner-src
+# Player.loseMoney call sites): servers = home RAM and cloud; sleeves = sleeve augs, Covenant
+# sleeves, memory; gang_expenses = gang gear and augs; other = TOR, programs, donations;
+# augmentations = the batch. Script purchase lists (capital_status.json, sleeve_buyer_status.json)
+# keep only their last 50 entries and reset on restart, so they serve only to attribute spending;
+# `pull` archives them into HISTORY. Spending no script recorded is "unattributed".
+
+SPEND_KEYS = ["servers", "sleeves", "gang_expenses", "other", "class", "hospitalization", "hacknet_expenses", "augmentations"]
+EARN_KEYS = ["hacking", "darknet", "codingcontract", "gang", "work", "crime", "hacknet"]
+# Late-cycle spending outside the batch and the small necessities (TOR, programs) in `other`: baseline B1.
+B1_KEYS = ["servers", "sleeves", "gang_expenses", "class", "hospitalization", "hacknet_expenses"]
+HISTORY = REPO / "runtime" / "spend_history.jsonl"
+EARLY_HOURS = 1.5  # capital_policy.json earlyCycleHours, live 2026-11-10
+PRICE_STEP = 1.9
+PURCHASE_SOURCES = {"capital_status.json": "capital", "sleeve_buyer_status.json": "sleeve"}
+# Which money counter each script's purchases land in.
+SOURCE_CATEGORY = {"capital": "servers", "sleeve": "sleeves"}
+
+
+def spent(s: dict, key: str) -> float | None:
+    """Money spent in category `key` since the install, as a positive number; None if not logged."""
+    v = get(s, f"income.{key}")
+    return None if v is None else -v
+
+
+def earned(s: dict) -> float | None:
+    vals = [get(s, f"income.{k}") for k in EARN_KEYS]
+    vals = [v for v in vals if v is not None]
+    return sum(vals) if vals else None
+
+
+def batch_cost(status: dict) -> float:
+    """Cash aug_install.js spent on the batch: plan prices (dearest first) x 1.9 per earlier buy, plus donations."""
+    bought = set(status.get("bought") or [])
+    cost, k = 0.0, 0
+    for entry in status.get("plan") or []:
+        name, price = entry[0], float(entry[-1])
+        if name in bought:
+            cost += price * PRICE_STEP ** k
+            k += 1
+    gifts = sum(float(d.get("amount", 0)) for d in status.get("donations") or [] if isinstance(d, dict))
+    return cost + gifts
+
+
+def read_history(path: Path = HISTORY) -> list[dict]:
+    if not path.exists():
+        return []
+    out = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        try:
+            rec = json.loads(line)
+        except ValueError:
+            continue
+        if isinstance(rec, dict) and isinstance(rec.get("ts"), (int, float)) and rec.get("type"):
+            out.append(rec)
+    return out
+
+
+def archive_records(history: list[dict], name: str, status: dict, now_ms: float) -> list[dict]:
+    """New history records from one pulled status file, deduplicated against `history`."""
+    new: list[dict] = []
+    if name == "aug_install_status.json":
+        ts = status.get("ts")
+        if status.get("installed") and isinstance(ts, (int, float)) and not any(h["type"] == "install" and h["ts"] == ts for h in history):
+            new.append({"type": "install", "ts": ts, "money": status.get("money"), "batchCost": batch_cost(status),
+                        "bought": len(status.get("bought") or []), "homeRam": status.get("homeRam"), "homeCores": status.get("homeCores")})
+        return new
+    source = PURCHASE_SOURCES.get(name)
+    if not source:
+        return new
+    seen = {(h.get("source"), h["ts"]) for h in history if h["type"] == "purchase"}
+    purchases = [p for p in status.get("purchases") or [] if isinstance(p, dict) and isinstance(p.get("ts"), (int, float))]
+    for p in purchases:
+        ok = p.get("ok", (p.get("outcome") or {}).get("ok"))
+        if ok and (source, p["ts"]) not in seen and isinstance(p.get("cost"), (int, float)):
+            new.append({"type": "purchase", "source": source, "ts": p["ts"], "kind": p.get("kind"), "cost": p["cost"]})
+    # Coverage: a full list (50) whose oldest entry is newer than the last pull may have dropped purchases.
+    last_pull = max((h["ts"] for h in history if h["type"] == "pull" and h.get("source") == source), default=None)
+    oldest = min((p["ts"] for p in purchases), default=None)
+    gap = len(purchases) >= 50 and oldest is not None and (last_pull is None or oldest > last_pull)
+    new.append({"type": "pull", "source": source, "ts": now_ms, "count": len(purchases), "gap": gap})
+    return new
+
+
+def attribution(history: list[dict], source: str, start: float, end: float) -> dict:
+    """Spending a script recorded in [start, end], and whether the archive covers that window:
+    pulled before it began, pulled near its end, and no pull in it reporting a possible gap."""
+    pulls = [h for h in history if h["type"] == "pull" and h.get("source") == source]
+    times = sorted(h["ts"] for h in pulls)
+    gaps = any(h.get("gap") for h in pulls if start <= h["ts"] <= end + HOUR_MS)
+    covered = bool(times) and times[0] <= start and times[-1] >= end - 3 * HOUR_MS and not gaps
+    cost = sum(h["cost"] for h in history if h["type"] == "purchase" and h.get("source") == source and start <= h["ts"] <= end)
+    return {"recorded": cost, "covered": covered}
+
+
+def cycle_spend(cycle: list[dict], next_reset: float | None = None, history: list[dict] | None = None,
+                early_hours: float = EARLY_HOURS, step_min: float = 1e9, step_frac: float = 0.01) -> dict:
+    """Spending in one install cycle from its metrics samples: per category early/late, big steps,
+    B1 (late spend outside the batch and necessities over late earnings), B3, and with history B2
+    and unattributed spending."""
+    history = history or []
+    reset = cycle[0]["resetAt"]
+    cut = reset + early_hours * HOUR_MS
+    early = [s for s in cycle if s["ts"] <= cut]
+    split = early[-1] if early else None
+    last = cycle[-1]
+    # The log is trimmed to about 5 days: an old cycle may begin after its early phase.
+    early_unknown = split is None and cycle[0]["ts"] > cut
+    cats: dict = {}
+    for key in SPEND_KEYS:
+        total = spent(last, key)
+        if total is None:
+            cats[key] = None
+            continue
+        e = (spent(split, key) or 0.0) if split else 0.0
+        cats[key] = {"early": e, "late": total - e, "total": total}
+    # Big single-interval spends; a servers step is home when home RAM grew in that interval.
+    steps, home, cloud, home_known = [], 0.0, 0.0, False
+    for a, b in zip(cycle, cycle[1:]):
+        grew = None
+        if isinstance(a.get("homeRam"), (int, float)) and isinstance(b.get("homeRam"), (int, float)):
+            grew = b["homeRam"] > a["homeRam"]
+            home_known = True
+        for key in SPEND_KEYS:
+            sa, sb = spent(a, key), spent(b, key)
+            if sa is None or sb is None:
+                continue
+            d = sb - sa
+            if key == "servers" and grew is not None and d > 0:
+                if grew:
+                    home += d
+                else:
+                    cloud += d
+            if d >= max(step_min, step_frac * (a.get("money") or 0)):
+                what = key if key != "servers" or grew is None else ("home" if grew else "cloud")
+                steps.append({"ts": b["ts"], "category": what, "amount": d, "phase": "early" if b["ts"] <= cut else "late"})
+    e1 = earned(split) if split else 0.0
+    e2 = earned(last)
+    late_earn = (e2 - (e1 or 0.0)) if (e2 is not None and last["ts"] > cut) else None
+    late_spend = sum(cats[k]["late"] for k in B1_KEYS if cats.get(k))
+    batch = [s.get("batchAverage") for s in cycle if isinstance(s.get("batchAverage"), (int, float))]
+    out = {
+        "start": reset, "end": last["ts"], "open": next_reset is None,
+        "hours": (last["ts"] - reset) / HOUR_MS, "categories": cats, "steps": steps,
+        "homeCloud": {"home": home, "cloud": cloud} if home_known else None,
+        "earnTotal": e2, "lateEarn": late_earn, "lateSpendB1": late_spend,
+        "b1": late_spend / late_earn if late_earn and late_earn > 0 else None,
+        "b3": batch[-1] if batch else None,
+        "cashPerHour": slope_per_hour(cycle, "money"), "mcpAvg": mean(cycle, "mcpAvgRate"),
+        "install": None, "unattributed": {}, "earlyUnknown": early_unknown,
+    }
+    if next_reset is not None:
+        inst = [h for h in history if h["type"] == "install" and last["ts"] <= h["ts"] <= next_reset + 10 * 60_000]
+        if inst:
+            rec = inst[-1]
+            # B2 upper bound: home RAM, cores and NeuroFlux were bought from this before the install.
+            out["install"] = {**rec, "leftAfterBatch": (rec.get("money") or 0) - (rec.get("batchCost") or 0)}
+    for source, key in SOURCE_CATEGORY.items():
+        cat = cats.get(key)
+        if not cat:
+            continue
+        att = attribution(history, source, reset, last["ts"])
+        out["unattributed"][key] = (cat["total"] - att["recorded"]) if att["covered"] else None
+    return out
+
+
+def spend_rows(samples: list[dict], history: list[dict] | None = None, early_hours: float = EARLY_HOURS) -> list[dict]:
+    groups = cycles_of(samples)
+    rows = []
+    for i, cyc in enumerate(groups):
+        cyc = [s for s in cyc if s["ts"] >= s["resetAt"]]
+        if not cyc:
+            continue
+        nxt = groups[i + 1][0]["resetAt"] if i + 1 < len(groups) else None
+        rows.append(cycle_spend(cyc, nxt, history, early_hours))
+    return rows
+
+
+def spend_text(rows: list[dict]) -> str:
+    if not rows:
+        return "metrics: no samples"
+    out = []
+    for r in rows:
+        out.append(f"{pt(r['start'])}  {r['hours']:.2f}h {'open' if r['open'] else 'closed'}  cash/h {num(r['cashPerHour'])}"
+                   f"  MCP avg {num(r['mcpAvg'])}/s  earned {num(r['earnTotal'])}")
+        parts = [f"{k} {num(c['total'])} ({num(c['early'])} early, {num(c['late'])} late)"
+                 for k, c in r["categories"].items() if c is not None and c["total"] >= 1e6]
+        out.append("  spend: " + ("; ".join(parts) or "none over $1m"))
+        if r["earlyUnknown"]:
+            out.append("  (log begins after the early phase: early spending is counted as late)")
+        missing = [k for k, c in r["categories"].items() if c is None]
+        if missing:
+            out.append(f"  not logged this cycle: {', '.join(missing)}")
+        if r["homeCloud"]:
+            out.append(f"  servers split: home {num(r['homeCloud']['home'])}, cloud {num(r['homeCloud']['cloud'])}")
+        b1 = "--" if r["b1"] is None else f"{r['b1'] * 100:.1f}%"
+        b3 = "--" if r["b3"] is None else f"{r['b3']:.3f}"
+        out.append(f"  B1 late spend outside batch: {num(r['lateSpendB1'])} of late earnings {num(r['lateEarn'])} = {b1}"
+                   f"   B3 batch value/h {b3}")
+        if r["install"]:
+            i = r["install"]
+            out.append(f"  B2 install {pt(i['ts'])}: cash {num(i['money'])}, batch {num(i['batchCost'])} ({i['bought']} augs),"
+                       f" left {num(i['leftAfterBatch'])} (home RAM/cores and NeuroFlux came from this; the rest was wiped)")
+        elif not r["open"]:
+            out.append("  B2: no aug_install record archived for this install")
+        un = ", ".join(f"{k} {'n/a' if v is None else num(v)}" for k, v in r["unattributed"].items())
+        if un:
+            out.append(f"  unattributed (counter minus script records; n/a = archive does not cover the cycle): {un}")
+        late = [st for st in r["steps"] if st["phase"] == "late"]
+        for st in sorted(late, key=lambda st: -st["amount"])[:5]:
+            out.append(f"  late step {pt(st['ts'])} {st['category']} {num(st['amount'])}")
+        if len(late) > 5:
+            out.append(f"  ... {len(late) - 5} more late steps of at least 1% of cash")
+    return "\n".join(out)
+
+
+def ctl_get(name: str) -> str | None:
+    cmd = [sys.executable, str(REPO / "tools" / "bb_remote.py"), "ctl-get", name]
+    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+    try:
+        result = json.loads(proc.stdout)
+    except ValueError:
+        return None
+    return result["result"] if result.get("ok") and isinstance(result.get("result"), str) else None
+
+
+def pull_spend(path: Path = HISTORY, now_ms: float | None = None, fetch=ctl_get) -> str:
+    """Fetch the spenders' status files and append new purchases and installs to the history."""
+    now_ms = now_ms if now_ms is not None else datetime.now(timezone.utc).timestamp() * 1000
+    history = read_history(path)
+    new: list[dict] = []
+    for name in ["aug_install_status.json", *PURCHASE_SOURCES]:
+        text = fetch(name)
+        if text is None:
+            continue
+        try:
+            status = json.loads(text)
+        except ValueError:
+            continue
+        if isinstance(status, dict):
+            new.extend(archive_records(history + new, name, status, now_ms))
+    if new:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a", encoding="utf-8") as fh:
+            for rec in new:
+                fh.write(json.dumps(rec) + "\n")
+    added = sum(1 for r in new if r["type"] != "pull")
+    return f"spend history: {added} new records in {path.name}"
+
+
 def pull(path: Path = LOG) -> int:
     cmd = [sys.executable, str(REPO / "tools" / "bb_remote.py"), "ctl-get", "metrics_log.txt"]
     proc = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
@@ -401,6 +656,7 @@ def pull(path: Path = LOG) -> int:
     samples = parse(result["result"])
     tail = f", latest {pt(samples[-1]['ts'])}" if samples else ""
     print(f"pulled {len(samples)} samples to {path.relative_to(REPO)}{tail}")
+    print(pull_spend())
     return 0
 
 
@@ -415,6 +671,8 @@ def main(argv: list[str] | None = None) -> int:
     sp = sub.add_parser("summary")
     sp.add_argument("--window", type=float, default=60, help="minutes (default 60)")
     sub.add_parser("cycles")
+    sp = sub.add_parser("spend")
+    sp.add_argument("--early-hours", type=float, default=EARLY_HOURS, help="early phase length (default 1.5)")
     sp = sub.add_parser("trend")
     sp.add_argument("--windows", type=int, default=3)
     sp.add_argument("--window", type=float, default=60, help="minutes per window (default 60)")
@@ -430,6 +688,8 @@ def main(argv: list[str] | None = None) -> int:
         print(summary_text(samples, args.window))
     elif args.cmd == "cycles":
         print(cycles_text(samples))
+    elif args.cmd == "spend":
+        print(spend_text(spend_rows(samples, read_history(), args.early_hours)))
     elif args.cmd == "trend":
         print(trend_line(trend(samples, args.windows, args.window)))
     else:

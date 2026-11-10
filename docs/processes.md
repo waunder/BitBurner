@@ -2188,10 +2188,10 @@ cost stay in `money.js`; `hud_consolidated.js` is separate.
 Resident time series for measured rates (added 2026-11-05). Every 5 minutes, on
 the wall-clock boundary, appends one JSON line to `metrics_log.txt`: `ts`,
 `resetAt` (`getResetInfo().lastAugReset`), `money`, `income` (`getMoneySources().sinceInstall`
-hacking/servers/augmentations/darknet/codingcontract/total), `skills`, `exp`
+hacking/servers/augmentations/darknet/codingcontract/total, and since 2026-11-10 the spending categories sleeves/gang_expenses/other/class/hospitalization plus gang/work/crime/stock/hacknet/hacknet_expenses), `homeRam` (home size, to tell home upgrades from cloud in `servers`), `skills`, `exp`
 (hacking and combat), `karma`, `city`, `sharePower`, `work` and `reason` (from
 `player_activity_status.json`), `factionRep`, `favor`, `installedCount`,
-`queuedCount`, `verdict` (from `augmentation_readiness.json`), `mcpRate` and
+`queuedCount`, `verdict`, `batchValue` and `batchAverage` (the advisor's, from `augmentation_readiness.json`), `mcpRate` and
 `mcpAvgRate` (from `mcp_status.json`), and `ramMax`/`ramUsed` over home plus cloud.
 
 - **Stale sources:** a status file older than 10 minutes (or missing) leaves its
@@ -2210,6 +2210,15 @@ hacking/servers/augmentations/darknet/codingcontract/total), `skills`, `exp`
   windows this cycle for cash/h, MCP rate, hacking exp/h, levels/h (context only), and rep/h of
   the work faction and the best faction: DECELERATING or ACCELERATING when the last two
   window-to-window changes both exceed 10%, SWITCH when the faction changed, n/a when short.
+  `spend [--early-hours 1.5]` is the spending ledger (allocator baseline, `docs/allocator-design.md` R0):
+  per cycle, money spent by game category (servers split home/cloud by `homeRam`, sleeves,
+  gang_expenses, other = TOR/programs/donations, augmentations), early vs late, the largest late
+  steps, B1 (late spend outside the batch over late earnings), B3 (advisor batch value per hour),
+  and, from `runtime/spend_history.jsonl`, B2 (cash left after the batch at each install) and
+  unattributed spending (counter minus the scripts' own purchase records; n/a where the archive
+  does not cover the cycle, since those lists keep 50 entries and reset on restart). `pull` also
+  fetches `aug_install_status.json`, `capital_status.json` and `sleeve_buyer_status.json` and
+  appends new installs and purchases to that history.
   Times are Pacific. Experiments are logged in `docs/experiments.md`.
 
 ### `maintenance_steward.js` and `cct_watcher.js`

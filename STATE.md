@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-10 06:22 Pacific (PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-10 08:17 Pacific (PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -12,6 +12,22 @@ DevTools, Remote API status files.
 > game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
+
+**2026-11-10 08:15 Pacific, 2-hourly task, BN10 run 2: steady, no changes.** Not a stand-aside run (no session
+running). Live (metrics sample 08:10, game `ps` 08:16, readiness 08:13): BN10, $164b, hacking 584, str/def/dex/agi
+1406/2888/679/888, karma -110k, **44 installed** (confirms install 6), **1 queued: The B00ts of Perseus** (darknet
+reward). Joined BitRunners (favor 0, +35.8 pending). Every resident running (17 plus gang-controller and cct_watcher).
+Player in the gym on dexterity (678/850, last combat stat short of the Covenant gate). Measured, 12 samples 07:15 to
+08:10: rep/h NiteSec 3.81m (gang), The Black Hand 82.1k, BitRunners 28.9k, Tian Di Hui 14.5k, Tetrads 11.4k, CyberSec
+8.63k, Slum Snakes 6.15k, The Syndicate 4.79k; hacking exp 898m/h (78.4 levels/h), karma -355/h, cash 120b/h, MCP rate
+406m/s average 309m/s, share 1.49. Trend: `n/a` on every series (cycle 1.8h old; rep work The Black Hand SWITCH).
+Cycle 6 (`metrics.py cycles`, 02:19-06:20): 4.02h, rebuild hacking 1.26h, rep earned NiteSec 11.1m, The Black Hand
+209k, Tian Di Hui 23.2k; favor banked NiteSec +77.5, CyberSec +13.9, Tian Di Hui +8.2 (live favor: NiteSec 337, The
+Black Hand 133). Advisor: **wait** ("gang cycle minimum: 2.1h more"; batch +50.2% vs cycle average +26.5%; plan PC
+Direct-Neural Interface Optimization Submodule, Neuralstimulator, Enhanced Myelin Sheathing, Bionic Arms from NiteSec,
+$162b; next valued The Black Hand, 61.7k rep, about 0.8h). Decision: **no install, agree**; the minimum ends about
+10:20. Covenant gate: hacking 584/850 is binding again, dexterity 679/850 the only combat stat short. World Daemon:
+not present (no Daedalus, no Red Pill). Share A/B: already recorded 2026-11-05; not repeated.
 
 **BN10 run 2, install 6 ran 2026-11-10 06:20 Pacific, 2-hourly task: 6 bought, 38 -> 44 installed.** Not a
 stand-aside run (no session running). Before (metrics sample 06:10, game `ps` 06:14, readiness 06:18): BN10, $133b

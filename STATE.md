@@ -13,6 +13,15 @@ DevTools, Remote API status files.
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
 
+> **MONEY PHASE, cycle 5 (set 2026-11-10 00:24 PC clock, Ken session). Undo both at the next install.** NiteSec rep
+> 3.76m covers every NiteSec aug (highest need 3.5m), so cash is now the only limit on the batch. (1) Gang objective
+> set to `money` (`run set_gang_objective.js money`; 11 Money Laundering + 1 Ethical Hacking, about $27b/h). (2)
+> capital_manager buying paused: game-only `capital_policy.json` now has `"enabled": false` (it still starts waiting
+> scripts). Reason: it had been spending most of a ~$480b/h gross income on cloud upgrades (cash net 31b/h), and an
+> install deletes cloud servers. **Right after the next install:** `run set_gang_objective.js reputation`, and push
+> `capital_policy.json` back to `{"reserve":0,"homeRamTarget":262144,"cloudDemandFloor":0}` (no `enabled`), then
+> check both took effect. Both settings survive an install, so forgetting them stalls the next cycle.
+
 **2026-11-10 00:15 Pacific, 2-hourly task, BN10 run 2: steady, no changes.** Not a stand-aside run (no session
 running). Live (metrics sample 00:10, game `ps` 00:14, readiness 00:12): BN10, $39.7b (to $35.1b at 00:12),
 hacking 357, str/def/dex/agi 133/181/131/131, karma -106k, 32 installed, 0 queued. Every resident running (19 plus

@@ -157,11 +157,11 @@ class RealRepoTests(unittest.TestCase):
         self.assertEqual(committed, fresh)
 
     def test_bn10_is_bn15_plus_sleeves(self):
-        # bn10 extends bn15 for the darknet (Red Pill from the 4th lab), adding only sleeves.
+        # bn10 extends bn15 for the darknet (Red Pill from the 4th lab), adding sleeves and the shadow allocator.
         a, b = P.resolve(REPO, "bn15"), P.resolve(REPO, "bn10")
         self.assertTrue(set(a.files) <= set(b.files))
         self.assertTrue(all(g.startswith("sleeve_") for g in set(b.files) - set(a.files)))
-        self.assertEqual(b.startup, ["dnet_root.js", "sleeve_controller.js"])
+        self.assertEqual(b.startup, ["dnet_root.js", "sleeve_controller.js", "sleeve_buyer.js", "allocator.js"])
 
     def test_game_paths_keep_flat_and_special_subpaths(self):
         files = P.resolve(REPO, "bn15").files

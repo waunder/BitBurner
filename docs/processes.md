@@ -456,6 +456,52 @@ never touches augmentations. While `mcp.js` is not running on home, it holds bac
   after 10s. Purchases are lost on augmentation install.
 - **Test:** `node --test capital_logic.test.js`
 
+### `allocator.js` and `valuation_logic.js`
+
+Shadow allocator, step R1 of `docs/allocator-design.md` (built 2026-11-10). Every minute it values
+every purchase the spenders made, and the one each is about to make, on one scale, and logs the
+verdict beside what was actually done. **It buys nothing, and no spender reads its output**: every
+purchase kind still runs on its own script's rule.
+
+- **Unit:** batch value (v), the install advisor's `augValue`. A purchase of d costs
+  B(C) - B(C - d) in v, where C is cash projected to the expected install (cash plus 75% of the cash
+  rate times the hours left; the later of the gang's 4h minimum and the advisor's "wait for X", cap
+  12h) and B the value of the batch `planPurchases` buys with C, with gang-faction rep grown at the
+  gang's measured rate. Cash the batch cannot use (`freeCash`) costs nothing. The Red Pill counts as
+  value 1000 (augValue scores it 0).
+- **Verdicts** (`valuePurchase`): TOR, programs, and home RAM below `homeRamFloor` or in demand are
+  necessities, granted up to the larger of 2% of cash and $1b. Home RAM nothing would use (demand
+  under `homeDemandFloor`) is refused in any phase. In the first `earlyCycleHours` everything else
+  is granted. Late in a cycle: granted when it comes out of free cash, or when the cash it returns
+  before the install (cloud: MCP rate x hours x added share, only while MCP fills the late cloud
+  floor; gang gear: from payback) buys back more v than it costs; otherwise a kind an install wipes
+  is refused and a lasting one marked `sweep`. NeuroFlux and donations are `n/a` (planned by
+  `aug_install.js`). Prices are charged 10% more (`costMargin`) so small forecast errors do not flip verdicts.
+- **Reads:** `capital_status.json`, `sleeve_buyer_status.json`, `gang_status.json`, `mcp_status.json`,
+  `augmentation_readiness.json` (`offers`, `owned`, `priority`, `advice`; ignored when over 10 minutes old),
+  `capital_policy.json` (shared keys and an optional `valuation` block of `DEFAULTS` overrides),
+  `valuation_flags.json` (reported only in R1), cash, `getMoneySources().sinceInstall`.
+- **Writes:** `spend_grants.json` each pass: `mode: "shadow"`, phase, projected cash and batch,
+  reserve, `freeCash`, marginal aug, per-kind `grants` (published for R2, unused), `pending` and
+  `refused` verdicts on what each spender is about to buy, `sweepPlan`, `seen` (last record per
+  spender, so a restart neither repeats nor skips), `counters`; `ok: false` with `error` on a
+  failed pass. `allocator_shadow_log.txt`: one JSON line per purchase (`ts`, `source`, `kind`,
+  `item`, `cost`, `flag`, `phase`, `verdict`, `class`, `costV`, `gainV`, `cashReturn`, `freeCash`,
+  `reserve`, `reason`) and one `unattributed` line per money counter (servers, sleeves,
+  gang_expenses, other) whose spend this pass no record explains (gang gear bought between the
+  allocator's polls, manual purchases). Last 2000 lines kept.
+- **Flags:** `valuation_flags.json`, `{"run": <getResetInfo().lastNodeReset>, "kinds": {kind: mode}}`,
+  modes own / shadow / valued / sweep / never. `flagFor` treats a missing or unreadable file, a
+  missing key, an unknown value, another run's stamp and `sweep` on `cloud_ram`/`sleeve_augs` as
+  `own`. Not read by any spender until R2. `grantFor` (R2) falls back on grants over `ttlSec` (300s)
+  old or from before the last install.
+- **Start:** bn10 profile `startup` (after `sleeve_buyer.js`); `capital_manager.js` restarts it when
+  it fits. A new copy kills the old one. Opens no tail window.
+- **RAM:** about 4.45GB (base 1.6, `getResetInfo` 1, `getMoneySources` 1, `kill` 0.5, `ps` 0.2,
+  cash 0.1, `getServerMaxRam` 0.05); confirm with `mem allocator.js`.
+- **Test:** `node --test valuation_logic.test.js` (three incident replays: cycle 7 late cloud,
+  2026-11-10 14:53 home step, late Covenant sleeve memory).
+
 ### `mcp.js`
 
 The orchestrator, and where nearly all the complexity lives. Home is a worker host (since 2026-11-02), less 512GB kept for the control plane in `cloudAdmissionHosts`. Each tick
@@ -1527,7 +1573,9 @@ and never changes player work.
   a finite remote assessment every two minutes and copies its result home.
   This deliberately avoids permanently reserving its relatively large
   Singularity API RAM footprint on `home`.
-- **Output:** `augmentation_readiness.json`, pulled through the Remote API.
+- **Output:** `augmentation_readiness.json`, pulled through the Remote API. Since 2026-11-10 it also
+  lists `offers` (every prerequisite-ready offer with rep, price, prerequisites and advisor value),
+  `owned` (installed and queued) and `priority`, for `allocator.js`; no extra Singularity calls.
 - **HUD use:** Operations and XP panels show a concise runway line. A higher
   discovered Hack gate remains the priority (`Rothman Algorithms`). Once that
   gate is clear, a three-or-more purchased batch reports `Install-ready`; or

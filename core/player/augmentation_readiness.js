@@ -172,7 +172,12 @@ function assess(ns, previous = null) {
     const gangSells = gangFaction ? unique(candidates.filter((item) => item.faction === gangFaction).map((item) => item.name)) : []
     const gangRep = gangFaction ? factionRep[gangFaction] ?? null : null
     const workCandidate = workCandidates.find((item) => !item.donatable) || null
+    // Every prerequisite-ready offer with its value, as planPurchases takes them, for allocator.js's
+    // batch valuation (valuation_logic.js). No extra Singularity calls: all were read above.
+    const offers = donated.candidates.map(({ name, faction, rep, repRequired, price, prerequisites, value, donatable }) =>
+      ({ name, faction, rep, repRequired, price, prerequisites, value: Number(value) || 0, donatable: Boolean(donatable) }))
     return {
+      offers, owned: includingQueued, priority,
       ts: now, ok: true, resetAt: resetAt(ns), money, factionRep, favor, favorToDonate, hackingExp: Number(player?.exp?.hacking) || 0, advice,
       installedCount: installed.length, queuedCount: queued.length, queued, installPlan,
       factionCount: factions.length, candidate, workCandidate, workCandidates, donating,

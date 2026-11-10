@@ -289,6 +289,10 @@ watch the live game, so it merges early as its own step (R1).
 
 ### R1. Shadow allocator: early read-only merge (branch `allocator-shadow`, 2–2.5 sessions)
 
+Built 2026-11-10 on `allocator-shadow` (not merged): `core/capital/valuation_logic.js`, `allocator.js`,
+`offers`/`owned`/`priority` in readiness; see `docs/processes.md`. Pending purchases are read from each
+spender's status `action`; gang gear bought between polls shows as `unattributed` gang_expenses.
+
 - **Builds:** `valuation_logic.js` (pure: `projectedCash`, `batchValue`, `costInV`, per-kind valuation,
   `chooseGrants`, `sweepPlan`, `grantFor`, `flagFor`) and `allocator.js`, writing `spend_grants.json`.
   Spenders are **not** edited (every kind effectively `own`). The allocator reads their purchases and

@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-09 22:20 Pacific (PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-10 00:20 Pacific (PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -12,6 +12,19 @@ DevTools, Remote API status files.
 > game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
+
+**2026-11-10 00:15 Pacific, 2-hourly task, BN10 run 2: steady, no changes.** Not a stand-aside run (no session
+running). Live (metrics sample 00:10, game `ps` 00:14, readiness 00:12): BN10, $39.7b (to $35.1b at 00:12),
+hacking 357, str/def/dex/agi 133/181/131/131, karma -106k, 32 installed, 0 queued. Every resident running (19 plus
+gang-controller and cct_watcher). Player in the Algorithms class toward hacking 365 for I.I.I.I. Cycle-4 favor
+confirmed live: NiteSec 260 (was 171), Tian Di Hui 116, Tetrads 115; `metrics.py cycles` still prints "favor banked:
+none" for cycle 4 (18:15-22:17), a display gap in the tool, not lost favor. Measured, 13 samples 23:10 to 00:10: rep/h
+NiteSec 1.83m (gang), Tian Di Hui 8.12k, CyberSec 6.2k, Tetrads 4.26k, Slum Snakes 1.86k; hacking exp 274m/h (62.1
+levels/h), karma -526/h, cash 31.3b/h, MCP rate 128m/s average 82m/s, share 1.44. Trend: `n/a` on every series
+(cycle 1.9h old). Advisor: **wait** ("gang cycle minimum: 2.1h more"; batch +16.8% vs cycle average +8.8%; plan
+Embedded Netburner Module Analyze Engine, DataJack, Augmented Targeting II from NiteSec, $35.0b). Decision: **no
+install, agree**; the minimum ends about 02:17, and the next run should install if cash still limits the batch rather
+than rep. World Daemon: not present (no Daedalus, no Red Pill). Share A/B: already recorded 2026-11-05; not repeated.
 
 **BN10 run 2, install 4 ran 2026-11-09 22:17 Pacific, 2-hourly task: 3 bought + W1ngs of Icarus, 32 installed.**
 Not a stand-aside run (no session running). Before (metrics sample 22:10, game `ps` 22:15, readiness 22:14): BN10,

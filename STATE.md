@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-10 04:16 Pacific (PC clock), on the PC. Sources: Steam game via
+Last refreshed: 2026-11-10 06:22 Pacific (PC clock), on the PC. Sources: Steam game via
 DevTools, Remote API status files.
 
 > **Which session is this? (standing note, keep at the top.)** The BitBurner run is meant to be worked from a Claude
@@ -12,6 +12,29 @@ DevTools, Remote API status files.
 > game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
+
+**BN10 run 2, install 6 ran 2026-11-10 06:20 Pacific, 2-hourly task: 6 bought, 38 -> 44 installed.** Not a
+stand-aside run (no session running). Before (metrics sample 06:10, game `ps` 06:14, readiness 06:18): BN10, $133b
+(06:10) to $250b (06:20), hacking 472, str/def/dex/agi 848/777/556/841, karma -109k, 38 installed, 0 queued. Every
+resident running (17 plus gang-controller and cct_watcher). Player in the Algorithms class. Measured, 12 samples 05:15
+to 06:10: rep/h NiteSec 3.09m (gang), The Black Hand 12.1k, Tian Di Hui 6.95k, Tetrads 6.39k, CyberSec 5.14k, Slum
+Snakes 3.08k; hacking exp 826m/h (17.4 levels/h), karma -514/h, cash 108b/h, MCP rate 247m/s average 143m/s, share
+1.5. Trend: `cash/h 33.2b>2.97b>108b STEADY | MCP 104m>119m>247m ACCELERATING | hackExp/h 351m>656m>826m ACCELERATING
+| lvl/h 59.2>29.8>17.4 context | rep work The Black Hand SWITCH | rep best NiteSec 2.72m>2.76m>3.09m STEADY`. Nothing
+decelerating. Advisor: **wait** to the end ("gang cycle minimum: 1m more" at 06:18:50; batch +121% to +130% vs cycle
+average +30% to +33%; next valued aug none). Decision: **install, agree in substance**: the 4h gang minimum was its only
+blocker and passed at about 06:19:50; NiteSec rep (10.9m) covers its whole shop, so cash alone limited the batch. Lost
+by installing: combat near 850, but the Covenant gate is bound by hacking (472 of 850), and combat rebuilt
+147 -> 848 in this 4h cycle. Favor banked about NiteSec +40.9 (to ~337), The Black Hand +45.8 (to ~133, toward 150).
+`capital_manager.js` killed 06:15. Backup `saves/bitburnerSave_pre-install6_BN10run2_2026-11-10.json.gz` (gzip and
+player parsed: node 10, 38 augs, 0 queued, 6 sleeves, $181.8b, no Red Pill; SHA-256
+cce7761a42d8fb4799e33891ae27528baf9170606b58936400cb3dc56d9fd96b). `aug_install.js --install` at 06:20 ($250.2b)
+bought Graphene Bone Lacings, Xanipher, PC Direct-Neural Interface, NEMEAN Subdermal Weave, CashRoot Starter Kit,
+Neural Wit Amplifier (all NiteSec); no NeuroFlux; home stays 16TB, 2 cores. After (game `ps` 06:20): every resident
+restarted (17 plus gang-controller and cct_watcher). No money phase this cycle, so nothing to undo. Installed count and
+post-install stats not read live yet; next run confirms 44 and adds the cycle-6 `metrics.py cycles` line (cycle 6,
+02:19-06:20, 4.0h). Run target unchanged. **Next:** rebuild toward the Covenant gate (hacking 850 binding). World
+Daemon: not present (no Red Pill). Share A/B: already recorded 2026-11-05; not repeated.
 
 **2026-11-10 04:15 Pacific, 2-hourly task, BN10 run 2: steady, no changes.** Not a stand-aside run (no session
 running). Live (metrics sample 04:10, game `ps` 04:15, readiness 04:12): BN10, $65.3b (sample) / $98.8b

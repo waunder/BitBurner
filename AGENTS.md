@@ -44,8 +44,9 @@ at the top of replies.
 
 ## Current authority
 
-`STATE.md` is the compact, dated handoff; refresh it when the objective or
-verified live state changes. `docs/Codex-todo.md` is the current implementation
+`STATE.md` is the compact, dated handoff (about a page); refresh it when the objective or
+verified live state changes. Detailed check and session entries go at the top of
+`docs/check-log.md`, not into `STATE.md`. `docs/Codex-todo.md` is the current implementation
 ledger. `docs/processes.md` describes current script behavior. Historical audit
 reports, archived checkpoints, `docs/claude-todo.md`, and migration reports are
 evidence/history, not current authority. `CLAUDE.md` is only a pointer back to

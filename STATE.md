@@ -19,6 +19,13 @@ DevTools, Remote API status files.
 > rep 11.2m >= 3.5m, all 12 on Money Laundering, gang money about $50b/h (cash 120b/h before), penalty 0.999.
 > Overnight, cycle 6 had run about 2h past 3.5m on Cyberterrorism for no use. capital_manager is not part of this:
 > it keeps buying cloud servers all cycle (lost at install); pausing it late in a cycle is still a manual call.
+>
+> **Cloud buying stopped for the rest of cycle 7 (10:14, Ken session). Undo right after the next install:** push
+> game-only `capital_policy.json` back to `{"reserve":0,"homeRamTarget":262144,"cloudDemandFloor":0}`, then read it back.
+> It is now `cloudDemandFloor` 0.5 (home RAM still bought). Evidence, cycle 7 metrics: cloud RAM grew 1.8PB -> 5.5PB
+> from 07:40 to 10:10 ($5.1t spent this cycle, about 95% of hacking income) while hacking income stayed flat at about
+> $1.7t/h; MCP's own jobs fill 0.2% of cloud RAM, so the extra RAM only fed xp_filler (hack exp 0.9b -> 1.9b/h), which an
+> install wipes. Floor 0 is right early in a cycle (fast hacking rebuild); late in a cycle, cash should go to the batch.
 
 **2026-11-10 08:15 Pacific, 2-hourly task, BN10 run 2: steady, no changes.** Not a stand-aside run (no session
 running). Live (metrics sample 08:10, game `ps` 08:16, readiness 08:13): BN10, $164b, hacking 584, str/def/dex/agi

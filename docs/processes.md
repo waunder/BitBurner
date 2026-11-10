@@ -449,7 +449,7 @@ never touches augmentations. While `mcp.js` is not running on home, it holds bac
 `mcp.js` itself is not on its list.
 
 - **Reads:** `capital_policy.json` every pass (`enabled`, `reserve`,
-  `homeRamTarget` default 512, `cloudFraction` default 0.5, `cloudDemandFloor` default 0.5, optional `lateCloudDemandFloor` and `earlyCycleHours`, `homeDemandFloor` default 0.5). Set `enabled` false
+  `homeRamTarget` default 512, `cloudFraction` default 0.5, `cloudDemandFloor` default 0.5, optional `lateCloudDemandFloor` and `earlyCycleHours`, `homeDemandFloor` default 0.5, `lateSpendFraction` default 0.01: after `earlyCycleHours` one home RAM step may cost at most that share of cash; `sleeve_buyer.js` uses the same `lateCycleLimit`). Set `enabled` false
   to stop purchases, or raise `reserve` to protect cash for augmentations.
 - **Writes:** `capital_status.json` with the last 50 purchases and `cyclePhase` (floor in use; early, late or fixed).
 - **Failure modes:** a refused purchase is recorded with `ok: false` and retried
@@ -1679,10 +1679,14 @@ purchase zeroes that sleeve's exp** (`Sleeve.installAugmentation`), so while the
   after the first Covenant sleeve, on the lowest-memory sleeve, the largest batch of up to 10
   points that spendable covers. Memory cost is computed locally from the game formula.
   Note `capital_manager.js` spends the same cash above the reserve; raise `reserve` to save.
+  **Late in a cycle** (`lateCycleLimit` in `capital_logic.js`, from `earlyCycleHours` after the last
+  install): no sleeve augmentations (an install wipes them), and sleeves or memory at most
+  `lateSpendFraction` (default 1%) of cash per purchase, so the cash-limited aug batch keeps the rest.
 - **Payoff model:** a full sleeve earns `sleeveShare` (policy key, default 0.25) of smoothed player
   income, scaled by memory/100 because sync restarts at memory. That share is an assumption, not
   a measurement. `paybackHours` is cost over that rate; null while income is 0.
-- **Writes:** `sleeve_buyer_status.json`: `idle` reason, or `income`, `sleeveCost`, `reserve`, last
+- **Writes:** `sleeve_buyer_status.json`: `idle` reason, or `income`, `sleeveCost`, `reserve`, `cyclePhase`,
+  `limits` (`lasting`, `wiped`: the most one purchase may cost), last
   `action` and `outcome`, and `purchases` (last 50) each with cost, payoff model and outcome
   (`ok`, game message, cash before and after).
 - **Failure modes:** a refused purchase is recorded with `ok: false` and retried after 30s.

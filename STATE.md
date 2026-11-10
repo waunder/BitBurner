@@ -47,6 +47,12 @@ Covenant in run 1).
   `capital_status.json` `homeDemand`; commit below). Added 2026-11-10 after a $4.74t home upgrade at
   14:53 bought RAM that sat 0.23% used. `capital_status.json` `cyclePhase` shows the phase. Why: in cycle 7, cloud
   RAM tripled while hacking income stayed flat, because MCP uses 0.2% of it.
+- **Late in each cycle the aug batch comes first** (2026-11-10). From 1.5h after an install
+  (`lateCycleLimit` in `capital_logic.js`): nothing an install wipes is bought (cloud RAM, sleeve
+  augs), and anything lasting (home RAM, sleeve memory, sleeves) is held to 1% of cash per purchase
+  (`lateSpendFraction`). Home RAM also needs demand. The gang already qualifies: money mode buys only
+  gear that pays back in 30 minutes; reputation mode buys rep the batch needs. Status files:
+  `capital_status.json` `homeDemand`, `sleeve_buyer_status.json` `cyclePhase` and `limits`.
 - **Gang planner** (merged 2026-11-09, 47b5559; `docs/gang-planner.md`). The advisor keeps a 4h
   minimum cycle for the gang faction (cap 12h). Ascension runs in either mode, at x1.5 and at most one
   per loop. Reputation mode uses the 0.80/0.90 wanted-penalty band.

@@ -10,6 +10,7 @@
  * @param {NS} ns
  */
 import { boughtFromCost, chooseNextPurchase, chooseSleeveAug, chooseSleevePurchase, eligibility, smoothIncome } from "sleeve_buyer_logic.js"
+import { lateCycleLimit } from "capital_logic.js"
 
 const STATUS = "sleeve_buyer_status.json"
 const POLICY = "capital_policy.json"
@@ -50,13 +51,19 @@ export async function main(ns) {
     // last.cash is taken after any purchase, so spending never reads as negative income.
     if (last) income = smoothIncome({ previous: income, cash, lastCash: last.cash, seconds: (now - last.at) / 1000 })
     const spendable = cash - (Number(policy.reserve) || 0)
+    // Late in a cycle the aug batch gets the cash: no sleeve augs (an install wipes them), and
+    // memory or sleeves (permanent) at most lateSpendFraction of cash per purchase (lateCycleLimit).
+    const hoursSinceInstall = (now - ns.getResetInfo().lastAugReset) / 3.6e6
+    const lasting = lateCycleLimit({ policy, hoursSinceInstall, cash })
+    const wiped = lateCycleLimit({ policy, hoursSinceInstall, cash, lostAtInstall: true })
+    const cyclePhase = lasting.phase
     const list = sleeves(ns)
     const covenantBlock = eligibility({ bitNode, factions: ns.getPlayer().factions })
     let covenant = null, sleeveCost = null
     if (!covenantBlock) {
       sleeveCost = ns.sleeve.getSleeveCost()
       covenant = chooseSleevePurchase({
-        spendable, sleeveCost, boughtCount: boughtFromCost(sleeveCost), sleeves: list, income,
+        spendable: Math.min(spendable, lasting.limit), sleeveCost, boughtCount: boughtFromCost(sleeveCost), sleeves: list, income,
         sleeveShare: Number(policy.sleeveShare) || 0.25,
       })
     }
@@ -66,7 +73,7 @@ export async function main(ns) {
     const karmaTarget = Number(readJson(ns, "player_activity_config.json", {})?.crimeKarmaTarget ?? -54000)
     const karmaNeeded = Number.isFinite(karma) && karma > karmaTarget
     const augs = list.map((s) => ({ ...s, augs: s.shock === 0 && (!karmaNeeded || s.exp < 1000) ? ns.sleeve.getSleevePurchasableAugs(s.index) : [] }))
-    const pick = chooseNextPurchase({ covenant, aug: chooseSleeveAug({ sleeves: augs, spendable, augShare: Number(policy.sleeveAugShare) || 0.05, karmaNeeded }) })
+    const pick = chooseNextPurchase({ covenant, aug: chooseSleeveAug({ sleeves: augs, spendable: Math.min(spendable, wiped.limit), augShare: Number(policy.sleeveAugShare) || 0.05, karmaNeeded }) })
     let outcome = null
     if (pick.kind !== "save") {
       const result = pick.kind === "sleeve" ? ns.sleeve.purchaseSleeve()
@@ -79,7 +86,8 @@ export async function main(ns) {
       purchases.splice(0, Math.max(0, purchases.length - 50))
     }
     last = { at: now, cash: ns.getServerMoneyAvailable("home") }
-    write({ ok: true, income, sleeveCost, covenant: covenantBlock ?? "member", reserve: Number(policy.reserve) || 0, action: pick, outcome })
+    write({ ok: true, income, sleeveCost, covenant: covenantBlock ?? "member", reserve: Number(policy.reserve) || 0,
+      cyclePhase, limits: { lasting: lasting.limit, wiped: wiped.limit }, action: pick, outcome })
     await ns.sleep(outcome?.ok ? 200 : POLL_MS)
   }
 }

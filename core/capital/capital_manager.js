@@ -4,13 +4,14 @@
  * `capital_policy.json` is read every pass: enabled, reserve, homeRamTarget,
  * cloudFraction, saveWindowSec, homeRamFloor, cloudDemandFloor, and optionally lateCloudDemandFloor and
  * earlyCycleHours (cloudDemandFloorFor: a stricter floor late in each install-to-install cycle), and
- * homeDemandFloor (default 0.5: home RAM is bought only while scripts need that share of it).
+ * homeDemandFloor (default 0.5: home RAM is bought only while scripts need that share of it), and
+ * lateSpendFraction (lateCycleLimit: late in a cycle home RAM may cost at most that share of cash).
  * Writes every purchase, and `cyclePhase`, to `capital_status.json`.
  * Start: `run capital_manager.js` (startup.js launches it).
  * @param {NS} ns
  */
 import { readStacks } from "stack_files.js"
-import { PROGRAMS, chooseCapitalAction, cloudDemandFloorFor, nextScriptToStart } from "capital_logic.js"
+import { PROGRAMS, chooseCapitalAction, cloudDemandFloorFor, lateCycleLimit, nextScriptToStart } from "capital_logic.js"
 
 const POLICY = "capital_policy.json"
 const STATUS = "capital_status.json"
@@ -115,9 +116,11 @@ export async function main(ns) {
     const policy = readPolicy(ns)
     let action = null, ok = null, cyclePhase = null, homeDemand = null
     if (policy.enabled !== false) {
-      cyclePhase = cloudDemandFloorFor(policy, (now - ns.getResetInfo().lastAugReset) / 3.6e6)
+      const hoursSinceInstall = (now - ns.getResetInfo().lastAugReset) / 3.6e6
+      cyclePhase = cloudDemandFloorFor(policy, hoursSinceInstall)
+      const homeLimit = lateCycleLimit({ policy, hoursSinceInstall, cash })
       const input = { ...observe(ns, policy), ramUtilization: readUtilization(ns), incomePerSec, saveWindowSec: Number(policy.saveWindowSec) || 300, homeRamFloor: Number(policy.homeRamFloor) || 128, cloudDemandFloor: cyclePhase.floor,
-        homeDemand: readHomeDemand(ns), homeDemandFloor: Number(policy.homeDemandFloor ?? 0.5) }
+        homeDemand: readHomeDemand(ns), homeDemandFloor: Number(policy.homeDemandFloor ?? 0.5), homeSpendLimit: homeLimit.limit }
       homeDemand = input.homeDemand
       action = chooseCapitalAction(input)
       if (action && action.kind !== "save") {

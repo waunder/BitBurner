@@ -22,9 +22,23 @@ export function cloudDemandFloorFor(policy = {}, hoursSinceInstall = 0) {
   return hoursSinceInstall < cutoff ? { floor: early, phase: "early" } : { floor: Number(late), phase: "late" }
 }
 
+/** Most a single purchase may cost at this point in the cycle (install to install). Late in a cycle
+ * cash belongs to the next augmentation batch, which is cash-limited (each aug costs 1.9x the one
+ * before): a purchase an install wipes (sleeve augmentations, cloud RAM) gets nothing, and one that
+ * lasts (home RAM, sleeve memory, sleeves) at most lateSpendFraction (default 1%) of cash. In the
+ * first earlyCycleHours (default 1.5) there is no extra limit: cash is small and rebuild speed counts.
+ * Every spender uses this so none can take the batch's cash (2026-11-10: $4.74t of idle home RAM).
+ * Returns { phase, limit }. */
+export function lateCycleLimit({ policy = {}, hoursSinceInstall = 0, cash = 0, lostAtInstall = false } = {}) {
+  const cutoff = Number(policy.earlyCycleHours ?? 1.5)
+  if (hoursSinceInstall < cutoff) return { phase: "early", limit: Infinity }
+  if (lostAtInstall) return { phase: "late", limit: 0 }
+  return { phase: "late", limit: Math.max(0, cash) * Number(policy.lateSpendFraction ?? 0.01) }
+}
+
 export function chooseCapitalAction({ spendable, hasTor, torCost = 200e3, programs = [], homeRam, homeRamTarget, homeRamCost,
   cloud = [], cloudLimit = 0, cloudQuotes = [], upgradeQuotes = [], cloudFraction = 0.5, incomePerSec = 0, saveWindowSec = 300, homeRamFloor = 128, ramUtilization = 1, cloudDemandFloor = 0.5,
-  homeDemand = 1, homeDemandFloor = 0.5 }) {
+  homeDemand = 1, homeDemandFloor = 0.5, homeSpendLimit = Infinity }) {
   if (!hasTor) return spendable >= torCost ? { kind: "tor", cost: torCost } : { kind: "save", reason: "TOR", cost: torCost }
   const missing = programs.find(p => !p.owned && Number.isFinite(p.cost) && p.cost > 0)
   if (missing && missing.cost <= spendable) return { kind: "program", name: missing.name, cost: missing.cost }
@@ -33,7 +47,9 @@ export function chooseCapitalAction({ spendable, hasTor, torCost = 200e3, progra
   // leftovers) must fill homeDemandFloor of it. BN10 run 2, 2026-11-10 14:53: with only a size target,
   // $4.74t doubled home to 131TB while 0.23% of it was in use, taking that cash from the aug batch.
   const homeNeeded = homeRam < homeRamFloor || homeDemand >= homeDemandFloor
-  const wantsHome = homeRam < homeRamTarget && Number.isFinite(homeRamCost) && homeNeeded
+  // Late in a cycle home RAM is also held to lateCycleLimit, except below the floor.
+  const withinLimit = homeRam < homeRamFloor || homeRamCost <= homeSpendLimit
+  const wantsHome = homeRam < homeRamTarget && Number.isFinite(homeRamCost) && homeNeeded && withinLimit
   if (wantsHome && homeRamCost <= spendable) return { kind: "home", cost: homeRamCost }
   // Below this floor the managers themselves cannot run, so nothing outranks it.
   if (wantsHome && homeRam < homeRamFloor) return { kind: "save", reason: "home RAM floor", cost: homeRamCost }

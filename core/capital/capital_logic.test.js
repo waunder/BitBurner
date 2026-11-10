@@ -1,6 +1,6 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { chooseCapitalAction, cloudDemandFloorFor, nextScriptToStart } from "./capital_logic.js"
+import { chooseCapitalAction, cloudDemandFloorFor, lateCycleLimit, nextScriptToStart } from "./capital_logic.js"
 
 const base = { spendable: 0, hasTor: true, homeRam: 512, homeRamTarget: 512, homeRamCost: 1, cloud: [], cloudLimit: 25 }
 
@@ -97,4 +97,18 @@ test("idle home RAM does not hold cash back from cloud either", () => {
 test("below the home RAM floor demand is not needed", () => {
   const input = { ...base, homeRam: 64, homeRamTarget: 512, homeRamCost: 50, spendable: 100, homeDemand: 0 }
   assert.equal(chooseCapitalAction(input).kind, "home")
+})
+
+test("lateCycleLimit: no extra limit early, 1% of cash late, nothing for what an install wipes", () => {
+  assert.deepEqual(lateCycleLimit({ hoursSinceInstall: 1, cash: 5e12 }), { phase: "early", limit: Infinity })
+  assert.deepEqual(lateCycleLimit({ hoursSinceInstall: 2, cash: 5e12 }), { phase: "late", limit: 5e10 })
+  assert.deepEqual(lateCycleLimit({ hoursSinceInstall: 2, cash: 5e12, lostAtInstall: true }), { phase: "late", limit: 0 })
+  assert.equal(lateCycleLimit({ policy: { earlyCycleHours: 3, lateSpendFraction: 0.05 }, hoursSinceInstall: 2, cash: 100 }).phase, "early")
+  assert.equal(lateCycleLimit({ policy: { lateSpendFraction: 0.05 }, hoursSinceInstall: 2, cash: 100 }).limit, 5)
+})
+test("late in a cycle home RAM is held to the spend limit even with demand", () => {
+  const input = { ...base, homeRam: 65536, homeRamTarget: 262144, homeRamCost: 4.74e12, spendable: 5e12, homeDemand: 0.9 }
+  assert.equal(chooseCapitalAction({ ...input, homeSpendLimit: 5e10 }), null)
+  assert.equal(chooseCapitalAction({ ...input, homeSpendLimit: Infinity }).kind, "home")
+  assert.equal(chooseCapitalAction({ ...input, homeRam: 64, homeRamCost: 1e3, homeSpendLimit: 0 }).kind, "home")
 })

@@ -13,12 +13,22 @@ DevTools, Remote API status files.
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
 
-> **INSTALL HOLD for NiteSec rep (set 2026-11-09 16:20 PC clock, Ken session).** Do not install this cycle (started
-> 14:16) until **NiteSec rep is at least 550k** (check `augmentation_readiness.json` `factionRep.NiteSec`), even when
-> the advisor says "install now": the advisor ignores gang-faction rep gaps (known bug, fix pending). Reason (planner
-> assessment): installs every ~2h cap NiteSec rep near 0.4-0.8m and shut out the 15 augs above 1m rep (~62% of
-> NiteSec's value); gang rep cannot be bought with donations. At >=550k: install, buying at least 7 augs (Daedalus
-> needs 30 installed). Keep cash for that batch. The session that lands the advisor fix removes this note.
+**BN10 run 2, install 3 ran 2026-11-09 18:15 Pacific (Ken session): gang-planner deployed; 4 augmentations + 2
+NeuroFlux, 27 installed.** The NiteSec install hold is lifted: the advisor now times gang-faction gaps itself (minimum
+cycle 4h, cap 12h; `docs/gang-planner.md`). Branch `gang-planner` merged to main (47b5559) at 18:14; the daemon sync was
+checked on the game copies (gang-controller, gang_logic, install_advisor_logic, augmentation_readiness, policy, run
+target). Before: NiteSec rep 617k (gate 550k) at about 217k/h (favor 72), penalty 0.932, cash $60b; capital_manager
+killed 18:14. Backup `saves/bitburnerSave_pre-install3_BN10run2_2026-11-09.json.gz` (parsed: node 10, 23 augs, 0 queued,
+$58.9b, hacking 297; SHA-256 9662296849d2f32c20bedacea0fd92b54bce476cd8eceda8fa9052d08b76dfb6). `aug_install.js` bought
+The Illustrated Primer, Artificial Bio-neural Network Implant, Cranial Signal Processors - Gen III and Bionic Spine (all
+NiteSec) plus 2 NeuroFlux; $2.3b left, below the cheapest stepped price ($2.35b), so 4 not the hoped-for 7. `--install`
+18:15; startup restarted 18 scripts and gang-controller. After (live 18:18): favor 171, NiteSec rep 16.7k; gang in
+wanted recovery (penalty 0.953 rising, wanted 291k falling about 1m/h, 10 Cyberterrorism + 2 Ethical Hacking) toward
+the new 0.985 exit; 12 of 60 rootkits bought (cash still small), no gang augs yet, no ascension yet (none in cleanup);
+advisor **wait** ("gang cycle minimum: 3.9h more"), 39 gang-sold augs; sleeves on Homicide for money (no non-gang rep
+target). **Next:** M1-M7 in `docs/gang-planner.md` against the baseline: rootkits fill as cash grows, Neuralstimulator
+by 21:15, rep/h at zero favor (rate / 2.71) in hours 1-4 vs 89k/h. The controller wiring has no tests: watch for
+ascensions resuming after cleanup, at least 90 s apart.
 
 **2026-11-09 16:16 Pacific, 2-hourly task, BN10 run 2: steady, no changes; install hold kept.** Not a stand-aside
 run (no session running; the Ken session that set the hold had stopped). Live (metrics sample 16:10, game `ps` 16:15,

@@ -119,3 +119,9 @@ first). Remove the STATE install hold in the same commit as A2. Record results i
   minutes after deploy: `gang_status.json` `equipment.boughtItems`, `gearTotals`, `ascensionCount`.
 - A3's batch stop is in `planPurchases` but `aug_install.js` still calls it with defaults (unchanged behaviour).
 - 563 tests pass in the staged bn10 copy.
+
+## Deployed 2026-11-09 18:15 (install 3, BN10 run 2)
+
+Merged 47b5559; install at 18:15 with NiteSec 617k (4 augs + 2 NeuroFlux; cash ran out). Favor after: 171, so the
+M1 zero-favor rate is the measured rate / 2.71. First check 18:18: wanted recovery under the 0.97/0.985 band (penalty
+0.953 rising), 12/60 rootkits, advisor "wait" for the 4h minimum. Results go here.

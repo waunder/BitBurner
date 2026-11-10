@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-10 12:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-10 14:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -67,19 +67,18 @@ Cash, not rep, limits each batch now (each aug in a batch costs 1.9x the one bef
 
 ## Latest check
 
-**2026-11-10 12:15 (2-hourly task): install 7, 9 augs, 44 -> 54 installed.** Before: BN10,
-$2.71t, hacking 683, str/def/dex/agi 1776/3648/830/1073, karma -111k. Measured, 13 samples
-11:10-12:10: cash 1.84t/h, hacking exp 3.13b/h, NiteSec 755k rep/h (gang on money), MCP avg 441m/s.
-Trend STEADY on every series. Advisor **install** (+2.9%/h next vs +28.2%/h cycle); agreed, since
-hacking (683/850) binds the Covenant gate. Backup validated first. After (12:16-12:17): every resident
-restarted, 54 installed, cloud buying in its early phase, gang back on reputation by itself. Favor:
-NiteSec 363, The Black Hand ~161 (donations open), BitRunners ~104. World Daemon: not present.
+**2026-11-10 14:15 (2-hourly task): steady, no changes.** BN10, $1.97t, hacking 800, str/def/dex/agi
+3369/6919/920/1247 (all past 850), karma -112k, 54 installed, 1 queued (The H4mmer of Daedalus). All
+residents running. Player in Algorithms class toward hacking 850, the last Covenant gate (about 15:00).
+Measured, 13 samples 13:10-14:10: cash 1.77t/h, hacking exp 2.52b/h (93 levels/h), NiteSec 1.06m rep/h,
+MCP avg 684m/s. Trend n/a (cycle 1.9h). Advisor **wait** (gang 4h minimum); agreed. Cycle 7 (5.93h):
+NiteSec 13.4m rep, favor +25.9 NiteSec, +19.3 CyberSec. World Daemon: not present.
 
 ## Next
 
-1. Cycle 8 (from 12:15): add `metrics.py cycles` for cycle 7, check that cloud buying stops after
-   1.5h (`cyclePhase` late about 13:45), and that The Black Hand donations show in readiness.
-   Next install when the advisor and judgement agree.
+1. Cycle 8 (from 12:15): confirm The Covenant invite is accepted once hacking reaches 850 (about
+   15:00), and what `sleeve_buyer.js` does with it. The Black Hand donations show in readiness.
+   Next install when the advisor and judgement agree (gang 4h minimum ends about 16:15).
 2. Push hacking to 850 for The Covenant, then Daedalus and The Red Pill.
 3. Gang planner metrics M1–M7 (`docs/gang-planner.md`): M1 and M6 are met. Keep checking the
    others at installs.

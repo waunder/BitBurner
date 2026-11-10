@@ -9,6 +9,22 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN10 run 2
 
+**2026-11-10 14:15 Pacific, 2-hourly task, BN10 run 2: steady, no changes.** Not a stand-aside run (no session
+running; Ken's session idle since 12:01). Live (metrics sample 14:10, readiness 14:13, game `ps` 14:16): BN10, $1.97t
+(readiness $2.18t at 14:13), hacking 800, str/def/dex/agi 3369/6919/920/1247 (all four past the Covenant's 850), cha
+3037, karma -112k, 54 installed, 1 queued (The H4mmer of Daedalus). Every resident running (17 plus gang-controller and
+cct_watcher). Player in Rothman's Algorithms class, H800 -> 850 for The Covenant invite (`covenantTarget` true); at
+92.8 levels/h the invite should come about 14:45-15:00, and `faction_join.js` accepts it. Gang rep 4.99m, past
+`gangRepNeeded` 3.5m. The Black Hand is in `donating` (favor 161). Measured, 13 samples 13:10 to 14:10: rep/h NiteSec
+1.06m, BitRunners 95.5k, The Black Hand 56.7k, Tian Di Hui 29k, Tetrads 28.7k, CyberSec 24.1k, Slum Snakes 20.5k, The
+Syndicate 4.76k; hacking exp 2.52b/h (92.8 levels/h), karma -393/h, cash 1.77t/h, MCP rate 997m/s average 684m/s, share
+1.52. Trend: `n/a` on every series (cycle 1.9h old). Advisor: **wait** ("gang cycle minimum: 2.0h more before an
+install (min 4h)"; next Neural Accelerator +8.3%/h vs cycle +37.1%/h; batch value 0.73). Decision: **wait, agree**:
+the cycle is under 2h and the Covenant invite is imminent. `metrics.py cycles` for cycle 7 (06:20-12:15, 5.93h,
+rebuild 0.75h): rep earned NiteSec 13.4m, The Black Hand 252k, BitRunners 172k, Tian Di Hui 80k; favor banked NiteSec
++25.9, CyberSec +19.3, Tian Di Hui +12.2 (the tool does not list BitRunners or The Black Hand, which readiness showed
+pending at 12:14). Run target unchanged. World Daemon: not present (no Red Pill installed or queued; hacking 800).
+
 **BN10 run 2, install 7 ran 2026-11-10 12:15 Pacific, 2-hourly task: 9 bought, 44 -> 54 installed.** Not a
 stand-aside run (no session running; Ken's session idle since 12:01). Before (metrics sample 12:10, readiness 12:14,
 game `ps` 12:15): BN10, $2.52t (12:10) to $2.71t (12:15), hacking 683, str/def/dex/agi 1776/3648/830/1073, cha 907,

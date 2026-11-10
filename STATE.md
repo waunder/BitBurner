@@ -40,10 +40,11 @@ Covenant in run 1).
   switches to Money Laundering by itself. An install resets faction rep, so the gang goes back to
   reputation on its own. Live 09:21: all 12 on Money Laundering, about $50b/h, penalty 0.999.
 - **Cloud buying by cycle phase** (2026-11-10, commit 085ffe8). Game-only `capital_policy.json`:
-  `{"reserve":0,"homeRamTarget":262144,"cloudDemandFloor":0,"lateCloudDemandFloor":0.5,"earlyCycleHours":1.5}`.
+  `{"reserve":0,"homeRamTarget":131072,"cloudDemandFloor":0,"lateCloudDemandFloor":0.5,"earlyCycleHours":1.5}`.
   For 1.5h after an install, cloud RAM is bought freely to speed up the hacking rebuild. After that,
   cloud RAM is bought only while MCP's own jobs fill half of it, which in practice means none. Home
-  RAM is bought throughout. `capital_status.json` `cyclePhase` shows the phase. Why: in cycle 7, cloud
+  RAM stops at 131TB, its size now (target lowered 2026-11-10 15:09: the $4.74t step to
+  131TB at 14:53 sits 0.23% used, and cash limits the aug batch). `capital_status.json` `cyclePhase` shows the phase. Why: in cycle 7, cloud
   RAM tripled while hacking income stayed flat, because MCP uses 0.2% of it.
 - **Gang planner** (merged 2026-11-09, 47b5559; `docs/gang-planner.md`). The advisor keeps a 4h
   minimum cycle for the gang faction (cap 12h). Ascension runs in either mode, at x1.5 and at most one

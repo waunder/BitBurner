@@ -9,6 +9,8 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN10 run 2
 
+**Home RAM buying stopped (2026-11-10 15:09 PC clock, Ken session).** Ken saw cash fall from over $4t to under $1t. Cause: `capital_manager` upgraded home RAM to 131TB at 14:53 for $4.74t (`capital_status.json` purchases); home RAM was exempt from the late-cycle stop because it survives installs. Live 15:07: home 131.07TB, 299.7GB used (0.23%), so the RAM is idle. The aug batch is cash-limited: 19 gang-sold augs are rep-ready, the plan at $0.88t buys 7, and $4.74t at the x1.9 step would have bought about 3 more. `capital_policy.json` `homeRamTarget` 262144 -> 131072 (pushed, read back 15:09:49). Cloud buying itself stopped on schedule: last cloud upgrade 13:39, late phase from 13:45.
+
 **2026-11-10 14:15 Pacific, 2-hourly task, BN10 run 2: steady, no changes.** Not a stand-aside run (no session
 running; Ken's session idle since 12:01). Live (metrics sample 14:10, readiness 14:13, game `ps` 14:16): BN10, $1.97t
 (readiness $2.18t at 14:13), hacking 800, str/def/dex/agi 3369/6919/920/1247 (all four past the Covenant's 850), cha

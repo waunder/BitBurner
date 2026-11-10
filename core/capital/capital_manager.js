@@ -2,12 +2,14 @@
  * Spends idle cash on hacking capacity and starts managers once they fit.
  * Buys TOR, port openers, home RAM and cloud RAM; never touches augmentations.
  * `capital_policy.json` is read every pass: enabled, reserve, homeRamTarget,
- * cloudFraction, saveWindowSec, homeRamFloor, cloudDemandFloor. Writes every purchase to `capital_status.json`.
+ * cloudFraction, saveWindowSec, homeRamFloor, cloudDemandFloor, and optionally lateCloudDemandFloor and
+ * earlyCycleHours (cloudDemandFloorFor: a stricter floor late in each install-to-install cycle).
+ * Writes every purchase, and `cyclePhase`, to `capital_status.json`.
  * Start: `run capital_manager.js` (startup.js launches it).
  * @param {NS} ns
  */
 import { readStacks } from "stack_files.js"
-import { PROGRAMS, chooseCapitalAction, nextScriptToStart } from "capital_logic.js"
+import { PROGRAMS, chooseCapitalAction, cloudDemandFloorFor, nextScriptToStart } from "capital_logic.js"
 
 const POLICY = "capital_policy.json"
 const STATUS = "capital_status.json"
@@ -97,9 +99,10 @@ export async function main(ns) {
     }
     let spent = 0
     const policy = readPolicy(ns)
-    let action = null, ok = null
+    let action = null, ok = null, cyclePhase = null
     if (policy.enabled !== false) {
-      const input = { ...observe(ns, policy), ramUtilization: readUtilization(ns), incomePerSec, saveWindowSec: Number(policy.saveWindowSec) || 300, homeRamFloor: Number(policy.homeRamFloor) || 128, cloudDemandFloor: Number(policy.cloudDemandFloor ?? 0.5) }
+      cyclePhase = cloudDemandFloorFor(policy, (now - ns.getResetInfo().lastAugReset) / 3.6e6)
+      const input = { ...observe(ns, policy), ramUtilization: readUtilization(ns), incomePerSec, saveWindowSec: Number(policy.saveWindowSec) || 300, homeRamFloor: Number(policy.homeRamFloor) || 128, cloudDemandFloor: cyclePhase.floor }
       action = chooseCapitalAction(input)
       if (action && action.kind !== "save") {
         ok = buy(ns, action, input.cloud.length)
@@ -110,7 +113,7 @@ export async function main(ns) {
     }
     last = { at: now, cash, spent }
     const started = startWaitingManager(ns)
-    ns.write(STATUS, JSON.stringify({ ts: Date.now(), policy, incomePerSec, action, ok, started, purchases }), "w")
+    ns.write(STATUS, JSON.stringify({ ts: Date.now(), policy, cyclePhase, incomePerSec, action, ok, started, purchases }), "w")
     // Keep buying while purchases succeed; otherwise wait for income.
     await ns.sleep(ok ? 200 : POLL_MS)
   }

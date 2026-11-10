@@ -1,6 +1,6 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { chooseCapitalAction, nextScriptToStart } from "./capital_logic.js"
+import { chooseCapitalAction, cloudDemandFloorFor, nextScriptToStart } from "./capital_logic.js"
 
 const base = { spendable: 0, hasTor: true, homeRam: 512, homeRamTarget: 512, homeRamCost: 1, cloud: [], cloudLimit: 25 }
 
@@ -63,4 +63,22 @@ test("cloud buying stops while MCP leaves RAM idle", () => {
   assert.equal(chooseCapitalAction({ ...input, ramUtilization: 0.04 }), null)
   assert.equal(chooseCapitalAction({ ...input, ramUtilization: 0.8 }).kind, "upgrade")
   assert.equal(chooseCapitalAction({ ...input, ramUtilization: 0.04, cloudDemandFloor: 0 }).kind, "upgrade")
+})
+
+test("cloudDemandFloorFor: one fixed floor unless the policy sets a late floor", () => {
+  assert.deepEqual(cloudDemandFloorFor({}, 5), { floor: 0.5, phase: "fixed" })
+  assert.deepEqual(cloudDemandFloorFor({ cloudDemandFloor: 0 }, 5), { floor: 0, phase: "fixed" })
+})
+test("cloudDemandFloorFor: early floor until earlyCycleHours, then the late floor", () => {
+  const policy = { cloudDemandFloor: 0, lateCloudDemandFloor: 0.5, earlyCycleHours: 1.5 }
+  assert.deepEqual(cloudDemandFloorFor(policy, 0.2), { floor: 0, phase: "early" })
+  assert.deepEqual(cloudDemandFloorFor(policy, 1.49), { floor: 0, phase: "early" })
+  assert.deepEqual(cloudDemandFloorFor(policy, 1.5), { floor: 0.5, phase: "late" })
+  assert.deepEqual(cloudDemandFloorFor({ cloudDemandFloor: 0, lateCloudDemandFloor: 0.5 }, 2), { floor: 0.5, phase: "late" })
+})
+test("late floor stops cloud buying when MCP barely uses its RAM", () => {
+  const input = { ...base, spendable: 1e12, cloud: ["a"], cloudLimit: 25, cloudQuotes: [{ ram: 8, cost: 1 }], upgradeQuotes: [{ host: "a", fromRam: 8, toRam: 16, cost: 1 }], ramUtilization: 0.002 }
+  const late = cloudDemandFloorFor({ cloudDemandFloor: 0, lateCloudDemandFloor: 0.5 }, 3).floor
+  assert.equal(chooseCapitalAction({ ...input, cloudDemandFloor: late }), null)
+  assert.notEqual(chooseCapitalAction({ ...input, cloudDemandFloor: 0 }), null)
 })

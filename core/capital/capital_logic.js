@@ -6,6 +6,21 @@ export const PROGRAMS = ["BruteSSH.exe", "FTPCrack.exe", "relaySMTP.exe", "Darks
  * first because they unlock rooted hosts and managers; cloud RAM takes the rest.
  * Input costs of null mean unavailable; `spendable` is cash above the reserve.
  */
+/** Cloud demand floor for this point in the cycle (install to install). An install deletes cloud
+ * servers, so late in a cycle spare cloud RAM earns nothing that lasts: MCP's income stops growing
+ * with RAM well before then (BN10 run 2 cycle 7: flat from about 1.3h while RAM tripled), and the
+ * extra only feeds xp_filler's hacking exp, which the install wipes. Early in a cycle that exp speeds
+ * the hacking rebuild. So: policy.cloudDemandFloor (default 0.5) for the first earlyCycleHours, then
+ * lateCloudDemandFloor. Without lateCloudDemandFloor in the policy the old single floor applies.
+ * Returns { floor, phase }. */
+export function cloudDemandFloorFor(policy = {}, hoursSinceInstall = 0) {
+  const early = Number(policy.cloudDemandFloor ?? 0.5)
+  const late = policy.lateCloudDemandFloor
+  if (late === undefined || late === null || !Number.isFinite(Number(late))) return { floor: early, phase: "fixed" }
+  const cutoff = Number(policy.earlyCycleHours ?? 1.5)
+  return hoursSinceInstall < cutoff ? { floor: early, phase: "early" } : { floor: Number(late), phase: "late" }
+}
+
 export function chooseCapitalAction({ spendable, hasTor, torCost = 200e3, programs = [], homeRam, homeRamTarget, homeRamCost,
   cloud = [], cloudLimit = 0, cloudQuotes = [], upgradeQuotes = [], cloudFraction = 0.5, incomePerSec = 0, saveWindowSec = 300, homeRamFloor = 128, ramUtilization = 1, cloudDemandFloor = 0.5 }) {
   if (!hasTor) return spendable >= torCost ? { kind: "tor", cost: torCost } : { kind: "save", reason: "TOR", cost: torCost }

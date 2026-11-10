@@ -30,6 +30,9 @@ Daemon. Installs are approved up to readiness to complete BN10, each with a save
 the World Daemon or any other reset, and notify Ken (`AGENTS.md`). Install timing is the agent's
 judgement. The install advisor is one input to it.
 
+**After this run (Ken, 2026-11-10): likely BN10 run 3.** Still stop at the World Daemon: Ken enters the
+next BitNode himself. Plan the allocator rollout to be proven in run 2 so run 3 starts with it.
+
 Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.1, 15.1. Six sleeves (2 from SF10, 4 bought from The
 Covenant in run 1).
 

@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-10 23:25 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-11 01:25 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -84,30 +84,32 @@ Covenant in run 1).
 | 9 | 11-10 19:17 | 17 augs (NiteSec, BitRunners, Black Hand) + 2 NeuroFlux + St4ff of Asclepius; cores 4 | 83 |
 | 10 | 11-10 21:20 | The L4w of Bayes only; unplanned, cause unknown, no backup, $365t unspent | 84 |
 | 11 | 11-10 23:00 | 1 aug for about $549t; unplanned, cause unknown, no backup | 85 |
+| 12 | 11-10 23:48 | 1 aug queued before it; unplanned, cause unknown, no backup; Daedalus favor -> 183 | 86 |
 
 Cash, not rep, limits each batch now (each aug in a batch costs 1.9x the one before). Backups are
 `saves/bitburnerSave_pre-install<N>_BN10run2_<date>.json.gz`.
 
 ## Latest check
 
-**2026-11-10 23:15 (2-hourly task): second unplanned install, at 23:00 (84 -> 85), cause unknown; no changes made.**
-Between 22:55 and 23:00 one augmentation was bought for about $549t (income ledger), then the game reset at 23:00:07,
-no backup, no `aug_install.js` record, no session running; PID 1 gone and residents at 2-24 fit a `startup.js` callback.
-Daedalus favor banked about 145.3 (364k rep), not 150. Live 23:15: $49.8b, hacking 2013, karma -116k, 85 installed, 0 queued,
-all 20 residents running, player in gym toward Daedalus's combat 1500. Measured, 3 samples 23:05-23:15: NiteSec 2.25m rep/h,
-hacking exp 1.05b/h, cash 281b/h, MCP avg 380m/s. Trend: n/a (cycle 0.25h). Advisor build; decision agree.
-World Daemon: not present (no Red Pill).
+**2026-11-11 01:15 (2-hourly task): The Red Pill is queued (bought by hand about 01:12); third unplanned install at 23:48; not installed by me.**
+The game reset again at 23:48:52 (85 -> 86, one augmentation queued since about 23:40, no backup, no `aug_install.js` record). That install
+banked Daedalus favor 183, past 150. Between the 01:10 and 01:15 samples The Red Pill was bought for $0 with no donation; no repo script can buy it
+(only `aug_install.js` calls `purchaseAugmentation`), so someone was likely playing in the game. I did not install, so as not to race them.
+Live 01:15: $604t, hacking 3223, karma -117k, 86 installed, 1 queued (The Red Pill), all 20 residents running, player on Daedalus work.
+Measured, 12 samples 00:20-01:15: NiteSec 2.41m rep/h, Daedalus 1.2m, Illuminati 301k; hacking exp 20.2b/h; cash 554t/h; MCP avg 96.1b/s.
+Trend: n/a on every series (cycle 1.4h). Advisor wait (stale 4h gang minimum; plan QLink via an $795b Illuminati donation); decision: install The Red Pill next run.
+World Daemon: not present (Red Pill queued, not installed).
 
 ## Next
 
-1. Cycle 12 (from 23:00): rejoin Daedalus (combat 1500 all or hacking 2500, $100b). Its favor is about 145.3, so about 45k
-   more rep reaches 150 (`favorTarget` Daedalus works it). Then install (backup first), rejoin, and `aug_install.js` donates
-   for The Red Pill's 5m rep; install again. The advisor's 4h gang minimum is stale; weigh it as such.
-2. Then the World Daemon gate, hacking 6000. Stop there for Ken.
+1. Install The Red Pill: backup first, then `aug_install.js --install` (its plan adds QLink via an $795b Illuminati donation, favor 172).
+   Do it at the next run unless the game has already been installed by then; check `queued` first.
+2. Then the World Daemon gate, hacking 6000 (`getServerRequiredHackingLevel`). Stop there for Ken.
 3. Gang planner metrics M1–M7 (`docs/gang-planner.md`): M1 and M6 are met. Keep checking the
    others at installs.
 
 ## Open questions
 
-- **Ken: did you install at 21:20 and again at 23:00 on 11-10?** At 23:00 one augmentation was bought for about $549t and installed at once; at 21:20 the game reset with only The L4w of Bayes queued and $365t
-  unspent. No script or session did it as far as the records show. If it was you, nothing to fix; if not, tell me.
+- **Ken: are you playing by hand?** The game was installed at 21:20, 23:00 and 23:48 on 11-10 without any script or session doing it, and
+  The Red Pill was bought about 01:12 on 11-11 with no script able to. If it was you, say so and whether you want to do the Red Pill install
+  yourself; until then each run installs it with a backup only when nobody seems active.

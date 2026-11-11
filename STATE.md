@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-10 17:15 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-10 19:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -81,23 +81,27 @@ Covenant in run 1).
 | 6 | 11-10 06:20 | 6 augs (all NiteSec) | 44 |
 | 7 | 11-10 12:15 | 9 augs (all NiteSec) + B00ts of Perseus | 54 |
 | 8 | 11-10 16:15 | 9 NiteSec augs + Neural Accelerator + 3 NeuroFlux + H4mmer of Daedalus | 65 |
+| 9 | 11-10 19:17 | 17 augs (NiteSec, BitRunners, Black Hand) + 2 NeuroFlux + St4ff of Asclepius; cores 4 | 83 |
 
 Cash, not rep, limits each batch now (each aug in a batch costs 1.9x the one before). Backups are
 `saves/bitburnerSave_pre-install<N>_BN10run2_<date>.json.gz`.
 
 ## Latest check
 
-**2026-11-10 17:15 (2-hourly task): steady, no changes.** BN10, $513b, hacking 1143, karma -113k, 65 installed, 1
-queued (The St4ff of Asclepius). **The Covenant rejoined** (rep 738). All residents and `allocator.js` running;
-early-phase cloud upgrades (mcp-worker-2..6 to 512TB). Measured, 11 samples 16:20-17:10: NiteSec 2.1m rep/h,
-BitRunners 134k, hacking exp 2.62b/h, cash 556b/h, MCP avg 713m/s. Trend: n/a (cycle 0.9h). Advisor **wait** (gang
-4h minimum ends about 20:15); decision wait, agree. Cycle 8 (`metrics.py cycles`): 3.99h, rebuild 0.82h, NiteSec
-7.22m rep, favor banked CyberSec +23.1, Tian Di Hui +14.3, NiteSec +9.9. World Daemon: not present (no Red Pill).
+**2026-11-10 19:17 (2-hourly task): install 9, 65 -> 83 installed.** Before: BN10, $40.5t, hacking 1314, dex 1009,
+karma -114k, Covenant member. Measured, 12 samples 18:15-19:10: NiteSec 1.34m rep/h, hacking exp 9.95b/h, cash 26.8t/h,
+MCP avg 4.4b/s. Trend: n/a (two windows), nothing decelerating. Advisor **wait** (gang 4h minimum, 1h left); decision
+**install**, differs: the minimum assumed a 3.8h rebuild (now under 1h), gang rep 5.3m was past the 1.5m needed, nothing was
+gaining rep, batch value 1.89 vs average 0.63. Backup `pre-install9` validated. 17 augs + 2 NeuroFlux, $547b BitRunners
+donation, cores 3 -> 4. Every resident restarted. Daedalus: dex 1500 is the only reachable gate (about 15h of gym now, less
+each install); hacking 2500 is out of reach. World Daemon: not present (no Red Pill).
 
 ## Next
 
-1. Cycle 9 (from 16:15): Covenant rejoined (hacking 1143). Next install when the advisor and judgement agree (gang 4h minimum ends about 20:15).
-2. Then Daedalus (hacking 2500 or all combat 1500, $100b) and The Red Pill.
+1. Cycle 10 (from 19:17): rejoin The Covenant at hacking 850. The advisor's 4h gang minimum is stale (rebuilds now take under 1h);
+   weigh it as such. `metrics.py cycles` for cycle 9 at the next check.
+2. Then Daedalus (hacking 2500 or all combat 1500, $100b) and The Red Pill. Dex is the gate: 1009/1500 at 19:10, about 15h of
+   gym at multiplier 5.4; `player_activity_logic.js` has no Daedalus training (only The Covenant's). Consider adding it.
 3. Gang planner metrics M1–M7 (`docs/gang-planner.md`): M1 and M6 are met. Keep checking the
    others at installs.
 

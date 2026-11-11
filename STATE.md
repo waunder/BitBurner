@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-10 21:40 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-10 23:25 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -83,23 +83,24 @@ Covenant in run 1).
 | 8 | 11-10 16:15 | 9 NiteSec augs + Neural Accelerator + 3 NeuroFlux + H4mmer of Daedalus | 65 |
 | 9 | 11-10 19:17 | 17 augs (NiteSec, BitRunners, Black Hand) + 2 NeuroFlux + St4ff of Asclepius; cores 4 | 83 |
 | 10 | 11-10 21:20 | The L4w of Bayes only; unplanned, cause unknown, no backup, $365t unspent | 84 |
+| 11 | 11-10 23:00 | 1 aug for about $549t; unplanned, cause unknown, no backup | 85 |
 
 Cash, not rep, limits each batch now (each aug in a batch costs 1.9x the one before). Backups are
 `saves/bitburnerSave_pre-install<N>_BN10run2_<date>.json.gz`.
 
 ## Latest check
 
-**2026-11-10 21:15 (2-hourly task): unplanned install at 21:20, 83 -> 84, cause unknown.** At 21:15: $331t, hacking 2215,
-dex 1807, **Daedalus joined**, player on Daedalus work toward favor 150 (387k of 462.5k rep). I waited for 21:31 to install
-then; at 21:20:29 the game reset with only The L4w of Bayes queued, $365t unspent, no backup. Not `aug_install.js` (its
-record is 19:17's); nothing else in the repo installs; residents restarted at low PIDs. Daedalus favor banked about 144.6.
-Measured, 12 samples 20:15-21:10: Daedalus 261k rep/h, NiteSec 1.76m, hacking exp 15b/h, cash 346t/h, MCP avg 79b/s.
-Trend: n/a (one window). Advisor wait (stale gang 4h minimum); decision wait 15 min for favor 150, overtaken by the reset.
+**2026-11-10 23:15 (2-hourly task): second unplanned install, at 23:00 (84 -> 85), cause unknown; no changes made.**
+Between 22:55 and 23:00 one augmentation was bought for about $549t (income ledger), then the game reset at 23:00:07,
+no backup, no `aug_install.js` record, no session running; PID 1 gone and residents at 2-24 fit a `startup.js` callback.
+Daedalus favor banked about 145.3 (364k rep), not 150. Live 23:15: $49.8b, hacking 2013, karma -116k, 85 installed, 0 queued,
+all 20 residents running, player in gym toward Daedalus's combat 1500. Measured, 3 samples 23:05-23:15: NiteSec 2.25m rep/h,
+hacking exp 1.05b/h, cash 281b/h, MCP avg 380m/s. Trend: n/a (cycle 0.25h). Advisor build; decision agree.
 World Daemon: not present (no Red Pill).
 
 ## Next
 
-1. Cycle 11 (from 21:20): rejoin Daedalus (combat 1500 all or hacking 2500, $100b). Its favor is about 144.6, so about 50k
+1. Cycle 12 (from 23:00): rejoin Daedalus (combat 1500 all or hacking 2500, $100b). Its favor is about 145.3, so about 45k
    more rep reaches 150 (`favorTarget` Daedalus works it). Then install (backup first), rejoin, and `aug_install.js` donates
    for The Red Pill's 5m rep; install again. The advisor's 4h gang minimum is stale; weigh it as such.
 2. Then the World Daemon gate, hacking 6000. Stop there for Ken.
@@ -108,5 +109,5 @@ World Daemon: not present (no Red Pill).
 
 ## Open questions
 
-- **Ken: did you install at 21:20 on 11-10?** The game reset with only The L4w of Bayes queued and $365t
+- **Ken: did you install at 21:20 and again at 23:00 on 11-10?** At 23:00 one augmentation was bought for about $549t and installed at once; at 21:20 the game reset with only The L4w of Bayes queued and $365t
   unspent. No script or session did it as far as the records show. If it was you, nothing to fix; if not, tell me.

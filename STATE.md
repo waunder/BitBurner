@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-11 13:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-11 15:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -78,18 +78,16 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-11 13:15 (scheduled run): MCP was down about 3h; fixed.** Home was 128GB and full; the late-cycle 1% cap
-(which counts from node start before any install) blocked the home upgrade, so mcp.js, the player controller and
-sleeve_controller could not start. `homeRamFloor:256` in `capital_policy.json` → home 256GB ($151m, 13:16);
-`restart_mcp.js` brought up MCP (phantasy, 97% RAM use), player controller, sleeve_controller, xp_filler;
-`early_stop.js` cleared the early loops (21 servers). Code: home RAM now outranks the cap while MCP cannot fit.
-Hacking 119, karma -8.98k, cash $12m, installed 0. Factions CyberSec, Tian Di Hui, Slum Snakes. Measured (60 min,
-12 samples, before the fix): cash/h 95.3m, hackExp/h 415k, karma/h -4.24k. Trend: cash ACCELERATING, hackExp STEADY,
-MCP and rep n/a. Advisor: unknown (no rep sampled); no install considered. 7 sleeves on Homicide; player at the gym.
+**2026-11-11 15:15 (scheduled run): steady, no changes made.** All 22 residents running; MCP harvesting phantasy
+since the 13:17 fix ($1.97b hacked). Cash $1.76b, hacking 125, karma -18.2k, installed 0, queued 0. Factions
+CyberSec, Tian Di Hui, Slum Snakes. Measured (60 min, 12 samples): cash/h 1.58b, hackExp/h 216k, karma/h -5.12k,
+rep/h Tian Di Hui 2.72k, CyberSec 2.44k. Trend: cash STEADY, hackExp STEADY (halved earlier as the player went to the
+gym), MCP and rep n/a. Advisor: wait (S.N.A in 6m; batch $1.21b, 6 augs); agreed, no install. Player at gym
+(def 74/75), then Homicide (chance 0.64); 7 sleeves on Homicide. World Daemon: not present.
 
 ## Next
 
-1. Check MCP's cash/h now it runs (first full hour after 13:17), and that capital_manager resumes cloud buying.
+1. Consider a first install once the Tian Di Hui/CyberSec batch stops gaining (advisor), with a backup.
 2. Gang at karma -54k (`gang_create.js` is running); about 10h at the measured -4.24k/h, faster once the player
    turns to crime.
 3. Find what destroyed run 2's daemon (check log 2026-11-11 09:47) before this run nears hacking 6000.

@@ -120,7 +120,8 @@ export async function main(ns) {
       cyclePhase = cloudDemandFloorFor(policy, hoursSinceInstall)
       const homeLimit = lateCycleLimit({ policy, hoursSinceInstall, cash })
       const input = { ...observe(ns, policy), ramUtilization: readUtilization(ns), incomePerSec, saveWindowSec: Number(policy.saveWindowSec) || 300, homeRamFloor: Number(policy.homeRamFloor) || 128, cloudDemandFloor: cyclePhase.floor,
-        homeDemand: readHomeDemand(ns), homeDemandFloor: Number(policy.homeDemandFloor ?? 0.5), homeSpendLimit: homeLimit.limit }
+        homeDemand: readHomeDemand(ns), homeDemandFloor: Number(policy.homeDemandFloor ?? 0.5), homeSpendLimit: homeLimit.limit,
+        mcpBlocked: !ns.scriptRunning("mcp.js", "home") && ns.getServerMaxRam("home") - ns.getServerUsedRam("home") < ns.getScriptRam("mcp.js", "home") }
       homeDemand = input.homeDemand
       action = chooseCapitalAction(input)
       if (action && action.kind !== "save") {

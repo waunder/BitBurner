@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-11 09:45 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-11 13:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -41,7 +41,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
   switches to Money Laundering by itself. An install resets faction rep, so the gang goes back to
   reputation on its own. Live 09:21: all 12 on Money Laundering, about $50b/h, penalty 0.999.
 - **Cloud buying by cycle phase** (2026-11-10, commit 085ffe8). Game-only `capital_policy.json`:
-  `{"reserve":0,"homeRamTarget":262144,"homeDemandFloor":0.5,"cloudDemandFloor":0,"lateCloudDemandFloor":0.5,"earlyCycleHours":1.5}`.
+  `{"reserve":0,"homeRamTarget":262144,"homeRamFloor":256,"homeDemandFloor":0.5,"cloudDemandFloor":0,"lateCloudDemandFloor":0.5,"earlyCycleHours":1.5}`.
   For 1.5h after an install, cloud RAM is bought freely to speed up the hacking rebuild. After that,
   cloud RAM is bought only while MCP's own jobs fill half of it, which in practice means none. Home
   RAM is bought only while the scripts that need home fill half of it (`homeDemandFloor`;
@@ -58,6 +58,8 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
   minimum cycle for the gang faction (cap 12h). Ascension runs in either mode, at x1.5 and at most one
   per loop. Reputation mode uses the 0.80/0.90 wanted-penalty band.
 - Share stays on (A/B recorded 2026-11-05).
+- **Home RAM floor 256GB** (2026-11-11, `capital_policy.json` `homeRamFloor`; game-only). Plus code: while mcp.js is
+  down and does not fit, home RAM ignores the late-cycle cap (`mcpBlocked` in `capital_logic.js`).
 - **Allocator project** (`docs/allocator-design.md`; Ken approved 2026-11-10): central valuation,
   each script still buys, one `own`/`shadow`/`valued`/`sweep`/`never` setting per purchase kind in
   `valuation_flags.json`. Step R0, the spending ledger, merged 2026-11-10 (bd6aa68):
@@ -76,20 +78,20 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-11 10:30 (Ken session): run 3 start.** Home 64GB, full at entry. Killed `mcp.js`, `mcp_xp.js` and `stack_manager.js`
-(about 31GB; `stack_manager` idles until Formulas.exe anyway); `sleeve_crime_now.js` put all 7 sleeves on Shoplift;
-`early_spread.js joesguns` rooted 23 servers and started 367 loop threads; `capital_bootstrap` handed over to
-`capital_manager.js` (saving $47.8m for home RAM, then TOR and programs); started `faction_join.js` and `gang_create.js`.
-Running: mcp_supervisor, crawler, steward, money, cct_watcher, capital_manager, faction_join, gang_create (2GB free).
-Not running for lack of RAM: mcp.js, stack_manager, HUD, run_report, player controller, xp_filler, metrics_logger,
-sleeve_controller.
+**2026-11-11 13:15 (scheduled run): MCP was down about 3h; fixed.** Home was 128GB and full; the late-cycle 1% cap
+(which counts from node start before any install) blocked the home upgrade, so mcp.js, the player controller and
+sleeve_controller could not start. `homeRamFloor:256` in `capital_policy.json` → home 256GB ($151m, 13:16);
+`restart_mcp.js` brought up MCP (phantasy, 97% RAM use), player controller, sleeve_controller, xp_filler;
+`early_stop.js` cleared the early loops (21 servers). Code: home RAM now outranks the cap while MCP cannot fit.
+Hacking 119, karma -8.98k, cash $12m, installed 0. Factions CyberSec, Tian Di Hui, Slum Snakes. Measured (60 min,
+12 samples, before the fix): cash/h 95.3m, hackExp/h 415k, karma/h -4.24k. Trend: cash ACCELERATING, hackExp STEADY,
+MCP and rep n/a. Advisor: unknown (no rep sampled); no install considered. 7 sleeves on Homicide; player at the gym.
 
 ## Next
 
-1. Nothing to restart by hand: as home grows, the steward restarts `mcp.js` and `capital_manager` starts each waiting
-   resident (player controller, HUD, logger, `sleeve_controller`, ...) while holding room for MCP. Check they came
-   back; kill the `scripts/weakenGrowHack.js` loops once MCP runs.
-2. Gang at karma -54k (`gang_create.js` is running).
+1. Check MCP's cash/h now it runs (first full hour after 13:17), and that capital_manager resumes cloud buying.
+2. Gang at karma -54k (`gang_create.js` is running); about 10h at the measured -4.24k/h, faster once the player
+   turns to crime.
 3. Find what destroyed run 2's daemon (check log 2026-11-11 09:47) before this run nears hacking 6000.
 
 ## Open questions

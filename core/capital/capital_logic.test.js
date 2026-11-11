@@ -112,3 +112,11 @@ test("late in a cycle home RAM is held to the spend limit even with demand", () 
   assert.equal(chooseCapitalAction({ ...input, homeSpendLimit: Infinity }).kind, "home")
   assert.equal(chooseCapitalAction({ ...input, homeRam: 64, homeRamCost: 1e3, homeSpendLimit: 0 }).kind, "home")
 })
+test("home RAM for a blocked MCP ignores the late cap and outranks cloud", () => {
+  const input = { ...base, homeRam: 128, homeRamTarget: 262144, homeRamCost: 1.5e8, spendable: 1.57e8, homeDemand: 1.8, homeSpendLimit: 1.5e6 }
+  assert.equal(chooseCapitalAction(input), null)
+  assert.equal(chooseCapitalAction({ ...input, mcpBlocked: true }).kind, "home")
+  const short = chooseCapitalAction({ ...input, mcpBlocked: true, spendable: 1e7 })
+  assert.equal(short.kind, "save")
+  assert.equal(short.reason, "home RAM for MCP")
+})

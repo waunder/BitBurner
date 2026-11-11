@@ -38,7 +38,7 @@ export function lateCycleLimit({ policy = {}, hoursSinceInstall = 0, cash = 0, l
 
 export function chooseCapitalAction({ spendable, hasTor, torCost = 200e3, programs = [], homeRam, homeRamTarget, homeRamCost,
   cloud = [], cloudLimit = 0, cloudQuotes = [], upgradeQuotes = [], cloudFraction = 0.5, incomePerSec = 0, saveWindowSec = 300, homeRamFloor = 128, ramUtilization = 1, cloudDemandFloor = 0.5,
-  homeDemand = 1, homeDemandFloor = 0.5, homeSpendLimit = Infinity }) {
+  homeDemand = 1, homeDemandFloor = 0.5, homeSpendLimit = Infinity, mcpBlocked = false }) {
   if (!hasTor) return spendable >= torCost ? { kind: "tor", cost: torCost } : { kind: "save", reason: "TOR", cost: torCost }
   const missing = programs.find(p => !p.owned && Number.isFinite(p.cost) && p.cost > 0)
   if (missing && missing.cost <= spendable) return { kind: "program", name: missing.name, cost: missing.cost }
@@ -46,13 +46,17 @@ export function chooseCapitalAction({ spendable, hasTor, torCost = 200e3, progra
   // above it, the scripts that need home (managers, MCP, stacks, waiting managers; not xp_filler's
   // leftovers) must fill homeDemandFloor of it. BN10 run 2, 2026-11-10 14:53: with only a size target,
   // $4.74t doubled home to 131TB while 0.23% of it was in use, taking that cash from the aug batch.
-  const homeNeeded = homeRam < homeRamFloor || homeDemand >= homeDemandFloor
-  // Late in a cycle home RAM is also held to lateCycleLimit, except below the floor.
-  const withinLimit = homeRam < homeRamFloor || homeRamCost <= homeSpendLimit
+  // mcpBlocked: mcp.js is down and does not fit in free home RAM. That outranks everything like the
+  // floor does (BN10 run 3, 2026-11-11: at node start "hours since install" was already past 1.5h, so
+  // the 1% late cap held home at 128GB and MCP stayed down about 3h).
+  const urgent = homeRam < homeRamFloor || mcpBlocked
+  const homeNeeded = urgent || homeDemand >= homeDemandFloor
+  // Late in a cycle home RAM is also held to lateCycleLimit, except when urgent.
+  const withinLimit = urgent || homeRamCost <= homeSpendLimit
   const wantsHome = homeRam < homeRamTarget && Number.isFinite(homeRamCost) && homeNeeded && withinLimit
   if (wantsHome && homeRamCost <= spendable) return { kind: "home", cost: homeRamCost }
-  // Below this floor the managers themselves cannot run, so nothing outranks it.
-  if (wantsHome && homeRam < homeRamFloor) return { kind: "save", reason: "home RAM floor", cost: homeRamCost }
+  // Below this floor (or with MCP unable to start) nothing outranks home RAM.
+  if (wantsHome && urgent) return { kind: "save", reason: mcpBlocked ? "home RAM for MCP" : "home RAM floor", cost: homeRamCost }
   // Hold cloud buying when income can reach the next priority soon, but never
   // wait on a distant $250m program: the cloud RAM is what earns it.
   const next = Math.min(missing?.cost ?? Infinity, wantsHome ? homeRamCost : Infinity)

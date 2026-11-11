@@ -102,9 +102,15 @@ Daedalus 1.2m rep/h, NiteSec 2.39m; hacking exp 20.2b/h; cash 555t/h; MCP avg 10
 
 ## Next
 
-1. World Daemon gate: hacking 6000 (`getServerRequiredHackingLevel`; 4785 at 09:38). When reached, notify Ken, add the
-   "World Daemon ready" line here, commit and stop. Never touch the daemon or choose a BitNode.
-2. Gang planner metrics M1-M7 (`docs/gang-planner.md`) only if the gate takes long.
+**Run 2 is over (11-11 about 09:47).** The World Daemon was destroyed without Ken or a session acting: hacking reached
+6000 between the 09:45 sample (5887) and the last game write at 09:47:15, and the game went to the BitNode selection
+screen. No backup was taken first; the newest is `saves/bitburnerSave_pre-install13_BN10run2_2026-11-11.json.gz`
+(09:37). Ken chooses the next BitNode himself (likely BN10 run 3). Until STATE says run 3 has started, checks change nothing.
+
+1. When Ken has entered run 3: record it here, rewrite `run_target.json`, and help with the 32GB start (see the
+   run 2 entry in `docs/archive/state-2026-11-10/STATE-full.md`).
+2. Find out what destroyed the daemon (check log 2026-11-11 09:47 entry). `backdoor.js` now refuses unless the
+   terminal is on its target.
 
 ## Open questions
 

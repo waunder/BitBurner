@@ -74,8 +74,26 @@ export async function main(ns) {
 		ns.tprint("backdoor.js: no path from home to ", target)
 		return
 	}
+	// installBackdoor acts on whatever server the terminal is on, so a failed
+	// hop (terminal not at home, or another backdoor.js moving it) must stop
+	// here. Backdooring w0r1d_d43m0n ends the BitNode; that is Ken's call only.
+	if (target === "w0r1d_d43m0n") {
+		ns.tprint("backdoor.js: refusing w0r1d_d43m0n (ends the BitNode)")
+		return
+	}
+	ns.singularity.connect("home")
 	for (const hop of path.slice(1)) {
-		ns.singularity.connect(hop)
+		if (!ns.singularity.connect(hop)) {
+			ns.tprint("backdoor.js: connect ", hop, " failed; no backdoor installed")
+			ns.singularity.connect("home")
+			return
+		}
+	}
+	const here = ns.singularity.getCurrentServer()
+	if (here !== target || here === "w0r1d_d43m0n") {
+		ns.tprint("backdoor.js: terminal is on ", here, ", not ", target, "; no backdoor installed")
+		ns.singularity.connect("home")
+		return
 	}
 
 	ns.tprint("installing backdoor on ", target, "...")

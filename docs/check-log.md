@@ -9,6 +9,23 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN10 run 2
 
+**2026-11-10 17:15 Pacific, 2-hourly task, BN10 run 2: steady, no changes.** Not a stand-aside run (no session
+running; Ken's session and the allocator-design worktree idle since 16:42). Live (metrics sample 17:10, readiness
+17:13, game `ps` 17:14): BN10, $513b, hacking 1143, str/def/dex/agi 4042/7546/878/1577, cha 7379, karma -113k, 65
+installed, 1 queued (The St4ff of Asclepius). Every resident running (17 plus gang-controller, cct_watcher and
+`allocator.js`). **The Covenant rejoined** this cycle (rep 738, favor 0.98). Player in Rothman's Algorithms class
+(H1140 -> 1178 for a megacorp). capital_manager in the early phase: upgraded mcp-worker-2..6 to 512TB at $271b each
+(16:48-17:14), as designed for the first 1.5h. Measured, 11 samples 16:20 to 17:10: rep/h NiteSec 2.1m (gang),
+BitRunners 134k, The Black Hand 128k, Tetrads 44.3k, Tian Di Hui 41.7k, Slum Snakes 37k, CyberSec 36.5k, The Syndicate
+13.5k, The Covenant 2.25k; hacking exp 2.62b/h (429 levels/h), karma -370/h, cash 556b/h, MCP rate 1.75b/s average
+713m/s, share 1.44. Trend: `n/a` on every series (cycle 0.9h old). Advisor: **wait** ("gang cycle minimum: 3.0h more";
+batch value 1.31 vs average 1.34; plan 9 augs from NiteSec and The Black Hand for $503b incl. a $36.5b Black Hand
+donation; BitRunners Neurolink cash-limited). Decision: **wait, agree**: the cycle is under 1h. `metrics.py cycles`,
+cycle 8 (12:15-16:15, 3.99h closed, rebuild hacking 0.82h): rep earned NiteSec 7.22m, BitRunners 424k, The Black Hand
+217k, Tian Di Hui 121k, Tetrads 114k, CyberSec 97k, Slum Snakes 81.2k, The Syndicate 19.6k; favor banked CyberSec
++23.1, Tian Di Hui +14.3, NiteSec +9.9. Run target unchanged. World Daemon: not present (The Red Pill neither owned nor
+queued). Share A/B: already recorded 2026-11-05.
+
 **Shadow allocator live (allocator R1) (2026-11-10 16:40 PC clock, Ken session).** Ken: merge now so it watches cycle 9 (install 8 ran 16:15). Reviewed `allocator-shadow` (924f82a): no purchase calls, writes only its own log and status, line endings clean; 600 node tests and the Python tests pass in a detached copy, and on main after merge (245363b). It also fixes `test_bn10_is_bn15_plus_sleeves`, which failed on main once sleeve_buyer joined startup. Started `allocator.js` 16:41: **5.45GB**, over its 5GB S1 target by the 1GB the game's RAM checker charges for the field name `run` (status key and `valuation_flags.json` stamp); rename in R2. Live checks 16:42-16:44: grants 21s old, phase early matches `capital_status.json`, every kind `own` (spenders unchanged), shadow log has 5 lines for capital_manager's cloud upgrades (mcp-worker-4..7, $25.5b each), all `grant`: early phase, rebuild. Readiness runs as a one-shot, so its new `offers` field needs no restart. Judged over cycle 9 on S1-S5 before R2.
 
 **BN10 run 2, install 8 ran 2026-11-10 16:15 Pacific, 2-hourly task: 10 bought + 3 NeuroFlux, 54 -> 65 installed.**

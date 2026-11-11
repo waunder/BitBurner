@@ -86,8 +86,9 @@ sleeve_controller.
 
 ## Next
 
-1. As home grows (128GB+): kill the `scripts/weakenGrowHack.js` loops and `run startup.js` so MCP, the logger and
-   `sleeve_controller` return. Move sleeves to Mug/Homicide for karma once their stats allow.
+1. Nothing to restart by hand: as home grows, the steward restarts `mcp.js` and `capital_manager` starts each waiting
+   resident (player controller, HUD, logger, `sleeve_controller`, ...) while holding room for MCP. Check they came
+   back; kill the `scripts/weakenGrowHack.js` loops once MCP runs.
 2. Gang at karma -54k (`gang_create.js` is running).
 3. Find what destroyed run 2's daemon (check log 2026-11-11 09:47) before this run nears hacking 6000.
 

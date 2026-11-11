@@ -82,9 +82,9 @@ Covenant in run 1).
 | 7 | 11-10 12:15 | 9 augs (all NiteSec) + B00ts of Perseus | 54 |
 | 8 | 11-10 16:15 | 9 NiteSec augs + Neural Accelerator + 3 NeuroFlux + H4mmer of Daedalus | 65 |
 | 9 | 11-10 19:17 | 17 augs (NiteSec, BitRunners, Black Hand) + 2 NeuroFlux + St4ff of Asclepius; cores 4 | 83 |
-| 10 | 11-10 21:20 | The L4w of Bayes only; unplanned, cause unknown, no backup, $365t unspent | 84 |
-| 11 | 11-10 23:00 | 1 aug for about $549t; unplanned, cause unknown, no backup | 85 |
-| 12 | 11-10 23:48 | 1 aug queued before it; unplanned, cause unknown, no backup; Daedalus favor -> 183 | 86 |
+| 10 | 11-10 21:20 | The L4w of Bayes only; by Ken by hand, no backup, $365t unspent | 84 |
+| 11 | 11-10 23:00 | 1 aug for about $549t; by Ken by hand, no backup | 85 |
+| 12 | 11-10 23:48 | 1 aug queued before it; by Ken by hand, no backup; Daedalus favor -> 183 | 86 |
 | 13 | 11-11 09:38 | The Red Pill (queued by hand) + QLink ($172b Illuminati donation) + 18 NeuroFlux; home 2PB, cores 7 | 88 |
 
 Cash, not rep, limits each batch now (each aug in a batch costs 1.9x the one before). Backups are
@@ -108,5 +108,4 @@ Daedalus 1.2m rep/h, NiteSec 2.39m; hacking exp 20.2b/h; cash 555t/h; MCP avg 10
 
 ## Open questions
 
-- **Ken: are you playing by hand?** Installs at 21:20, 23:00 and 23:48 on 11-10 and the Red Pill purchase about 01:12 on 11-11 came from no
-  script. I installed The Red Pill at 09:38 on 11-11 (approved route step) after 8h with no change; say if you wanted to do it yourself.
+None.

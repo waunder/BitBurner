@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-11 01:25 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-11 09:45 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -85,31 +85,28 @@ Covenant in run 1).
 | 10 | 11-10 21:20 | The L4w of Bayes only; unplanned, cause unknown, no backup, $365t unspent | 84 |
 | 11 | 11-10 23:00 | 1 aug for about $549t; unplanned, cause unknown, no backup | 85 |
 | 12 | 11-10 23:48 | 1 aug queued before it; unplanned, cause unknown, no backup; Daedalus favor -> 183 | 86 |
+| 13 | 11-11 09:38 | The Red Pill (queued by hand) + QLink ($172b Illuminati donation) + 18 NeuroFlux; home 2PB, cores 7 | 88 |
 
 Cash, not rep, limits each batch now (each aug in a batch costs 1.9x the one before). Backups are
 `saves/bitburnerSave_pre-install<N>_BN10run2_<date>.json.gz`.
 
 ## Latest check
 
-**2026-11-11 01:15 (2-hourly task): The Red Pill is queued (bought by hand about 01:12); third unplanned install at 23:48; not installed by me.**
-The game reset again at 23:48:52 (85 -> 86, one augmentation queued since about 23:40, no backup, no `aug_install.js` record). That install
-banked Daedalus favor 183, past 150. Between the 01:10 and 01:15 samples The Red Pill was bought for $0 with no donation; no repo script can buy it
-(only `aug_install.js` calls `purchaseAugmentation`), so someone was likely playing in the game. I did not install, so as not to race them.
-Live 01:15: $604t, hacking 3223, karma -117k, 86 installed, 1 queued (The Red Pill), all 20 residents running, player on Daedalus work.
-Measured, 12 samples 00:20-01:15: NiteSec 2.41m rep/h, Daedalus 1.2m, Illuminati 301k; hacking exp 20.2b/h; cash 554t/h; MCP avg 96.1b/s.
-Trend: n/a on every series (cycle 1.4h). Advisor wait (stale 4h gang minimum; plan QLink via an $795b Illuminati donation); decision: install The Red Pill next run.
-World Daemon: not present (Red Pill queued, not installed).
+**2026-11-11 09:36 (2-hourly task): The Red Pill installed at 09:38 (install 13), with a backup. World Daemon present, needs hacking 6000.**
+The game was closed 01:25-09:30 (Windows restarted 01:30; runs due 03:15-07:15 did not happen). At 09:36 The Red Pill was still queued, no terminal
+or queue activity since 01:15, so I installed: backup `saves/bitburnerSave_pre-install13_BN10run2_2026-11-11.json.gz` (node 10, 86 augs, Red Pill
+queued, $3.42q), then `aug_install.js --install`: QLink, 18 NeuroFlux, home RAM to 2PB, cores 7. After (09:38-09:40): 88 installed, 0 queued,
+hacking 4785, all 20 residents running, `w0r1d_d43m0n` exists with required hacking 6000. Advisor before: **install** ("nothing left worth
+waiting for", batch 1.37 vs average 0.14); decision: install, agrees. Measured, 12 samples 00:25-01:20 (last live hour before the shutdown):
+Daedalus 1.2m rep/h, NiteSec 2.39m; hacking exp 20.2b/h; cash 555t/h; MCP avg 101b/s. Trend: n/a (no new-cycle hour yet).
 
 ## Next
 
-1. Install The Red Pill: backup first, then `aug_install.js --install` (its plan adds QLink via an $795b Illuminati donation, favor 172).
-   Do it at the next run unless the game has already been installed by then; check `queued` first.
-2. Then the World Daemon gate, hacking 6000 (`getServerRequiredHackingLevel`). Stop there for Ken.
-3. Gang planner metrics M1–M7 (`docs/gang-planner.md`): M1 and M6 are met. Keep checking the
-   others at installs.
+1. World Daemon gate: hacking 6000 (`getServerRequiredHackingLevel`; 4785 at 09:38). When reached, notify Ken, add the
+   "World Daemon ready" line here, commit and stop. Never touch the daemon or choose a BitNode.
+2. Gang planner metrics M1-M7 (`docs/gang-planner.md`) only if the gate takes long.
 
 ## Open questions
 
-- **Ken: are you playing by hand?** The game was installed at 21:20, 23:00 and 23:48 on 11-10 without any script or session doing it, and
-  The Red Pill was bought about 01:12 on 11-11 with no script able to. If it was you, say so and whether you want to do the Red Pill install
-  yourself; until then each run installs it with a backup only when nobody seems active.
+- **Ken: are you playing by hand?** Installs at 21:20, 23:00 and 23:48 on 11-10 and the Red Pill purchase about 01:12 on 11-11 came from no
+  script. I installed The Red Pill at 09:38 on 11-11 (approved route step) after 8h with no change; say if you wanted to do it yourself.

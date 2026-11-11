@@ -59,7 +59,8 @@
       }
     },
     {
-      "label": "Red Pill queued 11-11 ~01:12 (Daedalus favor 183); install it, then rebuild"
+      "label": "Red Pill installed 11-11 09:38 (install 13, with QLink)",
+      "done": true
     },
     {
       "label": "World Daemon hacking 6000",

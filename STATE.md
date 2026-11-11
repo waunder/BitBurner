@@ -24,17 +24,15 @@ it. Its record is in the check log or the archive.
 
 ## Objective and authority
 
-**BN10 run 2**, entered 2026-11-08 by Ken. Route (`run_target.json`): gang (done, NiteSec) →
-NiteSec augs → The Covenant (gate: hacking and combat 850, $75b) → The Red Pill (Daedalus) → World
-Daemon. Installs are approved up to readiness to complete BN10, each with a save backup first. Stop at
-the World Daemon or any other reset, and notify Ken (`AGENTS.md`). Install timing is the agent's
-judgement. The install advisor is one input to it.
+**BN10 run 3**, entered 2026-11-11 about 10:20 by Ken (run 2's daemon went unattended at about 09:47; check log).
+**Ken is hands-off for the whole run** (2026-11-11): every action in the game is ours, so an unexplained install or
+purchase is a script fault to find, not Ken. Route (`run_target.json`): gang (NiteSec) → NiteSec augs → The Covenant
+(hacking and combat 850, $75b) → Daedalus, one install once its rep banks favor 150 → The Red Pill → World Daemon.
+Installs are approved up to readiness to complete BN10, each with a save backup first. Stop at the World Daemon or
+any other reset, take a backup and notify Ken (`AGENTS.md`). Install timing is the agent's judgement. The install
+advisor is one input to it.
 
-**After this run (Ken, 2026-11-10): likely BN10 run 3.** Still stop at the World Daemon: Ken enters the
-next BitNode himself. Plan the allocator rollout to be proven in run 2 so run 3 starts with it.
-
-Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.1, 15.1. Six sleeves (2 from SF10, 4 bought from The
-Covenant in run 1).
+Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th sleeve; confirm). Seven sleeves.
 
 ## Standing settings (live, nothing to undo at installs)
 
@@ -73,44 +71,25 @@ Covenant in run 1).
 
 | # | When (PC clock) | Bought | Installed after |
 |---|---|---|---|
-| 1 | 11-09 06:59 | 13 augs + 2 NeuroFlux | about 14 |
-| 2 | 11-09 14:16 | 9 augs | 23 |
-| 3 | 11-09 18:15 | 4 augs + 2 NeuroFlux (gang planner deployed) | 27 |
-| 4 | 11-09 22:17 | 3 augs + W1ngs of Icarus | 32 |
-| 5 | 11-10 02:19 | 6 augs + 1 NeuroFlux | 38 |
-| 6 | 11-10 06:20 | 6 augs (all NiteSec) | 44 |
-| 7 | 11-10 12:15 | 9 augs (all NiteSec) + B00ts of Perseus | 54 |
-| 8 | 11-10 16:15 | 9 NiteSec augs + Neural Accelerator + 3 NeuroFlux + H4mmer of Daedalus | 65 |
-| 9 | 11-10 19:17 | 17 augs (NiteSec, BitRunners, Black Hand) + 2 NeuroFlux + St4ff of Asclepius; cores 4 | 83 |
-| 10 | 11-10 21:20 | The L4w of Bayes only; by Ken by hand, no backup, $365t unspent | 84 |
-| 11 | 11-10 23:00 | 1 aug for about $549t; by Ken by hand, no backup | 85 |
-| 12 | 11-10 23:48 | 1 aug queued before it; by Ken by hand, no backup; Daedalus favor -> 183 | 86 |
-| 13 | 11-11 09:38 | The Red Pill (queued by hand) + QLink ($172b Illuminati donation) + 18 NeuroFlux; home 2PB, cores 7 | 88 |
 
-Cash, not rep, limits each batch now (each aug in a batch costs 1.9x the one before). Backups are
-`saves/bitburnerSave_pre-install<N>_BN10run2_<date>.json.gz`.
+Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave_pre-install<N>_BN10run3_<date>.json.gz`.
 
 ## Latest check
 
-**2026-11-11 09:36 (2-hourly task): The Red Pill installed at 09:38 (install 13), with a backup. World Daemon present, needs hacking 6000.**
-The game was closed 01:25-09:30 (Windows restarted 01:30; runs due 03:15-07:15 did not happen). At 09:36 The Red Pill was still queued, no terminal
-or queue activity since 01:15, so I installed: backup `saves/bitburnerSave_pre-install13_BN10run2_2026-11-11.json.gz` (node 10, 86 augs, Red Pill
-queued, $3.42q), then `aug_install.js --install`: QLink, 18 NeuroFlux, home RAM to 2PB, cores 7. After (09:38-09:40): 88 installed, 0 queued,
-hacking 4785, all 20 residents running, `w0r1d_d43m0n` exists with required hacking 6000. Advisor before: **install** ("nothing left worth
-waiting for", batch 1.37 vs average 0.14); decision: install, agrees. Measured, 12 samples 00:25-01:20 (last live hour before the shutdown):
-Daedalus 1.2m rep/h, NiteSec 2.39m; hacking exp 20.2b/h; cash 555t/h; MCP avg 101b/s. Trend: n/a (no new-cycle hour yet).
+**2026-11-11 10:30 (Ken session): run 3 start.** Home 64GB, full at entry. Killed `mcp.js`, `mcp_xp.js` and `stack_manager.js`
+(about 31GB; `stack_manager` idles until Formulas.exe anyway); `sleeve_crime_now.js` put all 7 sleeves on Shoplift;
+`early_spread.js joesguns` rooted 23 servers and started 367 loop threads; `capital_bootstrap` handed over to
+`capital_manager.js` (saving $47.8m for home RAM, then TOR and programs); started `faction_join.js` and `gang_create.js`.
+Running: mcp_supervisor, crawler, steward, money, cct_watcher, capital_manager, faction_join, gang_create (2GB free).
+Not running for lack of RAM: mcp.js, stack_manager, HUD, run_report, player controller, xp_filler, metrics_logger,
+sleeve_controller.
 
 ## Next
 
-**Run 2 is over (11-11 about 09:47).** The World Daemon was destroyed without Ken or a session acting: hacking reached
-6000 between the 09:45 sample (5887) and the last game write at 09:47:15, and the game went to the BitNode selection
-screen. No backup was taken first; the newest is `saves/bitburnerSave_pre-install13_BN10run2_2026-11-11.json.gz`
-(09:37). Ken chooses the next BitNode himself (likely BN10 run 3). Until STATE says run 3 has started, checks change nothing.
-
-1. When Ken has entered run 3: record it here, rewrite `run_target.json`, and help with the 32GB start (see the
-   run 2 entry in `docs/archive/state-2026-11-10/STATE-full.md`).
-2. Find out what destroyed the daemon (check log 2026-11-11 09:47 entry). `backdoor.js` now refuses unless the
-   terminal is on its target.
+1. As home grows (128GB+): kill the `scripts/weakenGrowHack.js` loops and `run startup.js` so MCP, the logger and
+   `sleeve_controller` return. Move sleeves to Mug/Homicide for karma once their stats allow.
+2. Gang at karma -54k (`gang_create.js` is running).
+3. Find what destroyed run 2's daemon (check log 2026-11-11 09:47) before this run nears hacking 6000.
 
 ## Open questions
 

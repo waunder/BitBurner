@@ -1,22 +1,20 @@
 {
-  "goal": "BN10 run 2: SF10.2 (a 3rd base sleeve elsewhere), gang early, 5th Covenant sleeve if cash allows",
+  "goal": "BN10 run 3 (entered 2026-11-11 ~10:20, Ken hands-off for the whole run): SF10.3, gang early, Daedalus favor 150 before The Red Pill",
   "updated": "2026-11-11",
   "steps": [
     {
-      "label": "Gang: NiteSec hacking gang, created 2026-11-09 02:16",
+      "label": "Gang: NiteSec hacking gang",
       "metric": {
         "kind": "karma",
         "target": -54000
-      },
-      "done": true
+      }
     },
     {
       "label": "NiteSec gate",
       "metric": {
         "kind": "hacking",
         "target": 211
-      },
-      "done": true
+      }
     },
     {
       "install": true,
@@ -26,11 +24,10 @@
       "metric": {
         "kind": "installed",
         "target": 1
-      },
-      "done": true
+      }
     },
     {
-      "label": "Covenant joined 2026-11-10 ~16:00 (rejoin at hacking 850 after each install)",
+      "label": "Covenant (rejoin at hacking 850 after each install)",
       "metrics": [
         {
           "kind": "installed",
@@ -48,19 +45,20 @@
           "kind": "combat",
           "target": 850
         }
-      ],
-      "done": true
+      ]
     },
     {
-      "label": "Fifth Covenant sleeve ($100q, a bonus, not a gate)",
+      "label": "Daedalus: join, then install once its rep banks favor 150 (one install, full batch, backup)"
+    },
+    {
+      "label": "Eighth sleeve from The Covenant (a bonus, not a gate)",
       "metric": {
         "kind": "money",
         "target": 1e+17
       }
     },
     {
-      "label": "Red Pill installed 11-11 09:38 (install 13, with QLink)",
-      "done": true
+      "label": "The Red Pill: donate to Daedalus, buy, install with a backup"
     },
     {
       "label": "World Daemon hacking 6000",
@@ -70,10 +68,10 @@
       }
     },
     {
-      "label": "World Daemon: stop for Ken"
+      "label": "World Daemon: stop for Ken (backup first; it was destroyed unattended in run 2)"
     }
   ],
-  "augWeightsWhy": "Run 2 start: hacking leads (MCP income, NiteSec, the 6000 gate); faction rep for Daedalus; combat counts for the Covenant's 850 gate, which run 1 reached by a long gym grind at the 0.4 level multiplier.",
+  "augWeightsWhy": "Run 3 start, same as run 2: hacking leads (MCP income, NiteSec, the 6000 gate); faction rep for Daedalus; combat for the Covenant's 850 gate and Daedalus's 1500.",
   "augWeights": {
     "hacking": 1,
     "strength": 0.4,

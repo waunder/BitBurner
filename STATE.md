@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-11 19:05 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-11 19:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -90,29 +90,22 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-11 19:05 (Ken session), cycle 2 of run 3 (install 1 at 17:17).** The install advisor had been stale since
-17:16: no remote host could hold its 35.35GB. It now falls back to home and is fresh again (97b9ab2, verified 19:00).
-The gang faction is settled as NiteSec (`run_target.json` `gangFaction`). Advisor at 19:00 said install on a batch of
-one (Wired Reflexes); decided **no install** (check log). At 18:54: MCP $26k/s on 15 cloud servers, hacking 81, $11m,
-karma -33.2k. Earlier today (18:25 session): starved-MCP rule 9486e86, HUD fix 2e5776f, gym 30 and port-opener gate
-40dbc09.
-
-Previous scheduled check:
-**2026-11-11 17:15 (scheduled run): install 1 at 17:17, 7 augs, 0 -> 7.** Before: $5.45b, hacking 129, karma -30.1k,
-factions CyberSec, Tian Di Hui, Slum Snakes, Tetrads. Measured (60 min, 13 samples): cash/h 1.82b, hackExp/h 211k,
-karma/h -5.77k, rep/h Tian Di Hui 4.84k. Trend: cash, MCP, hackExp STEADY; rep SWITCH. Advisor said install at 17:14
-(then wait 34m for CSP Gen I at 17:16 after a contract's +833 rep); decision install. Why: the gang is gated by hacking
-(NiteSec 211 needs ~3.5e8 exp, ~1,600h at x0.49), not karma, so waiting for NiteSec would stall; installs raise the
-multipliers. Favor banked Tian Di Hui +37.8, CyberSec +15.1. Backup `pre-install1_BN10run3` validated. After: 20
-residents back, hacking 3, $4.5m, player at gym. World Daemon: not present.
+**2026-11-11 19:15 (scheduled run), cycle 2 of run 3 (install 1 at 17:17, 1.9h in).** BitNode 10, $47m, hacking 86,
+karma -35.3k, 7 installed, 0 queued. Measured (60 min to 19:10, 13 samples): cash/h 14.7m, hackExp/h 74.7k, karma/h
+-5.54k, rep/h Tian Di Hui 6.03k, MCP avg 2.89k/s (n00dles, 15 cloud servers). Trend: all n/a (cycle under 3h), rep SWITCH.
+Changed: the player had been on Tian Di Hui for Neuroreceptor (145k rep gap, about 24h); `priorityAugs` now lists
+Neurotrainer I and Cranial Signal Processors - Gen I (CyberSec) ahead of it, smallest gap first. Observed 19:16: player
+switched to CyberSec for Neurotrainer I. `gang_create.js` restarted (pid 3715) so it reads NiteSec. Advisor: install
+(batch of one, Wired Reflexes); decision **wait** for the CyberSec hacking augs. World Daemon: not present.
 
 ## Next
 
 1. Short cycles of hacking augs (CyberSec: Cranial Signal Processors Gen I at 20k, Neurotrainer I) until the NiteSec
    gate (hacking 211) is in reach; add `metrics.py cycles` for cycle 1 once a new-cycle sample exists.
-2. Gang: karma -33.2k of -54k, but hacking gates it (NiteSec 211). Settled 2026-11-11: NiteSec. The running
-   `gang_create.js` still has the old Black Hand default until it restarts (`run gang_create.js`, or the next install's
-   startup); confirm with `ps` after the next install.
+2. Gang: karma -35.3k of -54k, but hacking gates it (NiteSec 211). Settled 2026-11-11: NiteSec; `gang_create.js`
+   restarted 19:16 and reads it from `run_target.json`.
+5. Install once Neurotrainer I and, ideally, CSP Gen I (CyberSec 20k rep, $350m) are bought; then drop them from
+   `priorityAugs` (profiles/bn10/config/player_activity_config.json) if the list still holds them.
 3. Next install: confirm the starved-MCP rule buys a cloud server and holds home RAM (`capital_status.json` reason
    "MCP starved" / "cloud RAM for MCP"), and that the player skips the gym.
 4. Find what destroyed run 2's daemon (check log 2026-11-11 09:47) before this run nears hacking 6000.

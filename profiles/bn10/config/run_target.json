@@ -17,13 +17,11 @@
       }
     },
     {
+      "label": "Early installs for hacking multipliers (NiteSec 211 is ~1,600h away at x0.49; first install 17:17, 7 augs)",
       "install": true,
-      "waitFor": [
-        "NiteSec"
-      ],
       "metric": {
         "kind": "installed",
-        "target": 1
+        "target": 3
       }
     },
     {

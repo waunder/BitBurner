@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-11 15:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-11 17:25 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -73,23 +73,27 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 
 | # | When (PC clock) | Bought | Installed after |
 |---|---|---|---|
+| 1 | 2026-11-11 17:17 | 7 (Tian Di Hui 5, CyberSec 2; $5.3b), no NeuroFlux | 0 -> 7 |
 
 Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave_pre-install<N>_BN10run3_<date>.json.gz`.
 
 ## Latest check
 
-**2026-11-11 15:15 (scheduled run): steady, no changes made.** All 22 residents running; MCP harvesting phantasy
-since the 13:17 fix ($1.97b hacked). Cash $1.76b, hacking 125, karma -18.2k, installed 0, queued 0. Factions
-CyberSec, Tian Di Hui, Slum Snakes. Measured (60 min, 12 samples): cash/h 1.58b, hackExp/h 216k, karma/h -5.12k,
-rep/h Tian Di Hui 2.72k, CyberSec 2.44k. Trend: cash STEADY, hackExp STEADY (halved earlier as the player went to the
-gym), MCP and rep n/a. Advisor: wait (S.N.A in 6m; batch $1.21b, 6 augs); agreed, no install. Player at gym
-(def 74/75), then Homicide (chance 0.64); 7 sleeves on Homicide. World Daemon: not present.
+**2026-11-11 17:15 (scheduled run): install 1 at 17:17, 7 augs, 0 -> 7.** Before: $5.45b, hacking 129, karma -30.1k,
+factions CyberSec, Tian Di Hui, Slum Snakes, Tetrads. Measured (60 min, 13 samples): cash/h 1.82b, hackExp/h 211k,
+karma/h -5.77k, rep/h Tian Di Hui 4.84k. Trend: cash, MCP, hackExp STEADY; rep SWITCH. Advisor said install at 17:14
+(then wait 34m for CSP Gen I at 17:16 after a contract's +833 rep); decision install. Why: the gang is gated by hacking
+(NiteSec 211 needs ~3.5e8 exp, ~1,600h at x0.49), not karma, so waiting for NiteSec would stall; installs raise the
+multipliers. Favor banked Tian Di Hui +37.8, CyberSec +15.1. Backup `pre-install1_BN10run3` validated. After: 20
+residents back, hacking 3, $4.5m, player at gym. World Daemon: not present.
 
 ## Next
 
-1. Consider a first install once the Tian Di Hui/CyberSec batch stops gaining (advisor), with a backup.
-2. Gang at karma -54k (`gang_create.js` is running); about 10h at the measured -4.24k/h, faster once the player
-   turns to crime.
+1. Short cycles of hacking augs (CyberSec: Cranial Signal Processors Gen I at 20k, Neurotrainer I) until the NiteSec
+   gate (hacking 211) is in reach; add `metrics.py cycles` for cycle 1 once a new-cycle sample exists.
+2. Gang: karma -30.3k of -54k, but hacking gates it. `gang_create.js` (started by `startup.js`, no argument) waits for
+   **The Black Hand** (Ken's default, 2026-11-07), while `run_target.json` names NiteSec, as in run 2. Settle which one
+   before karma and the NiteSec gate are both met (`run gang_create.js NiteSec` would do it).
 3. Find what destroyed run 2's daemon (check log 2026-11-11 09:47) before this run nears hacking 6000.
 
 ## Open questions

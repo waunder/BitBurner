@@ -1,6 +1,6 @@
 {
   "goal": "BN10 run 3 (entered 2026-11-11 ~10:20, Ken hands-off for the whole run): SF10.3, gang early, Daedalus favor 150 before The Red Pill",
-  "updated": "2026-11-11",
+  "updated": "2026-11-12",
   "gangFaction": "Slum Snakes",
   "steps": [
     {
@@ -11,7 +11,7 @@
       }
     },
     {
-      "label": "Early installs for hacking multipliers (first install 17:17, 7 augs)",
+      "label": "Early installs for hacking multipliers (install 1 11-11 17:17, 7 augs; install 2 11-12 05:16, 4 + NeuroFlux x5)",
       "install": true,
       "metric": {
         "kind": "installed",

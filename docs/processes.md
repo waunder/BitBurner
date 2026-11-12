@@ -2324,6 +2324,18 @@ When purchased workers do not exist after an augmentation reset, both audit
 and submission use the same rooted-normal-host fallback. A host with any
 non-MCP process is excluded; only MCP action loops may be briefly preempted.
 
+**Install advisor refresh (`augmentation_readiness.js`, 35.35GB).** Every two
+minutes the steward runs it on a remote worker chosen the same way. When no
+remote host qualifies (2026-11-11, BN10 run 3 cycle 2: 32GB cloud servers full
+of MCP batches, no 64GB server rooted; the advisor went 1.5h stale) it runs it
+on home instead, killing monitors (`hud_consolidated.js`, `ops_hud.js`,
+`tail_mcp.js`, `run_report.js`, `mcp_xp.js`, `get_target_stats.js`) only if home
+lacks the room. `maintenance_status.json` `augmentation.source` is then `home`
+(carried between refreshes), and `capital_manager.js` holds that RAM free on
+home so it does not relaunch monitors into it. The hold lapses once a remote
+host takes the job again. Failure modes: `augmentation.error` ends in
+`home lacks <n>GB` when even the monitors' RAM is not enough.
+
 **Solver coverage: 29 of Bitburner's 30 documented contract types
 (`NetscriptDefinitions.d.ts`'s `CodingContractName` enum), as of 2026-09-05**
 — all in `cct_logic.js`'s `SOLVERS` map, pure functions with no `ns` calls,

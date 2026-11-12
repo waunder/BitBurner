@@ -73,8 +73,18 @@ function startWaitingManager(ns) {
   // While mcp.js runs but cannot fit a batch, hold that batch's RAM too, so killed monitors
   // (HUD, run_report, mcp_xp; Ken 2026-11-11: monitors may always be killed for RAM) stay down.
   const mcpHold = ns.scriptRunning("mcp.js", home) ? readMcpWait(ns).need : ns.getScriptRam("mcp.js", home)
-  const name = nextScriptToStart(scripts, ns.getServerMaxRam(home) - ns.getServerUsedRam(home) - mcpHold)
+  const name = nextScriptToStart(scripts, ns.getServerMaxRam(home) - ns.getServerUsedRam(home) - mcpHold - readAdvisorHold(ns))
   return name && ns.run(name) ? name : null
+}
+
+/** GB of home RAM to keep free for the install advisor (augmentation_readiness.js) while the steward
+ * runs it on home because no remote host holds it; 0 while it runs or runs elsewhere. */
+function readAdvisorHold(ns) {
+  try {
+    const aug = JSON.parse(ns.read("maintenance_status.json") || "{}").augmentation
+    if (aug?.source !== "home" && !String(aug?.error || "").includes("home lacks")) return 0
+    return ns.scriptRunning("augmentation_readiness.js", "home") ? 0 : Number(aug.requiredRam) || 0
+  } catch { return 0 }
 }
 
 /** Share of home RAM that scripts need: everything running there except xp_filler's leftover

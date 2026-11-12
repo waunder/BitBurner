@@ -2,14 +2,18 @@ import { DEFAULT_GANG_FACTION, gangCreateStep } from "./gang_create_logic.js"
 
 /**
  * Create the gang once karma allows, then hand over to gang-controller.js and exit.
- * Usage: run gang_create.js [faction]   (default The Black Hand: hacking gang)
+ * Usage: run gang_create.js [faction]   (default: run_target.json `gangFaction`, else The Black Hand)
  * Polls every 60s. Started by startup.js in place of gang-controller.js, so it also
  * starts the controller after every startup when a gang already exists.
  * @param {NS} ns
  */
 export async function main(ns) {
   ns.disableLog("ALL")
-  const faction = String(ns.args[0] || DEFAULT_GANG_FACTION)
+  // The run's plan names the gang faction (BN10 run 3, 2026-11-11: the plan said NiteSec while this
+  // waited for The Black Hand, whose gate is about hacking 350 against NiteSec's 211).
+  let planned = null
+  try { planned = JSON.parse(ns.read("run_target.json") || "{}").gangFaction } catch { /* no plan */ }
+  const faction = String(ns.args[0] || planned || DEFAULT_GANG_FACTION)
   for (const process of ns.ps("home")) {
     if (process.filename === ns.getScriptName() && process.pid !== ns.pid) ns.kill(process.pid)
   }

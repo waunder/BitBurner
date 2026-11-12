@@ -1,6 +1,7 @@
 {
   "goal": "BN10 run 3 (entered 2026-11-11 ~10:20, Ken hands-off for the whole run): SF10.3, gang early, Daedalus favor 150 before The Red Pill",
   "updated": "2026-11-11",
+  "gangFaction": "NiteSec",
   "steps": [
     {
       "label": "Gang: NiteSec hacking gang",

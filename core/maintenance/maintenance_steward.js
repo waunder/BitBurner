@@ -12,6 +12,7 @@ const HISTORY = "maintenance_history.txt"
 const POLL_MS = 30_000
 const HISTORY_LIMIT = 100
 const AUGMENTATION_REFRESH_MS = 120_000
+const MONITORS = ["hud_consolidated.js", "ops_hud.js", "tail_mcp.js", "run_report.js", "mcp_xp.js", "get_target_stats.js"]
 
 function readJson(ns, file, fallback = null) {
   try { const raw = ns.read(file); return raw ? JSON.parse(raw) : fallback } catch { return fallback }
@@ -25,6 +26,27 @@ function startWatcher(ns) {
   if (!ns.isRunning("cct_watcher.js", "home")) return ns.run("cct_watcher.js", 1)
   return -1
 }
+/** Free home RAM for the readiness assessment, killing monitors if needed (Ken, 2026-11-11: monitors may
+ * always be killed for RAM). capital_manager holds this RAM while `source` is "home", so they stay down. */
+function homeRoomFor(ns, ram) {
+  const free = () => ns.getServerMaxRam("home") - ns.getServerUsedRam("home")
+  for (const proc of ns.ps("home")) {
+    if (free() >= ram) break
+    if (MONITORS.includes(proc.filename)) ns.kill(proc.pid)
+  }
+  return free() >= ram
+}
+
+/** Run the assessment on home and wait for it; the result is already where readers look. */
+async function readinessOnHome(ns, ram, current, remoteError) {
+  if (!homeRoomFor(ns, ram)) return { refreshed: false, error: `${remoteError}; home lacks ${ram}GB`, requiredRam: ram, status: current }
+  const pid = ns.exec("augmentation_readiness.js", "home", 1, "--once")
+  if (!pid) return { refreshed: false, error: `${remoteError}; could not start on home`, requiredRam: ram, status: current }
+  while (ns.isRunning(pid, "home")) await ns.sleep(100)
+  const status = readJson(ns, "augmentation_readiness.json", null)
+  return { refreshed: Boolean(status), worker: "home", source: "home", requiredRam: ram, status, error: status?.ok ? null : status?.reason || "assessment did not produce status" }
+}
+
 async function refreshAugmentationReadiness(ns) {
   const current = readJson(ns, "augmentation_readiness.json", null)
   if (Number.isFinite(current?.ts) && Date.now() - current.ts < AUGMENTATION_REFRESH_MS) return { refreshed: false, status: current }
@@ -33,7 +55,9 @@ async function refreshAugmentationReadiness(ns) {
     // a briefly-preemptible worker, then copy the compact result home.
     const ram = ns.getScriptRam("augmentation_readiness.js", "home")
     const prepared = await prepareContractWorker(ns, selectContractWorker(ns, ram), ram)
-    if (!prepared.ok) return { refreshed: false, error: prepared.reason, requiredRam: ram, status: current }
+    // Early in a cycle no remote host may hold it (BN10 run 3, 2026-11-11: 32GB cloud servers full of MCP
+    // batches, no 64GB server rooted at hacking 81), and the advisor went 1.5h stale. Home is the fallback.
+    if (!prepared.ok) return await readinessOnHome(ns, ram, current, prepared.reason)
     // The planner and advisor it imports, the files it reads and its last status (for rates) travel with it.
     const copied = await ns.scp(["augmentation_readiness.js", "aug_install_logic.js", "install_advisor_logic.js", "player_activity_config.json", "run_target.json", "augmentation_readiness.json"], prepared.worker, "home")
     const pid = copied ? ns.exec("augmentation_readiness.js", prepared.worker, 1, "--once") : 0
@@ -65,6 +89,9 @@ export async function main(ns) {
       progress = { ts: now, action: "alert", alert: "MCP progress inspection failed", reason: String(error) }
     }
     const augmentation = await refreshAugmentationReadiness(ns)
+    // Between refreshes keep where it last ran, so capital_manager's home hold does not lapse.
+    if (!augmentation.source && !augmentation.error && prior.augmentation?.source)
+      Object.assign(augmentation, { source: prior.augmentation.source, requiredRam: prior.augmentation.requiredRam })
     const state = {
       ts: now, pollMs: POLL_MS, mcp: { stale, ageMs: Number.isFinite(mcp?.ts) ? now - mcp.ts : null },
       contracts: readJson(ns, "cct_queue_status.json", { action: "waiting" }),

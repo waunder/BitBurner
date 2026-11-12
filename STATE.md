@@ -36,6 +36,10 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 
 ## Standing settings (live, nothing to undo at installs)
 
+- **Monitors may always be killed for RAM** (Ken, 2026-11-11): HUD (`hud_consolidated.js`, `ops_hud.js`),
+  `run_report.js`, `mcp_xp.js`, `get_target_stats.js`. While MCP waits for room (`capacity-wait`), `capital_manager`
+  holds its smallest batch's RAM so they are not relaunched, and buys the cheapest cloud server that fits one batch
+  if no worker can (any phase; commit below). Added after install 1 left MCP idle at 17:17 with 1.5GB per host.
 - **Gang objective is `auto`** (2026-11-10, commit 667d2ab). The gang earns NiteSec rep until it
   covers every aug NiteSec sells (`gangRepNeeded` in `augmentation_readiness.json`, 3.5m now), then
   switches to Money Laundering by itself. An install resets faction rep, so the gang goes back to

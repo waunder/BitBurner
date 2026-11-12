@@ -70,7 +70,9 @@ function startWaitingManager(ns) {
   // mcp.js is started by the steward's recovery, not from this list; while it is
   // down, keep its RAM free so residents cannot crowd out the income engine
   // (BN10 run 2, 128GB home: residents filled 127.95GB and MCP was down 2.6h).
-  const mcpHold = ns.scriptRunning("mcp.js", home) ? 0 : ns.getScriptRam("mcp.js", home)
+  // While mcp.js runs but cannot fit a batch, hold that batch's RAM too, so killed monitors
+  // (HUD, run_report, mcp_xp; Ken 2026-11-11: monitors may always be killed for RAM) stay down.
+  const mcpHold = ns.scriptRunning("mcp.js", home) ? readMcpWait(ns).need : ns.getScriptRam("mcp.js", home)
   const name = nextScriptToStart(scripts, ns.getServerMaxRam(home) - ns.getServerUsedRam(home) - mcpHold)
   return name && ns.run(name) ? name : null
 }
@@ -86,6 +88,26 @@ function readHomeDemand(ns) {
   const waiting = [...managerList(ns), "mcp.js"].filter(name => !ns.scriptRunning(name, home))
     .reduce((sum, name) => sum + ns.getScriptRam(name, home), 0)
   return (used + waiting) / max
+}
+
+/** GB of MCP's smallest waiting batch while it runs in status `capacity-wait` (under a minute old),
+ * plus whether any worker already has that much free. 0 when MCP is not waiting. */
+function readMcpWait(ns) {
+  try {
+    if (!ns.scriptRunning("mcp.js", "home")) return { need: 0, fits: true }
+    const s = JSON.parse(ns.read("mcp_status.json"))
+    if (s.phase !== "capacity-wait" || !(Date.now() - s.ts < 60_000)) return { need: 0, fits: true }
+    const need = Math.min(...(s.waiting ?? []).map(w => Number(w.minimumRam)).filter(r => r > 0))
+    if (!Number.isFinite(need)) return { need: 0, fits: true }
+    const most = Math.max(0, ...(s.workers ?? []).map(w => Number(w.freeRam) || 0))
+    return { need, fits: most >= need || ns.getServerMaxRam("home") - ns.getServerUsedRam("home") >= need }
+  } catch { return { need: 0, fits: true } }
+}
+
+/** GB MCP needs to buy for when no worker can hold its smallest batch; 0 otherwise. */
+function readMcpStarvedRam(ns) {
+  const wait = readMcpWait(ns)
+  return wait.fits ? 0 : wait.need
 }
 
 /** MCP's and the stacks' demand for cloud RAM; xp_filler.js is excluded because it only uses leftovers. */
@@ -121,7 +143,8 @@ export async function main(ns) {
       const homeLimit = lateCycleLimit({ policy, hoursSinceInstall, cash })
       const input = { ...observe(ns, policy), ramUtilization: readUtilization(ns), incomePerSec, saveWindowSec: Number(policy.saveWindowSec) || 300, homeRamFloor: Number(policy.homeRamFloor) || 128, cloudDemandFloor: cyclePhase.floor,
         homeDemand: readHomeDemand(ns), homeDemandFloor: Number(policy.homeDemandFloor ?? 0.5), homeSpendLimit: homeLimit.limit,
-        mcpBlocked: !ns.scriptRunning("mcp.js", "home") && ns.getServerMaxRam("home") - ns.getServerUsedRam("home") < ns.getScriptRam("mcp.js", "home") }
+        mcpBlocked: !ns.scriptRunning("mcp.js", "home") && ns.getServerMaxRam("home") - ns.getServerUsedRam("home") < ns.getScriptRam("mcp.js", "home"),
+        mcpStarvedRam: readMcpStarvedRam(ns) }
       homeDemand = input.homeDemand
       action = chooseCapitalAction(input)
       if (action && action.kind !== "save") {

@@ -38,7 +38,7 @@ export function lateCycleLimit({ policy = {}, hoursSinceInstall = 0, cash = 0, l
 
 export function chooseCapitalAction({ spendable, hasTor, torCost = 200e3, programs = [], homeRam, homeRamTarget, homeRamCost,
   cloud = [], cloudLimit = 0, cloudQuotes = [], upgradeQuotes = [], cloudFraction = 0.5, incomePerSec = 0, saveWindowSec = 300, homeRamFloor = 128, ramUtilization = 1, cloudDemandFloor = 0.5,
-  homeDemand = 1, homeDemandFloor = 0.5, homeSpendLimit = Infinity, mcpBlocked = false }) {
+  homeDemand = 1, homeDemandFloor = 0.5, homeSpendLimit = Infinity, mcpBlocked = false, mcpStarvedRam = 0 }) {
   if (!hasTor) return spendable >= torCost ? { kind: "tor", cost: torCost } : { kind: "save", reason: "TOR", cost: torCost }
   const missing = programs.find(p => !p.owned && Number.isFinite(p.cost) && p.cost > 0)
   if (missing && missing.cost <= spendable) return { kind: "program", name: missing.name, cost: missing.cost }
@@ -57,6 +57,16 @@ export function chooseCapitalAction({ spendable, hasTor, torCost = 200e3, progra
   if (wantsHome && homeRamCost <= spendable) return { kind: "home", cost: homeRamCost }
   // Below this floor (or with MCP unable to start) nothing outranks home RAM.
   if (wantsHome && urgent) return { kind: "save", reason: mcpBlocked ? "home RAM for MCP" : "home RAM floor", cost: homeRamCost }
+  // mcpStarvedRam: mcp.js runs but no worker has room for its smallest batch (this many GB). After an
+  // install the cloud servers are gone and residents fill home, so MCP earns nothing (BN10 run 3,
+  // 2026-11-11 17:17: capacity-wait with 1.5GB free per host). The cheapest cloud server that holds
+  // one batch outranks saving and the cycle-phase demand floor, in any phase: it is small and MCP is
+  // the income. Only while a cloud slot is free; otherwise upgrades follow the usual rules.
+  if (mcpStarvedRam > 0 && cloud.length < cloudLimit) {
+    const fit = cloudQuotes.filter(q => q.ram >= mcpStarvedRam).sort((a, b) => a.cost - b.cost)[0]
+    if (fit) return fit.cost <= spendable ? { kind: "cloud", ram: fit.ram, cost: fit.cost, reason: "MCP starved" }
+      : { kind: "save", reason: "cloud RAM for MCP", cost: fit.cost }
+  }
   // Hold cloud buying when income can reach the next priority soon, but never
   // wait on a distant $250m program: the cloud RAM is what earns it.
   const next = Math.min(missing?.cost ?? Infinity, wantsHome ? homeRamCost : Infinity)

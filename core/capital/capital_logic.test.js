@@ -112,6 +112,23 @@ test("late in a cycle home RAM is held to the spend limit even with demand", () 
   assert.equal(chooseCapitalAction({ ...input, homeSpendLimit: Infinity }).kind, "home")
   assert.equal(chooseCapitalAction({ ...input, homeRam: 64, homeRamCost: 1e3, homeSpendLimit: 0 }).kind, "home")
 })
+test("a starved MCP gets the cheapest cloud server that holds one batch, in any phase", () => {
+  const quotes = [{ ram: 32, cost: 1.8e6 }, { ram: 64, cost: 3.5e6 }, { ram: 128, cost: 7e6 }]
+  // Saving for a program within the window and a late-phase floor would both hold cloud buying.
+  const input = { ...base, cloud: [], cloudLimit: 15, cloudQuotes: quotes, spendable: 5e6, incomePerSec: 1e5,
+    programs: [{ name: "HTTPWorm.exe", owned: false, cost: 3e7 }], ramUtilization: 0, cloudDemandFloor: 0.5,
+    homeRam: 256, homeRamTarget: 512, homeRamCost: 1e9, homeDemand: 0.1 }
+  assert.notEqual(chooseCapitalAction(input)?.kind, "cloud")
+  const buy = chooseCapitalAction({ ...input, mcpStarvedRam: 42 })
+  assert.equal(buy.kind, "cloud")
+  assert.equal(buy.ram, 64)
+  const short = chooseCapitalAction({ ...input, mcpStarvedRam: 42, spendable: 1e6 })
+  assert.equal(short.kind, "save")
+  assert.equal(short.reason, "cloud RAM for MCP")
+  // No free slot: the usual rules apply.
+  assert.notEqual(chooseCapitalAction({ ...input, mcpStarvedRam: 42, cloud: Array(15).fill("s"), cloudLimit: 15 })?.reason, "MCP starved")
+})
+
 test("home RAM for a blocked MCP ignores the late cap and outranks cloud", () => {
   const input = { ...base, homeRam: 128, homeRamTarget: 262144, homeRamCost: 1.5e8, spendable: 1.57e8, homeDemand: 1.8, homeSpendLimit: 1.5e6 }
   assert.equal(chooseCapitalAction(input), null)

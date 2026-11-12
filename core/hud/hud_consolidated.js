@@ -148,7 +148,7 @@ function mcpStatus(ns, now) {
       `Status: ${running ? "RUNNING" : "STOPPED"}`,
       `Objective: ${objective}${running ? "" : " (last reported)"}`,
       ...(status.targets ? [`Targets: ${status.targets.length} (${status.targets.filter(t=>t.phase==='harvest').length} harvesting, ${status.targets.filter(t=>t.phase!=='harvest').length} preparing) — see MCP target stats`,
-        `Cloud: ${Math.round(status.cloudControl?.effectiveFraction*100)}% withdrawal; expires ${bcTime(status.cloudControl?.expiresAt)}`] : [`Target: ${target}`]),
+        ...(Number.isFinite(status.cloudControl?.expiresAt) ? [`Cloud: ${Math.round(status.cloudControl.effectiveFraction*100)}% withdrawal; expires ${bcTime(status.cloudControl.expiresAt)}`] : [])] : [`Target: ${target}`]),
       `Phase: ${phase}${status.holdGrowth ? " (growth held at money threshold)" : ""}${plan === "weaken" ? `; ${status.activeTargetWeaken || 0} weaken threads` : ""}`,
       `Rate: ${compact(rate, 2)}/s (avg ${compact(avgRate, 2)}/s)`,
       `Total hacked: ${compact(money)}`,
@@ -639,7 +639,14 @@ export async function main(ns) {
         ns.ui.renderTail()
       }
     } catch (err) {
+      ns.clearLog()
       ns.print(COLORS.HEADER + "ERROR: " + err.message + COLORS.RESET)
+      // Open the window anyway: an error must show, not hide the HUD (2026-11-11: a missing
+      // cloudControl.expiresAt threw every refresh, so the tail never opened).
+      if (!placed && ns.ui) {
+        placeTail(ns, pos, size)
+        placed = true
+      }
     }
 
     await saveTailPosition(ns, "hud_consolidated.js")

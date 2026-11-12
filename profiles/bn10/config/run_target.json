@@ -1,24 +1,17 @@
 {
   "goal": "BN10 run 3 (entered 2026-11-11 ~10:20, Ken hands-off for the whole run): SF10.3, gang early, Daedalus favor 150 before The Red Pill",
   "updated": "2026-11-11",
-  "gangFaction": "NiteSec",
+  "gangFaction": "Slum Snakes",
   "steps": [
     {
-      "label": "Gang: NiteSec hacking gang",
+      "label": "Gang: Slum Snakes combat gang (no hacking gate; changed from NiteSec 2026-11-11)",
       "metric": {
         "kind": "karma",
         "target": -54000
       }
     },
     {
-      "label": "NiteSec gate",
-      "metric": {
-        "kind": "hacking",
-        "target": 211
-      }
-    },
-    {
-      "label": "Early installs for hacking multipliers (NiteSec 211 is ~1,600h away at x0.49; first install 17:17, 7 augs)",
+      "label": "Early installs for hacking multipliers (first install 17:17, 7 augs)",
       "install": true,
       "metric": {
         "kind": "installed",

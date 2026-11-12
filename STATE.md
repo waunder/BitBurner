@@ -26,7 +26,7 @@ it. Its record is in the check log or the archive.
 
 **BN10 run 3**, entered 2026-11-11 about 10:20 by Ken (run 2's daemon went unattended at about 09:47; check log).
 **Ken is hands-off for the whole run** (2026-11-11): every action in the game is ours, so an unexplained install or
-purchase is a script fault to find, not Ken. Route (`run_target.json`): gang (NiteSec) → NiteSec augs → The Covenant
+purchase is a script fault to find, not Ken. Route (`run_target.json`): gang (Slum Snakes, combat; changed from NiteSec 2026-11-11 21:45) → gang-faction augs → The Covenant
 (hacking and combat 850, $75b) → Daedalus, one install once its rep banks favor 150 → The Red Pill → World Daemon.
 Installs are approved up to readiness to complete BN10, each with a save backup first. Stop at the World Daemon or
 any other reset, take a backup and notify Ken (`AGENTS.md`). Install timing is the agent's judgement. The install
@@ -100,8 +100,9 @@ wait for CSP Gen I; decision wait (agreed), install expected at the 23:15 check.
 
 1. Short cycles of hacking augs (CyberSec: Cranial Signal Processors Gen I at 20k, Neurotrainer I) until the NiteSec
    gate (hacking 211) is in reach; add `metrics.py cycles` for cycle 1 once a new-cycle sample exists.
-2. Gang: karma -35.3k of -54k, but hacking gates it (NiteSec 211). Settled 2026-11-11: NiteSec; `gang_create.js`
-   restarted 19:16 and reads it from `run_target.json`.
+2. Gang: **Slum Snakes** (2026-11-11 21:45, 3963dac). NiteSec gated it on hacking 211 (110 at 21:40) while karma
+   reaches -54k about 22:00 (-51.8k at 21:40, -6.7k/h). `gang_create.js` restarted 21:45 and reads `run_target.json`.
+   Confirm the gang exists and `gang-controller.js` runs.
 5. Install once Neurotrainer I and, ideally, CSP Gen I (CyberSec 20k rep, $350m) are bought; then drop them from
    `priorityAugs` (profiles/bn10/config/player_activity_config.json) if the list still holds them.
 3. Next install: confirm the starved-MCP rule buys a cloud server and holds home RAM (`capital_status.json` reason

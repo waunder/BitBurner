@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-12 11:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-12 13:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -91,13 +91,14 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-12 11:15 (scheduled run): steady, no changes made.** Cycle 3, 5.9h after install 2. BitNode 10, $4.5b, hacking
-155, karma -70.9k, 12 installed, 0 queued; factions Tian Di Hui (83.8k rep), CyberSec, Slum Snakes (gang), Tetrads.
-Measured (60 min to 11:10, 13 samples): cash/h 1.11b, hackExp/h 572k, karma/h -1.25k, rep/h Tian Di Hui 15.1k, CyberSec 540,
-Tetrads 150, Slum Snakes 142; MCP 506k/s (avg 261k/s). Trend: cash/h STEADY, MCP STEADY, hackExp/h STEADY, rep Tian Di Hui
-STEADY (15k). Advisor: build (batch empty, CSP Gen II 62h); decision wait (agreed): Neuroreceptor is 66.7k rep away (~4.4h,
-about 15:40). Gang in wanted recovery (penalty 0.98). All 20 residents running. World Daemon: not present. `metrics.py pull`
-still fails (chunk limit); the daemon's pull keeps the log current.
+**2026-11-12 13:15 (scheduled run): steady, no changes made.** Cycle 3, 8.0h after install 2. BitNode 10, $4.97b, hacking
+162, karma -73.5k, 12 installed, 0 queued; Tian Di Hui 121.0k rep, Slum Snakes (gang) 12.8k, CyberSec, Tetrads.
+Measured (60 min to 13:15, 12 samples): cash/h 38.8m, hackExp/h 570k, karma/h -1.26k, rep/h Tian Di Hui 18.5k, Slum Snakes 10k,
+CyberSec 1.19k; MCP 193k/s (avg 324k/s). Trend: cash/h DECELERATING (1.32b>709m>39m: gang gear, 5.75b this cycle, lifted
+Slum Snakes rep from 142/h to 10k/h), MCP STEADY, hackExp/h STEADY, rep Tian Di Hui STEADY (18.5k). Advisor: install (5 cheap
+Slum Snakes augs); decision wait: Neuroreceptor ~1.6h (about 14:50) and gang rep 20k within the hour opens better augs.
+**Install planned at the 15:15 check** (Neuroreceptor first, then Slum Snakes augs, NeuroFlux; backup first). All 20 residents
+running. World Daemon: not present. `metrics.py pull` still fails (chunk limit); the daemon's pull keeps the log current.
 
 ## Next
 

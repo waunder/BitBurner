@@ -303,4 +303,10 @@ test("rep work skips augmentations the gang faction sells", () => {
   const args = { player: { money: 10, skills: { hacking: 300, charisma: 600 } }, nextGate: { host: "x", required: 355 }, config: { physicalTarget: 0, repBeforeGates: true } }
   assert.equal(choosePlayerActivity({ ...args, augmentation: { ok: true, workCandidates: rows } }).action, "faction")
   assert.equal(choosePlayerActivity({ ...args, augmentation: { ok: true, workCandidates: rows, gangSells: ["Bionic Arms"] } }).action, "algorithms")
+  // A new gang far behind: the player's smaller gap at the workable faction wins.
+  const csp = [{ name: "CSP Gen I", faction: "CyberSec", repRequired: 20000, repGap: 2300, price: 1, cashReady: true }]
+  const young = { ok: true, workCandidates: csp, gangSells: ["CSP Gen I"], gangRep: 154 }
+  assert.equal(choosePlayerActivity({ ...args, augmentation: young }).faction, "CyberSec")
+  // Once the gang is closer than the player, the gang covers it.
+  assert.equal(choosePlayerActivity({ ...args, augmentation: { ...young, gangRep: 19000 } }).action, "algorithms")
 })

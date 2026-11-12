@@ -1488,6 +1488,9 @@ them), and so count in the advisor's batch. Every candidate of a donating factio
 never scores it as a wait-for-rep target (ones cash cannot yet cover are listed in `advice.cashLimited`), `workCandidate`
 skips it, and `repTarget` (player_activity_logic.js) never sends the player to work for it, priority names included.
 Before this, The Syndicate at favor 152 still read "build, NEMEAN in 2.2h" and the controller ground its rep.
+Names the gang faction sells (readiness `gangSells`) are likewise left to the gang, but only while the gang's gap
+(`repRequired - gangRep`) is no larger than the player's gap at the workable faction (2026-11-12: a 3h-old gang at
+154 rep had moved the player off CyberSec 2.3k short of Cranial Signal Processors - Gen I).
 
 **Run report (`run_report.js`, resident, tail window "Run report").** Shows `run_report.json`
 (`{ts, title, lines}`), which the hourly scheduled task writes to `runtime/run_report.json` and pushes with `ctl-push`.

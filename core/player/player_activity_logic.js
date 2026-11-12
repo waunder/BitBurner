@@ -247,12 +247,16 @@ function repTarget(player, augmentation, config, only = null) {
   // A faction at the donation threshold sells rep for cash (aug_install.js), so working it, or any
   // other faction selling the same augmentation, for that rep wastes the time.
   const cashBought = new Set(targets.filter((item) => item.donatable === true).map((item) => item.name))
-  // The gang faction sells these; its rep comes from the gang, never from player work.
-  for (const name of augmentation?.gangSells || []) cashBought.add(name)
+  // The gang faction sells these; its rep comes from the gang, never from player work. A row stays
+  // workable only while its own gap is smaller than the gang's: a new gang (154 rep, 2026-11-12)
+  // would otherwise strand the player 2.3k short of CSP Gen I at CyberSec for ~290h of gang rep.
+  const gangSells = new Set(augmentation?.gangSells || [])
+  const gangCovers = (item) => gangSells.has(item.name)
+    && !(number(item.repGap) < number(item.repRequired) - number(augmentation?.gangRep))
   // A name sold by several workable factions keeps a row per faction: the bundle score below
   // credits a faction with every name its rep reaches, so the cheapest route wins on value per rep.
   const eligible = targets
-    .filter((item) => (!only || only.has(item.name)) && !repReady.has(item.name) && !cashBought.has(item.name)
+    .filter((item) => (!only || only.has(item.name)) && !repReady.has(item.name) && !cashBought.has(item.name) && !gangCovers(item)
       && item.canWorkForRep !== false && item.donatable !== true && number(item.repGap) > 0 && item.faction
       && (item.cashReady || number(item.price) <= repPriceLimit))
     // Valued candidates (augmentation_readiness.js, install_advisor_logic.js weights) rank by value per rep,

@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-11 23:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-12 01:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -90,12 +90,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-11 23:15 (scheduled run), cycle 2 of run 3 (install 1 at 17:17, 5.9h in). Steady, no changes made.** BitNode 10,
-$935m, hacking 118, karma -55.6k, 7 installed, 0 queued. Measured (60 min to 23:10, 12 samples): cash/h 521m, hackExp/h
-165k, karma/h -1.25k, rep/h Tian Di Hui 9.3k, MCP sampled 6.83k/s (avg 41.4k/s; sampled rate reads 0 between harvest
-batches). Trend: cash/h, MCP, hackExp/h STEADY; rep SWITCH. Player moved CyberSec -> Tian Di Hui at about 22:01 because
-the new gang sells CSP Gen I (`gangSells` rule). Advisor: wait 5.7h for Nanofiber Weave; decision wait (agreed; a 2-aug
-install would reset rising income and the new gang's rep). All residents up. World Daemon: not present.
+**2026-11-12 01:15 (scheduled run), cycle 2 of run 3 (install 1 at 17:17, 8.0h in). Player sent back to CyberSec for CSP
+Gen I.** BitNode 10, $1.93b, hacking 125, karma -58.2k, 7 installed, 0 queued. Measured (60 min to 01:10, 12 samples):
+cash/h 332m, hackExp/h 172k, karma/h -1.25k, rep/h Tian Di Hui 10.5k, Slum Snakes 68.8, MCP 220k/s (avg 68.1k/s). Trend:
+cash/h STEADY (521m>570m>332m), MCP ACCELERATING, hackExp/h STEADY, rep Tian Di Hui STEADY. Fix: the `gangSells` rule
+left CSP Gen I to a gang at 154 rep (~290h away) while CyberSec was 2.3k short; now a gang-sold name stays workable while
+the player's gap is smaller than the gang's (tests 603/603, controller restarted). Advisor: wait 3.3h for Nanofiber Weave;
+decision wait (agreed). All residents up. World Daemon: not present.
 
 ## Next
 
@@ -103,8 +104,8 @@ install would reset rising income and the new gang's rep). All residents up. Wor
    gate (hacking 211) is in reach; add `metrics.py cycles` for cycle 1 once a new-cycle sample exists.
 2. Gang: **created with Slum Snakes about 22:00** (2026-11-11; 3963dac moved it off NiteSec's hacking 211 gate).
    3 members, reputation mode, `gang-controller.js` running at 22:05. Next: watch respect and rep build.
-5. Install once Nanofiber Weave (Tian Di Hui, ~5.7h from 23:15) is bought or the advisor turns to install; CSP Gen I now
-   waits on gang rep (Slum Snakes sells it). Then drop bought names from `priorityAugs` (profiles/bn10/config/player_activity_config.json).
+5. Install once Nanofiber Weave (Tian Di Hui, ~3.3h from 01:15) is in reach or the advisor turns to install; CSP Gen I
+   (CyberSec, worked from 01:16) should join the batch first. Then drop bought names from `priorityAugs` (profiles/bn10/config/player_activity_config.json).
 3. Next install: confirm the starved-MCP rule buys a cloud server and holds home RAM (`capital_status.json` reason
    "MCP starved" / "cloud RAM for MCP"), and that the player skips the gym.
 4. Find what destroyed run 2's daemon (check log 2026-11-11 09:47) before this run nears hacking 6000.

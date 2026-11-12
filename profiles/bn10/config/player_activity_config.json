@@ -5,7 +5,7 @@
   "charismaTarget": 0,
   "covenantTarget": true,
   "covenantCloseFraction": 0.5,
-  "priorityAugs": ["Neuroreceptor Management Implant"],
+  "priorityAugs": ["Cranial Signal Processors - Gen II"],
   "favorTarget": "Daedalus",
   "repBeforeGates": true,
   "focusWork": true,

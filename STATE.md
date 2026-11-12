@@ -100,7 +100,8 @@ wait for CSP Gen I; decision wait (agreed), install expected at the 23:15 check.
 
 1. Short cycles of hacking augs (CyberSec: Cranial Signal Processors Gen I at 20k, Neurotrainer I) until the NiteSec
    gate (hacking 211) is in reach; add `metrics.py cycles` for cycle 1 once a new-cycle sample exists.
-2. Gang: **created with Slum Snakes about 22:00** (2026-11-11; 3963dac moved it off NiteSec's hacking 211 gate).`n   3 members, reputation mode, `gang-controller.js` running at 22:05. Next: watch respect and rep build.
+2. Gang: **created with Slum Snakes about 22:00** (2026-11-11; 3963dac moved it off NiteSec's hacking 211 gate).
+   3 members, reputation mode, `gang-controller.js` running at 22:05. Next: watch respect and rep build.
 5. Install once Neurotrainer I and, ideally, CSP Gen I (CyberSec 20k rep, $350m) are bought; then drop them from
    `priorityAugs` (profiles/bn10/config/player_activity_config.json) if the list still holds them.
 3. Next install: confirm the starved-MCP rule buys a cloud server and holds home RAM (`capital_status.json` reason

@@ -69,7 +69,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
   minimum cycle for the gang faction (cap 12h). Ascension runs in either mode, at x1.5 and at most one
   per loop. Reputation mode uses the 0.80/0.90 wanted-penalty band.
 - Share stays on (A/B recorded 2026-11-05).
-- **Home RAM floor 256GB** (2026-11-11, `capital_policy.json` `homeRamFloor`; game-only). Plus code: while mcp.js is
+- **Home RAM floor 512GB** (2026-11-11 22:08, was 256; `capital_policy.json` `homeRamFloor`; game-only). Bought 512GB for $477m so the HUD (killed for the install advisor's 35GB) could run again. Plus code: while mcp.js is
   down and does not fit, home RAM ignores the late-cycle cap (`mcpBlocked` in `capital_logic.js`).
 - **Allocator project** (`docs/allocator-design.md`; Ken approved 2026-11-10): central valuation,
   each script still buys, one `own`/`shadow`/`valued`/`sweep`/`never` setting per purchase kind in

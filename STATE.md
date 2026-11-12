@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-11 17:25 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-11 19:05 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -90,12 +90,12 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-11 18:25 (Ken session), cycle 2 of run 3 (install 1 at 17:17).** Fixed and deployed today after the 17:15
-check: MCP idle after the install (`capacity-wait`, 1.5GB free per host) -> starved-MCP rule, 9486e86; the HUD window
-never opened (`cloudControl.expiresAt` missing threw every refresh) -> fixed, 2e5776f; gym and port-opener spending
--> 40dbc09. At 18:25: home 256GB, MCP harvesting n00dles on 14 workers (484GB), $2.4m after HTTPWorm ($30m), player on
-crime for cash until $10m (then training or faction work), 7 sleeves on Homicide. Cash this cycle to 18:15: darknet
-+$37.6m, contracts +$16.7m, hacking +$7.3m, gym -$8.3m, servers -$24.2m.
+**2026-11-11 19:05 (Ken session), cycle 2 of run 3 (install 1 at 17:17).** The install advisor had been stale since
+17:16: no remote host could hold its 35.35GB. It now falls back to home and is fresh again (97b9ab2, verified 19:00).
+The gang faction is settled as NiteSec (`run_target.json` `gangFaction`). Advisor at 19:00 said install on a batch of
+one (Wired Reflexes); decided **no install** (check log). At 18:54: MCP $26k/s on 15 cloud servers, hacking 81, $11m,
+karma -33.2k. Earlier today (18:25 session): starved-MCP rule 9486e86, HUD fix 2e5776f, gym 30 and port-opener gate
+40dbc09.
 
 Previous scheduled check:
 **2026-11-11 17:15 (scheduled run): install 1 at 17:17, 7 augs, 0 -> 7.** Before: $5.45b, hacking 129, karma -30.1k,
@@ -110,9 +110,9 @@ residents back, hacking 3, $4.5m, player at gym. World Daemon: not present.
 
 1. Short cycles of hacking augs (CyberSec: Cranial Signal Processors Gen I at 20k, Neurotrainer I) until the NiteSec
    gate (hacking 211) is in reach; add `metrics.py cycles` for cycle 1 once a new-cycle sample exists.
-2. Gang: karma -30.3k of -54k, but hacking gates it. `gang_create.js` (started by `startup.js`, no argument) waits for
-   **The Black Hand** (Ken's default, 2026-11-07), while `run_target.json` names NiteSec, as in run 2. Settle which one
-   before karma and the NiteSec gate are both met (`run gang_create.js NiteSec` would do it).
+2. Gang: karma -33.2k of -54k, but hacking gates it (NiteSec 211). Settled 2026-11-11: NiteSec. The running
+   `gang_create.js` still has the old Black Hand default until it restarts (`run gang_create.js`, or the next install's
+   startup); confirm with `ps` after the next install.
 3. Next install: confirm the starved-MCP rule buys a cloud server and holds home RAM (`capital_status.json` reason
    "MCP starved" / "cloud RAM for MCP"), and that the player skips the gym.
 4. Find what destroyed run 2's daemon (check log 2026-11-11 09:47) before this run nears hacking 6000.

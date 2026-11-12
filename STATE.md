@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-12 09:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-12 11:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -91,13 +91,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-12 09:15 (scheduled run): steady, no changes made.** Cycle 3, 3.9h after install 2. BitNode 10, $2.4b, hacking
-143, karma -68.4k, 12 installed, 0 queued; factions Tian Di Hui, CyberSec, Slum Snakes (gang), and Tetrads (newly joined).
-Measured (60 min to 09:10, 12 samples): cash/h 430m, hackExp/h 513k, karma/h -1.25k, rep/h Tian Di Hui 16.5k, CyberSec 509,
-Tetrads 151, Slum Snakes 127; MCP 57.3k/s (avg 192k/s). Trend: cash/h STEADY, MCP STEADY, hackExp/h ACCELERATING, rep Tian
-Di Hui SWITCH/STEADY (16.5k). Advisor: wait (gang 4h minimum, batch empty); decision wait (agreed): Neuroreceptor is ~106k
-rep away (~6.4h). All 20 residents running. World Daemon: not present. `metrics.py pull` still fails (chunk limit); the
-daemon's pull keeps the log current.
+**2026-11-12 11:15 (scheduled run): steady, no changes made.** Cycle 3, 5.9h after install 2. BitNode 10, $4.5b, hacking
+155, karma -70.9k, 12 installed, 0 queued; factions Tian Di Hui (83.8k rep), CyberSec, Slum Snakes (gang), Tetrads.
+Measured (60 min to 11:10, 13 samples): cash/h 1.11b, hackExp/h 572k, karma/h -1.25k, rep/h Tian Di Hui 15.1k, CyberSec 540,
+Tetrads 150, Slum Snakes 142; MCP 506k/s (avg 261k/s). Trend: cash/h STEADY, MCP STEADY, hackExp/h STEADY, rep Tian Di Hui
+STEADY (15k). Advisor: build (batch empty, CSP Gen II 62h); decision wait (agreed): Neuroreceptor is 66.7k rep away (~4.4h,
+about 15:40). Gang in wanted recovery (penalty 0.98). All 20 residents running. World Daemon: not present. `metrics.py pull`
+still fails (chunk limit); the daemon's pull keeps the log current.
 
 ## Next
 

@@ -50,7 +50,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 - **Gang objective is `auto`** (2026-11-10, commit 667d2ab). The gang earns NiteSec rep until it
   covers every aug NiteSec sells (`gangRepNeeded` in `augmentation_readiness.json`, 3.5m now), then
   switches to Money Laundering by itself. An install resets faction rep, so the gang goes back to
-  reputation on its own. (Run 3 has no gang yet.)
+  reputation on its own. (Run 3 gang: Slum Snakes, created 2026-11-11 about 22:00.)
 - **Cloud buying by cycle phase** (2026-11-10, commit 085ffe8). Game-only `capital_policy.json`:
   `{"reserve":0,"homeRamTarget":262144,"homeRamFloor":256,"homeDemandFloor":0.5,"cloudDemandFloor":0,"lateCloudDemandFloor":0.5,"earlyCycleHours":1.5}`.
   For 1.5h after an install, cloud RAM is bought freely to speed up the hacking rebuild. After that,
@@ -100,9 +100,7 @@ wait for CSP Gen I; decision wait (agreed), install expected at the 23:15 check.
 
 1. Short cycles of hacking augs (CyberSec: Cranial Signal Processors Gen I at 20k, Neurotrainer I) until the NiteSec
    gate (hacking 211) is in reach; add `metrics.py cycles` for cycle 1 once a new-cycle sample exists.
-2. Gang: **Slum Snakes** (2026-11-11 21:45, 3963dac). NiteSec gated it on hacking 211 (110 at 21:40) while karma
-   reaches -54k about 22:00 (-51.8k at 21:40, -6.7k/h). `gang_create.js` restarted 21:45 and reads `run_target.json`.
-   Confirm the gang exists and `gang-controller.js` runs.
+2. Gang: **created with Slum Snakes about 22:00** (2026-11-11; 3963dac moved it off NiteSec's hacking 211 gate).`n   3 members, reputation mode, `gang-controller.js` running at 22:05. Next: watch respect and rep build.
 5. Install once Neurotrainer I and, ideally, CSP Gen I (CyberSec 20k rep, $350m) are bought; then drop them from
    `priorityAugs` (profiles/bn10/config/player_activity_config.json) if the list still holds them.
 3. Next install: confirm the starved-MCP rule buys a cloud server and holds home RAM (`capital_status.json` reason

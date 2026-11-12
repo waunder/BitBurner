@@ -40,10 +40,17 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
   `run_report.js`, `mcp_xp.js`, `get_target_stats.js`. While MCP waits for room (`capacity-wait`), `capital_manager`
   holds its smallest batch's RAM so they are not relaunched, and buys the cheapest cloud server that fits one batch
   if no worker can (any phase; commit below). Added after install 1 left MCP idle at 17:17 with 1.5GB per host.
+- **Port openers wait for a server within reach** (2026-11-11, 40dbc09). `capital_manager` buys BruteSSH..SQLInject
+  only when a not-yet-rooted server with required hacking <= hacking x1.25+10 needs that many ports
+  (`capital_status.json` `portsNeeded`); DarkscapeNavigator and Formulas are unaffected. An install deletes programs,
+  and the crawler roots only at the level anyway. Owned at 18:25: all but SQLInject.
+- **Gym baseline 30** (2026-11-11, `player_activity_config.json` `physicalTarget` 75 -> 30). 75 was a run-1 Tetrads
+  route; after install 1 the gym cost $8.3m against MCP's $7.3m. 30 covers the Slum Snakes invite. The Covenant's
+  850 training is separate (`covenantTarget`).
 - **Gang objective is `auto`** (2026-11-10, commit 667d2ab). The gang earns NiteSec rep until it
   covers every aug NiteSec sells (`gangRepNeeded` in `augmentation_readiness.json`, 3.5m now), then
   switches to Money Laundering by itself. An install resets faction rep, so the gang goes back to
-  reputation on its own. Live 09:21: all 12 on Money Laundering, about $50b/h, penalty 0.999.
+  reputation on its own. (Run 3 has no gang yet.)
 - **Cloud buying by cycle phase** (2026-11-10, commit 085ffe8). Game-only `capital_policy.json`:
   `{"reserve":0,"homeRamTarget":262144,"homeRamFloor":256,"homeDemandFloor":0.5,"cloudDemandFloor":0,"lateCloudDemandFloor":0.5,"earlyCycleHours":1.5}`.
   For 1.5h after an install, cloud RAM is bought freely to speed up the hacking rebuild. After that,
@@ -83,6 +90,14 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
+**2026-11-11 18:25 (Ken session), cycle 2 of run 3 (install 1 at 17:17).** Fixed and deployed today after the 17:15
+check: MCP idle after the install (`capacity-wait`, 1.5GB free per host) -> starved-MCP rule, 9486e86; the HUD window
+never opened (`cloudControl.expiresAt` missing threw every refresh) -> fixed, 2e5776f; gym and port-opener spending
+-> 40dbc09. At 18:25: home 256GB, MCP harvesting n00dles on 14 workers (484GB), $2.4m after HTTPWorm ($30m), player on
+crime for cash until $10m (then training or faction work), 7 sleeves on Homicide. Cash this cycle to 18:15: darknet
++$37.6m, contracts +$16.7m, hacking +$7.3m, gym -$8.3m, servers -$24.2m.
+
+Previous scheduled check:
 **2026-11-11 17:15 (scheduled run): install 1 at 17:17, 7 augs, 0 -> 7.** Before: $5.45b, hacking 129, karma -30.1k,
 factions CyberSec, Tian Di Hui, Slum Snakes, Tetrads. Measured (60 min, 13 samples): cash/h 1.82b, hackExp/h 211k,
 karma/h -5.77k, rep/h Tian Di Hui 4.84k. Trend: cash, MCP, hackExp STEADY; rep SWITCH. Advisor said install at 17:14
@@ -98,7 +113,9 @@ residents back, hacking 3, $4.5m, player at gym. World Daemon: not present.
 2. Gang: karma -30.3k of -54k, but hacking gates it. `gang_create.js` (started by `startup.js`, no argument) waits for
    **The Black Hand** (Ken's default, 2026-11-07), while `run_target.json` names NiteSec, as in run 2. Settle which one
    before karma and the NiteSec gate are both met (`run gang_create.js NiteSec` would do it).
-3. Find what destroyed run 2's daemon (check log 2026-11-11 09:47) before this run nears hacking 6000.
+3. Next install: confirm the starved-MCP rule buys a cloud server and holds home RAM (`capital_status.json` reason
+   "MCP starved" / "cloud RAM for MCP"), and that the player skips the gym.
+4. Find what destroyed run 2's daemon (check log 2026-11-11 09:47) before this run nears hacking 6000.
 
 ## Open questions
 

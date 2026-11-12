@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-12 07:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-12 09:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -91,13 +91,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-12 07:15 (scheduled run): steady, no changes made.** Cycle 3, 2.0h after install 2. BitNode 10, $474m, hacking
-123, karma -66.0k, 12 installed, 0 queued; Tian Di Hui 13.9k (favor 84.9), CyberSec 1.5k, Slum Snakes 205 (gang).
-Measured (60 min to 07:15, 12 samples): cash/h 508m, hackExp/h 333k (cycle 2: 177k), karma/h -1.25k, rep/h Tian Di Hui
-11.7k, CyberSec 431, Slum Snakes 102; MCP 53.1k/s (avg 29.1k/s). Trend: all n/a (cycle too short). Advisor: wait (gang 4h
-minimum, batch empty); decision wait (agreed). Neuroreceptor is 136k rep away (~11.6h). All 20 residents running. Cycle 2
-closed: 11.98h, rebuild hacking 9.80h. Gang rep only ~108/h (respect 12.9k) against 3.5m needed: see Next 2. World Daemon:
-not present. `metrics.py pull` still fails (chunk limit); the daemon's pull keeps the log current.
+**2026-11-12 09:15 (scheduled run): steady, no changes made.** Cycle 3, 3.9h after install 2. BitNode 10, $2.4b, hacking
+143, karma -68.4k, 12 installed, 0 queued; factions Tian Di Hui, CyberSec, Slum Snakes (gang), and Tetrads (newly joined).
+Measured (60 min to 09:10, 12 samples): cash/h 430m, hackExp/h 513k, karma/h -1.25k, rep/h Tian Di Hui 16.5k, CyberSec 509,
+Tetrads 151, Slum Snakes 127; MCP 57.3k/s (avg 192k/s). Trend: cash/h STEADY, MCP STEADY, hackExp/h ACCELERATING, rep Tian
+Di Hui SWITCH/STEADY (16.5k). Advisor: wait (gang 4h minimum, batch empty); decision wait (agreed): Neuroreceptor is ~106k
+rep away (~6.4h). All 20 residents running. World Daemon: not present. `metrics.py pull` still fails (chunk limit); the
+daemon's pull keeps the log current.
 
 ## Next
 

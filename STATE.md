@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-11 19:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-11 21:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -90,13 +90,11 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-11 19:15 (scheduled run), cycle 2 of run 3 (install 1 at 17:17, 1.9h in).** BitNode 10, $47m, hacking 86,
-karma -35.3k, 7 installed, 0 queued. Measured (60 min to 19:10, 13 samples): cash/h 14.7m, hackExp/h 74.7k, karma/h
--5.54k, rep/h Tian Di Hui 6.03k, MCP avg 2.89k/s (n00dles, 15 cloud servers). Trend: all n/a (cycle under 3h), rep SWITCH.
-Changed: the player had been on Tian Di Hui for Neuroreceptor (145k rep gap, about 24h); `priorityAugs` now lists
-Neurotrainer I and Cranial Signal Processors - Gen I (CyberSec) ahead of it, smallest gap first. Observed 19:16: player
-switched to CyberSec for Neurotrainer I. `gang_create.js` restarted (pid 3715) so it reads NiteSec. Advisor: install
-(batch of one, Wired Reflexes); decision **wait** for the CyberSec hacking augs. World Daemon: not present.
+**2026-11-11 21:15 (scheduled run), cycle 2 of run 3 (install 1 at 17:17, 3.9h in). Steady, no changes made.** BitNode 10,
+$524m, hacking 107, karma -48.5k, 7 installed, 0 queued. Measured (60 min to 21:10, 13 samples): cash/h 262m, hackExp/h
+128k, karma/h -6.68k, rep/h CyberSec 6.19k, MCP avg 15.2k/s (max-hardware, 15 cloud servers). Trend: cash/h and hackExp/h
+ACCELERATING, rep SWITCH, MCP n/a; nothing decelerating. Player on CyberSec for CSP Gen I (8.6k rep gap, ~1.4h). Advisor:
+wait for CSP Gen I; decision wait (agreed), install expected at the 23:15 check. All residents up. World Daemon: not present.
 
 ## Next
 

@@ -1,5 +1,16 @@
 /** Pure spending decisions for capital_manager.js. No ns calls, no side effects. */
 export const PROGRAMS = ["BruteSSH.exe", "FTPCrack.exe", "relaySMTP.exe", "DarkscapeNavigator.exe", "HTTPWorm.exe", "SQLInject.exe", "Formulas.exe"]
+/** Port openers by the port count they complete when bought in order. */
+export const PORT_OPENERS = { "BruteSSH.exe": 1, "FTPCrack.exe": 2, "relaySMTP.exe": 3, "HTTPWorm.exe": 4, "SQLInject.exe": 5 }
+
+/** Most ports any not-yet-rooted server needs whose hacking requirement is within reach
+ * (required <= hacking * 1.25 + 10). Rooting by the crawler waits for the level anyway, so an
+ * opener beyond this count opens nothing yet, and an install deletes it (BN10 run 3, 2026-11-11:
+ * $30m HTTPWorm saved for at hacking 64, when no 4-port server was near). */
+export function portsUseful(servers = [], hacking = 0) {
+  const reach = hacking * 1.25 + 10
+  return servers.filter(s => !s.rooted && s.required <= reach).reduce((most, s) => Math.max(most, s.ports), 0)
+}
 
 /**
  * Choose the next purchase, or null to wait. Affordable programs and home RAM come
@@ -38,9 +49,9 @@ export function lateCycleLimit({ policy = {}, hoursSinceInstall = 0, cash = 0, l
 
 export function chooseCapitalAction({ spendable, hasTor, torCost = 200e3, programs = [], homeRam, homeRamTarget, homeRamCost,
   cloud = [], cloudLimit = 0, cloudQuotes = [], upgradeQuotes = [], cloudFraction = 0.5, incomePerSec = 0, saveWindowSec = 300, homeRamFloor = 128, ramUtilization = 1, cloudDemandFloor = 0.5,
-  homeDemand = 1, homeDemandFloor = 0.5, homeSpendLimit = Infinity, mcpBlocked = false, mcpStarvedRam = 0 }) {
+  homeDemand = 1, homeDemandFloor = 0.5, homeSpendLimit = Infinity, mcpBlocked = false, mcpStarvedRam = 0, portsNeeded = Infinity }) {
   if (!hasTor) return spendable >= torCost ? { kind: "tor", cost: torCost } : { kind: "save", reason: "TOR", cost: torCost }
-  const missing = programs.find(p => !p.owned && Number.isFinite(p.cost) && p.cost > 0)
+  const missing = programs.find(p => !p.owned && Number.isFinite(p.cost) && p.cost > 0 && !((PORT_OPENERS[p.name] ?? 0) > portsNeeded))
   if (missing && missing.cost <= spendable) return { kind: "program", name: missing.name, cost: missing.cost }
   // Home RAM is bought only when something would use it: below the floor the managers cannot run;
   // above it, the scripts that need home (managers, MCP, stacks, waiting managers; not xp_filler's

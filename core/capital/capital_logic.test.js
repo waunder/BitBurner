@@ -1,6 +1,6 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { chooseCapitalAction, cloudDemandFloorFor, lateCycleLimit, nextScriptToStart } from "./capital_logic.js"
+import { chooseCapitalAction, portsUseful, cloudDemandFloorFor, lateCycleLimit, nextScriptToStart } from "./capital_logic.js"
 
 const base = { spendable: 0, hasTor: true, homeRam: 512, homeRamTarget: 512, homeRamCost: 1, cloud: [], cloudLimit: 25 }
 
@@ -8,6 +8,19 @@ test("saves for TOR before anything else", () => {
   assert.equal(chooseCapitalAction({ ...base, hasTor: false, spendable: 100 }).kind, "save")
   assert.equal(chooseCapitalAction({ ...base, hasTor: false, spendable: 200e3 }).kind, "tor")
 })
+test("port openers wait until a server within reach needs that many ports", () => {
+  const programs = [{ name: "BruteSSH.exe", owned: true, cost: 0 }, { name: "FTPCrack.exe", owned: true, cost: 0 },
+    { name: "relaySMTP.exe", owned: true, cost: 0 }, { name: "DarkscapeNavigator.exe", owned: true, cost: 0 },
+    { name: "HTTPWorm.exe", owned: false, cost: 3e7 }, { name: "SQLInject.exe", owned: false, cost: 2.5e8 }, { name: "Formulas.exe", owned: false, cost: 5e9 }]
+  assert.equal(chooseCapitalAction({ ...base, programs, spendable: 3e7, portsNeeded: 4 }).name, "HTTPWorm.exe")
+  // Three ports cover everything near: HTTPWorm and SQLInject are skipped, Formulas still counts.
+  const held = chooseCapitalAction({ ...base, programs, spendable: 3e7, portsNeeded: 3, incomePerSec: 2e7 })
+  assert.equal(held.cost, 5e9)
+  const servers = [{ rooted: false, required: 70, ports: 3 }, { rooted: false, required: 400, ports: 4 }, { rooted: true, required: 10, ports: 5 }]
+  assert.equal(portsUseful(servers, 64), 3)
+  assert.equal(portsUseful(servers, 320), 4)
+})
+
 test("buys programs strictly in order", () => {
   const programs = [{ name: "a", owned: true, cost: 0 }, { name: "b", owned: false, cost: 50 }, { name: "c", owned: false, cost: 10 }]
   assert.deepEqual(chooseCapitalAction({ ...base, programs, spendable: 50 }), { kind: "program", name: "b", cost: 50 })

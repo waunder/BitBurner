@@ -11,7 +11,7 @@
  * @param {NS} ns
  */
 import { readStacks } from "stack_files.js"
-import { PROGRAMS, chooseCapitalAction, cloudDemandFloorFor, lateCycleLimit, nextScriptToStart } from "capital_logic.js"
+import { PROGRAMS, chooseCapitalAction, portsUseful, cloudDemandFloorFor, lateCycleLimit, nextScriptToStart } from "capital_logic.js"
 
 const POLICY = "capital_policy.json"
 const STATUS = "capital_status.json"
@@ -90,6 +90,20 @@ function readHomeDemand(ns) {
   return (used + waiting) / max
 }
 
+/** Ports the next rootable servers need (see portsUseful). */
+function readPortsNeeded(ns) {
+  const seen = new Set(["home"]), queue = ["home"], servers = []
+  while (queue.length) {
+    for (const host of ns.scan(queue.shift())) {
+      if (seen.has(host)) continue
+      seen.add(host)
+      queue.push(host)
+      servers.push({ rooted: ns.hasRootAccess(host), required: ns.getServerRequiredHackingLevel(host), ports: ns.getServerNumPortsRequired(host) })
+    }
+  }
+  return portsUseful(servers, ns.getHackingLevel())
+}
+
 /** GB of MCP's smallest waiting batch while it runs in status `capacity-wait` (under a minute old),
  * plus whether any worker already has that much free. 0 when MCP is not waiting. */
 function readMcpWait(ns) {
@@ -136,7 +150,7 @@ export async function main(ns) {
     }
     let spent = 0
     const policy = readPolicy(ns)
-    let action = null, ok = null, cyclePhase = null, homeDemand = null
+    let action = null, ok = null, cyclePhase = null, homeDemand = null, portsNeeded = null
     if (policy.enabled !== false) {
       const hoursSinceInstall = (now - ns.getResetInfo().lastAugReset) / 3.6e6
       cyclePhase = cloudDemandFloorFor(policy, hoursSinceInstall)
@@ -144,8 +158,9 @@ export async function main(ns) {
       const input = { ...observe(ns, policy), ramUtilization: readUtilization(ns), incomePerSec, saveWindowSec: Number(policy.saveWindowSec) || 300, homeRamFloor: Number(policy.homeRamFloor) || 128, cloudDemandFloor: cyclePhase.floor,
         homeDemand: readHomeDemand(ns), homeDemandFloor: Number(policy.homeDemandFloor ?? 0.5), homeSpendLimit: homeLimit.limit,
         mcpBlocked: !ns.scriptRunning("mcp.js", "home") && ns.getServerMaxRam("home") - ns.getServerUsedRam("home") < ns.getScriptRam("mcp.js", "home"),
-        mcpStarvedRam: readMcpStarvedRam(ns) }
+        mcpStarvedRam: readMcpStarvedRam(ns), portsNeeded: readPortsNeeded(ns) }
       homeDemand = input.homeDemand
+      portsNeeded = input.portsNeeded
       action = chooseCapitalAction(input)
       if (action && action.kind !== "save") {
         ok = buy(ns, action, input.cloud.length)
@@ -156,7 +171,7 @@ export async function main(ns) {
     }
     last = { at: now, cash, spent }
     const started = startWaitingManager(ns)
-    ns.write(STATUS, JSON.stringify({ ts: Date.now(), policy, cyclePhase, homeDemand, incomePerSec, action, ok, started, purchases }), "w")
+    ns.write(STATUS, JSON.stringify({ ts: Date.now(), policy, cyclePhase, homeDemand, portsNeeded, incomePerSec, action, ok, started, purchases }), "w")
     // Keep buying while purchases succeed; otherwise wait for income.
     await ns.sleep(ok ? 200 : POLL_MS)
   }

@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-12 05:18 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-12 07:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -91,24 +91,23 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-12 05:15 (scheduled run): install 2 at 05:16, cycle 2 closed at 12.0h.** Before: BitNode 10, $3.70b, hacking
-134, karma -63.2k, 7 installed, 0 queued; Tian Di Hui 80.8k, CyberSec 20.9k. Measured (60 min to 05:10, 12 samples):
-cash/h 162m, hackExp/h 177k, karma/h -1.25k, rep/h Tian Di Hui 11.3k, Slum Snakes 98, MCP 68k/s (avg 110k/s). Trend:
-cash/h 475m>674m>162m STEADY | MCP 43.7k>25.5k>68k STEADY | hackExp/h STEADY | rep Tian Di Hui STEADY. Advisor: install
-(batch 0.30 vs cycle 0.025; next, LuminCloaking, +0.1%/h); decision install (agreed). Backup
-`saves/bitburnerSave_pre-install2_BN10run3_2026-11-12.json.gz` validated. Favor banked: Tian Di Hui +47.0 (~84.8), CyberSec
-+24.3, Tetrads +1.6, Slum Snakes +1.0. 21 residents back (game `ps` 05:16). `priorityAugs` now Neuroreceptor only (pushed).
-World Daemon: not present. `metrics.py pull` still fails (chunk limit); the daemon's pull keeps the log current.
+**2026-11-12 07:15 (scheduled run): steady, no changes made.** Cycle 3, 2.0h after install 2. BitNode 10, $474m, hacking
+123, karma -66.0k, 12 installed, 0 queued; Tian Di Hui 13.9k (favor 84.9), CyberSec 1.5k, Slum Snakes 205 (gang).
+Measured (60 min to 07:15, 12 samples): cash/h 508m, hackExp/h 333k (cycle 2: 177k), karma/h -1.25k, rep/h Tian Di Hui
+11.7k, CyberSec 431, Slum Snakes 102; MCP 53.1k/s (avg 29.1k/s). Trend: all n/a (cycle too short). Advisor: wait (gang 4h
+minimum, batch empty); decision wait (agreed). Neuroreceptor is 136k rep away (~11.6h). All 20 residents running. Cycle 2
+closed: 11.98h, rebuild hacking 9.80h. Gang rep only ~108/h (respect 12.9k) against 3.5m needed: see Next 2. World Daemon:
+not present. `metrics.py pull` still fails (chunk limit); the daemon's pull keeps the log current.
 
 ## Next
 
 1. Short cycles of hacking augs (CyberSec: Cranial Signal Processors Gen I at 20k, Neurotrainer I) until the NiteSec
    gate (hacking 211) is in reach; add `metrics.py cycles` for cycle 1 once a new-cycle sample exists.
 2. Gang: **created with Slum Snakes about 22:00** (2026-11-11; 3963dac moved it off NiteSec's hacking 211 gate).
-   3 members, reputation mode, `gang-controller.js` running at 22:05. Next: watch respect and rep build.
+   8 members, reputation mode. At 07:15 on 11-12 it earned ~108 faction rep/h (respect 12.9k): look at member stats and
+   tasks before counting on gang-sold augs.
 5. Cycle 3 (from 05:16): rebuild, then Neuroreceptor Management Implant (Tian Di Hui 150k). Tian Di Hui favor ~84.8;
-   another cycle like this one would take it near 150 (donations). Add `metrics.py cycles` for cycle 2 once a cycle-3
-   sample exists.
+   another cycle like this one would take it near 150 (donations). Cycle 2's `metrics.py cycles` line is in the check log.
 3. Next install: confirm the starved-MCP rule buys a cloud server and holds home RAM (`capital_status.json` reason
    "MCP starved" / "cloud RAM for MCP"), and that the player skips the gym.
 4. Find what destroyed run 2's daemon (check log 2026-11-11 09:47) before this run nears hacking 6000.

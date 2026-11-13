@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-12 15:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-12 17:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -92,13 +92,12 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-12 15:15 (scheduled run): install 3 at 15:16, 3 augs + NeuroFlux x1, 12 -> 15 installed.** Before: BitNode 10,
-$4.44b, hacking 166, karma -76.1k; Tian Di Hui 151.4k (Neuroreceptor reached), Slum Snakes (gang) 83.4k, CyberSec 8.6k.
-Measured (60 min to 15:10, 13 samples): rep/h Slum Snakes 50.4k, Tian Di Hui 14.7k, CyberSec 988; hackExp/h 577k; karma/h
--1.29k; cash/h -765m (gang gear); MCP 298k/s (avg 356k/s). Trend: cash/h DECELERATING (gang equipment in reputation mode),
-MCP ACCELERATING, hackExp/h STEADY, rep SWITCH (player moved to an Algorithms class). Advisor install; decision install (agreed,
-as planned at 13:15). Favor banked: Slum Snakes +71.9, Tian Di Hui +38.1, CyberSec +7.4. Backup checked; all 20 residents back.
-`priorityAugs` now CSP Gen II (CyberSec). World Daemon: not present. `metrics.py pull` still fails (chunk limit).
+**2026-11-12 17:15 (scheduled run): steady, no changes.** BitNode 10, $324m, hacking 127, karma -79.1k, 15 installed, 0 queued;
+cycle 4 is 2.0h old. Slum Snakes (gang) 201k rep, which already covers every Slum Snakes aug up to Power Recirculation Core
+(50k); cash is now the limit. Measured (60 min to 17:10, 13 samples): rep/h Slum Snakes 109k, Tian Di Hui 1.41k, CyberSec
+526; hackExp/h 357k; karma/h -1.51k; cash/h +249m; MCP 53.1k/s (avg 21.3k/s, rebuilding). Trend: all n/a (cycle too short).
+Advisor wait (gang 4h minimum); decision wait. All 20 residents running. World Daemon: not present (no Red Pill).
+Cycle 3 (`metrics.py cycles`): 10.00h, rebuild 2.82h, rep Tian Di Hui 151k, Slum Snakes 83.4k; favor Slum Snakes +73.0.
 
 ## Next
 
@@ -108,7 +107,7 @@ as planned at 13:15). Favor banked: Slum Snakes +71.9, Tian Di Hui +38.1, CyberS
    8 members, reputation mode. At 07:15 on 11-12 it earned ~108 faction rep/h (respect 12.9k): look at member stats and
    tasks before counting on gang-sold augs.
 5. Cycle 4 (from 15:16): rebuild, then CSP Gen II (CyberSec) and Slum Snakes augs (gang favor ~75 now, rep came at
-   50k/h late in cycle 3). Tian Di Hui favor ~123. Add cycle 3's closed `metrics.py cycles` line at the next run.
+   50k/h late in cycle 3, 109k/h at 17:10). Tian Di Hui favor ~123. Rep is no longer the gate; cash is (+249m/h).
 3. Next install: confirm the starved-MCP rule buys a cloud server and holds home RAM (`capital_status.json` reason
    "MCP starved" / "cloud RAM for MCP"), and that the player skips the gym.
 4. Find what destroyed run 2's daemon (check log 2026-11-11 09:47) before this run nears hacking 6000.

@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-13 13:25 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-13 15:15 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -97,13 +97,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-13 13:15 (scheduled run): install 8, 12 augs + NeuroFlux x3, 39 -> 51 installed.** Live before (metrics 13:10,
-readiness 13:13, save 13:15): BitNode 10, $1.37t, hacking 404, str/def/dex/agi 1039/1172/354/1105, karma -120k, cycle 8
-3.95h. Measured (60 min to 13:10, 13 samples): rep/h Slum Snakes 1.08m, NiteSec 39.4k; hackExp/h 252m; karma/h -8.69k;
-cash/h 575b; MCP 184m/s (avg 102m/s). Trend: cash/h STEADY, MCP ACCELERATING, hackExp/h STEADY, rep work SWITCH, Slum
-Snakes STEADY; nothing decelerating. Advisor **wait** (gang 4h minimum, 3 min left); decision **install** at 13:15:25
-with a value-chosen batch (1.52 vs cycle average 0.146/h). All 20 residents back after the reset. No World Daemon.
-`metrics.py pull` still fails on the 2.2MB log; the daemon's pull is current. `priorityAugs` now lists owned augs only.
+**2026-11-13 15:15 (scheduled run): steady, no changes made; no install (gang 4h minimum).** Live (metrics 15:10,
+readiness 15:14, game `ps` 15:15): BitNode 10, $900b-1.04t, hacking 615, str/def/dex/agi 1103/1369/818/1004, karma -131k,
+51 installed, 0 queued, cycle 9 1.9h. All 20 residents running. Measured (60 min to 15:10, 13 samples): rep/h Slum
+Snakes 1.67m (6.10m banked), The Black Hand 15.5k; hackExp/h 1.31b (83 lvl/h); karma/h -2.7k; cash/h 791b; MCP 1.25b/s
+(avg 311m/s). Trend: all n/a (cycle under 3h), rep work SWITCH; nothing decelerating. Advisor **wait** (gang minimum,
+2.0h left; batch 0.55 vs average 0.28); decision wait, agreed. Player in a dexterity class for The Covenant (818/850);
+hacking 615/850, about 3h away at the current rate. No World Daemon (The Red Pill not owned). `metrics.py pull` still fails.
 
 ## Next
 

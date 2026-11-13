@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-12 19:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-12 21:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -87,18 +87,19 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 1 | 2026-11-11 17:17 | 7 (Tian Di Hui 5, CyberSec 2; $5.3b), no NeuroFlux | 0 -> 7 |
 | 2 | 2026-11-12 05:16 | 4 (Nanofiber Weave, Wired Reflexes from Tian Di Hui; CSP Gen I, Neurotrainer I from CyberSec; $1.0b) + NeuroFlux x5 | 7 -> 11 + NF5 |
 | 3 | 2026-11-12 15:16 | 3 (Neuroreceptor Management Implant from Tian Di Hui; Neurotrainer III, Augmented Targeting I from Slum Snakes; $3.48b) + NeuroFlux x1 | 12 -> 15 + NF |
+| 4 | 2026-11-12 21:15 | 2 (Bionic Arms, Cranial Signal Processors Gen II, both Slum Snakes; ~$2.56b) + NeuroFlux x1 | 15 -> 17 + NF |
 
 Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave_pre-install<N>_BN10run3_<date>.json.gz`.
 
 ## Latest check
 
-**2026-11-12 19:15 (scheduled run): steady, no changes; install held to about 21:15.** BitNode 10, $1.72b, hacking 148, karma -82k,
-15 installed, 0 queued; cycle 4 is 4.0h old. Slum Snakes (gang) 625k rep, favor gain at reset +95 (to ~171). Measured (60 min
-to 19:10, 12 samples): rep/h Slum Snakes 253k, Tian Di Hui 1.7k, CyberSec 635; hackExp/h 599k; karma/h -1.48k; cash/h +584m;
-MCP 169k/s (avg 159k/s). Trend: cash STEADY, MCP, hackExp and Slum Snakes rep ACCELERATING. Advisor wait (gang 4h minimum,
-1 min left), then install ($1.58b: CSP Gen II, Art. Synaptic Potentiation, Hacknet CPU). Decision: wait about 1-2h so Power
-Recirculation Core or Bionic Arms (value ~0.2, Slum Snakes, rep met) fits beside CSP Gen II; cash is the only gate.
-All 20 residents running. World Daemon: not present (no Red Pill).
+**2026-11-12 21:15 (scheduled run): install 4 at 21:15, Bionic Arms + CSP Gen II + NeuroFlux x1, 15 -> 17.** Before: BitNode 10,
+$2.62b, hacking 160, karma -85k; cycle 4 was 6.0h. Slum Snakes (gang) 1.54m rep, favor 75.9 + 135.9 at reset (to ~212).
+Measured (60 min to 21:10, 12 samples): rep/h Slum Snakes 512k, Tian Di Hui 1.8k, CyberSec 683; hackExp/h 675k; karma/h
+-1.48k; cash/h +444m; MCP 186k/s (avg 287k/s). Trend: cash, MCP, hackExp STEADY; Slum Snakes rep ACCELERATING. Advisor
+**install** ("nothing left worth waiting for"; batch 0.293 vs cycle average 0.049); decision install (agreed, as planned at
+19:15). Backup checked first. All 20 residents back after the install. World Daemon: not present (no Red Pill).
+`metrics.py cycles` for cycle 5 still to add once a new-cycle sample exists.
 
 ## Next
 
@@ -107,8 +108,8 @@ All 20 residents running. World Daemon: not present (no Red Pill).
 2. Gang: **created with Slum Snakes about 22:00** (2026-11-11; 3963dac moved it off NiteSec's hacking 211 gate).
    8 members, reputation mode. At 07:15 on 11-12 it earned ~108 faction rep/h (respect 12.9k): look at member stats and
    tasks before counting on gang-sold augs.
-5. Cycle 4 (from 15:16): rebuild, then CSP Gen II (CyberSec) and Slum Snakes augs (gang favor ~75 now, rep came at
-   50k/h late in cycle 3, 109k/h at 17:10). Tian Di Hui favor ~123. Rep is no longer the gate; cash is (+249m/h).
+5. Cycle 5 (from 21:15): rebuild, then the next Slum Snakes batch (Power Recirculation Core, Bionic Spine, Synthetic
+   Heart later). Gang favor ~212 after install 4. Tian Di Hui favor ~125. Rep is not the gate; cash is.
 3. Next install: confirm the starved-MCP rule buys a cloud server and holds home RAM (`capital_status.json` reason
    "MCP starved" / "cloud RAM for MCP"), and that the player skips the gym.
 4. Find what destroyed run 2's daemon (check log 2026-11-11 09:47) before this run nears hacking 6000.

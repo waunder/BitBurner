@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-12 17:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-12 19:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -92,12 +92,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-12 17:15 (scheduled run): steady, no changes.** BitNode 10, $324m, hacking 127, karma -79.1k, 15 installed, 0 queued;
-cycle 4 is 2.0h old. Slum Snakes (gang) 201k rep, which already covers every Slum Snakes aug up to Power Recirculation Core
-(50k); cash is now the limit. Measured (60 min to 17:10, 13 samples): rep/h Slum Snakes 109k, Tian Di Hui 1.41k, CyberSec
-526; hackExp/h 357k; karma/h -1.51k; cash/h +249m; MCP 53.1k/s (avg 21.3k/s, rebuilding). Trend: all n/a (cycle too short).
-Advisor wait (gang 4h minimum); decision wait. All 20 residents running. World Daemon: not present (no Red Pill).
-Cycle 3 (`metrics.py cycles`): 10.00h, rebuild 2.82h, rep Tian Di Hui 151k, Slum Snakes 83.4k; favor Slum Snakes +73.0.
+**2026-11-12 19:15 (scheduled run): steady, no changes; install held to about 21:15.** BitNode 10, $1.72b, hacking 148, karma -82k,
+15 installed, 0 queued; cycle 4 is 4.0h old. Slum Snakes (gang) 625k rep, favor gain at reset +95 (to ~171). Measured (60 min
+to 19:10, 12 samples): rep/h Slum Snakes 253k, Tian Di Hui 1.7k, CyberSec 635; hackExp/h 599k; karma/h -1.48k; cash/h +584m;
+MCP 169k/s (avg 159k/s). Trend: cash STEADY, MCP, hackExp and Slum Snakes rep ACCELERATING. Advisor wait (gang 4h minimum,
+1 min left), then install ($1.58b: CSP Gen II, Art. Synaptic Potentiation, Hacknet CPU). Decision: wait about 1-2h so Power
+Recirculation Core or Bionic Arms (value ~0.2, Slum Snakes, rep met) fits beside CSP Gen II; cash is the only gate.
+All 20 residents running. World Daemon: not present (no Red Pill).
 
 ## Next
 

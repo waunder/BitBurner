@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-13 05:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-13 07:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -95,14 +95,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-13 05:17 (scheduled run): install 6, 5 augs, 23 -> 28 installed.** Before (metrics 05:15, readiness 05:14, save
-05:16): BitNode 10, $40.6b, hacking 194, karma -95.9k, cycle 6 at 4.0h, gang in money mode. Measured (60 min to 05:15,
-13 samples): rep/h Slum Snakes 411k; hackExp/h 1.87m; karma/h -1.19k; cash/h 20b; MCP 2.01m/s (avg 779k/s). Trend: cash/h
-and MCP ACCELERATING, hackExp/h and Slum Snakes rep STEADY; nothing decelerating. Cycles: 5 was 4.03h (rebuild 2.99h, +59.0
-favor); 6 was 4.0h (rebuild 1.79h, 4.42m rep). Advisor **wait** (gang 4h minimum, 3 min left; batch 0.84 vs 0.21); decision
-**install** past the minimum with `priorityAugs` set by value (~1.06 vs 0.84 for the same cash). Backup
-`saves/bitburnerSave_pre-install6_BN10run3_2026-11-13.json.gz` (verified). All 20 residents back. No World Daemon (no Red Pill).
-The 03:15 run left no entry or commit (cause unknown). `metrics.py pull` still fails (chunk limit); the daemon's pull is current.
+**2026-11-13 07:15 (scheduled run): steady, no changes made.** Live (metrics 07:10, readiness and save 07:16): BitNode 10,
+$10.8b, hacking 258, karma -98.0k, 28 installed, 0 queued, cycle 7 at 2.0h. NiteSec joined (hacking past 211); player on
+NiteSec hacking work. Gang Slum Snakes 3.93m rep (past 3.5m, so `auto` goes to money), favor 301.7. All 20 residents running.
+Measured (60 min to 07:10, 13 samples): rep/h Slum Snakes 1.93m, NiteSec 13.8k; hackExp/h 12.3m (74.8 lvl/h); karma/h -771;
+cash/h 8.63b; MCP 14.4m/s (avg 3.22m/s). Trend: n/a (cycle under 3h); rep work SWITCH to NiteSec. Cycle 7 rebuild hacking
+1.13h. Advisor **wait** (gang 4h minimum, ~09:17; batch 0.19 vs 0.10); decision **wait** (agreed). Its dearest-first plan
+is HyperSight + LuminCloaking ($13.8b): set `priorityAugs` by value before install 7. No World Daemon (no Red Pill).
 
 ## Next
 

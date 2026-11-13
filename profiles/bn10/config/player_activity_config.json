@@ -5,7 +5,7 @@
   "charismaTarget": 0,
   "covenantTarget": true,
   "covenantCloseFraction": 0.5,
-  "priorityAugs": ["Graphene Bionic Legs Upgrade", "BitRunners Neurolink", "Graphene Bone Lacings", "NEMEAN Subdermal Weave", "Synthetic Heart", "Synfibril Muscle", "Neuregen Gene Modification", "SmartSonar Implant", "Combat Rib II", "Augmented Targeting II", "LuminCloaking-V1 Skin Implant"],
+  "priorityAugs": ["Embedded Netburner Module Direct Memory Access Upgrade", "ECorp HVMind Implant", "Artificial Bio-neural Network Implant", "HyperSight Corneal Implant", "Embedded Netburner Module Core Implant", "Enhanced Myelin Sheathing", "CRTX42-AA Gene Modification", "Combat Rib III", "Augmented Targeting III", "BrachiBlades", "INFRARET Enhancement", "LuminCloaking-V2 Skin Implant"],
   "favorTarget": "Daedalus",
   "repBeforeGates": true,
   "focusWork": true,

@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-12 21:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-12 23:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -93,13 +93,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-12 21:15 (scheduled run): install 4 at 21:15, Bionic Arms + CSP Gen II + NeuroFlux x1, 15 -> 17.** Before: BitNode 10,
-$2.62b, hacking 160, karma -85k; cycle 4 was 6.0h. Slum Snakes (gang) 1.54m rep, favor 75.9 + 135.9 at reset (to ~212).
-Measured (60 min to 21:10, 12 samples): rep/h Slum Snakes 512k, Tian Di Hui 1.8k, CyberSec 683; hackExp/h 675k; karma/h
--1.48k; cash/h +444m; MCP 186k/s (avg 287k/s). Trend: cash, MCP, hackExp STEADY; Slum Snakes rep ACCELERATING. Advisor
-**install** ("nothing left worth waiting for"; batch 0.293 vs cycle average 0.049); decision install (agreed, as planned at
-19:15). Backup checked first. All 20 residents back after the install. World Daemon: not present (no Red Pill).
-`metrics.py cycles` for cycle 5 still to add once a new-cycle sample exists.
+**2026-11-12 23:15 (scheduled run): steady, no changes made; no install.** BitNode 10, $533m, hacking 144, karma -88.1k,
+17 installed, 0 queued, cycle 5 at 2.0h. Slum Snakes (gang) 1.88m rep, favor 212.4. Measured (60 min to 23:15, 13 samples):
+rep/h Slum Snakes 894k; hackExp/h 533k; karma/h -1.48k; cash/h 450m; MCP 95.9k/s (avg 44.1k/s). Trend: all n/a (cycle
+too short). Cycle 4 (`metrics.py cycles`): 5.99h, Slum Snakes 1.54m rep, favor +136.6. Advisor **wait** (gang 4h minimum,
+2h more); decision wait (agreed). Planned batch Artificial Synaptic Potentiation + HNCA Neural-Upload, $505m, cash covers it;
+install due about 01:15. All 20 residents running. World Daemon: not present (no Red Pill). `metrics.py pull` failed
+(control-socket chunk limit) though the daemon's own pull was current; watch for a repeat.
 
 ## Next
 

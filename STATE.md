@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-13 01:25 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-13 05:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -89,20 +89,20 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 3 | 2026-11-12 15:16 | 3 (Neuroreceptor Management Implant from Tian Di Hui; Neurotrainer III, Augmented Targeting I from Slum Snakes; $3.48b) + NeuroFlux x1 | 12 -> 15 + NF |
 | 4 | 2026-11-12 21:15 | 2 (Bionic Arms, Cranial Signal Processors Gen II, both Slum Snakes; ~$2.56b) + NeuroFlux x1 | 15 -> 17 + NF |
 | 5 | 2026-11-13 01:17 | 6 (Bionic Legs, Power Recirculation Core, Bionic Spine, Neurotrainer II, HemoRecirculator, HNCA Neural-Upload; all Slum Snakes, ~$10.8b; chosen by value through `priorityAugs`) | 17 -> 23 |
+| 6 | 2026-11-13 05:17 | 5 (Graphene Bionic Spine Upgrade, CSP Gen III, Embedded Netburner Module, Combat Rib I, Neural Wit Amplifier; all Slum Snakes, ~$40.6b; chosen by value through `priorityAugs`) | 23 -> 28 |
 
 Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave_pre-install<N>_BN10run3_<date>.json.gz`.
 
 ## Latest check
 
-**2026-11-13 01:17 (scheduled run): install 5, 6 augs, 17 -> 23 installed.** Before (metrics 01:10, readiness 01:14, save
-01:17): BitNode 10, $11.9b, hacking 167, karma -91.1k, cycle 5 at 4.0h. The gang reached its 3.5m rep need and switched
-itself to money mode (gang income ~$1b per 5 min). Measured (60 min to 01:10, 12 samples): rep/h Slum Snakes 475k;
-hackExp/h 790k; karma/h -1.48k; cash/h 10.2b; MCP 384k/s (avg 296k/s). Trend: cash/h ACCELERATING (gang money), MCP,
-hackExp/h, Slum Snakes rep STEADY; nothing decelerating. Advisor **wait** (gang 4h minimum, 2 min left; batch 0.26 vs 0.066);
-decision **install**, and with a different batch: the advisor's dearest-first plan (Enhanced Myelin, Shadow's Simulacrum,
-Combat Rib I, $11.1b) scored 0.26; `priorityAugs` set to five cheap high-value augs scored ~0.82 for $10.3b. Backup
-`saves/bitburnerSave_pre-install5_BN10run3_2026-11-13.json.gz` (verified). All 20 residents back. No World Daemon (no Red Pill).
-`metrics.py pull` still fails (chunk limit); the daemon's pull stays current. Cycle 5 `metrics.py cycles` for the next run.
+**2026-11-13 05:17 (scheduled run): install 6, 5 augs, 23 -> 28 installed.** Before (metrics 05:15, readiness 05:14, save
+05:16): BitNode 10, $40.6b, hacking 194, karma -95.9k, cycle 6 at 4.0h, gang in money mode. Measured (60 min to 05:15,
+13 samples): rep/h Slum Snakes 411k; hackExp/h 1.87m; karma/h -1.19k; cash/h 20b; MCP 2.01m/s (avg 779k/s). Trend: cash/h
+and MCP ACCELERATING, hackExp/h and Slum Snakes rep STEADY; nothing decelerating. Cycles: 5 was 4.03h (rebuild 2.99h, +59.0
+favor); 6 was 4.0h (rebuild 1.79h, 4.42m rep). Advisor **wait** (gang 4h minimum, 3 min left; batch 0.84 vs 0.21); decision
+**install** past the minimum with `priorityAugs` set by value (~1.06 vs 0.84 for the same cash). Backup
+`saves/bitburnerSave_pre-install6_BN10run3_2026-11-13.json.gz` (verified). All 20 residents back. No World Daemon (no Red Pill).
+The 03:15 run left no entry or commit (cause unknown). `metrics.py pull` still fails (chunk limit); the daemon's pull is current.
 
 ## Next
 
@@ -111,12 +111,12 @@ Combat Rib I, $11.1b) scored 0.26; `priorityAugs` set to five cheap high-value a
 2. Gang: **created with Slum Snakes about 22:00** (2026-11-11; 3963dac moved it off NiteSec's hacking 211 gate).
    8 members, reputation mode. At 07:15 on 11-12 it earned ~108 faction rep/h (respect 12.9k): look at member stats and
    tasks before counting on gang-sold augs.
-5. Cycle 5 (from 21:15): rebuild, then the next Slum Snakes batch (Power Recirculation Core, Bionic Spine, Synthetic
-   Heart later). Gang favor ~212 after install 4. Tian Di Hui favor ~125. Rep is not the gate; cash is.
+5. Cycle 7 (from 05:17): rebuild, gang back in reputation mode until 3.5m, then money. Gang favor ~302 after install 6.
+   Tian Di Hui favor ~125. Rep is not the gate; cash is.
 6. **Install batch choice:** when cash limits the batch, `aug_install.js` buys dearest first and ignores value; set
-   `priorityAugs` (bn10 `player_activity_config.json`) to the best value-per-cost augs before each install, as at install 5,
-   until the planner weighs value itself. After install 5 the gang re-earns rep (reset); next batch candidates: Graphene
-   Bone Lacings, Synthetic Heart, NEMEAN Subdermal Weave, CSP Gen III, Neuregen.
+   `priorityAugs` (bn10 `player_activity_config.json`) to the best value-per-cost augs before each install, as at installs
+   5 and 6, until the planner weighs value itself. It now lists only owned augs. Next batch candidates: Graphene Bone
+   Lacings, Graphene Bionic Legs, Synthetic Heart, NEMEAN Subdermal Weave, Synfibril Muscle, Neuregen.
 3. Next install: confirm the starved-MCP rule buys a cloud server and holds home RAM (`capital_status.json` reason
    "MCP starved" / "cloud RAM for MCP"), and that the player skips the gym.
 4. Find what destroyed run 2's daemon (check log 2026-11-11 09:47) before this run nears hacking 6000.

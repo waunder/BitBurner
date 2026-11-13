@@ -5,7 +5,7 @@
   "charismaTarget": 0,
   "covenantTarget": true,
   "covenantCloseFraction": 0.5,
-  "priorityAugs": ["Bionic Legs", "Power Recirculation Core", "Bionic Spine", "HemoRecirculator", "Neurotrainer II"],
+  "priorityAugs": ["Graphene Bionic Spine Upgrade", "Cranial Signal Processors - Gen III", "Embedded Netburner Module", "Combat Rib I"],
   "favorTarget": "Daedalus",
   "repBeforeGates": true,
   "focusWork": true,

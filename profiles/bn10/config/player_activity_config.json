@@ -5,7 +5,7 @@
   "charismaTarget": 0,
   "covenantTarget": true,
   "covenantCloseFraction": 0.5,
-  "priorityAugs": ["Graphene Bionic Spine Upgrade", "Cranial Signal Processors - Gen III", "Embedded Netburner Module", "Combat Rib I"],
+  "priorityAugs": ["Graphene Bionic Legs Upgrade", "BitRunners Neurolink", "Graphene Bone Lacings", "NEMEAN Subdermal Weave", "Synthetic Heart", "Synfibril Muscle", "Neuregen Gene Modification", "SmartSonar Implant", "Combat Rib II", "Augmented Targeting II", "LuminCloaking-V1 Skin Implant"],
   "favorTarget": "Daedalus",
   "repBeforeGates": true,
   "focusWork": true,

@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-12 23:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-13 01:25 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -88,18 +88,21 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 2 | 2026-11-12 05:16 | 4 (Nanofiber Weave, Wired Reflexes from Tian Di Hui; CSP Gen I, Neurotrainer I from CyberSec; $1.0b) + NeuroFlux x5 | 7 -> 11 + NF5 |
 | 3 | 2026-11-12 15:16 | 3 (Neuroreceptor Management Implant from Tian Di Hui; Neurotrainer III, Augmented Targeting I from Slum Snakes; $3.48b) + NeuroFlux x1 | 12 -> 15 + NF |
 | 4 | 2026-11-12 21:15 | 2 (Bionic Arms, Cranial Signal Processors Gen II, both Slum Snakes; ~$2.56b) + NeuroFlux x1 | 15 -> 17 + NF |
+| 5 | 2026-11-13 01:17 | 6 (Bionic Legs, Power Recirculation Core, Bionic Spine, Neurotrainer II, HemoRecirculator, HNCA Neural-Upload; all Slum Snakes, ~$10.8b; chosen by value through `priorityAugs`) | 17 -> 23 |
 
 Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave_pre-install<N>_BN10run3_<date>.json.gz`.
 
 ## Latest check
 
-**2026-11-12 23:15 (scheduled run): steady, no changes made; no install.** BitNode 10, $533m, hacking 144, karma -88.1k,
-17 installed, 0 queued, cycle 5 at 2.0h. Slum Snakes (gang) 1.88m rep, favor 212.4. Measured (60 min to 23:15, 13 samples):
-rep/h Slum Snakes 894k; hackExp/h 533k; karma/h -1.48k; cash/h 450m; MCP 95.9k/s (avg 44.1k/s). Trend: all n/a (cycle
-too short). Cycle 4 (`metrics.py cycles`): 5.99h, Slum Snakes 1.54m rep, favor +136.6. Advisor **wait** (gang 4h minimum,
-2h more); decision wait (agreed). Planned batch Artificial Synaptic Potentiation + HNCA Neural-Upload, $505m, cash covers it;
-install due about 01:15. All 20 residents running. World Daemon: not present (no Red Pill). `metrics.py pull` failed
-(control-socket chunk limit) though the daemon's own pull was current; watch for a repeat.
+**2026-11-13 01:17 (scheduled run): install 5, 6 augs, 17 -> 23 installed.** Before (metrics 01:10, readiness 01:14, save
+01:17): BitNode 10, $11.9b, hacking 167, karma -91.1k, cycle 5 at 4.0h. The gang reached its 3.5m rep need and switched
+itself to money mode (gang income ~$1b per 5 min). Measured (60 min to 01:10, 12 samples): rep/h Slum Snakes 475k;
+hackExp/h 790k; karma/h -1.48k; cash/h 10.2b; MCP 384k/s (avg 296k/s). Trend: cash/h ACCELERATING (gang money), MCP,
+hackExp/h, Slum Snakes rep STEADY; nothing decelerating. Advisor **wait** (gang 4h minimum, 2 min left; batch 0.26 vs 0.066);
+decision **install**, and with a different batch: the advisor's dearest-first plan (Enhanced Myelin, Shadow's Simulacrum,
+Combat Rib I, $11.1b) scored 0.26; `priorityAugs` set to five cheap high-value augs scored ~0.82 for $10.3b. Backup
+`saves/bitburnerSave_pre-install5_BN10run3_2026-11-13.json.gz` (verified). All 20 residents back. No World Daemon (no Red Pill).
+`metrics.py pull` still fails (chunk limit); the daemon's pull stays current. Cycle 5 `metrics.py cycles` for the next run.
 
 ## Next
 
@@ -110,6 +113,10 @@ install due about 01:15. All 20 residents running. World Daemon: not present (no
    tasks before counting on gang-sold augs.
 5. Cycle 5 (from 21:15): rebuild, then the next Slum Snakes batch (Power Recirculation Core, Bionic Spine, Synthetic
    Heart later). Gang favor ~212 after install 4. Tian Di Hui favor ~125. Rep is not the gate; cash is.
+6. **Install batch choice:** when cash limits the batch, `aug_install.js` buys dearest first and ignores value; set
+   `priorityAugs` (bn10 `player_activity_config.json`) to the best value-per-cost augs before each install, as at install 5,
+   until the planner weighs value itself. After install 5 the gang re-earns rep (reset); next batch candidates: Graphene
+   Bone Lacings, Synthetic Heart, NEMEAN Subdermal Weave, CSP Gen III, Neuregen.
 3. Next install: confirm the starved-MCP rule buys a cloud server and holds home RAM (`capital_status.json` reason
    "MCP starved" / "cloud RAM for MCP"), and that the player skips the gym.
 4. Find what destroyed run 2's daemon (check log 2026-11-11 09:47) before this run nears hacking 6000.

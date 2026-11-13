@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-13 09:25 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-13 11:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -96,14 +96,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-13 09:15 (scheduled run): install 7, 11 augs, 28 -> 39 installed.** Live before (metrics 09:10, readiness 09:15,
-save 09:16): BitNode 10, $866b, hacking 302, karma -100.3k, cycle 7 3.96h. Player on The Syndicate hacking work (joined
-this cycle). Measured (60 min to 09:10, 13 samples): rep/h Slum Snakes 761k, NiteSec 18k, Syndicate 2.67k; hackExp/h 47.7m;
-karma/h -1.09k; cash/h 444b; MCP 116m/s (avg 54.3m/s). Trend: cash/h ACCELERATING, MCP ACCELERATING, hackExp/h STEADY,
-rep work SWITCH, Slum Snakes STEADY; nothing decelerating. Advisor **wait** (gang 4h minimum, 2 min left; next BrachiBlades
-rate 0.099 vs cycle average 0.224, so install once past it); decision **install**, batch set by value in `priorityAugs`
-(2.22 vs the dearest-first 0.89). Installed 09:16, ~1 min before the 4h mark. All 20 residents back. No World Daemon.
-`metrics.py cycles`, cycle 7 (05:17 -> 09:16, 3.99h, logged 98%): rebuild hacking 1.13h, Slum Snakes 5.36m rep, favor +22.1.
+**2026-11-13 11:15 (scheduled run): steady, no changes; no install (gang 4h minimum ends about 13:16).** Live (metrics
+11:10, readiness 11:13, `ps` 11:16): BitNode 10, $208b-239b, hacking 365, dex 329 (other combat 906+), karma -103k,
+39 installed, 0 queued, cycle 8 1.95h. Player on NiteSec work (Neural-Retention, +23.7k). Measured (60 min to 11:10,
+13 samples): rep/h Slum Snakes 888k (4.64m banked), Syndicate 20.1k, NiteSec 9.24k; hackExp/h 166m; karma/h -1.37k;
+cash/h 185b; MCP 99.3m/s (avg 43.3m/s). Trend: n/a (cycle under 3h), rep work SWITCH; nothing decelerating. Advisor
+**wait**, decision wait; planned batch ENM DMA, ENM Analyze, ECorp HVMind, Enhanced Myelin ($238b). All 20 residents up.
+No World Daemon. `metrics.py pull` still fails on the 2.1MB log, but the daemon's own pull is current.
 
 ## Next
 

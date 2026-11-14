@@ -185,6 +185,8 @@ Sleeps 2 minutes between sweeps. Since 2026-11-04 it also runs `hacking/backdoor
 any of the four faction servers (`CSEC`, `avmnite-02h`, `I.I.I.I`, `run4theh111z`) that is
 rooted, within hacking level and not yet backdoored, so the backdoor no longer depends on
 worm.js's fresh nuke (after an install, servers are rooted before hacking catches up).
+`IGNORE` holds `darkweb` and, since 2026-11-14, `w0r1d_d43m0n`: rooting the World Daemon is
+Ken's call (World Daemon rule), and `worm.js` also refuses it if run on it directly.
 
 - **Start:** `run hacking/crawler.js`
 - **Reads/writes:** nothing on disk

@@ -38,6 +38,11 @@ export async function main(ns) {
 		"smtp": ns.fileExists("relaySMTP.exe"),
 	}
 	let server = ns.args[0]
+	// Never root the World Daemon: ending the BitNode is Ken's call only.
+	if (server === "w0r1d_d43m0n") {
+		ns.tprint("worm.js: refusing w0r1d_d43m0n (World Daemon rule)")
+		return
+	}
 
 	// Running assumption that hacking level is high enough. This is checked in crawler.js
 	ns.tprint(server, " hacking level:", ns.getServerRequiredHackingLevel(server))

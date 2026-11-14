@@ -1,4 +1,5 @@
-const IGNORE = ["darkweb"]
+// w0r1d_d43m0n: never root it; ending the BitNode is Ken's call (World Daemon rule).
+const IGNORE = ["darkweb", "w0r1d_d43m0n"]
 const SLEEP_MIN = 2
 // Same list as worm.js. worm.js only backdoors on its own fresh nuke, so a server
 // rooted before hacking reached its level, or another way, was left without one.

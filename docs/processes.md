@@ -390,6 +390,8 @@ Buys every augmentation current rep and cash allow, dearest first because each
 purchase raises later prices, then NeuroFlux Governor levels with what is left.
 Rep-ready names in `priorityAugs` (`player_activity_config.json`) always fit: a dearer
 augmentation is skipped rather than leave too little cash for them.
+With `priorityOnly: true` (same file) only the `priorityAugs` are bought, so no zero-value filler
+raises the price of the NeuroFlux levels bought after them (added 2026-11-13, install 10).
 A donation is made only if the cash left still covers the cheapest augmentation it newly
 unlocks (matters when prices are x5, as in BN10; in BN15 cash was never the limit).
 With `--install` it then spends the rest on home RAM and cores, cheapest first, because
@@ -397,7 +399,7 @@ both survive an install (only a BitNode reset clears them), then installs and re
 through `startup.js`. Back up the save first.
 
 - **Args:** `--dry` plans only; `--install` installs after buying.
-- **Reads:** `player_activity_config.json` (`priorityAugs`).
+- **Reads:** `player_activity_config.json` (`priorityAugs`, `priorityOnly`).
 - **Writes:** `aug_install_status.json` (plan, bought, failed, money before, final home RAM and cores).
 - **Test:** `node --test aug_install_logic.test.js`
 

@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-13 19:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-13 21:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -93,17 +93,20 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 7 | 2026-11-13 09:16 | 11 (Graphene Bionic Legs Upgrade, BitRunners Neurolink, Graphene Bone Lacings, NEMEAN Subdermal Weave, Synthetic Heart, Synfibril Muscle, Neuregen, SmartSonar, Combat Rib II, Augmented Targeting II, LuminCloaking-V1; all Slum Snakes, ~$866b; value 2.22 through `priorityAugs`) | 28 -> 39 |
 | 8 | 2026-11-13 13:15 | 12 (ENM DMA Upgrade, ECorp HVMind, Artificial Bio-neural Network, HyperSight, ENM Core, Enhanced Myelin, Combat Rib III, Augmented Targeting III, INFRARET, LuminCloaking-V2 from Slum Snakes; CRTX42-AA from NiteSec; BrachiBlades from The Syndicate; value 1.52 through `priorityAugs`) + NeuroFlux x3; home to 2TB, 2 cores | 39 -> 51 + NF3 |
 | 9 | 2026-11-13 17:16 | 13 (Unstable Circadian Modulator, ENM Core V2, PC Direct-Neural Interface, Neuralstimulator, SmartJaw, CSP Gen IV, FocusWire, ADR-V2, DataJack, The Shadow's Simulacrum, Artificial Synaptic Potentiation, CashRoot (filler) from Slum Snakes; Neural-Retention from NiteSec; value 1.00 through `priorityAugs`) + NeuroFlux x3; home to 8TB, 3 cores | 51 -> 64 + NF3 |
+| 10 | 2026-11-13 21:17 | 4 (ENM Core V3 Upgrade, PC DNI Optimization Submodule, CSP Gen V from Slum Snakes; The Black Hand from The Black Hand; value ~1.08 through `priorityAugs` with new `priorityOnly`) + queued The W1ngs of Icarus + NeuroFlux x12; home to 64TB, 4 cores | 64 -> 69 + NF12 |
 
 Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave_pre-install<N>_BN10run3_<date>.json.gz`.
 
 ## Latest check
 
-**2026-11-13 19:15 (scheduled run): steady, no changes made.** Live (metrics 19:10, readiness and `ps` 19:14): BitNode 10,
-$1.70t, hacking 812, str/def/dex/agi 1113/1381/853/1128, karma -132k, 64 installed, 0 queued, cycle 10 1.97h; all 20
-residents running. Measured (60 min to 19:10, 13 samples): rep/h Slum Snakes 4.45m (11.6m banked), Dark Army/Speakers/
-Black Hand 45.9k; hackExp/h 5.54b (91 lvl/h); karma/h -625; cash/h 1.17t; MCP 775m/s (avg 614m/s). Trend: all n/a
-(cycle under 3h). Advisor **wait** (gang minimum, 2.0h left; batch 0.86 vs average 0.44); decision **wait**, agreed.
-The Covenant invite lacks only hacking 850 (about 19:40). Cycle 9 closed 4.02h, rebuild 0.49h, favor Slum Snakes +18.5.
+**2026-11-13 21:15 (scheduled run): install 10, 4 augs + W1ngs of Icarus + NeuroFlux x12, 64 -> 69 installed.** Live before
+(metrics 21:10, readiness 21:12, save 21:17): BitNode 10, $9.40t, hacking 865, str/def/dex/agi 1262/1566/862/1193, karma -132k,
+64 installed, 1 queued (The W1ngs of Icarus, labyrinth). Joined The Covenant this cycle (24.6k rep). Measured (60 min to 21:10,
+13 samples): rep/h Slum Snakes 4.84m, Speakers 166k, The Covenant 27.1k; hackExp/h 6.17b; karma/h -38.5; cash/h 3.97t; MCP
+1.09b/s (avg 825m/s). Trend: `cash/h 1.17t>3.52t>3.97t ACCELERATING | MCP STEADY | hackExp/h STEADY | rep work SWITCH | rep best
+Slum Snakes STEADY`. Advisor **wait** (gang minimum 4 min; then next Graphene BrachiBlades rate 0.33 vs average 0.29). Decision
+**install** at the 4h mark: BrachiBlades is ~0.8h away and the next check 2h, so waiting earns under the average. New
+`priorityOnly` flag (604/604 tests) stopped zero-value filler: NeuroFlux x12 instead of ~3. All 20 residents restarted.
 World Daemon: not present (The Red Pill not owned).
 
 ## Next
@@ -111,16 +114,15 @@ World Daemon: not present (The Red Pill not owned).
 2. Gang: **created with Slum Snakes about 22:00** (2026-11-11; 3963dac moved it off NiteSec's hacking 211 gate).
    8 members, reputation mode. At 07:15 on 11-12 it earned ~108 faction rep/h (respect 12.9k): look at member stats and
    tasks before counting on gang-sold augs.
-5. Cycle 10 (from 17:16): gang 4h minimum ends about 21:16. Correction to the 17:15 note: Slum Snakes again sells
-   positive-value augs now that their prerequisites are installed: CSP Gen V 0.44 ($11.2b), ENM Core V3 0.30 ($37.5b),
-   PC DNI Optimization 0.10 ($22.5b). Readiness 19:14 still plans dearest first with zero-value augs (Illustrated
-   Primer, Glibness, Social Dynamics, Hacknet Core DNI), so set `priorityAugs` before install 10. Other factions:
-   Graphene Bionic Arms (Dark Army 1m, 0.49), The Black Hand (200k, 0.24; 99.6k at 19:14), Graphene BrachiBlades
-   (Speakers 450k), Neural Accelerator (BitRunners 400k).
-6. **Install batch choice:** when cash limits the batch, `aug_install.js` buys dearest first and ignores value; set
-   `priorityAugs` (bn10 `player_activity_config.json`) to the best value-per-cost augs before each install, as at installs
-   5-7, until the planner weighs value itself. It now lists only owned augs. `planPurchases` also appends affordable
-   filler after the list (CashRoot at install 9, about $0.7t at the stepped price); a `minValue` cut would stop that.
+5. Cycle 11 (from 21:17): gang 4h minimum ends about 01:17. Value left to buy: Graphene BrachiBlades (Speakers 450k, 0.27),
+   Neural Accelerator (BitRunners 400k, 0.19), Graphene Bionic Arms (Dark Army 1m, 0.49), SPTN-97 (The Covenant 2.5m, 1.04).
+   **The Covenant:** membership resets at each install; it re-invites at hacking 850 (about 2.4h into cycle 10). Its favor
+   (33.7 banked at install 10) is the way to SPTN-97: at favor 150 (~460k lifetime rep) donations buy the 2.5m. Consider
+   working The Covenant once rejoined rather than lesser faction augs.
+6. **Install batch choice:** set `priorityAugs` (bn10 `player_activity_config.json`) to the best value augs before each
+   install. Since install 10 `priorityOnly: true` makes `aug_install.js` buy only that list (no zero-value filler, which
+   raised every later NeuroFlux price 1.9x). An aug is worth buying if its value beats ~0.04 (0.83 NeuroFlux levels lost to
+   its 1.9x price step, at ~0.048 per level). `priorityAugs` is empty now, which with `priorityOnly` means filler again.
 3. Next install: confirm the starved-MCP rule buys a cloud server and holds home RAM (`capital_status.json` reason
    "MCP starved" / "cloud RAM for MCP"), and that the player skips the gym.
 4. Find what destroyed run 2's daemon (check log 2026-11-11 09:47) before this run nears hacking 6000.

@@ -7,12 +7,14 @@
  * @param {string[]} priority
  * @param {{maxStepPrice?:number, minValue?:number}} limits an offer whose stepped price (price x the
  *   1.9 steps already taken) exceeds `maxStepPrice` and whose `value` is known and under `minValue` is
- *   skipped, not bought (cheaper ones still are). Defaults (Infinity, 0) change nothing.
+ *   skipped, not bought (cheaper ones still are). With `only` and a non-empty `priority`, nothing
+ *   outside `priority` is bought (no filler that raises NeuroFlux prices). Defaults change nothing.
  */
-export function planPurchases(offers, owned, money, priceStep = 1.9, priority = [], { maxStepPrice = Infinity, minValue = 0 } = {}) {
+export function planPurchases(offers, owned, money, priceStep = 1.9, priority = [], { maxStepPrice = Infinity, minValue = 0, only = false } = {}) {
   const best = new Map()
   for (const offer of offers) {
     if (offer.rep < offer.repRequired || offer.name === NEUROFLUX) continue
+    if (only && priority.length && !priority.includes(offer.name)) continue
     const seen = best.get(offer.name)
     if (!seen || offer.rep > seen.rep) best.set(offer.name, offer)
   }

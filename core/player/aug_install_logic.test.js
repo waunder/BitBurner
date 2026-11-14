@@ -76,3 +76,10 @@ test("NeuroFlux is bought from a donating faction first, then the one with most 
   assert.equal(fluxSeller(sellers, []), "B")
   assert.equal(fluxSeller([], []), null)
 })
+
+test("only: buys nothing outside the priority list, so no filler raises later prices", () => {
+  const offers = [offer("filler", 9), offer("want", 5), offer("also", 1)]
+  assert.deepEqual(planPurchases(offers, [], 100, 1.9, ["want", "also"], { only: true }).plan.map((item) => item.name), ["want", "also"])
+  assert.deepEqual(planPurchases(offers, [], 100, 1.9, [], { only: true }).plan.map((item) => item.name), ["filler", "want", "also"])
+  assert.deepEqual(planPurchases(offers, [], 100, 1.9, ["want"]).plan.map((item) => item.name), ["filler", "want", "also"])
+})

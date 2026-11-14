@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-13 23:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-14 01:25 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -94,30 +94,30 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 8 | 2026-11-13 13:15 | 12 (ENM DMA Upgrade, ECorp HVMind, Artificial Bio-neural Network, HyperSight, ENM Core, Enhanced Myelin, Combat Rib III, Augmented Targeting III, INFRARET, LuminCloaking-V2 from Slum Snakes; CRTX42-AA from NiteSec; BrachiBlades from The Syndicate; value 1.52 through `priorityAugs`) + NeuroFlux x3; home to 2TB, 2 cores | 39 -> 51 + NF3 |
 | 9 | 2026-11-13 17:16 | 13 (Unstable Circadian Modulator, ENM Core V2, PC Direct-Neural Interface, Neuralstimulator, SmartJaw, CSP Gen IV, FocusWire, ADR-V2, DataJack, The Shadow's Simulacrum, Artificial Synaptic Potentiation, CashRoot (filler) from Slum Snakes; Neural-Retention from NiteSec; value 1.00 through `priorityAugs`) + NeuroFlux x3; home to 8TB, 3 cores | 51 -> 64 + NF3 |
 | 10 | 2026-11-13 21:17 | 4 (ENM Core V3 Upgrade, PC DNI Optimization Submodule, CSP Gen V from Slum Snakes; The Black Hand from The Black Hand; value ~1.08 through `priorityAugs` with new `priorityOnly`) + queued The W1ngs of Icarus + NeuroFlux x12; home to 64TB, 4 cores | 64 -> 69 + NF12 |
+| 11 | 2026-11-14 01:17 | 2 (Graphene BrachiBlades Upgrade from Speakers; Neural Accelerator from BitRunners; `priorityOnly`) + queued The B00ts of Perseus + NeuroFlux x18 ($17b donated); home to 1PB, 7 cores | 69 -> 72 + NF18 |
 
 Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave_pre-install<N>_BN10run3_<date>.json.gz`.
 
 ## Latest check
 
-**2026-11-13 23:15 (scheduled run): wait; player steered to The Covenant's favor after BrachiBlades.** Live (metrics 23:10,
-readiness 23:13, game `ps` 23:15): BitNode 10, $227t, hacking 1703, str/def/dex/agi 1496/1614/926/1206, karma -134k,
-69 installed, 1 queued (The B00ts of Perseus), cycle 11 1.9h old, all 20 residents running. Measured (60 min to 23:10,
-13 samples): rep/h Slum Snakes 6.43m, Speakers 479k, BitRunners 201k, The Covenant 102k; hackExp/h 17.8b; karma/h -1.48k;
-cash/h 174t; MCP 105b/s (avg 42.5b/s). Trend: all n/a (cycle under 3h), rep work SWITCH. Advisor **wait** (gang minimum,
-2.1h more); decision wait, agreed. Config: `priorityAugs` [Graphene BrachiBlades], `favorTarget` The Covenant (was
-Daedalus, not joined), so after BrachiBlades the player works The Covenant until favor + gain reaches 150; then SPTN-97
-(value 1.04) is donatable next cycle; controller confirmed the priority branch at 23:16. World Daemon: not present (The Red Pill not owned).
+**2026-11-14 01:15 (scheduled run): install 11, 2 augs + B00ts of Perseus + NeuroFlux x18, 69 -> 72.** Live before (metrics
+01:10, readiness 01:13, save 01:15): BitNode 10, $1.25q, hacking 1798, str/def/dex/agi 1810/1954/983/1443, karma -134k,
+cycle 11 3.97h. Measured (60 min to 01:10, 13 samples): rep/h Slum Snakes 8.53m, Dark Army 449k, Covenant 128k; hackExp/h
+18.2b; karma/h -175; cash/h 515t; MCP 119b/s (avg 104b/s). Trend: cash/h, MCP, hackExp/h STEADY; rep work Dark Army SWITCH;
+rep best Slum Snakes STEADY. Advisor **wait** (4 min of gang minimum; next Graphene Bionic Arms 0.49 at 0.67h). Decision
+**install** at the 4h mark: the install banks favor 150+ at The Covenant (155), Dark Army (180), Speakers, BitRunners and
+The Black Hand, so SPTN-97 (1.04) and Bionic Arms (0.49) can both be bought by donation early next cycle. After: all 20
+residents running. `favorTarget` back to Daedalus. World Daemon: not present (The Red Pill not owned).
 
 ## Next
 
 2. Gang: **created with Slum Snakes about 22:00** (2026-11-11; 3963dac moved it off NiteSec's hacking 211 gate).
    8 members, reputation mode. At 07:15 on 11-12 it earned ~108 faction rep/h (respect 12.9k): look at member stats and
    tasks before counting on gang-sold augs.
-5. Cycle 11 (from 21:17): gang 4h minimum ends about 01:17; install then. Batch by value: Graphene BrachiBlades (Speakers,
-   0.27, due ~23:30), Neural Accelerator (BitRunners, rep met, 0.19); Graphene Bionic Arms (Dark Army 1m, 0.49) not reached.
-   **The Covenant:** since 23:15 `favorTarget` is "The Covenant" (`player_activity_config.json`), so the player works it
-   after BrachiBlades until favor + pending gain reaches 150. Next cycle, buy SPTN-97 (2.5m, value 1.04) by donation.
-   **Set `favorTarget` back to "Daedalus" once The Covenant banks 150 or Daedalus invites (hacking 2500; 1703 at 23:10).**
+5. Cycle 12 (from 01:17): rejoin The Covenant (hacking 850) and The Dark Army, then **donate** for SPTN-97 (Covenant 2.5m,
+   value 1.04) and Graphene Bionic Arms (Dark Army 1m, 0.49); favor after install 11: Covenant ~155, Dark Army ~180, Speakers
+   ~184, BitRunners ~174, The Black Hand ~153, NiteSec ~149.8. Check the donation path (`donating` in readiness) picks them up.
+   `favorTarget` is Daedalus again (joins at hacking 2500).
 6. **Install batch choice:** set `priorityAugs` (bn10 `player_activity_config.json`) to the best value augs before each
    install. Since install 10 `priorityOnly: true` makes `aug_install.js` buy only that list (no zero-value filler, which
    raised every later NeuroFlux price 1.9x). An aug is worth buying if its value beats ~0.04 (0.83 NeuroFlux levels lost to

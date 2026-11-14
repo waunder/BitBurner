@@ -5,7 +5,7 @@
   "charismaTarget": 0,
   "covenantTarget": true,
   "covenantCloseFraction": 0.5,
-  "priorityAugs": ["Embedded Netburner Module Direct Memory Access Upgrade", "ECorp HVMind Implant", "Artificial Bio-neural Network Implant", "HyperSight Corneal Implant", "Embedded Netburner Module Core Implant", "Enhanced Myelin Sheathing", "CRTX42-AA Gene Modification", "Combat Rib III", "Augmented Targeting III", "BrachiBlades", "INFRARET Enhancement", "LuminCloaking-V2 Skin Implant"],
+  "priorityAugs": ["Unstable Circadian Modulator", "Embedded Netburner Module Core V2 Upgrade", "PC Direct-Neural Interface", "Neuralstimulator", "SmartJaw", "Cranial Signal Processors - Gen IV", "FocusWire", "ADR-V2 Pheromone Gene", "DataJack", "The Shadow's Simulacrum", "Neural-Retention Enhancement", "Artificial Synaptic Potentiation"],
   "favorTarget": "Daedalus",
   "repBeforeGates": true,
   "focusWork": true,

@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-13 17:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-13 19:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -98,24 +98,25 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-13 17:15 (scheduled run): install 9, 13 augs + NeuroFlux x3, 51 -> 64.** Before (metrics 17:10, readiness
-17:14, save 17:16): BitNode 10, $5.09t, hacking 666, str/def/dex/agi 1256/1559/858/1100, karma -131k, cycle 9 3.98h.
-Measured (60 min to 17:10, 13 samples): rep/h Slum Snakes 1.82m (9.68m banked), The Black Hand 25.5k; hackExp/h 1.7b
-(17 lvl/h); karma/h -50; cash/h 2.01t; MCP 250m/s (avg 446m/s). Trend: `cash/h 665b>1.99t>2.01t STEADY | MCP STEADY |
-hackExp/h STEADY | rep best Slum Snakes 1.67m>1.77m>1.82m STEADY`. Advisor **wait** (gang minimum, 1m left; batch 0.69 vs
-average 0.17); decision **install**: the minimum was up by the purchase, and a value-chosen batch (1.00) beat it. The
-Covenant's hacking 850 needs about 4.5e11 exp at the current multiplier (1.7b/h), so holding for the invite was not worth
-it. After: all 20 residents restarted, home 8TB. Backup `saves/bitburnerSave_pre-install9_BN10run3_2026-11-13.json.gz`.
+**2026-11-13 19:15 (scheduled run): steady, no changes made.** Live (metrics 19:10, readiness and `ps` 19:14): BitNode 10,
+$1.70t, hacking 812, str/def/dex/agi 1113/1381/853/1128, karma -132k, 64 installed, 0 queued, cycle 10 1.97h; all 20
+residents running. Measured (60 min to 19:10, 13 samples): rep/h Slum Snakes 4.45m (11.6m banked), Dark Army/Speakers/
+Black Hand 45.9k; hackExp/h 5.54b (91 lvl/h); karma/h -625; cash/h 1.17t; MCP 775m/s (avg 614m/s). Trend: all n/a
+(cycle under 3h). Advisor **wait** (gang minimum, 2.0h left; batch 0.86 vs average 0.44); decision **wait**, agreed.
+The Covenant invite lacks only hacking 850 (about 19:40). Cycle 9 closed 4.02h, rebuild 0.49h, favor Slum Snakes +18.5.
+World Daemon: not present (The Red Pill not owned).
 
 ## Next
 
 2. Gang: **created with Slum Snakes about 22:00** (2026-11-11; 3963dac moved it off NiteSec's hacking 211 gate).
    8 members, reputation mode. At 07:15 on 11-12 it earned ~108 faction rep/h (respect 12.9k): look at member stats and
    tasks before counting on gang-sold augs.
-5. Cycle 10 (from 17:16): rebuild; gang back in reputation mode until its target, then money. Gang 4h minimum ends
-   about 21:16. Slum Snakes now has only zero-value augs left (Analyze Engine 0.03 aside), so the next batch comes from
-   other factions' rep: Graphene Bionic Arms (Dark Army 1m), The Black Hand (200k), Graphene BrachiBlades (Speakers 450k),
-   Neural Accelerator (BitRunners 400k). Consider steering player work to one of these.
+5. Cycle 10 (from 17:16): gang 4h minimum ends about 21:16. Correction to the 17:15 note: Slum Snakes again sells
+   positive-value augs now that their prerequisites are installed: CSP Gen V 0.44 ($11.2b), ENM Core V3 0.30 ($37.5b),
+   PC DNI Optimization 0.10 ($22.5b). Readiness 19:14 still plans dearest first with zero-value augs (Illustrated
+   Primer, Glibness, Social Dynamics, Hacknet Core DNI), so set `priorityAugs` before install 10. Other factions:
+   Graphene Bionic Arms (Dark Army 1m, 0.49), The Black Hand (200k, 0.24; 99.6k at 19:14), Graphene BrachiBlades
+   (Speakers 450k), Neural Accelerator (BitRunners 400k).
 6. **Install batch choice:** when cash limits the batch, `aug_install.js` buys dearest first and ignores value; set
    `priorityAugs` (bn10 `player_activity_config.json`) to the best value-per-cost augs before each install, as at installs
    5-7, until the planner weighs value itself. It now lists only owned augs. `planPurchases` also appends affordable

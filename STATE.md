@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-13 21:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-13 23:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -99,26 +99,25 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-13 21:15 (scheduled run): install 10, 4 augs + W1ngs of Icarus + NeuroFlux x12, 64 -> 69 installed.** Live before
-(metrics 21:10, readiness 21:12, save 21:17): BitNode 10, $9.40t, hacking 865, str/def/dex/agi 1262/1566/862/1193, karma -132k,
-64 installed, 1 queued (The W1ngs of Icarus, labyrinth). Joined The Covenant this cycle (24.6k rep). Measured (60 min to 21:10,
-13 samples): rep/h Slum Snakes 4.84m, Speakers 166k, The Covenant 27.1k; hackExp/h 6.17b; karma/h -38.5; cash/h 3.97t; MCP
-1.09b/s (avg 825m/s). Trend: `cash/h 1.17t>3.52t>3.97t ACCELERATING | MCP STEADY | hackExp/h STEADY | rep work SWITCH | rep best
-Slum Snakes STEADY`. Advisor **wait** (gang minimum 4 min; then next Graphene BrachiBlades rate 0.33 vs average 0.29). Decision
-**install** at the 4h mark: BrachiBlades is ~0.8h away and the next check 2h, so waiting earns under the average. New
-`priorityOnly` flag (604/604 tests) stopped zero-value filler: NeuroFlux x12 instead of ~3. All 20 residents restarted.
-World Daemon: not present (The Red Pill not owned).
+**2026-11-13 23:15 (scheduled run): wait; player steered to The Covenant's favor after BrachiBlades.** Live (metrics 23:10,
+readiness 23:13, game `ps` 23:15): BitNode 10, $227t, hacking 1703, str/def/dex/agi 1496/1614/926/1206, karma -134k,
+69 installed, 1 queued (The B00ts of Perseus), cycle 11 1.9h old, all 20 residents running. Measured (60 min to 23:10,
+13 samples): rep/h Slum Snakes 6.43m, Speakers 479k, BitRunners 201k, The Covenant 102k; hackExp/h 17.8b; karma/h -1.48k;
+cash/h 174t; MCP 105b/s (avg 42.5b/s). Trend: all n/a (cycle under 3h), rep work SWITCH. Advisor **wait** (gang minimum,
+2.1h more); decision wait, agreed. Config: `priorityAugs` [Graphene BrachiBlades], `favorTarget` The Covenant (was
+Daedalus, not joined), so after BrachiBlades the player works The Covenant until favor + gain reaches 150; then SPTN-97
+(value 1.04) is donatable next cycle; controller confirmed the priority branch at 23:16. World Daemon: not present (The Red Pill not owned).
 
 ## Next
 
 2. Gang: **created with Slum Snakes about 22:00** (2026-11-11; 3963dac moved it off NiteSec's hacking 211 gate).
    8 members, reputation mode. At 07:15 on 11-12 it earned ~108 faction rep/h (respect 12.9k): look at member stats and
    tasks before counting on gang-sold augs.
-5. Cycle 11 (from 21:17): gang 4h minimum ends about 01:17. Value left to buy: Graphene BrachiBlades (Speakers 450k, 0.27),
-   Neural Accelerator (BitRunners 400k, 0.19), Graphene Bionic Arms (Dark Army 1m, 0.49), SPTN-97 (The Covenant 2.5m, 1.04).
-   **The Covenant:** membership resets at each install; it re-invites at hacking 850 (about 2.4h into cycle 10). Its favor
-   (33.7 banked at install 10) is the way to SPTN-97: at favor 150 (~460k lifetime rep) donations buy the 2.5m. Consider
-   working The Covenant once rejoined rather than lesser faction augs.
+5. Cycle 11 (from 21:17): gang 4h minimum ends about 01:17; install then. Batch by value: Graphene BrachiBlades (Speakers,
+   0.27, due ~23:30), Neural Accelerator (BitRunners, rep met, 0.19); Graphene Bionic Arms (Dark Army 1m, 0.49) not reached.
+   **The Covenant:** since 23:15 `favorTarget` is "The Covenant" (`player_activity_config.json`), so the player works it
+   after BrachiBlades until favor + pending gain reaches 150. Next cycle, buy SPTN-97 (2.5m, value 1.04) by donation.
+   **Set `favorTarget` back to "Daedalus" once The Covenant banks 150 or Daedalus invites (hacking 2500; 1703 at 23:10).**
 6. **Install batch choice:** set `priorityAugs` (bn10 `player_activity_config.json`) to the best value augs before each
    install. Since install 10 `priorityOnly: true` makes `aug_install.js` buy only that list (no zero-value filler, which
    raised every later NeuroFlux price 1.9x). An aug is worth buying if its value beats ~0.04 (0.83 NeuroFlux levels lost to

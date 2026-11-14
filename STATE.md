@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-14 01:25 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-14 03:25 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -100,24 +100,24 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-14 01:15 (scheduled run): install 11, 2 augs + B00ts of Perseus + NeuroFlux x18, 69 -> 72.** Live before (metrics
-01:10, readiness 01:13, save 01:15): BitNode 10, $1.25q, hacking 1798, str/def/dex/agi 1810/1954/983/1443, karma -134k,
-cycle 11 3.97h. Measured (60 min to 01:10, 13 samples): rep/h Slum Snakes 8.53m, Dark Army 449k, Covenant 128k; hackExp/h
-18.2b; karma/h -175; cash/h 515t; MCP 119b/s (avg 104b/s). Trend: cash/h, MCP, hackExp/h STEADY; rep work Dark Army SWITCH;
-rep best Slum Snakes STEADY. Advisor **wait** (4 min of gang minimum; next Graphene Bionic Arms 0.49 at 0.67h). Decision
-**install** at the 4h mark: the install banks favor 150+ at The Covenant (155), Dark Army (180), Speakers, BitRunners and
-The Black Hand, so SPTN-97 (1.04) and Bionic Arms (0.49) can both be bought by donation early next cycle. After: all 20
-residents running. `favorTarget` back to Daedalus. World Daemon: not present (The Red Pill not owned).
+**2026-11-14 03:15 (scheduled run): wait; kill gate fixed, The Dark Army and Speakers rejoined.** Live (metrics 03:10,
+readiness 03:18, save 03:15): BitNode 10, $654t, hacking 2359, str/def/dex/agi 2882/3110/1166/2508, karma -134k, 72 installed,
+0 queued, cycle 12 at 2.0h. Found: kills were 0 after install 11 (installs reset them), so The Dark Army (5) and Speakers (30)
+never invited and Graphene Bionic Arms was out of reach. Ran Homicide to 56 kills; both joined by 03:19. `faction_join.js` now
+starts Homicide itself until 30 kills (604/604 pass, restarted). Measured (60 min to 03:10, 13 samples): rep/h Slum Snakes 10m,
+BitRunners 85.3k, Covenant 79.5k; hackExp/h 33.2b; karma/h -164; cash/h 414t; MCP 133b/s (avg 84.2b/s). Trend: all n/a (cycle
+under 3h). Advisor **wait** (gang minimum, 2.0h more; batch 1.56 = SPTN-97 1.04 + Graphene Bionic Arms 0.49 by donation); agreed.
+World Daemon: not present (The Red Pill not owned).
 
 ## Next
 
 2. Gang: **created with Slum Snakes about 22:00** (2026-11-11; 3963dac moved it off NiteSec's hacking 211 gate).
    8 members, reputation mode. At 07:15 on 11-12 it earned ~108 faction rep/h (respect 12.9k): look at member stats and
    tasks before counting on gang-sold augs.
-5. Cycle 12 (from 01:17): rejoin The Covenant (hacking 850) and The Dark Army, then **donate** for SPTN-97 (Covenant 2.5m,
-   value 1.04) and Graphene Bionic Arms (Dark Army 1m, 0.49); favor after install 11: Covenant ~155, Dark Army ~180, Speakers
-   ~184, BitRunners ~174, The Black Hand ~153, NiteSec ~149.8. Check the donation path (`donating` in readiness) picks them up.
-   `favorTarget` is Daedalus again (joins at hacking 2500).
+5. **Install 12 at the 05:15 run** (4h gang minimum at 05:17). Before it, set `priorityAugs` to SPTN-97 Gene Modification
+   and Graphene Bionic Arms Upgrade (both in readiness' `installPlan` by donation, 03:18). Daedalus should invite near
+   hacking 2500 (2359 at 03:10, ~115 lvl/h); weigh its favor (`favorTarget` Daedalus) against installing at 4h.
+   Check `faction_join_status.json` `killing` early next cycle: it should bring kills to 30 by itself.
 6. **Install batch choice:** set `priorityAugs` (bn10 `player_activity_config.json`) to the best value augs before each
    install. Since install 10 `priorityOnly: true` makes `aug_install.js` buy only that list (no zero-value filler, which
    raised every later NeuroFlux price 1.9x). An aug is worth buying if its value beats ~0.04 (0.83 NeuroFlux levels lost to

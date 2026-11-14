@@ -27,6 +27,19 @@ function combat(p, level) {
   return ["strength", "defense", "dexterity", "agility"].every((s) => p.skills[s] >= level)
 }
 
+// The Dark Army needs 5 kills and Speakers for the Dead 30, and an install resets the kill count. Once the other
+// gates are met, start Homicide (unfocused, ~3s per kill at combat 300+); the player controller takes the player
+// back to its own work at its next poll, and this repeats each minute until 30 kills (added 2026-11-14).
+const KILL_GATED = ["The Dark Army", "Speakers for the Dead"]
+const KILLS_WANTED = 30
+
+function seekKills(ns, player) {
+  if (player.numPeopleKilled >= KILLS_WANTED || KILL_GATED.every((f) => player.factions.includes(f))) return false
+  if (!(player.skills.hacking >= 300 && combat(player, 300) && player.karma <= -45)) return false
+  if (ns.singularity.getCurrentWork()?.type === "CRIME") return false
+  return ns.singularity.commitCrime("Homicide", false) > 0
+}
+
 function seekCityFactions(ns) {
   const player = ns.getPlayer()
   const next = CITY_GATED.find((gate) => !player.factions.includes(gate.faction) && gate.ready(player))
@@ -38,11 +51,12 @@ export async function main(ns) {
   const joined = []
   while (true) {
     seekCityFactions(ns)
+    const killing = seekKills(ns, ns.getPlayer())
     const invites = ns.singularity.checkFactionInvitations()
     for (const faction of invites) {
       if (!CITY.has(faction) && ns.singularity.joinFaction(faction)) joined.push({ ts: Date.now(), faction })
     }
-    ns.write(STATUS, JSON.stringify({ ts: Date.now(), invites, joined }), "w")
+    ns.write(STATUS, JSON.stringify({ ts: Date.now(), invites, joined, killing }), "w")
     await ns.sleep(POLL_MS)
   }
 }

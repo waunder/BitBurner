@@ -1,6 +1,6 @@
 # Current BitBurner Handoff
 
-Last refreshed: 2026-11-14 05:25 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
+Last refreshed: 2026-11-14 07:20 PC clock, on the PC. Trimmed from 1,918 lines on 2026-11-10. Every
 earlier note is unchanged in `docs/archive/state-2026-11-10/STATE-full.md`. Run 2's detailed check
 entries are in `docs/check-log.md`.
 
@@ -96,31 +96,31 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 10 | 2026-11-13 21:17 | 4 (ENM Core V3 Upgrade, PC DNI Optimization Submodule, CSP Gen V from Slum Snakes; The Black Hand from The Black Hand; value ~1.08 through `priorityAugs` with new `priorityOnly`) + queued The W1ngs of Icarus + NeuroFlux x12; home to 64TB, 4 cores | 64 -> 69 + NF12 |
 | 11 | 2026-11-14 01:17 | 2 (Graphene BrachiBlades Upgrade from Speakers; Neural Accelerator from BitRunners; `priorityOnly`) + queued The B00ts of Perseus + NeuroFlux x18 ($17b donated); home to 1PB, 7 cores | 69 -> 72 + NF18 |
 | 12 | 2026-11-14 05:17 | 2 (SPTN-97 Gene Modification from The Covenant, Graphene Bionic Arms Upgrade from The Dark Army, both by donation; `priorityOnly`) + NeuroFlux x16; home to 2PB, 7 cores. Banks ~161 favor at Illuminati (joined that cycle) | 72 -> 74 + NF16 |
+| 13 | 2026-11-14 07:16 | 1 (QLink from Illuminati by donation, $237.5t + $707b donation; `priorityOnly`) + queued The H4mmer of Daedalus + NeuroFlux x12. Banks Daedalus favor 0 -> ~178.6 | 74 -> 76 + NF12 |
 
 Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave_pre-install<N>_BN10run3_<date>.json.gz`.
 
 ## Latest check
 
-**2026-11-14 05:15 (scheduled run): install 12, SPTN-97 + Graphene Bionic Arms + NeuroFlux x16, 72 -> 74.** Live before
-(metrics 05:10, readiness 05:14): BitNode 10, $1.49q, hacking 2460, str/def/dex/agi 3450/3723/1291/2581, karma -136k, 72
-installed, cycle 12 at 3.95h. Illuminati had joined (586k rep, player on its hacking work for QLink, 3.16m gap). Measured (60 min
-to 05:10, 13 samples): rep/h Slum Snakes 11.3m, Illuminati 355k, others 70-94k; hackExp/h 33.2b; karma/h -260; cash/h 413t; MCP
-176b/s (avg 104b/s). Trend: `cash/h STEADY | MCP STEADY | hackExp/h STEADY | rep work Illuminati SWITCH | rep best Slum Snakes
-STEADY`; nothing decelerating. Advisor **wait** (gang minimum 3m; next QLink 1.37 at 8.9h by work). Decision: **install** at 4h:
-the install banks Illuminati favor 0 -> ~161, so QLink becomes donatable next cycle instead of 8.9h of work. Backup
-`saves/bitburnerSave_pre-install12_BN10run3_2026-11-14.json.gz` validated. Installed 05:17:41; all residents back (ps 05:17).
-World Daemon: not present (The Red Pill not owned).
+**2026-11-14 07:15 (scheduled run): install 13, QLink + The H4mmer of Daedalus + NeuroFlux x12, 74 -> 76.** Live before
+(metrics 07:10, readiness 07:12, save 07:16): BitNode 10, $752t, hacking 3267, str/def/dex/agi 11.0k/6.4k/4.0k/3.9k, karma -137k,
+74 installed + H4mmer queued (granted with Daedalus, as in run 2), cycle 13 at 1.98h. Daedalus joined at 05:28 (834k rep, favor
+gain 178.6); player on its hacking work. Measured (60 min to 07:10, 13 samples): rep/h Slum Snakes 14.2m, Daedalus 531k, others
+120-192k; hackExp/h 49.2b; karma/h -204; cash/h 447t; MCP 137b/s (avg 98.3b/s). Trend: all n/a (cycle under 3h). Advisor **wait**
+(gang 4h minimum). Decision: **install** early: Daedalus favor clears 150, so The Red Pill (5m rep) is donatable next cycle instead
+of ~7.8h of work; QLink (1.37) was ready; gang augs are worth 0. Backup `saves/bitburnerSave_pre-install13_BN10run3_2026-11-14.json.gz`
+validated. Installed 07:16:10; 76 installed (readiness 07:17); all 19 residents back (ps 07:16). World Daemon: not present.
 
 ## Next
 
 2. Gang: **created with Slum Snakes about 22:00** (2026-11-11; 3963dac moved it off NiteSec's hacking 211 gate).
    8 members, reputation mode. At 07:15 on 11-12 it earned ~108 faction rep/h (respect 12.9k): look at member stats and
    tasks before counting on gang-sold augs.
-5. **Cycle 13 (from install 12 at 05:17):** rejoin Illuminati once its invite requirements are met again (check
-   `faction_join_status.json`), then buy **QLink (1.37, $125t)** by donation (favor ~161 if banked as `favor` shows); set
-   `priorityAugs` to QLink before install 13. Daedalus should invite near hacking 2500; weigh its favor (`favorTarget`
-   Daedalus) against installing at 4h. Kills: `faction_join` restores 30 for The Dark Army and Speakers by itself.
-   Add the closed cycle-12 line from `metrics.py cycles` (not yet available at 05:20).
+5. **Cycle 14 (from install 13 at 07:16): The Red Pill.** Once `faction_join` rejoins Daedalus (30 augs, $100b, hacking
+   2500) and readiness shows Daedalus favor ~178, set `priorityAugs` to ["The Red Pill"], dry-run (expect a Daedalus
+   donation for 5m rep), back up, install. No need to wait 4h: nothing else in the batch matters. After it the World
+   Daemon appears; follow the World Daemon rule (notify Ken once hacking reaches its requirement; never touch it).
+   Add the closed cycle-13 line from `metrics.py cycles`.
 6. **Install batch choice:** set `priorityAugs` (bn10 `player_activity_config.json`) to the best value augs before each
    install. Since install 10 `priorityOnly: true` makes `aug_install.js` buy only that list (no zero-value filler, which
    raised every later NeuroFlux price 1.9x). An aug is worth buying if its value beats ~0.04 (0.83 NeuroFlux levels lost to

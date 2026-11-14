@@ -1,6 +1,6 @@
 {
   "goal": "BN10 run 3 (entered 2026-11-11 ~10:20, Ken hands-off for the whole run): SF10.3, gang early, Daedalus favor 150 before The Red Pill",
-  "updated": "2026-11-12",
+  "updated": "2026-11-14",
   "gangFaction": "Slum Snakes",
   "steps": [
     {
@@ -40,14 +40,16 @@
       ]
     },
     {
-      "label": "Daedalus: join, then install once its rep banks favor 150 (one install, full batch, backup)"
+      "label": "Daedalus: favor banked at install 13 (11-14 07:16, +178.6)",
+      "done": true
     },
     {
-      "label": "Eighth sleeve from The Covenant (a bonus, not a gate)",
+      "label": "Eighth sleeve from The Covenant (a bonus, not a gate) (skipped: $100q not reachable)",
       "metric": {
         "kind": "money",
         "target": 1e+17
-      }
+      },
+      "done": true
     },
     {
       "label": "The Red Pill: donate to Daedalus, buy, install with a backup"

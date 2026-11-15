@@ -113,10 +113,12 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-15 09:14 (scheduled run): steady, no changes made.** All residents up since the 07:16 install (no reload); monitors mcp_money, automation_review, ops_hud not running.
-Live: BN6, $56m, hacking 111, str/def/dex/agi 143/143/143/166, karma -54.3k, 9 installed, 0 queued. Gang Slum Snakes 8 members, reputation mode, power 1 vs 80.
-Measured (13 samples, 08:10-09:10): rep/h Tetrads 5.85k, Tian Di Hui 1.03k; hackExp/h 248k; karma/h -11; cash/h 100m; MCP avg 13.7k/s. Trend n/a (cycle 2 under 2h).
-Advisor wait (gang 4h minimum, 2h more; next Nanofiber Weave ~6h); decision wait, agreed.
+**2026-11-15 11:14 (scheduled run): steady, no changes made.** All residents up since the 07:16 install; optional monitors mcp_money, automation_review, ops_hud not running.
+Live: BN6, $224m, hacking 139, str/def/dex/agi 143/143/143/166, karma -54.3k, 9 installed, 0 queued. Sleeves in shock recovery (~25).
+Gang Slum Snakes 9 members, reputation mode, gang rep 452 of 1.75m, power 1 vs 185.
+Measured (13 samples, 10:10-11:10): rep/h Tian Di Hui 4.85k, CyberSec 989; hackExp/h 581k; karma/h -9.6; cash/h 128m; MCP avg 76.4k/s.
+Trend: cash STEADY, MCP and hackExp ACCELERATING, nothing decelerating.
+Advisor wait (gang 4h minimum; batch 4 minor augs $162m, next Nanofiber Weave ~4.2h); decision wait, agreed.
 Bladeburner rank 0, idle (controller not written). End check: no daemon; next black op Operation Typhoon; not ready.
 
 ## Next

@@ -107,13 +107,12 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-15 01:14 (scheduled run): sleeves moved from shock recovery to karma crime.** All residents up incl. mcp.js; sleeve_buyer
-started by capital_manager this run. Live 01:15: BN6, $199m, hacking 75, str/def/dex/agi 142/183/154/154, karma -772, 0 installed/queued,
-home 512GB (capital_manager bought 256 -> 512 about 23:55, $318m). Bladeburner rank 0, no action, next black op Operation Typhoon (2500).
-Measured (12 samples, 60 min to 01:10): cash/h 216m (STEADY; the dip was the home buy), hackExp/h 21.8k (ACCELERATING), karma/h -7.85,
-rep/h Tetrads 2.61k, Slum Snakes 864; MCP avg 130/s. Change: game-only `sleeve_config.json` `{"karmaWhileShocked": true}` (karma is not
-shock-scaled; shock 60 needed ~10h more recovery); 7 sleeves on Homicide at 01:16, chance ~0.9%. Next run: measure karma/h.
-Advisor wait (HemoRecirculator 1.5h), agreed. End check: no daemon, not Daedalus; not ready.
+**2026-11-15 03:14 (scheduled run): steady, no changes made.** All residents up incl. mcp.js (sleeve_buyer idles outside BN10 and exits; harmless).
+Live 03:14: BN6, $802m, hacking 85, str/def/dex/agi 163/192/170/170, karma -10.3k (was -772 at 01:15), 0 installed/queued, home 512GB.
+Bladeburner rank 0, idle. Measured (13 samples, 60 min to 03:10): karma/h -6.57k (sleeve Homicide via `karmaWhileShocked` works),
+rep/h Tetrads 3.27k, CyberSec 1.13k; hackExp/h 28.8k (ACCELERATING); cash/h 441m (STEADY); MCP avg 151/s.
+Karma -54k (Slum Snakes gang) expected about 09:50. Advisor wait 3.4h for Power Recirculation Core, agreed.
+End check: no Red Pill so no daemon; next black op Operation Typhoon; not ready.
 
 ## Next
 

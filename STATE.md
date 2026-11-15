@@ -113,13 +113,11 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-15 07:14 (scheduled run): install 1 of BN6 run 1, 0 -> 9 installed.** Gang Slum Snakes created about 06:54 by gang_create.js
-(3 members training combat, objective auto -> reputation). Live before 07:15: BN6, $2.24b, hacking 97, str/def/dex/agi 189/207/193/193, karma -54.2k.
-Measured (12 samples, 06:15-07:10): rep/h Tian Di Hui 3.59k; hackExp/h 34.8k; karma/h -12.7k; cash/h 380m; MCP avg 2.71k/s. Trend STEADY, nothing decelerating.
-Advisor wait (10m for S.N.A., value 0.04); decision install: S.N.A. would raise four cheaper augs by 1.9x and push the batch past cash.
-Backup `saves/bitburnerSave_pre-install1_BN6run1_2026-11-15.json.gz` validated. After: all residents back except mcp_money, automation_review, ops_hud (monitors).
-`metrics.py cycles` 07:21: cycle 1 closed 14.00h, +9 installed, rep Tetrads 25.3k, Tian Di Hui 5.67k, CyberSec 4.48k; cycle 2 open from 07:16.
-Bladeburner rank 0, idle. End check: no daemon; next black op Operation Typhoon; not ready. Game was reloaded between 05:16 and 07:14 (PIDs restarted from 1).
+**2026-11-15 09:14 (scheduled run): steady, no changes made.** All residents up since the 07:16 install (no reload); monitors mcp_money, automation_review, ops_hud not running.
+Live: BN6, $56m, hacking 111, str/def/dex/agi 143/143/143/166, karma -54.3k, 9 installed, 0 queued. Gang Slum Snakes 8 members, reputation mode, power 1 vs 80.
+Measured (13 samples, 08:10-09:10): rep/h Tetrads 5.85k, Tian Di Hui 1.03k; hackExp/h 248k; karma/h -11; cash/h 100m; MCP avg 13.7k/s. Trend n/a (cycle 2 under 2h).
+Advisor wait (gang 4h minimum, 2h more; next Nanofiber Weave ~6h); decision wait, agreed.
+Bladeburner rank 0, idle (controller not written). End check: no daemon; next black op Operation Typhoon; not ready.
 
 ## Next
 

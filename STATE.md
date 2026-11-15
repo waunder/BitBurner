@@ -1,4 +1,4 @@
-# Current BitBurner Handoff
+**2026-11-14 ~17:15 PC clock: BN6 run 1 entered by Ken (Bladeburners). Profile bn6 active, fresh-node bootstrap running.** BN10 run 3 complete (SF10.3). Plan: `docs/bn6-plan.md`. The BN10 sections below are history until this file is rewritten for BN6.
 
 **2026-11-14 11:23 PC clock: BN10 World Daemon ready, Ken notified** (hacking 6024 of 6000 at 11:23:15; daemon present, not rooted; desktop notification sent, no phone push because Remote Control was off). Waiting for Ken to choose the next BitNode. Do not root, backdoor, hack or destroy it.
 
@@ -119,11 +119,15 @@ daemon unrooted (still at 11:23:53, hacking 6105). Ken notified; backup `saves/b
 
 ## Next
 
-1. **Ken chose BN6 (Bladeburners), 2026-11-14 ~17:00.** Pre-entry design and the `bn6` profile are ready (`docs/bn6-plan.md`; sleeves split into a shared `profiles/sleeves` layer). Entry (destroy daemon, switch profile) waits for Ken's go. Until then, runs report only and must not notify again. Latest backup `saves/bitburnerSave_worlddaemon-hold_BN10run3_2026-11-14_1710.json.gz` (taken during a GPU reset stream, see memory).
-   Nothing may root the daemon: crawler.js and worm.js skip it since 11:20 (11-14); backdoor.js refuses it.
-2. Before the next run's World Daemon, finish finding what destroyed run 2's daemon (check log 2026-11-11 09:47). Today's
-   finding: the crawler roots every server it can reach, the daemon included, which nothing prevented before this fix.
-3. `metrics.py pull` fails (metrics_log.txt 2.7MB over the 1MB control limit); the daemon's own pull keeps runtime/ current.
+1. **BN6 day one (17:20):** home 32GB, 7 sleeves, SF 1.2 2.1 4.3 5.3 10.3 15.1. Running: mcp_supervisor, crawler, capital_bootstrap,
+   early_spread loops on joesguns; sleeves 0-6 Shoplift; player Shoplift (`crime_now.js`, dev). mcp.js was killed for RAM;
+   capital_bootstrap/manager restart the residents as home RAM grows. BN6 multipliers (non-1): HackingLevel 0.35, HackExpGain 0.25,
+   ServerMaxMoney 0.2, ScriptHackMoney 0.75, ServerStartingMoney 0.5, CrimeMoney 0.75, CompanyWorkMoney 0.5, GangSoftcap 0.7,
+   GangUniqueAugs 0.2, DaedalusAugsRequirement 35, WorldDaemonDifficulty 2. No Bladeburner multiplier below 1, so hacking is the weak
+   leg here and Bladeburner plus gang carry the run.
+2. Then: combat 100 and join Bladeburner; measure action times, odds, stamina, `mem`; design the controller (`docs/bn6-plan.md`).
+3. Rewrite this file for BN6 (objective, standing settings, run-1 install table) and update the scheduled task prompt (it names BN10).
+4. Still open: what destroyed run 2's daemon (crawler roots everything; now guarded). `metrics.py pull` over the 1MB limit.
 
 ## Open questions
 

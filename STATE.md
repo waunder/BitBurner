@@ -105,13 +105,11 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-14 21:14 (scheduled run): game closed again; not relaunched, nothing changed.** GPU resets (nvlddmkm 13/14/153) came back
-20:52-20:57 after the 20:38 relaunch; Ken restarted the PC at 20:59 (boot 21:01) and more bursts followed at 21:02-21:04 with the game
-not running. Steam is up, BitBurner is not; Remote API daemon up, game disconnected. Held off relaunching while Ken diagnoses the GPU
-(governance "Doubt"). Last sample 20:55 (measured, 4 samples, 30 min): $63.1m, hacking 15, str/def/dex/agi 108/93/132/132, karma -743,
-home 256GB, 0 installed; cash/h 264m, hackExp/h 2.11k, karma/h -28.8, MCP 0/s; trend n/a. Advisor build, no install. End check: no
-Red Pill, not in Bladeburner; not ready. Run report not pushed.
-**Ken: relaunch BitBurner from Steam when the GPU work is done; the next scheduled run picks up from there.**
+**2026-11-14 23:15 (scheduled run): joined the Bladeburner division; nothing else changed.** Game relaunched about 21:44; all
+residents up incl. mcp.js. Live 23:15: BN6, $155m, hacking 58, str/def/dex/agi 129/179/145/145, karma -756, 0 installed/queued, home 256GB.
+Bladeburner rank 0, no action started, next black op Operation Typhoon (rank 2500). Measured (13 samples, 60 min): cash/h 35.3m (DECELERATING
+after the restart), hackExp/h 13.3k, karma/h -6.92, rep/h Slum Snakes 3.8k, CyberSec 1.7k; MCP avg 193/s. Sleeves 0-6 on shock recovery
+(shock 71 > 5), so karma is slow and the gang is far off. Advisor wait, agreed. End check: no daemon, not Daedalus; not ready.
 
 ## Next
 
@@ -121,7 +119,7 @@ Red Pill, not in Bladeburner; not ready. Run report not pushed.
    ServerMaxMoney 0.2, ScriptHackMoney 0.75, ServerStartingMoney 0.5, CrimeMoney 0.75, CompanyWorkMoney 0.5, GangSoftcap 0.7,
    GangUniqueAugs 0.2, DaedalusAugsRequirement 35, WorldDaemonDifficulty 2. No Bladeburner multiplier below 1, so hacking is the weak
    leg here and Bladeburner plus gang carry the run.
-2. Then: combat 100 and join Bladeburner; measure action times, odds, stamina, `mem`; design the controller (`docs/bn6-plan.md`).
+2. Joined Bladeburner 2026-11-14 23:15 (rank 0). Next: measure action times, odds, stamina, `mem`; design the controller (`docs/bn6-plan.md`).
 3. Rewrite this file for BN6 (objective, standing settings, run-1 install table). The scheduled task prompt is updated for BN6.
 4. Still open: what destroyed run 2's daemon (crawler roots everything; now guarded). `metrics.py pull` over the 1MB limit.
 

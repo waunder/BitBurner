@@ -107,11 +107,12 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-15 03:14 (scheduled run): steady, no changes made.** All residents up incl. mcp.js (sleeve_buyer idles outside BN10 and exits; harmless).
-Live 03:14: BN6, $802m, hacking 85, str/def/dex/agi 163/192/170/170, karma -10.3k (was -772 at 01:15), 0 installed/queued, home 512GB.
-Bladeburner rank 0, idle. Measured (13 samples, 60 min to 03:10): karma/h -6.57k (sleeve Homicide via `karmaWhileShocked` works),
-rep/h Tetrads 3.27k, CyberSec 1.13k; hackExp/h 28.8k (ACCELERATING); cash/h 441m (STEADY); MCP avg 151/s.
-Karma -54k (Slum Snakes gang) expected about 09:50. Advisor wait 3.4h for Power Recirculation Core, agreed.
+**2026-11-15 05:14 (scheduled run): started `gang_create.js`** (pid 24312). It was never running: startup.js could not fit it on the
+32GB day-one home, and capital_manager does not relaunch it. It creates the Slum Snakes gang at -54k karma, then starts gang-controller.js.
+Live 05:15: BN6, $1.35b, hacking 92, str/def/dex/agi 180/201/185/185, karma -31.1k, 0 installed, 1 queued (The W1ngs of Icarus, darknet reward), home 512GB.
+Bladeburner rank 0, idle. Measured (13 samples, 60 min to 05:15): karma/h -11.3k, rep/h Tetrads 5.26k; hackExp/h 30.2k; cash/h 252m
+(DECELERATING 456m>336m>252m: income is almost all darknet payouts so far; MCP rising, 9.55k/s); MCP avg 1.41k/s. Karma -54k about 07:15.
+Advisor wait 44m for Power Recirculation Core (batch 0.82 vs average 0.07); agreed. Install likely at the 07:15 run, after the core and the gang.
 End check: no Red Pill so no daemon; next black op Operation Typhoon; not ready.
 
 ## Next

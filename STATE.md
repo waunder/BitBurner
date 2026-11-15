@@ -105,17 +105,14 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-14 11:15 (scheduled run): game relaunched after the PC freeze, install 14 (The Red Pill), World Daemon ready.**
-The PC hard-froze about 08:55 and rebooted at 09:02 (`project_pc_gpu_wake_hang` memory); the game stayed closed and the
-09:15 run did nothing. Relaunched it through Steam at 11:15 (launch options carry the DevTools port); Remote API reconnected
-11:16 (158 synced, 30 pulled); all 20 residents restarted from the save. Live 11:15 (readiness): BitNode 10, $1.47q, hacking 6441,
-karma -152k, 76 installed, Daedalus favor 180.3. Last measured rates (60 min to 08:55, 12 samples; no samples 08:55-11:15):
-rep/h Slum Snakes 17.8m, Illuminati 451k, Daedalus 308k; hackExp/h 56.6b; karma/h -4.43k; cash/h 467t; MCP 86.1b/s (avg 116b/s).
-Trend: all n/a. Advisor **wait** ("gang cycle minimum: 1m more"); decision **install**: The Red Pill was the only plan item
-(ENM Analyze Engine 0.029 under the bar). Backup `saves/bitburnerSave_pre-install14_BN10run3_2026-11-14.json.gz` validated;
-installed 11:18:38. Hacking 5241 at 11:19:53 with the daemon present, so the crawler was killed at 11:20:05 and crawler/worm
-patched to skip `w0r1d_d43m0n` (they would have nuked it; run 2's daemon died this way or after it). Hacking 6024 at 11:23:15,
-daemon unrooted (still at 11:23:53, hacking 6105). Ken notified; backup `saves/bitburnerSave_worlddaemon-ready_BN10run3_2026-11-14.json.gz`.
+**2026-11-14 20:37 (scheduled run): game closed since Ken's 18:21 diagnostics restart; not relaunched, nothing changed.**
+Ken took a save backup and restarted for Dell F12 diagnostics at 18:21 (`saves/bitburnerSave_pre-diagnostics_BN6run1_2026-11-14.json.gz`),
+then restarted four more times by 18:25 (event 1074, user-initiated) and has not reopened the game or his session. GPU reset
+bursts (nvlddmkm 13/14/153) ran 18:07-18:28, none since. BitBurner's window opening coincided with a burst at 18:12, so the run
+held off relaunching during Ken's hardware test (governance "Doubt"). Last autosave: BitNode 6, $25.6m, hacking 8, karma -273,
+0 installed, player Shoplift. Remote API daemon up, game disconnected. No BN6 metrics samples yet (`metrics_logger.js` has not
+fit on 32GB; the log's last sample is BN10 17:15). End check: Red Pill not owned, not in Bladeburner; not ready.
+**Ken: relaunch BitBurner from Steam when the diagnostics are done; the next scheduled run picks up from there.**
 
 ## Next
 

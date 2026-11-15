@@ -1,0 +1,20 @@
+{
+  "name": "sleeves",
+  "description": "Shared layer, not a BitNode: sleeve controller and buyer. Sleeves exist in every BitNode once SF10 is owned, so any profile that wants them extends this layer.",
+  "extends": [
+    "core"
+  ],
+  "bitnodes": [],
+  "files": {
+    "sleeve_logic.js": "profiles/sleeves/sleeve/sleeve_logic.js",
+    "sleeve_controller.js": "profiles/sleeves/sleeve/sleeve_controller.js",
+    "sleeve_buyer_logic.js": "profiles/sleeves/sleeve/sleeve_buyer_logic.js",
+    "sleeve_buyer.js": "profiles/sleeves/sleeve/sleeve_buyer.js"
+  },
+  "config": {},
+  "startup": [
+    "sleeve_controller.js",
+    "sleeve_buyer.js"
+  ],
+  "notes": "Layer only (bitnodes is empty, so profile.py switch refuses it). sleeve_buyer.js buys sleeve augmentations, and Covenant sleeves and memory after joining The Covenant."
+}

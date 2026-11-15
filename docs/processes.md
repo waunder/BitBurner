@@ -1665,7 +1665,7 @@ only a status older than 5 minutes reads "controller status stale".
 
 ### `sleeve_controller.js` and `sleeve_logic.js`
 
-BN10 work package A. Lives in `profiles/bn10/sleeve/`, so it is in the bn10 profile's manifest
+BN10 work package A. Lives in `profiles/sleeves/sleeve/`, the shared sleeves layer, so it ships with every profile that extends it (bn10, bn6)
 only (not bn15's) and not run live: the live save is BN15
 without SF10, where the Sleeve API throws. Once a minute the controller reads every sleeve,
 asks `sleeve_logic.js` for one task per sleeve, and changes a sleeve only when its current
@@ -1716,7 +1716,7 @@ and is assumed to be 1, so chances can be slightly optimistic.
 
 ### `sleeve_buyer.js`
 
-BN10 only; in `profiles/bn10/sleeve/`, so shipped by the bn10 profile only. Buys Covenant sleeves, sleeve
+In `profiles/sleeves/sleeve/`, the shared sleeves layer (bn10, bn6). Buys Covenant sleeves, sleeve
 augmentations and sleeve memory, in that order, with cash above the `reserve` in `capital_policy.json`.
 **Augmentations (2026-11-07, Ken):** need no Covenant membership, only a sleeve at shock 0; the list is
 `getSleevePurchasableAugs`, priced at base cost; cheapest first, each at most `sleeveAugShare` (policy

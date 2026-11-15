@@ -119,7 +119,7 @@ daemon unrooted (still at 11:23:53, hacking 6105). Ken notified; backup `saves/b
 
 ## Next
 
-1. **Ken: choose the next BitNode** (destroying the daemon is his call). Until then, runs report only and must not notify again.
+1. **Ken chose BN6 (Bladeburners), 2026-11-14 ~17:00.** Pre-entry design and the `bn6` profile are ready (`docs/bn6-plan.md`; sleeves split into a shared `profiles/sleeves` layer). Entry (destroy daemon, switch profile) waits for Ken's go. Until then, runs report only and must not notify again. Latest backup `saves/bitburnerSave_worlddaemon-hold_BN10run3_2026-11-14_1710.json.gz` (taken during a GPU reset stream, see memory).
    Nothing may root the daemon: crawler.js and worm.js skip it since 11:20 (11-14); backdoor.js refuses it.
 2. Before the next run's World Daemon, finish finding what destroyed run 2's daemon (check log 2026-11-11 09:47). Today's
    finding: the crawler roots every server it can reach, the daemon included, which nothing prevented before this fix.

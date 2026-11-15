@@ -42,7 +42,7 @@ NiteSec sells. Install hold in STATE.md until NiteSec 550k.
 ## Tasks
 
 ### A. Player-side (coder A): `core/player/augmentation_readiness.js`, `core/player/install_advisor_logic.js`,
-`core/player/aug_install_logic.js`, `core/player/player_activity_logic.js`, `profiles/bn10/sleeve/sleeve_logic.js`,
+`core/player/aug_install_logic.js`, `core/player/player_activity_logic.js`, `profiles/sleeves/sleeve/sleeve_logic.js`,
 `profiles/bn10/config/player_activity_config.json`, `profiles/bn10/config/run_target.json` (or wherever augWeights lives)
 
 A1. **Gang sells.** Readiness publishes `gangSells` (names the gang faction sells and the player does not own) and

@@ -12,7 +12,7 @@ entries are in `docs/check-log.md`.
 > (claude.ai or the desktop Chat tab, no shell or repo folder), do not try to run, debug or change the game or the
 > scheduled task from here. Tell Ken plainly: "This is a chat session. For BitBurner work, open the Claude desktop app,
 > go to the Code tab, and start a session in C:\Users\kenne\BitBurner." Then help only with questions that need no
-> game access. The 2-hourly check is the scheduled task "BitBurner BN10 progress"; its runs appear in the Code tab
+> game access. The 2-hourly check is the scheduled task "BitBurner BN6 progress" (id bitburner-bn15-progress; prompt updated for BN6 2026-11-14); its runs appear in the Code tab
 > sidebar, and "Run now" there starts one. (On 2026-11-06 a chat-side attempt to sort out the task led to an
 > unrecorded install.)
 
@@ -126,7 +126,7 @@ daemon unrooted (still at 11:23:53, hacking 6105). Ken notified; backup `saves/b
    GangUniqueAugs 0.2, DaedalusAugsRequirement 35, WorldDaemonDifficulty 2. No Bladeburner multiplier below 1, so hacking is the weak
    leg here and Bladeburner plus gang carry the run.
 2. Then: combat 100 and join Bladeburner; measure action times, odds, stamina, `mem`; design the controller (`docs/bn6-plan.md`).
-3. Rewrite this file for BN6 (objective, standing settings, run-1 install table) and update the scheduled task prompt (it names BN10).
+3. Rewrite this file for BN6 (objective, standing settings, run-1 install table). The scheduled task prompt is updated for BN6.
 4. Still open: what destroyed run 2's daemon (crawler roots everything; now guarded). `metrics.py pull` over the 1MB limit.
 
 ## Open questions

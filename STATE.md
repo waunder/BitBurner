@@ -70,6 +70,8 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 - **Gang planner** (merged 2026-11-09, 47b5559; `docs/gang-planner.md`). The advisor keeps a 4h
   minimum cycle for the gang faction (cap 12h). Ascension runs in either mode, at x1.5 and at most one
   per loop. Reputation mode uses the 0.80/0.90 wanted-penalty band.
+- **Sleeves do karma crime while shocked** (2026-11-15 01:16, game-only `sleeve_config.json` `{"karmaWhileShocked": true}`).
+  BN6 started sleeves at high shock; recovery to 5 would have held karma near -8/h for about 10 more hours. Delete the file to revert.
 - Share stays on (A/B recorded 2026-11-05).
 - **Home RAM floor 512GB** (2026-11-11 22:08, was 256; `capital_policy.json` `homeRamFloor`; game-only). Bought 512GB for $477m so the HUD (killed for the install advisor's 35GB) could run again. Plus code: while mcp.js is
   down and does not fit, home RAM ignores the late-cycle cap (`mcpBlocked` in `capital_logic.js`).
@@ -105,11 +107,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-14 23:15 (scheduled run): joined the Bladeburner division; nothing else changed.** Game relaunched about 21:44; all
-residents up incl. mcp.js. Live 23:15: BN6, $155m, hacking 58, str/def/dex/agi 129/179/145/145, karma -756, 0 installed/queued, home 256GB.
-Bladeburner rank 0, no action started, next black op Operation Typhoon (rank 2500). Measured (13 samples, 60 min): cash/h 35.3m (DECELERATING
-after the restart), hackExp/h 13.3k, karma/h -6.92, rep/h Slum Snakes 3.8k, CyberSec 1.7k; MCP avg 193/s. Sleeves 0-6 on shock recovery
-(shock 71 > 5), so karma is slow and the gang is far off. Advisor wait, agreed. End check: no daemon, not Daedalus; not ready.
+**2026-11-15 01:14 (scheduled run): sleeves moved from shock recovery to karma crime.** All residents up incl. mcp.js; sleeve_buyer
+started by capital_manager this run. Live 01:15: BN6, $199m, hacking 75, str/def/dex/agi 142/183/154/154, karma -772, 0 installed/queued,
+home 512GB (capital_manager bought 256 -> 512 about 23:55, $318m). Bladeburner rank 0, no action, next black op Operation Typhoon (2500).
+Measured (12 samples, 60 min to 01:10): cash/h 216m (STEADY; the dip was the home buy), hackExp/h 21.8k (ACCELERATING), karma/h -7.85,
+rep/h Tetrads 2.61k, Slum Snakes 864; MCP avg 130/s. Change: game-only `sleeve_config.json` `{"karmaWhileShocked": true}` (karma is not
+shock-scaled; shock 60 needed ~10h more recovery); 7 sleeves on Homicide at 01:16, chance ~0.9%. Next run: measure karma/h.
+Advisor wait (HemoRecirculator 1.5h), agreed. End check: no daemon, not Daedalus; not ready.
 
 ## Next
 

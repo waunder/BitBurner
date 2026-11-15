@@ -113,14 +113,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-15 13:14 (scheduled run): steady, no changes made.** All residents up since the 07:16 install.
-Live: BN6, $1.23b, hacking 153, str/def/dex/agi 143/143/143/166, karma -54.3k, 9 installed, 0 queued.
-Gang Slum Snakes 9 members, Mug People for respect, gang rep 760 of 1.75m, power 1 vs 322.
-Measured (12 samples, 12:15-13:10): rep/h Tian Di Hui 8.33k, Slum Snakes 153; hackExp/h 1.02m; karma/h -11.7; cash/h -238m; MCP avg 354k/s.
-Trend: cash and MCP STEADY, hackExp and Tian Di Hui rep ACCELERATING, nothing decelerating.
-Negative cash/h is 9.9b of late cloud upgrades this cycle, allowed by MCP demand (RAM 14.5k/16.9k GB used); lost at install.
-Advisor wait 1.3h for Nanofiber Weave (10.4k rep gap, cash ready); decision wait, agreed.
-Bladeburner rank 0, idle (controller not written). End check: no daemon; next black op Operation Typhoon; not ready.
+**2026-11-15 15:14 (scheduled run): blocked, no game changes made.** PC rebooted 14:17; game back 14:19.
+Since 14:33 Ken's OCCT CPU stress test holds CPU at 100%; the game's Remote API dropped 15:09 and the daemon times out.
+Not interfered with; no live probe, no in-game report. Last sample 14:30: $715m, hacking 161, combat 150/150/150/173, karma -54.3k, 9 installed.
+Measured (25 samples, 12:30-14:30): rep/h Tian Di Hui 11.1k, Tetrads 1.17k, Slum Snakes 159; hackExp/h 1.29m; karma/h -12.7; cash/h -24.6m; MCP avg 471k/s.
+Trend: cash/h DECELERATING (late cloud upgrades, lost at install); MCP, hackExp, Tian Di Hui rep ACCELERATING.
+Advisor verdict install (14:30); decision defer to the 17:15 run, which must first confirm the game reconnected and residents survived the reboot.
+End check (last known): no daemon, Bladeburner rank 0, next black op Operation Typhoon; not ready.
 
 ## Next
 

@@ -11,5 +11,11 @@ const SYMBOL = "ECP"
 
 export async function main(ns) {
   ns.disableLog("ALL")
-  while (true) await ns.dnet.promoteStock(SYMBOL)
+  // A fresh BitNode has no stock market until WSE access is bought, so the symbol is
+  // invalid; exit quietly instead of raising a runtime-error modal.
+  try {
+    while (true) await ns.dnet.promoteStock(SYMBOL)
+  } catch (e) {
+    if (!String(e).includes("Invalid stock symbol")) throw e
+  }
 }

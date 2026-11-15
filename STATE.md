@@ -84,7 +84,13 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
   to `allocator_shadow_log.txt`; it buys nothing and every kind is `own`. It is judged over cycle 9
   (install 8 at 16:15) on S1-S5 in the design doc before R2 lets any kind obey it.
 
-## Installs this run
+## Installs this run (BN6 run 1)
+
+| # | When (PC clock) | Bought | Installed after |
+|---|---|---|---|
+| 1 | 2026-11-15 07:16 | 7 (Power Recirculation Core, HemoRecirculator, LuminCloaking-V1 from Tetrads; Nuoptimal Nootropic Injector Implant, ADR-V1 Pheromone Gene, Speech Enhancement from Tian Di Hui; BitWire from CyberSec; ~$2.1b) + NeuroFlux x1 + The W1ngs of Icarus (darknet reward) | 0 -> 9 |
+
+## Installs BN10 run 3 (history)
 
 | # | When (PC clock) | Bought | Installed after |
 |---|---|---|---|
@@ -107,13 +113,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-15 05:14 (scheduled run): started `gang_create.js`** (pid 24312). It was never running: startup.js could not fit it on the
-32GB day-one home, and capital_manager does not relaunch it. It creates the Slum Snakes gang at -54k karma, then starts gang-controller.js.
-Live 05:15: BN6, $1.35b, hacking 92, str/def/dex/agi 180/201/185/185, karma -31.1k, 0 installed, 1 queued (The W1ngs of Icarus, darknet reward), home 512GB.
-Bladeburner rank 0, idle. Measured (13 samples, 60 min to 05:15): karma/h -11.3k, rep/h Tetrads 5.26k; hackExp/h 30.2k; cash/h 252m
-(DECELERATING 456m>336m>252m: income is almost all darknet payouts so far; MCP rising, 9.55k/s); MCP avg 1.41k/s. Karma -54k about 07:15.
-Advisor wait 44m for Power Recirculation Core (batch 0.82 vs average 0.07); agreed. Install likely at the 07:15 run, after the core and the gang.
-End check: no Red Pill so no daemon; next black op Operation Typhoon; not ready.
+**2026-11-15 07:14 (scheduled run): install 1 of BN6 run 1, 0 -> 9 installed.** Gang Slum Snakes created about 06:54 by gang_create.js
+(3 members training combat, objective auto -> reputation). Live before 07:15: BN6, $2.24b, hacking 97, str/def/dex/agi 189/207/193/193, karma -54.2k.
+Measured (12 samples, 06:15-07:10): rep/h Tian Di Hui 3.59k; hackExp/h 34.8k; karma/h -12.7k; cash/h 380m; MCP avg 2.71k/s. Trend STEADY, nothing decelerating.
+Advisor wait (10m for S.N.A., value 0.04); decision install: S.N.A. would raise four cheaper augs by 1.9x and push the batch past cash.
+Backup `saves/bitburnerSave_pre-install1_BN6run1_2026-11-15.json.gz` validated. After: all residents back except mcp_money, automation_review, ops_hud (monitors).
+`metrics.py cycles` 07:21: cycle 1 closed 14.00h, +9 installed, rep Tetrads 25.3k, Tian Di Hui 5.67k, CyberSec 4.48k; cycle 2 open from 07:16.
+Bladeburner rank 0, idle. End check: no daemon; next black op Operation Typhoon; not ready. Game was reloaded between 05:16 and 07:14 (PIDs restarted from 1).
 
 ## Next
 

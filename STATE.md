@@ -105,18 +105,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-14 20:42 (Ken session): game relaunched 20:38, Remote API resynced, residents running; zero GPU resets since 18:28 (launch included).**
-Home 256GB (185 used), $1.76m, hacking 8 (joesguns gate 10, no hacking income yet), str 49 def 1 dex/agi 132, karma -736.
-Player training str at Powerhouse Gym toward physicalTarget 100; metrics_logger now running. MPO OverlayTestMode=5 still set.
-
-**2026-11-14 20:37 (scheduled run): game closed since Ken's 18:21 diagnostics restart; not relaunched, nothing changed.**
-Ken took a save backup and restarted for Dell F12 diagnostics at 18:21 (`saves/bitburnerSave_pre-diagnostics_BN6run1_2026-11-14.json.gz`),
-then restarted four more times by 18:25 (event 1074, user-initiated) and has not reopened the game or his session. GPU reset
-bursts (nvlddmkm 13/14/153) ran 18:07-18:28, none since. BitBurner's window opening coincided with a burst at 18:12, so the run
-held off relaunching during Ken's hardware test (governance "Doubt"). Last autosave: BitNode 6, $25.6m, hacking 8, karma -273,
-0 installed, player Shoplift. Remote API daemon up, game disconnected. No BN6 metrics samples yet (`metrics_logger.js` has not
-fit on 32GB; the log's last sample is BN10 17:15). End check: Red Pill not owned, not in Bladeburner; not ready.
-**Ken: relaunch BitBurner from Steam when the diagnostics are done; the next scheduled run picks up from there.**
+**2026-11-14 21:14 (scheduled run): game closed again; not relaunched, nothing changed.** GPU resets (nvlddmkm 13/14/153) came back
+20:52-20:57 after the 20:38 relaunch; Ken restarted the PC at 20:59 (boot 21:01) and more bursts followed at 21:02-21:04 with the game
+not running. Steam is up, BitBurner is not; Remote API daemon up, game disconnected. Held off relaunching while Ken diagnoses the GPU
+(governance "Doubt"). Last sample 20:55 (measured, 4 samples, 30 min): $63.1m, hacking 15, str/def/dex/agi 108/93/132/132, karma -743,
+home 256GB, 0 installed; cash/h 264m, hackExp/h 2.11k, karma/h -28.8, MCP 0/s; trend n/a. Advisor build, no install. End check: no
+Red Pill, not in Bladeburner; not ready. Run report not pushed.
+**Ken: relaunch BitBurner from Steam when the GPU work is done; the next scheduled run picks up from there.**
 
 ## Next
 

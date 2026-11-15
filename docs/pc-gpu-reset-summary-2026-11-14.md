@@ -73,6 +73,7 @@ One software variable remains: Meta's Quest Link app (OVRService and its "Meta V
 
 - Uninstall security update KB5132061 as a test (`wusa /uninstall /kb:5132061`, admin, restart).
 - Stop/disable Meta's OVRService (admin) and see whether resets continue.
+- Clock test (minimizing a window also triggers resets, 2026-11-14 ~22:20): NVIDIA Control Panel > Manage 3D settings > Power management mode = "Prefer maximum performance" (global), or `nvidia-smi -lgc 1500,2600` (admin; undo `nvidia-smi -rgc`). If resets stop, the card is unstable when dropping to/rising from idle clocks.
 - Turn on System Restore for C: so there is a fallback.
 - Photos or video of the 16-pin power connector via iPhone.
 - Undo MPO test when done: `reg delete HKLM\SOFTWARE\Microsoft\Windows\Dwm /v OverlayTestMode /f` + restart.

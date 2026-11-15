@@ -105,6 +105,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
+**2026-11-14 20:42 (Ken session): game relaunched 20:38, Remote API resynced, residents running; zero GPU resets since 18:28 (launch included).**
+Home 256GB (185 used), $1.76m, hacking 8 (joesguns gate 10, no hacking income yet), str 49 def 1 dex/agi 132, karma -736.
+Player training str at Powerhouse Gym toward physicalTarget 100; metrics_logger now running. MPO OverlayTestMode=5 still set.
+
 **2026-11-14 20:37 (scheduled run): game closed since Ken's 18:21 diagnostics restart; not relaunched, nothing changed.**
 Ken took a save backup and restarted for Dell F12 diagnostics at 18:21 (`saves/bitburnerSave_pre-diagnostics_BN6run1_2026-11-14.json.gz`),
 then restarted four more times by 18:25 (event 1074, user-initiated) and has not reopened the game or his session. GPU reset

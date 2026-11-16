@@ -4,6 +4,25 @@ Running list kept by Claude on its own initiative (Ken, 2026-11-16: "exercise in
 for flaws and opportunities"). Newest first. Each entry: finding, evidence, expected gain, status.
 The 2-hourly check reviews this once per cycle (first run after an install).
 
+## Bigger ideas (2026-11-16, Ken: "I want to see your imagination at work")
+
+- **Optimize, don't threshold.** Replace bladeburner.js's fixed bars (0.8 odds, rest at 55% stamina) with
+  expected rank per second: chance x rank gain / time, minus what a failure costs (stamina, HP, chaos).
+  The controller already measures every input. Let the data pick the bar.
+- **One currency for the whole run.** Value money, sleeve time, stamina and skill points in "rank-hours
+  to Daedalus". Then sleeves on money crime vs contracts, sleeve augs vs RAM, and install timing are all
+  the same question. Builds on the BN10 shadow allocator (docs/allocator-design.md).
+- **Sleeves as a portfolio.** Assign all seven together (best total), not one at a time: e.g. one sleeve
+  on Diplomacy keeps chaos down so the others' odds rise; one infiltrates to refill counts the rest use.
+- **Run experiments, not guesses.** Alternate a policy by the hour (stamina band A, then B) and let
+  metrics decide. docs/experiments.md exists; automate the switching and the verdict.
+- **Self-calibration.** Log estimated odds vs actual successes per action; if the game's estimate is
+  biased, correct for it.
+- **Plan backwards from Daedalus.** The black op chain has fixed rank gates; model the route (skills such
+  as Overclock that shorten action time, city population, count refills) and show the ETA as a curve,
+  not one number.
+- **A run page for Ken.** A live chart of rank, odds and cycles he can glance at instead of the HUD.
+
 ## Open
 
 - **Sleeves on money crime vs building contract capability.** Four sleeves commit Homicide for money

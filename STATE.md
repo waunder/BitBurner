@@ -115,13 +115,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-16 05:14 (scheduled run): steady, no changes made.**
-Live (probe 05:15): BitNode 6, $4.47b, hacking 201, combat 414/350/392/383, karma -302k, home 1TB, 18 installed, 1 queued (The B00ts of Perseus).
-Gang Slum Snakes respect 35k (ascension likely), territory 14%. Bladeburner rank 5,665 on Assassination (controller: 2,324 rank/h); all residents running, nothing died.
-Measured (12 samples, 04:20-05:15): rep/h Bladeburners 5.99k, Tian Di Hui 2.97k, Tetrads 2.88k, Speakers 2.43k, Syndicate 2.24k, CyberSec 1.08k, Slum Snakes 269; hackExp/h 2.8m; karma/h -6.81k; cash/h 490m; MCP avg 1.36m/s.
-Trend: cash and hackExp STEADY, MCP ACCELERATING; nothing DECELERATING.
-Advisor wait (3.1h for Combat Rib I; plan BLADE-51b + EMS-4, $3.61b). Decision wait: rank/h climbing, install would reset combat and Bladeburners rep; revisit 07:15.
-End check: no daemon; Typhoon rank met but chance 0.27 (controller needs 0.9); Daedalus not ready.
+**2026-11-16 07:15 (scheduled run): restarted `hacking/crawler.js`, which had died (cause not found); nothing else changed.**
+Live (probe 07:15): BitNode 6, $3.38b, hacking 213, combat 443/375/424/415, karma -311k, home 1TB, 18 installed, 1 queued (The B00ts of Perseus).
+Gang Slum Snakes respect 48k, territory 14%. Bladeburner rank 14,076 on Assassination (chance 0.92; controller: 4,604 rank/h); other residents running.
+Measured (12 samples, 06:20-07:15): rep/h Bladeburners 14.2k, NiteSec 4.57k, Tian Di Hui 4.37k, Speakers 3.86k, Syndicate 3.85k, Tetrads 3.05k, CyberSec 2.37k, Slum Snakes 300; hackExp/h 4.89m; karma/h -4.17k; cash/h 188m; MCP avg 2.16m/s.
+Trend: cash/h DECELERATING (848m>570m>188m), from about 80b of late-cycle cloud RAM buys while MCP fills 77% of RAM; MCP, hackExp and Bladeburners rep ACCELERATING.
+Advisor wait (31m for Combat Rib I). Decision wait, agreed: rank/h doubled again and an install would reset combat stats mid-climb.
+End check: no daemon; Typhoon chance 0.53-0.57 (controller needs 0.9); Daedalus needs rank 400k; not ready.
 
 ## Next
 

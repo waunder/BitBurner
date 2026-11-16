@@ -41,6 +41,24 @@ first sleeve augmentation batches; gang power after gear.
 
 ## Open
 
+- **Install 4 cost no rank/h; installs are cheap in BN6** (2026-11-16 13:15, cycle review). Rank (metrics log):
+  41.7k at 10:50, 48.8k at 11:20, 69.6k at 12:20, 103.7k at 13:15. Rank/h was ~8.8k/h over 08:20-10:50 and is
+  36k/h now (bladeburner_status, 1h window). Strength fell 492 -> 259 at the install and was back to 444 in two
+  hours; Assassination stayed at 0.98-1.00 odds. Rank/h rises with rank itself (skill points: Blade's Intuition
+  95, Cloak 91; ops and black ops unlocking), so the dip the 09:15 plan feared did not show. Expected gain:
+  shorter cycles once a worthwhile batch is affordable, so combat and Bladeburner augs compound sooner.
+  Status: weigh at each install decision; no code.
+- **Interim install plan is dearest-first, not by value** (2026-11-16 13:15). With $0.94b and empty
+  `priorityAugs`, `installPlan` is FocusWire ($900m, value 0.06) + Neural Wit Amplifier (value 0), while Bionic
+  Spine ($125m, 0.56), Combat Rib I ($24m, 0.19), Augmented Targeting II, Neurotrainer II/III, Bionic Legs
+  ($375m, 0.47) are rep-ready. The gang's gear cap reserves `installPlan.cost`, so it guards the wrong batch.
+  A long `priorityAugs` list is not a fix: `planPurchases` picks nothing when the whole list cannot be reserved,
+  which empties the plan and lifts the gang cap. Fix: order picks by value per cost (or value, then price),
+  keeping the 1.9 step and prerequisites, with tests. Expected gain: a better interim batch and a correct gang
+  reserve. Status: open; needs a tested change to `aug_install_logic.js` (it also drives real installs).
+- **Checked and rejected: late-cycle cloud RAM loses money** (2026-11-16 13:15). Cycle 3 spent $90.1b on cloud
+  and earned $127.5b hacking; buying stopped at 07:50 at 52k GB. Net positive, so `lateCloudDemandFloor` stays 0.5.
+
 - **Leftover sleeves on money crime** (2026-11-16 11:15). With 3 contract types (one sleeve each) and at most 2
   infiltrators, 2-3 sleeves fall to Mug; at 11:15 Tracking (13 < 20) idled a third. Options: a third infiltrator
   (refill grows as sqrt(n): +22%, and op counts feed the player's Assassination), Diplomacy when city chaos rises,

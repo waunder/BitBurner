@@ -11,7 +11,8 @@
     "dnet_root.js",
     "sleeve_controller.js",
     "sleeve_buyer.js",
-    "bladeburner.js"
+    "bladeburner.js",
+    "allocator.js"
   ],
   "files": {
     "sync_manifest.json": "sync_manifest.json",

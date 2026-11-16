@@ -120,13 +120,14 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-16 11:15 (scheduled run, first after install 4 at 11:05): steady, no changes made.**
-Live (probe 11:15): BitNode 6, $67m, hacking 89, combat 233/197/299/251, karma -323k, home 1TB, 22 augs + NeuroFlux installed, 0 queued.
-Bladeburner rank 47.75k (44.4k at install), Assassination at 1.00, 13.8k rank/h over 0.25h only (9.8k/h before install). Next black op Operation Juggernaut, not yet attempted.
-Sleeves: 2 on contracts, 2 infiltrating (Tracking 13), 3 on Mug by design. Sleeve buyer bought 8 augs 11:04-11:11 (early window works). Gang reputation mode, 38k of 1.75m.
-Measured (3 samples, 11:05-11:15, thin): rep/h Slum Snakes 164k, Bladeburners 88.9k; hackExp/h 225k; karma/h -3.67k; cash/h 201m; MCP avg 1.41k/s. Trend n/a (cycle too young).
-Audit 0 of 32 flagged; nothing died. Cycle review (dip and recovery vs 9.8k/h) due next run with an hour of data.
-Advisor wait; decision wait. End check: no daemon, Daedalus needs rank 400k; not ready.
+**2026-11-16 13:15 (scheduled run, cycle review for install 4): steady, no game changes.**
+Live (probe 13:15): BitNode 6, $1.29b, hacking 170, combat 444/376/496/416, karma -333k, home 1TB, 22 augs + NeuroFlux, 0 queued.
+Bladeburner rank 103.7k (47.75k at 11:15), 36.0k rank/h over 1h (8.8k/h before install 4). Deckard done 13:10; next black op Tyrell.
+Sleeves: 1 on contracts, 2 infiltrating, 1 faction work, 3 Homicide. Sleeve buyer 14 augs early in the cycle. Gang reputation mode, 355k of 1.75m.
+Measured (13 samples, 12:15-13:15): rep/h Bladeburners 212k, Slum Snakes 164k; hackExp/h 1.53m; karma/h -8.12k; cash/h 404m; MCP avg 608k/s. Trend: all rising (hacking lvl/h falling, context).
+Cycle review: install 4 caused no lasting rank/h dip (stats back in ~2h), so installs are cheap here. Interim install plan is dearest-first (FocusWire); see docs/opportunities.md.
+Audit 0 of 32 flagged; nothing died. Committed the generated manifest left over from 4ae4da6.
+Advisor wait; decision wait (install once gang rep unlocks Graphene Bionic Arms and Photosynthetic Cells, ~1-1.5h, and cash covers them with the cheap combat set). End check: no daemon, Daedalus needs rank 400k; not ready.
 
 ## Next
 

@@ -46,10 +46,11 @@ first sleeve augmentation batches; gang power after gear.
   wasted; weight gear by the stats the members' tasks use. Status: to fix.
 - **Territory.** Gang power 1 vs strongest rival 1874; territory flat at 14%. Once gear lifts power, turn on
   territory clashes (policy `territoryEnabled`) when win chance is high. Status: watch power.
-- **Cash has few uses in BN6.** Augmentations are rep-limited ($14.5b spare after ready augs). Outlets: gang
-  gear (now on), sleeve augs (next install), home RAM. Server spending (~$90b/cycle) roughly equals the
-  hacking+darknet income it produces, so it pays its way. Status: answered 2026-11-16; revisit with the
-  one-currency model.
+- **Cash sets the size of each install batch** (corrected 2026-11-16, Ken). The next augmentation waits on rep,
+  but the batch is cash-limited: at 09:00 the install plan cost $13.5b (4 augs) against $9.9b cash, and all
+  22 offered would cost ~$96t because each purchase raises later prices. The money panel's "spare" is only
+  cash left after the rep-ready augs. So every outlet (gang gear 1%/item, sleeve augs ~$0.7b/cycle, servers)
+  competes with batch size; servers roughly pay for themselves. Status: weigh in the one-currency model.
 - **Sleeves idle on contracts for lack of counts.** By 08:00 every sleeve had 92%+ contract odds, but only
   one sleeve may run each contract and Tracking was down to 1 count, so three sleeves did faction work and
   one crime. More infiltrators would refill counts for more contract sleeves. Part of "sleeves as a team".

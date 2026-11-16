@@ -90,6 +90,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 |---|---|---|---|
 | 1 | 2026-11-15 07:16 | 7 (Power Recirculation Core, HemoRecirculator, LuminCloaking-V1 from Tetrads; Nuoptimal Nootropic Injector Implant, ADR-V1 Pheromone Gene, Speech Enhancement from Tian Di Hui; BitWire from CyberSec; ~$2.1b) + NeuroFlux x1 + The W1ngs of Icarus (darknet reward) | 0 -> 9 |
 | 2 | 2026-11-15 19:17 | 5 (Bionic Arms from Tetrads; CSP Gen I, Synaptic Enhancement, Neurotrainer I from CyberSec; Wired Reflexes from Tian Di Hui; `priorityOnly` to skip Glibness Enhancement, $2.5b, value 0) + NeuroFlux x6; home 512GB -> 1TB | 9 -> 14 |
+| 3 | 2026-11-15 23:15 | 4 (Nanofiber Weave, Speech Processor Implant, Social Negotiation Assistant from Tian Di Hui; LuminCloaking-V2 from Tetrads; ~$534m) + NeuroFlux x3; home stays 1TB | 14 -> 18 |
 
 ## Installs BN10 run 3 (history)
 
@@ -114,12 +115,14 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-15 21:14 (scheduled run): steady, no changes made.** All residents running; nothing died since install 2 (19:17).
-Live (probe 21:15): BitNode 6, $190m, hacking 144, combat 274/210/270/240, karma -166k, home 1TB, 14 installed, 0 queued. Gang Slum Snakes respect 34k, territory 14%.
-Measured (13 samples, 20:10-21:10): rep/h Tian Di Hui 9.73k, Tetrads 1.57k, CyberSec 358, Slum Snakes 200; hackExp/h 573k; karma/h -22k; cash/h 84.3m; MCP avg 69k/s.
-Trend: n/a (cycle 3 only 1.9h old); nothing DECELERATING.
-Advisor wait (gang 4h minimum; Nanofiber Weave ~2.2h away); decision wait, agreed.
+**2026-11-15 23:14 (scheduled run): install 3, 4 augs + NeuroFlux x3, 14 -> 18 installed (23:15:50).**
+Before (probe 23:15): BitNode 6, $687m, hacking 171, combat 310/239/317/281, karma -214k, home 1TB. Gang Slum Snakes respect 31k, territory 14%.
+Measured (12 samples, 22:15-23:10): rep/h Tian Di Hui 13.5k, CyberSec 2.3k, Tetrads 1.53k, Slum Snakes 219; hackExp/h 1.38m; karma/h -24.4k; cash/h -152m (spending); MCP avg 528k/s.
+Trend: MCP, hackExp, Tian Di Hui rep ACCELERATING; nothing DECELERATING.
+Advisor wait (gang 4h minimum, 2 min left; batch 0.60 vs avg 0.15); decision install: that was its only objection and the next aug is ~36h off.
+Backup `saves/bitburnerSave_pre-install3_BN6run1_2026-11-15.json.gz` checked. After: all residents back, gang and Bladeburner kept.
 End check: no daemon; Bladeburner rank 0, idle, next black op Operation Typhoon (2500); not ready.
+`metrics.py cycles` 23:22: cycle 3 (19:17) closed 3.98h, logged 98%, installed +4, rebuild hacking not yet, repRate 0.47h; rep earned Tian Di Hui 37.7k, Tetrads 9.98k, CyberSec 3.47k, Slum Snakes 818; favor banked Slum Snakes +1.5 (the advisor expected Tian Di Hui +19.8 too; not shown by `cycles`, check live favor next run); cycle 4 (23:15) open.
 
 ## Next
 

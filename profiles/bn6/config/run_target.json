@@ -1,6 +1,6 @@
 {
   "goal": "BN6 run 1 (Bladeburners): SF6.1. Route below is a first guess, to be confirmed against the live node (docs/bn6-plan.md).",
-  "updated": "2026-11-14",
+  "updated": "2026-11-16",
   "gangFaction": "Slum Snakes",
   "steps": [
     {
@@ -31,7 +31,7 @@
       "label": "Operation Daedalus (final black op): stop for Ken before completing it; it ends the BitNode"
     }
   ],
-  "augWeightsWhy": "BN6 first guess: combat stats drive Bladeburner success chance and rank; hacking still funds everything through MCP.",
+  "augWeightsWhy": "BN6 first guess: combat stats drive Bladeburner success chance and rank; hacking still funds everything through MCP. 2026-11-16: Bladeburner multipliers added (success chance weighted highest: it gates rank per second and black ops; stamina sets how long contracts run between rests).",
   "augWeights": {
     "strength": 1,
     "defense": 1,
@@ -44,6 +44,10 @@
     "agility_exp": 0.3,
     "faction_rep": 0.3,
     "hacking_money": 0.2,
-    "hacking_speed": 0.2
+    "hacking_speed": 0.2,
+    "bladeburner_success_chance": 1.5,
+    "bladeburner_max_stamina": 0.5,
+    "bladeburner_stamina_gain": 0.5,
+    "bladeburner_analysis": 0.2
   }
 }

@@ -63,6 +63,17 @@ export function orderedCost(prices, step = PRICE_STEP) {
   return [...prices].sort((a, b) => b - a).reduce((sum, price, i) => sum + price * step ** i, 0)
 }
 
+/**
+ * Augmentation candidates from augmentation_readiness.json: every faction's offers (not owned or queued),
+ * as { name, faction, price, repGap }. 2026-11-16: the panel used player_activity's workCandidates, which
+ * leave out factions with no work (Bladeburners, the gang's faction) and showed 3 rep-ready augs of 26.
+ */
+export function readinessCandidates(readiness) {
+  const skip = new Set([...(readiness?.owned || []), ...(readiness?.queued || [])])
+  return (readiness?.offers || []).filter((o) => !skip.has(o.name))
+    .map((o) => ({ name: o.name, faction: o.faction, price: Number(o.price) || 0, repGap: (Number(o.repRequired) || 0) - (Number(o.rep) || 0) }))
+}
+
 /** What the current faction offers would cost, and whether cash or rep is what limits them. */
 export function augOutlook(cash, candidates, netRate) {
   const best = new Map()

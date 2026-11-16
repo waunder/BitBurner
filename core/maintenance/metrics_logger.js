@@ -56,6 +56,8 @@ function sample(ns) {
     gang: readJson(ns, "gang_status.json"),
     bladeburner: readJson(ns, "bladeburner_status.json"),
     sleeves: readJson(ns, "sleeve_status.json"),
+    sleeveBuyer: readJson(ns, "sleeve_buyer_status.json"),
+    moneyPanel: readJson(ns, "money_status.json"),
     ram: ramTotals(ns),
     homeRam: ns.getServerMaxRam("home"),
   })

@@ -1,6 +1,6 @@
 import { capturePriorTailPosition, loadTailPosition, saveTailPosition } from "./tail_geometry.js"
 import { readStacks } from "./stack_files.js"
-import { addSample, augOutlook, duration, money, nextStackTotal, ramYield, streams, windowRate, WINDOWS_MS } from "./money_logic.js"
+import { addSample, augOutlook, readinessCandidates, duration, money, nextStackTotal, ramYield, streams, windowRate, WINDOWS_MS } from "./money_logic.js"
 /**
  * Money panel: how fast cash is growing, which stream earns it, where it goes,
  * and whether cash or rep limits the next augmentations.
@@ -69,7 +69,7 @@ function summarize(ns, samples, now) {
   const sleeveSpend = sleeveBuys.reduce((sum, p) => sum + (Number(p.cost) || 0), 0)
   return {
     ts: now, cash, net, ...flows, sleeveSpend, sleeveBuys: sleeveBuys.length,
-    augs: augOutlook(cash, activity?.augmentation?.workCandidates, net[1] ?? net[0] ?? 0),
+    augs: augOutlook(cash, readinessCandidates(json(ns, "augmentation_readiness.json")), net[1] ?? net[0] ?? 0),
     yields: [
       ...flows.income.filter((r) => r.key.startsWith("stack:")).map((r) => ({ label: r.label, value: ramYield(steady(r), last.stackRam[r.label]) })),
       { label: "MCP targets", value: ramYield(steady(flows.income.find((r) => r.key === "rest")), mcpRam) },

@@ -80,8 +80,12 @@ export async function main(ns) {
     const bbSleeves = readJson(ns, "bladeburner_status.json", null)?.sleeveContracts?.sleeves || []
     const priorityOf = (i) => Math.max(0, ...Object.values(bbSleeves.find((r) => r.index === i)?.contracts || {}).map((c) => Number(c.chance?.[0] ?? c.chance) || 0))
     const augLimit = Math.min(spendable, wiped.limit)
-    const augs = list.map((s) => ({ ...s, priority: priorityOf(s.index),
-      augs: augLimit > 0 && s.shock === 0 && (!freshOnly || s.exp < 1000) ? ns.sleeve.getSleevePurchasableAugs(s.index) : [] }))
+    // Every sleeve's offers, read each pass for the totals (Ken 2026-11-16: track what they would all cost).
+    const offers = list.map((s) => { try { return ns.sleeve.getSleevePurchasableAugs(s.index) } catch { return [] } })
+    const total = (pick) => offers.flat().filter(pick).reduce((t, a) => ({ count: t.count + 1, cost: t.cost + (Number(a.cost) || 0) }), { count: 0, cost: 0 })
+    const augTotals = { all: total(() => true), wanted: total((a) => !wanted || wanted.includes(a.name)) }
+    const augs = list.map((s, i) => ({ ...s, priority: priorityOf(s.index),
+      augs: augLimit > 0 && s.shock === 0 && (!freshOnly || s.exp < 1000) ? offers[i] : [] }))
     const pick = chooseNextPurchase({ covenant, aug: chooseSleeveAugBatch({ sleeves: augs, spendable: augLimit, wanted, freshOnly,
       batchShare: Number(policy.sleeveAugBatchShare) || 0.5 }) })
     let outcome = null
@@ -97,7 +101,7 @@ export async function main(ns) {
     }
     last = { at: now, cash: ns.getServerMoneyAvailable("home") }
     write({ ok: true, income, sleeveCost, covenant: covenantBlock ?? "member", reserve: Number(policy.reserve) || 0,
-      cyclePhase, limits: { lasting: lasting.limit, wiped: wiped.limit }, action: pick, outcome })
+      cyclePhase, limits: { lasting: lasting.limit, wiped: wiped.limit }, augTotals, action: pick, outcome })
     await ns.sleep(outcome?.ok ? 200 : POLL_MS)
   }
 }

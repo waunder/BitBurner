@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { addSample, augOutlook, duration, KEEP_MS, money, nextStackTotal, orderedCost, ramYield, streams, windowRate } from "./money_logic.js"
+import { addSample, augOutlook, duration, KEEP_MS, money, nextStackTotal, orderedCost, ramYield, streams, windowRate, readinessCandidates } from "./money_logic.js"
 
 const sample = (t, hacking, stack, extra = {}) => ({ t, stacks: { "omega-net": stack }, sources: { total: hacking, hacking, ...extra } })
 
@@ -76,4 +76,15 @@ test("ramYield is income per TB", () => {
   assert.equal(ramYield(60, 2048), 30)
   assert.equal(ramYield(null, 2048), null)
   assert.equal(ramYield(60, 0), null)
+})
+
+test("readinessCandidates: every faction's offers, minus owned and queued, with rep gaps", () => {
+  const r = { owned: ["A"], queued: ["B"], offers: [
+    { name: "A", faction: "X", rep: 10, repRequired: 5, price: 1 },
+    { name: "B", faction: "X", rep: 10, repRequired: 5, price: 2 },
+    { name: "C", faction: "Bladeburners", rep: 10, repRequired: 5, price: 3 },
+    { name: "D", faction: "X", rep: 1, repRequired: 5, price: 4 },
+  ] }
+  assert.deepEqual(readinessCandidates(r).map((c) => [c.name, c.repGap]), [["C", -5], ["D", 4]])
+  assert.deepEqual(readinessCandidates(null), [])
 })

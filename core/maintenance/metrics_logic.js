@@ -91,7 +91,7 @@ export function gangSummary(status) {
  * One sample. Stale or missing sources leave their fields null and are listed
  * in `stale` with their age in seconds (null age = missing), never copied.
  */
-export function buildSample({ now, resetAt, money, sources, player, sharePower, readiness, activity, mcp, gang = null, bladeburner = null, sleeves = null, ram, homeRam = null, staleMs = STALE_MS }) {
+export function buildSample({ now, resetAt, money, sources, player, sharePower, readiness, activity, mcp, gang = null, bladeburner = null, sleeves = null, sleeveBuyer = null, moneyPanel = null, ram, homeRam = null, staleMs = STALE_MS }) {
   const stale = {}
   const readyOk = fresh(now, readiness, staleMs)
   const actOk = fresh(now, activity, staleMs)
@@ -134,6 +134,9 @@ export function buildSample({ now, resetAt, money, sources, player, sharePower, 
     gang: gangOk ? gangSummary(gang) : null,
     bladeburner: bbOk ? bladeburnerSummary(bladeburner) : null,
     sleeves: sleevesOk ? sleeveSummary(sleeves) : null,
+    // What every rep-ready player augmentation (price escalation included) and every sleeve augmentation would cost.
+    augReady: fresh(now, moneyPanel, staleMs) && moneyPanel.augs ? { count: num(moneyPanel.augs.ready), cost: num(moneyPanel.augs.readyCost) } : null,
+    sleeveAugs: fresh(now, sleeveBuyer, staleMs) && sleeveBuyer.augTotals ? sleeveBuyer.augTotals : null,
     ramMax: num(ram?.max),
     ramUsed: num(ram?.used),
     // Home RAM separates home upgrades from cloud in the `servers` spending category.

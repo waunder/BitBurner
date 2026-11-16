@@ -90,6 +90,7 @@ function readCapitalPolicy(ns) {
       territoryEnabled: raw.territoryEnabled === true,
       augmentationCashTarget: Number.isFinite(raw.augmentationCashTarget) && raw.augmentationCashTarget >= 0
         ? raw.augmentationCashTarget : null,
+      reserveInstallPlan: raw.reserveInstallPlan === true,
     };
   } catch {
     return safe;
@@ -319,7 +320,13 @@ export async function main(ns) {
     const cheap = candidates.filter((c) => c.cheap).sort((a, b) => a.cost - b.cost);
     const bestEquipment = paying[0] || cheap[0] || candidates.sort((a, b) => a.paybackSeconds - b.paybackSeconds)[0] || null;
     const phaseAllowsEquipment = capitalPolicy.phase === "earning-capacity";
-    const augmentationTarget = capitalPolicy.augmentationCashTarget;
+    // reserveInstallPlan: gear may spend only cash above the next install batch's cost (augmentation_readiness.json).
+    let installPlanCost = null;
+    if (capitalPolicy.reserveInstallPlan) {
+      try { installPlanCost = JSON.parse(ns.read("augmentation_readiness.json") || "null")?.installPlan?.cost ?? null; } catch {}
+    }
+    const reserveCandidates = [capitalPolicy.augmentationCashTarget, installPlanCost].filter((v) => Number.isFinite(v) && v >= 0);
+    const augmentationTarget = reserveCandidates.length ? Math.max(...reserveCandidates) : null;
     const reservePreserved = augmentationTarget === null || cash - bestEquipment?.cost >= augmentationTarget;
     const roiQualified = bestEquipment
       && ((bestEquipment.paybackSeconds <= C.equipmentMaxPaybackSeconds && bestEquipment.cost <= cashBudget) || bestEquipment.cheap)

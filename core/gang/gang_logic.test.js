@@ -272,6 +272,15 @@ test("reputation gear: skip ordinary gear near ascension but still buy augmentat
   assert.equal(planReputationGear(cands, { cash: 5_000 }).length, 0);
 });
 
+test("reputation gear: a combat gang buys rootkits and vehicles only when they add respect", () => {
+  const cands = [
+    { item: "NUKE Rootkit", cost: 100_000, member: "a", gain: 0, ascRatio: 1 },
+    { item: "Quadra Sport R-7", cost: 100_000, member: "a", gain: 0, ascRatio: 1 },
+    { item: "Jack the Ripper", cost: 100_000, member: "a", gain: 3, ascRatio: 1 },
+  ];
+  assert.deepEqual(planReputationGear(cands, { cash: 1e9, isHacking: false }).map((p) => p.item), ["Jack the Ripper"]);
+});
+
 test("ascension cooldown", () => {
   assert.equal(ascensionCooldownElapsed(null, 1000), true);
   assert.equal(ascensionCooldownElapsed(0, 89_999), false);

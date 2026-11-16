@@ -1,12 +1,13 @@
 {
   "phase": "earning-capacity",
-  "objective": "BN6: cash has few uses (augmentations are rep-limited), so equip the Slum Snakes gang: combat gear under 1% of cash per item, gang augmentations under 30%. Territory stays off until gang power nears the rivals'.",
+  "objective": "BN6: install batches are cash-limited, so the gang spends only cash above the install plan cost (reserveInstallPlan): gear under 1% of cash per item, gang augmentations under 5%, rootkits only when they add respect. It spent $59b in cycle 18 (6x the batch). Territory stays off until gang power nears the rivals'.",
   "allowEquipmentPurchases": true,
   "augmentationCashTarget": null,
   "territoryEnabled": false,
   "reputationCleanupEnter": 0.97,
   "reputationCleanupExit": 0.985,
   "rootkitCashFraction": 0.01,
-  "gangAugCashFraction": 0.3,
+  "gangAugCashFraction": 0.05,
+  "reserveInstallPlan": true,
   "updatedAt": "2026-11-16"
 }

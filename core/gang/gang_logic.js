@@ -297,7 +297,8 @@ export function planReputationGear(candidates, { cash, isHacking = true, rootkit
   for (const c of pool) {
     if (picked.length >= maxPurchases) break;
     if (balance - c.cost < reserve) continue;
-    const auto = c.category === "rootkit" || (isHacking && c.category === "vehicle");
+    // Rootkits and vehicles carry hacking/charisma: automatic only for a hacking gang; a combat gang buys them only on gain.
+    const auto = isHacking && (c.category === "rootkit" || c.category === "vehicle");
     const ok = c.category === "augmentation"
       ? c.gain > 0 && c.cost <= augFraction * balance
       : (auto || c.gain > 0) && c.cost <= rootkitFraction * balance;

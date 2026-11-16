@@ -20,7 +20,8 @@
     "gang_capital_policy.json": "profiles/bn6/config/gang_capital_policy.json"
   },
   "startup": [
-    "bladeburner.js"
+    "bladeburner.js",
+    "allocator.js"
   ],
-  "notes": "Prepared 2026-11-14 before entering BN6; see docs/bn6-plan.md. bladeburner.js written 2026-11-16 from live measurements (bb_probe.js). allocator.js (shadow) is left out until RAM allows."
+  "notes": "Prepared 2026-11-14 before entering BN6; see docs/bn6-plan.md. bladeburner.js written 2026-11-16 from live measurements (bb_probe.js). allocator.js (shadow, ~5.5GB) restored 2026-11-16 with home at 1TB: it values every purchase and logs verdicts, buys nothing yet (docs/allocator-design.md R1)."
 }

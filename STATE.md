@@ -83,6 +83,10 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
   (245363b) and running: `allocator.js` (5.45GB) writes `spend_grants.json` and one line per purchase
   to `allocator_shadow_log.txt`; it buys nothing and every kind is `own`. It is judged over cycle 9
   (install 8 at 16:15) on S1-S5 in the design doc before R2 lets any kind obey it.
+  **Status 2026-11-16:** the project stopped at R1 (shadow); the cycle-9 judgement and R2 never happened as the run
+  moved to BN15 and BN6, and BN6 left allocator.js out for RAM. Restored to BN6 startup 12:25 (home 1TB, 513GB free).
+  Its first pass granted all 13 sleeve aug batches bought after install 4 (early phase, no batch reserve). Next:
+  judge it this cycle, then R2 (the gang's reserveInstallPlan is a local stand-in for its batch reserve).
 
 ## Installs this run (BN6 run 1)
 

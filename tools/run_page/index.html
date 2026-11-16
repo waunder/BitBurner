@@ -68,11 +68,13 @@ th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: upp
   <section class="panel half"><h2>Rank per hour</h2><div class="chart"><canvas id="rateChart"></canvas></div></section>
   <section class="panel half"><h2>Sleeve contract odds (best, low estimate)</h2><div class="chart"><canvas id="oddsChart"></canvas></div></section>
 
-  <section class="panel half"><h2>Sleeves now</h2><div id="sleeves"></div></section>
   <section class="panel half"><h2>Earnings per hour by source</h2><div class="chart"><canvas id="earnChart"></canvas></div></section>
+  <section class="panel half"><h2>Spending per hour by category</h2><div class="chart"><canvas id="spendChart"></canvas></div></section>
 
+  <section class="panel half"><h2>Sleeves now</h2><div id="sleeves"></div></section>
   <section class="panel half"><h2>Bladeburner events</h2><div id="events"></div></section>
-  <section class="panel half"><h2>Opportunities and ideas</h2><div id="opps"></div></section>
+
+  <section class="panel wide"><h2>Opportunities and ideas</h2><div id="opps"></div></section>
 </main>
 <script>
 const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim()
@@ -95,6 +97,7 @@ function lineChart(id, opts = {}) {
 }
 const rankChart = lineChart("rankChart"), rateChart = lineChart("rateChart"), oddsChart = lineChart("oddsChart", { legend: true, y: { max: 1 } })
 const earnChart = lineChart("earnChart", { legend: true, stacked: true })
+const spendChart = lineChart("spendChart", { legend: true, stacked: true })
 
 /** Rank/h from 5-minute samples, smoothed over `win` samples; skips gaps and drops (installs keep rank). */
 function rankRate(rows, win = 6) {
@@ -233,6 +236,15 @@ async function refresh() {
     data: cyc.slice(6).map((r, j) => { const a = cyc[j], h = (r.ts - a.ts) / 3.6e6; return { x: r.ts, y: h > 0 ? Math.max(0, ((r.earned[src] || 0) - (a.earned[src] || 0)) / h) : 0 } }) }))
   earnChart.options.scales.y.ticks = { callback: (v) => "$" + fmt(v, 0) }
   earnChart.update()
+
+  // ---- spending per hour by category (this cycle): the negative money sources, shown as positive.
+  // The game nets sleeve augmentation costs into "sleeves" income, so they show there, not here.
+  const cycS = rows.filter((r) => r.spent && r.resetAt === rows.at(-1)?.resetAt)
+  const cats = [...new Set(cycS.flatMap((r) => Object.keys(r.spent)))]
+  spendChart.data.datasets = cats.map((cat, i) => ({ label: cat.replace("_expenses", ""), fill: true, borderColor: palette[(i + 3) % 7], backgroundColor: palette[(i + 3) % 7] + "55", pointRadius: 0, borderWidth: 1,
+    data: cycS.slice(6).map((r, j) => { const a = cycS[j], h = (r.ts - a.ts) / 3.6e6; return { x: r.ts, y: h > 0 ? Math.max(0, ((r.spent[cat] || 0) - (a.spent[cat] || 0)) / h) : 0 } }) }))
+  spendChart.options.scales.y.ticks = { callback: (v) => "$" + fmt(v, 0) }
+  spendChart.update()
 
   // ---- events
   document.getElementById("events").innerHTML = (live.events || []).slice().reverse().map((l) => {

@@ -47,6 +47,8 @@ def compact(row):
         "ts": row.get("ts"), "resetAt": row.get("resetAt"), "money": row.get("money"),
         # Cumulative earnings since install by source (expenses left out); the page differentiates them.
         "earned": {k: v for k, v in income.items() if k != "total" and isinstance(v, (int, float)) and v > 0} or None,
+        # Cumulative spending since install by category, as positive numbers.
+        "spent": {k: -v for k, v in income.items() if k != "total" and isinstance(v, (int, float)) and v < 0} or None,
         "installed": row.get("installedCount"), "karma": row.get("karma"),
         "skills": row.get("skills"), "verdict": row.get("verdict"),
         "rank": bb.get("rank"), "stamina": bb.get("stamina"), "action": bb.get("action"), "chaos": bb.get("chaos"),

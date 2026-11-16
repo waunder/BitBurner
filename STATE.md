@@ -72,6 +72,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
   per loop. Reputation mode uses the 0.80/0.90 wanted-penalty band.
 - **Sleeves do karma crime while shocked** (2026-11-15 01:16, game-only `sleeve_config.json` `{"karmaWhileShocked": true}`).
   BN6 started sleeves at high shock; recovery to 5 would have held karma near -8/h for about 10 more hours. Delete the file to revert.
+- **Four sleeves may infiltrate** (2026-11-16 15:15, game-only `sleeve_config.json` `maxInfiltrators` 4, default 2). Contract counts sat at 8-20, under the start bar of 20, so spare sleeves did Homicide. Remove the key to revert.
 - Share stays on (A/B recorded 2026-11-05).
 - **Home RAM floor 512GB** (2026-11-11 22:08, was 256; `capital_policy.json` `homeRamFloor`; game-only). Bought 512GB for $477m so the HUD (killed for the install advisor's 35GB) could run again. Plus code: while mcp.js is
   down and does not fit, home RAM ignores the late-cycle cap (`mcpBlocked` in `capital_logic.js`).
@@ -120,14 +121,14 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-16 13:15 (scheduled run, cycle review for install 4): steady, no game changes.**
-Live (probe 13:15): BitNode 6, $1.29b, hacking 170, combat 444/376/496/416, karma -333k, home 1TB, 22 augs + NeuroFlux, 0 queued.
-Bladeburner rank 103.7k (47.75k at 11:15), 36.0k rank/h over 1h (8.8k/h before install 4). Deckard done 13:10; next black op Tyrell.
-Sleeves: 1 on contracts, 2 infiltrating, 1 faction work, 3 Homicide. Sleeve buyer 14 augs early in the cycle. Gang reputation mode, 355k of 1.75m.
-Measured (13 samples, 12:15-13:15): rep/h Bladeburners 212k, Slum Snakes 164k; hackExp/h 1.53m; karma/h -8.12k; cash/h 404m; MCP avg 608k/s. Trend: all rising (hacking lvl/h falling, context).
-Cycle review: install 4 caused no lasting rank/h dip (stats back in ~2h), so installs are cheap here. Interim install plan is dearest-first (FocusWire); see docs/opportunities.md.
-Audit 0 of 32 flagged; nothing died. Committed the generated manifest left over from 4ae4da6.
-Advisor wait; decision wait (install once gang rep unlocks Graphene Bionic Arms and Photosynthetic Cells, ~1-1.5h, and cash covers them with the cheap combat set). End check: no daemon, Daedalus needs rank 400k; not ready.
+**2026-11-16 15:15 (scheduled run): sleeves 3 and 6 moved to infiltration; no install.**
+Live (probe 15:15): BitNode 6, $5.44b, hacking 196, combat 531/449/571/478, karma -353k, home 1TB, 22 augs + NeuroFlux, 0 queued.
+Bladeburner rank 202.7k (103.7k at 13:15), 47.9k rank/h; running Operation Annihilus (0.83). Daedalus at 400k, about 4h.
+Measured (13 samples, 14:15-15:15): rep/h Slum Snakes 313k, Bladeburners 299k; hackExp/h 3.27m; karma/h -10.4k; cash/h -357m net (cloud buys $2.7b/10min); MCP avg 1.31m/s. Trend: MCP and hackExp accelerating, Bladeburner rep steady.
+Change: contract counts (8-20) under the sleeves' start bar left 3 sleeves on Homicide; `sleeve_config.json` `maxInfiltrators` 2 -> 4, seen applied 15:17.
+Audit 0 of 32 flagged; nothing died. Gang rep mode 877k of 1.75m.
+Advisor install (3 Slum Snakes augs, $5.07b); decision wait: the node can end in ~4h and an install costs ~2h of combat stats. A last install of Bladeburner augs before Daedalus, if its odds are low, is Ken's call at the end.
+End check: no daemon; Daedalus needs rank 400k; not ready.
 
 ## Next
 

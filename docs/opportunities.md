@@ -4,6 +4,12 @@ Running list kept by Claude on its own initiative (Ken, 2026-11-16: "exercise in
 for flaws and opportunities"). Newest first. Each entry: finding, evidence, expected gain, status.
 The 2-hourly check reviews this once per cycle (first run after an install).
 
+## 2026-11-16 15:15 check
+
+- **More infiltrators while counts are low.** Evidence: counts 8-20, start bar 20; 3 of 7 sleeves on Homicide for money, 1 on Speakers rep for a value-0 aug. Gain: ~1.4x count refill (sqrt law), more sleeve contracts and player ops. Status: shipped (game-only `maxInfiltrators` 4), measure rank/h and counts next run. Next idea: let sleeve 0 drop value-0 faction targets.
+- **Cash near the node end.** Evidence: capital manager buys cloud at ~$16b/h late in the cycle (B1 82.8%); no further install planned before Daedalus (~4h). Gain: if Daedalus odds are low at rank 400k, a last install of Bladeburner augs (BLADE-51b, ORION-MKIV, GOLEM Serum, Vangelis, Hyperion, EsperTech; Bladeburners rep 922k covers all) needs ~$30b+ with price escalation. Status: open; Ken's end-of-node call. Consider pausing cloud buys once rank passes ~350k.
+- **Advisor blind to the node end.** Evidence: verdict install with 3 augs while Daedalus is ~4h away. Gain: avoids a reset that costs ~2h of stats near the finish. Status: open (judgement covers it this time).
+
 ## Sequence (2026-11-16 08:30)
 
 One build at a time; each lands, gets measured, then the next starts. Quick fixes found on the way go in

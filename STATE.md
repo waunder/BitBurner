@@ -145,10 +145,15 @@ End check: no daemon; Typhoon chance 0.53-0.57 (controller needs 0.9); Daedalus 
    Ken's framing: balance exp lost to each purchase against capability gained; maximize growth rate, don't
    under-buy. Measure it: sleeve contract odds and rank/h per cycle with vs without augs.
 3. Rewrite this file for BN6 (objective, standing settings, run-1 install table). The scheduled task prompt is updated for BN6.
-4. **For the next-BitNode decision (Ken 2026-11-16):** we own 7 of 8 sleeves (3 from SF10.3, 4 Covenant). The 8th
+4. **Install timing (Ken and Claude, 2026-11-16 09:15):** hold the next install for a few hours of clean data on
+   today's fixes (city hop, black ops at 0.6, sleeve teams, gang gear): rank/h rose from ~5k to 7.9k. In BN6 an
+   install resets combat stats, so it costs Bladeburner rank/h for hours (unmeasured) while the batch is small
+   (~4 augs for ~$13.5b; price x1.9 per aug). Install when rank/h growth flattens or the affordable batch clearly
+   outweighs the dip; then measure the dip, the recovery and the first sleeve aug batches.
+5. **For the next-BitNode decision (Ken 2026-11-16):** we own 7 of 8 sleeves (3 from SF10.3, 4 Covenant). The 8th
    and sleeve memory upgrades are bought from The Covenant only in BN10; the 5th Covenant sleeve costs ~$100q
    (10^4 x $10t). Weigh a BN10 return for these against other BitNodes.
-5. Still open: what destroyed run 2's daemon (crawler roots everything; now guarded). `metrics.py pull` over the 1MB limit.
+6. Still open: what destroyed run 2's daemon (crawler roots everything; now guarded). `metrics.py pull` over the 1MB limit.
 
 ## Open questions
 

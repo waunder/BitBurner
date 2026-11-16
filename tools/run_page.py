@@ -127,8 +127,11 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--port", type=int, default=8790)
+    # 0.0.0.0 so Ken can open it from the MacBook over Tailscale (http://100.125.241.4:8790) or the home LAN.
+    # The page is read-only: it never writes to the game.
+    parser.add_argument("--host", default="0.0.0.0")
     args = parser.parse_args()
-    server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
+    server = ThreadingHTTPServer((args.host, args.port), Handler)
     print(f"run page on http://localhost:{args.port}", flush=True)
     server.serve_forever()
 

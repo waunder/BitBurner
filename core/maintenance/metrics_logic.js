@@ -39,6 +39,30 @@ export function workSummary(work) {
   }
 }
 
+/** Bladeburner fields from a fresh bladeburner_status.json (bladeburner.js), or null. */
+export function bladeburnerSummary(status) {
+  if (!status || status.ok === false) return null
+  const sleeves = status.sleeveContracts?.sleeves || []
+  return {
+    rank: num(status.rank),
+    stamina: Array.isArray(status.stamina) ? status.stamina.map(num) : null,
+    action: status.current ? `${status.current.type}/${status.current.name}` : null,
+    chance: Array.isArray(status.currentChance) ? status.currentChance.map(num) : null,
+    city: status.city ?? null,
+    chaos: num(status.cityChaos),
+    skillPoints: num(status.skillPoints),
+    minCount: num(status.sleeveContracts?.minCount),
+    // Each sleeve's best contract odds (low end of the estimate).
+    sleeveBest: sleeves.map((r) => num(Math.max(0, ...Object.values(r.contracts || {}).map((c) => Number(c.chance?.[0]) || 0)))),
+  }
+}
+
+/** Sleeve tasks from a fresh sleeve_status.json (sleeve_controller.js), or null. */
+export function sleeveSummary(status) {
+  if (!status || !Array.isArray(status.sleeves) || !status.sleeves.length) return null
+  return status.sleeves.map((r) => ({ task: r.current ?? null, shock: num(r.shock), sync: num(r.sync), error: r.error ? String(r.error).slice(0, 60) : null }))
+}
+
 /** Gang fields from a fresh gang_status.json (gang-controller.js), or null. */
 export function gangSummary(status) {
   const g = status?.gang
@@ -67,7 +91,7 @@ export function gangSummary(status) {
  * One sample. Stale or missing sources leave their fields null and are listed
  * in `stale` with their age in seconds (null age = missing), never copied.
  */
-export function buildSample({ now, resetAt, money, sources, player, sharePower, readiness, activity, mcp, gang = null, ram, homeRam = null, staleMs = STALE_MS }) {
+export function buildSample({ now, resetAt, money, sources, player, sharePower, readiness, activity, mcp, gang = null, bladeburner = null, sleeves = null, ram, homeRam = null, staleMs = STALE_MS }) {
   const stale = {}
   const readyOk = fresh(now, readiness, staleMs)
   const actOk = fresh(now, activity, staleMs)
@@ -78,6 +102,10 @@ export function buildSample({ now, resetAt, money, sources, player, sharePower, 
   // No gang status is normal before a gang exists: listed as stale only when the file is there but old.
   const gangOk = fresh(now, gang, staleMs)
   if (gang && !gangOk) stale.gang = ageS(now, gang)
+  const bbOk = fresh(now, bladeburner, staleMs)
+  if (bladeburner && !bbOk) stale.bladeburner = ageS(now, bladeburner)
+  const sleevesOk = fresh(now, sleeves, staleMs)
+  if (sleeves && !sleevesOk) stale.sleeves = ageS(now, sleeves)
   const favor = readyOk
     ? Object.fromEntries(Object.entries(readiness.favor || {}).map(([f, v]) => [f, num(typeof v === "object" ? v?.favor : v)]))
     : null
@@ -104,6 +132,8 @@ export function buildSample({ now, resetAt, money, sources, player, sharePower, 
     mcpRate: mcpOk ? num(mcp.rate) : null,
     mcpAvgRate: mcpOk ? num(mcp.avgRate) : null,
     gang: gangOk ? gangSummary(gang) : null,
+    bladeburner: bbOk ? bladeburnerSummary(bladeburner) : null,
+    sleeves: sleevesOk ? sleeveSummary(sleeves) : null,
     ramMax: num(ram?.max),
     ramUsed: num(ram?.used),
     // Home RAM separates home upgrades from cloud in the `servers` spending category.

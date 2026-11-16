@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { gangSummary, buildSample, trimLog, msToNextTick, workSummary, fresh } from "./metrics_logic.js"
+import { gangSummary, bladeburnerSummary, sleeveSummary, buildSample, trimLog, msToNextTick, workSummary, fresh } from "./metrics_logic.js"
 
 const NOW = 1_000_000_000
 const base = {
@@ -129,4 +129,16 @@ test("batch value is null when readiness is stale, home RAM null when not given"
   assert.equal(s.batchValue, null)
   assert.equal(s.batchAverage, null)
   assert.equal(s.homeRam, null)
+})
+
+test("bladeburner and sleeve summaries", () => {
+  const bb = bladeburnerSummary({ ok: true, rank: 364.2, stamina: [83, 102], current: { type: "General", name: "Training" }, currentChance: null,
+    city: "Aevum", cityChaos: 3, skillPoints: 2,
+    sleeveContracts: { minCount: 240, sleeves: [{ index: 0, contracts: { Tracking: { chance: [0.7, 0.9] }, "Bounty Hunter": { chance: [0.5, 0.6] } } }] } })
+  assert.equal(bb.rank, 364.2)
+  assert.equal(bb.action, "General/Training")
+  assert.deepEqual(bb.sleeveBest, [0.7])
+  assert.equal(bladeburnerSummary({ ok: false }), null)
+  assert.deepEqual(sleeveSummary({ sleeves: [{ current: "CRIME:Homicide", shock: 0, sync: 100 }] }), [{ task: "CRIME:Homicide", shock: 0, sync: 100, error: null }])
+  assert.equal(sleeveSummary({ sleeves: [] }), null)
 })

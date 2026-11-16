@@ -9,7 +9,8 @@
  * Stale source files are listed in `stale`, never copied.
  *
  * Writes: metrics_log.txt (bounded to the last KEEP lines, about 5 days).
- * Reads:  augmentation_readiness.json, player_activity_status.json, mcp_status.json, gang_status.json.
+ * Reads:  augmentation_readiness.json, player_activity_status.json, mcp_status.json, gang_status.json,
+ *         bladeburner_status.json (rank, stamina, action, sleeve odds), sleeve_status.json (tasks).
  * Start:  run metrics_logger.js (opens no tail window; replaces a prior copy)
  * Local:  tools/metrics.py pull | summary | cycles | rates
  *
@@ -53,6 +54,8 @@ function sample(ns) {
     activity: readJson(ns, "player_activity_status.json"),
     mcp: readJson(ns, "mcp_status.json"),
     gang: readJson(ns, "gang_status.json"),
+    bladeburner: readJson(ns, "bladeburner_status.json"),
+    sleeves: readJson(ns, "sleeve_status.json"),
     ram: ramTotals(ns),
     homeRam: ns.getServerMaxRam("home"),
   })

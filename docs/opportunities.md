@@ -25,6 +25,16 @@ The 2-hourly check reviews this once per cycle (first run after an install).
 
 ## Open
 
+- **Gang gear choice for a combat gang.** Since equipment buying came on (2026-11-16 08:10) the controller also
+  buys rootkits (hacking gear) for Slum Snakes, whose members do combat tasks. Cheap (1% cap) but likely
+  wasted; weight gear by the stats the members' tasks use. Status: to fix.
+- **Territory.** Gang power 1 vs strongest rival 1874; territory flat at 14%. Once gear lifts power, turn on
+  territory clashes (policy `territoryEnabled`) when win chance is high. Status: watch power.
+- **Cash has few uses in BN6.** Augmentations are rep-limited ($14.5b spare after ready augs). Outlets: gang
+  gear (now on), sleeve augs (next install), home RAM. Server spending (~$90b/cycle) roughly equals the
+  hacking+darknet income it produces, so it pays its way. Status: answered 2026-11-16; revisit with the
+  one-currency model.
+
 - **Sleeves on money crime vs building contract capability.** Four sleeves commit Homicide for money
   while their Bladeburner contract odds sit below the 0.8 bar (Bounty Hunter ~0.53). Training combat
   (gym) or Field Analysis might put more sleeves on contracts within the cycle. Evidence needed: sleeve
@@ -40,6 +50,12 @@ The 2-hourly check reviews this once per cycle (first run after an install).
   a narrower band or Training while low might earn more. Status: to measure.
 
 ## Done
+
+- 2026-11-16 **Gang bought no equipment all run.** BN6 had no gang_capital_policy.json, so the core default
+  (BN2-era "stop gang equipment purchases") applied. Added a BN6 policy; buying started at once.
+- 2026-11-16 **Half the player's Bladeburner time on Diplomacy.** Assassination pushed chaos past 50; now moves
+  to a calm city instead (f1bb959). **Black ops stalled** under a 0.9 bar: lowered to 0.6; Typhoon and Zero
+  succeeded at 0.68 and 0.72 within minutes.
 
 - 2026-11-16 **Sleeve augmentations never bought in BN6** (Ken's question). sleeve_buyer.js exited outside
   BN10. Fixed f4d8ecd; then per-sleeve batches, combat list, contract-odds priority (cbb0d37). Measure

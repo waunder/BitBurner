@@ -1688,7 +1688,12 @@ Priority per sleeve, each rule checked against bitburner-src `dev` (file paths i
    faction is used last, since the game does not forbid sharing with the player. The gang's
    faction is excluded (the game stops that work). The player's `workType` is tried first,
    then hacking, field, security; the game returns false for types a faction does not offer.
-4. Crime by money rate, else synchronize, else leave the sleeve alone.
+4. Bladeburner (BN6+, while `bladeburner_status.json` is fresh): spare sleeves take contracts, one
+   sleeve per contract; a contract is started only with `contractStartCount` (20) left and kept down
+   to 1. While any contract/op count is below `infiltrateBelow` (300), spare sleeves still free
+   infiltrate Synthoids, up to `maxInfiltrators` (2; 2026-11-16, so a near-empty Tracking no longer
+   holds a sleeve idle).
+5. Crime by money rate, else synchronize, else leave the sleeve alone.
 
 Crime success is computed from the sleeve's skills and `crime_success` multiplier (the
 `Crime.successRate` formula). The BitNode's own crime multiplier is not visible without SF5

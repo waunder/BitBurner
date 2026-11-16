@@ -46,12 +46,16 @@ first sleeve augmentation batches; gang power after gear.
   wasted; weight gear by the stats the members' tasks use. Status: to fix.
 - **Territory.** Gang power 1 vs strongest rival 1874; territory flat at 14%. Once gear lifts power, turn on
   territory clashes (policy `territoryEnabled`) when win chance is high. Status: watch power.
+- **Gang spending vs the install batch** (2026-11-16 09:15). Gang expenses $26b in the hour after equipment buying
+  came on (respect 48k -> 579k, Slum Snakes rep/h 35.7k). Cash $11.2b vs a $13.5b batch plan. Gang augs persist
+  through installs, so not wasted, but they now set the batch size. Decide before the install whether to pause
+  gang buying for the last hour of a cycle. Status: to weigh at the install.
 - **Cash sets the size of each install batch** (corrected 2026-11-16, Ken). The next augmentation waits on rep,
   but the batch is cash-limited: at 09:00 the install plan cost $13.5b (4 augs) against $9.9b cash, and all
   22 offered would cost ~$96t because each purchase raises later prices. The money panel's "spare" is only
   cash left after the rep-ready augs. So every outlet (gang gear 1%/item, sleeve augs ~$0.7b/cycle, servers)
   competes with batch size; servers roughly pay for themselves. Status: weigh in the one-currency model.
-- **Sleeves idle on contracts for lack of counts.** By 08:00 every sleeve had 92%+ contract odds, but only
+- **Sleeves idle on contracts for lack of counts.** (2026-11-16 09:17: a near-empty contract no longer holds a sleeve idle; leftover spare sleeves infiltrate, up to 2. Measure Retirement/Bounty Hunter counts and rank/h over the next hours.) By 08:00 every sleeve had 92%+ contract odds, but only
   one sleeve may run each contract and Tracking was down to 1 count, so three sleeves did faction work and
   one crime. More infiltrators would refill counts for more contract sleeves. Part of "sleeves as a team".
 - **Install cadence in BN6.** Installs keep Bladeburner rank and skills, so the usual cost of an install

@@ -115,13 +115,14 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-16 07:15 (scheduled run): restarted `hacking/crawler.js`, which had died (cause not found); nothing else changed.**
-Live (probe 07:15): BitNode 6, $3.38b, hacking 213, combat 443/375/424/415, karma -311k, home 1TB, 18 installed, 1 queued (The B00ts of Perseus).
-Gang Slum Snakes respect 48k, territory 14%. Bladeburner rank 14,076 on Assassination (chance 0.92; controller: 4,604 rank/h); other residents running.
-Measured (12 samples, 06:20-07:15): rep/h Bladeburners 14.2k, NiteSec 4.57k, Tian Di Hui 4.37k, Speakers 3.86k, Syndicate 3.85k, Tetrads 3.05k, CyberSec 2.37k, Slum Snakes 300; hackExp/h 4.89m; karma/h -4.17k; cash/h 188m; MCP avg 2.16m/s.
-Trend: cash/h DECELERATING (848m>570m>188m), from about 80b of late-cycle cloud RAM buys while MCP fills 77% of RAM; MCP, hackExp and Bladeburners rep ACCELERATING.
-Advisor wait (31m for Combat Rib I). Decision wait, agreed: rank/h doubled again and an install would reset combat stats mid-climb.
-End check: no daemon; Typhoon chance 0.53-0.57 (controller needs 0.9); Daedalus needs rank 400k; not ready.
+**2026-11-16 09:15 (scheduled run): sleeve 3 was idle on a near-empty Tracking contract; now spare sleeves infiltrate (up to 2) instead.**
+Live (probe 09:15): BitNode 6, $11.2b, hacking 221, combat 469/397/449/439, karma -317k, home 1TB, 18 installed, 1 queued (The B00ts of Perseus).
+Gang Slum Snakes respect 579k (gear on since 08:11; spent $26b in the hour), territory 14%. Bladeburner rank 27.0k, controller 8,144 rank/h (4.6k at 07:15).
+Measured (13 samples, 08:15-09:15): rep/h Slum Snakes 35.7k, Bladeburners 23.7k, Syndicate 3.52k, Speakers 3.52k, Tetrads 3.2k, Tian Di Hui 3.04k, NiteSec 2.58k, CyberSec 944; hackExp/h 5.26m; karma/h -2.9k; cash/h -1.13b (gang spend); MCP avg 2.7m/s.
+Trend: nothing DECELERATING; best rep switched to Slum Snakes.
+Fix: `sleeve_logic.js` `contractStartCount` 20 and `maxInfiltrators` 2; observed sleeves 3 and 6 infiltrating, Tracking 1 -> 3.1 in 2 min.
+Advisor wait (4m for Bionic Spine). Decision wait, per Ken's 09:15 hold for clean data; rank/h still rising.
+End check: no daemon; Operation Titan chance 0.59-0.70 (bar 0.6 low end); Daedalus needs rank 400k; not ready.
 
 ## Next
 

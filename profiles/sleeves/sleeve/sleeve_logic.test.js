@@ -190,6 +190,20 @@ test("bladeburner: low counts send one free sleeve to infiltrate", () => {
   assert.equal(out.filter((r) => r.task.bbAction === "Infiltrate Synthoids").length, 1)
 })
 
+test("bladeburner: a near-empty contract is not started, and the freed sleeve infiltrates (2026-11-16)", () => {
+  const status = bbStatus({ minCount: 1 })
+  status.contracts.Tracking.count = 1.05
+  const out = assignBladeburner(spareSleeves, status)
+  assert.equal(out.some((r) => r.task.contract === "Tracking"), false)
+  assert.equal(out.filter((r) => r.task.bbAction === "Infiltrate Synthoids").length, 2)
+  // a sleeve already on it keeps it down to 1
+  const onIt = spareSleeves.map((s) => s.index === 0 ? { ...s, task: { type: "BLADEBURNER", actionName: "Tracking" } } : s)
+  assert.equal(assignBladeburner(onIt, status).find((r) => r.index === 0)?.task.contract, "Tracking")
+  // at most maxInfiltrators
+  const many = [0, 1, 2, 3, 4, 5].map((index) => ({ index, shock: 0, sync: 100, skills: {}, task: null }))
+  assert.equal(assignBladeburner(many, status).filter((r) => r.task.bbAction === "Infiltrate Synthoids").length, 2)
+})
+
 test("bladeburner: replaces money crime only when fresh, and sameTask recognises it", () => {
   const withBb = chooseSleeveTasks({ sleeves: spareSleeves, karma: -1e6, now: NOW, bladeburner: bbStatus() })
   assert.equal(withBb.filter((r) => r.task.action === "bladeburner").length, 3)

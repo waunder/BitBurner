@@ -45,6 +45,9 @@ export const DEFAULT_SLEEVE_CONFIG = {
   bladeburnerMinChance: 0.8, // low end of the sleeve's own estimate, to start a contract
   bladeburnerKeepChance: 0.7, // a sleeve already on a contract keeps it down to here (no flapping at the bar)
   infiltrateBelow: 300,     // one spare sleeve infiltrates Synthoid communities when any contract/op count is below this
+  contractStartCount: 20,   // a sleeve starts a contract only with this many left (keeps it down to 1); stops a near-empty
+                            // contract (Tracking at ~1, 2026-11-16) from holding a sleeve idle between refills
+  maxInfiltrators: 2,       // spare sleeves left without a contract while counts are low also infiltrate, up to this many
 }
 
 function number(value) { return Number.isFinite(Number(value)) ? Number(value) : 0 }
@@ -233,10 +236,10 @@ export function chooseSleeveTasks({ sleeves = [], karma = null, config = {}, act
 export function assignBladeburner(spare = [], bb = {}, config = DEFAULT_SLEEVE_CONFIG) {
   const cfg = { ...DEFAULT_SLEEVE_CONFIG, ...config }
   const odds = new Map((bb.sleeves || []).map((row) => [row.index, row.contracts || {}]))
-  const usable = (sleeve, name, bar = cfg.bladeburnerMinChance) => {
+  const usable = (sleeve, name, bar = cfg.bladeburnerMinChance, minCount = number(cfg.contractStartCount) || 1) => {
     const o = odds.get(sleeve.index)?.[name]
     const c = bb.contracts?.[name]
-    if (!o || !c || number(c.count) < 1 || number(o.chance?.[0]) < bar) return null
+    if (!o || !c || number(c.count) < Math.max(1, minCount) || number(o.chance?.[0]) < bar) return null
     return { name, chance: number(o.chance[0]), score: (number(o.chance[0]) * number(c.repGain)) / Math.max(0.001, number(o.timeMs) / 1000) }
   }
   const out = []
@@ -249,7 +252,7 @@ export function assignBladeburner(spare = [], bb = {}, config = DEFAULT_SLEEVE_C
   // Keep sleeves already on a still-good contract, so reassignment never trips the one-sleeve rule.
   for (const sleeve of spare) {
     if (sleeve.task?.type !== "BLADEBURNER" || claimed.has(sleeve.task.actionName)) continue
-    const pick = usable(sleeve, sleeve.task.actionName, Math.min(cfg.bladeburnerKeepChance, cfg.bladeburnerMinChance))
+    const pick = usable(sleeve, sleeve.task.actionName, Math.min(cfg.bladeburnerKeepChance, cfg.bladeburnerMinChance), 1)
     if (pick) take(sleeve, pick)
   }
   // Then the best remaining (sleeve, contract) pairs.
@@ -268,8 +271,9 @@ export function assignBladeburner(spare = [], bb = {}, config = DEFAULT_SLEEVE_C
   }
   if (number(bb.minCount) < cfg.infiltrateBelow) {
     const free = spare.filter((s) => !used.has(s.index))
-    const infiltrator = free.find((s) => s.task?.type === "INFILTRATE") || free[0]
-    if (infiltrator) {
+    // Current infiltrators first (no churn); the game's per-infiltration gain falls as 1/sqrt(infiltrators), so total refill grows as sqrt(n).
+    free.sort((a, b) => (b.task?.type === "INFILTRATE") - (a.task?.type === "INFILTRATE"))
+    for (const infiltrator of free.slice(0, Math.max(1, number(cfg.maxInfiltrators) || 1))) {
       used.add(infiltrator.index)
       out.push({ index: infiltrator.index, task: { action: "bladeburner", bbAction: "Infiltrate Synthoids" }, reason: `Infiltrate Synthoids: lowest contract/op count ${number(bb.minCount).toFixed(0)} < ${cfg.infiltrateBelow}` })
     }

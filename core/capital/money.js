@@ -62,8 +62,13 @@ function summarize(ns, samples, now) {
   const steady = (row) => row?.rates[1] ?? row?.rates[0] ?? null
   const activity = json(ns, "player_activity_status.json")
   const cash = ns.getServerMoneyAvailable("home")
+  // The game's "sleeves" source is net (sleeve crime earnings minus sleeve purchases), so sleeve
+  // augmentation spending never shows as spending. Count it from sleeve_buyer.js's own records.
+  const resetAt = Number(json(ns, "augmentation_readiness.json")?.resetAt) || 0
+  const sleeveBuys = (json(ns, "sleeve_buyer_status.json")?.purchases || []).filter((p) => p.ts >= resetAt && p.outcome?.ok)
+  const sleeveSpend = sleeveBuys.reduce((sum, p) => sum + (Number(p.cost) || 0), 0)
   return {
-    ts: now, cash, net, ...flows,
+    ts: now, cash, net, ...flows, sleeveSpend, sleeveBuys: sleeveBuys.length,
     augs: augOutlook(cash, activity?.augmentation?.workCandidates, net[1] ?? net[0] ?? 0),
     yields: [
       ...flows.income.filter((r) => r.key.startsWith("stack:")).map((r) => ({ label: r.label, value: ramYield(steady(r), last.stackRam[r.label]) })),
@@ -80,7 +85,9 @@ function buildLines(view, pos) {
     [GREEN, columns("net", cell(view.net[0]), cell(view.net[1]), "")],
     ...view.income.map((row) => [GREEN, rateRow(row)]),
   ]
-  if (view.spending.length) lines.push([WHITE, "spent"], ...view.spending.map((row) => [YELLOW, rateRow(row)]))
+  lines.push([WHITE, "spent"], ...view.spending.map((row) => [YELLOW, rateRow(row)]))
+  // Inside the net "sleeves" figure above; shown here so it is visible (total this cycle only).
+  lines.push([YELLOW, columns(`sleeve augs (${view.sleeveBuys})`, "", "", money(view.sleeveSpend))])
   const { augs, yields } = view
   lines.push([WHITE, "per TB of RAM"])
   for (const { label, value } of yields) lines.push([GREEN, fit(label, `${money(value)}/s`)])

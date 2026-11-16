@@ -96,6 +96,26 @@ export function factionTargets(readiness, { gangFaction = null, money = 0, confi
   return [...byFaction.values()].sort((a, b) => a.repGap - b.repGap || a.faction.localeCompare(b.faction))
 }
 
+/**
+ * Faction work types ordered by the sleeve's own reputation rate (bitburner-src Faction work formulas):
+ * hacking ~ (hack + int/3), field ~ 0.9 x (hack + str + def + dex + agi + cha + int) / 5.5,
+ * security ~ 0.9 x (hack + str + def + dex + agi + int) / 4.5. 2026-11-16 (BN6): sleeves with hacking 59
+ * and combat ~205 did hacking work at about a third of their security/field rate.
+ * Returns { types, scores } (types best first); null skills keep the configured order.
+ */
+export function workTypeRank(skills, fallback = DEFAULT_SLEEVE_CONFIG.factionWorkTypes) {
+  if (!skills) return { types: [...fallback], scores: null }
+  const k = (name) => number(skills[name])
+  const hack = k("hacking"), int = k("intelligence")
+  const scores = {
+    hacking: hack + int / 3,
+    field: (0.9 * (hack + k("strength") + k("defense") + k("dexterity") + k("agility") + k("charisma") + int)) / 5.5,
+    security: (0.9 * (hack + k("strength") + k("defense") + k("dexterity") + k("agility") + int)) / 4.5,
+  }
+  const types = [...fallback].sort((a, b) => number(scores[b]) - number(scores[a]))
+  return { types, scores }
+}
+
 /** Does the sleeve's current task (ns.sleeve.getTask, null when idle) already satisfy the desired one? */
 export function sameTask(current, desired) {
   if (!desired || desired.action === "hold") return current === null || current === undefined
@@ -106,7 +126,15 @@ export function sameTask(current, desired) {
   if (desired.action === "bladeburner") return desired.bbAction === "Infiltrate Synthoids"
     ? current.type === "INFILTRATE"
     : current.type === "BLADEBURNER" && current.actionName === desired.contract
-  if (desired.action === "faction") return current.type === "FACTION" && current.factionName === desired.faction && desired.workTypes.includes(current.factionWorkType)
+  if (desired.action === "faction") {
+    if (current.type !== "FACTION" || current.factionName !== desired.faction || !desired.workTypes.includes(current.factionWorkType)) return false
+    // Close enough to the sleeve's best type (within 10%)? Keeps a sleeve on the best type the faction offers
+    // without retrying, and moves it off a much worse one (hacking work for a combat sleeve).
+    const scores = desired.workScores
+    if (!scores) return true
+    const best = Math.max(...desired.workTypes.map((t) => number(scores[t])))
+    return number(scores[current.factionWorkType]) >= 0.9 * best
+  }
   return false
 }
 
@@ -156,11 +184,14 @@ export function chooseSleeveTasks({ sleeves = [], karma = null, config = {}, act
 
   // A sleeve already on a wanted faction keeps it, so reassigning never trips the one-sleeve-per-faction rule.
   const claimed = new Set()
-  const assignFaction = (sleeve, target, note) => results.set(sleeve.index, {
+  const assignFaction = (sleeve, target, note) => {
+    const rank = workTypeRank(sleeve.skills, workTypes)
+    return results.set(sleeve.index, {
     index: sleeve.index,
-    task: { action: "faction", faction: target.faction, workTypes, augmentation: target.augmentation, repGap: target.repGap },
+    task: { action: "faction", faction: target.faction, workTypes: rank.types, workScores: rank.scores, augmentation: target.augmentation, repGap: target.repGap },
     reason: `${target.faction} needs +${Math.ceil(target.repGap)} rep for ${target.augmentation}${note}`,
   })
+  }
   const rest = []
   const spare = []
   for (const sleeve of pending) {

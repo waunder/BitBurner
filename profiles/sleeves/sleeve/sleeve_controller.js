@@ -42,6 +42,10 @@ function readSleeves(ns) {
   return sleeves
 }
 
+// Work types a faction refused (e.g. NiteSec offers hacking only), so a sleeve is not retried every poll.
+const refusedTypes = new Map()
+const refused = (faction) => refusedTypes.get(faction) || new Set()
+
 function apply(ns, index, task) {
   if (task.action === "recovery") return ns.sleeve.setToShockRecovery(index)
   if (task.action === "synchronize") return ns.sleeve.setToSynchronize(index)
@@ -52,6 +56,7 @@ function apply(ns, index, task) {
     let lastError = null
     for (const type of task.workTypes) {
       try { if (ns.sleeve.setToFactionWork(index, task.faction, type)) return true } catch (error) { lastError = error }
+      refusedTypes.set(task.faction, refused(task.faction).add(type))
     }
     if (lastError) throw lastError
     return false
@@ -87,6 +92,11 @@ export async function main(ns) {
       const rows = []
       for (const sleeve of sleeves) {
         const decision = decisions[sleeve.index]
+        if (decision.task.action === "faction") {
+          const no = refused(decision.task.faction)
+          const offered = decision.task.workTypes.filter((t) => !no.has(t))
+          if (offered.length) decision.task.workTypes = offered
+        }
         let changed = false
         let error = null
         if (!sameTask(sleeve.task, decision.task) && decision.task.action !== "hold") {

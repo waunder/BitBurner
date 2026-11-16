@@ -111,10 +111,12 @@ test("a stale or failed readiness snapshot yields no rep target, so sleeves fall
   assert.equal(run({ sleeves: [sleeve(0)], readiness: { ok: false, ts: NOW } })[0].task.goal, "money")
 })
 
-test("faction work types start with the player's, then hacking, field, security", () => {
+test("faction work types follow the sleeve's own rep rate (2026-11-16; was the player's type first)", () => {
   const activity = { ts: NOW, decision: { action: "faction", faction: "X", workType: "field" } }
   const out = run({ sleeves: [sleeve(0)], readiness: readiness([cand("NiteSec", "A", 100)]), activity })
-  assert.deepEqual(out[0].task.workTypes, ["field", "hacking", "security"])
+  const scores = out[0].task.workScores
+  assert.deepEqual(out[0].task.workTypes, [...out[0].task.workTypes].sort((a, b) => scores[b] - scores[a]))
+  assert.deepEqual([...out[0].task.workTypes].sort(), ["field", "hacking", "security"])
 })
 
 test("the current crime is kept unless the best beats it clearly", () => {
@@ -205,4 +207,17 @@ test("bladeburner: keeping a contract has a lower bar than starting one", () => 
   const onIt = spareSleeves.map((s) => s.index === 1 ? { ...s, task: { type: "BLADEBURNER", actionName: "Retirement" } } : s)
   assert.equal(assignBladeburner(onIt, status).find((r) => r.index === 1)?.task.contract, "Retirement")
   assert.equal(assignBladeburner(spareSleeves, status).some((r) => r.task.contract === "Retirement"), false)
+})
+
+test("workTypeRank: a combat sleeve prefers security/field over hacking; sameTask moves it off hacking", async () => {
+  const { workTypeRank, sameTask } = await import("./sleeve_logic.js")
+  const skills = { hacking: 59, strength: 202, defense: 202, dexterity: 208, agility: 208, charisma: 156 }
+  const r = workTypeRank(skills)
+  assert.equal(r.types.at(-1), "hacking")
+  assert.ok(r.scores.security > 2.5 * r.scores.hacking)
+  const desired = { action: "faction", faction: "NiteSec", workTypes: r.types, workScores: r.scores }
+  assert.equal(sameTask({ type: "FACTION", factionName: "NiteSec", factionWorkType: "hacking" }, desired), false)
+  assert.equal(sameTask({ type: "FACTION", factionName: "NiteSec", factionWorkType: "field" }, desired), true) // within 10% of security
+  assert.equal(sameTask({ type: "FACTION", factionName: "NiteSec", factionWorkType: "hacking" }, { ...desired, workScores: null }), true)
+  assert.deepEqual(workTypeRank(null).types, ["hacking", "field", "security"])
 })

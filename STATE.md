@@ -139,6 +139,11 @@ End check: no daemon; Typhoon chance 0.53-0.57 (controller needs 0.9); Daedalus 
    HUD: `hb` toggles the Bladeburner section; header "Node finish" line (white) is the Daedalus ETA at the current rate.
    Next: track rank/h trend; tune `minChance` and stamina thresholds; consider sleeve Training/Field Analysis instead of
    money crime; add rank to `metrics_logger` and the 2-hourly check; growth-based node ETA.
+   **Sleeve augs (Ken 2026-11-16):** buyer now runs outside BN10 (f4d8ecd) but only for exp<1000 sleeves, a window
+   that closes before cash exists (cash ~$65m at 1h, ~$200m at 2h after install). Build before next install:
+   early-cycle window (~2h), combat augs + Neurotrainer I only (~$100m/sleeve), cheap group first across sleeves.
+   Ken's framing: balance exp lost to each purchase against capability gained; maximize growth rate, don't
+   under-buy. Measure it: sleeve contract odds and rank/h per cycle with vs without augs.
 3. Rewrite this file for BN6 (objective, standing settings, run-1 install table). The scheduled task prompt is updated for BN6.
 4. Still open: what destroyed run 2's daemon (crawler roots everything; now guarded). `metrics.py pull` over the 1MB limit.
 

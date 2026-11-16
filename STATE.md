@@ -113,13 +113,14 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-15 15:14 (scheduled run): blocked, no game changes made.** PC rebooted 14:17; game back 14:19.
-Since 14:33 Ken's OCCT CPU stress test holds CPU at 100%; the game's Remote API dropped 15:09 and the daemon times out.
-Not interfered with; no live probe, no in-game report. Last sample 14:30: $715m, hacking 161, combat 150/150/150/173, karma -54.3k, 9 installed.
-Measured (25 samples, 12:30-14:30): rep/h Tian Di Hui 11.1k, Tetrads 1.17k, Slum Snakes 159; hackExp/h 1.29m; karma/h -12.7; cash/h -24.6m; MCP avg 471k/s.
-Trend: cash/h DECELERATING (late cloud upgrades, lost at install); MCP, hackExp, Tian Di Hui rep ACCELERATING.
-Advisor verdict install (14:30); decision defer to the 17:15 run, which must first confirm the game reconnected and residents survived the reboot.
-End check (last known): no daemon, Bladeburner rank 0, next black op Operation Typhoon; not ready.
+**2026-11-15 17:14 (scheduled run): steady, no changes made.** Game reconnected 15:53 after the reboot and Ken's CPU test (OCCT gone).
+Game `ps` 17:16: all 19 residents up (mcp_supervisor, crawler, mcp, capital_manager, gang-controller, metrics_logger, run_report, HUD...).
+Live (probe 17:15): BitNode 6, $4.48b, hacking 174, combat 220/220/220/254, karma -84.7k, 9 installed, 0 queued, home 512GB.
+Gang Slum Snakes respect 31.6k, territory 14%. Player on Tetrads field work.
+Measured (25 samples, 15:10-17:10): rep/h Tetrads 13.8k, CyberSec 734, Tian Di Hui 180, Slum Snakes 169; hackExp/h 1.88m; karma/h -15.1k; cash/h 1.58b; MCP avg 1.52m/s.
+Trend: cash/h STEADY, MCP ACCELERATING, hackExp STEADY, Tetrads rep STEADY. Nothing DECELERATING.
+Advisor verdict wait (1.1h for Bionic Arms, Tetrads rep gap 16.5k); decision wait, agreed. Install likely at the 19:14 run.
+End check (probe 17:15): no daemon; Bladeburner rank 0, idle, next black op Operation Typhoon (2500); not ready.
 
 ## Next
 

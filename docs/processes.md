@@ -1731,7 +1731,8 @@ purchase zeroes that sleeve's exp** (`Sleeve.installAugmentation`), so while the
 `purchaseSleeveAug`), about 24GB by the 4GB rule.
 
 - **Start:** `startup.js` (bn10 profile), or `run sleeve_buyer.js`; a rerun replaces the running copy.
-  Outside BN10 it writes the reason to `sleeve_buyer_status.json` and exits. Before The Covenant it
+  Outside BN10 (since 2026-11-16) it buys augmentations only, and in BN6 only for fresh sleeves (exp below
+  1000, right after an install) because their Bladeburner contract odds follow their stats. Before The Covenant it
   buys augmentations only and reports `covenant` with the reason; sleeves and memory begin on joining.
 - **Policy:** a sleeve whenever spendable (cash minus reserve) covers `getSleeveCost()`. Memory only
   after the first Covenant sleeve, on the lowest-memory sleeve, the largest batch of up to 10

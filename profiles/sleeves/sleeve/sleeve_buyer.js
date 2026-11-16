@@ -1,6 +1,6 @@
 /**
  * Buys Covenant sleeves, sleeve augmentations and sleeve memory, with cash above the
- * `capital_policy.json` reserve. BitNode 10 only. Augmentations need no Covenant membership
+ * `capital_policy.json` reserve. Augmentations work in any BitNode with sleeves and need no Covenant membership
  * (each sleeve's shock must be 0); sleeves and memory do, and start once the player joins.
  * Installs wipe sleeve augmentations, so startup.js runs this after each one (bn10 profile).
  * Records cost, modelled payoff and outcome of every purchase in `sleeve_buyer_status.json`.
@@ -41,8 +41,9 @@ export async function main(ns) {
   const prior = readJson(ns, STATUS, {})
   const purchases = Array.isArray(prior.purchases) ? prior.purchases : []
   const write = (extra) => ns.write(STATUS, JSON.stringify({ ts: Date.now(), purchases, ...extra }, null, 2), "w")
+  // Augmentations work wherever sleeves exist (SF10); only Covenant sleeves and memory need BN10,
+  // and eligibility() gates those below.
   const bitNode = ns.getResetInfo().currentNode
-  if (Number(bitNode) !== 10) { const why = eligibility({ bitNode }); write({ ok: false, idle: why }); ns.print(why); return }
 
   let last = null, income = 0
   while (true) {
@@ -71,9 +72,11 @@ export async function main(ns) {
     let karma = null
     try { karma = Number(ns.heart.break()) } catch { /* unknown: treated as not needed */ }
     const karmaTarget = Number(readJson(ns, "player_activity_config.json", {})?.crimeKarmaTarget ?? -54000)
-    const karmaNeeded = Number.isFinite(karma) && karma > karmaTarget
-    const augs = list.map((s) => ({ ...s, augs: s.shock === 0 && (!karmaNeeded || s.exp < 1000) ? ns.sleeve.getSleevePurchasableAugs(s.index) : [] }))
-    const pick = chooseNextPurchase({ covenant, aug: chooseSleeveAug({ sleeves: augs, spendable: Math.min(spendable, wiped.limit), augShare: Number(policy.sleeveAugShare) || 0.05, karmaNeeded }) })
+    // Fresh sleeves only (exp below 1000, i.e. just after an install) while their exp matters: karma crime,
+    // or BN6 where sleeves run Bladeburner contracts whose odds follow their stats.
+    const freshOnly = (Number.isFinite(karma) && karma > karmaTarget) || Number(bitNode) === 6
+    const augs = list.map((s) => ({ ...s, augs: s.shock === 0 && (!freshOnly || s.exp < 1000) ? ns.sleeve.getSleevePurchasableAugs(s.index) : [] }))
+    const pick = chooseNextPurchase({ covenant, aug: chooseSleeveAug({ sleeves: augs, spendable: Math.min(spendable, wiped.limit), augShare: Number(policy.sleeveAugShare) || 0.05, karmaNeeded: freshOnly }) })
     let outcome = null
     if (pick.kind !== "save") {
       const result = pick.kind === "sleeve" ? ns.sleeve.purchaseSleeve()

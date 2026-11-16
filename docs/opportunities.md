@@ -41,6 +41,10 @@ first sleeve augmentation batches; gang power after gear.
 
 ## Open
 
+- **Sleeves idle ~90 s after an install**: the controller assigned faction work from the pre-install readiness file
+  (factions not yet rejoined) and the game threw. Self-heals when readiness refreshes; a membership guard would
+  close it. Minor. Status: to fix when next in sleeve code.
+
 - **Gang gear choice for a combat gang.** Since equipment buying came on (2026-11-16 08:10) the controller also
   buys rootkits (hacking gear) for Slum Snakes, whose members do combat tasks. Cheap (1% cap) but likely
   wasted; weight gear by the stats the members' tasks use. Status: to fix.
@@ -67,6 +71,10 @@ first sleeve augmentation batches; gang power after gear.
   a narrower band or Training while low might earn more. Status: to measure.
 
 ## Done
+
+- 2026-11-16 **Gang spent $59b in cycle 18, 6x the install batch, for zero territory power.** Gear does not raise
+  power (only Territory Warfare does). Gang gear now spends only cash above the install plan (`reserveInstallPlan`),
+  gang augs 5% of cash, a combat gang buys rootkits only on respect gain (ed99b83).
 
 - 2026-11-16 **Gang bought no equipment all run.** BN6 had no gang_capital_policy.json, so the core default
   (BN2-era "stop gang equipment purchases") applied. Added a BN6 policy; buying started at once.

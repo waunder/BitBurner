@@ -85,6 +85,10 @@ export async function main(ns) {
       }
 
       const snap = snapshot(ns, bb)
+      // Rank 25 opens the Bladeburners faction (its augmentations boost Bladeburner work).
+      if (snap.rank >= 25 && !ns.getPlayer().factions.includes("Bladeburners")) {
+        if (bb.joinBladeburnerFaction()) event(ns, `joined Bladeburners faction at rank ${snap.rank.toFixed(1)}`)
+      }
       const current = bb.getCurrentAction()
       const curKey = current ? actionKey(current) : "none"
       const elapsed = current ? bb.getActionCurrentTime() : 0

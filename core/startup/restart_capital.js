@@ -6,5 +6,5 @@ export async function main(ns) {
   await ns.sleep(200)
   const pid = ns.run("capital_manager.js")
   ns.tprint(`capital_manager.js restarted, pid ${pid}`)
-  ns.singularity.setFocus(true)
+  try { if (ns.singularity.getCurrentWork()) ns.singularity.setFocus(true) } catch { /* not working (e.g. Bladeburner action) */ }
 }

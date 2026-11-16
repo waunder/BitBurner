@@ -15,6 +15,12 @@ test("manual override makes no player action change", () => {
   assert.equal(choosePlayerActivity({ player, config: { override: "manual" } }).action, "hold")
 })
 
+test("an external owner (bladeburner.js) holds the player", () => {
+  const d = choosePlayerActivity({ player, config: { enabled: true, physicalTarget: 30 }, externalOwner: "bladeburner.js" })
+  assert.equal(d.action, "hold")
+  assert.match(d.reason, /bladeburner/)
+})
+
 test("after physical baseline, a visible hacking gate selects Algorithms", () => {
   const ready = { skills: { hacking: 400, strength: 30, defense: 30, dexterity: 30, agility: 30 } }
   const result = choosePlayerActivity({ player: ready, nextGate: { host: "catalyst", required: 401 }, config: { physicalTarget: 30 } })

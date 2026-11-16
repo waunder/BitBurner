@@ -160,7 +160,10 @@ export async function main(ns) {
     const crimeNeeded = cashShort || (Number.isFinite(karmaTarget) && Number(player.karma) > karmaTarget)
     const crimeCandidate = capability.available && (crimeNeeded || String(config.override).toLowerCase() === "crime")
       ? bestCrime(ns, cashShort) : null
-    const decision = choosePlayerActivity({ player, nextGate: gateState.gate, augmentation, crimeCandidate, config, bitNode: capability.currentNode })
+    // bladeburner.js owns the player while its status is fresh and says so (BN6).
+    const blade = readJson(ns, "bladeburner_status.json", null)
+    const externalOwner = blade?.ownsPlayer && now - Number(blade.ts || 0) < 2 * 60 * 1000 ? "bladeburner.js" : null
+    const decision = choosePlayerActivity({ player, nextGate: gateState.gate, augmentation, crimeCandidate, config, bitNode: capability.currentNode, externalOwner })
     if (decision.action === "faction" && capability.available) decision.workType = offeredWorkType(ns, decision.faction, decision.workType)
     const key = actionKey(decision)
     // Applying again is how a rising rep takes the promotion.

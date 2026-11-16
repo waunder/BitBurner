@@ -93,7 +93,7 @@ export async function main(ns) {
       if (want > 0 && ns.exec(SHARE_SCRIPT, host, want)) threads += want
     }
     ns.tprint(`share_deploy: ${threads} share threads on ${servers} cloud server(s). Share power after the first call lands: run again to read; now ${ns.getSharePower().toFixed(4)}.`)
-    ns.singularity.setFocus(true)
+    try { if (ns.singularity.getCurrentWork()) ns.singularity.setFocus(true) } catch { /* not working (e.g. Bladeburner action) */ }
     return
   }
 

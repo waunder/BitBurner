@@ -10,7 +10,8 @@
   "startup": [
     "dnet_root.js",
     "sleeve_controller.js",
-    "sleeve_buyer.js"
+    "sleeve_buyer.js",
+    "bladeburner.js"
   ],
   "files": {
     "sync_manifest.json": "sync_manifest.json",
@@ -170,6 +171,9 @@
     "sleeve_logic.js": "profiles/sleeves/sleeve/sleeve_logic.js",
     "sleeve_controller.js": "profiles/sleeves/sleeve/sleeve_controller.js",
     "sleeve_buyer_logic.js": "profiles/sleeves/sleeve/sleeve_buyer_logic.js",
-    "sleeve_buyer.js": "profiles/sleeves/sleeve/sleeve_buyer.js"
+    "sleeve_buyer.js": "profiles/sleeves/sleeve/sleeve_buyer.js",
+    "bladeburner_logic.js": "profiles/bn6/bladeburner/bladeburner_logic.js",
+    "bladeburner.js": "profiles/bn6/bladeburner/bladeburner.js",
+    "bb_probe.js": "profiles/bn6/bladeburner/bb_probe.js"
   }
 }

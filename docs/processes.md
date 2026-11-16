@@ -3435,3 +3435,29 @@ opt-in via `BB_REMOTE_TRACE=1`; daemon stdout no longer duplicates every
 record. Host-side `.log` files are not Netscript-readable: the old
 `remote_api_keepalive.js` cannot determine daemon health. Full usage and
 recovery states: `docs/remote-api-keepalive.md`.
+
+## Bladeburner (BN6), added 2026-11-16
+
+### `bladeburner.js` (profile bn6, startup)
+- **What:** persistent controller for the player's Bladeburner actions. Every 0.5s it snapshots rank, stamina, city
+  chaos and each contract/operation's success range, time, count and rank gain; `bladeburner_logic.chooseAction()`
+  picks the best expected rank/second at a planned chance (low end of the range while it is wider than 0.05, else
+  its midpoint) above `minChance` (0.8). Field Analysis when a wide range might beat the best by 20%+ (blocked per
+  action after 10 analyses that do not narrow it). Rests (Hyperbolic Regeneration Chamber) below 55% stamina until
+  95%. Diplomacy above chaos 50. Black ops once rank and low-end chance >= 0.9 clear. Switches only at an action
+  boundary. Spends skill points greedily by weight per point. Moves to the most populous city with chaos <= 50
+  when it has 25%+ more people.
+- **Never starts Operation Daedalus** (ends the BitNode) unless `allowDaedalus` is true in the config; reports
+  `daedalusReady` instead. Ken decides.
+- **Files:** reads `bladeburner_config.json` (optional, merged over `DEFAULT_CONFIG`); writes
+  `bladeburner_status.json` (every 5s: rank, rankPerHour over up to 1h, stamina, city, current, decision, nextBlackOp,
+  daedalusReady, analysisBlocked, lastError) and `bladeburner_events.txt` (last 400 lines: starts, skills, city
+  moves, errors).
+- **RAM:** 73GB. **Player ownership:** while `ownsPlayer` is true and the status is under 2 min old,
+  `player_activity_controller.js` holds (`externalOwner`). Set `{"enabled": false}` or `{"ownPlayer": false}` in the
+  config to hand the player back.
+- **Gotchas:** action types are plural in this game version ("Contracts", "Operations", "Black Operations").
+  Bladeburner actions are not "work", so `singularity.setFocus` throws while one runs; restart scripts now guard it.
+
+### `bb_probe.js`
+- One-shot, read-only snapshot of every Bladeburner action, city and skill to `bb_probe.json`. 

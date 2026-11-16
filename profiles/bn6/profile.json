@@ -1,6 +1,6 @@
 {
   "name": "bn6",
-  "description": "BitNode 6 (Bladeburners): Bladeburner controller (to be written once the node is open), plus the bn15 darknet family and the shared sleeves layer.",
+  "description": "BitNode 6 (Bladeburners): Bladeburner controller (bladeburner.js), plus the bn15 darknet family and the shared sleeves layer.",
   "extends": [
     "core",
     "bn15",
@@ -9,11 +9,17 @@
   "bitnodes": [
     6
   ],
-  "files": {},
+  "files": {
+    "bladeburner_logic.js": "profiles/bn6/bladeburner/bladeburner_logic.js",
+    "bladeburner.js": "profiles/bn6/bladeburner/bladeburner.js",
+    "bb_probe.js": "profiles/bn6/bladeburner/bb_probe.js"
+  },
   "config": {
     "player_activity_config.json": "profiles/bn6/config/player_activity_config.json",
     "run_target.json": "profiles/bn6/config/run_target.json"
   },
-  "startup": [],
-  "notes": "Prepared 2026-11-14 before entering BN6; see docs/bn6-plan.md. Scripts go in profiles/bn6/bladeburner/ and are added to files and startup once measured live. allocator.js (shadow) is left out until RAM allows."
+  "startup": [
+    "bladeburner.js"
+  ],
+  "notes": "Prepared 2026-11-14 before entering BN6; see docs/bn6-plan.md. bladeburner.js written 2026-11-16 from live measurements (bb_probe.js). allocator.js (shadow) is left out until RAM allows."
 }

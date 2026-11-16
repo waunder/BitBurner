@@ -95,11 +95,13 @@ function covenantTraining({ player, augmentation, config, bitNode }) {
   return null
 }
 
-export function choosePlayerActivity({ player = {}, nextGate = null, augmentation = null, crimeCandidate = null, config = {}, bitNode = null } = {}) {
+export function choosePlayerActivity({ player = {}, nextGate = null, augmentation = null, crimeCandidate = null, config = {}, bitNode = null, externalOwner = null } = {}) {
   const override = String(config.override || "auto").toLowerCase()
   if (config.enabled === false || override === "manual") {
     return { action: "hold", reason: "manual override is active", confidence: "HIGH" }
   }
+  // Another controller (bladeburner.js) holds the player's one action slot.
+  if (externalOwner) return { action: "hold", reason: `player owned by ${externalOwner}`, confidence: "HIGH" }
 
   if (override === "algorithms") {
     return { action: "algorithms", university: config.university || "Rothman University", city: config.universityCity || "Sector-12", course: "Algorithms", reason: "explicit Algorithms override", confidence: "HIGH" }

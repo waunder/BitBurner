@@ -12,5 +12,5 @@ export async function main(ns) {
   await ns.sleep(200)
   const pid = ns.run("dnet_root.js", 1, ...args)
   ns.tprint(`dnet_root.js restarted, pid ${pid}, args ${JSON.stringify(args)}`)
-  ns.singularity.setFocus(true)
+  try { if (ns.singularity.getCurrentWork()) ns.singularity.setFocus(true) } catch { /* not working (e.g. Bladeburner action) */ }
 }

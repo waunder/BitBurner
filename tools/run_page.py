@@ -24,7 +24,7 @@ import bb_remote  # noqa: E402
 PAGE = ROOT / "tools" / "run_page" / "index.html"
 METRICS = ROOT / "runtime" / "metrics_log.txt"
 LIVE_FILES = ["bladeburner_status.json", "sleeve_status.json", "sleeve_buyer_status.json",
-              "augmentation_readiness.json", "gang_status.json", "capital_status.json"]
+              "augmentation_readiness.json", "gang_status.json", "capital_status.json", "money_status.json"]
 LIVE_TTL_S = 10
 _live_cache = {"at": 0, "data": None}
 _metrics_cache = {"mtime": None, "rows": None}
@@ -53,6 +53,7 @@ def compact(row):
         "sleeveBest": bb.get("sleeveBest"),
         "sleeves": [s.get("task") for s in (row.get("sleeves") or [])] or None,
         "respect": gang.get("respect") if isinstance(gang, dict) else None,
+        "augReady": row.get("augReady"), "sleeveAugs": row.get("sleeveAugs"),
     }
 
 

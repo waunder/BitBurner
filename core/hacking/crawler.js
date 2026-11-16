@@ -15,6 +15,8 @@ function disable_logs(ns) {
 /** @param {NS} ns */
 export async function main(ns) {
 	disable_logs(ns)
+	// One crawler only: a rerun replaces the old copy (2026-11-16: two were running, PIDs 3 and 118493).
+	for (const p of ns.ps("home")) if (p.filename === ns.getScriptName() && p.pid !== ns.pid) ns.kill(p.pid)
 	while (true) {
 		let servers = Array(ns.scan())[0]
 		let serv_set = Array(servers)

@@ -534,7 +534,7 @@ function buildDisplay(ns, state, pos) {
   const finish = nodeCompletionLine(now, json(ns, "bladeburner_status.json"))
   if (finish) target.lines.push(finish)
   for (const [i, line] of target.lines.entries()) {
-    const color = i === 0 || line.startsWith("Now:") ? COLORS.HEADER : COLORS.HEALTHY
+    const color = line.startsWith("Node finish") ? COLORS.SECTION : i === 0 || line.startsWith("Now:") ? COLORS.HEADER : COLORS.HEALTHY
     for (const part of wrapText(line, HUD_CHARS)) lines.push(color + part + COLORS.RESET)
   }
   lines.push(COLORS.HEADER + "─".repeat(37) + COLORS.RESET)

@@ -64,6 +64,8 @@ export async function main(ns) {
   const bb = ns.bladeburner
   if (!bb.inBladeburner()) { ns.write(STATUS, JSON.stringify({ ts: Date.now(), ok: false, ownsPlayer: false, reason: "not in Bladeburner" }), "w"); return }
 
+  let daedalusRank = null
+  try { daedalusRank = bb.getBlackOpRank("Operation Daedalus") } catch { /* name changed: reported as null */ }
   let resting = false
   let prevElapsed = 0
   let prevKey = null
@@ -145,7 +147,7 @@ export async function main(ns) {
           rank: snap.rank, rankPerHour: hours > 0.05 ? (snap.rank - r0) / hours : null, rankWindowHours: hours,
           stamina: snap.stamina, city: snap.city, cityChaos: snap.cityChaos, skillPoints: bb.getSkillPoints(),
           current: cur, currentChance, decision: lastDecision, resting,
-          nextBlackOp: snap.nextBlackOp, daedalusReady: snap.nextBlackOp?.name === "Operation Daedalus" && snap.rank >= snap.nextBlackOp.rank,
+          nextBlackOp: snap.nextBlackOp, daedalusRank, daedalusReady: snap.nextBlackOp?.name === "Operation Daedalus" && snap.rank >= snap.nextBlackOp.rank,
           analysisBlocked: analysis.blocked, lastError,
         }, null, 1), "w")
       }

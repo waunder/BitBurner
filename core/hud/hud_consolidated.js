@@ -499,6 +499,18 @@ function runTargetStatus(ns, now) {
   return runTargetView(json(ns, "run_target.json"), live, compact)
 }
 
+// BN6: the node ends with Operation Daedalus. Straight-line ETA at the current rank rate (an upper bound: the rate climbs).
+export function nodeCompletionLine(now, s) {
+  if (!s || !Number.isFinite(s.ts) || now - s.ts > 300_000 || !(Number(s.daedalusRank) > 0)) return null
+  const need = Number(s.daedalusRank) - (Number(s.rank) || 0)
+  if (need <= 0) return `Node finish: Daedalus rank reached${s.daedalusReady ? " — READY, Ken decides" : ""}`
+  const perHour = Number(s.rankPerHour)
+  if (!(perHour > 0)) return `Node finish: Daedalus at rank ${compact(s.daedalusRank)}; ETA after rate settles`
+  const hours = need / perHour
+  const when = hours < 48 ? `${hours.toFixed(1)}h` : `${(hours / 24).toFixed(hours < 240 ? 1 : 0)} days`
+  return `Node finish: ~${when} at ${compact(perHour)} rank/h (Daedalus ${compact(s.daedalusRank)}; rate rising)`
+}
+
 function buildDisplay(ns, state, pos) {
   const now = Date.now()
 
@@ -519,6 +531,8 @@ function buildDisplay(ns, state, pos) {
   lines.push(COLORS.HEADER + "║        CONSOLIDATED HUD           ║" + COLORS.RESET)
   lines.push(COLORS.HEADER + "╚═══════════════════════════════════╝" + COLORS.RESET)
   const target = runTargetStatus(ns, now)
+  const finish = nodeCompletionLine(now, json(ns, "bladeburner_status.json"))
+  if (finish) target.lines.push(finish)
   for (const [i, line] of target.lines.entries()) {
     const color = i === 0 || line.startsWith("Now:") ? COLORS.HEADER : COLORS.HEALTHY
     for (const part of wrapText(line, HUD_CHARS)) lines.push(color + part + COLORS.RESET)

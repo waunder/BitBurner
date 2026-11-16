@@ -6,6 +6,7 @@
   "covenantTarget": false,
   "covenantCloseFraction": 0.5,
   "priorityAugs": [],
+  "priorityOnly": false,
   "repBeforeGates": true,
   "focusWork": true,
   "gym": "Powerhouse Gym",

@@ -89,6 +89,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | # | When (PC clock) | Bought | Installed after |
 |---|---|---|---|
 | 1 | 2026-11-15 07:16 | 7 (Power Recirculation Core, HemoRecirculator, LuminCloaking-V1 from Tetrads; Nuoptimal Nootropic Injector Implant, ADR-V1 Pheromone Gene, Speech Enhancement from Tian Di Hui; BitWire from CyberSec; ~$2.1b) + NeuroFlux x1 + The W1ngs of Icarus (darknet reward) | 0 -> 9 |
+| 2 | 2026-11-15 19:17 | 5 (Bionic Arms from Tetrads; CSP Gen I, Synaptic Enhancement, Neurotrainer I from CyberSec; Wired Reflexes from Tian Di Hui; `priorityOnly` to skip Glibness Enhancement, $2.5b, value 0) + NeuroFlux x6; home 512GB -> 1TB | 9 -> 14 |
 
 ## Installs BN10 run 3 (history)
 
@@ -113,14 +114,14 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-15 17:14 (scheduled run): steady, no changes made.** Game reconnected 15:53 after the reboot and Ken's CPU test (OCCT gone).
-Game `ps` 17:16: all 19 residents up (mcp_supervisor, crawler, mcp, capital_manager, gang-controller, metrics_logger, run_report, HUD...).
-Live (probe 17:15): BitNode 6, $4.48b, hacking 174, combat 220/220/220/254, karma -84.7k, 9 installed, 0 queued, home 512GB.
-Gang Slum Snakes respect 31.6k, territory 14%. Player on Tetrads field work.
-Measured (25 samples, 15:10-17:10): rep/h Tetrads 13.8k, CyberSec 734, Tian Di Hui 180, Slum Snakes 169; hackExp/h 1.88m; karma/h -15.1k; cash/h 1.58b; MCP avg 1.52m/s.
-Trend: cash/h STEADY, MCP ACCELERATING, hackExp STEADY, Tetrads rep STEADY. Nothing DECELERATING.
-Advisor verdict wait (1.1h for Bionic Arms, Tetrads rep gap 16.5k); decision wait, agreed. Install likely at the 19:14 run.
-End check (probe 17:15): no daemon; Bladeburner rank 0, idle, next black op Operation Typhoon (2500); not ready.
+**2026-11-15 19:14 (scheduled run): install 2, 9 -> 14 installed, NeuroFlux x6, home 512GB -> 1TB.** Backup `saves/bitburnerSave_pre-install2_BN6run1_2026-11-15.json.gz` validated.
+Before (probe 19:15): BitNode 6, $3.32b, hacking 181, combat 240/240/240/277, karma -124k, home 512GB. Gang Slum Snakes respect 37k, territory 14%.
+Measured (13 samples, 18:10-19:10): rep/h CyberSec 6.38k, Tetrads 2.12k, Tian Di Hui 196, Slum Snakes 192; hackExp/h 2.97m; karma/h -21.5k; cash/h 1.27b; MCP avg 1.65m/s.
+Trend: cash/h ACCELERATING, MCP DECELERATING (late-cycle drawdown, hacking stalled short of omega-net), hackExp ACCELERATING.
+Advisor install; decision install, but with `priorityOnly` to skip Glibness Enhancement ($2.5b, value 0, x1.9 on later prices). Config reverted after.
+After (19:18): hacking 1, combat 45/10/13/12 (retraining to 100), all residents back incl. crawler and gang-controller.
+`metrics.py cycles` 19:21: cycle 2 closed 12.01h, logged 99%, +5 installed, rebuild 1.39h; rep Tetrads 63.3k, Tian Di Hui 47.9k, CyberSec 10.3k; cycle 3 open.
+End check: no daemon; Bladeburner rank 0, idle, next black op Operation Typhoon (2500); not ready.
 
 ## Next
 

@@ -4,6 +4,22 @@ Running list kept by Claude on its own initiative (Ken, 2026-11-16: "exercise in
 for flaws and opportunities"). Newest first. Each entry: finding, evidence, expected gain, status.
 The 2-hourly check reviews this once per cycle (first run after an install).
 
+## Sequence (2026-11-16 08:30)
+
+One build at a time; each lands, gets measured, then the next starts. Quick fixes found on the way go in
+at once. Measurement-only items run in parallel because they need no code.
+
+1. **Sleeves as a team** (now): more infiltrators to refill contract counts, so all seven sleeves can work
+   contracts; joint assignment. Biggest immediate rank gain: ~3 idle-for-rank sleeves.
+2. **Gang gear matched to combat** (small, next): stop buying rootkits for Slum Snakes.
+3. **Daedalus route model** on the run page: black-op gates, rank curve, finish date.
+4. **Optimizer**: expected rank/s with failure costs; replace the remaining fixed bars.
+5. **Experiments** that run themselves (stamina band first).
+6. **One currency**: rank-hours to Daedalus for money, sleeve time, installs.
+
+Measuring alongside (no code): city-hop and black-op effect on rank/h; the next install's dip and recovery;
+first sleeve augmentation batches; gang power after gear.
+
 ## Bigger ideas (2026-11-16, Ken: "I want to see your imagination at work")
 
 - **Optimize, don't threshold.** Replace bladeburner.js's fixed bars (0.8 odds, rest at 55% stamina) with

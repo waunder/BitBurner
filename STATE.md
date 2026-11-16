@@ -132,7 +132,10 @@ End check: no daemon; Bladeburner rank 0, idle, next black op Operation Typhoon 
    ServerMaxMoney 0.2, ScriptHackMoney 0.75, ServerStartingMoney 0.5, CrimeMoney 0.75, CompanyWorkMoney 0.5, GangSoftcap 0.7,
    GangUniqueAugs 0.2, DaedalusAugsRequirement 35, WorldDaemonDifficulty 2. No Bladeburner multiplier below 1, so hacking is the weak
    leg here and Bladeburner plus gang carry the run.
-2. Joined Bladeburner 2026-11-14 23:15 (rank 0). Next: measure action times, odds, stamina, `mem`; design the controller (`docs/bn6-plan.md`).
+2. **Bladeburner controller live 2026-11-16 00:10** (`bladeburner.js`, commit 081ed2a, docs/processes.md "Bladeburner"). It owns the
+   player (player_activity_controller holds); moved to Aevum; Field Analysis first. Never starts Operation Daedalus
+   (`allowDaedalus` false): stop, back up and notify Ken when `bladeburner_status.json` `daedalusReady` is true.
+   Next: measure rank/h, tune `minChance`, consider sleeves on Bladeburner (karma -214k is far past the gang's -54k).
 3. Rewrite this file for BN6 (objective, standing settings, run-1 install table). The scheduled task prompt is updated for BN6.
 4. Still open: what destroyed run 2's daemon (crawler roots everything; now guarded). `metrics.py pull` over the 1MB limit.
 

@@ -1718,21 +1718,25 @@ and is assumed to be 1, so chances can be slightly optimistic.
 
 In `profiles/sleeves/sleeve/`, the shared sleeves layer (bn10, bn6). Buys Covenant sleeves, sleeve
 augmentations and sleeve memory, in that order, with cash above the `reserve` in `capital_policy.json`.
-**Augmentations (2026-11-07, Ken):** need no Covenant membership, only a sleeve at shock 0; the list is
-`getSleevePurchasableAugs`, priced at base cost; cheapest first, each at most `sleeveAugShare` (policy
-key, default 0.05) of spendable (`chooseSleeveAug`). Every player install wipes them (bitburner-src
-`Sleeve.prestige`), so the bn10 profile starts this from `startup.js` to buy them again. **Each
-purchase zeroes that sleeve's exp** (`Sleeve.installAugmentation`), so while the player's karma is above
-`crimeKarmaTarget` (`player_activity_config.json`, default -54000) only sleeves with combat exp below
-1000 buy (right after an install); the rest wait for the gang gate (2026-11-09: thirty purchases on
-2026-11-08 about 23:00 halved sleeve Homicide chance). Karma via `ns.heart.break()`. Pure rules in
+**Augmentations (2026-11-07; batches 2026-11-16, Ken):** need no Covenant membership, only a sleeve at
+shock 0; the list is `getSleevePurchasableAugs`, priced at base cost (no escalation). Every player install
+wipes them (bitburner-src `Sleeve.prestige`). **Each purchase zeroes that sleeve's exp**
+(`Sleeve.installAugmentation`), but a second purchase on a zeroed sleeve costs nothing more, so
+`chooseSleeveAugBatch` buys per sleeve, one batch per reset: every wanted augmentation that
+`sleeveAugBatchShare` (policy key, default 0.5) of spendable covers, cheapest first. A fresh sleeve (exp
+below 1000, right after an install) takes any amount; a trained one needs at least 3 or its whole
+remaining set. Order: fresh sleeves, then best Bladeburner contract odds (`bladeburner_status.json`
+`sleeveContracts`), then biggest batch. Only in the early cycle (`earlyCycleHours`, `lateCycleLimit`).
+Wanted list: `sleeveAugWanted` (policy key), else in BN6 `BN6_SLEEVE_AUGS` (combat plus Neurotrainer I),
+else all. While karma is above `crimeKarmaTarget` (`player_activity_config.json`, default -54000) only
+fresh sleeves buy (2026-11-08: thirty one-at-a-time purchases halved sleeve Homicide chance). Karma via
+`ns.heart.break()`. Pure rules in
 `sleeve_buyer_logic.js`; game rules in `docs/bn10-plan.md` package B. Four `ns.sleeve` calls
 (`getSleeveCost`, `getSleeve`, `purchaseSleeve`, `upgradeMemory`, `getSleevePurchasableAugs`,
 `purchaseSleeveAug`), about 24GB by the 4GB rule.
 
 - **Start:** `startup.js` (bn10 profile), or `run sleeve_buyer.js`; a rerun replaces the running copy.
-  Outside BN10 (since 2026-11-16) it buys augmentations only, and in BN6 only for fresh sleeves (exp below
-  1000, right after an install) because their Bladeburner contract odds follow their stats. Before The Covenant it
+  Outside BN10 (since 2026-11-16) it buys augmentations only. Before The Covenant it
   buys augmentations only and reports `covenant` with the reason; sleeves and memory begin on joining.
 - **Policy:** a sleeve whenever spendable (cash minus reserve) covers `getSleeveCost()`. Memory only
   after the first Covenant sleeve, on the lowest-memory sleeve, the largest batch of up to 10

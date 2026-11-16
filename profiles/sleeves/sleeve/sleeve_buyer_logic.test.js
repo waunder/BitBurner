@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { chooseNextPurchase, chooseSleeveAug, chooseSleevePurchase, eligibility, memoryCost, payoff, smoothIncome } from "./sleeve_buyer_logic.js"
+import { chooseNextPurchase, chooseSleeveAugBatch, chooseSleevePurchase, eligibility, memoryCost, payoff, smoothIncome } from "./sleeve_buyer_logic.js"
 
 test("memory cost follows the game formula", () => {
   assert.equal(memoryCost(1, 1), 1e12)
@@ -54,13 +54,44 @@ test("income smoothing ignores spending", () => {
   assert.equal(smoothIncome({ cash: 500, lastCash: 1000, spent: 500, seconds: 10 }), 0)
 })
 
-test("sleeve augmentations: shock 0 only, cheapest first, within the cash share", () => {
+test("sleeve augmentation batch: shock 0 only, cheapest first, one sleeve, within the batch share", () => {
   const sleeves = [
-    { index: 0, shock: 0, augs: [{ name: "B", cost: 3e9 }, { name: "A", cost: 1e9 }] },
-    { index: 1, shock: 5, augs: [{ name: "C", cost: 1e6 }] },
+    { index: 0, shock: 0, exp: 0, augs: [{ name: "B", cost: 3e9 }, { name: "A", cost: 1e9 }] },
+    { index: 1, shock: 5, exp: 0, augs: [{ name: "C", cost: 1e6 }] },
   ]
-  assert.deepEqual([chooseSleeveAug({ sleeves, spendable: 1e12 })].map((p) => [p.sleeve, p.name]), [[0, "A"]])
-  assert.equal(chooseSleeveAug({ sleeves, spendable: 1e10 }), null)
+  const all = chooseSleeveAugBatch({ sleeves, spendable: 1e12 })
+  assert.deepEqual([all.sleeve, all.names, all.cost, all.complete], [0, ["A", "B"], 4e9, true])
+  // Fresh sleeve: a partial batch is fine (the reset costs nothing).
+  assert.deepEqual(chooseSleeveAugBatch({ sleeves, spendable: 2e9 }).names, ["A"])
+  assert.equal(chooseSleeveAugBatch({ sleeves, spendable: 1e9 }), null)
+  assert.equal(chooseSleeveAugBatch({ sleeves, spendable: 0 }), null)
+})
+
+test("sleeve augmentation batch: trained sleeves need a real batch; wanted filter; priority order", () => {
+  const augs = [{ name: "a", cost: 1 }, { name: "b", cost: 2 }, { name: "c", cost: 3 }, { name: "d", cost: 4 }, { name: "hack", cost: 0.5 }]
+  const sleeves = [
+    { index: 0, shock: 0, exp: 5e5, priority: 0.5, augs },
+    { index: 1, shock: 0, exp: 5e5, priority: 0.9, augs },
+  ]
+  const wanted = ["a", "b", "c", "d"]
+  // Budget 2*share covers a+b only (2 < minAugs 3): a trained sleeve waits.
+  assert.equal(chooseSleeveAugBatch({ sleeves, spendable: 6, wanted }), null)
+  const pick = chooseSleeveAugBatch({ sleeves, spendable: 12, wanted })
+  assert.deepEqual([pick.sleeve, pick.names], [1, ["a", "b", "c"]])
+  // A fresh sleeve outranks priority.
+  const fresh = chooseSleeveAugBatch({ sleeves: [...sleeves, { index: 2, shock: 0, exp: 10, priority: 0, augs }], spendable: 12, wanted })
+  assert.equal(fresh.sleeve, 2)
+  // Completing a short remaining set is allowed even below minAugs.
+  assert.deepEqual(chooseSleeveAugBatch({ sleeves: [{ index: 0, shock: 0, exp: 5e5, augs: [{ name: "d", cost: 4 }] }], spendable: 8, wanted }).names, ["d"])
+})
+
+test("sleeve augmentation batch: freshOnly holds trained sleeves (karma crime)", () => {
+  const sleeves = [
+    { index: 0, shock: 0, exp: 13000, augs: [{ name: "A", cost: 1e9 }] },
+    { index: 1, shock: 0, exp: 200, augs: [{ name: "B", cost: 2e9 }] },
+  ]
+  assert.equal(chooseSleeveAugBatch({ sleeves, spendable: 1e12, freshOnly: true }).sleeve, 1)
+  assert.equal(chooseSleeveAugBatch({ sleeves: sleeves.slice(0, 1), spendable: 1e12, freshOnly: true }), null)
 })
 
 test("purchase order: Covenant sleeve, then augmentation, then memory", () => {
@@ -71,12 +102,3 @@ test("purchase order: Covenant sleeve, then augmentation, then memory", () => {
   assert.equal(chooseNextPurchase({}).kind, "save")
 })
 
-test("sleeve augmentations wait while karma is needed, unless the sleeve's exp is fresh", () => {
-  const sleeves = [
-    { index: 0, shock: 0, exp: 13000, augs: [{ name: "A", cost: 1e9 }] },
-    { index: 1, shock: 0, exp: 200, augs: [{ name: "B", cost: 2e9 }] },
-  ]
-  assert.deepEqual([chooseSleeveAug({ sleeves, spendable: 1e12, karmaNeeded: true })].map((p) => [p.sleeve, p.name]), [[1, "B"]])
-  assert.equal(chooseSleeveAug({ sleeves: sleeves.slice(0, 1), spendable: 1e12, karmaNeeded: true }), null)
-  assert.deepEqual([chooseSleeveAug({ sleeves, spendable: 1e12 })].map((p) => [p.sleeve, p.name]), [[0, "A"]])
-})

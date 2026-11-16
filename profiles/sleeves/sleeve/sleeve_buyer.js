@@ -9,7 +9,7 @@
  * Start: run sleeve_buyer.js
  * @param {NS} ns
  */
-import { boughtFromCost, chooseNextPurchase, chooseSleeveAug, chooseSleevePurchase, eligibility, smoothIncome } from "sleeve_buyer_logic.js"
+import { BN6_SLEEVE_AUGS, boughtFromCost, chooseNextPurchase, chooseSleeveAugBatch, chooseSleevePurchase, eligibility, smoothIncome } from "sleeve_buyer_logic.js"
 import { lateCycleLimit } from "capital_logic.js"
 
 const STATUS = "sleeve_buyer_status.json"
@@ -68,19 +68,26 @@ export async function main(ns) {
         sleeveShare: Number(policy.sleeveShare) || 0.25,
       })
     }
-    // An aug purchase zeroes the sleeve's exp; hold them while sleeves do karma crime (see chooseSleeveAug).
+    // Augmentations go in per-sleeve batches (one exp reset each; see chooseSleeveAugBatch). While karma
+    // crime is still needed only fresh sleeves buy. Late in a cycle wiped.limit is 0, so nothing buys.
     let karma = null
     try { karma = Number(ns.heart.break()) } catch { /* unknown: treated as not needed */ }
     const karmaTarget = Number(readJson(ns, "player_activity_config.json", {})?.crimeKarmaTarget ?? -54000)
-    // Fresh sleeves only (exp below 1000, i.e. just after an install) while their exp matters: karma crime,
-    // or BN6 where sleeves run Bladeburner contracts whose odds follow their stats.
-    const freshOnly = (Number.isFinite(karma) && karma > karmaTarget) || Number(bitNode) === 6
-    const augs = list.map((s) => ({ ...s, augs: s.shock === 0 && (!freshOnly || s.exp < 1000) ? ns.sleeve.getSleevePurchasableAugs(s.index) : [] }))
-    const pick = chooseNextPurchase({ covenant, aug: chooseSleeveAug({ sleeves: augs, spendable: Math.min(spendable, wiped.limit), augShare: Number(policy.sleeveAugShare) || 0.05, karmaNeeded: freshOnly }) })
+    const freshOnly = Number.isFinite(karma) && karma > karmaTarget
+    const wanted = Array.isArray(policy.sleeveAugWanted) ? policy.sleeveAugWanted : Number(bitNode) === 6 ? BN6_SLEEVE_AUGS : null
+    // Priority: each sleeve's best Bladeburner contract odds (bladeburner.js measures them), so the
+    // sleeves nearest contract work get augmented first.
+    const bbSleeves = readJson(ns, "bladeburner_status.json", null)?.sleeveContracts?.sleeves || []
+    const priorityOf = (i) => Math.max(0, ...Object.values(bbSleeves.find((r) => r.index === i)?.contracts || {}).map((c) => Number(c.chance?.[0] ?? c.chance) || 0))
+    const augLimit = Math.min(spendable, wiped.limit)
+    const augs = list.map((s) => ({ ...s, priority: priorityOf(s.index),
+      augs: augLimit > 0 && s.shock === 0 && (!freshOnly || s.exp < 1000) ? ns.sleeve.getSleevePurchasableAugs(s.index) : [] }))
+    const pick = chooseNextPurchase({ covenant, aug: chooseSleeveAugBatch({ sleeves: augs, spendable: augLimit, wanted, freshOnly,
+      batchShare: Number(policy.sleeveAugBatchShare) || 0.5 }) })
     let outcome = null
     if (pick.kind !== "save") {
       const result = pick.kind === "sleeve" ? ns.sleeve.purchaseSleeve()
-        : pick.kind === "aug" ? ns.sleeve.purchaseSleeveAug(pick.sleeve, pick.name)
+        : pick.kind === "aug" ? pick.names.map((name) => ns.sleeve.purchaseSleeveAug(pick.sleeve, name)).every((ok) => ok === true)
           : ns.sleeve.upgradeMemory(pick.sleeve, pick.points)
       const after = ns.getServerMoneyAvailable("home")
       // purchaseSleeveAug returns a boolean; the Covenant calls return { success, message }.

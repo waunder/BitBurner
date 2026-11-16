@@ -85,28 +85,49 @@ export function smoothIncome({ previous = 0, cash, lastCash, spent = 0, seconds,
   return previous ? previous + (sample - previous) * weight : sample
 }
 
+/** BN6: augmentations that help Bladeburner contract work (combat stats), plus Neurotrainer I (all exp). */
+export const BN6_SLEEVE_AUGS = ["Wired Reflexes", "Neurotrainer I", "LuminCloaking-V1 Skin Implant",
+  "Augmented Targeting I", "LuminCloaking-V2 Skin Implant", "HemoRecirculator"]
+
 /**
- * Next sleeve augmentation, or null. Rules (bitburner-src dev, src/PersonObjects/Sleeve/Sleeve.ts):
+ * Next sleeve augmentation batch, or null. Rules (bitburner-src dev, src/PersonObjects/Sleeve/Sleeve.ts):
  * the sleeve's shock must be 0, the list is getSleevePurchasableAugs (factions' augs the player has
- * rep for, sleeve-valid multipliers only), the price is the augmentation's base cost, and every
- * player install wipes sleeve augmentations (Sleeve.prestige), so they are bought again after it.
- * Cheapest first, each costing at most `augShare` of spendable. No Covenant membership needed.
- * Sleeve.installAugmentation zeroes the sleeve's exp, so while karma is still needed (sleeves on
- * crime, whose chance follows their stats) only sleeves whose combat exp is below `freshExp` (just
- * after a player install) buy; the rest wait for the karma gate. On 2026-11-08 about 23:00 thirty
- * purchases reset every sleeve and halved Homicide chance (29% to 15%).
- * sleeves: [{ index, shock, exp, augs: [{ name, cost }] }]
+ * rep for, sleeve-valid multipliers only), the price is the augmentation's base cost (no escalation),
+ * and every player install wipes sleeve augmentations, so they are bought again after it.
+ *
+ * Sleeve.installAugmentation zeroes the sleeve's exp, but a second purchase on a zeroed sleeve costs
+ * nothing more. So augmentations are bought per sleeve, as a batch in one pass (Ken 2026-11-16):
+ * one reset buys every wanted augmentation the budget (`batchShare` of spendable) covers, cheapest
+ * first. A fresh sleeve (exp below `freshExp`, i.e. just after an install) loses nothing and takes
+ * any amount; any other sleeve needs a batch of at least `minAugs` or its whole remaining set.
+ * `freshOnly` (karma crime still needed) restricts buying to fresh sleeves. The caller passes
+ * spendable 0 late in a cycle (lateCycleLimit), when an install would soon wipe the purchase.
+ * Order: fresh sleeves, then highest `priority` (best Bladeburner contract odds), then biggest batch.
+ * sleeves: [{ index, shock, exp, priority, augs: [{ name, cost }] }]; wanted: names, or null for all.
  */
-export function chooseSleeveAug({ sleeves = [], spendable, augShare = 0.05, karmaNeeded = false, freshExp = 1000 } = {}) {
-  const limit = Math.max(0, Number(spendable) || 0) * augShare
-  const options = sleeves.filter((s) => Number(s.shock) === 0)
-    .filter((s) => !karmaNeeded || (Number(s.exp) || 0) < freshExp)
-    .flatMap((s) => (s.augs || []).map((aug) => ({ sleeve: s.index, name: aug.name, cost: Number(aug.cost) })))
-    .filter((o) => Number.isFinite(o.cost) && o.cost <= limit)
-    .sort((a, b) => a.cost - b.cost || a.sleeve - b.sleeve)
-  if (!options.length) return null
-  const pick = options[0]
-  return { kind: "aug", ...pick, model: "sleeve augmentation: multiplies the sleeve's stats and gains until the next install", paybackHours: null }
+export function chooseSleeveAugBatch({ sleeves = [], spendable, batchShare = 0.5, wanted = null, freshOnly = false, freshExp = 1000, minAugs = 3 } = {}) {
+  const budget = Math.max(0, Number(spendable) || 0) * batchShare
+  const candidates = []
+  for (const s of sleeves) {
+    if (Number(s.shock) !== 0) continue
+    const fresh = (Number(s.exp) || 0) < freshExp
+    if (freshOnly && !fresh) continue
+    const want = (s.augs || []).filter((a) => !wanted || wanted.includes(a.name))
+      .map((a) => ({ name: a.name, cost: Number(a.cost) })).filter((a) => Number.isFinite(a.cost))
+      .sort((a, b) => a.cost - b.cost)
+    if (!want.length) continue
+    const names = []
+    let cost = 0
+    for (const a of want) { if (cost + a.cost > budget) break; names.push(a.name); cost += a.cost }
+    const complete = names.length === want.length
+    if (!names.length || (!fresh && !complete && names.length < minAugs)) continue
+    candidates.push({ sleeve: s.index, names, cost, complete, fresh, priority: Number(s.priority) || 0 })
+  }
+  candidates.sort((a, b) => (b.fresh - a.fresh) || (b.priority - a.priority) || (b.names.length - a.names.length) || (a.sleeve - b.sleeve))
+  const pick = candidates[0]
+  if (!pick) return null
+  return { kind: "aug", sleeve: pick.sleeve, names: pick.names, cost: pick.cost, complete: pick.complete, fresh: pick.fresh,
+    model: "sleeve augmentation batch: one exp reset, multiplies the sleeve's stats until the next install", paybackHours: null }
 }
 
 /** A Covenant sleeve first, then augmentations, then memory; `covenant` is null outside The Covenant. */

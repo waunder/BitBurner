@@ -165,7 +165,7 @@ async function refresh() {
     { label: "Doing now", value: `<span style="font-size:18px">${esc(cur)}</span>`, sub: `${esc(bb.city || "")}${chance}` },
     { label: "Cash", value: "$" + fmt(readiness.money), sub: cycleH != null ? `cycle ${dur(cycleH)} old` : "" },
     { label: "Installs", value: readiness.installedCount ?? "–", sub: `${readiness.queuedCount ?? 0} queued · advisor: ${readiness.advice?.verdict ?? "–"}` },
-    { label: "Gang respect", value: fmt(gang.respect, 1), sub: `${gang.members ?? "–"} members · territory ${gang.territory != null ? Math.round(gang.territory * 100) + "%" : "–"}` },
+    { label: "Gang respect", value: fmt(gang.respect, 1), sub: `${Array.isArray(gang.members) ? gang.members.length : gang.members ?? "–"} members · territory ${gang.territory != null ? Math.round(gang.territory * 100) + "%" : "–"}` },
   ]
   document.getElementById("tiles").innerHTML = tiles.map((t) => `<div class="tile${t.hero ? " hero" : ""}"><div class="label">${t.label}</div><div class="value">${t.value}</div><div class="sub">${t.sub}</div>${t.bar != null ? `<div class="bar"><div style="width:${Math.min(100, Math.max(0, t.bar * 100)).toFixed(1)}%"></div></div>` : ""}</div>`).join("")
 

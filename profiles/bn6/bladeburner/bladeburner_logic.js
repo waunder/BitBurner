@@ -107,10 +107,11 @@ export function planSkillBuys(skills = {}, points = 0, config = DEFAULT_CONFIG) 
   const buys = []
   let left = num(points)
   for (let guard = 0; guard < 200; guard++) {
+    // Best value per point overall; if it is not affordable yet, save for it rather than buy a cheap low-value skill.
     const pick = Object.entries(state)
-      .filter(([name, v]) => num(cfg.skillWeights[name]) > 0 && v.cost <= left && v.level < num(cfg.skillMaxLevel[name], Infinity))
+      .filter(([name, v]) => num(cfg.skillWeights[name]) > 0 && Number.isFinite(v.cost) && v.level < num(cfg.skillMaxLevel[name], Infinity))
       .sort(([a, va], [b, vb]) => cfg.skillWeights[b] / vb.cost - cfg.skillWeights[a] / va.cost)[0]
-    if (!pick) break
+    if (!pick || pick[1].cost > left) break
     const [name, v] = pick
     buys.push(name)
     left -= v.cost

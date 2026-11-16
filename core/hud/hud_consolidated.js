@@ -276,6 +276,36 @@ function sleeveStatus(ns, now) {
   }
 }
 
+// BN6+: written by bladeburner.js. Returns null (section hidden) when the file has never existed.
+function bladeburnerStatus(ns, now) {
+  const s = json(ns, "bladeburner_status.json")
+  if (!s) return null
+  if (!Number.isFinite(s.ts) || now - s.ts > 60_000) return { compact: `STOPPED (status ${age(now, s.ts)} old)`, expanded: ["bladeburner.js is not writing status; restart it with: run bladeburner.js"] }
+  if (!s.ok) return { compact: "-- unavailable", expanded: [s.reason || "not in Bladeburner"] }
+  const rank = Number(s.rank) || 0
+  const perHour = Number(s.rankPerHour)
+  const stam = Array.isArray(s.stamina) && s.stamina[1] > 0 ? Math.round((100 * s.stamina[0]) / s.stamina[1]) : null
+  const chance = Array.isArray(s.currentChance) ? `${Math.round(100 * s.currentChance[0])}${s.currentChance[1] - s.currentChance[0] > 0.01 ? `-${Math.round(100 * s.currentChance[1])}` : ""}%` : ""
+  const action = s.current?.name ? `${s.current.name}${chance ? ` ${chance}` : ""}` : "idle"
+  const bo = s.nextBlackOp
+  const need = bo ? Math.max(0, Number(bo.rank) - rank) : 0
+  const eta = bo && need > 0 && perHour > 0 ? `${(need / perHour).toFixed(1)}h` : bo && need <= 0 ? "rank met" : "--"
+  return {
+    compact: `${s.daedalusReady ? "DAEDALUS READY · " : ""}rank ${compact(rank)}${Number.isFinite(perHour) ? ` (+${compact(perHour)}/h)` : ""} · ${action} · stam ${stam ?? "--"}%${s.lastError ? " · error" : ""}`,
+    expanded: [
+      `Rank ${rank.toFixed(1)}; ${Number.isFinite(perHour) ? `${perHour.toFixed(1)}/h over ${(Number(s.rankWindowHours) * 60).toFixed(0)} min` : "rate after 3 min"}`,
+      `Doing: ${s.current?.type || "-"} / ${action}${s.resting ? " (resting)" : ""}`,
+      `Why: ${s.decision?.reason || "-"}`,
+      `Stamina ${Array.isArray(s.stamina) ? `${s.stamina[0].toFixed(0)}/${s.stamina[1].toFixed(0)}` : "--"} · skill points ${s.skillPoints ?? "--"}`,
+      `City ${s.city || "--"} · chaos ${Number(s.cityChaos).toFixed(1)}`,
+      bo ? `Next black op: ${bo.name} at rank ${compact(bo.rank)} (${eta})` : "No black ops left",
+      ...(s.daedalusReady ? ["Operation Daedalus is ready: ends the BitNode, Ken decides (allowDaedalus is off)"] : []),
+      ...(s.analysisBlocked?.length ? [`Analysis blocked: ${s.analysisBlocked.join(", ")}`] : []),
+      ...(s.lastError ? [`Error: ${s.lastError}`] : []),
+    ],
+  }
+}
+
 function systemStatus(ns, now) {
   const statusOk = json(ns, "dnet_scorecard_status.json")
   const freshMs = now - (statusOk?.ts || 0)
@@ -480,8 +510,9 @@ function buildDisplay(ns, state, pos) {
     { key: "gang", label: "Gang", data: gangStatus(ns, now) },
     { key: "aug", label: "Augmentation", data: augmentationStatus(ns, now) },
     { key: "sleeves", label: "Sleeves", data: sleeveStatus(ns, now) },
+    { key: "blade", label: "Bladeburner", data: bladeburnerStatus(ns, now) },
     { key: "system", label: "System", data: systemStatus(ns, now) },
-  ]
+  ].filter((section) => section.data)
 
   const lines = []
   lines.push(COLORS.HEADER + "╔═══════════════════════════════════╗" + COLORS.RESET)
@@ -499,7 +530,7 @@ function buildDisplay(ns, state, pos) {
   for (const section of sections) {
     const isExpanded = state.expanded === section.key
     const indicator = isExpanded ? "▼" : "▶"
-    const keyHint = { mcp: "hm", darknet: "hd", cct: "hc", gang: "hg", ipvgo: "hi", aug: "ha", sleeves: "hl", system: "hs" }[section.key]
+    const keyHint = { mcp: "hm", darknet: "hd", cct: "hc", gang: "hg", ipvgo: "hi", aug: "ha", sleeves: "hl", blade: "hb", system: "hs" }[section.key]
     // Wrapped plain, then coloured: the label stays header-coloured on the first line.
     const label = `${indicator} ${section.label}`
     // A no-break space keeps the [key] hint on the line with the word before it.

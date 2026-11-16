@@ -3461,3 +3461,7 @@ recovery states: `docs/remote-api-keepalive.md`.
 
 ### `bb_probe.js`
 - One-shot, read-only snapshot of every Bladeburner action, city and skill to `bb_probe.json`. 
+- **HUD:** `hud_consolidated.js` shows a Bladeburner section (toggle `hb`, i.e. `run hud_toggle.js b`) when
+  `bladeburner_status.json` exists: rank and rank/h, action and its success range, stamina, city/chaos, skill points,
+  next black op with ETA, a DAEDALUS READY flag. Hidden in BitNodes without the file. Skill points are now saved for
+  the best value-per-point skill instead of spent on whatever is affordable (2026-11-16).

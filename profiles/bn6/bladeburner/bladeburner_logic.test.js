@@ -83,4 +83,6 @@ test("skill buys follow weight per point within budget", () => {
   const skills = { "Blade's Intuition": { level: 0, cost: 3 }, Tracer: { level: 0, cost: 2 }, Hyperdrive: { level: 0, cost: 1 } }
   assert.deepEqual(planSkillBuys(skills, 5), ["Blade's Intuition", "Tracer"])
   assert.deepEqual(planSkillBuys(skills, 0), [])
+  // 1 point affords only Hyperdrive (0.5/pt); save it for Blade's Intuition (1/pt) instead
+  assert.deepEqual(planSkillBuys(skills, 1), [])
 })

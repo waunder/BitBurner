@@ -133,11 +133,14 @@ export async function main(ns) {
         lastStatus = now
         const [t0, r0] = rankSamples[0]
         const hours = (now - t0) / 3600_000
+        const cur = bb.getCurrentAction()
+        let currentChance = null
+        if (cur && cur.type !== "General" && cur.type !== "Idle") currentChance = bb.getActionEstimatedSuccessChance(cur.type, cur.name)
         ns.write(STATUS, JSON.stringify({
           ts: now, ok: true, ownsPlayer: Boolean(cfg.enabled && cfg.ownPlayer),
           rank: snap.rank, rankPerHour: hours > 0.05 ? (snap.rank - r0) / hours : null, rankWindowHours: hours,
           stamina: snap.stamina, city: snap.city, cityChaos: snap.cityChaos, skillPoints: bb.getSkillPoints(),
-          current: bb.getCurrentAction(), decision: lastDecision, resting,
+          current: cur, currentChance, decision: lastDecision, resting,
           nextBlackOp: snap.nextBlackOp, daedalusReady: snap.nextBlackOp?.name === "Operation Daedalus" && snap.rank >= snap.nextBlackOp.rank,
           analysisBlocked: analysis.blocked, lastError,
         }, null, 1), "w")

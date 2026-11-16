@@ -42,7 +42,8 @@ export const DEFAULT_SLEEVE_CONFIG = {
   crimeKeepRatio: 0.9,      // keep the current crime unless the best beats it by more than 1/ratio
   statusMaxAgeMs: 5 * 60 * 1000,
   bladeburner: true,        // spare sleeves take Bladeburner contracts when bladeburner.js reports odds (BN6+)
-  bladeburnerMinChance: 0.8, // low end of the sleeve's own estimate
+  bladeburnerMinChance: 0.8, // low end of the sleeve's own estimate, to start a contract
+  bladeburnerKeepChance: 0.7, // a sleeve already on a contract keeps it down to here (no flapping at the bar)
   infiltrateBelow: 300,     // one spare sleeve infiltrates Synthoid communities when any contract/op count is below this
 }
 
@@ -201,10 +202,10 @@ export function chooseSleeveTasks({ sleeves = [], karma = null, config = {}, act
 export function assignBladeburner(spare = [], bb = {}, config = DEFAULT_SLEEVE_CONFIG) {
   const cfg = { ...DEFAULT_SLEEVE_CONFIG, ...config }
   const odds = new Map((bb.sleeves || []).map((row) => [row.index, row.contracts || {}]))
-  const usable = (sleeve, name) => {
+  const usable = (sleeve, name, bar = cfg.bladeburnerMinChance) => {
     const o = odds.get(sleeve.index)?.[name]
     const c = bb.contracts?.[name]
-    if (!o || !c || number(c.count) < 1 || number(o.chance?.[0]) < cfg.bladeburnerMinChance) return null
+    if (!o || !c || number(c.count) < 1 || number(o.chance?.[0]) < bar) return null
     return { name, chance: number(o.chance[0]), score: (number(o.chance[0]) * number(c.repGain)) / Math.max(0.001, number(o.timeMs) / 1000) }
   }
   const out = []
@@ -217,7 +218,7 @@ export function assignBladeburner(spare = [], bb = {}, config = DEFAULT_SLEEVE_C
   // Keep sleeves already on a still-good contract, so reassignment never trips the one-sleeve rule.
   for (const sleeve of spare) {
     if (sleeve.task?.type !== "BLADEBURNER" || claimed.has(sleeve.task.actionName)) continue
-    const pick = usable(sleeve, sleeve.task.actionName)
+    const pick = usable(sleeve, sleeve.task.actionName, Math.min(cfg.bladeburnerKeepChance, cfg.bladeburnerMinChance))
     if (pick) take(sleeve, pick)
   }
   // Then the best remaining (sleeve, contract) pairs.

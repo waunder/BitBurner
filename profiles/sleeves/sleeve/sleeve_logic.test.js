@@ -198,3 +198,11 @@ test("bladeburner: replaces money crime only when fresh, and sameTask recognises
   assert.equal(sameTask({ type: "BLADEBURNER", actionName: "Tracking" }, { action: "bladeburner", bbAction: "Take on contracts", contract: "Tracking" }), true)
   assert.equal(sameTask({ type: "INFILTRATE" }, { action: "bladeburner", bbAction: "Infiltrate Synthoids" }), true)
 })
+
+test("bladeburner: keeping a contract has a lower bar than starting one", () => {
+  const status = bbStatus()
+  for (const row of status.sleeves) row.contracts.Retirement.chance = [0.75, 0.76]
+  const onIt = spareSleeves.map((s) => s.index === 1 ? { ...s, task: { type: "BLADEBURNER", actionName: "Retirement" } } : s)
+  assert.equal(assignBladeburner(onIt, status).find((r) => r.index === 1)?.task.contract, "Retirement")
+  assert.equal(assignBladeburner(spareSleeves, status).some((r) => r.task.contract === "Retirement"), false)
+})

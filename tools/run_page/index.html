@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BN6 Run</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #f6f5f1; --panel: #ffffff; --ink: #1d1d1b; --muted: #6b6a64; --line: #e3e1da;
+  --accent: #b5562d; --good: #2f7d4f; --warn: #b8860b; --bad: #b3261e;
+  --s1: #b5562d; --s2: #2f6db5; --s3: #2f7d4f; --s4: #8a4fb5; --s5: #b8860b; --s6: #1f8a8a; --s7: #7a6a55;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161614; --panel: #201f1c; --ink: #ecebe6; --muted: #9b998f; --line: #34332e;
+    --accent: #e0855a; --good: #6cc08b; --warn: #e3b64d; --bad: #ef6b60;
+    --s1: #e0855a; --s2: #6fa3e8; --s3: #6cc08b; --s4: #b98ae3; --s5: #e3b64d; --s6: #5cc6c6; --s7: #b9a78e;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; padding: 20px 24px 8px; }
+h1 { margin: 0; font-size: 22px; letter-spacing: .2px; }
+h1 small { color: var(--muted); font-weight: 400; font-size: 14px; margin-left: 8px; }
+#updated { color: var(--muted); font-size: 13px; }
+main { padding: 8px 24px 32px; display: grid; gap: 16px; grid-template-columns: repeat(12, 1fr); }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; min-width: 0; }
+.panel h2 { margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); font-weight: 600; }
+.tiles { grid-column: span 12; display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+.tile { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.tile .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .6px; }
+.tile .value { font-size: 26px; font-weight: 650; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.tile .sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.tile.hero { border-color: var(--accent); }
+.tile.hero .value { color: var(--accent); }
+.bar { height: 6px; background: var(--line); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+.bar > div { height: 100%; background: var(--accent); }
+.wide { grid-column: span 12; } .half { grid-column: span 6; } .third { grid-column: span 4; } .twothird { grid-column: span 8; }
+@media (max-width: 900px) { .half, .third, .twothird { grid-column: span 12; } main, header { padding-left: 16px; padding-right: 16px; } }
+.chart { position: relative; height: 260px; }
+.chart.tall { height: 320px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.ok { color: var(--good); } .warn { color: var(--warn); } .bad { color: var(--bad); }
+#events { font: 12.5px/1.5 ui-monospace, "Cascadia Mono", Consolas, monospace; max-height: 320px; overflow: auto; white-space: pre-wrap; }
+#events div { padding: 1px 0; border-bottom: 1px dashed var(--line); }
+#opps { max-height: 420px; overflow: auto; font-size: 14px; }
+#opps h3 { font-size: 14px; margin: 12px 0 4px; color: var(--accent); }
+#opps ul { margin: 0; padding-left: 18px; } #opps li { margin: 4px 0; }
+.note { color: var(--muted); font-size: 13px; margin-top: 6px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>BitNode 6 <small>Bladeburners · run 1</small></h1>
+  <div id="updated">loading…</div>
+</header>
+<main>
+  <section class="tiles" id="tiles"></section>
+
+  <section class="panel twothird"><h2>Rank over the run</h2><div class="chart tall"><canvas id="rankChart"></canvas></div>
+    <div class="note" id="rankNote"></div></section>
+  <section class="panel third"><h2>Road to Operation Daedalus</h2><div id="route"></div></section>
+
+  <section class="panel half"><h2>Rank per hour</h2><div class="chart"><canvas id="rateChart"></canvas></div></section>
+  <section class="panel half"><h2>Sleeve contract odds (best, low estimate)</h2><div class="chart"><canvas id="oddsChart"></canvas></div></section>
+
+  <section class="panel half"><h2>Sleeves now</h2><div id="sleeves"></div></section>
+  <section class="panel half"><h2>Earnings per hour by source</h2><div class="chart"><canvas id="earnChart"></canvas></div></section>
+
+  <section class="panel half"><h2>Bladeburner events</h2><div id="events"></div></section>
+  <section class="panel half"><h2>Opportunities and ideas</h2><div id="opps"></div></section>
+</main>
+<script>
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim()
+const SLEEVE_COLORS = ["--s1", "--s2", "--s3", "--s4", "--s5", "--s6", "--s7"].map(css)
+const DAEDALUS = 400000
+const fmt = (n, d = 1) => n == null || !isFinite(n) ? "–" : Math.abs(n) >= 1e12 ? (n / 1e12).toFixed(d) + "t" : Math.abs(n) >= 1e9 ? (n / 1e9).toFixed(d) + "b"
+  : Math.abs(n) >= 1e6 ? (n / 1e6).toFixed(d) + "m" : Math.abs(n) >= 1e3 ? (n / 1e3).toFixed(d) + "k" : n.toFixed(d)
+const clock = (ts) => new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+const dayClock = (ts) => new Date(ts).toLocaleString([], { weekday: "short", hour: "2-digit", minute: "2-digit" })
+const dur = (h) => !isFinite(h) || h < 0 ? "–" : h >= 48 ? (h / 24).toFixed(1) + " days" : h >= 1 ? h.toFixed(1) + " h" : Math.round(h * 60) + " min"
+const esc = (s) => String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]))
+
+Chart.defaults.color = css("--muted"); Chart.defaults.borderColor = css("--line"); Chart.defaults.font.family = "system-ui, sans-serif"
+const timeAxis = { type: "linear", ticks: { callback: (v) => dayClock(v), maxTicksLimit: 7 } }
+function lineChart(id, opts = {}) {
+  return new Chart(document.getElementById(id), { type: "line", data: { datasets: [] },
+    options: { animation: false, maintainAspectRatio: false, parsing: false, normalized: true, interaction: { mode: "nearest", intersect: false },
+      plugins: { legend: { display: opts.legend ?? false, labels: { boxWidth: 10 } }, tooltip: { callbacks: { title: (it) => dayClock(it[0].parsed.x) } } },
+      scales: { x: timeAxis, y: { beginAtZero: opts.zero ?? true, stacked: opts.stacked ?? false, ...(opts.y || {}) } } } })
+}
+const rankChart = lineChart("rankChart"), rateChart = lineChart("rateChart"), oddsChart = lineChart("oddsChart", { legend: true, y: { max: 1 } })
+const earnChart = lineChart("earnChart", { legend: true, stacked: true })
+
+/** Rank/h from 5-minute samples, smoothed over `win` samples; skips gaps and drops (installs keep rank). */
+function rankRate(rows, win = 6) {
+  const pts = rows.filter((r) => r.rank != null)
+  const out = []
+  for (let i = win; i < pts.length; i++) {
+    const a = pts[i - win], b = pts[i], h = (b.ts - a.ts) / 3.6e6
+    if (h > 0 && h < 2 && b.rank >= a.rank) out.push({ x: b.ts, y: (b.rank - a.rank) / h })
+  }
+  return out
+}
+/** Least-squares line through (hours, rate) for the last `hours`; returns slope per hour and current fitted rate. */
+function trend(points, hours = 6) {
+  if (points.length < 4) return null
+  const t1 = points.at(-1).x, pts = points.filter((p) => t1 - p.x <= hours * 3.6e6)
+  if (pts.length < 4) return null
+  const xs = pts.map((p) => (p.x - t1) / 3.6e6), ys = pts.map((p) => p.y), n = xs.length
+  const mx = xs.reduce((a, b) => a + b) / n, my = ys.reduce((a, b) => a + b) / n
+  let num = 0, den = 0
+  for (let i = 0; i < n; i++) { num += (xs[i] - mx) * (ys[i] - my); den += (xs[i] - mx) ** 2 }
+  const slope = den ? num / den : 0
+  return { slope, now: my - slope * mx }
+}
+/** Hours to gain `need` rank with rate r(t) = r0 + s t (s may be 0). */
+function hoursTo(need, r0, s) {
+  if (need <= 0) return 0
+  if (!(r0 > 0) && !(s > 0)) return Infinity
+  if (Math.abs(s) < 1e-9) return need / r0
+  const disc = r0 * r0 + 2 * s * need
+  if (disc < 0) return Infinity
+  return (-r0 + Math.sqrt(disc)) / s
+}
+
+function installMarks(rows) {
+  const marks = []
+  for (let i = 1; i < rows.length; i++) if (rows[i].resetAt && rows[i].resetAt !== rows[i - 1].resetAt) marks.push(rows[i].resetAt)
+  return marks
+}
+
+async function refresh() {
+  let rows = [], live = {}
+  try { [rows, live] = await Promise.all([fetch("/api/metrics").then((r) => r.json()), fetch("/api/live").then((r) => r.json())]) }
+  catch (e) { document.getElementById("updated").textContent = "cannot reach the run page server"; return }
+  const bb = live.bladeburner || {}, now = live.serverTs || Date.now()
+  const runStart = rows.length ? rows[0].ts : now
+
+  // ---- rank series and rates
+  const rankPts = rows.filter((r) => r.rank != null).map((r) => ({ x: r.ts, y: r.rank }))
+  if (bb.rank != null) rankPts.push({ x: bb.ts, y: bb.rank })
+  const rates = rankRate(rows)
+  const liveRate = bb.rankPerHour
+  const tr = trend(rates)
+  const need = DAEDALUS - (bb.rank || 0)
+  const etaFlat = liveRate > 0 ? need / liveRate : Infinity
+  const etaTrend = tr && tr.slope > 0 ? hoursTo(need, Math.max(liveRate || tr.now, 0), tr.slope) : null
+
+  // ---- tiles
+  const stamina = bb.stamina || [0, 1], stamPct = stamina[0] / stamina[1]
+  const cur = bb.current ? `${bb.current.name}` : "idle"
+  const chance = Array.isArray(bb.currentChance) ? ` · ${Math.round(bb.currentChance[0] * 100)}–${Math.round(bb.currentChance[1] * 100)}%` : ""
+  const readiness = live.augmentation_readiness || {}
+  const cycleH = readiness.resetAt ? (now - readiness.resetAt) / 3.6e6 : null
+  const gang = live.gang?.gang || {}
+  const tiles = [
+    { hero: true, label: "Bladeburner rank", value: fmt(bb.rank, 1), sub: `${fmt(liveRate, 0)} rank/h (last ${dur(bb.rankWindowHours)})` },
+    { hero: true, label: "Daedalus (400k)", value: dur(etaFlat), sub: etaTrend ? `${dur(etaTrend)} if growth holds` : "at today's rate", bar: (bb.rank || 0) / DAEDALUS },
+    { label: "Stamina", value: `${Math.round(stamPct * 100)}%`, sub: bb.resting ? "resting" : `${fmt(stamina[0], 0)} / ${fmt(stamina[1], 0)}`, bar: stamPct },
+    { label: "Doing now", value: `<span style="font-size:18px">${esc(cur)}</span>`, sub: `${esc(bb.city || "")}${chance}` },
+    { label: "Cash", value: "$" + fmt(readiness.money), sub: cycleH != null ? `cycle ${dur(cycleH)} old` : "" },
+    { label: "Installs", value: readiness.installedCount ?? "–", sub: `${readiness.queuedCount ?? 0} queued · advisor: ${readiness.advice?.verdict ?? "–"}` },
+    { label: "Gang respect", value: fmt(gang.respect, 1), sub: `${gang.members ?? "–"} members · territory ${gang.territory != null ? Math.round(gang.territory * 100) + "%" : "–"}` },
+  ]
+  document.getElementById("tiles").innerHTML = tiles.map((t) => `<div class="tile${t.hero ? " hero" : ""}"><div class="label">${t.label}</div><div class="value">${t.value}</div><div class="sub">${t.sub}</div>${t.bar != null ? `<div class="bar"><div style="width:${Math.min(100, Math.max(0, t.bar * 100)).toFixed(1)}%"></div></div>` : ""}</div>`).join("")
+
+  // ---- rank chart with install markers and projections
+  const marks = installMarks(rows)
+  const projections = []
+  if (liveRate > 0 && bb.rank != null) {
+    const h = 24
+    projections.push({ label: "today's rate", data: [{ x: bb.ts, y: bb.rank }, { x: bb.ts + h * 3.6e6, y: bb.rank + liveRate * h }], borderDash: [6, 4], borderColor: css("--muted"), pointRadius: 0, borderWidth: 1.5 })
+    if (tr && tr.slope > 0) projections.push({ label: "if growth holds", data: Array.from({ length: 25 }, (_, i) => ({ x: bb.ts + i * 3.6e6, y: bb.rank + liveRate * i + tr.slope * i * i / 2 })), borderDash: [2, 3], borderColor: css("--accent"), pointRadius: 0, borderWidth: 1.5 })
+  }
+  rankChart.data.datasets = [{ label: "rank", data: rankPts, borderColor: css("--accent"), backgroundColor: css("--accent") + "22", fill: true, pointRadius: 0, borderWidth: 2 }, ...projections,
+    ...marks.map((m) => ({ label: "install", data: [{ x: m, y: 0 }, { x: m, y: Math.max(...rankPts.map((p) => p.y), 1) }], borderColor: css("--line"), borderWidth: 1, pointRadius: 0 }))]
+  rankChart.update()
+  document.getElementById("rankNote").textContent = rankPts.length < 3
+    ? "Rank history starts 2026-11-16 morning, when the 5-minute log began recording it; it fills in from here. Dashed lines project the next 24 hours."
+    : `Dashed: next 24 h at today's rate; dotted: if rank/h keeps rising as over the last 6 h (${tr ? (tr.slope >= 0 ? "+" : "") + fmt(tr.slope, 1) + " rank/h per hour" : "not enough data yet"}). Grey verticals are installs.`
+
+  // ---- route panel
+  const next = bb.nextBlackOp
+  const routeRows = [
+    ["Next black op", next ? `${esc(next.name)}` : "–"],
+    ["Needs rank", next ? fmt(next.rank, 1) : "–"],
+    ["Rank gap", next ? (bb.rank >= next.rank ? `<span class="ok">ready</span>` : fmt(next.rank - bb.rank, 1)) : "–"],
+    ["Time to it", next && bb.rank < next.rank && liveRate > 0 ? dur((next.rank - bb.rank) / liveRate) : "–"],
+    ["Daedalus rank", fmt(bb.daedalusRank ?? DAEDALUS, 0)],
+    ["Progress", `${((bb.rank || 0) / DAEDALUS * 100).toFixed(2)}%`],
+    ["Finish (today's rate)", isFinite(etaFlat) ? dayClock(now + etaFlat * 3.6e6) + " · " + dur(etaFlat) : "–"],
+    ["Finish (if growth holds)", etaTrend ? dayClock(now + etaTrend * 3.6e6) + " · " + dur(etaTrend) : "needs ~1 h of history"],
+    ["Skill points banked", fmt(bb.skillPoints, 0)],
+    ["City chaos", `${fmt(bb.cityChaos, 1)} (${esc(bb.city || "–")})`],
+  ]
+  document.getElementById("route").innerHTML = `<table>${routeRows.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join("")}</table>
+    <div class="note">Operation Daedalus ends the BitNode. The scripts never start it; you decide.</div>`
+
+  // ---- rate chart
+  rateChart.data.datasets = [{ label: "rank/h", data: rates, borderColor: css("--accent"), pointRadius: 0, borderWidth: 2 }]
+  rateChart.update()
+
+  // ---- sleeve odds chart
+  const n = Math.max(0, ...rows.map((r) => r.sleeveBest?.length || 0))
+  oddsChart.data.datasets = [...Array.from({ length: n }, (_, i) => ({ label: `S${i}`, data: rows.filter((r) => r.sleeveBest?.[i] != null).map((r) => ({ x: r.ts, y: r.sleeveBest[i] })),
+    borderColor: SLEEVE_COLORS[i % 7], pointRadius: 0, borderWidth: 1.8 })),
+    ...(rows.length ? [{ label: "0.8 bar", data: [{ x: rows[0].ts, y: 0.8 }, { x: now, y: 0.8 }], borderColor: css("--muted"), borderDash: [4, 4], pointRadius: 0, borderWidth: 1 }] : [])]
+  oddsChart.update()
+
+  // ---- sleeves table
+  const ss = live.sleeve?.sleeves || [], sc = bb.sleeveContracts?.sleeves || [], buyer = live.sleeve_buyer || {}
+  document.getElementById("sleeves").innerHTML = `<table><tr><th>Sleeve</th><th>Doing</th><th>Best contract odds</th><th>Status</th></tr>${ss.map((s) => {
+    const odds = Object.entries(sc.find((r) => r.index === s.index)?.contracts || {}).sort((a, b) => b[1].chance[0] - a[1].chance[0])[0]
+    return `<tr><td><span class="dot" style="background:${SLEEVE_COLORS[s.index % 7]}"></span>${s.index}</td><td>${esc(s.current)}</td>
+      <td>${odds ? `${esc(odds[0])} ${Math.round(odds[1].chance[0] * 100)}–${Math.round(odds[1].chance[1] * 100)}%` : "–"}</td>
+      <td class="${s.error ? "bad" : "ok"}">${s.error ? esc(s.error) : "ok"}</td></tr>` }).join("")}</table>
+    <div class="note">Augmentation buyer: ${esc(buyer.action?.kind === "save" ? buyer.action.reason : buyer.action?.kind || "–")} · cycle phase ${esc(buyer.cyclePhase || "–")} · last batch ${(buyer.purchases || []).filter((p) => p.kind === "aug").slice(-1).map((p) => `${dayClock(p.ts)} S${p.sleeve} (${(p.names || [p.name]).length} augs)`)[0] || "none yet"}</div>`
+
+  // ---- earnings per hour by source (this cycle)
+  const cyc = rows.filter((r) => r.earned && r.resetAt === rows.at(-1)?.resetAt)
+  const sources = [...new Set(cyc.flatMap((r) => Object.keys(r.earned)))]
+  const palette = ["--s1", "--s2", "--s3", "--s4", "--s5", "--s6", "--s7"].map(css)
+  earnChart.data.datasets = sources.map((src, i) => ({ label: src, fill: true, borderColor: palette[i % 7], backgroundColor: palette[i % 7] + "55", pointRadius: 0, borderWidth: 1,
+    data: cyc.slice(6).map((r, j) => { const a = cyc[j], h = (r.ts - a.ts) / 3.6e6; return { x: r.ts, y: h > 0 ? Math.max(0, ((r.earned[src] || 0) - (a.earned[src] || 0)) / h) : 0 } }) }))
+  earnChart.options.scales.y.ticks = { callback: (v) => "$" + fmt(v, 0) }
+  earnChart.update()
+
+  // ---- events
+  document.getElementById("events").innerHTML = (live.events || []).slice().reverse().map((l) => {
+    const m = /^(\S+)\s(.*)$/.exec(l); if (!m) return ""
+    const cls = /error|refused/i.test(m[2]) ? "bad" : /Black Operations|joined|skill/i.test(m[2]) ? "ok" : ""
+    return `<div><span style="color:var(--muted)">${clock(m[1])}</span> <span class="${cls}">${esc(m[2])}</span></div>` }).join("")
+
+  document.getElementById("updated").textContent = `updated ${clock(now)} · ${rows.length} samples since ${dayClock(runStart)}`
+}
+
+async function refreshOpps() {
+  try {
+    const md = await fetch("/api/opportunities").then((r) => r.text())
+    let html = "", inList = false
+    for (const line of md.split("\n")) {
+      if (/^##\s/.test(line)) { if (inList) { html += "</ul>"; inList = false } html += `<h3>${esc(line.replace(/^##\s*/, ""))}</h3>` }
+      else if (/^- /.test(line)) { if (!inList) { html += "<ul>"; inList = true } html += `<li>${esc(line.slice(2)).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")}` }
+      else if (/^\s+\S/.test(line) && inList) html += " " + esc(line.trim()).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")
+    }
+    document.getElementById("opps").innerHTML = html + (inList ? "</ul>" : "")
+  } catch { /* keep the last copy */ }
+}
+
+refresh(); refreshOpps()
+setInterval(refresh, 30000); setInterval(refreshOpps, 300000)
+</script>
+</body>
+</html>

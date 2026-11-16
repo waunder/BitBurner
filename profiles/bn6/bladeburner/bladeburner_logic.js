@@ -14,12 +14,16 @@ export const DEFAULT_CONFIG = {
   allowDaedalus: false, // Operation Daedalus ends the BitNode; never set true without Ken
   ownPlayer: true, // player_activity_controller stands down while this is true and the status is fresh
   minChance: { Contracts: 0.8, Operations: 0.8 },
-  blackOpMinChance: 0.9,
+  // Black ops gate the road to Daedalus and pay large rank. 2026-11-16: Typhoon sat at 0.61-0.66 for hours
+  // under a 0.9 bar; failure costs little rank, so try them at fair odds (Ken: "don't be afraid of failure").
+  blackOpMinChance: 0.6,
   narrowSpread: 0.05, // a range narrower than this counts as known; use its midpoint
   analysisSpread: 0.1, // do Field Analysis when the best candidate's range is wider than this
   staminaRestBelow: 0.55, // rest when stamina falls below this share of max (game penalises below 0.5)
   staminaResumeAbove: 0.95,
-  chaosMax: 50, // Diplomacy above this in the current city
+  chaosMax: 50, // above this in the current city: move to a calm city (calmCity), else Diplomacy
+  calmChaos: 25, // a city counts as calm below this
+  calmPopShare: 0.5, // ...and with at least this share of the current city's population
   restAction: "Hyperbolic Regeneration Chamber",
   skipActions: ["Raid", "Stealth Retirement Operation", "Incite Violence", "Recruitment"],
   skillWeights: {
@@ -88,6 +92,21 @@ export function chooseAction(s, config = DEFAULT_CONFIG) {
   }
   if (best) return { type: best.type, name: best.name, reason: `best rank/s ${scoreAction(best, cfg).toFixed(3)} at chance ${plannedChance(best.chance, cfg.narrowSpread).toFixed(2)}`, resting }
   return { type: "General", name: "Training", reason: "no contract or operation clears the success bar", resting }
+}
+
+/**
+ * City to move to when the current one is too chaotic, or null (then Diplomacy).
+ * 2026-11-16: Assassination pushed New Tokyo's chaos past 50 every few minutes, so the player spent about
+ * half its time on Diplomacy (no rank). Each city has its own chaos: moving costs nothing.
+ * cities: [{ city, pop, chaos }]
+ */
+export function calmCity(cities = [], current, config = DEFAULT_CONFIG) {
+  const cfg = { ...DEFAULT_CONFIG, ...config }
+  const here = cities.find((c) => c.city === current)
+  if (!here || num(here.chaos) <= cfg.chaosMax) return null
+  return cities
+    .filter((c) => c.city !== current && num(c.chaos) < cfg.calmChaos && num(c.pop) >= cfg.calmPopShare * num(here.pop))
+    .sort((a, b) => num(b.pop) - num(a.pop))[0]?.city ?? null
 }
 
 /** Switch only at an action boundary, or when the current action is not ours / is a general filler. */

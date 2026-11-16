@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { chooseAction, plannedChance, shouldSwitch, planSkillBuys } from "./bladeburner_logic.js"
+import { chooseAction, plannedChance, shouldSwitch, planSkillBuys, calmCity } from "./bladeburner_logic.js"
 
 const act = (type, name, chance, timeMs, repGain, count = 100) => ({ type, name, chance, timeMs, repGain, count })
 const base = {
@@ -85,4 +85,16 @@ test("skill buys follow weight per point within budget", () => {
   assert.deepEqual(planSkillBuys(skills, 0), [])
   // 1 point affords only Hyperdrive (0.5/pt); save it for Blade's Intuition (1/pt) instead
   assert.deepEqual(planSkillBuys(skills, 1), [])
+})
+
+test("calmCity: move off a chaotic city to the most populous calm one with enough people", () => {
+  const cities = [
+    { city: "New Tokyo", pop: 1e9, chaos: 52 },
+    { city: "Aevum", pop: 0.9e9, chaos: 10 },
+    { city: "Ishima", pop: 1.2e9, chaos: 30 },
+    { city: "Volhaven", pop: 0.3e9, chaos: 0 },
+  ]
+  assert.equal(calmCity(cities, "New Tokyo"), "Aevum")
+  assert.equal(calmCity(cities, "Aevum"), null) // already calm
+  assert.equal(calmCity([{ city: "A", pop: 1, chaos: 60 }, { city: "B", pop: 1, chaos: 40 }], "A"), null) // nowhere calm: Diplomacy
 })

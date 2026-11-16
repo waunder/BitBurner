@@ -13,7 +13,7 @@
  * Events:  bladeburner_events.txt (switches, black ops, skills; trimmed)
  * @param {NS} ns
  */
-import { DEFAULT_CONFIG, chooseAction, shouldSwitch, planSkillBuys, actionKey } from "./bladeburner_logic.js"
+import { DEFAULT_CONFIG, chooseAction, shouldSwitch, planSkillBuys, actionKey, calmCity } from "./bladeburner_logic.js"
 
 const CONFIG = "bladeburner_config.json"
 const STATUS = "bladeburner_status.json"
@@ -101,7 +101,13 @@ export async function main(ns) {
         for (const s of planSkillBuys(skills, points, cfg)) if (bb.upgradeSkill(s)) event(ns, `skill ${s} -> ${bb.getSkillLevel(s)}`)
       }
 
-      const snap = snapshot(ns, bb)
+      let snap = snapshot(ns, bb)
+      // Too much chaos here: move to a calm city instead of spending the time on Diplomacy.
+      const calm = calmCity(CITIES.map((c) => ({ city: c, pop: bb.getCityEstimatedPopulation(c), chaos: bb.getCityChaos(c) })), snap.city, cfg)
+      if (calm && bb.switchCity(calm)) {
+        event(ns, `city ${snap.city} -> ${calm} (chaos ${snap.cityChaos.toFixed(0)} > ${cfg.chaosMax})`)
+        snap = snapshot(ns, bb)
+      }
       // Rank 25 opens the Bladeburners faction (its augmentations boost Bladeburner work).
       if (snap.rank >= 25 && !ns.getPlayer().factions.includes("Bladeburners")) {
         if (bb.joinBladeburnerFaction()) event(ns, `joined Bladeburners faction at rank ${snap.rank.toFixed(1)}`)
@@ -122,6 +128,12 @@ export async function main(ns) {
           event(ns, `analysis blocked for ${analysis.target}: range stuck at ${spread.toFixed(3)}`)
         }
       }
+      // Black op outcome: did the chain advance? (Calibration for blackOpMinChance.)
+      if (boundary && prevKey?.startsWith("Black Operations/")) {
+        const name = prevKey.slice("Black Operations/".length)
+        const won = snap.nextBlackOp?.name !== name
+        event(ns, `black op ${name} ${won ? "SUCCESS" : "failed"} (rank ${snap.rank.toFixed(0)})`)
+      }
       prevElapsed = elapsed
       prevKey = curKey
 
@@ -134,7 +146,7 @@ export async function main(ns) {
           if (target !== analysis.target) { analysis.target = target; analysis.spread = null; analysis.stale = 0 }
         }
         if (shouldSwitch({ current, desired: decision, elapsedMs: elapsed, boundary })) {
-          const move = bestCity(bb, cfg.chaosMax)
+          const move = bestCity(bb, cfg.calmChaos ?? cfg.chaosMax)
           if (move && move.c !== snap.city && move.pop > 1.25 * bb.getCityEstimatedPopulation(snap.city)) {
             if (bb.switchCity(move.c)) event(ns, `city ${snap.city} -> ${move.c} (pop ${(move.pop / 1e6).toFixed(0)}m)`)
           }

@@ -116,14 +116,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-16 09:15 (scheduled run): sleeve 3 was idle on a near-empty Tracking contract; now spare sleeves infiltrate (up to 2) instead.**
-Live (probe 09:15): BitNode 6, $11.2b, hacking 221, combat 469/397/449/439, karma -317k, home 1TB, 18 installed, 1 queued (The B00ts of Perseus).
-Gang Slum Snakes respect 579k (gear on since 08:11; spent $26b in the hour), territory 14%. Bladeburner rank 27.0k, controller 8,144 rank/h (4.6k at 07:15).
-Measured (13 samples, 08:15-09:15): rep/h Slum Snakes 35.7k, Bladeburners 23.7k, Syndicate 3.52k, Speakers 3.52k, Tetrads 3.2k, Tian Di Hui 3.04k, NiteSec 2.58k, CyberSec 944; hackExp/h 5.26m; karma/h -2.9k; cash/h -1.13b (gang spend); MCP avg 2.7m/s.
-Trend: nothing DECELERATING; best rep switched to Slum Snakes.
-Fix: `sleeve_logic.js` `contractStartCount` 20 and `maxInfiltrators` 2; observed sleeves 3 and 6 infiltrating, Tracking 1 -> 3.1 in 2 min.
-Advisor wait (4m for Bionic Spine). Decision wait, per Ken's 09:15 hold for clean data; rank/h still rising.
-End check: no daemon; Operation Titan chance 0.59-0.70 (bar 0.6 low end); Daedalus needs rank 400k; not ready.
+**2026-11-16 11:15 (scheduled run, first after install 4 at 11:05): steady, no changes made.**
+Live (probe 11:15): BitNode 6, $67m, hacking 89, combat 233/197/299/251, karma -323k, home 1TB, 22 augs + NeuroFlux installed, 0 queued.
+Bladeburner rank 47.75k (44.4k at install), Assassination at 1.00, 13.8k rank/h over 0.25h only (9.8k/h before install). Next black op Operation Juggernaut, not yet attempted.
+Sleeves: 2 on contracts, 2 infiltrating (Tracking 13), 3 on Mug by design. Sleeve buyer bought 8 augs 11:04-11:11 (early window works). Gang reputation mode, 38k of 1.75m.
+Measured (3 samples, 11:05-11:15, thin): rep/h Slum Snakes 164k, Bladeburners 88.9k; hackExp/h 225k; karma/h -3.67k; cash/h 201m; MCP avg 1.41k/s. Trend n/a (cycle too young).
+Audit 0 of 32 flagged; nothing died. Cycle review (dip and recovery vs 9.8k/h) due next run with an hour of data.
+Advisor wait; decision wait. End check: no daemon, Daedalus needs rank 400k; not ready.
 
 ## Next
 

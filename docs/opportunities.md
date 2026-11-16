@@ -41,6 +41,14 @@ first sleeve augmentation batches; gang power after gear.
 
 ## Open
 
+- **Leftover sleeves on money crime** (2026-11-16 11:15). With 3 contract types (one sleeve each) and at most 2
+  infiltrators, 2-3 sleeves fall to Mug; at 11:15 Tracking (13 < 20) idled a third. Options: a third infiltrator
+  (refill grows as sqrt(n): +22%, and op counts feed the player's Assassination), Diplomacy when city chaos rises,
+  or sleeve Training for black-op odds. Evidence needed: Mug $/h per sleeve vs value of counts. Status: open;
+  measure after the post-install cycle review.
+- **Sleeve buyer logs `name` as missing for aug purchases** (11:04-11:11 entries show no name). Minor, logging only.
+  Status: to fix when next in sleeve_buyer.
+
 - **Sleeves idle ~90 s after an install**: the controller assigned faction work from the pre-install readiness file
   (factions not yet rejoined) and the game threw. Self-heals when readiness refreshes; a membership guard would
   close it. Minor. Status: to fix when next in sleeve code.

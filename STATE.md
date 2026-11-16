@@ -115,13 +115,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-16 01:14 (scheduled run): steady, no changes made.**
-Live (probe 01:15): BitNode 6, $176m, hacking 156, combat 326/276/294/288, karma -259k, home 1TB, 18 installed, 1 queued (The B00ts of Perseus, darknet reward).
-Gang Slum Snakes respect 43k, territory 14%. Bladeburner rank 229 on Bounty Hunter (controller: 337 rank/h); all residents incl. `bladeburner.js` running.
-Measured (13 samples, 00:15-01:15): rep/h Tetrads 2.16k, Tian Di Hui 2.06k, CyberSec 639, Bladeburners 606, Slum Snakes 261; hackExp/h 825k; karma/h -19.9k; cash/h 145m; MCP avg 257k/s.
-Trend: n/a (cycle 4 is 2h old); nothing DECELERATING.
-Advisor wait (gang 4h minimum, 2h left; batch 0.058); decision wait, agreed.
-End check: no daemon; next black op Operation Typhoon (rank 2500); Daedalus not ready.
+**2026-11-16 03:14 (scheduled run): steady, no changes made.**
+Live (probe 03:15): BitNode 6, $1.27b, hacking 186, combat 380/321/354/346, karma -285k, home 1TB, 18 installed, 1 queued (The B00ts of Perseus, darknet reward).
+Gang Slum Snakes respect 67k, territory 14%. Bladeburner rank 1,965 on Undercover Operation (controller: 1,210 rank/h); all residents running, nothing died.
+Measured (13 samples, 02:15-03:15): rep/h Tian Di Hui 5.82k, Speakers for the Dead 5.33k, CyberSec 4.08k, Bladeburners 3.2k, Tetrads 2.65k, Slum Snakes 294; hackExp/h 2.51m; karma/h -11.5k; cash/h 430m; MCP avg 866k/s.
+Trend: cash STEADY, MCP and hackExp ACCELERATING; nothing DECELERATING.
+Advisor wait (gang minimum, 1 min left; plan EMS-4 + EsperTech, $1.12b). Decision wait: ORION-MKIV (6,250 Bladeburners rep) ~25 min away, Typhoon (rank 2500) ~30 min; revisit 05:15.
+End check: no daemon; next black op Operation Typhoon; Daedalus not ready.
 
 ## Next
 

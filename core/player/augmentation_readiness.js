@@ -129,7 +129,8 @@ function assess(ns, previous = null) {
         candidates.push({
           name, faction, rep, repRequired, repGap: Math.max(0, repRequired - rep),
           price, cashReady: Number(player?.money) >= price, prerequisites,
-          canWorkForRep: faction !== gangFaction,
+          // Bladeburners offers no faction work: its rep comes only from Bladeburner rank.
+          canWorkForRep: faction !== gangFaction && faction !== "Bladeburners",
         })
       }
     }

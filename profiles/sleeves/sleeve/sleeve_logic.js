@@ -41,6 +41,9 @@ export const DEFAULT_SLEEVE_CONFIG = {
   factionWorkTypes: ["hacking", "field", "security"],
   crimeKeepRatio: 0.9,      // keep the current crime unless the best beats it by more than 1/ratio
   statusMaxAgeMs: 5 * 60 * 1000,
+  bladeburner: true,        // spare sleeves take Bladeburner contracts when bladeburner.js reports odds (BN6+)
+  bladeburnerMinChance: 0.8, // low end of the sleeve's own estimate
+  infiltrateBelow: 300,     // one spare sleeve infiltrates Synthoid communities when any contract/op count is below this
 }
 
 function number(value) { return Number.isFinite(Number(value)) ? Number(value) : 0 }
@@ -99,6 +102,9 @@ export function sameTask(current, desired) {
   if (desired.action === "recovery") return current.type === "RECOVERY"
   if (desired.action === "synchronize") return current.type === "SYNCHRO"
   if (desired.action === "crime") return current.type === "CRIME" && current.crimeType === desired.crime
+  if (desired.action === "bladeburner") return desired.bbAction === "Infiltrate Synthoids"
+    ? current.type === "INFILTRATE"
+    : current.type === "BLADEBURNER" && current.actionName === desired.contract
   if (desired.action === "faction") return current.type === "FACTION" && current.factionName === desired.faction && desired.workTypes.includes(current.factionWorkType)
   return false
 }
@@ -107,7 +113,7 @@ export function sameTask(current, desired) {
  * One task per sleeve. Each sleeve is {index, shock, sync, skills, mults, task}. Returns
  * [{index, task, reason}], task.action being recovery | synchronize | crime | faction | hold.
  */
-export function chooseSleeveTasks({ sleeves = [], karma = null, config = {}, activity = null, readiness = null, money = 0, now = Date.now(), bitNodeMult = 1 } = {}) {
+export function chooseSleeveTasks({ sleeves = [], karma = null, config = {}, activity = null, readiness = null, money = 0, now = Date.now(), bitNodeMult = 1, bladeburner = null } = {}) {
   const cfg = { ...DEFAULT_SLEEVE_CONFIG, ...config }
   if (cfg.enabled === false) return sleeves.map((s) => ({ index: s.index, task: { action: "hold" }, reason: "disabled in sleeve_config.json" }))
 
@@ -155,6 +161,7 @@ export function chooseSleeveTasks({ sleeves = [], karma = null, config = {}, act
     reason: `${target.faction} needs +${Math.ceil(target.repGap)} rep for ${target.augmentation}${note}`,
   })
   const rest = []
+  const spare = []
   for (const sleeve of pending) {
     const target = sleeve.task?.type === "FACTION" && !claimed.has(sleeve.task.factionName)
       ? targets.find((t) => t.faction === sleeve.task.factionName) : null
@@ -169,12 +176,73 @@ export function chooseSleeveTasks({ sleeves = [], karma = null, config = {}, act
       assignFaction(sleeve, target, target.faction === playerFaction ? " (shared with the player)" : "")
       continue
     }
+    spare.push(sleeve)
+  }
+  const bbFresh = cfg.bladeburner !== false && bladeburner && Number.isFinite(Number(bladeburner.ts)) && now - Number(bladeburner.ts) <= 2 * 60 * 1000
+  for (const r of bbFresh ? assignBladeburner(spare, bladeburner, cfg) : []) results.set(r.index, r)
+  for (const sleeve of spare) {
+    if (results.has(sleeve.index)) continue
     const pick = pickCrime(sleeve, "money", cfg, bitNodeMult)
     if (pick) results.set(sleeve.index, { index: sleeve.index, task: { action: "crime", crime: pick.crime, chance: pick.chance, goal: "money" }, reason: "crime for money: no unclaimed faction rep target" })
     else if (number(sleeve.sync) < 100) results.set(sleeve.index, { index: sleeve.index, task: { action: "synchronize" }, reason: "no crime with a chance of success; synchronizing" })
     else results.set(sleeve.index, { index: sleeve.index, task: { action: "hold" }, reason: "nothing useful to do" })
   }
   return sleeves.map((s) => results.get(s.index))
+}
+
+/**
+ * Spare sleeves on Bladeburner (bitburner-src dev, checked 2026-11-16): a sleeve's contract success gives
+ * the player's division full rank and uses the shared count but not the player's stamina; only one sleeve
+ * may run a given contract (setToBladeburnerAction throws otherwise); Infiltrate Synthoids adds count to
+ * every contract and operation. Failures cost the sleeve HP (shock), which the recovery rule handles.
+ * bb = bladeburner_status.json sleeveContracts: { contracts: {name: {count, repGain}}, minCount,
+ * sleeves: [{index, contracts: {name: {chance: [lo, hi], timeMs}}}] }.
+ */
+export function assignBladeburner(spare = [], bb = {}, config = DEFAULT_SLEEVE_CONFIG) {
+  const cfg = { ...DEFAULT_SLEEVE_CONFIG, ...config }
+  const odds = new Map((bb.sleeves || []).map((row) => [row.index, row.contracts || {}]))
+  const usable = (sleeve, name) => {
+    const o = odds.get(sleeve.index)?.[name]
+    const c = bb.contracts?.[name]
+    if (!o || !c || number(c.count) < 1 || number(o.chance?.[0]) < cfg.bladeburnerMinChance) return null
+    return { name, chance: number(o.chance[0]), score: (number(o.chance[0]) * number(c.repGain)) / Math.max(0.001, number(o.timeMs) / 1000) }
+  }
+  const out = []
+  const used = new Set()
+  const claimed = new Set()
+  const take = (sleeve, pick) => {
+    used.add(sleeve.index); claimed.add(pick.name)
+    out.push({ index: sleeve.index, task: { action: "bladeburner", bbAction: "Take on contracts", contract: pick.name, chance: pick.chance }, reason: `Bladeburner ${pick.name} at ${(pick.chance * 100).toFixed(0)}%` })
+  }
+  // Keep sleeves already on a still-good contract, so reassignment never trips the one-sleeve rule.
+  for (const sleeve of spare) {
+    if (sleeve.task?.type !== "BLADEBURNER" || claimed.has(sleeve.task.actionName)) continue
+    const pick = usable(sleeve, sleeve.task.actionName)
+    if (pick) take(sleeve, pick)
+  }
+  // Then the best remaining (sleeve, contract) pairs.
+  while (true) {
+    let best = null
+    for (const sleeve of spare) {
+      if (used.has(sleeve.index)) continue
+      for (const name of Object.keys(bb.contracts || {})) {
+        if (claimed.has(name)) continue
+        const pick = usable(sleeve, name)
+        if (pick && (!best || pick.score > best.pick.score)) best = { sleeve, pick }
+      }
+    }
+    if (!best) break
+    take(best.sleeve, best.pick)
+  }
+  if (number(bb.minCount) < cfg.infiltrateBelow) {
+    const free = spare.filter((s) => !used.has(s.index))
+    const infiltrator = free.find((s) => s.task?.type === "INFILTRATE") || free[0]
+    if (infiltrator) {
+      used.add(infiltrator.index)
+      out.push({ index: infiltrator.index, task: { action: "bladeburner", bbAction: "Infiltrate Synthoids" }, reason: `Infiltrate Synthoids: lowest contract/op count ${number(bb.minCount).toFixed(0)} < ${cfg.infiltrateBelow}` })
+    }
+  }
+  return out
 }
 
 /** The Sleeve API throws this outside BitNode 10 without Source-File 10. */

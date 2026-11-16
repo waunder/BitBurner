@@ -53,6 +53,21 @@ function snapshot(ns, bb) {
   return { rank: bb.getRank(), stamina: bb.getStamina(), city, cityChaos: bb.getCityChaos(city), nextBlackOp, actions }
 }
 
+/** Per-sleeve contract odds for sleeve_controller.js (it assigns; we measure, since we already pay Bladeburner RAM). */
+function sleeveContracts(bb) {
+  const names = bb.getContractNames()
+  const contracts = Object.fromEntries(names.map((n) => [n, { count: bb.getActionCountRemaining("Contracts", n), repGain: bb.getActionRepGain("Contracts", n) }]))
+  const counts = [...names.map((n) => ["Contracts", n]), ...bb.getOperationNames().map((n) => ["Operations", n])]
+    .map(([t, n]) => bb.getActionCountRemaining(t, n))
+  const sleeves = []
+  for (let i = 0; i < 8; i++) {
+    try {
+      sleeves.push({ index: i, contracts: Object.fromEntries(names.map((n) => [n, { chance: bb.getActionEstimatedSuccessChance("Contracts", n, i), timeMs: bb.getActionTime("Contracts", n, i) }])) })
+    } catch { break }
+  }
+  return { ts: Date.now(), contracts, minCount: Math.min(...counts), sleeves }
+}
+
 function bestCity(bb, chaosMax) {
   const rows = CITIES.map((c) => ({ c, pop: bb.getCityEstimatedPopulation(c), chaos: bb.getCityChaos(c) }))
   return rows.filter((r) => r.chaos <= chaosMax).sort((a, b) => b.pop - a.pop)[0] || null
@@ -149,6 +164,7 @@ export async function main(ns) {
           current: cur, currentChance, decision: lastDecision, resting,
           nextBlackOp: snap.nextBlackOp, daedalusRank, daedalusReady: snap.nextBlackOp?.name === "Operation Daedalus" && snap.rank >= snap.nextBlackOp.rank,
           analysisBlocked: analysis.blocked, lastError,
+          sleeveContracts: cfg.sleeves === false ? null : sleeveContracts(bb),
         }, null, 1), "w")
       }
       lastError = null

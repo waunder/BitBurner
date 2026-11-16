@@ -3465,3 +3465,11 @@ recovery states: `docs/remote-api-keepalive.md`.
   `bladeburner_status.json` exists: rank and rank/h, action and its success range, stamina, city/chaos, skill points,
   next black op with ETA, a DAEDALUS READY flag. Hidden in BitNodes without the file. Skill points are now saved for
   the best value-per-point skill instead of spent on whatever is affordable (2026-11-16).
+- **Sleeves on Bladeburner (2026-11-16):** `bladeburner.js` writes `sleeveContracts` (each sleeve's contract odds and
+  times, contract counts, the lowest contract/op count) into its status. `sleeve_controller.js` reads it and
+  `sleeve_logic.assignBladeburner()` gives spare sleeves (no faction rep target) one contract each (the game allows
+  one sleeve per contract), best low-end odds >= `bladeburnerMinChance` 0.8, keeping a sleeve on its contract while it
+  stays good; one spare sleeve does Infiltrate Synthoids while any count is under `infiltrateBelow` 300. Sleeve
+  contract wins give the player's division full rank and use no player stamina. Off with `{"bladeburner": false}` in
+  `sleeve_config.json`. The Bladeburners faction is marked `canWorkForRep: false` in `augmentation_readiness.js`
+  (it offers no work; rep comes from rank).

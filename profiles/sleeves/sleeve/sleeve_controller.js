@@ -46,6 +46,7 @@ function apply(ns, index, task) {
   if (task.action === "recovery") return ns.sleeve.setToShockRecovery(index)
   if (task.action === "synchronize") return ns.sleeve.setToSynchronize(index)
   if (task.action === "crime") return ns.sleeve.setToCommitCrime(index, task.crime)
+  if (task.action === "bladeburner") return ns.sleeve.setToBladeburnerAction(index, task.bbAction, task.contract)
   if (task.action === "faction") {
     // A faction that does not offer a work type makes the game return false, so walk the preference list.
     let lastError = null
@@ -60,7 +61,7 @@ function apply(ns, index, task) {
 
 function describe(task) {
   if (!task) return "idle"
-  return [task.type, task.crimeType || task.factionName, task.factionWorkType].filter(Boolean).join(":")
+  return [task.type, task.crimeType || task.factionName || task.actionName, task.factionWorkType].filter(Boolean).join(":")
 }
 
 export async function main(ns) {
@@ -80,7 +81,9 @@ export async function main(ns) {
       const config = { ...(playerConfig.crimeKarmaTarget === undefined ? {} : { crimeKarmaTarget: playerConfig.crimeKarmaTarget }), ...override }
       const activity = readJson(ns, "player_activity_status.json", null)
       const readiness = readJson(ns, "augmentation_readiness.json", null)
-      const decisions = chooseSleeveTasks({ sleeves, karma, config, activity, readiness, money: Number(readiness?.money) || 0, now })
+      // BN6+: bladeburner.js measures per-sleeve contract odds (it already pays the Bladeburner RAM).
+      const bladeburner = readJson(ns, "bladeburner_status.json", null)?.sleeveContracts || null
+      const decisions = chooseSleeveTasks({ sleeves, karma, config, activity, readiness, money: Number(readiness?.money) || 0, now, bladeburner })
       const rows = []
       for (const sleeve of sleeves) {
         const decision = decisions[sleeve.index]

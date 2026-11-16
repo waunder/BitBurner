@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { chooseSleeveTasks, crimeChance, factionTargets, rankCrimes, sameTask, sleeveApiUnavailable } from "./sleeve_logic.js"
+import { assignBladeburner, chooseSleeveTasks, crimeChance, factionTargets, rankCrimes, sameTask, sleeveApiUnavailable } from "./sleeve_logic.js"
 
 const NOW = 1_000_000
 const strong = { hacking: 100, strength: 200, defense: 200, dexterity: 200, agility: 200, charisma: 100, intelligence: 0 }
@@ -152,4 +152,49 @@ test("the unavailable-API error is recognised", () => {
 test("sleeve faction targets skip names the gang faction sells", () => {
   const list = readiness([cand("Tetrads", "Bionic Arms", 100), cand("Slum Snakes", "Other", 200)], { gangSells: ["Bionic Arms"] })
   assert.deepEqual(factionTargets(list, { money: 1e6 }).map((t) => t.faction), ["Slum Snakes"])
+})
+
+
+// Bladeburner (BN6): spare sleeves take contracts, one sleeve per contract, best odds first.
+const bbStatus = (over = {}) => ({
+  ts: NOW, minCount: 800,
+  contracts: { Tracking: { count: 800, repGain: 1 }, "Bounty Hunter": { count: 800, repGain: 3 }, Retirement: { count: 800, repGain: 2 } },
+  sleeves: [0, 1, 2, 3].map((index) => ({ index, contracts: {
+    Tracking: { chance: [0.99, 1], timeMs: 11000 },
+    "Bounty Hunter": { chance: [index === 2 ? 0.95 : 0.85, 0.97], timeMs: 21000 },
+    Retirement: { chance: [index === 3 ? 0.5 : 0.9, 0.95], timeMs: 17000 },
+  } })),
+  ...over,
+})
+const spareSleeves = [0, 1, 2, 3].map((index) => ({ index, shock: 0, sync: 100, skills: {}, task: null }))
+
+test("bladeburner: each contract to one sleeve, best odds wins Bounty Hunter", () => {
+  const out = assignBladeburner(spareSleeves, bbStatus())
+  const byContract = Object.fromEntries(out.map((r) => [r.task.contract, r.index]))
+  assert.equal(out.length, 3)
+  assert.equal(byContract["Bounty Hunter"], 2)
+  assert.equal(new Set(out.map((r) => r.index)).size, 3)
+  assert.notEqual(byContract.Retirement, 3) // sleeve 3 is below the bar for Retirement
+})
+
+test("bladeburner: a sleeve already on a good contract keeps it", () => {
+  const sleeves = spareSleeves.map((s) => s.index === 0 ? { ...s, task: { type: "BLADEBURNER", actionName: "Bounty Hunter" } } : s)
+  const out = assignBladeburner(sleeves, bbStatus())
+  assert.equal(out.find((r) => r.index === 0).task.contract, "Bounty Hunter")
+})
+
+test("bladeburner: low counts send one free sleeve to infiltrate", () => {
+  const out = assignBladeburner(spareSleeves, bbStatus({ minCount: 100 }))
+  assert.equal(out.filter((r) => r.task.bbAction === "Infiltrate Synthoids").length, 1)
+})
+
+test("bladeburner: replaces money crime only when fresh, and sameTask recognises it", () => {
+  const withBb = chooseSleeveTasks({ sleeves: spareSleeves, karma: -1e6, now: NOW, bladeburner: bbStatus() })
+  assert.equal(withBb.filter((r) => r.task.action === "bladeburner").length, 3)
+  const stale = chooseSleeveTasks({ sleeves: spareSleeves, karma: -1e6, now: NOW, bladeburner: bbStatus({ ts: NOW - 10 * 60 * 1000 }) })
+  assert.equal(stale.filter((r) => r.task.action === "bladeburner").length, 0)
+  const off = chooseSleeveTasks({ sleeves: spareSleeves, karma: -1e6, now: NOW, config: { bladeburner: false }, bladeburner: bbStatus() })
+  assert.equal(off.filter((r) => r.task.action === "bladeburner").length, 0)
+  assert.equal(sameTask({ type: "BLADEBURNER", actionName: "Tracking" }, { action: "bladeburner", bbAction: "Take on contracts", contract: "Tracking" }), true)
+  assert.equal(sameTask({ type: "INFILTRATE" }, { action: "bladeburner", bbAction: "Infiltrate Synthoids" }), true)
 })

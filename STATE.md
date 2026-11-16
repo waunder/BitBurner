@@ -115,14 +115,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-15 23:14 (scheduled run): install 3, 4 augs + NeuroFlux x3, 14 -> 18 installed (23:15:50).**
-Before (probe 23:15): BitNode 6, $687m, hacking 171, combat 310/239/317/281, karma -214k, home 1TB. Gang Slum Snakes respect 31k, territory 14%.
-Measured (12 samples, 22:15-23:10): rep/h Tian Di Hui 13.5k, CyberSec 2.3k, Tetrads 1.53k, Slum Snakes 219; hackExp/h 1.38m; karma/h -24.4k; cash/h -152m (spending); MCP avg 528k/s.
-Trend: MCP, hackExp, Tian Di Hui rep ACCELERATING; nothing DECELERATING.
-Advisor wait (gang 4h minimum, 2 min left; batch 0.60 vs avg 0.15); decision install: that was its only objection and the next aug is ~36h off.
-Backup `saves/bitburnerSave_pre-install3_BN6run1_2026-11-15.json.gz` checked. After: all residents back, gang and Bladeburner kept.
-End check: no daemon; Bladeburner rank 0, idle, next black op Operation Typhoon (2500); not ready.
-`metrics.py cycles` 23:22: cycle 3 (19:17) closed 3.98h, logged 98%, installed +4, rebuild hacking not yet, repRate 0.47h; rep earned Tian Di Hui 37.7k, Tetrads 9.98k, CyberSec 3.47k, Slum Snakes 818; favor banked Slum Snakes +1.5 (the advisor expected Tian Di Hui +19.8 too; not shown by `cycles`, check live favor next run); cycle 4 (23:15) open.
+**2026-11-16 01:14 (scheduled run): steady, no changes made.**
+Live (probe 01:15): BitNode 6, $176m, hacking 156, combat 326/276/294/288, karma -259k, home 1TB, 18 installed, 1 queued (The B00ts of Perseus, darknet reward).
+Gang Slum Snakes respect 43k, territory 14%. Bladeburner rank 229 on Bounty Hunter (controller: 337 rank/h); all residents incl. `bladeburner.js` running.
+Measured (13 samples, 00:15-01:15): rep/h Tetrads 2.16k, Tian Di Hui 2.06k, CyberSec 639, Bladeburners 606, Slum Snakes 261; hackExp/h 825k; karma/h -19.9k; cash/h 145m; MCP avg 257k/s.
+Trend: n/a (cycle 4 is 2h old); nothing DECELERATING.
+Advisor wait (gang 4h minimum, 2h left; batch 0.058); decision wait, agreed.
+End check: no daemon; next black op Operation Typhoon (rank 2500); Daedalus not ready.
 
 ## Next
 

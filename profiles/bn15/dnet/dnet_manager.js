@@ -125,9 +125,11 @@ export async function main(ns) {
 
       if (Date.now() >= nextCrawl) {
         await writeStatus(ns, "crawling", failures, nextCrawl)
-        // Recrawls refresh local access only. They must never turn a stable
-        // manager into a new propagation source.
-        const crawlPid = ns.run(CRAWLER, { preventDuplicates: true }, "--quiet", "--no-spread")
+        // Recrawls refresh local access only, except on the darkweb gateway (2026-11-17 live
+        // experiment): it may spread to its direct neighbours, whose crawlers stay terminal
+        // (--no-spread), so expansion is one level deep and bounded by MAX_ACTIVE_MANAGERS.
+        const spreadArgs = ns.getHostname() === "darkweb" ? [] : ["--no-spread"]
+        const crawlPid = ns.run(CRAWLER, { preventDuplicates: true }, "--quiet", ...spreadArgs)
         if (crawlPid !== 0) await waitPid(ns, crawlPid)
         else await ns.sleep(POLL_MS)
         nextCrawl = Date.now() + jitteredRecrawlMs(RECRAWL_MS)

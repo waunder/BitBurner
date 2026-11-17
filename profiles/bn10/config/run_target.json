@@ -1,10 +1,11 @@
 {
   "goal": "BN10 run 4 (entered 2026-11-16 ~21:48, Ken hands-off): The Covenant's 8th sleeve; sleeve memory already 100 on all 7",
-  "updated": "2026-11-16",
+  "updated": "2026-11-17",
   "gangFaction": "Slum Snakes",
   "steps": [
     {
-      "label": "Gang: Slum Snakes (player and 7 sleeves on Homicide; karmaFirst since 11-16 23:30)",
+      "label": "Gang: Slum Snakes (created 2026-11-17 ~05:16; gang-controller.js running)",
+      "done": true,
       "metric": {
         "kind": "karma",
         "target": -54000

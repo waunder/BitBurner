@@ -126,13 +126,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-17 03:15 (scheduled run, BN10 run 4 hour 5.5): started gang_create.js; no install.**
-Live (probe 03:15): BitNode 10, $320m, hacking 73, combat 77/77/79/79, karma -35.0k, home 256GB, 0 installed, 0 queued, 7 sleeves on Homicide (shock 14.6, odds 0.28).
-Gap fixed: gang_create.js was not running (only startup.js starts it), so nothing would have created the gang. Started 03:16; it starts gang-controller.js (39GB) once RAM allows, likely after home 512GB (~05:20, $477m).
-Measured (25 samples, 120 min): karma/h -8.89k, cash/h 135m, hackExp/h 22.3k, rep/h 150 passive x4, MCP avg 3.68k/s. Trend: cash and hackExp ACCELERATING. Gang (karma -54k) about 05:25.
-Audit: 0 of 32 flagged. Open: sleeve augs blocked in the first cycle (late phase); durable gang_create start (docs/opportunities.md).
+**2026-11-17 05:15 (scheduled run, BN10 run 4 hour 7.5): gang exists; MCP home-reserve fix; no install.**
+Live (probe 05:18): BitNode 10, $96m, hacking 88, combat 83/83/84/84, karma -54.2k, home 512GB, 0 installed, 0 queued. Gang Slum Snakes since ~05:16 (3 members, reputation mode, gang-controller.js running). Sleeves shock 10.7: 2 faction rep, 5 money crime.
+Fixed: MCP sat in capacity-wait with 232GB free on home; `mcp_cloud.js` reserved a fixed 512GB of home (BN15 value). Now a quarter of home (64GB floor, 512GB cap); MCP restarted 05:19 and runs 104GB of jobs on home.
+Measured (24 samples, 120 min): hackExp/h 41.6k, karma/h -9.51k, cash/h -208m (home purchase), rep/h 148 passive x4, MCP avg 5.46k/s. Trend: MCP and cash DECELERATING (the reserve fault and the purchase), hackExp ACCELERATING.
+Audit: 1 of 32 flagged (cct_watcher, no safe worker yet; harmless). Open: first-cycle sleeve augs (late phase); durable gang_create start.
 Advisor verdict build; no install. End check: no Red Pill, no World Daemon.
-Next run: confirm the gang exists and gang-controller.js runs.
+Next run: confirm MCP rate recovers; watch gang respect and recruits.
 
 ## Daedalus ready (2026-11-16 21:35)
 

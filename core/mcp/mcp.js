@@ -920,7 +920,7 @@ function chooseTarget(ns, servers, maxWeaken, skippedTargets, drainedTargets) {
 }
 
 // Home is a worker host because its RAM survives an install; cloudAdmissionHosts
-// keeps HOME_WORKER_RESERVE_GB free there for the control plane.
+// keeps homeWorkerReserve() free there for the control plane.
 function getHostFreeRam(ns, host) {
   const usedRam = ns.getServerUsedRam(host)
   let freeRam = ns.getServerMaxRam(host) - usedRam

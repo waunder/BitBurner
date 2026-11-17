@@ -75,7 +75,14 @@ test('XP resumes in the same tick when only security preparation remains',async(
  assert.equal(state.batches.size,0)
 })
 
-import {cloudWakeDelay,cloudAdmissionHosts} from './mcp_cloud.js'
+import {cloudWakeDelay,cloudAdmissionHosts,homeWorkerReserve} from './mcp_cloud.js'
+test('home reserve scales with home size: 64GB floor, quarter of home, 512GB cap',()=>{
+ assert.equal(homeWorkerReserve(128),64)
+ assert.equal(homeWorkerReserve(512),128)
+ assert.equal(homeWorkerReserve(4096),512)
+ const ns={getServerMaxRam:()=>512,getServerUsedRam:()=>280,isRunning:()=>false}
+ assert.equal(cloudAdmissionHosts(ns,['home'],new Map(),{},true)[0].freeRam,104)
+})
 test('completion wake targets final harvest action with margin, preserving other modes',()=>{
  const status={workerMode:'finite',targets:[{phase:'harvest',startedAt:1000,counts:{hack:5,grow:10,weaken:1},durations:{hack:2,grow:6.4,weaken:8}}]}
  assert.equal(cloudWakeDelay(status,1000,10000,true),8100)

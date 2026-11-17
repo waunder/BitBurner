@@ -4,6 +4,11 @@ Running list kept by Claude on its own initiative (Ken, 2026-11-16: "exercise in
 for flaws and opportunities"). Newest first. Each entry: finding, evidence, expected gain, status.
 The 2-hourly check reviews this once per cycle (first run after an install).
 
+## 2026-11-17 05:15 check (BN10 run 4, hour 7.5)
+
+- **MCP's cloud path reserved a fixed 512GB of home, so a 512GB home gave it nothing.** Evidence: `mcp_status.json` 05:18 `capacity-wait`, rate 0, home 232GB free but `availableRam` 4.5GB on every waiting target; MCP 3x60m trend 10.3k>6.19k>764/s; `HOME_WORKER_RESERVE_GB=512` in `mcp_cloud.js` (set for BN15's PB home). Gain: about 100-200GB more batch RAM on home (MCP's main pool in early BN10, no cloud servers), and home RAM buys now feed MCP. Status: shipped 05:20 (`homeWorkerReserve`: quarter of home, 64GB floor, 512GB cap; test added). After restart, 104GB of jobs on home, phase harvest. Measure MCP rate next run.
+- **gang_create.js durable start** (from 03:15) is still open; the gang now exists, so it matters again only in the next node.
+
 ## 2026-11-17 03:15 check (BN10 run 4, hour 5.5)
 
 - **gang_create.js is not started on a fresh-node bootstrap.** Evidence: game `ps` 03:15 had every resident but gang_create.js; it is only in `startup.js`'s list, and capital_manager starts MANAGERS plus the profile startup list. Karma -35k, gang due ~05:25. Gain: gang created on time instead of whenever a session notices. Status: started by hand 03:16. Durable fix (open): have capital_manager launch gang_create.js while karma > -54k and no gang (it exits by itself once the controller runs, so a plain MANAGERS entry would relaunch it every pass), or add it to the bn10 profile startup list with a guard.

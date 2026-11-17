@@ -169,8 +169,13 @@ export function cloudWakeDelay(status, now, nominalMs, enabled) {
   return Math.max(200,Math.min(nominalMs,Math.min(...deadlines)-now))
 }
 
+// Control-plane room kept free on home. A fixed 512GB suited a PB home but blocked all
+// of a 512GB home (BN10 run 4, 2026-11-17: 200GB idle, MCP in capacity-wait).
+export function homeWorkerReserve(maxRam) {
+  return Math.min(512, Math.max(64, 0.25*maxRam))
+}
+
 /** Hold finished harvest slots until its final restoration job completes. */
-const HOME_WORKER_RESERVE_GB=512
 export function cloudAdmissionHosts(ns, workers, batches, ram, reserveHarvestRam) {
   const held=new Map()
   if(reserveHarvestRam)for(const batch of batches.values()) {
@@ -180,7 +185,7 @@ export function cloudAdmissionHosts(ns, workers, batches, ram, reserveHarvestRam
     }
   }
   return workers.map(host=>({host,reservedRam:held.get(host)||0,
-    freeRam:Math.max(0,ns.getServerMaxRam(host)-ns.getServerUsedRam(host)-(held.get(host)||0)-(host==='home'?HOME_WORKER_RESERVE_GB:0))}))
+    freeRam:Math.max(0,ns.getServerMaxRam(host)-ns.getServerUsedRam(host)-(held.get(host)||0)-(host==='home'?homeWorkerReserve(ns.getServerMaxRam(host)):0))}))
     .sort((a,b)=>b.freeRam-a.freeRam)
 }
 

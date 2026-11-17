@@ -72,6 +72,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
   per loop. Reputation mode uses the 0.80/0.90 wanted-penalty band.
 - **Sleeves do karma crime while shocked** (2026-11-15 01:16, game-only `sleeve_config.json` `{"karmaWhileShocked": true}`).
   BN6 started sleeves at high shock; recovery to 5 would have held karma near -8/h for about 10 more hours. Delete the file to revert.
+- **Black ops tried at 0.35 odds** (2026-11-16 17:15, game-only `bladeburner_config.json` `{"blackOpMinChance": 0.35}`, default 0.6). Rank passed Centurion (300k) but odds 0.41-0.48 held it back; failure costs little rank. Daedalus stays blocked (`allowDaedalus` false). Delete the file to revert.
 - **Four sleeves may infiltrate** (2026-11-16 15:15, game-only `sleeve_config.json` `maxInfiltrators` 4, default 2). Contract counts sat at 8-20, under the start bar of 20, so spare sleeves did Homicide. Remove the key to revert.
 - Share stays on (A/B recorded 2026-11-05).
 - **Home RAM floor 512GB** (2026-11-11 22:08, was 256; `capital_policy.json` `homeRamFloor`; game-only). Bought 512GB for $477m so the HUD (killed for the install advisor's 35GB) could run again. Plus code: while mcp.js is
@@ -121,14 +122,14 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-16 15:15 (scheduled run): sleeves 3 and 6 moved to infiltration; no install.**
-Live (probe 15:15): BitNode 6, $5.44b, hacking 196, combat 531/449/571/478, karma -353k, home 1TB, 22 augs + NeuroFlux, 0 queued.
-Bladeburner rank 202.7k (103.7k at 13:15), 47.9k rank/h; running Operation Annihilus (0.83). Daedalus at 400k, about 4h.
-Measured (13 samples, 14:15-15:15): rep/h Slum Snakes 313k, Bladeburners 299k; hackExp/h 3.27m; karma/h -10.4k; cash/h -357m net (cloud buys $2.7b/10min); MCP avg 1.31m/s. Trend: MCP and hackExp accelerating, Bladeburner rep steady.
-Change: contract counts (8-20) under the sleeves' start bar left 3 sleeves on Homicide; `sleeve_config.json` `maxInfiltrators` 2 -> 4, seen applied 15:17.
-Audit 0 of 32 flagged; nothing died. Gang rep mode 877k of 1.75m.
-Advisor install (3 Slum Snakes augs, $5.07b); decision wait: the node can end in ~4h and an install costs ~2h of combat stats. A last install of Bladeburner augs before Daedalus, if its odds are low, is Ken's call at the end.
-End check: no daemon; Daedalus needs rank 400k; not ready.
+**2026-11-16 17:15 (scheduled run): black-op bar lowered to 0.35; Operation Centurion started 17:17; no install.**
+Live (probe 17:15): BitNode 6, $12.7b, hacking 210, combat 570/482/617/517, karma -359k, home 1TB, 22 augs + NeuroFlux, 0 queued.
+Bladeburner rank 468k (past Daedalus's 400k), 151k rank/h. Annihilus and Ultron won; Centurion, Vindictus, Daedalus remain.
+Black-op odds now gate the end: Centurion 0.41-0.48, Vindictus 0.39-0.45, Daedalus 0.36-0.42. The 0.6 bar had held Centurion back since ~16:30.
+Measured (13 samples, 16:15-17:15): rep/h Bladeburners 960k, Slum Snakes 437k; hackExp/h 4.72m; karma/h -1.79k; cash/h 6.35b; MCP avg 2.33m/s. Trend: Bladeburner rep accelerating, rest steady.
+Audit 0 of 32 flagged; nothing died.
+Advisor wait (BrachiBlades in 34m); decision wait: an install would cut combat stats and black-op odds for ~2h. Bladeburner success augs before Daedalus are part of Ken's end call.
+End check: no daemon; next black op Centurion; daedalusReady false.
 
 ## Next
 

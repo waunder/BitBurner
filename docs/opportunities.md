@@ -4,6 +4,11 @@ Running list kept by Claude on its own initiative (Ken, 2026-11-16: "exercise in
 for flaws and opportunities"). Newest first. Each entry: finding, evidence, expected gain, status.
 The 2-hourly check reviews this once per cycle (first run after an install).
 
+## 2026-11-16 17:15 check
+
+- **Black-op bar too timid once rank is no longer the limit.** Evidence: rank 468k vs Centurion's 300k; low-end odds 0.41-0.48 under the 0.6 bar, so the controller farmed Assassination for ~45 min instead. Gain: the remaining black ops (Centurion, Vindictus) clear in about 20 min each instead of waiting on skill points. Status: shipped (game-only `blackOpMinChance` 0.35); check the event log for SUCCESS/failed and HP.
+- **Bladeburner success augs for the final op.** Evidence: Daedalus odds 0.36-0.42; Bladeburners rep 2.6m opens every Bladeburner aug, cash $12.7b. Gain: higher Daedalus odds if Ken wants them before ending. Status: for Ken at the end call (install costs ~2h of stats).
+
 ## 2026-11-16 15:15 check
 
 - **More infiltrators while counts are low.** Evidence: counts 8-20, start bar 20; 3 of 7 sleeves on Homicide for money, 1 on Speakers rep for a value-0 aug. Gain: ~1.4x count refill (sqrt law), more sleeve contracts and player ops. Status: shipped (game-only `maxInfiltrators` 4), measure rank/h and counts next run. Next idea: let sleeve 0 drop value-0 faction targets.

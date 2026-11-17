@@ -228,6 +228,19 @@ the Covenant join, cash/h and MCP $/s before and after each graft (payback), ent
 by activity (grafting versus crime, gym, faction work, from `player_activity_status.json` history), and installs avoided or shrunk.
 A graft "paid" if its measured income/rep/time gain beat 0.097 v of entropy plus its cash and hours; otherwise tighten `minNetValue`.
 
+## G1 results (live, 2026-11-16 22:50, BN10 run 4)
+
+Three read-only scripts (7.2, 11.7 and 11.7GB; one combined script was 27.2GB, so keep probes split). Raw output:
+`runtime/graft_probe_g1.json`.
+- **Prices confirmed:** graft price = 0.6 x `getAugmentationBasePrice` for all 8 samples. In BN10 that function already
+  includes the x5 BitNode multiplier, so this is 3 x the raw base, as the source says. SPTN-97 $14.6b, nextSENS $5.8b,
+  Bionic Spine $0.38b, QLink $75t.
+- **Correction 1, time:** `getAugmentationGraftTime` already includes the intelligence bonus (it returned the formula /1.09,
+  and intelligence is 146, so 1 + 146^0.8/600 = 1.09). Use it as the time before the focus penalty only.
+- **Correction 2, name:** the entropy cure is **"violet Congruity Implant"** in v3.0.1, not "Nickofolas Congruity Implant".
+- 98 graftable (offline list said 97); entropy 0; intelligence 146; `getAugmentationPrereq` works for an aug no faction offers
+  us (Combat Rib III -> Combat Rib II, Combat Rib I); `getAugmentationStats` likewise.
+
 ## 6. Open questions and risks
 
 Not confirmed from source or not yet checked live:
@@ -236,9 +249,9 @@ Not confirmed from source or not yet checked live:
    (`focusWork`), so it is probably tolerated, but I could not confirm that `tools/game_terminal.py` still works then. Step G7 tests it.
 2. **Whether unfocused grafting progresses while the window is hidden or throttled.** Source is per game cycle, so a
    throttled window could slow it. Not checked; compare predicted and actual in G7.
-3. **`getAugmentationBasePrice` and `getAugmentationPrereq` for non-offered augs.** `getAugmentationStats` checks no ownership (confirmed),
+3. **(Settled by G1: both work.)** `getAugmentationBasePrice` and `getAugmentationPrereq` for non-offered augs. `getAugmentationStats` checks no ownership (confirmed),
    and I did not read the other two; the probe settles it.
-4. **Intelligence magnitude.** The bonus is `1 + int^0.8/600`; our intelligence is unknown here (about 1.07x at 100, 1.42x at 1000).
+4. **(Settled by G1: 146, bonus 1.09.)** Intelligence magnitude. The bonus is `1 + int^0.8/600`; our intelligence is unknown here (about 1.07x at 100, 1.42x at 1000).
    The probe reads it.
 5. **Entropy scale of the value estimate.** I priced entropy with the weighted keys only (sum 4.8). It really hits every
    multiplier, including crime, company and work money, and cost multipliers; those are outside our weights, so the true

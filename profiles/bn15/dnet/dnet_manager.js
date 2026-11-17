@@ -20,7 +20,7 @@ const HEARTBEAT_MS = 15 * 1000
 // after its resident manager, enough for two 3.6GB phish workers; this is a
 // measured 1→2-thread ROI experiment, not a broad concurrency increase.
 // The manager/spread caps remain unchanged.
-export const MAX_PHISH_THREADS = 2
+export const MAX_PHISH_THREADS = 16 // 2026-11-17 live experiment: host RAM (projectedThreads) is the real limit; was 2
 
 // Concurrency-cap heartbeat (2026-08-30) — dnet_crawl.js reserves this
 // host's slot once, right before spawning this process; this file's job is

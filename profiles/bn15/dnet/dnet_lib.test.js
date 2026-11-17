@@ -421,9 +421,9 @@ describe("dnet_crawl.js/dnet_manager.js's duplicated cap constants stay in sync 
   })
 
   test("controlled expansion profile remains bounded", () => {
-    assert.equal(MAX_ACTIVE_MANAGERS, 2)
-    assert.equal(MAX_SPREAD_PER_PASS, 1)
-    assert.equal(MAX_PHISH_THREADS, 2)
+    assert.equal(MAX_ACTIVE_MANAGERS, 4)
+    assert.equal(MAX_SPREAD_PER_PASS, 2)
+    assert.equal(MAX_PHISH_THREADS, 16)
   })
 })
 

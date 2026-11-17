@@ -132,6 +132,12 @@ Measured (13 samples, 18:15-19:15): rep/h Bladeburners 1.29m, Slum Snakes 116k; 
 Advisor verdict install; decision no install: the node is done and Daedalus is Ken's call. Any extra Bladeburner augs before Daedalus are part of that call.
 End check: no World Daemon (Red Pill not installed); Daedalus ready. Save backup taken and validated.
 
+## Daedalus ready (2026-11-16 21:35)
+
+Rank 1.32m (gate 400k), 363k/h. Operation Daedalus: 100% odds, 7m16s, 1 count. NOT started (allowDaedalus false).
+Save backed up: saves/daedalus-ready-bn6-20261116-2135.json.gz. Ken notified; ending BN6 is his call.
+Bladeburner keeps working Assassination meanwhile.
+
 ## Next
 
 1. **BN6 day one (17:20):** home 32GB, 7 sleeves, SF 1.2 2.1 4.3 5.3 10.3 15.1. Running: mcp_supervisor, crawler, capital_bootstrap,

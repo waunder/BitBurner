@@ -229,7 +229,10 @@ async function refresh() {
   const gangRows = [
     ["Gang", `${esc(g.gang?.faction || last.gang?.faction || "–")} · ${esc(g.gangObjective || "–")} mode`],
     ["Respect", `${fmt(gangLive.respect ?? last.respect, 1)}`],
-    ["Gang faction rep", fmt(last.factionRep?.[readiness.gangFaction || "Slum Snakes"], 1)],
+    ["Gang faction rep", (() => { const have = last.factionRep?.[readiness.gangFaction || "Slum Snakes"] ?? 0, need = Number((/of (\d+) needed/.exec(g.objectiveChoice?.reason || "") || [])[1])
+      return `${fmt(have, 1)}${need ? ` of ${fmt(need, 1)} for its augmentations${barHtml(have / need)}` : ""}` })()],
+    ["What the spending buys", `${g.ascensionCount ?? "–"} ascensions (each ×${fmt(g.lastAscension?.mult ?? 1.25, 2)} to that member's stats; gear is lost at ascension, augmentations kept).
+      Return comes later: run 3's gang went from $0.1b to $56b income per cycle once members compounded.`],
     ["Power", `${fmt(g.power?.ours, 0)} vs strongest rival ${fmt(g.power?.strongestRival, 0)} (territory off)`],
   ]
   document.getElementById("gang").innerHTML = `<table>${gangRows.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join("")}</table>`

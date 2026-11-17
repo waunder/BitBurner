@@ -4,6 +4,11 @@ Running list kept by Claude on its own initiative (Ken, 2026-11-16: "exercise in
 for flaws and opportunities"). Newest first. Each entry: finding, evidence, expected gain, status.
 The 2-hourly check reviews this once per cycle (first run after an install).
 
+## 2026-11-17 01:15 check (BN10 run 4, hour 3.5)
+
+- **First cycle of a node is already "late", so sleeve augs would wait for the first install.** Evidence: `capital_status.json` and `sleeve_buyer_status.json` `cyclePhase` late at hour 3.4 with 0 installed (`earlyCycleHours` 1.5 counts from node entry); sleeve buyer `limits.wiped` 0. Sleeve shock 18.3, falling ~1.9/h, so sleeves can buy augs in ~9-10h, likely before the first install (advisor: nothing until Wired Reflexes in 7.5h, gang at ~06:00). Gain: lesson 6 says sleeve augs early pay well (BN6: 7 sleeves x 6 augs for $0.71b, odds held); sleeve Homicide odds are 0.25 now. Status: open; check before shock hits 0 (~10:00) and, if no install is near, let the first cycle count as early until the first install or until the batch exists.
+- **Karma rate measured.** Evidence: karma/h -7.67k (23 samples, 120 min) with `karmaFirst`; karma -1.8k -> -17.1k in 2h. Gain: gang at about 06:00 PC clock. Status: shipped last run, working.
+
 ## 2026-11-16 23:15 check (BN10 run 4, hour 1.5)
 
 - **Player did rep work while gang karma waited.** Evidence: player on Slum Snakes field work for Wired Reflexes ($12.5m, value 0.04) at karma -1.8k; karma crime is the last fallback in `choosePlayerActivity`; player Homicide odds 0.52 (~1.85k karma/h, ~$21m/h). Gain: roughly +30-40% karma rate toward -54k, so the gang (main money and rep loop) arrives hours sooner. Status: shipped (`karmaFirst` config flag, BN10 only; test added). Measure karma/h next run.

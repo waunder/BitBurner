@@ -126,13 +126,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-16 23:15-23:40 (scheduled run, BN10 run 4 hour 1.5): player moved to Homicide for gang karma; metrics_logger and run_report restarted.**
-Live (probes 23:15): BitNode 10, $58.6m, hacking 30, combat 58/58/64/64, karma -1.8k, home 128GB (9.5GB free), 0 installed, 0 queued, 7 sleeves on Homicide (shock 22, sync 100, memory 100 on all: memory goal already met).
-Change: `karmaFirst` flag (core logic + test, true in bn10 config) puts karma crime ahead of small rep targets; player was on Slum Snakes field work for a $12.5m aug. Observed 23:33: player on Homicide (odds 0.52).
-Not running for RAM: mcp.js (16.95GB + batches), sleeve_controller, sleeve_buyer, HUD, allocator. capital_manager saves $151m for home 256GB (~1h at $21k/s).
-Measured: no BN10 samples yet (metrics_logger was down since entry; restarted 23:3x). Rates from next run.
-Audit: 1 of 32 flagged, cct_watcher "no safe rooted worker" (early node, harmless). Advisor verdict unknown (no rep rate); no install (nothing bought).
-End check: no Red Pill, no World Daemon. Gang: none yet (karma -54k). `run_target.json` rewritten for run 4.
+**2026-11-17 01:15 (scheduled run, BN10 run 4 hour 3.5): steady, no changes in the game.**
+Live (probe 01:15): BitNode 10, $64.6m, hacking 45, combat 70/70/73/73, karma -17.0k, home 256GB (41GB free), 0 installed, 0 queued, 7 sleeves on Homicide (shock 18.3, odds 0.25).
+All residents now run (mcp.js, sleeve_controller, sleeve_buyer, allocator added since 23:15). capital_manager bought home 256GB and BruteSSH; saving $477m for the 512GB floor (~5.5h).
+Measured (23 samples, 120 min): karma/h -7.67k, hackExp/h 1.11k, rep/h Slum Snakes 151, MCP avg 229/s. Gang (karma -54k) about 06:00.
+Audit: 1 of 32 flagged, cct_watcher "no safe rooted worker" (early node, harmless).
+Gap (open, docs/opportunities.md): first cycle already "late", so sleeve augs stay blocked once shock hits 0 (~10:00) until the first install.
+Advisor verdict build; no install. End check: no Red Pill, no World Daemon.
 
 ## Daedalus ready (2026-11-16 21:35)
 

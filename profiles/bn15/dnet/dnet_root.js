@@ -68,9 +68,10 @@ function mergeManagerRegistryShards(ns, generation, retainExisting) {
     if (!file.endsWith(".json")) continue
     try {
       const rec = JSON.parse(ns.read(file) || "")
-      // A restart is a new ownership generation. Never let a pre-restart
-      // manager reserve a slot merely by continuing to refresh its old shard.
-      if (rec && rec.generation === generation && typeof rec.host === "string" && typeof rec.ts === "number") shardRecords.push(rec)
+      // Count every manager still heartbeating, whatever its generation (2026-11-17). The cap bounds
+      // load, and a manager left from a replaced root is still real load; filtering by generation
+      // let 16 run while the registry read 0. Dead ones age out after MANAGER_STALE_MS.
+      if (rec && typeof rec.host === "string" && typeof rec.ts === "number") shardRecords.push(rec)
     } catch { /* tolerate a killed writer's partial shard */ }
   }
 

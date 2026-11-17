@@ -87,6 +87,15 @@ first sleeve augmentation batches; gang power after gear.
 
 ## Open
 
+- **Darknet push (Ken, 2026-11-17: "see how far you can push darknet's contribution").** Live on the PC since 13:35. Stage 1:
+  gateway recrawls spread one level (3 managers). Stage 2 (14:13): spread levels (`MAX_SPREAD_LEVEL` 2), manager cap 16 after
+  16 ran under a cap of 8 with the renderer at <=19% of one core. Fixes on the way: one root and one manager per host (the
+  capital_manager restart raced hand restarts), recrawls pass the generation, the registry counts every heartbeating manager
+  (15 at 15:10). Darknet $/h: ~35m before; ~350m over 14:05-15:05 (hacking 393m); 500m/h peak. CPU log runtime/cpu_watch.csv.
+  **Next stage (for the 2-hourly check):** after one steady hour at 16, raise `MAX_SPREAD_LEVEL` to 3 to reach deeper,
+  higher-RAM, better-paying hosts; then the cap to 24. Each stage: compare darknet $/h over an hour and the renderer peak;
+  step back if the renderer passes ~60% of a core or the Remote API slows past 3 s.
+
 - **Darknet review (Ken, 2026-11-17: "always an earnings disappointment").** Source (v3.0.1 `src/DarkNet/effects/phishing.ts`,
   `cacheFiles.ts`, `labyrinth.ts`, `BitNode.tsx`): money = direct phishing hits (x threads, x (0.1 + 0.05 x depth), x charisma,
   x BitNode `DarknetMoneyMultiplier`) plus money caches (global 3-min cooldown, ~1 in 4-5 caches is money). Node multiplier:

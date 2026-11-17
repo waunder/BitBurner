@@ -16,7 +16,7 @@ export const DEFAULT_CONFIG = {
   minChance: { Contracts: 0.8, Operations: 0.8 },
   // Black ops gate the road to Daedalus and pay large rank. 2026-11-16: Typhoon sat at 0.61-0.66 for hours
   // under a 0.9 bar; failure costs little rank, so try them at fair odds (Ken: "don't be afraid of failure").
-  blackOpMinChance: 0.6,
+  blackOpMinChance: 0.35, // BN6 run 1: every black op tried at 0.35+ was won (2026-11-16 17:15 on)
   narrowSpread: 0.05, // a range narrower than this counts as known; use its midpoint
   analysisSpread: 0.1, // do Field Analysis when the best candidate's range is wider than this
   staminaRestBelow: 0.55, // rest when stamina falls below this share of max (game penalises below 0.5)

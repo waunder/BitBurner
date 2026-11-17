@@ -105,6 +105,8 @@ async function writeStatus(ns, state, failures, nextCrawl, lastError = null) {
 export async function main(ns) {
   ns.disableLog("ALL")
   const flags = ns.flags([["generation", ""], ["level", 0]])
+  // One manager per host (2026-11-17): copies with different args slip past preventDuplicates.
+  for (const proc of ns.ps(ns.getHostname())) if (proc.filename.replace(/^\//, "") === "dnet_manager.js" && proc.pid !== ns.pid) ns.kill(proc.pid)
   let needsLoot = true
   let failures = 0
   let nextCrawl = Date.now() + jitteredRecrawlMs(RECRAWL_MS)

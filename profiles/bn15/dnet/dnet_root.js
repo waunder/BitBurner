@@ -117,6 +117,9 @@ function mergeCredentialShards(ns, creds) {
 
 export async function main(ns) {
   ns.disableLog("ALL")
+  // One root only (2026-11-17): capital_manager.js restarts this file when it is missing, so a hand
+  // restart could leave two roots with competing generations. The newest copy wins.
+  for (const proc of ns.ps("home")) if (proc.filename.replace(/^\//, "") === "dnet_root.js" && proc.pid !== ns.pid) ns.kill(proc.pid)
   // DarkscapeNavigator.exe is lost on augmentation install. Game rule
   // (src/DarkNet/utils/darknetAuthUtils.ts): hasDarknetAccess() is true in BN15, with any
   // SF15 level, or with the exe, so outside BN15 (BN10) SF15.1 opens ns.dnet by itself and

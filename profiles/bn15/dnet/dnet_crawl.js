@@ -34,7 +34,7 @@ const FILES = [SELF, MANAGER, REALLOC, LAB_WORKER, "dnet_lab_logic.js", "dnet_li
 // Bitburner's RAM accounting is driven by which ns-touching functions get
 // called, not by which plain constants a leaf script happens to export, and
 // nothing else in-game imports this file, so this costs nothing live.
-export const MAX_ACTIVE_MANAGERS = 8 // stage 2 of the 2026-11-17 push; 2026-11-17 live experiment on the PC (Ken: "just a game, test where we are"); was 2
+export const MAX_ACTIVE_MANAGERS = 16 // 2026-11-17: 16 ran with the renderer at <=19% of a core and ~$500m/h; stage 2 of the push; 2026-11-17 live experiment on the PC (Ken: "just a game, test where we are"); was 2
 export const MANAGER_REGISTRY_FILE = "dnet_manager_registry.json"
 export const MANAGER_SHARD_PREFIX = "dnet_manager_active_"
 export const MANAGER_STALE_MS = 2 * 60 * 1000

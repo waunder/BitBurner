@@ -129,9 +129,11 @@ export async function main(ns) {
         await writeStatus(ns, "crawling", failures, nextCrawl)
         // Recrawls may spread while this manager sits above MAX_SPREAD_LEVEL (dnet_crawl.js), so
         // the network grows one level per recrawl, bounded by MAX_ACTIVE_MANAGERS (2026-11-17 push).
-        // The crawler itself applies MAX_SPREAD_LEVEL, so passing the level is enough.
+        // The crawler applies MAX_SPREAD_LEVEL. The generation must travel too: managers it spawns
+        // with a blank one are dropped from the registry, so the cap stops counting them (16 ran
+        // under a cap of 8 on 2026-11-17 before this was passed).
         const level = ns.getHostname() === "darkweb" ? 0 : Math.max(1, Number(flags.level))
-        const crawlPid = ns.run(CRAWLER, { preventDuplicates: true }, "--quiet", "--level", level)
+        const crawlPid = ns.run(CRAWLER, { preventDuplicates: true }, "--quiet", "--level", level, "--generation", flags.generation)
         if (crawlPid !== 0) await waitPid(ns, crawlPid)
         else await ns.sleep(POLL_MS)
         nextCrawl = Date.now() + jitteredRecrawlMs(RECRAWL_MS)

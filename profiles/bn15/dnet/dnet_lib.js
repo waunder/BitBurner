@@ -64,7 +64,7 @@ export const LOOT_SHARD_SUFFIX = ".json"
 // The only safe default while the freeze root cause is being verified is one
 // resident manager.  It makes the cap real even before a home-issued lease
 // protocol replaces the old, stale-snapshot admission scheme.
-export const MAX_ACTIVE_MANAGERS = 8 // stage 2 of the 2026-11-17 push; 2026-11-17 live experiment on the PC (Ken: "just a game, test where we are"); was 2
+export const MAX_ACTIVE_MANAGERS = 16 // 2026-11-17: 16 ran with the renderer at <=19% of a core and ~$500m/h; stage 2 of the push; 2026-11-17 live experiment on the PC (Ken: "just a game, test where we are"); was 2
 // How often dnet_root.js folds fresh manager-heartbeat shards into the
 // registry (was 5000ms, tied to RETRY_MS, until the overshoot above showed
 // that gap was wide enough to matter) — this is the other lever on the

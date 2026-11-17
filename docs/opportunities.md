@@ -82,6 +82,20 @@ first sleeve augmentation batches; gang power after gear.
 
 ## Open
 
+- **Darknet review (Ken, 2026-11-17: "always an earnings disappointment").** Source (v3.0.1 `src/DarkNet/effects/phishing.ts`,
+  `cacheFiles.ts`, `labyrinth.ts`, `BitNode.tsx`): money = direct phishing hits (x threads, x (0.1 + 0.05 x depth), x charisma,
+  x BitNode `DarknetMoneyMultiplier`) plus money caches (global 3-min cooldown, ~1 in 4-5 caches is money). Node multiplier:
+  1.0 in BN1/2/6/7/11/14/15, 0.7 BN5, **0.4 BN10**/BN3/BN4, 0.1 BN13, 0.05 BN9, 0 BN8. SF15.2: auth 20% faster, charisma boosts
+  salary/rep; SF15.3: cache money x1.5. No node or SF makes it a main engine. **Our structural miss:** the only live manager is on
+  `darkweb` (depth 0: payout factor 0.1 vs up to 2.1 at depth 40; 8.5GB free = 2 phish threads), so `MAX_PHISH_THREADS` 2 is not
+  the binding cap; deep, high-RAM hosts (RAM 16 x 2^floor(difficulty/6) GB) earn nothing. **Labyrinth blocked on charisma**: found
+  at depth 6 (`dnet_lab_status.json`: needs 300, player 144). Labs give The W1ngs of Icarus, Boots, Hammer, Staff, Law, Sword
+  (charisma, darknet money up to ~2x combined); cha gates 300/600/1500/2500/3000/3500; the Red Pill from a later lab.
+  Decision 2026-11-17: **not now in BN10** (0.4x money; Leadership would pull the player off install rep; `charismaTarget` stays 0).
+  Revisit (a) after the Covenant gate, with `charismaTarget` 300 for the first lab, and (b) in a 1.0x node: a supervised
+  experiment placing one manager on the deepest high-RAM host with RAM-sized phish threads (the freeze-sensitive dial is manager
+  count and fan-out, not threads). Status: parked with a plan.
+
 - **Spending review (Ken, 2026-11-17: "different bitnodes, different spend").** Income vs spend per cycle ($b):
   BN6 c2 hacking 43.9 / servers 46.9; c3 9.2 / 11.7; c4 130.7 / 90.1 (+ gang 62.1); c5 210.8 / **317.2**. Cloud RAM lost money
   in BN6 (hacking x0.35, server money x0.2): ~$466b of servers for ~$395b of hacking. BN10 run 3 servers $7.5t returned

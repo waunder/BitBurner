@@ -126,13 +126,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-17 09:15 (scheduled run, BN10 run 4 hour 11.5): steady, no changes made.**
-Live (probe 09:15): BitNode 10, $1.10b, hacking 111, combat 97/97/98/98, karma -58.6k, home 512GB, 0 installed, 0 queued. Player on CyberSec rep for BitWire. Sleeves shock 3.2 (zero ~11:00): 3 faction rep, 4 Mug.
-Gang Slum Snakes 8 members, respect 7.05k (~1.9k/h), faction rep 158 (~58/h of 3.5m needed), reputation mode.
-Measured (24 samples, 120 min): rep/h Tian Di Hui 3.8k, CyberSec 1.69k, Tetrads 1.64k, Slum Snakes 52; hackExp/h 121k; cash/h 337m; MCP 57k/s now, avg 35.6k/s. Trend: cash, MCP, hackExp STEADY.
-Audit: 1 of 32 flagged (cct_watcher, harmless). Spenders all saving: capital_manager (late phase), sleeve_buyer (late, not Covenant), gang (payback rule).
-Advisor verdict wait (BitWire in 26m; 8 augs ready by rep, $4.25b vs $1.1b cash); no install. End check: no Red Pill, no World Daemon.
-Next run (11:15): sleeve shock 0, decide first-cycle sleeve augs; second gang respect reading, then A/B Train Combat if still slow.
+**2026-11-17 11:15 (scheduled run, BN10 run 4 hour 13.5): gang recruit hold shipped; no install.**
+Live (probe 11:15): BitNode 10, $1.74b, hacking 117, combat 103 each, karma -60.9k, home 512GB, 0 installed, 0 queued. Player on Tetrads rep for HemoRecirculator. Sleeves shock 0: 2 faction rep, 5 Mug.
+Gang Slum Snakes 8 members, respect 7.30k: x1.25 ascensions (4 in 2h) ate ~6.9k of ~7.5k earned, so the 9th recruit (15.6k) never came. Fix: `recruitHoldHours` 3 in bn10 gang policy (`recruitHoldsAscension`, core default off; 645/645 tests); live 11:18, `recruitHold` true; 9th member expected ~13:30.
+Measured (24 samples, 120 min): rep/h Tetrads 4.42k, Tian Di Hui 1.79k, CyberSec 741, Slum Snakes 59; hackExp/h 133k; cash/h 318m; MCP 82k/s now, avg 50k/s. Trend: cash, MCP, hackExp STEADY.
+Audit: 1 of 32 flagged (cct_watcher, harmless). Terminal hit its line cap again; `clear` fixed it. Spenders saving (late phase); first-cycle sleeve augs declined ($1.27b, wiped at install; install is cash-limited).
+Advisor verdict wait (HemoRecirculator in 47m); no install. End check: no Red Pill, no World Daemon.
+Next run (13:15): confirm 9th gang member and ascensions resuming; respect/h; install timing as cash nears the batch.
 
 ## Daedalus ready (2026-11-16 21:35)
 

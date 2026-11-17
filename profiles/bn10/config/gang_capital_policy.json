@@ -9,5 +9,6 @@
   "rootkitCashFraction": 0.01,
   "gangAugCashFraction": 0.3,
   "reserveInstallPlan": true,
-  "updatedAt": "2026-11-16"
+  "recruitHoldHours": 3,
+  "updatedAt": "2026-11-17"
 }

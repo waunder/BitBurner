@@ -309,6 +309,21 @@ export function planReputationGear(candidates, { cash, isHacking = true, rootkit
   return picked;
 }
 
+/**
+ * Hold ascensions while the next recruit is within holdHours of gross respect gain. Ascension
+ * deducts the member's respect from the gang, and recruit thresholds are 5^(members-2), so with a
+ * recruit in reach, repeated ascensions keep pushing it back (BN10 run 4, 2026-11-17: four
+ * ascensions in 2h ate ~6.9k of ~7.5k respect earned, 9th member at 15.6k never came closer).
+ * respectPerHour is the gross rate (respectGainRate per 200ms cycle x 18000). holdHours 0 = off.
+ */
+export function recruitHoldsAscension({ members, maxMembers = 12, respect, respectForNextRecruit,
+  respectPerHour, holdHours = 0 }) {
+  if (!(holdHours > 0) || !(members < maxMembers)) return false;
+  if (![respect, respectForNextRecruit, respectPerHour].every(Number.isFinite) || respectPerHour <= 0) return false;
+  const gap = respectForNextRecruit - respect;
+  return gap > 0 && gap / respectPerHour <= holdHours;
+}
+
 /** True when at least minMs has passed since the last ascension (or none has happened). */
 export function ascensionCooldownElapsed(lastTs, now, minMs = 90_000) {
   return !Number.isFinite(lastTs) || now - lastTs >= minMs;

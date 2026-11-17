@@ -1,7 +1,7 @@
 import { canBuildTerritoryPower, moneyModePriority, planMoneyTasks, planReputationTasks, planTerritoryPower,
   shouldAscendMember, shouldEngageTerritoryClashes, wantedCleanupPolicy, cheapGearQualifies,
   reputationCleanupMode, withEquipment, planReputationGear, gearCounts, ascensionCooldownElapsed,
-  GANG_ROOTKITS, autoGangObjective } from "./gang_logic.js";
+  GANG_ROOTKITS, autoGangObjective, recruitHoldsAscension } from "./gang_logic.js";
 
 /**
  * Gang v2: formula-driven money or faction-reputation, wanted, and territory control.
@@ -91,6 +91,7 @@ function readCapitalPolicy(ns) {
       augmentationCashTarget: Number.isFinite(raw.augmentationCashTarget) && raw.augmentationCashTarget >= 0
         ? raw.augmentationCashTarget : null,
       reserveInstallPlan: raw.reserveInstallPlan === true,
+      recruitHoldHours: Number.isFinite(raw.recruitHoldHours) && raw.recruitHoldHours > 0 ? raw.recruitHoldHours : 0,
     };
   } catch {
     return safe;
@@ -256,7 +257,10 @@ export async function main(ns) {
       : (gang.respect / (gang.respect + 1)) * C.cleanupEnterAttainablePenalty;
     let ascendBest = null;
     const ascRatios = new Map();
-    const cooledDown = ascensionCooldownElapsed(lastAscension?.ts, Date.now(), C.ascendCooldownMs);
+    const recruitHold = recruitHoldsAscension({ members: members.length, respect: gang.respect,
+      respectForNextRecruit: gang.respectForNextRecruit, respectPerHour: gang.respectGainRate * 18000,
+      holdHours: capitalPolicy.recruitHoldHours });
+    const cooledDown = !recruitHold && ascensionCooldownElapsed(lastAscension?.ts, Date.now(), C.ascendCooldownMs);
     for (const plan of plans) {
       if (plan.choice?.task && plan.member.task !== plan.choice.task) ns.gang.setMemberTask(plan.member.name, plan.choice.task);
       const asc = ns.gang.getAscensionResult(plan.member.name);
@@ -379,7 +383,7 @@ export async function main(ns) {
     const gear = members.map((m) => ({ member: m.name, ...gearCounts(m) }));
     const gearTotals = { rootkits: gear.reduce((s, g) => s + g.rootkits, 0), augs: gear.reduce((s, g) => s + g.augs, 0),
       rootkitsPossible: members.length * GANG_ROOTKITS.length };
-    const status = { ts: statusNow, mode, gangObjective, objectiveChoice, lastAscension, ascensionCount, gear, gearTotals,
+    const status = { ts: statusNow, mode, gangObjective, objectiveChoice, lastAscension, ascensionCount, recruitHold, gear, gearTotals,
       power: { ours: gang.power, strongestRival: strongestRivalPower },
       ascendAt: C.ascendAt, factionRep: Number.isFinite(factionRep) ? factionRep : null,
       observedFactionRepRate, projectedRespectPerCycle: plans.reduce((sum, p) => sum + (p.choice?.respect || 0), 0),

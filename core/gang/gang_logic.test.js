@@ -2,7 +2,22 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { autoGangObjective, canBuildTerritoryPower, moneyModePriority, planMoneyTasks, planReputationTasks,
   planTerritoryPower, shouldAscendMember, shouldEngageTerritoryClashes, wantedCleanupPolicy, cheapGearQualifies, reputationCleanupMode,
-  withEquipment, planReputationGear, equipmentCategory, gearCounts, ascensionCooldownElapsed } from "./gang_logic.js";
+  withEquipment, planReputationGear, equipmentCategory, gearCounts, ascensionCooldownElapsed,
+  recruitHoldsAscension } from "./gang_logic.js";
+
+test("recruit hold blocks ascension only while the next recruit is within holdHours", () => {
+  const base = { members: 8, respect: 7300, respectForNextRecruit: 15625, respectPerHour: 3750, holdHours: 3 };
+  assert.equal(recruitHoldsAscension(base), true); // 8.3k gap, 2.2h
+  assert.equal(recruitHoldsAscension({ ...base, holdHours: 2 }), false);
+  assert.equal(recruitHoldsAscension({ ...base, holdHours: 0 }), false);
+  const { holdHours, ...noHold } = base;
+  assert.equal(recruitHoldsAscension(noHold), false); // off by default
+  assert.equal(recruitHoldsAscension({ ...base, members: 12 }), false);
+  assert.equal(recruitHoldsAscension({ ...base, respect: 16000 }), false); // can recruit now
+  assert.equal(recruitHoldsAscension({ ...base, respectForNextRecruit: 78125 }), false); // 19h away
+  assert.equal(recruitHoldsAscension({ ...base, respectPerHour: 0 }), false);
+  assert.equal(recruitHoldsAscension({ ...base, respectForNextRecruit: Infinity }), false);
+});
 
 test("money mode prioritizes wanted recovery over blocked recruitment growth", () => {
   assert.equal(moneyModePriority(true, true, true), "wanted-recovery");

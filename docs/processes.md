@@ -1350,6 +1350,10 @@ Justice and reduce gang income while active. `gang_status.json` exposes
 `wantedCleanup.severeMode` and `wantedCleanup.reductionFractionPerUpdate` for
 review. This is a policy target, not a promised observed reduction; if no
 allocation meets it, the planner selects the strongest available reduction.
+**Recruit hold (2026-11-17):** `recruitHoldHours` in `gang_capital_policy.json` (core default 0 = off;
+bn10 3) skips ascensions while fewer than 12 members and the next recruit's respect is within that many
+hours of gross respect gain (`recruitHoldsAscension`; status `recruitHold`). Ascension deducts the
+member's respect, so near a recruit it pushes the recruit back.
 **Reputation-mode band (2026-11-08):** with the `reputation` objective, cleanup instead uses the
 absolute wanted penalty: enter below `reputationCleanupEnter`, leave at `reputationCleanupExit` or
 above (`gang_capital_policy.json`, defaults 0.90/0.95; `reputationCleanupMode`). Since 2026-11-09 both

@@ -11,6 +11,7 @@
  * @param {NS} ns
  */
 import { readStacks } from "stack_files.js"
+import { flagFor, grantFor, kindOf } from "valuation_logic.js"
 import { PROGRAMS, chooseCapitalAction, portsUseful, cloudDemandFloorFor, lateCycleLimit, nextScriptToStart } from "capital_logic.js"
 
 const POLICY = "capital_policy.json"
@@ -172,6 +173,18 @@ export async function main(ns) {
       homeDemand = input.homeDemand
       portsNeeded = input.portsNeeded
       action = chooseCapitalAction(input)
+      // R2 (docs/allocator-design.md): a kind flagged "valued" in valuation_flags.json obeys the
+      // allocator's grant. Shadow evidence: BN6 run 1's last cycle bought $276b of cloud RAM the
+      // allocator refused (hacking earned $211b against $317b of servers); BN10 run 3 it granted all
+      // $41.7t, which paid. A stale or missing grant falls back to this script's own rule.
+      const kind = action && action.kind !== "save" ? kindOf("capital", action) : null
+      if (kind && flagFor(ns.read("valuation_flags.json"), kind, ns.getResetInfo().lastNodeReset) === "valued") {
+        const grants = (() => { try { return JSON.parse(ns.read("spend_grants.json") || "null") } catch { return null } })()
+        const check = grantFor(grants, kind, action.cost, Date.now(), ns.getResetInfo().lastAugReset)
+        if (!check.ok && !check.fallback) {
+          action = { kind: "save", reason: `allocator: ${check.reason}`, refused: { ...action } }
+        } else if (action) action.grant = check.reason
+      }
       if (action && action.kind !== "save") {
         ok = buy(ns, action, input.cloud.length)
         if (ok) spent = action.cost

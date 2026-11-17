@@ -82,6 +82,16 @@ first sleeve augmentation batches; gang power after gear.
 
 ## Open
 
+- **Spending review (Ken, 2026-11-17: "different bitnodes, different spend").** Income vs spend per cycle ($b):
+  BN6 c2 hacking 43.9 / servers 46.9; c3 9.2 / 11.7; c4 130.7 / 90.1 (+ gang 62.1); c5 210.8 / **317.2**. Cloud RAM lost money
+  in BN6 (hacking x0.35, server money x0.2): ~$466b of servers for ~$395b of hacking. BN10 run 3 servers $7.5t returned
+  $1.5q+ of hacking. The shadow allocator judged both right: BN6 c5 it refused $276b of cloud RAM ("returns 0.000 v"),
+  BN10 run 3 it granted all $41.7t. **Done 2026-11-17:** cloud RAM obeys the allocator (R2 wired into capital_manager via
+  `grantFor`; game-only `valuation_flags.json` cloud_ram "valued"; set "own" to undo). Still open in the allocator:
+  (a) gang spending is "unattributed" (98 passes, $12.7b in BN6 c5): gang-controller's purchases are not recorded where
+  the allocator reads them, so gang spend is never judged; (b) home RAM refused as "zero-value" ($477m) while residents
+  waited for RAM: the necessity rule misses unstarted scripts. Next kinds to move to "valued": gang gear, then home RAM.
+
 - **Early-crime chooser for fresh BitNodes** (Ken, 2026-11-16). player_activity_controller.js (36.8GB) cannot fit on a
   32GB fresh home, so BN10 run 4 sat ~50 min on Shoplift (str/def 1; Shoplift trains only dex/agi; karma 0.05/s).
   Build a ~12-16GB one-shot loop (getCrimeChance 5GB, commitCrime 5GB, sleeve setToCommitCrime 4GB) that steps player

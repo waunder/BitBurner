@@ -30,7 +30,10 @@ and where it is already built in. Newest BitNode first. Started 2026-11-16 at th
 7. **A ready end-of-node waits on Ken: notify at once, with a phone push.** BN6's Daedalus was unlocked
    ~19:15 and started 21:40. *Do:* the moment `daedalusReady` or the daemon's level is reached, push a
    notification (Remote Control on, or phone push) and back up the save.
-8. **One-off probes beat guesses.** Small scripts that write one JSON file (bb_probe.js, bn_probe.js,
+8. **Fresh node: get everyone to Homicide fast.** Shoplift trains only dex/agi; Mug trains str/def at the same pay
+   and leads to Homicide (karma for the gang). Until the controllers fit, run the early-crime chooser
+   (docs/opportunities.md) or step crimes by hand with crime_now.js / sleeve_crime_now.js.
+9. **One-off probes beat guesses.** Small scripts that write one JSON file (bb_probe.js, bn_probe.js,
    sleeve price reads) settled questions in minutes. Delete them after.
 
 ## BN6 (Bladeburners), run 1: 2026-11-14 17:15 to 2026-11-16 21:47 (about 52.5 hours)

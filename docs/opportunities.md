@@ -52,6 +52,12 @@ first sleeve augmentation batches; gang power after gear.
 
 ## Open
 
+- **Early-crime chooser for fresh BitNodes** (Ken, 2026-11-16). player_activity_controller.js (36.8GB) cannot fit on a
+  32GB fresh home, so BN10 run 4 sat ~50 min on Shoplift (str/def 1; Shoplift trains only dex/agi; karma 0.05/s).
+  Build a ~12-16GB one-shot loop (getCrimeChance 5GB, commitCrime 5GB, sleeve setToCommitCrime 4GB) that steps player
+  and sleeves Shoplift -> Mug -> Homicide by money and karma per second, and exits when the controllers fit.
+  Gain: karma (the gang gate) an hour or so sooner per fresh BitNode. Status: to build before the next BitNode.
+
 - **Install 4 cost no rank/h; installs are cheap in BN6** (2026-11-16 13:15, cycle review). Rank (metrics log):
   41.7k at 10:50, 48.8k at 11:20, 69.6k at 12:20, 103.7k at 13:15. Rank/h was ~8.8k/h over 08:20-10:50 and is
   36k/h now (bladeburner_status, 1h window). Strength fell 492 -> 259 at the install and was back to 444 in two

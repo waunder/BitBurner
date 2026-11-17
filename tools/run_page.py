@@ -13,7 +13,9 @@ import argparse
 import asyncio
 import json
 import sys
+import threading
 import time
+import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -113,6 +115,10 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if path in ("/", "/index.html"):
                 self._send(200, PAGE.read_bytes(), "text/html; charset=utf-8")
+            elif path == "/api/quit" and self.client_address[0] == "127.0.0.1":
+                # A newly started copy asks the old one to stop, so only one ever serves the port.
+                self._send(200, "bye", "text/plain")
+                threading.Thread(target=self.server.shutdown, daemon=True).start()
             elif path == "/api/version":
                 # Changes when the server restarts or the page file changes; open pages reload on a change.
                 self._send(200, json.dumps({"version": f"{BOOT}-{PAGE.stat().st_mtime_ns}"}), "application/json")
@@ -138,7 +144,30 @@ def main():
     # The page is read-only: it never writes to the game.
     parser.add_argument("--host", default="0.0.0.0")
     args = parser.parse_args()
-    server = ThreadingHTTPServer((args.host, args.port), Handler)
+    # Windows lets two servers share a port (SO_REUSEADDR), and the older one kept answering with a stale
+    # page. Bind exclusively, and if a copy is already running, ask it to quit and take over.
+    class Server(ThreadingHTTPServer):
+        allow_reuse_address = False
+
+        def server_bind(self):
+            import socket
+            if hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
+                self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+            super().server_bind()
+
+    server = None
+    for _ in range(20):
+        try:
+            server = Server((args.host, args.port), Handler)
+            break
+        except OSError:
+            try:
+                urllib.request.urlopen(f"http://127.0.0.1:{args.port}/api/quit", timeout=3).read()
+            except Exception:
+                pass
+            time.sleep(0.5)
+    if server is None:
+        sys.exit(f"port {args.port} is held by something that would not quit")
     print(f"run page on http://localhost:{args.port}", flush=True)
     server.serve_forever()
 

@@ -16,5 +16,6 @@
   "cooldownMs": 600000,
   "repInvestmentMaxPriceMultiple": 250,
   "crimeKarmaTarget": -54000,
+  "karmaFirst": true,
   "charismaAugs": []
 }

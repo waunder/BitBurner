@@ -4,6 +4,12 @@ Running list kept by Claude on its own initiative (Ken, 2026-11-16: "exercise in
 for flaws and opportunities"). Newest first. Each entry: finding, evidence, expected gain, status.
 The 2-hourly check reviews this once per cycle (first run after an install).
 
+## 2026-11-16 23:15 check (BN10 run 4, hour 1.5)
+
+- **Player did rep work while gang karma waited.** Evidence: player on Slum Snakes field work for Wired Reflexes ($12.5m, value 0.04) at karma -1.8k; karma crime is the last fallback in `choosePlayerActivity`; player Homicide odds 0.52 (~1.85k karma/h, ~$21m/h). Gain: roughly +30-40% karma rate toward -54k, so the gang (main money and rep loop) arrives hours sooner. Status: shipped (`karmaFirst` config flag, BN10 only; test added). Measure karma/h next run.
+- **game_terminal.py returns no output once the terminal hits its line cap.** Evidence: `ok:true, output:[]` for every command; `audit.py` reported "terminal unreachable"; `clear` fixed it. Gain: checks stop misreading the game as down. Status: open; small fix is to diff by last line, or clear when the line count does not grow.
+- **sleeve_buyer and sleeve_controller do not fit on 128GB.** Evidence: 9.5GB free; sleeves have no augs in their cheap early window (lesson 6). Gain: sleeve Homicide odds ~0.2 rise with combat augs. Status: waits on home 256GB ($151m, capital_manager saving).
+
 ## 2026-11-16 17:15 check
 
 - **Black-op bar too timid once rank is no longer the limit.** Evidence: rank 468k vs Centurion's 300k; low-end odds 0.41-0.48 under the 0.6 bar, so the controller farmed Assassination for ~45 min instead. Gain: the remaining black ops (Centurion, Vindictus) clear in about 20 min each instead of waiting on skill points. Status: shipped (game-only `blackOpMinChance` 0.35); check the event log for SUCCESS/failed and HP.

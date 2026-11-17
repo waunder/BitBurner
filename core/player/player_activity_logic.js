@@ -141,6 +141,12 @@ export function choosePlayerActivity({ player = {}, nextGate = null, augmentatio
     const covenant = covenantTraining({ player, augmentation, config, bitNode })
     if (covenant) return covenant
   }
+  // karmaFirst: the gang's karma gate outranks the small rep targets of a fresh node (BN10 run 4).
+  const firstKarma = Number(config.crimeKarmaTarget)
+  if (override === "auto" && config.karmaFirst === true && crimeCandidate
+    && Number.isFinite(firstKarma) && number(player.karma) > firstKarma) {
+    return { ...crimeCandidate, reason: `crime for karma ${number(player.karma).toFixed(0)} → ${firstKarma} (karmaFirst)`, confidence: "HIGH" }
+  }
   // Corporate factions invite on company rep alone, and sell the charisma augmentations the later labs need.
   const corp = config.companyTarget
   if (override === "auto" && corp?.company && !(player.factions || []).includes(corp.company)) {

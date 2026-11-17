@@ -185,6 +185,20 @@ test("valued candidates rank by value per rep, and zero-value ones are skipped",
   assert.equal(none.host, "run4theh111z")
 })
 
+test("karmaFirst puts gang karma crime ahead of rep targets until the karma target is met", () => {
+  const workCandidates = [{ faction: "Slum Snakes", name: "Wired Reflexes", repGap: 2477, cashReady: false, price: 1.25e7, value: 0.04 }]
+  const crimeCandidate = { action: "crime", crime: "Homicide", chance: 0.5 }
+  const player = { money: 5e7, karma: -1830, factions: ["Slum Snakes"], skills: { hacking: 30, strength: 58, defense: 58, dexterity: 64, agility: 64 } }
+  const config = { physicalTarget: 30, crimeKarmaTarget: -54000 }
+  const augmentation = { ok: true, workCandidates }
+  assert.equal(choosePlayerActivity({ player, augmentation, crimeCandidate, config }).action, "faction")
+  const first = choosePlayerActivity({ player, augmentation, crimeCandidate, config: { ...config, karmaFirst: true } })
+  assert.equal(first.action, "crime")
+  assert.match(first.reason, /karmaFirst/)
+  const done = choosePlayerActivity({ player: { ...player, karma: -60000 }, augmentation, crimeCandidate, config: { ...config, karmaFirst: true } })
+  assert.equal(done.action, "faction")
+})
+
 test("a target counts the faction's cheaper valued augmentations its rep unlocks on the way", () => {
   const ready = { money: 5e11, factions: ["NiteSec", "The Black Hand"], skills: { hacking: 400, charisma: 300 } }
   // Alone, Solo beats Far (0.04/10k vs 0.1/40k), but Far's 40k at The Black Hand also reaches Near and Shared.

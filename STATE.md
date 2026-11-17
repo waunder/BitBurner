@@ -126,13 +126,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-16 19:15 (scheduled run): BN6 end ready, Ken notified; no install, no game changes.**
-Live (probes 19:15): BitNode 6, $15.4b, hacking 220, combat 621/525/660/553, karma -366k, home 1TB, 7 sleeves, 22 augs + NeuroFlux, 0 queued.
-Bladeburner rank 606k (468k at 17:15), 201k rank/h over 1h; Centurion and Vindictus both won since 17:15. Next black op Operation Daedalus at 0.52-0.55 odds.
-Controller keeps doing Assassination (`allowDaedalus` false); all 21 other black ops done.
-Measured (13 samples, 18:15-19:15): rep/h Bladeburners 1.29m, Slum Snakes 116k; hackExp/h 5.41m; karma/h -3.97k; cash/h 491m; MCP avg 3.34m/s. Trend: all STEADY.
-Advisor verdict install; decision no install: the node is done and Daedalus is Ken's call. Any extra Bladeburner augs before Daedalus are part of that call.
-End check: no World Daemon (Red Pill not installed); Daedalus ready. Save backup taken and validated.
+**2026-11-16 23:15-23:40 (scheduled run, BN10 run 4 hour 1.5): player moved to Homicide for gang karma; metrics_logger and run_report restarted.**
+Live (probes 23:15): BitNode 10, $58.6m, hacking 30, combat 58/58/64/64, karma -1.8k, home 128GB (9.5GB free), 0 installed, 0 queued, 7 sleeves on Homicide (shock 22, sync 100, memory 100 on all: memory goal already met).
+Change: `karmaFirst` flag (core logic + test, true in bn10 config) puts karma crime ahead of small rep targets; player was on Slum Snakes field work for a $12.5m aug. Observed 23:33: player on Homicide (odds 0.52).
+Not running for RAM: mcp.js (16.95GB + batches), sleeve_controller, sleeve_buyer, HUD, allocator. capital_manager saves $151m for home 256GB (~1h at $21k/s).
+Measured: no BN10 samples yet (metrics_logger was down since entry; restarted 23:3x). Rates from next run.
+Audit: 1 of 32 flagged, cct_watcher "no safe rooted worker" (early node, harmless). Advisor verdict unknown (no rep rate); no install (nothing bought).
+End check: no Red Pill, no World Daemon. Gang: none yet (karma -54k). `run_target.json` rewritten for run 4.
 
 ## Daedalus ready (2026-11-16 21:35)
 

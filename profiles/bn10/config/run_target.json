@@ -1,17 +1,17 @@
 {
-  "goal": "BN10 run 3 (entered 2026-11-11 ~10:20, Ken hands-off for the whole run): SF10.3, gang early, Daedalus favor 150 before The Red Pill",
-  "updated": "2026-11-14",
+  "goal": "BN10 run 4 (entered 2026-11-16 ~21:48, Ken hands-off): The Covenant's 8th sleeve; sleeve memory already 100 on all 7",
+  "updated": "2026-11-16",
   "gangFaction": "Slum Snakes",
   "steps": [
     {
-      "label": "Gang: Slum Snakes combat gang (no hacking gate; changed from NiteSec 2026-11-11)",
+      "label": "Gang: Slum Snakes (player and 7 sleeves on Homicide; karmaFirst since 11-16 23:30)",
       "metric": {
         "kind": "karma",
         "target": -54000
       }
     },
     {
-      "label": "Early installs for hacking multipliers (install 1 11-11 17:17, 7 augs; install 2 11-12 05:16, 4 + NeuroFlux x5; install 3 11-12 15:16, 3 + NeuroFlux x1)",
+      "label": "Early installs for multipliers (gang-faction augs)",
       "install": true,
       "metric": {
         "kind": "installed",
@@ -40,33 +40,21 @@
       ]
     },
     {
-      "label": "Daedalus: favor banked at install 13 (11-14 07:16, +178.6)",
-      "done": true
-    },
-    {
-      "label": "Eighth sleeve from The Covenant (a bonus, not a gate) (skipped: $100q not reachable)",
+      "label": "Eighth sleeve from The Covenant (5th Covenant purchase, $100q)",
       "metric": {
         "kind": "money",
         "target": 1e+17
-      },
-      "done": true
-    },
-    {
-      "label": "The Red Pill: installed 11-14 11:18 (install 14, Daedalus donation)",
-      "done": true
-    },
-    {
-      "label": "World Daemon hacking 6000",
-      "metric": {
-        "kind": "hacking",
-        "target": 6000
       }
     },
     {
-      "label": "World Daemon: stop for Ken (backup first; it was destroyed unattended in run 2)"
+      "label": "Sleeve memory 100 on all sleeves (already 100 at entry)",
+      "done": true
+    },
+    {
+      "label": "Then Daedalus, The Red Pill, World Daemon: stop for Ken (backup first)"
     }
   ],
-  "augWeightsWhy": "Run 3 start, same as run 2: hacking leads (MCP income, NiteSec, the 6000 gate); faction rep for Daedalus; combat for the Covenant's 850 gate and Daedalus's 1500.",
+  "augWeightsWhy": "Run 4 start, as run 3: hacking leads (MCP income); faction rep; combat for the Covenant's 850 gate. Money matters more this run ($100q sleeve).",
   "augWeights": {
     "hacking": 1,
     "strength": 0.4,
@@ -79,7 +67,7 @@
     "dexterity_exp": 0.1,
     "agility_exp": 0.1,
     "faction_rep": 0.5,
-    "hacking_money": 0.3,
+    "hacking_money": 0.4,
     "hacking_grow": 0.2,
     "hacking_chance": 0.2,
     "hacking_speed": 0.3

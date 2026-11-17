@@ -214,7 +214,7 @@ need no game at all and can be written while the run proceeds.
 | --- | --- | --- | --- |
 | G1 | **Read-only probe**: `graft_probe.js --stage list|stats|price|time|player`. Writes `graft_probe.json`: the graftable list; for 8 sample augs (SPTN-97, nextSENS, Bionic Spine, BitWire, Neuregen, Targeting I, CombatRib3, QLink) the graft price, graft time, `getAugmentationStats`, `getAugmentationPrereq`; player `city`, `entropy`, intelligence, factions; measured karma/h split between player and sleeves. Does not call `graftAugmentation`. | One JSON file; price equals 3 x base for all samples; time equals the formula; list matches the 97-name offline list; RAM printed per chunk. Delete the script after (lesson 8). | Hour 1 to 6 of the run, whenever 7 to 10GB is free |
 | G2 | `graft_logic.js` pure: `graftPrice`, `graftTimeMs(mults, intelligence)`, `entropyFactor(stacks)`, `entropyValue(weights)`, `netValue`. Tests pin QLink 1.93h, SPTN-97 1.76h, Congruity 15 min, the 0.097 threshold, int bonus at 0/100/1000. | Tests green; matches G1 numbers to rounding. | Offline, before G1 results are in; adjust after |
-| G3 | `graft_scan.js` + `buildCatalog(list, stats, prereqs)` in logic. Writes `graft_catalog.json` (name, base, graftPrice, hours, stats, prereqs, special excluded). Tests use a 15-aug fixture from the source. | Catalog has 90+ rows live; `graft_logic` ranks SPTN-97 first among no-prereq combat augs. | Day 1 (home RAM 64GB+, or two chunks on 32GB) |
+| G3 | **Done 2026-11-17 13:17** (98 rows; see G3 results). `graft_scan.js` + `buildCatalog(list, stats, prereqs)` in logic. Writes `graft_catalog.json` (name, base, graftPrice, hours, stats, prereqs, special excluded). Tests use a 15-aug fixture from the source. | Catalog has 90+ rows live; `graft_logic` ranks SPTN-97 first among no-prereq combat augs. | Day 1 (home RAM 64GB+, or two chunks on 32GB) |
 | G4 | `planGraft({...})` and `installBlocked` in logic. Gates in order: enabled, API/city/money, prereqs, entropy cap, price cap, install-plan reserve, karma delay, cheaper-in-faction, rate vs alternative, cooldown. Tests: one per gate (including "no graft in stage 1", "queued ladder does not change graft price", "prereq chain picks Bionic Spine before Graphene Bionic Spine"). | Each refusal returns a named reason; a good candidate returns the aug with its numbers. | Offline, before the gang exists |
 | G5 | `graft_controller.js` in **dry** mode: reads files, writes `graft_status.json` and `graft_log.txt` with the decision, never travels or grafts. Not in `startup`. Add to `profiles/bn10/profile.json`, rebuild the manifest, document in `docs/processes.md`. | Runs at about 13.5GB with a one-line status; decisions look sensible against what the player is doing, for one full cycle. | Day 1 to 2, once home RAM is 64GB+ |
 | G6 | Handover and interlock: the `externalOwner` and `GRAFTING` hold in `player_activity_controller.js`/`player_activity_logic.js`; `installBlocked` in `aug_install.js`. Tests for hold, for a stale status file (ignored after 2 minutes), and for the install refusal. | Tests green; with a hand-written fresh `graft_status.json` the controller reports "player owned by graft_controller.js". | Before G7 |
@@ -227,6 +227,16 @@ need no game at all and can be written while the run proceeds.
 the Covenant join, cash/h and MCP $/s before and after each graft (payback), entropy stacks and the % loss they imply, player hours
 by activity (grafting versus crime, gym, faction work, from `player_activity_status.json` history), and installs avoided or shrunk.
 A graft "paid" if its measured income/rep/time gain beat 0.097 v of entropy plus its cash and hours; otherwise tighten `minNetValue`.
+
+## G3 results (live, 2026-11-17 13:17, BN10 run 4)
+
+`graft_scan.js` (15.1GB: list, price, time; starts the next) and `graft_scan_meta.js` (stats and prereqs; builds the
+catalog with `buildCatalog`, ranks with the new `rankCatalog`) wrote `graft_catalog.json`: 98 of 98 rows. Read-only; in the
+bn10 profile, not in startup. Ranking by net value per graft hour (run_target weights, one entropy stack included):
+overall QLink 0.80/h ($75t), SPTN-97 0.58/h ($14.6b, 1.62h), Graphene Bionic Spine 0.45/h ($18b, needs Bionic Spine);
+no-prereq combat: **SPTN-97 first** (done-looks-like met), then Hydroflame Left Arm ($7.5t), Graphene Bone Lacings ($12.75b),
+NEMEAN Subdermal Weave ($9.75b). Every useful combat graft costs $10b+, so grafting waits for cash well above today's
+$2.5b. Next: G5 (dry-run controller).
 
 ## G1 results (live, 2026-11-16 22:50, BN10 run 4)
 

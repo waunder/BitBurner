@@ -126,13 +126,14 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-17 11:15 (scheduled run, BN10 run 4 hour 13.5): gang recruit hold shipped; no install.**
-Live (probe 11:15): BitNode 10, $1.74b, hacking 117, combat 103 each, karma -60.9k, home 512GB, 0 installed, 0 queued. Player on Tetrads rep for HemoRecirculator. Sleeves shock 0: 2 faction rep, 5 Mug.
-Gang Slum Snakes 8 members, respect 7.30k: x1.25 ascensions (4 in 2h) ate ~6.9k of ~7.5k earned, so the 9th recruit (15.6k) never came. Fix: `recruitHoldHours` 3 in bn10 gang policy (`recruitHoldsAscension`, core default off; 645/645 tests); live 11:18, `recruitHold` true; 9th member expected ~13:30.
-Measured (24 samples, 120 min): rep/h Tetrads 4.42k, Tian Di Hui 1.79k, CyberSec 741, Slum Snakes 59; hackExp/h 133k; cash/h 318m; MCP 82k/s now, avg 50k/s. Trend: cash, MCP, hackExp STEADY.
-Audit: 1 of 32 flagged (cct_watcher, harmless). Terminal hit its line cap again; `clear` fixed it. Spenders saving (late phase); first-cycle sleeve augs declined ($1.27b, wiped at install; install is cash-limited).
-Advisor verdict wait (HemoRecirculator in 47m); no install. End check: no Red Pill, no World Daemon.
-Next run (13:15): confirm 9th gang member and ascensions resuming; respect/h; install timing as cash nears the batch.
+**2026-11-17 13:15 (scheduled run, BN10 run 4 hour 15.5): grafting G3 live; 9th gang member; no install.**
+Live (probe 13:15): BitNode 10, $2.54b, hacking 121, combat 107 each, karma -63.2k, home 512GB, 0 installed, 0 queued. Player on Tetrads rep for Power Recirculation Core. Sleeves shock 0: 2 faction rep, 5 Mug.
+Gang Slum Snakes 9 members (13:18); recruit hold released (next 78k), ascensions resumed.
+Grafting G3: `graft_scan.js` + `graft_scan_meta.js` wrote `graft_catalog.json`, 98 rows; SPTN-97 best combat graft ($14.6b, 1.62h). 646/646 tests. Next G5.
+Measured (24 samples, 120 min): rep/h Tetrads 5.12k, Tian Di Hui 1.89k; hackExp/h 144k; cash/h 378m; MCP 111k/s now, avg 62.2k/s. Trend: all STEADY.
+Audit: 1 of 32 flagged (cct_watcher, harmless). Spenders saving for the batch (correct).
+Advisor verdict wait (Power Recirculation Core in 4.6h); batch of 5 ready, $2.39b of $2.54b. Decision wait; install by ~18:00 at the latest, sleeve augs right after. End check: no Red Pill, no World Daemon.
+Next run (15:15): install timing; allocator gang spend attribution.
 
 ## Daedalus ready (2026-11-16 21:35)
 

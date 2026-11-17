@@ -172,6 +172,8 @@
     "sleeve_logic.js": "profiles/sleeves/sleeve/sleeve_logic.js",
     "sleeve_controller.js": "profiles/sleeves/sleeve/sleeve_controller.js",
     "sleeve_buyer_logic.js": "profiles/sleeves/sleeve/sleeve_buyer_logic.js",
-    "sleeve_buyer.js": "profiles/sleeves/sleeve/sleeve_buyer.js"
+    "sleeve_buyer.js": "profiles/sleeves/sleeve/sleeve_buyer.js",
+    "graft_scan.js": "core/player/graft_scan.js",
+    "graft_scan_meta.js": "core/player/graft_scan_meta.js"
   }
 }

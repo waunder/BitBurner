@@ -9,7 +9,10 @@
   "bitnodes": [
     10
   ],
-  "files": {},
+  "files": {
+    "graft_scan.js": "core/player/graft_scan.js",
+    "graft_scan_meta.js": "core/player/graft_scan_meta.js"
+  },
   "config": {
     "player_activity_config.json": "profiles/bn10/config/player_activity_config.json",
     "run_target.json": "profiles/bn10/config/run_target.json",

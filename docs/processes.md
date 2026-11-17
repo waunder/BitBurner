@@ -3450,6 +3450,16 @@ record. Host-side `.log` files are not Netscript-readable: the old
 `remote_api_keepalive.js` cannot determine daemon health. Full usage and
 recovery states: `docs/remote-api-keepalive.md`.
 
+## Grafting (BN10), added 2026-11-17
+
+Plan and gates: `docs/grafting-plan.md`. Pure logic in `graft_logic.js` (core/player; tests in `graft_logic.test.js`).
+- `graft_scan.js` (bn10 profile, 15.1GB, one-shot, not in startup): `run graft_scan.js`. Reads the graftable list,
+  graft price and time per name; writes `graft_scan_raw.json`; starts `graft_scan_meta.js`. Never grafts.
+  Fails soft (ok:false in the raw file) when the grafting API is unavailable.
+- `graft_scan_meta.js` (bn10 profile, one-shot): reads `graft_scan_raw.json` and `run_target.json` `augWeights`; adds
+  stats and prereqs; writes `graft_catalog.json` {ts, resetAt, graftable, count, top, topCombat, rows}. If it does
+  not start for RAM, run it by hand after graft_scan.js.
+
 ## Bladeburner (BN6), added 2026-11-16
 
 ### `bladeburner.js` (profile bn6, startup)

@@ -238,3 +238,16 @@ test("installBlocked only while a fresh status owns the player", () => {
   assert.equal(installBlocked(null, now), false);
   assert.equal(installBlocked({ ownsPlayer: true, ts: now - 5000 }, now, 1000), false);
 });
+
+test("rankCatalog: SPTN-97 first among no-prereq combat augs; filters apply", async () => {
+  const { rankCatalog, isCombatAug } = await import("./graft_logic.js");
+  const combat = rankCatalog(ROWS, WEIGHTS, { noPrereqs: true, combat: true });
+  assert.equal(combat[0].name, "SPTN-97 Gene Modification");
+  assert.ok(!combat.some(r => r.name === "Graphene Bionic Spine Upgrade"));
+  assert.ok(!combat.some(r => r.name === "BitWire" || r.name === "QLink"));
+  assert.equal(isCombatAug(SPINE), true);
+  assert.equal(isCombatAug(BITWIRE), false);
+  const all = rankCatalog(ROWS, WEIGHTS);
+  assert.equal(all.length, ROWS.length);
+  for (let i = 1; i < all.length; i++) assert.ok(all[i - 1].perHour >= all[i].perHour);
+});

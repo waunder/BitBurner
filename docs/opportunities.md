@@ -4,6 +4,11 @@ Running list kept by Claude on its own initiative (Ken, 2026-11-16: "exercise in
 for flaws and opportunities"). Newest first. Each entry: finding, evidence, expected gain, status.
 The 2-hourly check reviews this once per cycle (first run after an install).
 
+## 2026-11-17 13:15 check (BN10 run 4, hour 15.5)
+
+- **Grafting is cash-gated, not code-gated, for now.** Evidence: `graft_catalog.json` 13:17, 98 rows; the best no-prereq combat grafts cost $9.75b-$14.6b (SPTN-97 $14.6b, 0.58 net/h) against $2.54b cash and 378m/h (24 samples). Gain: SPTN-97 is +75% to every combat stat toward the Covenant's 850, so worth the first graft once cash allows after the batch. Status: G3 done; G5 dry run next, so the controller's verdicts are reviewed before cash is there.
+- **Recruit hold confirmed.** Evidence: 9 members at 13:18; hold released (next recruit 78k), ascension resumed. Status: done.
+
 ## 2026-11-17 11:15 check (BN10 run 4, hour 13.5)
 
 - **Gang ascensions eat the respect that recruits need.** Evidence: respect 7.05k (09:15) -> 7.30k (11:14), net ~+125/h, while gross gain is 0.208/cycle (~3.75k/h); 4 ascensions in that window (16 -> 20), each deducting ~1.7k. The 9th recruit needs 15.6k (thresholds 5^(members-2): 10th 78k, 11th 391k), so with an ascension at x1.25 about every 30 min the gang stayed at 8 members. Gain: 9th member about 13:30 instead of never (+1/8 respect and money throughput until install); ascensions resume once the next recruit is over 3h away (10th at 78k is ~19h). Status: shipped 11:18 (`recruitHoldHours` 3 in bn10 gang policy, `recruitHoldsAscension` in gang_logic.js, test added, 645/645 pass); `gang_status.json` 11:18 `recruitHold` true. Measure next run: members 9, respect/h, ascensions resumed. The Train Combat A/B (07:15 entry) stays open behind this.

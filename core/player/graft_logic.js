@@ -218,3 +218,27 @@ export function installBlocked(graftStatus, now, freshMs = 120000) {
   const stamp = Number(graftStatus.ts)
   return Number.isFinite(stamp) && Number(now) - stamp <= freshMs
 }
+
+const COMBAT_KEYS = ["strength", "defense", "dexterity", "agility"]
+
+/** True when the multipliers raise any combat stat. */
+export function isCombatAug(mults) {
+  return COMBAT_KEYS.some(key => Number(mults?.[key]) > 1)
+}
+
+/**
+ * Catalog rows ranked by net value per graft hour (entropy included), best first.
+ * Options: `noPrereqs` keeps rows with no prerequisites, `combat` keeps rows that raise a combat stat.
+ */
+export function rankCatalog(rows, weights, { cured = false, noPrereqs = false, combat = false } = {}) {
+  const ranked = []
+  for (const row of rows || []) {
+    if (noPrereqs && row.prereqs?.length) continue
+    if (combat && !isCombatAug(row.mults)) continue
+    const net = netValue(row.mults, weights, cured)
+    const hours = Number(row.hours) > 0 ? Number(row.hours) : Infinity
+    ranked.push({ name: row.name, net, perHour: net / hours, graftPrice: row.graftPrice, hours: row.hours })
+  }
+  ranked.sort((a, b) => b.perHour - a.perHour)
+  return ranked
+}

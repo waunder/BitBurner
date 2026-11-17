@@ -116,10 +116,15 @@ function hourly(rows, get, win = 12) {
   const a = cyc[Math.max(0, cyc.length - 1 - win)], b = cyc.at(-1), h = (b.ts - a.ts) / 3.6e6
   return h > 0 ? (get(b) - get(a)) / h : null
 }
+// One colour per money source, the same on both charts (Ken, 2026-11-17: darknet earnings and gang spend looked alike).
+// Gang income and gang expenses share the gang colour on purpose; everything else is distinct.
+const SOURCE_COLOR = { hacking: "--s2", darknet: "--s4", sleeves: "--s3", gang: "--s1", servers: "--s6", codingcontract: "--s5",
+  crime: "--s7", hacknet: "--s5", work: "--s7", hospitalization: "--bad", class: "--muted", other: "--muted", augmentations: "--warn", stock: "--good" }
+const sourceColor = (label, i) => css(SOURCE_COLOR[label] || ["--s1", "--s2", "--s3", "--s4", "--s5", "--s6", "--s7"][i % 7])
 function perHourSeries(cyc, field) {
   const keys = [...new Set(cyc.flatMap((r) => Object.keys(r[field] || {})))]
-  return keys.map((k, i) => ({ label: k.replace("_expenses", ""), fill: true, borderColor: PAL[i % 7], backgroundColor: PAL[i % 7] + "55", pointRadius: 0, borderWidth: 1,
-    data: cyc.slice(6).map((r, j) => { const a = cyc[j], h = (r.ts - a.ts) / 3.6e6; return { x: r.ts, y: h > 0 ? Math.max(0, ((r[field][k] || 0) - (a[field][k] || 0)) / h) : 0 } }) }))
+  return keys.map((k, i) => { const label = k.replace("_expenses", ""), col = sourceColor(label, i); return { label, fill: true, borderColor: col, backgroundColor: col + "55", pointRadius: 0, borderWidth: 1,
+    data: cyc.slice(6).map((r, j) => { const a = cyc[j], h = (r.ts - a.ts) / 3.6e6; return { x: r.ts, y: h > 0 ? Math.max(0, ((r[field][k] || 0) - (a[field][k] || 0)) / h) : 0 } }) } })
 }
 
 async function refresh() {

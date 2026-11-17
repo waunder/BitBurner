@@ -133,7 +133,7 @@ Grafting G5: `graft_controller.js` dry, 2.1GB, running (not startup); first deci
 Measured (24 samples, 120 min): rep/h Tetrads 5.26k, Tian Di Hui 1.94k; hackExp/h 145k; cash/h 515m; MCP 116k/s now, avg 72.2k/s. Trend: all STEADY.
 Audit: 1 of 32 flagged (cct_watcher, harmless). Spenders saving for the batch (correct).
 Advisor verdict wait (PRC in 2.5h). Decision wait, but not the advisor's batch: install PRC + HemoRecirculator + S.N.A + ADR-V1 + Wired Reflexes (~$2.63b, value ~0.47; the advisor plan has two value-0 augs). End check: no Red Pill, no World Daemon.
-**Next run (17:15): set player_activity_config `priorityAugs` to those five (priorityOnly true), back up, install once PRC rep is in (~17:45; poll in short steps), then sleeve augs at once.**
+**Next run (17:15): set player_activity_config `priorityAugs` to those five plus Neurotrainer I and BitWire (Ken session 16:20: both rep-ready, value 0.067 and 0.049, above ADR-V1 and Wired Reflexes; all seven cost ~$4.20b dearest first with the 1.9x climb vs ~$4.5b cash expected at 17:45; if cash is short, drop Wired Reflexes, then BitWire) (priorityOnly true), back up, install once PRC rep is in (~17:45; poll in short steps), then sleeve augs at once.**
 
 ## Daedalus ready (2026-11-16 21:35)
 

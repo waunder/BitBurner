@@ -126,13 +126,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-17 01:15 (scheduled run, BN10 run 4 hour 3.5): steady, no changes in the game.**
-Live (probe 01:15): BitNode 10, $64.6m, hacking 45, combat 70/70/73/73, karma -17.0k, home 256GB (41GB free), 0 installed, 0 queued, 7 sleeves on Homicide (shock 18.3, odds 0.25).
-All residents now run (mcp.js, sleeve_controller, sleeve_buyer, allocator added since 23:15). capital_manager bought home 256GB and BruteSSH; saving $477m for the 512GB floor (~5.5h).
-Measured (23 samples, 120 min): karma/h -7.67k, hackExp/h 1.11k, rep/h Slum Snakes 151, MCP avg 229/s. Gang (karma -54k) about 06:00.
-Audit: 1 of 32 flagged, cct_watcher "no safe rooted worker" (early node, harmless).
-Gap (open, docs/opportunities.md): first cycle already "late", so sleeve augs stay blocked once shock hits 0 (~10:00) until the first install.
+**2026-11-17 03:15 (scheduled run, BN10 run 4 hour 5.5): started gang_create.js; no install.**
+Live (probe 03:15): BitNode 10, $320m, hacking 73, combat 77/77/79/79, karma -35.0k, home 256GB, 0 installed, 0 queued, 7 sleeves on Homicide (shock 14.6, odds 0.28).
+Gap fixed: gang_create.js was not running (only startup.js starts it), so nothing would have created the gang. Started 03:16; it starts gang-controller.js (39GB) once RAM allows, likely after home 512GB (~05:20, $477m).
+Measured (25 samples, 120 min): karma/h -8.89k, cash/h 135m, hackExp/h 22.3k, rep/h 150 passive x4, MCP avg 3.68k/s. Trend: cash and hackExp ACCELERATING. Gang (karma -54k) about 05:25.
+Audit: 0 of 32 flagged. Open: sleeve augs blocked in the first cycle (late phase); durable gang_create start (docs/opportunities.md).
 Advisor verdict build; no install. End check: no Red Pill, no World Daemon.
+Next run: confirm the gang exists and gang-controller.js runs.
 
 ## Daedalus ready (2026-11-16 21:35)
 

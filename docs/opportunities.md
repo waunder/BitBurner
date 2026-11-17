@@ -4,6 +4,10 @@ Running list kept by Claude on its own initiative (Ken, 2026-11-16: "exercise in
 for flaws and opportunities"). Newest first. Each entry: finding, evidence, expected gain, status.
 The 2-hourly check reviews this once per cycle (first run after an install).
 
+## 2026-11-17 03:15 check (BN10 run 4, hour 5.5)
+
+- **gang_create.js is not started on a fresh-node bootstrap.** Evidence: game `ps` 03:15 had every resident but gang_create.js; it is only in `startup.js`'s list, and capital_manager starts MANAGERS plus the profile startup list. Karma -35k, gang due ~05:25. Gain: gang created on time instead of whenever a session notices. Status: started by hand 03:16. Durable fix (open): have capital_manager launch gang_create.js while karma > -54k and no gang (it exits by itself once the controller runs, so a plain MANAGERS entry would relaunch it every pass), or add it to the bn10 profile startup list with a guard.
+
 ## 2026-11-17 01:15 check (BN10 run 4, hour 3.5)
 
 - **First cycle of a node is already "late", so sleeve augs would wait for the first install.** Evidence: `capital_status.json` and `sleeve_buyer_status.json` `cyclePhase` late at hour 3.4 with 0 installed (`earlyCycleHours` 1.5 counts from node entry); sleeve buyer `limits.wiped` 0. Sleeve shock 18.3, falling ~1.9/h, so sleeves can buy augs in ~9-10h, likely before the first install (advisor: nothing until Wired Reflexes in 7.5h, gang at ~06:00). Gain: lesson 6 says sleeve augs early pay well (BN6: 7 sleeves x 6 augs for $0.71b, odds held); sleeve Homicide odds are 0.25 now. Status: open; check before shock hits 0 (~10:00) and, if no install is near, let the first cycle count as early until the first install or until the batch exists.

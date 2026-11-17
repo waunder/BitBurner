@@ -200,11 +200,15 @@ async function refresh() {
 
   // ---- earnings and spending (this cycle)
   earnChart.data.datasets = perHourSeries(cyc.filter((r) => r.earned), "earned")
-  earnChart.options.scales.y.ticks = { callback: (v) => "$" + fmt(v, 0) }
-  earnChart.update()
   spendChart.data.datasets = perHourSeries(cyc.filter((r) => r.spent), "spent")
-  spendChart.options.scales.y.ticks = { callback: (v) => "$" + fmt(v, 0) }
-  spendChart.update()
+  // Same y scale on both (Ken, 2026-11-17), so earnings and spending compare at a glance: the larger stacked peak sets it.
+  const stackedPeak = (sets) => { const t = new Map(); for (const s of sets) for (const p of s.data) t.set(p.x, (t.get(p.x) || 0) + p.y); return Math.max(0, ...t.values()) }
+  const sharedMax = Math.max(stackedPeak(earnChart.data.datasets), stackedPeak(spendChart.data.datasets)) * 1.05 || undefined
+  for (const c of [earnChart, spendChart]) {
+    c.options.scales.y.ticks = { callback: (v) => "$" + fmt(v, 0) }
+    c.options.scales.y.max = sharedMax
+    c.update()
+  }
 
   // ---- sleeves
   const buyer = live.sleeve_buyer || {}

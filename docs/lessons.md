@@ -33,7 +33,12 @@ and where it is already built in. Newest BitNode first. Started 2026-11-16 at th
 8. **Fresh node: get everyone to Homicide fast.** Shoplift trains only dex/agi; Mug trains str/def at the same pay
    and leads to Homicide (karma for the gang). Until the controllers fit, run the early-crime chooser
    (docs/opportunities.md) or step crimes by hand with crime_now.js / sleeve_crime_now.js.
-9. **One-off probes beat guesses.** Small scripts that write one JSON file (bb_probe.js, bn_probe.js,
+9. **Fresh node: crime and the darknet pay for RAM, RAM pays for hacking** (Ken, 2026-11-17). The darknet farms on
+   darknet servers' own RAM; its ~7.5GB root on home is the best early income per GB. BN10 run 4 (0.4x node): ~$350-500m/h
+   at 16 managers by hour 17, level with hacking, after running at ~$35m/h under the August freeze caps; the game's thread
+   stayed under 20% of a core. `capital_manager.js` now starts `dnet_root.js` first; caps live in profiles/bn15/dnet
+   (managers 16, spread 2/pass, spread levels 2, phish threads up to 16). In a 1.0x node expect ~2.5x that.
+10. **One-off probes beat guesses.** Small scripts that write one JSON file (bb_probe.js, bn_probe.js,
    sleeve price reads) settled questions in minutes. Delete them after.
 
 ## BN6 (Bladeburners), run 1: 2026-11-14 17:15 to 2026-11-16 21:47 (about 52.5 hours)

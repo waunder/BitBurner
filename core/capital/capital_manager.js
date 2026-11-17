@@ -20,7 +20,9 @@ const POLL_MS = 10_000
 const INCOME_WINDOW_SEC = 600
 // Resident scripts only: one that exits at once (gang-controller.js without a
 // gang) would be relaunched every pass. The profile's startup list follows.
-const MANAGERS = ["maintenance_steward.js", "money.js", "stack_manager.js", "faction_join.js", "hud_consolidated.js", "run_report.js", "player_activity_controller.js", "dnet_root.js", "metrics_logger.js"]
+// dnet_root.js first (2026-11-17): the darknet farms on darknet servers' own RAM, so its ~7.5GB on home
+// buys the largest early income per GB (BN10 run 4: ~$350-500m/h at 16 managers, level with hacking).
+const MANAGERS = ["dnet_root.js", "maintenance_steward.js", "money.js", "stack_manager.js", "faction_join.js", "hud_consolidated.js", "run_report.js", "player_activity_controller.js", "metrics_logger.js"]
 const LAST = ["xp_filler.js"]
 
 function readPolicy(ns) {

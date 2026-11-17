@@ -4,6 +4,11 @@ Running list kept by Claude on its own initiative (Ken, 2026-11-16: "exercise in
 for flaws and opportunities"). Newest first. Each entry: finding, evidence, expected gain, status.
 The 2-hourly check reviews this once per cycle (first run after an install).
 
+## 2026-11-17 07:15 check (BN10 run 4, hour 9.5)
+
+- **Gang faction rep is ~44/h against 3.5m needed.** Evidence: `gang_status.json` 07:16 respect 3.3k, gain 0.149/cycle, faction rep 56 (rep = respect/75), 7 of 8 members on Mug People at combat ~38, 11 ascensions at x1.25. Gain: the gang faction sells most augs; at this rate it never gets there without member growth. Status: open. Next: compare respect/h over the next two checks; if it stays under ~10k/h, A/B more members on Train Combat (stats feed every later respect task) before respect tasks.
+- **MCP home-reserve fix confirmed.** Evidence: MCP 3x60m 764>9.22k>105k/s, 57k/s now (24 samples). Status: done.
+
 ## 2026-11-17 05:15 check (BN10 run 4, hour 7.5)
 
 - **MCP's cloud path reserved a fixed 512GB of home, so a 512GB home gave it nothing.** Evidence: `mcp_status.json` 05:18 `capacity-wait`, rate 0, home 232GB free but `availableRam` 4.5GB on every waiting target; MCP 3x60m trend 10.3k>6.19k>764/s; `HOME_WORKER_RESERVE_GB=512` in `mcp_cloud.js` (set for BN15's PB home). Gain: about 100-200GB more batch RAM on home (MCP's main pool in early BN10, no cloud servers), and home RAM buys now feed MCP. Status: shipped 05:20 (`homeWorkerReserve`: quarter of home, 64GB floor, 512GB cap; test added). After restart, 104GB of jobs on home, phase harvest. Measure MCP rate next run.

@@ -126,13 +126,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-17 05:15 (scheduled run, BN10 run 4 hour 7.5): gang exists; MCP home-reserve fix; no install.**
-Live (probe 05:18): BitNode 10, $96m, hacking 88, combat 83/83/84/84, karma -54.2k, home 512GB, 0 installed, 0 queued. Gang Slum Snakes since ~05:16 (3 members, reputation mode, gang-controller.js running). Sleeves shock 10.7: 2 faction rep, 5 money crime.
-Fixed: MCP sat in capacity-wait with 232GB free on home; `mcp_cloud.js` reserved a fixed 512GB of home (BN15 value). Now a quarter of home (64GB floor, 512GB cap); MCP restarted 05:19 and runs 104GB of jobs on home.
-Measured (24 samples, 120 min): hackExp/h 41.6k, karma/h -9.51k, cash/h -208m (home purchase), rep/h 148 passive x4, MCP avg 5.46k/s. Trend: MCP and cash DECELERATING (the reserve fault and the purchase), hackExp ACCELERATING.
-Audit: 1 of 32 flagged (cct_watcher, no safe worker yet; harmless). Open: first-cycle sleeve augs (late phase); durable gang_create start.
-Advisor verdict build; no install. End check: no Red Pill, no World Daemon.
-Next run: confirm MCP rate recovers; watch gang respect and recruits.
+**2026-11-17 07:15 (scheduled run, BN10 run 4 hour 9.5): steady, no changes made; MCP fix confirmed.**
+Live (probe 07:15): BitNode 10, $483m, hacking 102, combat 91/91/93/93, karma -56.4k, home 512GB, 0 installed, 0 queued. Gang Slum Snakes 8 members, respect 3.3k, faction rep 56 (~44/h), reputation mode. Sleeves shock 7.0: 4 faction rep, rest money crime. Player on Tian Di Hui rep for ADR-V1 (9 min).
+Measured (24 samples, 120 min): rep/h Tian Di Hui 2.71k, Tetrads 2.23k, CyberSec 787, Slum Snakes 30; hackExp/h 99k; karma/h -1.13k; cash/h 191m; MCP 57k/s now, avg 12.7k/s. Trend: cash, MCP (764>9.22k>105k) and hackExp ACCELERATING; the 05:20 MCP home-reserve fix worked.
+Audit: 1 of 32 flagged (cct_watcher, no safe worker; harmless). Spenders: capital_manager saving for home 1TB (homeDemand 0.58); sleeve_buyer blocked (shock, late phase; known); gang gear blocked by payback (correct).
+Gap: gang faction rep ~44/h against 3.5m needed (members at combat ~38, 7 on Mug People); recorded in docs/opportunities.md.
+Advisor verdict wait (ADR-V1 in 9m); no install (nothing owned or queued). End check: no Red Pill, no World Daemon.
+Next run: first aug purchases and install timing; gang respect growth; sleeves reach shock 0 about 11:00.
 
 ## Daedalus ready (2026-11-16 21:35)
 

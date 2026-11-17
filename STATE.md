@@ -126,14 +126,14 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-17 13:15 (scheduled run, BN10 run 4 hour 15.5): grafting G3 live; 9th gang member; no install.**
-Live (probe 13:15): BitNode 10, $2.54b, hacking 121, combat 107 each, karma -63.2k, home 512GB, 0 installed, 0 queued. Player on Tetrads rep for Power Recirculation Core. Sleeves shock 0: 2 faction rep, 5 Mug.
-Gang Slum Snakes 9 members (13:18); recruit hold released (next 78k), ascensions resumed.
-Grafting G3: `graft_scan.js` + `graft_scan_meta.js` wrote `graft_catalog.json`, 98 rows; SPTN-97 best combat graft ($14.6b, 1.62h). 646/646 tests. Next G5.
-Measured (24 samples, 120 min): rep/h Tetrads 5.12k, Tian Di Hui 1.89k; hackExp/h 144k; cash/h 378m; MCP 111k/s now, avg 62.2k/s. Trend: all STEADY.
+**2026-11-17 15:15 (scheduled run, BN10 run 4 hour 17.5): grafting G5 dry controller live; install planned ~17:45; no install.**
+Live (probe 15:15): BitNode 10, $3.39b, hacking 125, combat 110, karma -65.5k, home 512GB, 0 installed, 0 queued. Player on Tetrads rep for Power Recirculation Core (36.8k of 50k). Sleeves shock 0, none idle.
+Gang 9 members, respect 15.4k, wanted cleanup (penalty 0.976); faction rep 583 of 3.5m.
+Grafting G5: `graft_controller.js` dry, 2.1GB, running (not startup); first decision: no pick (price cap, install-plan reserve). 647/647 tests. Next G6.
+Measured (24 samples, 120 min): rep/h Tetrads 5.26k, Tian Di Hui 1.94k; hackExp/h 145k; cash/h 515m; MCP 116k/s now, avg 72.2k/s. Trend: all STEADY.
 Audit: 1 of 32 flagged (cct_watcher, harmless). Spenders saving for the batch (correct).
-Advisor verdict wait (Power Recirculation Core in 4.6h); batch of 5 ready, $2.39b of $2.54b. Decision wait; install by ~18:00 at the latest, sleeve augs right after. End check: no Red Pill, no World Daemon.
-Next run (15:15): install timing; allocator gang spend attribution.
+Advisor verdict wait (PRC in 2.5h). Decision wait, but not the advisor's batch: install PRC + HemoRecirculator + S.N.A + ADR-V1 + Wired Reflexes (~$2.63b, value ~0.47; the advisor plan has two value-0 augs). End check: no Red Pill, no World Daemon.
+**Next run (17:15): set player_activity_config `priorityAugs` to those five (priorityOnly true), back up, install once PRC rep is in (~17:45; poll in short steps), then sleeve augs at once.**
 
 ## Daedalus ready (2026-11-16 21:35)
 

@@ -219,6 +219,60 @@ export function installBlocked(graftStatus, now, freshMs = 120000) {
   return Number.isFinite(stamp) && Number(now) - stamp <= freshMs
 }
 
+/**
+ * planGraft input from the game's status files (step G5, the dry controller reads files only).
+ * files: {catalog, readiness, sleeve, activity, target, config, previous}; any may be null.
+ * live: {cash, entropy, now}. The alternative rate is the advisor's best faction-work value per
+ * hour (advice.next.rate), else the cycle average; an "install" verdict means install now (0h).
+ */
+export function graftInputs(files, live) {
+  const { catalog, readiness, sleeve, activity, target, config, previous } = files || {}
+  const owned = Array.isArray(readiness?.owned) ? readiness.owned : []
+  const queued = Array.isArray(readiness?.queued) ? readiness.queued : []
+  const factionOffers = {}
+  for (const offer of readiness?.offers || []) {
+    if (!offer?.name) continue
+    const repReady = Number(offer.rep) >= Number(offer.repRequired)
+    const known = factionOffers[offer.name]
+    if (!known || (repReady && (!known.repReady || Number(offer.price) < Number(known.price)))) {
+      factionOffers[offer.name] = { price: Number(offer.price), repReady }
+    }
+  }
+  const advice = readiness?.advice || {}
+  const nextRate = Number(advice.next?.rate)
+  const average = Number(advice.average)
+  const alternativeRate = Number.isFinite(nextRate) ? nextRate : (Number.isFinite(average) ? average : null)
+  const installSoonHours = advice.verdict === "install" ? 0 : null
+  const planNames = readiness?.installPlan?.names
+  const lastFinishedAt = previous?.lastFinishedAt ?? null
+  return {
+    catalog: Array.isArray(catalog?.rows) ? catalog.rows : [],
+    owned, queued,
+    cash: Number(live?.cash) || 0,
+    entropy: Number(live?.entropy) || 0,
+    cured: owned.includes(CURE_NAME) || queued.includes(CURE_NAME),
+    weights: target?.augWeights || {},
+    karma: sleeve?.karma ?? null,
+    karmaTarget: sleeve?.karmaTarget ?? activity?.config?.crimeKarmaTarget ?? null,
+    playerKarmaShare: 1,
+    alternativeRate,
+    installPlanCost: Number(readiness?.installPlan?.cost) || 0,
+    installSoonHours,
+    factionOffers,
+    batchSize: Array.isArray(planNames) ? planNames.length : 0,
+    lastFinishedAt,
+    now: Number(live?.now) || Date.now(),
+    working: activity?.currentWork || null,
+    config: config || {},
+  }
+}
+
+/** Short key for "did the decision change": the pick's name, or the sorted blocked gates. */
+export function decisionKey(plan) {
+  if (plan?.pick) return `pick:${plan.pick.name}`
+  return `blocked:${(plan?.blocked || []).join(",")}`
+}
+
 const COMBAT_KEYS = ["strength", "defense", "dexterity", "agility"]
 
 /** True when the multipliers raise any combat stat. */

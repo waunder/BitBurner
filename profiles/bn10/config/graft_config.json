@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "dry": true,
+  "allow": [],
+  "block": [],
+  "maxPriceFractionOfCash": 0.25,
+  "reserveInstallPlan": true,
+  "maxEntropy": 6,
+  "minNetValue": 0.05,
+  "maxGraftHours": 2.5,
+  "maxKarmaDelayHours": 0.25,
+  "allowDuringKarma": false,
+  "focus": false,
+  "cooldownMs": 600000,
+  "stage": "G5 dry run (BN10 run 4)"
+}

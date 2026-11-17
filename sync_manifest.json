@@ -174,6 +174,8 @@
     "sleeve_buyer_logic.js": "profiles/sleeves/sleeve/sleeve_buyer_logic.js",
     "sleeve_buyer.js": "profiles/sleeves/sleeve/sleeve_buyer.js",
     "graft_scan.js": "core/player/graft_scan.js",
-    "graft_scan_meta.js": "core/player/graft_scan_meta.js"
+    "graft_scan_meta.js": "core/player/graft_scan_meta.js",
+    "graft_controller.js": "core/player/graft_controller.js",
+    "graft_config.json": "profiles/bn10/config/graft_config.json"
   }
 }

@@ -251,3 +251,47 @@ test("rankCatalog: SPTN-97 first among no-prereq combat augs; filters apply", as
   assert.equal(all.length, ROWS.length);
   for (let i = 1; i < all.length; i++) assert.ok(all[i - 1].perHour >= all[i].perHour);
 });
+
+test("graftInputs builds planGraft input from status files (G5 dry controller)", async () => {
+  const { graftInputs, decisionKey } = await import("./graft_logic.js");
+  const files = {
+    catalog: { rows: ROWS },
+    readiness: {
+      owned: ["Bionic Spine"], queued: [],
+      offers: [
+        { name: "BitWire", faction: "A", rep: 10, repRequired: 100, price: 5e6 },
+        { name: "BitWire", faction: "B", rep: 500, repRequired: 100, price: 9e6 },
+      ],
+      advice: { verdict: "wait", average: 0.016, next: { rate: 0.078 } },
+      installPlan: { names: ["x", "y", "z"], cost: 3.35e9 },
+    },
+    sleeve: { karma: -65000, karmaTarget: -54000 },
+    activity: { currentWork: { type: "FACTION" } },
+    target: { augWeights: WEIGHTS },
+    config: { dry: true },
+    previous: { lastFinishedAt: 123 },
+  };
+  const input = graftInputs(files, { cash: 3.4e9, entropy: 0, now: 5 });
+  assert.equal(input.catalog.length, ROWS.length);
+  assert.equal(input.alternativeRate, 0.078);
+  assert.equal(input.installPlanCost, 3.35e9);
+  assert.equal(input.batchSize, 3);
+  assert.equal(input.installSoonHours, null);
+  assert.deepEqual(input.factionOffers.BitWire, { price: 9e6, repReady: true });
+  assert.equal(input.lastFinishedAt, 123);
+  assert.equal(input.cured, false);
+  assert.equal(input.weights, WEIGHTS);
+  // Live numbers today: $3.4b against a $3.35b plan, so every graft is refused (reserve or price cap).
+  const plan = planGraft(input);
+  assert.equal(plan.pick, null);
+  assert.ok(plan.blocked.includes("price cap") || plan.blocked.includes("install-plan reserve"));
+  assert.ok(decisionKey(plan).startsWith("blocked:"));
+  // An install verdict means install now; empty files give a safe empty input.
+  files.readiness.advice.verdict = "install";
+  assert.equal(graftInputs(files, { cash: 1 }).installSoonHours, 0);
+  const empty = graftInputs({}, {});
+  assert.equal(empty.catalog.length, 0);
+  assert.equal(empty.alternativeRate, null);
+  assert.equal(planGraft(empty).pick, null);
+  assert.equal(decisionKey(planGraft(base({}))), `pick:${planGraft(base({})).pick.name}`);
+});

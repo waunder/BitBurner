@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BN6 Run</title>
+<title>BN10 Run</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root {
   --bg: #f6f5f1; --panel: #ffffff; --ink: #1d1d1b; --muted: #6b6a64; --line: #e3e1da;
-  --accent: #b5562d; --good: #2f7d4f; --warn: #b8860b; --bad: #b3261e;
+  --accent: #2f6db5; --good: #2f7d4f; --warn: #b8860b; --bad: #b3261e;
   --s1: #b5562d; --s2: #2f6db5; --s3: #2f7d4f; --s4: #8a4fb5; --s5: #b8860b; --s6: #1f8a8a; --s7: #7a6a55;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #161614; --panel: #201f1c; --ink: #ecebe6; --muted: #9b998f; --line: #34332e;
-    --accent: #e0855a; --good: #6cc08b; --warn: #e3b64d; --bad: #ef6b60;
+    --accent: #6fa3e8; --good: #6cc08b; --warn: #e3b64d; --bad: #ef6b60;
     --s1: #e0855a; --s2: #6fa3e8; --s3: #6cc08b; --s4: #b98ae3; --s5: #e3b64d; --s6: #5cc6c6; --s7: #b9a78e;
   }
 }
@@ -24,6 +24,7 @@ header { display: flex; justify-content: space-between; align-items: baseline; f
 h1 { margin: 0; font-size: 22px; letter-spacing: .2px; }
 h1 small { color: var(--muted); font-weight: 400; font-size: 14px; margin-left: 8px; }
 #updated { color: var(--muted); font-size: 13px; }
+#updated a { color: var(--muted); }
 main { padding: 8px 24px 32px; display: grid; gap: 16px; grid-template-columns: repeat(12, 1fr); }
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; min-width: 0; }
 .panel h2 { margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); font-weight: 600; }
@@ -43,10 +44,9 @@ main { padding: 8px 24px 32px; display: grid; gap: 16px; grid-template-columns: 
 table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
 th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
 th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+td .bar { margin-top: 4px; }
 .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
 .ok { color: var(--good); } .warn { color: var(--warn); } .bad { color: var(--bad); }
-#events { font: 12.5px/1.5 ui-monospace, "Cascadia Mono", Consolas, monospace; max-height: 320px; overflow: auto; white-space: pre-wrap; }
-#events div { padding: 1px 0; border-bottom: 1px dashed var(--line); }
 #opps { max-height: 420px; overflow: auto; font-size: 14px; }
 #opps h3 { font-size: 14px; margin: 12px 0 4px; color: var(--accent); }
 #opps ul { margin: 0; padding-left: 18px; } #opps li { margin: 4px 0; }
@@ -55,37 +55,42 @@ th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: upp
 </head>
 <body>
 <header>
-  <h1>BitNode 6 <small>Bladeburners · run 1</small></h1>
+  <h1>BitNode 10 <small>Digital Carbon · run 4 · goal: The Covenant's 8th sleeve and sleeve memory</small></h1>
   <div id="updated">loading…</div>
 </header>
 <main>
   <section class="tiles" id="tiles"></section>
 
-  <section class="panel twothird"><h2>Rank over the run</h2><div class="chart tall"><canvas id="rankChart"></canvas></div>
-    <div class="note" id="rankNote"></div></section>
-  <section class="panel third"><h2>Road to Operation Daedalus</h2><div id="route"></div></section>
+  <section class="panel twothird"><h2>Levels against The Covenant's 850</h2><div class="chart tall"><canvas id="levelChart"></canvas></div>
+    <div class="note">The Covenant invites at hacking 850 and all four combat stats 850, with 20 installed augmentations and $75b. BN10 halves hacking and combat growth, so augmentation multipliers carry this. Grey verticals are installs.</div></section>
+  <section class="panel third"><h2>Road to The Covenant</h2><div id="route"></div></section>
 
-  <section class="panel half"><h2>Rank per hour</h2><div class="chart"><canvas id="rateChart"></canvas></div></section>
-  <section class="panel half"><h2>Sleeve contract odds (best, low estimate)</h2><div class="chart"><canvas id="oddsChart"></canvas></div></section>
+  <section class="panel half"><h2>Cash</h2><div class="chart"><canvas id="cashChart"></canvas></div></section>
+  <section class="panel half"><h2>Faction reputation this cycle</h2><div class="chart"><canvas id="repChart"></canvas></div></section>
 
   <section class="panel half"><h2>Earnings per hour by source</h2><div class="chart"><canvas id="earnChart"></canvas></div></section>
   <section class="panel half"><h2>Spending per hour by category</h2><div class="chart"><canvas id="spendChart"></canvas></div></section>
 
   <section class="panel half"><h2>Sleeves now</h2><div id="sleeves"></div></section>
-  <section class="panel half"><h2>Bladeburner events</h2><div id="events"></div></section>
+  <section class="panel half"><h2>Gang</h2><div id="gang"></div></section>
+
+  <section class="panel twothird"><h2>Grafting: augmentations for cash and time, no reputation</h2><div id="graftAugs"></div></section>
+  <section class="panel third"><h2>Grafting plan</h2><div id="graftPlan"></div></section>
 
   <section class="panel wide"><h2>Opportunities and ideas</h2><div id="opps"></div></section>
 </main>
 <script>
 const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim()
-const SLEEVE_COLORS = ["--s1", "--s2", "--s3", "--s4", "--s5", "--s6", "--s7"].map(css)
-const DAEDALUS = 400000
-const fmt = (n, d = 1) => n == null || !isFinite(n) ? "–" : Math.abs(n) >= 1e12 ? (n / 1e12).toFixed(d) + "t" : Math.abs(n) >= 1e9 ? (n / 1e9).toFixed(d) + "b"
+const PAL = ["--s1", "--s2", "--s3", "--s4", "--s5", "--s6", "--s7"].map(css)
+const GATE = { level: 850, augs: 20, cash: 75e9 }
+const COVENANT_SLEEVES = [10e12, 100e12, 1e15, 10e15, 100e15] // 4th..8th sleeve (docs/bn10-assessment-2026-11-03.md)
+const fmt = (n, d = 1) => n == null || !isFinite(n) ? "–" : Math.abs(n) >= 1e15 ? (n / 1e15).toFixed(d) + "q" : Math.abs(n) >= 1e12 ? (n / 1e12).toFixed(d) + "t" : Math.abs(n) >= 1e9 ? (n / 1e9).toFixed(d) + "b"
   : Math.abs(n) >= 1e6 ? (n / 1e6).toFixed(d) + "m" : Math.abs(n) >= 1e3 ? (n / 1e3).toFixed(d) + "k" : n.toFixed(d)
 const clock = (ts) => new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
 const dayClock = (ts) => new Date(ts).toLocaleString([], { weekday: "short", hour: "2-digit", minute: "2-digit" })
 const dur = (h) => !isFinite(h) || h < 0 ? "–" : h >= 48 ? (h / 24).toFixed(1) + " days" : h >= 1 ? h.toFixed(1) + " h" : Math.round(h * 60) + " min"
 const esc = (s) => String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]))
+const barHtml = (f) => `<div class="bar"><div style="width:${Math.min(100, Math.max(0, f * 100)).toFixed(1)}%"></div></div>`
 
 Chart.defaults.color = css("--muted"); Chart.defaults.borderColor = css("--line"); Chart.defaults.font.family = "system-ui, sans-serif"
 const timeAxis = { type: "linear", ticks: { callback: (v) => dayClock(v), maxTicksLimit: 7 } }
@@ -95,164 +100,154 @@ function lineChart(id, opts = {}) {
       plugins: { legend: { display: opts.legend ?? false, labels: { boxWidth: 10 } }, tooltip: { callbacks: { title: (it) => dayClock(it[0].parsed.x) } } },
       scales: { x: timeAxis, y: { beginAtZero: opts.zero ?? true, stacked: opts.stacked ?? false, ...(opts.y || {}) } } } })
 }
-const rankChart = lineChart("rankChart"), rateChart = lineChart("rateChart"), oddsChart = lineChart("oddsChart", { legend: true, y: { max: 1 } })
-const earnChart = lineChart("earnChart", { legend: true, stacked: true })
-const spendChart = lineChart("spendChart", { legend: true, stacked: true })
-
-/** Rank/h from 5-minute samples, smoothed over `win` samples; skips gaps and drops (installs keep rank). */
-function rankRate(rows, win = 6) {
-  const pts = rows.filter((r) => r.rank != null)
-  const out = []
-  for (let i = win; i < pts.length; i++) {
-    const a = pts[i - win], b = pts[i], h = (b.ts - a.ts) / 3.6e6
-    if (h > 0 && h < 2 && b.rank >= a.rank) out.push({ x: b.ts, y: (b.rank - a.rank) / h })
-  }
-  return out
-}
-/** Least-squares line through (hours, rate) for the last `hours`; returns slope per hour and current fitted rate. */
-function trend(points, hours = 6) {
-  if (points.length < 4) return null
-  const t1 = points.at(-1).x, pts = points.filter((p) => t1 - p.x <= hours * 3.6e6)
-  if (pts.length < 4) return null
-  const xs = pts.map((p) => (p.x - t1) / 3.6e6), ys = pts.map((p) => p.y), n = xs.length
-  const mx = xs.reduce((a, b) => a + b) / n, my = ys.reduce((a, b) => a + b) / n
-  let num = 0, den = 0
-  for (let i = 0; i < n; i++) { num += (xs[i] - mx) * (ys[i] - my); den += (xs[i] - mx) ** 2 }
-  const slope = den ? num / den : 0
-  return { slope, now: my - slope * mx }
-}
-/** Hours to gain `need` rank with rate r(t) = r0 + s t (s may be 0). */
-function hoursTo(need, r0, s) {
-  if (need <= 0) return 0
-  if (!(r0 > 0) && !(s > 0)) return Infinity
-  if (Math.abs(s) < 1e-9) return need / r0
-  const disc = r0 * r0 + 2 * s * need
-  if (disc < 0) return Infinity
-  return (-r0 + Math.sqrt(disc)) / s
-}
+const levelChart = lineChart("levelChart", { legend: true }), cashChart = lineChart("cashChart", { y: { type: "logarithmic", beginAtZero: false } })
+const repChart = lineChart("repChart", { legend: true })
+const earnChart = lineChart("earnChart", { legend: true, stacked: true }), spendChart = lineChart("spendChart", { legend: true, stacked: true })
 
 function installMarks(rows) {
   const marks = []
   for (let i = 1; i < rows.length; i++) if (rows[i].resetAt && rows[i].resetAt !== rows[i - 1].resetAt) marks.push(rows[i].resetAt)
   return marks
 }
+/** Per-hour rate of a cumulative series over the last `win` samples of this cycle. */
+function hourly(rows, get, win = 12) {
+  const cyc = rows.filter((r) => r.resetAt === rows.at(-1)?.resetAt && get(r) != null)
+  if (cyc.length < 2) return null
+  const a = cyc[Math.max(0, cyc.length - 1 - win)], b = cyc.at(-1), h = (b.ts - a.ts) / 3.6e6
+  return h > 0 ? (get(b) - get(a)) / h : null
+}
+function perHourSeries(cyc, field) {
+  const keys = [...new Set(cyc.flatMap((r) => Object.keys(r[field] || {})))]
+  return keys.map((k, i) => ({ label: k.replace("_expenses", ""), fill: true, borderColor: PAL[i % 7], backgroundColor: PAL[i % 7] + "55", pointRadius: 0, borderWidth: 1,
+    data: cyc.slice(6).map((r, j) => { const a = cyc[j], h = (r.ts - a.ts) / 3.6e6; return { x: r.ts, y: h > 0 ? Math.max(0, ((r[field][k] || 0) - (a[field][k] || 0)) / h) : 0 } }) }))
+}
 
 async function refresh() {
-  let rows = [], live = {}
-  try { [rows, live] = await Promise.all([fetch("/api/metrics").then((r) => r.json()), fetch("/api/live").then((r) => r.json())]) }
+  let all = [], live = {}
+  try { [all, live] = await Promise.all([fetch("/api/metrics").then((r) => r.json()), fetch("/api/live").then((r) => r.json())]) }
   catch (e) { document.getElementById("updated").textContent = "cannot reach the run page server"; return }
-  const bb = live.bladeburner || {}, now = live.serverTs || Date.now()
-  const runStart = rows.length ? rows[0].ts : now
-
-  // ---- rank series and rates
-  const rankPts = rows.filter((r) => r.rank != null).map((r) => ({ x: r.ts, y: r.rank }))
-  if (bb.rank != null) rankPts.push({ x: bb.ts, y: bb.rank })
-  const rates = rankRate(rows)
-  const liveRate = bb.rankPerHour
-  const tr = trend(rates)
-  const need = DAEDALUS - (bb.rank || 0)
-  const etaFlat = liveRate > 0 ? need / liveRate : Infinity
-  const etaTrend = tr && tr.slope > 0 ? hoursTo(need, Math.max(liveRate || tr.now, 0), tr.slope) : null
-
-  // ---- tiles
-  const stamina = bb.stamina || [0, 1], stamPct = stamina[0] / stamina[1]
-  const cur = bb.current ? `${bb.current.name}` : "idle"
-  const chance = Array.isArray(bb.currentChance) ? ` · ${Math.round(bb.currentChance[0] * 100)}–${Math.round(bb.currentChance[1] * 100)}%` : ""
+  const now = live.serverTs || Date.now()
   const readiness = live.augmentation_readiness || {}
+  // This run only: samples since the BitNode began (first install mark after a gap, or the karma reset).
+  const runStart = (() => { let start = 0; for (let i = 1; i < all.length; i++) if ((all[i].installed ?? 0) < (all[i - 1].installed ?? 0)) start = i; return start })()
+  const rows = all.slice(runStart)
+  const last = rows.at(-1) || {}
+  const sk = last.skills || {}
+  const combatMin = Math.min(sk.strength ?? 0, sk.defense ?? 0, sk.dexterity ?? 0, sk.agility ?? 0)
+  const installed = readiness.installedCount ?? last.installed ?? 0
+  const cash = readiness.money ?? last.money
+  const cashRate = hourly(rows, (r) => r.earned ? Object.values(r.earned).reduce((a, b) => a + b, 0) - Object.values(r.spent || {}).reduce((a, b) => a + b, 0) : null)
   const cycleH = readiness.resetAt ? (now - readiness.resetAt) / 3.6e6 : null
-  const gang = live.gang?.gang || {}
-  const buyerTotals = live.sleeve_buyer?.augTotals || {}
-  const tiles = [
-    { hero: true, label: "Bladeburner rank", value: fmt(bb.rank, 1), sub: `${fmt(liveRate, 0)} rank/h (last ${dur(bb.rankWindowHours)})` },
-    { hero: true, label: "Daedalus (400k)", value: dur(etaFlat), sub: etaTrend ? `${dur(etaTrend)} if growth holds` : "at today's rate", bar: (bb.rank || 0) / DAEDALUS },
-    { label: "Stamina", value: `${Math.round(stamPct * 100)}%`, sub: bb.resting ? "resting" : `${fmt(stamina[0], 0)} / ${fmt(stamina[1], 0)}`, bar: stamPct },
-    { label: "Doing now", value: `<span style="font-size:18px">${esc(cur)}</span>`, sub: `${esc(bb.city || "")}${chance}` },
-    { label: "Cash", value: "$" + fmt(readiness.money), sub: cycleH != null ? `cycle ${dur(cycleH)} old` : "" },
-    { label: "Installs", value: readiness.installedCount ?? "–", sub: `${readiness.queuedCount ?? 0} queued · advisor: ${readiness.advice?.verdict ?? "–"}` },
-    { label: "Player augs ready (rep)", value: "$" + fmt(live.money?.augs?.readyCost), sub: `${live.money?.augs?.ready ?? "–"} augs, each purchase raises the next price · cash $${fmt(readiness.money)}`,
-      bar: live.money?.augs?.readyCost ? Math.min(1, (readiness.money || 0) / live.money.augs.readyCost) : null },
-    { label: "Sleeve augs available", value: "$" + fmt(buyerTotals.wanted?.cost), sub: `${buyerTotals.wanted?.count ?? "–"} wanted (combat) · all ${buyerTotals.all?.count ?? "–"} = $${fmt(buyerTotals.all?.cost)}` },
-    { label: "Gang respect", value: fmt(gang.respect, 1), sub: `${Array.isArray(gang.members) ? gang.members.length : gang.members ?? "–"} members · territory ${gang.territory != null ? Math.round(gang.territory * 100) + "%" : "–"}` },
-  ]
-  document.getElementById("tiles").innerHTML = tiles.map((t) => `<div class="tile${t.hero ? " hero" : ""}"><div class="label">${t.label}</div><div class="value">${t.value}</div><div class="sub">${t.sub}</div>${t.bar != null ? `<div class="bar"><div style="width:${Math.min(100, Math.max(0, t.bar * 100)).toFixed(1)}%"></div></div>` : ""}</div>`).join("")
+  const runH = rows.length ? (now - rows[0].ts) / 3.6e6 : null
+  const gangLive = live.gang?.gang || {}
+  const sleeves = live.sleeve?.sleeves || []
+  const nSleeves = sleeves.length || (last.sleeves || []).length
+  const nextSleeveCost = COVENANT_SLEEVES[nSleeves - 3] ?? null
+  const gateParts = [Math.min(1, (sk.hacking ?? 0) / GATE.level), Math.min(1, combatMin / GATE.level), Math.min(1, installed / GATE.augs), Math.min(1, (cash ?? 0) / GATE.cash)]
+  const gateShare = gateParts.reduce((a, b) => a + b) / gateParts.length
+  const advice = readiness.advice || {}
+  const pa = live.player_activity || {}
 
-  // ---- rank chart with install markers and projections
+  const tiles = [
+    { hero: true, label: "Covenant gate", value: `${Math.round(gateShare * 100)}%`, sub: "average of hacking, combat, augs, cash against their bars", bar: gateShare },
+    { hero: true, label: "Sleeves", value: `${nSleeves} / 8`, sub: nextSleeveCost ? `next from The Covenant $${fmt(nextSleeveCost, 0)}` : "all eight", bar: nSleeves / 8 },
+    { label: "Cash", value: "$" + fmt(cash), sub: `${cashRate != null ? (cashRate >= 0 ? "+" : "") + "$" + fmt(cashRate) + "/h net" : ""}` },
+    { label: "Hacking", value: fmt(sk.hacking, 0), sub: `of 850 · MCP avg $${fmt(last.mcpAvgRate)}/s`, bar: (sk.hacking ?? 0) / GATE.level },
+    { label: "Combat (lowest)", value: fmt(combatMin, 0), sub: `str ${sk.strength ?? "–"} def ${sk.defense ?? "–"} dex ${sk.dexterity ?? "–"} agi ${sk.agility ?? "–"}`, bar: combatMin / GATE.level },
+    { label: "Installed augs", value: installed, sub: `${readiness.queuedCount ?? 0} queued · advisor: ${esc(advice.verdict ?? "–")}`, bar: installed / GATE.augs },
+    { label: "Install batch", value: "$" + fmt(readiness.installPlan?.cost), sub: `${(readiness.installPlan?.names || []).length} augs · cycle ${dur(cycleH)} old`,
+      bar: readiness.installPlan?.cost ? Math.min(1, (cash || 0) / readiness.installPlan.cost) : null },
+    { label: "Karma", value: fmt(last.karma, 1), sub: (last.karma ?? 0) <= -54000 ? "gang threshold passed" : "gang needs -54k", bar: Math.min(1, -(last.karma ?? 0) / 54000) },
+    { label: "Gang respect", value: fmt(gangLive.respect ?? last.respect, 1), sub: `${gangLive.members?.length ?? last.gangMembers ?? "–"} members · power ${fmt(live.gang?.power?.ours, 0)} vs ${fmt(live.gang?.power?.strongestRival, 0)}` },
+  ]
+  document.getElementById("tiles").innerHTML = tiles.map((t) => `<div class="tile${t.hero ? " hero" : ""}"><div class="label">${t.label}</div><div class="value">${t.value}</div><div class="sub">${t.sub}</div>${t.bar != null ? barHtml(t.bar) : ""}</div>`).join("")
+
+  // ---- levels chart with the 850 bar and install markers
   const marks = installMarks(rows)
-  const projections = []
-  if (liveRate > 0 && bb.rank != null) {
-    const h = 24
-    projections.push({ label: "today's rate", data: [{ x: bb.ts, y: bb.rank }, { x: bb.ts + h * 3.6e6, y: bb.rank + liveRate * h }], borderDash: [6, 4], borderColor: css("--muted"), pointRadius: 0, borderWidth: 1.5 })
-    if (tr && tr.slope > 0) projections.push({ label: "if growth holds", data: Array.from({ length: 25 }, (_, i) => ({ x: bb.ts + i * 3.6e6, y: bb.rank + liveRate * i + tr.slope * i * i / 2 })), borderDash: [2, 3], borderColor: css("--accent"), pointRadius: 0, borderWidth: 1.5 })
-  }
-  rankChart.data.datasets = [{ label: "rank", data: rankPts, borderColor: css("--accent"), backgroundColor: css("--accent") + "22", fill: true, pointRadius: 0, borderWidth: 2 }, ...projections,
-    ...marks.map((m) => ({ label: "install", data: [{ x: m, y: 0 }, { x: m, y: Math.max(...rankPts.map((p) => p.y), 1) }], borderColor: css("--line"), borderWidth: 1, pointRadius: 0 }))]
-  rankChart.update()
-  document.getElementById("rankNote").textContent = rankPts.length < 3
-    ? "Rank history starts 2026-11-16 morning, when the 5-minute log began recording it; it fills in from here. Dashed lines project the next 24 hours."
-    : `Dashed: next 24 h at today's rate; dotted: if rank/h keeps rising as over the last 6 h (${tr ? (tr.slope >= 0 ? "+" : "") + fmt(tr.slope, 1) + " rank/h per hour" : "not enough data yet"}). Grey verticals are installs.`
+  const stat = (k, i) => ({ label: k, data: rows.filter((r) => r.skills?.[k] != null).map((r) => ({ x: r.ts, y: r.skills[k] })), borderColor: PAL[i], pointRadius: 0, borderWidth: k === "hacking" ? 2.5 : 1.5 })
+  const top = Math.max(GATE.level, ...rows.map((r) => Math.max(...Object.values(r.skills || { a: 0 }))))
+  levelChart.data.datasets = [stat("hacking", 1), stat("strength", 0), stat("defense", 2), stat("dexterity", 3), stat("agility", 4),
+    ...(rows.length ? [{ label: "850", data: [{ x: rows[0].ts, y: GATE.level }, { x: now, y: GATE.level }], borderColor: css("--muted"), borderDash: [5, 4], pointRadius: 0, borderWidth: 1 }] : []),
+    ...marks.map((m) => ({ label: "install", data: [{ x: m, y: 0 }, { x: m, y: top }], borderColor: css("--line"), borderWidth: 1, pointRadius: 0 }))]
+  levelChart.options.plugins.legend.labels.filter = (item) => item.text !== "install"
+  levelChart.update()
 
   // ---- route panel
-  const next = bb.nextBlackOp
+  const cell = (have, need, money) => `${money ? "$" + fmt(have) : fmt(have, 0)} / ${money ? "$" + fmt(need, 0) : fmt(need, 0)} ${have >= need ? '<span class="ok">✓</span>' : ""}${barHtml(have / need)}`
   const routeRows = [
-    ["Next black op", next ? `${esc(next.name)}` : "–"],
-    ["Needs rank", next ? fmt(next.rank, 1) : "–"],
-    ["Rank gap", next ? (bb.rank >= next.rank ? `<span class="ok">ready</span>` : fmt(next.rank - bb.rank, 1)) : "–"],
-    ["Time to it", next && bb.rank < next.rank && liveRate > 0 ? dur((next.rank - bb.rank) / liveRate) : "–"],
-    ["Daedalus rank", fmt(bb.daedalusRank ?? DAEDALUS, 0)],
-    ["Progress", `${((bb.rank || 0) / DAEDALUS * 100).toFixed(2)}%`],
-    ["Finish (today's rate)", isFinite(etaFlat) ? dayClock(now + etaFlat * 3.6e6) + " · " + dur(etaFlat) : "–"],
-    ["Finish (if growth holds)", etaTrend ? dayClock(now + etaTrend * 3.6e6) + " · " + dur(etaTrend) : "needs ~1 h of history"],
-    ["Skill points banked", fmt(bb.skillPoints, 0)],
-    ["City chaos", `${fmt(bb.cityChaos, 1)} (${esc(bb.city || "–")})`],
+    ["Hacking", cell(sk.hacking ?? 0, GATE.level)],
+    ["Strength", cell(sk.strength ?? 0, GATE.level)], ["Defense", cell(sk.defense ?? 0, GATE.level)],
+    ["Dexterity", cell(sk.dexterity ?? 0, GATE.level)], ["Agility", cell(sk.agility ?? 0, GATE.level)],
+    ["Installed augs", cell(installed, GATE.augs)], ["Cash", cell(cash ?? 0, GATE.cash, true)],
   ]
   document.getElementById("route").innerHTML = `<table>${routeRows.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join("")}</table>
-    <div class="note">Operation Daedalus ends the BitNode. The scripts never start it; you decide.</div>`
+    <div class="note">Then: Covenant sleeves ($10t, $100t, $1q, $10q, $100q for the 4th to 8th; we own ${nSleeves}) and sleeve memory. Run ${dur(runH)} old.
+    Advisor: ${esc(advice.reason || "–")}</div>`
 
-  // ---- rate chart
-  rateChart.data.datasets = [{ label: "rank/h", data: rates, borderColor: css("--accent"), pointRadius: 0, borderWidth: 2 }]
-  rateChart.update()
+  // ---- cash
+  cashChart.data.datasets = [{ label: "cash", data: rows.filter((r) => r.money > 0).map((r) => ({ x: r.ts, y: r.money })), borderColor: css("--accent"), backgroundColor: css("--accent") + "22", fill: true, pointRadius: 0, borderWidth: 2 },
+    ...marks.map((m) => ({ label: "install", data: [{ x: m, y: 1 }, { x: m, y: Math.max(...rows.map((r) => r.money || 1)) }], borderColor: css("--line"), borderWidth: 1, pointRadius: 0 }))]
+  cashChart.options.scales.y.ticks = { callback: (v) => "$" + fmt(v, 0) }
+  cashChart.update()
 
-  // ---- sleeve odds chart
-  const n = Math.max(0, ...rows.map((r) => r.sleeveBest?.length || 0))
-  oddsChart.data.datasets = [...Array.from({ length: n }, (_, i) => ({ label: `S${i}`, data: rows.filter((r) => r.sleeveBest?.[i] != null).map((r) => ({ x: r.ts, y: r.sleeveBest[i] })),
-    borderColor: SLEEVE_COLORS[i % 7], pointRadius: 0, borderWidth: 1.8 })),
-    ...(rows.length ? [{ label: "0.8 bar", data: [{ x: rows[0].ts, y: 0.8 }, { x: now, y: 0.8 }], borderColor: css("--muted"), borderDash: [4, 4], pointRadius: 0, borderWidth: 1 }] : [])]
-  oddsChart.update()
+  // ---- faction rep this cycle
+  const cyc = rows.filter((r) => r.resetAt === last.resetAt)
+  const facs = [...new Set(cyc.flatMap((r) => Object.keys(r.factionRep || {})))]
+    .sort((a, b) => (last.factionRep?.[b] || 0) - (last.factionRep?.[a] || 0)).slice(0, 7)
+  repChart.data.datasets = facs.map((f, i) => ({ label: f, data: cyc.filter((r) => r.factionRep?.[f] != null).map((r) => ({ x: r.ts, y: r.factionRep[f] })), borderColor: PAL[i % 7], pointRadius: 0, borderWidth: 1.8 }))
+  repChart.options.scales.y.ticks = { callback: (v) => fmt(v, 0) }
+  repChart.update()
 
-  // ---- sleeves table
-  const ss = live.sleeve?.sleeves || [], sc = bb.sleeveContracts?.sleeves || [], buyer = live.sleeve_buyer || {}
-  document.getElementById("sleeves").innerHTML = `<table><tr><th>Sleeve</th><th>Doing</th><th>Best contract odds</th><th>Status</th></tr>${ss.map((s) => {
-    const odds = Object.entries(sc.find((r) => r.index === s.index)?.contracts || {}).sort((a, b) => b[1].chance[0] - a[1].chance[0])[0]
-    return `<tr><td><span class="dot" style="background:${SLEEVE_COLORS[s.index % 7]}"></span>${s.index}</td><td>${esc(s.current)}</td>
-      <td>${odds ? `${esc(odds[0])} ${Math.round(odds[1].chance[0] * 100)}–${Math.round(odds[1].chance[1] * 100)}%` : "–"}</td>
-      <td class="${s.error ? "bad" : "ok"}">${s.error ? esc(s.error) : "ok"}</td></tr>` }).join("")}</table>
-    <div class="note">Augmentation buyer: ${esc(buyer.action?.kind === "save" ? buyer.action.reason : buyer.action?.kind || "–")} · cycle phase ${esc(buyer.cyclePhase || "–")} · last batch ${(buyer.purchases || []).filter((p) => p.kind === "aug").slice(-1).map((p) => `${dayClock(p.ts)} S${p.sleeve} (${(p.names || [p.name]).length} augs)`)[0] || "none yet"}</div>`
-
-  // ---- earnings per hour by source (this cycle)
-  const cyc = rows.filter((r) => r.earned && r.resetAt === rows.at(-1)?.resetAt)
-  const sources = [...new Set(cyc.flatMap((r) => Object.keys(r.earned)))]
-  const palette = ["--s1", "--s2", "--s3", "--s4", "--s5", "--s6", "--s7"].map(css)
-  earnChart.data.datasets = sources.map((src, i) => ({ label: src, fill: true, borderColor: palette[i % 7], backgroundColor: palette[i % 7] + "55", pointRadius: 0, borderWidth: 1,
-    data: cyc.slice(6).map((r, j) => { const a = cyc[j], h = (r.ts - a.ts) / 3.6e6; return { x: r.ts, y: h > 0 ? Math.max(0, ((r.earned[src] || 0) - (a.earned[src] || 0)) / h) : 0 } }) }))
+  // ---- earnings and spending (this cycle)
+  earnChart.data.datasets = perHourSeries(cyc.filter((r) => r.earned), "earned")
   earnChart.options.scales.y.ticks = { callback: (v) => "$" + fmt(v, 0) }
   earnChart.update()
-
-  // ---- spending per hour by category (this cycle): the negative money sources, shown as positive.
-  // The game nets sleeve augmentation costs into "sleeves" income, so they show there, not here.
-  const cycS = rows.filter((r) => r.spent && r.resetAt === rows.at(-1)?.resetAt)
-  const cats = [...new Set(cycS.flatMap((r) => Object.keys(r.spent)))]
-  spendChart.data.datasets = cats.map((cat, i) => ({ label: cat.replace("_expenses", ""), fill: true, borderColor: palette[(i + 3) % 7], backgroundColor: palette[(i + 3) % 7] + "55", pointRadius: 0, borderWidth: 1,
-    data: cycS.slice(6).map((r, j) => { const a = cycS[j], h = (r.ts - a.ts) / 3.6e6; return { x: r.ts, y: h > 0 ? Math.max(0, ((r.spent[cat] || 0) - (a.spent[cat] || 0)) / h) : 0 } }) }))
+  spendChart.data.datasets = perHourSeries(cyc.filter((r) => r.spent), "spent")
   spendChart.options.scales.y.ticks = { callback: (v) => "$" + fmt(v, 0) }
   spendChart.update()
 
-  // ---- events
-  document.getElementById("events").innerHTML = (live.events || []).slice().reverse().map((l) => {
-    const m = /^(\S+)\s(.*)$/.exec(l); if (!m) return ""
-    const cls = /error|refused/i.test(m[2]) ? "bad" : /Black Operations|joined|skill/i.test(m[2]) ? "ok" : ""
-    return `<div><span style="color:var(--muted)">${clock(m[1])}</span> <span class="${cls}">${esc(m[2])}</span></div>` }).join("")
+  // ---- sleeves
+  const buyer = live.sleeve_buyer || {}
+  const playerRow = `<tr><td><span class="dot" style="background:var(--ink)"></span>player</td><td>${esc(pa.decision?.action === "faction" ? `FACTION:${pa.decision.faction}:${pa.decision.workType}` : (last.work ? `${last.work.type}${last.work.faction ? ":" + last.work.faction : ""}` : "–"))}</td><td colspan="2">${esc(pa.decision?.reason || last.reason || "")}</td></tr>`
+  document.getElementById("sleeves").innerHTML = `<table><tr><th>Who</th><th>Doing</th><th>Shock · sync</th><th>Why</th></tr>${playerRow}${sleeves.map((s) =>
+    `<tr><td><span class="dot" style="background:${PAL[s.index % 7]}"></span>S${s.index}</td><td>${esc(s.current)}</td>
+      <td>${Math.round(s.shock)} · ${Math.round(s.sync)}</td><td class="${s.error ? "bad" : ""}">${esc(s.error || s.reason || "")}</td></tr>`).join("")}</table>
+    <div class="note">Sleeve augmentations: ${esc(buyer.action?.kind === "save" ? buyer.action.reason : buyer.action?.kind || "–")} · cycle phase ${esc(buyer.cyclePhase || "–")} ·
+    available $${fmt(buyer.augTotals?.all?.cost)} for ${buyer.augTotals?.all?.count ?? "–"} · last batch ${(buyer.purchases || []).filter((p) => p.kind === "aug" && p.ts > (rows[0]?.ts || 0)).slice(-1).map((p) => `${dayClock(p.ts)} S${p.sleeve}`)[0] || "none this run"}</div>`
 
-  document.getElementById("updated").textContent = `updated ${clock(now)} · ${rows.length} samples since ${dayClock(runStart)}`
+  // ---- gang and grafting
+  const g = live.gang || {}, graft = live.graft
+  const gangRows = [
+    ["Gang", `${esc(g.gang?.faction || last.gang?.faction || "–")} · ${esc(g.gangObjective || "–")} mode`],
+    ["Respect", `${fmt(gangLive.respect ?? last.respect, 1)}`],
+    ["Gang faction rep", fmt(last.factionRep?.[readiness.gangFaction || "Slum Snakes"], 1)],
+    ["Power", `${fmt(g.power?.ours, 0)} vs strongest rival ${fmt(g.power?.strongestRival, 0)} (territory off)`],
+  ]
+  document.getElementById("gang").innerHTML = `<table>${gangRows.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join("")}</table>`
+
+  // ---- grafting
+  const probe = await fetch("/api/grafting").then((r) => r.json()).catch(() => null)
+  const rowsG = Object.entries(probe?.price || {}).filter(([, p]) => p.graftPrice).sort((a, b) => a[1].graftPrice - b[1].graftPrice)
+  document.getElementById("graftAugs").innerHTML = graft
+    ? `<table><tr><th>Mode</th><td>${esc(graft.mode || "–")}</td></tr><tr><th>Pick</th><td>${esc(graft.decision?.name || graft.aug || "none")}</td></tr>
+       <tr><th>Blocked by</th><td>${esc((graft.blocked || []).join(", ") || "–")}</td></tr><tr><th>Entropy</th><td>${graft.entropy ?? 0} stacks (each costs 2% of every multiplier)</td></tr></table>`
+    : `<table><tr><th>Augmentation</th><th>Graft price</th><th>Time</th><th>Prerequisites</th><th>Cash covers</th></tr>${rowsG.map(([n, p]) => {
+        const pre = probe.stats?.[n]?.prereq || []
+        return `<tr><td>${esc(n)}</td><td>$${fmt(p.graftPrice)}</td><td>${dur(p.graftTimeMs / 3.6e6)}</td><td>${pre.length ? esc(pre.join(", ")) : "none"}</td>
+          <td>${(cash || 0) >= p.graftPrice ? '<span class="ok">yes</span>' : Math.round((cash || 0) / p.graftPrice * 100) + "%"}</td></tr>` }).join("")}</table>
+       <div class="note">Live prices and times from the read-only probe (${probe ? dayClock(probe.ts) : "–"}; intelligence ${probe?.player?.intelligence ?? "–"}). A graft costs 3x the augmentation's base price,
+       skips the faction's 1.9x climb, takes effect at once and counts as installed, but takes the player's time and adds 2% entropy. The controller's live picks replace this table once it runs.</div>`
+
+  // ---- the plan's steps (docs/grafting-plan.md section 5)
+  const STEPS = [["G1", "Read-only probe of prices and times", "done"], ["G2–G4", "Decision logic and 26 tests", "done"], ["G3", "Catalog scan script", "next"],
+    ["G5", "Controller in dry mode (logs what it would graft)", "next"], ["G6", "Safeguards: nothing interrupts a graft", ""], ["G7", "First real graft, supervised", ""],
+    ["G8", "Allocator shadow", ""], ["G9", "Metrics and this page", ""], ["G10", "Covenant combat set", ""]]
+  const auto = graft ? { G3: "done", G5: graft.mode === "dry" ? "running" : "done" } : {}
+  document.getElementById("graftPlan").innerHTML = `<table>${STEPS.map(([k, v, st]) => { const st2 = auto[k] || st
+    return `<tr><th>${k}</th><td>${esc(v)}</td><td class="${st2 === "done" ? "ok" : st2 ? "warn" : ""}">${st2 || ""}</td></tr>` }).join("")}</table>
+    <div class="note">Plan: docs/grafting-plan.md. Nothing grafts until the dry run has been reviewed.</div>`
+
+  document.getElementById("updated").innerHTML = `updated ${clock(now)} · ${rows.length} samples this run · <a href="/bn6">BN6 page</a>`
 }
 
 async function refreshOpps() {

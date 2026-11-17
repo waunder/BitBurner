@@ -26,7 +26,8 @@ import bb_remote  # noqa: E402
 PAGE = ROOT / "tools" / "run_page" / "index.html"
 METRICS = ROOT / "runtime" / "metrics_log.txt"
 LIVE_FILES = ["bladeburner_status.json", "sleeve_status.json", "sleeve_buyer_status.json",
-              "augmentation_readiness.json", "gang_status.json", "capital_status.json", "money_status.json"]
+              "augmentation_readiness.json", "gang_status.json", "capital_status.json", "money_status.json",
+              "player_activity_status.json", "graft_status.json"]
 LIVE_TTL_S = 10
 _live_cache = {"at": 0, "data": None}
 _metrics_cache = {"mtime": None, "rows": None}
@@ -59,6 +60,8 @@ def compact(row):
         "sleeves": [s.get("task") for s in (row.get("sleeves") or [])] or None,
         "respect": gang.get("respect") if isinstance(gang, dict) else None,
         "augReady": row.get("augReady"), "sleeveAugs": row.get("sleeveAugs"),
+        "factionRep": row.get("factionRep"), "mcpAvgRate": row.get("mcpAvgRate"), "homeRam": row.get("homeRam"),
+        "gangMembers": gang.get("members") if isinstance(gang, dict) else None, "work": row.get("work"),
     }
 
 
@@ -92,7 +95,7 @@ def live():
         readiness = data.get("augmentation_readiness")
         if isinstance(readiness, dict):  # trim the large offer lists
             data["augmentation_readiness"] = {k: readiness.get(k) for k in
-                ("ts", "money", "installedCount", "queuedCount", "queued", "resetAt", "advice", "installPlan", "candidate")}
+                ("ts", "money", "installedCount", "queuedCount", "queued", "resetAt", "advice", "installPlan", "candidate", "factionRep", "gangFaction")}
         events = ctl_get("bladeburner_events.txt") or ""
         data["events"] = events.strip().split("\n")[-40:]
         data["serverTs"] = int(now * 1000)
@@ -115,6 +118,8 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if path in ("/", "/index.html"):
                 self._send(200, PAGE.read_bytes(), "text/html; charset=utf-8")
+            elif path in ("/bn6", "/bn6.html"):  # the BN6 run 1 page, kept for a return to BN6/BN7
+                self._send(200, (PAGE.parent / "bn6.html").read_bytes(), "text/html; charset=utf-8")
             elif path == "/api/quit" and self.client_address[0] == "127.0.0.1":
                 # A newly started copy asks the old one to stop, so only one ever serves the port.
                 self._send(200, "bye", "text/plain")
@@ -126,6 +131,10 @@ class Handler(BaseHTTPRequestHandler):
                 self._send(200, json.dumps(metrics_rows()), "application/json")
             elif path == "/api/live":
                 self._send(200, json.dumps(live()), "application/json")
+            elif path == "/api/grafting":
+                # G1 probe results (runtime/graft_probe_g1.json); the live controller status comes with /api/live.
+                probe = ROOT / "runtime" / "graft_probe_g1.json"
+                self._send(200, probe.read_text(encoding="utf-8") if probe.exists() else "null", "application/json")
             elif path == "/api/opportunities":
                 self._send(200, (ROOT / "docs" / "opportunities.md").read_text(encoding="utf-8"), "text/plain; charset=utf-8")
             else:

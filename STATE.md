@@ -1,3 +1,5 @@
+**2026-11-16 19:15 PC clock: BN6 end ready, Ken notified.** Operation Centurion and Vindictus won; next black op is Operation Daedalus, rank 606k of 400k, odds 0.52-0.55 (`daedalusReady` true). Desktop notification sent 19:16 (no phone push: Remote Control off). Backup `saves/bn6-daedalus-ready-20261116-1915.json.gz`. Daedalus not attempted (`allowDaedalus` false); waiting for Ken to choose the next BitNode. No install pending.
+
 **2026-11-14 ~17:15 PC clock: BN6 run 1 entered by Ken (Bladeburners). Profile bn6 active, fresh-node bootstrap running.** BN10 run 3 complete (SF10.3). Plan: `docs/bn6-plan.md`. The BN10 sections below are history until this file is rewritten for BN6.
 
 **2026-11-14 11:23 PC clock: BN10 World Daemon ready, Ken notified** (hacking 6024 of 6000 at 11:23:15; daemon present, not rooted; desktop notification sent, no phone push because Remote Control was off). Waiting for Ken to choose the next BitNode. Do not root, backdoor, hack or destroy it.
@@ -122,14 +124,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-16 17:15 (scheduled run): black-op bar lowered to 0.35; Operation Centurion started 17:17; no install.**
-Live (probe 17:15): BitNode 6, $12.7b, hacking 210, combat 570/482/617/517, karma -359k, home 1TB, 22 augs + NeuroFlux, 0 queued.
-Bladeburner rank 468k (past Daedalus's 400k), 151k rank/h. Annihilus and Ultron won; Centurion, Vindictus, Daedalus remain.
-Black-op odds now gate the end: Centurion 0.41-0.48, Vindictus 0.39-0.45, Daedalus 0.36-0.42. The 0.6 bar had held Centurion back since ~16:30.
-Measured (13 samples, 16:15-17:15): rep/h Bladeburners 960k, Slum Snakes 437k; hackExp/h 4.72m; karma/h -1.79k; cash/h 6.35b; MCP avg 2.33m/s. Trend: Bladeburner rep accelerating, rest steady.
-Audit 0 of 32 flagged; nothing died.
-Advisor wait (BrachiBlades in 34m); decision wait: an install would cut combat stats and black-op odds for ~2h. Bladeburner success augs before Daedalus are part of Ken's end call.
-End check: no daemon; next black op Centurion; daedalusReady false.
+**2026-11-16 19:15 (scheduled run): BN6 end ready, Ken notified; no install, no game changes.**
+Live (probes 19:15): BitNode 6, $15.4b, hacking 220, combat 621/525/660/553, karma -366k, home 1TB, 7 sleeves, 22 augs + NeuroFlux, 0 queued.
+Bladeburner rank 606k (468k at 17:15), 201k rank/h over 1h; Centurion and Vindictus both won since 17:15. Next black op Operation Daedalus at 0.52-0.55 odds.
+Controller keeps doing Assassination (`allowDaedalus` false); all 21 other black ops done.
+Measured (13 samples, 18:15-19:15): rep/h Bladeburners 1.29m, Slum Snakes 116k; hackExp/h 5.41m; karma/h -3.97k; cash/h 491m; MCP avg 3.34m/s. Trend: all STEADY.
+Advisor verdict install; decision no install: the node is done and Daedalus is Ken's call. Any extra Bladeburner augs before Daedalus are part of that call.
+End check: no World Daemon (Red Pill not installed); Daedalus ready. Save backup taken and validated.
 
 ## Next
 

@@ -34,7 +34,7 @@ const FILES = [SELF, MANAGER, REALLOC, LAB_WORKER, "dnet_lab_logic.js", "dnet_li
 // Bitburner's RAM accounting is driven by which ns-touching functions get
 // called, not by which plain constants a leaf script happens to export, and
 // nothing else in-game imports this file, so this costs nothing live.
-export const MAX_ACTIVE_MANAGERS = 4 // 2026-11-17 live experiment on the PC (Ken: "just a game, test where we are"); was 2
+export const MAX_ACTIVE_MANAGERS = 8 // stage 2 of the 2026-11-17 push; 2026-11-17 live experiment on the PC (Ken: "just a game, test where we are"); was 2
 export const MANAGER_REGISTRY_FILE = "dnet_manager_registry.json"
 export const MANAGER_SHARD_PREFIX = "dnet_manager_active_"
 export const MANAGER_STALE_MS = 2 * 60 * 1000
@@ -44,6 +44,10 @@ export const MANAGER_STALE_MS = 2 * 60 * 1000
 // propagation burst itself, which turned out to be the actual driver of
 // two live freezes tonight.
 export const MAX_SPREAD_PER_PASS = 2 // 2026-11-17 live experiment; was 1
+// Levels below the darkweb gateway (level 0) whose managers may spread on recrawl (2026-11-17 push,
+// Ken: "see how far you can push darknet's contribution"). A crawler is still terminal when it lands
+// (--no-spread); only a settled manager's recrawl spreads, so growth is one level per ~90s recrawl.
+export const MAX_SPREAD_LEVEL = 2
 
 function safeHost(host) {
   let safe = ""
@@ -194,6 +198,7 @@ export async function main(ns) {
     ["quiet", false],
     ["no-spread", false],
     ["generation", ""],
+    ["level", 0],
   ])
   const host = ns.getHostname()
   const creds = readCreds(ns)
@@ -214,7 +219,7 @@ export async function main(ns) {
     // doc comment in dnet_lib.js), and there's no reason to pay that cost for
     // neighbors this pass won't spread to anyway. Anything left unprocessed
     // gets picked up on this host's next recrawl (dnet_manager.js).
-    const spreadLimit = flags["no-spread"] ? 0 : MAX_SPREAD_PER_PASS
+    const spreadLimit = flags["no-spread"] || Number(flags.level) >= MAX_SPREAD_LEVEL ? 0 : MAX_SPREAD_PER_PASS
     if (summary.deployed >= spreadLimit) break
     const known = creds[target]
     const result = await acquireSession(ns, target, known, flags.brute)
@@ -264,7 +269,7 @@ export async function main(ns) {
       }
       // Children are terminal: the one authorised expansion is not allowed
       // to recursively create another propagation wave.
-      const pid = ns.exec(SELF, target, { preventDuplicates: true }, "--no-spread", "--generation", flags.generation)
+      const pid = ns.exec(SELF, target, { preventDuplicates: true }, "--no-spread", "--generation", flags.generation, "--level", Number(flags.level) + 1)
       if (pid !== 0) summary.deployed++
       else {
         summary.failed++
@@ -315,9 +320,9 @@ export async function main(ns) {
 
   // spawn replaces this process after releasing its RAM, so the manager is
   // never forced to coexist with the transient crawler during handoff.
-  ns.spawn(MANAGER, { threads: 1, preventDuplicates: true, spawnDelay: 100 }, "--generation", flags.generation)
+  ns.spawn(MANAGER, { threads: 1, preventDuplicates: true, spawnDelay: 100 }, "--generation", flags.generation, "--level", Number(flags.level))
 }
 
 export function autocomplete() {
-  return ["--brute", "--quiet", "--no-spread", "--generation"]
+  return ["--brute", "--quiet", "--no-spread", "--generation", "--level"]
 }

@@ -28,6 +28,7 @@ LIVE_FILES = ["bladeburner_status.json", "sleeve_status.json", "sleeve_buyer_sta
 LIVE_TTL_S = 10
 _live_cache = {"at": 0, "data": None}
 _metrics_cache = {"mtime": None, "rows": None}
+BOOT = int(time.time())
 
 
 def ctl_get(name):
@@ -112,6 +113,9 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if path in ("/", "/index.html"):
                 self._send(200, PAGE.read_bytes(), "text/html; charset=utf-8")
+            elif path == "/api/version":
+                # Changes when the server restarts or the page file changes; open pages reload on a change.
+                self._send(200, json.dumps({"version": f"{BOOT}-{PAGE.stat().st_mtime_ns}"}), "application/json")
             elif path == "/api/metrics":
                 self._send(200, json.dumps(metrics_rows()), "application/json")
             elif path == "/api/live":

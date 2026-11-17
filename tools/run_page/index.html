@@ -270,6 +270,16 @@ async function refreshOpps() {
 
 refresh(); refreshOpps()
 setInterval(refresh, 30000); setInterval(refreshOpps, 300000)
+// Reload when the server restarts or the page changes, so an open tab always shows the current page.
+let pageVersion = null
+async function checkVersion() {
+  try {
+    const { version } = await fetch("/api/version").then((r) => r.json())
+    if (pageVersion && version !== pageVersion) location.reload()
+    pageVersion = version
+  } catch { /* server down: keep trying */ }
+}
+checkVersion(); setInterval(checkVersion, 15000)
 </script>
 </body>
 </html>

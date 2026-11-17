@@ -6,7 +6,7 @@ The 2-hourly check reviews this once per cycle (first run after an install).
 
 ## 2026-11-17 07:15 check (BN10 run 4, hour 9.5)
 
-- **Gang faction rep is ~44/h against 3.5m needed.** Evidence: `gang_status.json` 07:16 respect 3.3k, gain 0.149/cycle, faction rep 56 (rep = respect/75), 7 of 8 members on Mug People at combat ~38, 11 ascensions at x1.25. Gain: the gang faction sells most augs; at this rate it never gets there without member growth. Status: open. Next: compare respect/h over the next two checks; if it stays under ~10k/h, A/B more members on Train Combat (stats feed every later respect task) before respect tasks.
+- **Gang faction rep is ~44/h against 3.5m needed.** Evidence: `gang_status.json` 07:16 respect 3.3k, gain 0.149/cycle, faction rep 56 (rep = respect/75), 7 of 8 members on Mug People at combat ~38, 11 ascensions at x1.25. Gain: the gang faction sells most augs; at this rate it never gets there without member growth. Status: open; 09:15 reading respect 7.05k (~1.9k/h), faction rep 158 (~58/h). Next: compare respect/h over the next two checks; if it stays under ~10k/h, A/B more members on Train Combat (stats feed every later respect task) before respect tasks.
 - **MCP home-reserve fix confirmed.** Evidence: MCP 3x60m 764>9.22k>105k/s, 57k/s now (24 samples). Status: done.
 
 ## 2026-11-17 05:15 check (BN10 run 4, hour 7.5)

@@ -126,13 +126,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-17 07:15 (scheduled run, BN10 run 4 hour 9.5): steady, no changes made; MCP fix confirmed.**
-Live (probe 07:15): BitNode 10, $483m, hacking 102, combat 91/91/93/93, karma -56.4k, home 512GB, 0 installed, 0 queued. Gang Slum Snakes 8 members, respect 3.3k, faction rep 56 (~44/h), reputation mode. Sleeves shock 7.0: 4 faction rep, rest money crime. Player on Tian Di Hui rep for ADR-V1 (9 min).
-Measured (24 samples, 120 min): rep/h Tian Di Hui 2.71k, Tetrads 2.23k, CyberSec 787, Slum Snakes 30; hackExp/h 99k; karma/h -1.13k; cash/h 191m; MCP 57k/s now, avg 12.7k/s. Trend: cash, MCP (764>9.22k>105k) and hackExp ACCELERATING; the 05:20 MCP home-reserve fix worked.
-Audit: 1 of 32 flagged (cct_watcher, no safe worker; harmless). Spenders: capital_manager saving for home 1TB (homeDemand 0.58); sleeve_buyer blocked (shock, late phase; known); gang gear blocked by payback (correct).
-Gap: gang faction rep ~44/h against 3.5m needed (members at combat ~38, 7 on Mug People); recorded in docs/opportunities.md.
-Advisor verdict wait (ADR-V1 in 9m); no install (nothing owned or queued). End check: no Red Pill, no World Daemon.
-Next run: first aug purchases and install timing; gang respect growth; sleeves reach shock 0 about 11:00.
+**2026-11-17 09:15 (scheduled run, BN10 run 4 hour 11.5): steady, no changes made.**
+Live (probe 09:15): BitNode 10, $1.10b, hacking 111, combat 97/97/98/98, karma -58.6k, home 512GB, 0 installed, 0 queued. Player on CyberSec rep for BitWire. Sleeves shock 3.2 (zero ~11:00): 3 faction rep, 4 Mug.
+Gang Slum Snakes 8 members, respect 7.05k (~1.9k/h), faction rep 158 (~58/h of 3.5m needed), reputation mode.
+Measured (24 samples, 120 min): rep/h Tian Di Hui 3.8k, CyberSec 1.69k, Tetrads 1.64k, Slum Snakes 52; hackExp/h 121k; cash/h 337m; MCP 57k/s now, avg 35.6k/s. Trend: cash, MCP, hackExp STEADY.
+Audit: 1 of 32 flagged (cct_watcher, harmless). Spenders all saving: capital_manager (late phase), sleeve_buyer (late, not Covenant), gang (payback rule).
+Advisor verdict wait (BitWire in 26m; 8 augs ready by rep, $4.25b vs $1.1b cash); no install. End check: no Red Pill, no World Daemon.
+Next run (11:15): sleeve shock 0, decide first-cycle sleeve augs; second gang respect reading, then A/B Train Combat if still slow.
 
 ## Daedalus ready (2026-11-16 21:35)
 

@@ -12,6 +12,7 @@ const bcTime = (ms) => new Date(ms - 7 * 3600000).toISOString().slice(11, 19)
  * Usage: run run_report.js
  */
 
+const WHITE = "\u001b[1;37m", GREEN = "\u001b[1;32m", RESET = "\u001b[0m"
 const FILE = "run_report.json"
 const POLL_MS = 10000
 const DEFAULT_X = 380
@@ -30,14 +31,15 @@ function readReport(ns) {
 }
 
 function render(report, now) {
-  if (!report || !Array.isArray(report.lines)) return ["No run report yet (run_report.json missing or invalid)."]
+  if (!report || !Array.isArray(report.lines)) return [WHITE + "No run report yet (run_report.json missing or invalid)." + RESET]
   const posted = Number.isFinite(report.ts) ? bcTime(report.ts) : "unknown time"
   const overdue = Number.isFinite(report.ts) && now - report.ts > OVERDUE_MS ? "  ⚠ overdue" : ""
+  // Same scheme as the other tail windows (Ken, 2026-11-17): bright white headings, bright green content.
   return [
-    `${report.title || "Run report"}`,
-    `Posted ${posted} (${Number.isFinite(report.ts) ? age(now - report.ts) : "?"} ago)${overdue}`,
-    "─".repeat(40),
-    ...report.lines.map(String),
+    WHITE + `${report.title || "Run report"}` + RESET,
+    WHITE + `Posted ${posted} (${Number.isFinite(report.ts) ? age(now - report.ts) : "?"} ago)${overdue}` + RESET,
+    WHITE + "─".repeat(40) + RESET,
+    ...report.lines.map((line) => GREEN + String(line) + RESET),
   ]
 }
 

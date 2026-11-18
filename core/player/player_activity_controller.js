@@ -8,7 +8,7 @@
  *
  * @param {NS} ns
  */
-import { actionKey, choosePlayerActivity, pickCrime, shouldFocus, shouldSwitch } from "./player_activity_logic.js"
+import { actionKey, choosePlayerActivity, externalPlayerOwner, pickCrime, shouldFocus, shouldSwitch } from "./player_activity_logic.js"
 
 const CONFIG = "player_activity_config.json"
 const STATUS = "player_activity_status.json"
@@ -160,9 +160,13 @@ export async function main(ns) {
     const crimeNeeded = cashShort || (Number.isFinite(karmaTarget) && Number(player.karma) > karmaTarget)
     const crimeCandidate = capability.available && (crimeNeeded || String(config.override).toLowerCase() === "crime")
       ? bestCrime(ns, cashShort) : null
-    // bladeburner.js owns the player while its status is fresh and says so (BN6).
-    const blade = readJson(ns, "bladeburner_status.json", null)
-    const externalOwner = blade?.ownsPlayer && now - Number(blade.ts || 0) < 2 * 60 * 1000 ? "bladeburner.js" : null
+    // bladeburner.js (BN6) or graft_controller.js owns the player while its status is fresh and says so;
+    // a GRAFTING work type holds regardless, since other work would cancel the graft.
+    const externalOwner = externalPlayerOwner({
+      now, currentWork,
+      graft: readJson(ns, "graft_status.json", null),
+      blade: readJson(ns, "bladeburner_status.json", null),
+    })
     const decision = choosePlayerActivity({ player, nextGate: gateState.gate, augmentation, crimeCandidate, config, bitNode: capability.currentNode, externalOwner })
     if (decision.action === "faction" && capability.available) decision.workType = offeredWorkType(ns, decision.faction, decision.workType)
     const key = actionKey(decision)

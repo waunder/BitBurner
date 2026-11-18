@@ -189,6 +189,18 @@ test("new purchases since the last pass, from each spender, once", () => {
   assert.equal(newPurchases({ capital, sleeve, gang }, first.seen).records.length, 0)
 })
 
+test("gang purchases list: every update's items count once, not just the latest update's", () => {
+  const gang = { ts: 90, purchases: [
+    { ts: 50, ok: true, item: "NUKE Rootkit", member: "a", cost: 3 },
+    { ts: 70, ok: true, item: "Katana", member: "b", cost: 4 },
+    { ts: 90, ok: true, item: "Glock 18C", member: "a", cost: 5 },
+  ], equipment: { boughtItems: [{ item: "Glock 18C", member: "a", cost: 5 }] } }
+  const first = newPurchases({ gang }, { gang: 50 })
+  assert.deepEqual(first.records.map((r) => [r.item, r.cost]), [["Katana", 4], ["Glock 18C", 5]])
+  assert.equal(first.seen.gang, 90)
+  assert.equal(newPurchases({ gang }, first.seen).records.length, 0)
+})
+
 test("requests: cloud upgrades add the RAM step; gang gear returns cash by payback", () => {
   const env = { homeRam: 65536, homeDemand: 0.9, utilization: 0.8, totalCloudRam: 64, mcpRate: 1e6, hours: 2,
     gangCategory: (n) => (n === "Neuralstimulator" ? "augmentation" : "rootkit"), gangPayback: () => 600 }

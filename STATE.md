@@ -132,13 +132,14 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-17 17:15 (scheduled run, BN10 run 4 hour 19.5): install 1 done at 17:42, 7 augs, 0 -> 7.**
-Pre-install (probe 17:15): BitNode 10, $4.49b, hacking 128, combat 113, karma -68.0k, home 512GB, 0 installed, 0 queued.
-Set `priorityAugs` (bn10 player_activity_config) to the seven planned (PRC, HemoRecirculator, S.N.A, ADR-V1, BitWire, Neurotrainer I, Wired Reflexes); PRC rep reached 50k at 17:41; cash had fallen to $4.26b (gang spending, ~$0.45b in 25 min); all seven still fit ($4.20b). Backup `saves/pre-install-bn10run4-1-20261117-1742.json.gz` (validated). `aug_install.js --install`: 7 bought, 0 failed, installed. `priorityAugs` cleared again.
-After: every resident restarted by startup; `graft_controller.js` (dry) restarted by hand. Sleeve buyer early phase, saving (cash ~$1m).
-Measured (25 samples, 120 min, pre-install): rep/h CyberSec 14.6k, Tian Di Hui 14.6k, Tetrads 5.43k; hackExp/h 141k; cash/h 534m; MCP avg 81.7k/s. Trend: all STEADY.
-Audit: 1 of 33 flagged (cct_watcher, harmless). Advisor verdict wait (PRC 26m); decision install once PRC was in (as planned). End check: no Red Pill, no World Daemon.
-**Next run (19:15): cycle review (first run after an install): `metrics.py cycles`; confirm sleeve_buyer bought early-phase sleeve augs (augTotals read 0 at 17:47, check why); gang respect rebuild; grafting G6 (skipped this run for the install).**
+**2026-11-17 19:15 (scheduled run, BN10 run 4, cycle 2 at 1.5h): grafting G6 and gang spend attribution shipped; no install.**
+Live (probe 19:14): BitNode 10, $114m, hacking 113, str/def 66, dex/agi 85, karma -70.7k, home 512GB, 7 installed, 0 queued. All residents running.
+Measured (18 samples, 90 min): rep/h Slum Snakes 18.2k, Tian Di Hui 1.69k, CyberSec 371; hackExp/h 227k; cash/h 19.1m; MCP avg 12.5k/s (rebuilding). Trend n/a (cycle under 3h).
+Cycle review: cycle 1 earned $6.45b (241m/h), gang rep 849; cycle 2 has 29.2k gang rep in 1.5h (11 members, Terrorism). Gang rep now outruns cash (docs/opportunities.md).
+Spenders this cycle: sleeve buyer 21 augs $148m; cloud 50 upgrades $450m; gang gear blocked by its rules. Audit 0 of 33 flagged.
+Shipped: G6 player hold and install refusal while a graft runs; gang `purchases` log for the allocator; aug_install.js -2.4GB. 649/649 tests.
+Advisor verdict wait (gang 4h minimum); decision wait. End check: no Red Pill, no World Daemon.
+**Next run (21:15): gang money vs rep (compare `projectedMoneyRate` with cash/h); confirm attributed gang rows in `allocator_shadow_log.txt`; grafting G7 needs cash ($10b+) and a line to Ken first; then the home-RAM necessity rule.**
 
 ## Daedalus ready (2026-11-16 21:35)
 

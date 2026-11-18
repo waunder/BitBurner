@@ -244,24 +244,26 @@ function pct(v) {
 // ---------------------------------------------------------------- allocator.js helpers (shadow)
 
 /**
- * Purchases the spenders recorded since `seen` ({ capital, sleeve, gang } timestamps). capital and
- * sleeve keep a purchases list; the gang controller reports the items bought on its latest update,
- * stamped with its status ts. Returns { records, seen }.
+ * Purchases the spenders recorded since `seen` ({ capital, sleeve, gang } timestamps). Each keeps a
+ * purchases list; an older gang controller without one reports only the items bought on its latest
+ * update (stamped with its status ts), so updates between two allocator passes were missed.
+ * Returns { records, seen }.
  */
 export function newPurchases({ capital = null, sleeve = null, gang = null } = {}, seen = {}) {
   const records = []
   const next = { ...seen }
-  for (const [source, status] of [["capital", capital], ["sleeve", sleeve]]) {
+  const gangLog = Array.isArray(gang?.purchases)
+  for (const [source, status] of [["capital", capital], ["sleeve", sleeve], ...(gangLog ? [["gang", gang]] : [])]) {
     const list = Array.isArray(status?.purchases) ? status.purchases : []
     for (const p of list) {
       const ok = p?.ok ?? p?.outcome?.ok
       if (!ok || !(Number(p.ts) > (Number(seen[source]) || 0))) continue
-      records.push({ source, ts: Number(p.ts), item: p.name ?? p.host ?? p.kind, cost: Number(p.cost) || 0, raw: p })
+      records.push({ source, ts: Number(p.ts), item: p.name ?? p.item ?? p.host ?? p.kind, cost: Number(p.cost) || 0, raw: p })
       next[source] = Math.max(Number(next[source]) || 0, Number(p.ts))
     }
   }
   const items = Array.isArray(gang?.equipment?.boughtItems) ? gang.equipment.boughtItems : []
-  if (Number(gang?.ts) > (Number(seen.gang) || 0)) {
+  if (!gangLog && Number(gang?.ts) > (Number(seen.gang) || 0)) {
     for (const b of items) records.push({ source: "gang", ts: Number(gang.ts), item: b.item, cost: Number(b.cost) || 0, raw: b })
     next.gang = Number(gang.ts)
   }

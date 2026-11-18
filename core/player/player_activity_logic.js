@@ -95,6 +95,19 @@ function covenantTraining({ player, augmentation, config, bitNode }) {
   return null
 }
 
+/**
+ * Which other controller holds the player's one action slot, or null. A graft in progress
+ * (work type GRAFTING) always holds, even without a status file: starting other work cancels it
+ * with no refund. Status files count only while fresh (written within freshMs).
+ */
+export function externalPlayerOwner({ now, currentWork = null, graft = null, blade = null, freshMs = 2 * 60 * 1000 } = {}) {
+  if (currentWork?.type === "GRAFTING") return "graft_controller.js (graft in progress)"
+  const fresh = (status) => Boolean(status?.ownsPlayer) && Number(now) - Number(status.ts || 0) < freshMs
+  if (fresh(graft)) return "graft_controller.js"
+  if (fresh(blade)) return "bladeburner.js"
+  return null
+}
+
 export function choosePlayerActivity({ player = {}, nextGate = null, augmentation = null, crimeCandidate = null, config = {}, bitNode = null, externalOwner = null } = {}) {
   const override = String(config.override || "auto").toLowerCase()
   if (config.enabled === false || override === "manual") {

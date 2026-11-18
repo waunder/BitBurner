@@ -70,10 +70,10 @@ export function donationFor(gap, repMult) {
 
 /**
  * Donations that lift each donating faction to the dearest rep any of its unowned offers needs,
- * while the total stays within `share` of cash. Cheapest factions first.
+ * while the total stays within `cashShare` of cash. Cheapest factions first.
  * @param {string[]} donating factions whose favor allows donations
  */
-export function donationPlan(offers, owned, money, repMult, donating, share = 0.25) {
+export function donationPlan(offers, owned, money, repMult, donating, cashShare = 0.25) {
   const held = new Set(owned)
   // Many augmentations are sold by several factions. One rep-ready anywhere needs no gift, and
   // one sold by several donating factions is bought through the one with the smallest rep gap,
@@ -92,7 +92,7 @@ export function donationPlan(offers, owned, money, repMult, donating, share = 0.
     // be the limit, and a donation that leaves nothing affordable only burns cash.
     need.set(offer.faction, { rep: offer.rep, target: Math.max(seen?.target || 0, offer.repRequired), cheapest: Math.min(seen?.cheapest ?? Infinity, offer.price) })
   }
-  let budget = money * share
+  let budget = money * cashShare
   let cash = money
   const plan = []
   for (const [faction, { rep, target, cheapest }] of [...need].sort((a, b) => (a[1].target - a[1].rep) - (b[1].target - b[1].rep))) {

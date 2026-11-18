@@ -217,7 +217,7 @@ need no game at all and can be written while the run proceeds.
 | G3 | **Done 2026-11-17 13:17** (98 rows; see G3 results). `graft_scan.js` + `buildCatalog(list, stats, prereqs)` in logic. Writes `graft_catalog.json` (name, base, graftPrice, hours, stats, prereqs, special excluded). Tests use a 15-aug fixture from the source. | Catalog has 90+ rows live; `graft_logic` ranks SPTN-97 first among no-prereq combat augs. | Day 1 (home RAM 64GB+, or two chunks on 32GB) |
 | G4 | `planGraft({...})` and `installBlocked` in logic. Gates in order: enabled, API/city/money, prereqs, entropy cap, price cap, install-plan reserve, karma delay, cheaper-in-faction, rate vs alternative, cooldown. Tests: one per gate (including "no graft in stage 1", "queued ladder does not change graft price", "prereq chain picks Bionic Spine before Graphene Bionic Spine"). | Each refusal returns a named reason; a good candidate returns the aug with its numbers. | Offline, before the gang exists |
 | G5 | **Live (dry) 2026-11-17 15:18** (see G5 results). `graft_controller.js` in **dry** mode: reads files, writes `graft_status.json` and `graft_log.txt` with the decision, never travels or grafts. Not in `startup`. Add to `profiles/bn10/profile.json`, rebuild the manifest, document in `docs/processes.md`. | Runs at about 13.5GB with a one-line status; decisions look sensible against what the player is doing, for one full cycle. | Day 1 to 2, once home RAM is 64GB+ |
-| G6 | Handover and interlock: the `externalOwner` and `GRAFTING` hold in `player_activity_controller.js`/`player_activity_logic.js`; `installBlocked` in `aug_install.js`. Tests for hold, for a stale status file (ignored after 2 minutes), and for the install refusal. | Tests green; with a hand-written fresh `graft_status.json` the controller reports "player owned by graft_controller.js". | Before G7 |
+| G6 | **Done 2026-11-17 19:17** (see G6 results). Handover and interlock: the `externalOwner` and `GRAFTING` hold in `player_activity_controller.js`/`player_activity_logic.js`; `installBlocked` in `aug_install.js`. Tests for hold, for a stale status file (ignored after 2 minutes), and for the install refusal. | Tests green; with a hand-written fresh `graft_status.json` the controller reports "player owned by graft_controller.js". | Before G7 |
 | G7 | **First live graft, supervised.** Set `dry: false`, `allow: ["Bionic Spine"]` or the first net-positive cheap aug, `focus: false`. Measure: predicted vs actual hours, price charged, entropy 0 to 1, city trip, player activity restored within 2 polls, the aug in `getOwnedAugmentations`, installed count up by one. Repeat once with `focus: true` to see whether the Work page blocks `tools/game_terminal.py`. | One logged round trip, all of the above recorded; no cancelled work. | Stage 2 or 3, with $1b+ spare |
 | G8 | Allocator shadow: add kind `graft_augs` to `KINDS` (lasting), `valueV` in `valuePurchase`, `COUNTER_OF` for the `augmentations` counter, and read `graft_status.json` for pending verdicts. Tests in `valuation_logic.test.js`. | `spend_grants.json` shows a verdict for the pending graft; flag `shadow` only. | With the allocator already running |
 | G9 | Metrics and display: `metrics.py` `PURCHASE_SOURCES`, `run_page.py` `LIVE_FILES`, `PULL_FILES` in `tools/bb_remote.py`, one HUD or run-page line. | Graft rows appear in the ledger; effect-after numbers logged. | After G7 |
@@ -227,6 +227,21 @@ need no game at all and can be written while the run proceeds.
 the Covenant join, cash/h and MCP $/s before and after each graft (payback), entropy stacks and the % loss they imply, player hours
 by activity (grafting versus crime, gym, faction work, from `player_activity_status.json` history), and installs avoided or shrunk.
 A graft "paid" if its measured income/rep/time gain beat 0.097 v of entropy plus its cash and hours; otherwise tighten `minNetValue`.
+
+## G6 results (2026-11-17 19:17, BN10 run 4)
+
+Pure `externalPlayerOwner({now, currentWork, graft, blade})` in player_activity_logic.js: a GRAFTING work type always
+holds (no file needed); a `graft_status.json` or `bladeburner_status.json` with `ownsPlayer` holds only while under
+2 minutes old. `player_activity_controller.js` uses it in place of the Bladeburner-only check. `aug_install.js --install`
+reads `graft_status.json` and, while `installBlocked` is true, still buys but does not install (`installRefused` in
+`aug_install_status.json`). Tests: hold, stale file ignored, GRAFTING without a file, decision text "player owned by
+graft_controller.js" (player_activity_logic.test.js; `installBlocked` already tested in graft_logic.test.js). 649/649 pass.
+Pushed; player_activity_controller.js restarted 19:17 and kept its Algorithms work (dry status has `ownsPlayer` false).
+The live hand-written-file check was not run: the dry controller rewrites `graft_status.json` every 60 s, and the unit
+test covers the same path. Also renamed `share` to `cashShare` in aug_install_logic.js (the game billed it as `share()`):
+aug_install.js 52.65GB -> 50.25GB. The dry controller saw the whole cycle 1 to the install with no pick (cash held for
+the batch); after the install, blocked by prereqs, price cap and net value with $139m cash. Next: G7, the first live
+graft, needs a reviewed dry run and a line to Ken first; cash ($10b+ for SPTN-97) is the real gate.
 
 ## G5 results (dry controller live, 2026-11-17 15:18, BN10 run 4)
 

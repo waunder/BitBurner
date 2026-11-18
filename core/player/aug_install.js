@@ -1,4 +1,5 @@
 import { NEUROFLUX, donationFor, donationPlan, fluxSeller, nextHomeUpgrade, planPurchases } from "./aug_install_logic.js"
+import { installBlocked } from "./graft_logic.js"
 
 /** Buys what rep and cash allow, then installs on --install. See docs/processes.md. @param {NS} ns */
 export async function main(ns) {
@@ -41,6 +42,15 @@ export async function main(ns) {
   }
   ns.write("aug_install_status.json", JSON.stringify(status), "w")
   ns.tprint(JSON.stringify(status))
+  // Installing cancels a graft in progress with no refund: buy, but refuse to install while one runs.
+  let graftStatus = null
+  try { graftStatus = JSON.parse(ns.read("graft_status.json") || "null") } catch { graftStatus = null }
+  if (flags.install && !flags.dry && installBlocked(graftStatus, Date.now())) {
+    status.installRefused = "graft in progress (graft_status.json ownsPlayer); rerun --install after it finishes"
+    ns.write("aug_install_status.json", JSON.stringify(status), "w")
+    ns.tprint(`aug_install: install refused: ${status.installRefused}`)
+    return
+  }
   if (flags.install && !flags.dry) {
     for (let upgrades = 0; upgrades < 100; upgrades++) {
       const pick = nextHomeUpgrade(s.getUpgradeHomeRamCost(), s.getUpgradeHomeCoresCost(), ns.getPlayer().money)

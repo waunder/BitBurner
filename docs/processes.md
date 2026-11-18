@@ -399,9 +399,11 @@ unlocks (matters when prices are x5, as in BN10; in BN15 cash was never the limi
 With `--install` it then spends the rest on home RAM and cores, cheapest first, because
 both survive an install (only a BitNode reset clears them), then installs and restarts
 through `startup.js`. Back up the save first.
+While a fresh `graft_status.json` (under 2 minutes old) says `ownsPlayer`, `--install` still buys but
+refuses to install (installing cancels a graft with no refund) and records `installRefused` (grafting G6, 2026-11-17).
 
 - **Args:** `--dry` plans only; `--install` installs after buying.
-- **Reads:** `player_activity_config.json` (`priorityAugs`, `priorityOnly`).
+- **Reads:** `player_activity_config.json` (`priorityAugs`, `priorityOnly`), `graft_status.json` (install interlock).
 - **Writes:** `aug_install_status.json` (plan, bought, failed, money before, final home RAM and cores).
 - **Test:** `node --test aug_install_logic.test.js`
 
@@ -1667,6 +1669,10 @@ only a status older than 5 minutes reads "controller status stale".
   BitNode 4. Without it, the controller records the current node/level and
   leaves the player's current work untouched.
 
+
+Holds the player (decision `hold`, "player owned by ...") while another controller owns it: `externalPlayerOwner`
+in player_activity_logic.js returns graft_controller.js when the work type is GRAFTING or a fresh `graft_status.json` says
+`ownsPlayer`, and bladeburner.js for a fresh `bladeburner_status.json` with `ownsPlayer` (fresh = under 2 minutes; grafting G6, 2026-11-17).
 ### `sleeve_controller.js` and `sleeve_logic.js`
 
 BN10 work package A. Lives in `profiles/sleeves/sleeve/`, the shared sleeves layer, so it ships with every profile that extends it (bn10, bn6)

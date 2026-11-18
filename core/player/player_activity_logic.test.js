@@ -1,6 +1,21 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { actionKey, choosePlayerActivity, covenantGymHours, expForLevel, pickCrime, shouldFocus, shouldSwitch } from "./player_activity_logic.js"
+import { actionKey, choosePlayerActivity, covenantGymHours, expForLevel, externalPlayerOwner, pickCrime, shouldFocus, shouldSwitch } from "./player_activity_logic.js"
+
+test("externalPlayerOwner: a fresh graft status or GRAFTING work holds; stale files do not", () => {
+  const now = 1_000_000_000
+  assert.equal(externalPlayerOwner({ now }), null)
+  assert.equal(externalPlayerOwner({ now, graft: { ownsPlayer: true, ts: now - 30_000 } }), "graft_controller.js")
+  assert.equal(externalPlayerOwner({ now, graft: { ownsPlayer: true, ts: now - 130_000 } }), null)
+  assert.equal(externalPlayerOwner({ now, graft: { ownsPlayer: false, ts: now } }), null)
+  assert.match(externalPlayerOwner({ now, currentWork: { type: "GRAFTING" } }), /graft in progress/)
+  assert.match(externalPlayerOwner({ now, currentWork: { type: "GRAFTING" }, graft: { ownsPlayer: false, ts: 0 } }), /graft/)
+  assert.equal(externalPlayerOwner({ now, blade: { ownsPlayer: true, ts: now - 1000 } }), "bladeburner.js")
+  assert.equal(externalPlayerOwner({ now, blade: { ownsPlayer: true, ts: now - 200_000 } }), null)
+  const d = choosePlayerActivity({ player, config: { enabled: true }, externalOwner: externalPlayerOwner({ now, graft: { ownsPlayer: true, ts: now } }) })
+  assert.equal(d.action, "hold")
+  assert.match(d.reason, /player owned by graft_controller\.js/)
+})
 
 const player = { skills: { hacking: 400, strength: 1, defense: 1, dexterity: 1, agility: 1 } }
 

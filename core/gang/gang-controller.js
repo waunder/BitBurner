@@ -133,6 +133,8 @@ export async function main(ns) {
   let factionRepReadAt = 0;
   let lastAscension = null;
   let ascensionCount = 0; // since this script started (an install restarts it), so roughly per cycle
+  // Every purchase, so the allocator sees items bought on updates between its passes (latest 100).
+  let purchaseLog = [];
   while (true) {
     while (ns.gang.canRecruitMember()) ns.gang.recruitMember(`operator-${Date.now()}`);
 
@@ -380,6 +382,7 @@ export async function main(ns) {
       bought = purchaseAllowed && ns.gang.purchaseEquipment(bestEquipment.member, bestEquipment.item) ? bestEquipment : null;
       if (bought) boughtItems = [bought];
     }
+    if (boughtItems.length) purchaseLog = [...purchaseLog, ...boughtItems.map((b) => ({ ts: statusNow, ok: true, item: b.item, member: b.member, cost: b.cost }))].slice(-100);
     const gear = members.map((m) => ({ member: m.name, ...gearCounts(m) }));
     const gearTotals = { rootkits: gear.reduce((s, g) => s + g.rootkits, 0), augs: gear.reduce((s, g) => s + g.augs, 0),
       rootkitsPossible: members.length * GANG_ROOTKITS.length };
@@ -412,7 +415,7 @@ export async function main(ns) {
         sourceMasterEnabled: C.equipmentMasterEnabled, purchaseAllowed, blockedReason,
         candidate: bestEquipment, cashBudget },
       equipment: { enabled: C.equipmentMasterEnabled && capitalPolicy.allowEquipmentPurchases, allowed: reputationGear ? boughtItems.length > 0 : purchaseAllowed, nextItem, bestEquipment, bought, boughtItems,
-        cashBudget, maxPaybackSeconds: C.equipmentMaxPaybackSeconds } };
+        cashBudget, maxPaybackSeconds: C.equipmentMaxPaybackSeconds }, purchases: purchaseLog };
     ns.write(C.statusFile, JSON.stringify(status), "w");
     await ns.gang.nextUpdate();
   }

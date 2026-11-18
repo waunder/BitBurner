@@ -60,6 +60,7 @@ export async function main(ns) {
   }
   open()
   let shownTs = readReport(ns)?.ts
+  let sizedTs = null
   while (true) {
     const report = readReport(ns)
     // Closing the window leaves the script running; a new report reopens it.
@@ -70,9 +71,20 @@ export async function main(ns) {
     const lines = render(report, Date.now())
     ns.clearLog()
     for (const line of lines) ns.print(line)
-    const styles = ns.ui.getStyles?.() || {}
-    const lineHeight = (styles.tailFontSize || 14) * (styles.lineHeight || 1.2)
-    ns.ui.resizeTail(WIDTH, Math.ceil((lines.length + 1) * lineHeight) + 40)
+    // Size once per report, counting wrapped rows, and never below a size the reader set
+    // (Ken, 2026-11-17: it was too short and snapped back within 10 s of a manual resize).
+    if (sizedTs !== report?.ts) {
+      sizedTs = report?.ts
+      const styles = ns.ui.getStyles?.() || {}
+      const font = styles.tailFontSize || 14
+      const lineHeight = font * (styles.lineHeight || 1.2)
+      const tail = ns.self()?.tailProperties
+      const width = Math.max(WIDTH, Number(tail?.width) || 0)
+      const perRow = Math.max(20, Math.floor((width - 40) / (font * 0.6)))
+      const rows = lines.reduce((n, line) => n + Math.max(1, Math.ceil(line.replace(/\u001b\[[0-9;]*m/g, "").length / perRow)), 0)
+      const height = Math.max(Math.ceil((rows + 2) * lineHeight) + 60, Number(tail?.height) || 0)
+      ns.ui.resizeTail(width, height)
+    }
     ns.ui.renderTail()
     await saveTailPosition(ns, "run_report.js")
     await ns.sleep(POLL_MS)

@@ -94,7 +94,13 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
   Its first pass granted all 13 sleeve aug batches bought after install 4 (early phase, no batch reserve). Next:
   judge it this cycle, then R2 (the gang's reserveInstallPlan is a local stand-in for its batch reserve).
 
-## Installs this run (BN6 run 1)
+## Installs BN10 run 4
+
+| # | When (PC clock) | Bought | Installed after |
+|---|---|---|---|
+| 1 | 2026-11-17 17:42 | 7 (Power Recirculation Core, HemoRecirculator from Tetrads; S.N.A, ADR-V1 Pheromone Gene, Wired Reflexes from Tian Di Hui; BitWire, Neurotrainer I from CyberSec; ~$4.20b, `priorityAugs` + `priorityOnly`); no NeuroFlux. Backup saves/pre-install-bn10run4-1-20261117-1742.json.gz | 0 -> 7 |
+
+## Installs BN6 run 1 (history)
 
 | # | When (PC clock) | Bought | Installed after |
 |---|---|---|---|
@@ -126,14 +132,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-17 15:15 (scheduled run, BN10 run 4 hour 17.5): grafting G5 dry controller live; install planned ~17:45; no install.**
-Live (probe 15:15): BitNode 10, $3.39b, hacking 125, combat 110, karma -65.5k, home 512GB, 0 installed, 0 queued. Player on Tetrads rep for Power Recirculation Core (36.8k of 50k). Sleeves shock 0, none idle.
-Gang 9 members, respect 15.4k, wanted cleanup (penalty 0.976); faction rep 583 of 3.5m.
-Grafting G5: `graft_controller.js` dry, 2.1GB, running (not startup); first decision: no pick (price cap, install-plan reserve). 647/647 tests. Next G6.
-Measured (24 samples, 120 min): rep/h Tetrads 5.26k, Tian Di Hui 1.94k; hackExp/h 145k; cash/h 515m; MCP 116k/s now, avg 72.2k/s. Trend: all STEADY.
-Audit: 1 of 32 flagged (cct_watcher, harmless). Spenders saving for the batch (correct).
-Advisor verdict wait (PRC in 2.5h). Decision wait, but not the advisor's batch: install PRC + HemoRecirculator + S.N.A + ADR-V1 + Wired Reflexes (~$2.63b, value ~0.47; the advisor plan has two value-0 augs). End check: no Red Pill, no World Daemon.
-**Next run (17:15): set player_activity_config `priorityAugs` to those five plus Neurotrainer I and BitWire (Ken session 16:20: both rep-ready, value 0.067 and 0.049, above ADR-V1 and Wired Reflexes; all seven cost ~$4.20b dearest first with the 1.9x climb vs ~$4.5b cash expected at 17:45; if cash is short, drop Wired Reflexes, then BitWire) (priorityOnly true), back up, install once PRC rep is in (~17:45; poll in short steps), then sleeve augs at once.**
+**2026-11-17 17:15 (scheduled run, BN10 run 4 hour 19.5): install 1 done at 17:42, 7 augs, 0 -> 7.**
+Pre-install (probe 17:15): BitNode 10, $4.49b, hacking 128, combat 113, karma -68.0k, home 512GB, 0 installed, 0 queued.
+Set `priorityAugs` (bn10 player_activity_config) to the seven planned (PRC, HemoRecirculator, S.N.A, ADR-V1, BitWire, Neurotrainer I, Wired Reflexes); PRC rep reached 50k at 17:41; cash had fallen to $4.26b (gang spending, ~$0.45b in 25 min); all seven still fit ($4.20b). Backup `saves/pre-install-bn10run4-1-20261117-1742.json.gz` (validated). `aug_install.js --install`: 7 bought, 0 failed, installed. `priorityAugs` cleared again.
+After: every resident restarted by startup; `graft_controller.js` (dry) restarted by hand. Sleeve buyer early phase, saving (cash ~$1m).
+Measured (25 samples, 120 min, pre-install): rep/h CyberSec 14.6k, Tian Di Hui 14.6k, Tetrads 5.43k; hackExp/h 141k; cash/h 534m; MCP avg 81.7k/s. Trend: all STEADY.
+Audit: 1 of 33 flagged (cct_watcher, harmless). Advisor verdict wait (PRC 26m); decision install once PRC was in (as planned). End check: no Red Pill, no World Daemon.
+**Next run (19:15): cycle review (first run after an install): `metrics.py cycles`; confirm sleeve_buyer bought early-phase sleeve augs (augTotals read 0 at 17:47, check why); gang respect rebuild; grafting G6 (skipped this run for the install).**
 
 ## Daedalus ready (2026-11-16 21:35)
 

@@ -136,14 +136,14 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-18 05:15 (scheduled run, BN10 run 4): install 3 at 05:15 (5 Slum Snakes augs + NeuroFlux x2, 12 -> 17); grafting live path built, still dry.**
-Live before install (probe 05:14): BitNode 10, $4.19b, hacking 157, str/def 167/165, dex/agi 145, karma -84.7k, home 512GB. Gang Slum Snakes rep 3.53m (covers all).
-Measured (25 samples, 03:10-05:10): rep/h Slum Snakes 954k, Tetrads 13.1k; hackExp/h 751k; cash/h 351m; MCP avg 277k/s. Trend: cash STEADY, MCP STEADY, Slum Snakes rep ACCELERATING.
-Audit 0 of 33. Gang gear $2.37b after the 03:17 reserve fix, above the plan; allocator shadow agreed on 89%.
-Advisor install (batch 0.38, $3.63b); decision install: no sixth aug fits the ladder, the next valuable augs are $14-30b away. After: all residents up; sleeve_buyer early phase, aug hold $45m.
-Grafting: G7 code done (`liveGraftStep`, 12.1GB, 659/659), config `dry: true`; first live graft waits for $1b+ spare above the batch.
+**2026-11-18 07:15 (scheduled run, BN10 run 4): cycle review after install 3; allocator false "sleeves" spend fixed; no install.**
+Live (probe 07:14): BitNode 10, $328m, hacking 161, str/def/dex/agi 151/143/134/128, karma -86.8k, home 512GB, 17 installed, 0 queued. Gang Slum Snakes rep 3.27m of 3.5m, 12 members.
+Measured (23 samples, 05:20-07:10): rep/h Slum Snakes 1.66m, Tetrads 12.3k; hackExp/h 846k; cash/h 144m; MCP avg 147k/s. Trend n/a (cycle under 3h).
+Cycle review: cycle 3 5.99h, rebuild 4.31h; cycle 4 rebuilt in 1.82h, Slum Snakes 3.11m in 1.9h. Early phase worked: sleeve augs $1.0b (29 batches, the hold), cloud $1.0b+, gang gear $0.19b. Audit 0 of 33; all 7 sleeves working.
+Fault fixed: allocator read sleeve crime income (net sleeves counter falling) as an install reset and logged the whole counter every pass ($45b of false "unattributed" rows this cycle). Pushed, allocator restarted 07:17; clean since.
+Advisor wait (gang minimum 2h; plan $0.22b); decision wait. Grafting stays dry (no $1b spare).
 End check: 17 installed, no Red Pill, no World Daemon. Not notified.
-**Next run (07:15): cycle review for cycle 3 vs 2 (`metrics.py cycles`); confirm sleeve aug buys in the early phase; Covenant needs 20 installed (3 more), 850 stats, $75b: weigh aug count in the next batch.**
+**Next run (09:15): install judgement (Covenant needs 3 more installed: weigh count); gang leaves reputation mode at 3.5m; gang_gear to "valued" needs gang-controller to read grants (build).**
 
 ## Daedalus ready (2026-11-16 21:35)
 

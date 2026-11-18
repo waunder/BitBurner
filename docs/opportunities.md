@@ -4,6 +4,13 @@ Running list kept by Claude on its own initiative (Ken, 2026-11-16: "exercise in
 for flaws and opportunities"). Newest first. Each entry: finding, evidence, expected gain, status.
 The 2-hourly check reviews this once per cycle (first run after an install).
 
+## 2026-11-18 07:15 check (BN10 run 4, cycle review after install 3)
+
+- **Allocator logged sleeve crime income as spending.** Evidence: `allocator_shadow_log.txt` cycle 4: 80 `counter`/`sleeves` rows, $45.0b "unattributed", each ~$825m and falling ~$1.8m a pass. The sleeves money counter is net (crime income minus augs); when income lowered it, `unattributed` took the drop for an install reset and logged the whole counter. Gain: a shadow log fit to judge "valued" moves (S1-S5). Status: shipped 07:17 (a drop counts as a reset only if the counter fell by over half; test assert added, 659/659); clean over two passes.
+- **Gang gear agreement, cycle 4 so far.** 103 grant ($175m), 4 sweep ($17m): 96% (cycle 3 window 89%). But `gang-controller.js` does not read `valuation_flags.json` or `spend_grants.json`, so "valued" needs code there first. Status: open; build the gang read of its grant, then flip the flag at cycle end if agreement holds.
+- **Cycle 4 early phase worked as designed.** Sleeve augs $1.0b in 29 batches (12-86 min after install; the `augHold` fix), cloud $1.0b+, rebuild 1.82h (cycle 3 4.31h). Status: done.
+- **Covenant hacking is the long pole.** `covenantHackingFactor24h` 3.9: hacking mult must rise ~x3.9 to reach 850 in a 24h cycle; combat 850 at x0.4 is also far (151 now). The 20-aug count (3 more) is the easy gate. Gain: weight hacking-mult augs in `run_target.json` value weights for the next batches. Status: open; check the weights next run.
+
 ## 2026-11-18 05:15 check (BN10 run 4, install 3)
 
 - **Gang gear vs the allocator, first window with a live reserve.** Evidence: `allocator_shadow_log.txt` gang_gear rows 03:17-05:15: 257 grant ($2.10b), 23 sweep ($0.27b); `metrics.py spend` gang_expenses $4.32b in cycle 3 ($2.37b after the 03:17 fix). The allocator would have kept $0.27b (11%) for the batch. Gain if "valued": about $0.1b/h late in a cycle. Status: open; one 2h window is thin. Judge over cycle 4 (install 3 at 05:15), then move gang_gear to "valued" if agreement stays high and sweeps are batch-relevant.

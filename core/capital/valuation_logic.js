@@ -318,7 +318,8 @@ export function unattributed(before = {}, after = {}, records = [], min = 1e6) {
   const out = {}
   for (const counter of ["servers", "sleeves", "gang_expenses", "other"]) {
     const a = -(Number(before[counter]) || 0), b = -(Number(after[counter]) || 0)
-    const spent = b >= a ? b - a : b
+    // A drop means income (sleeve crime money shares the sleeves counter) unless it fell by over half: an install reset.
+    const spent = b >= a ? b - a : (b < a / 2 ? Math.max(0, b) : 0)
     const extra = spent - (recorded[counter] || 0)
     if (extra >= min) out[counter] = extra
   }

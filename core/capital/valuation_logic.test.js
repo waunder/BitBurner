@@ -231,6 +231,8 @@ test("unattributed spending: counter deltas no record explains; an install reset
   const records = [{ kind: "home_ram", cost: 2_000_000 }, { kind: "gang_gear", cost: 1_000_000 }]
   assert.deepEqual(unattributed(before, after, records), { gang_expenses: 2_000_000 })
   assert.deepEqual(unattributed({ servers: -9e9 }, { servers: -5e6 }, []), { servers: 5e6 })
+  // Sleeve crime income lowers the net sleeves counter; that is not spending (2026-11-18: $45b of false rows).
+  assert.deepEqual(unattributed({ sleeves: -827.8e6 }, { sleeves: -826.0e6 }, []), {})
 })
 
 test("home RAM with a blocked resident is a necessity in the verdict, request and grant", () => {

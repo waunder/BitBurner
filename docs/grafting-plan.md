@@ -249,6 +249,7 @@ Waiting on Ken's go-ahead or a permission rule for `tools/bb_remote.py ctl-push`
 2026-11-18 13:20: `allow: []` still blocked live grafts ("live needs an allow list"); added `autoPick` (empty allow + autoPick
 uses the capped planner pick). Config `autoPick: true`. graft_controller.js is not in startup: restart it by hand after
 each install until G10 adds it.
+2026-11-18 14:51: first auto-picked live graft, The Black Hand ($1.65b, 1.70h predicted, rateV 0.090), after cash reached $7.58b vs a $3.79b plan; due ~16:33. Measure actual hours and hacking effect at the 17:15 check. Next code step: G8.
 
 ## G6 results (2026-11-17 19:17, BN10 run 4)
 

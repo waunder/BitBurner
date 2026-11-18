@@ -44,6 +44,9 @@ test("expected install: gang minimum, the advisor's wait, the 12h cap; none with
   assert.equal(expectedInstallHours({ advice: { verdict: "wait", next: { hours: 0.5 } }, cycleHours: 2, gang: true }), 2)
   assert.equal(expectedInstallHours({ advice: { verdict: "wait", next: { hours: 5 } }, cycleHours: 2, gang: true }), 5)
   assert.equal(expectedInstallHours({ advice: { verdict: "wait", next: { hours: 20 } }, cycleHours: 2, gang: true }), 10)
+  // 2026-11-18 15:15: BrachiBlades 7h away at 0.016/h vs cycle average 0.30/h: install comes at the 4h minimum.
+  assert.equal(expectedInstallHours({ advice: { verdict: "wait", average: 0.30, next: { hours: 7, rate: 0.016 } }, cycleHours: 2, gang: true }), 2)
+  assert.equal(expectedInstallHours({ advice: { verdict: "wait", average: 0.30, next: { hours: 5, rate: 0.4 } }, cycleHours: 2, gang: true }), 5)
   assert.equal(expectedInstallHours({ advice: { verdict: "install" }, cycleHours: 5, gang: true }), 0)
   assert.equal(expectedInstallHours({ advice: { verdict: "build" }, cycleHours: 5 }), null)
   assert.equal(expectedInstallHours({ advice: null, cycleHours: 5 }), null)

@@ -138,15 +138,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-18 13:15 (scheduled run, BN10 run 4): install 5 at 13:16; live grafting unblocked (autoPick); gang gear "valued".**
-Before install (probe 13:14): BitNode 10, $59.5b, hacking 198, str/def/dex/agi 370/307/263/360, karma -93.9k, home 512GB, 7 sleeves, 25 installed (24 + grafted Bionic Arms).
-Measured (24 samples, 11:15-13:10): rep/h Slum Snakes 532k, Tetrads 6.56k; hackExp/h 3.98m; karma/h -1.26k; cash/h 26b; MCP avg 1.24m/s. Trend: cash/h 5.43b>24.5b>27.4b ACCELERATING, MCP STEADY, hackExp/h STEADY.
-Income by source at 4.0h vs cycle 4: gang 17.7b/h (12.3b), hacking 9.09b/h (4.29b), darknet 578m/h (0, fixed 12:30), sleeves 134m/h (107m). No source fell. Audit 0 of 33.
-Install: advisor wait only for the 4h minimum (2 min), plan 5 Slum Snakes augs $51.4b, value 1.25 (cycle avg 0.32/h). Decision install at 13:16. After: $147m, hacking 1, home 1TB, all residents back, gang reputation mode (rep 134k).
-`metrics.py cycles`: cycle 5 closed 4.00h, rebuild hacking 2.23h, Slum Snakes 4.78m, +6 installed.
-Grafting: live config had `allow: []` but the code required a named allow list, so no graft could start after 12:30. Added `autoPick` (graft_logic.js, test; 660/660); config `autoPick: true`; graft_controller.js restarted (not in startup), status "no pick" (price cap at $22m), as expected early in a cycle.
-Allocator: gang_gear "valued" in game-only valuation_flags.json (cycle 5: 182/182 shadow grants agreed, $0.41b).
-End check: no Red Pill, no World Daemon. Not notified. **Next run (15:15): first auto-picked graft once cash clears the plan; watch gang grant refusals; install judgement ~17:16.**
+**2026-11-18 15:15 (scheduled run, BN10 run 4): cycle review after install 5; allocator install horizon fixed; no install.**
+Live (probe 15:14): BitNode 10, $30.1b, hacking 226, str/def/dex/agi 784/664/519/517, karma -104k, home 1TB, 7 sleeves, 30 installed, 0 queued. Player grafting The Black Hand (first auto-picked graft, $1.65b, 1.70h, 14:51 to ~16:33).
+Measured (23 samples, 13:20-15:10): rep/h Slum Snakes 2.35m, Speakers 7.83k, Tian Di Hui 7.64k, Syndicate 4.75k; hackExp/h 6.91m; karma/h -4.19k; cash/h 5.71b (net of $49b cloud and $15b sleeve augs); MCP avg 1.92m/s. Trend n/a (cycle under 3h).
+Income by source, hour 1-2 vs cycle 5: hacking 73.4b/h (4.69b), gang 19.9b/h (5.49b), darknet 1.0b/h (0), sleeves net -14.7b/h (aug buys). No source fell. Audit 0 of 33.
+Fault fixed: the allocator expected the install 7.0h out (BrachiBlades rep, 0.016 v/h vs cycle average 0.30), so its projected batch was $1.26t and it granted ~$35b of late cloud RAM (14:50-15:07) as "free cash after the projected batch". `expectedInstallHours` now skips a next aug slower than the cycle average; horizon 1.97h after restart (660/660). Still open: the cash rate it projects with reads ~224b/h (gang-controller short window) vs ~95b/h gross.
+Install: advisor wait (gang 4h minimum, ~17:16), plan 5 Slum Snakes augs $26.6b value 0.59. Agree.
+End check: no Red Pill, no World Daemon. Not notified. **Next run (17:15): install judgement; graft finishes ~16:33 (measure); G8.**
 
 ## Daedalus ready (2026-11-16 21:35)
 

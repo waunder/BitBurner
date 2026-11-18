@@ -4,6 +4,13 @@ Running list kept by Claude on its own initiative (Ken, 2026-11-16: "exercise in
 for flaws and opportunities"). Newest first. Each entry: finding, evidence, expected gain, status.
 The 2-hourly check reviews this once per cycle (first run after an install).
 
+## 2026-11-18 15:15 check (BN10 run 4, cycle review after install 5)
+
+- **Allocator install horizon followed a slow aug (fixed).** Evidence: `spend_grants.json` 15:15 `expectedInstallHours` 7.03 (BrachiBlades 0.016 v/h vs cycle average 0.30), projected $1.26t, ~$35b of cloud granted 14:50-15:07 as "free cash"; installs this run all came at the 4h minimum. Gain: late wiped spend measured against the real ~2h horizon; more cash for the batch (each ~$35b is roughly one more aug on the ladder). Status: shipped 15:18 (`expectedInstallHours`), horizon 1.97h observed.
+- **Allocator cash rate is a short-window spike.** Evidence: `observedCashRate` 62m/s (224b/h) vs measured gross ~95b/h (hacking 73b + gang 20b + darknet 1b, hour 1-2). Projected cash at install is ~2x too high, so the reserve batch is too large and "free cash" too loose. Fix idea: allocator takes the 1h `income.total` slope from metrics (or capital_manager's average), not gang-controller's window. Gain: honest reserve. Status: open, next allocator step.
+- **Cloud doubling cascade.** Evidence: 15 workers went 2TB->4TB->8TB within 8 minutes (14:59, 15:07); the allocator now reads MCP jobs at 10% of 95TB. capital_manager's demand reading lagged each doubling. Gain: avoid buying RAM that MCP cannot fill at hacking 226. Status: watch; check whether capital's `readUtilization` counts share threads as demand.
+- **Sleeve augs $15.3b in the early phase.** Evidence: `metrics.py spend` cycle 6 sleeves $14b early (cycle 5: none listed; cycle 4 $0.88b). Wiped at install. Payback unmeasured (4 sleeves on faction rep, 3 Homicide). Status: measure rep/h and karma/h per sleeve before and after the batches next cycle.
+
 ## 2026-11-18 11:15 check (BN10 run 4, cycle review after install 4)
 
 - **Graft Bionic Arms instead of grinding Tetrads rep.** Evidence: `graft_status.json` 11:14 decision Bionic Arms, $825m, 1.08h, net value 0.111 (0.103 v/h vs alternative 0.053); the player has spent cycles 3-5 on Tetrads work and is still 89k rep (3.9h) short; cash $7.96b vs plan $5.45b. Gain: the aug about 3h sooner, the player freed for the next goal, no 1.9x ladder step. Status: blocked; the live config push was refused by the session's permission check. Waiting on Ken.

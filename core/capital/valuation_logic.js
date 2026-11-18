@@ -86,7 +86,10 @@ export function expectedInstallHours({ advice = null, cycleHours = 0, gang = fal
   const verdict = advice?.verdict
   if (verdict !== "wait" && verdict !== "install") return null
   const minLeft = gang ? Math.max(0, s.gangMinCycleHours - cycleHours) : 0
-  const next = verdict === "wait" && Number(advice?.next?.hours) > 0 ? Number(advice.next.hours) : 0
+  // A next aug that earns less per hour than the cycle average is not waited for (the advisor installs
+  // instead); counting it put the install 7h out on 2026-11-18 while installs came at the 4h minimum.
+  const slow = Number.isFinite(Number(advice?.next?.rate)) && Number.isFinite(Number(advice?.average)) && Number(advice.next.rate) < Number(advice.average)
+  const next = verdict === "wait" && !slow && Number(advice?.next?.hours) > 0 ? Number(advice.next.hours) : 0
   return Math.max(0, Math.min(Math.max(minLeft, next), s.capHours - cycleHours))
 }
 

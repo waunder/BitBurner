@@ -1270,7 +1270,9 @@ targets), and whether cash or rep limits the augmentations on offer.
 - **Writes:** `money_status.json` (the panel's full view), `tail_position_money.json`.
 - **Limits:** rates show `--` until half their window has run, and reset when the panel restarts.
   The stacked share since install is only as complete as the stack status files: income from a stack run
-  that ended before the panel started counts as `other hacking`. Augmentation totals assume dearest
+  that ended before the panel started counts with the rest of hacking. That rest is labelled `MCP` while
+  `mcp_status.json` is fresh (otherwise `other hacking`); it is the game total minus the stacks, because
+  `mcp_cloud` reports no hacking of its own (its `totalHacked` is the game total, stacks included). Augmentation totals assume dearest
   first at a 1.9 price step and ignore prerequisite order. MCP RAM is the sum of `targets[].ram`.
 - **Test:** `node --test money_logic.test.js`
 

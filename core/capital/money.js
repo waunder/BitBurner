@@ -57,8 +57,11 @@ function summarize(ns, samples, now) {
   const last = samples.at(-1)
   const net = WINDOWS_MS.map((ms) => windowRate(samples, ms, (s) => s.sources.total || 0))
   const mcp = json(ns, "mcp_status.json")
-  const mcpRam = now - (mcp?.ts || 0) < STALE_MS ? (mcp.targets || []).reduce((sum, t) => sum + (t.ram || 0), 0) : 0
-  const flows = streams(samples)
+  const mcpFresh = now - (mcp?.ts || 0) < STALE_MS
+  const mcpRam = mcpFresh ? (mcp.targets || []).reduce((sum, t) => sum + (t.ram || 0), 0) : 0
+  // Hacking the stacks don't claim is MCP's while it runs. Its own totalHacked can't be used:
+  // mcp_cloud reports the game's whole hacking total since it started, stacks included.
+  const flows = streams(samples, mcpFresh ? "MCP" : "other hacking")
   const steady = (row) => row?.rates[1] ?? row?.rates[0] ?? null
   const activity = json(ns, "player_activity_status.json")
   const cash = ns.getServerMoneyAvailable("home")

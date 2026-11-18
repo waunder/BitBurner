@@ -41,15 +41,19 @@ export function windowRate(samples, ms, value) {
   return seconds * 2000 < ms ? null : (value(last) - value(first)) / seconds
 }
 
-/** Splits hacking into the stacked target and the rest, then every other game category. */
-export function streams(samples) {
+/**
+ * Splits hacking into the stacked targets and the rest, then every other game category.
+ * `restLabel` names the rest when the caller knows who earns it (money.js passes "MCP" while
+ * MCP's status is fresh: mcp_cloud reports no hacking of its own, only the game total).
+ */
+export function streams(samples, restLabel = "other hacking") {
   const last = samples.at(-1)
   const stacked = (s) => Object.values(s.stacks).reduce((sum, value) => sum + value, 0)
   const rest = (s) => Math.max(0, (s.sources.hacking || 0) - stacked(s))
   const rows = []
   const add = (key, label, value) => rows.push({ key, label, total: value(last), rates: WINDOWS_MS.map((ms) => windowRate(samples, ms, value)) })
   for (const target of Object.keys(last.stacks)) if (last.stacks[target] > 0) add(`stack:${target}`, target, (s) => s.stacks[target] || 0)
-  if (last.sources.hacking) add("rest", stacked(last) > 0 ? "other hacking" : "hacking", rest)
+  if (last.sources.hacking) add("rest", stacked(last) > 0 ? restLabel : "hacking", rest)
   for (const key of Object.keys(last.sources)) {
     if (key === "total" || key === "hacking" || !last.sources[key]) continue
     add(key, LABELS[key] || key, (s) => s.sources[key] || 0)

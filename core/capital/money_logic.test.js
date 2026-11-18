@@ -47,6 +47,11 @@ test("streams gives each stacked target its own row", () => {
   assert.deepEqual(rows.map((r) => [r.label, r.total]), [["other hacking", 60], ["a", 30], ["b", 10]])
 })
 
+test("streams names the rest of hacking when the caller knows who earns it", () => {
+  const rows = streams([{ t: 0, stacks: { a: 30 }, sources: { total: 100, hacking: 100 } }], "MCP").income
+  assert.deepEqual(rows.map((r) => [r.label, r.total]), [["MCP", 70], ["a", 30]])
+})
+
 test("streams labels plain hacking when no stack has run", () => {
   assert.deepEqual(streams([sample(0, 100, 0)]).income.map((r) => r.label), ["hacking"])
 })

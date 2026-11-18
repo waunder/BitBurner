@@ -11,7 +11,7 @@
   "maxGraftHours": 2.5,
   "maxKarmaDelayHours": 0.25,
   "allowDuringKarma": false,
-  "focus": false,
+  "focus": true,
   "cooldownMs": 600000,
   "stage": "live, agent's judgement (Ken approved 2026-11-18 12:30 after the first graft, Bionic Arms)"
 }

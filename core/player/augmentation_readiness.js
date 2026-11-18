@@ -34,7 +34,8 @@ function unique(values) {
 
 // Shadow-mode install advice (install_advisor_logic.js). `previous` is the last
 // status, read before this run overwrites it, so rep and exp rates come from two samples.
-function advise(ns, { now, player, previous, factionRep, queued, plan, candidates, gangFaction = null }) {
+// Value of an augmentation by name under run_target.json's weights, cached per pass.
+function augValuer(ns) {
   let weights = DEFAULT_WEIGHTS
   try { weights = JSON.parse(ns.read("run_target.json") || "{}").augWeights || DEFAULT_WEIGHTS } catch {}
   const statsCache = new Map()
@@ -42,6 +43,11 @@ function advise(ns, { now, player, previous, factionRep, queued, plan, candidate
     if (!statsCache.has(name)) statsCache.set(name, augValue(ns.singularity.getAugmentationStats(name), weights))
     return statsCache.get(name)
   }
+  value.weights = weights
+  return value
+}
+
+function advise(ns, { now, player, previous, factionRep, queued, plan, candidates, gangFaction = null, value = augValuer(ns) }) {
   // The player controller ranks rep targets by this value per rep (player_activity_logic.js).
   for (const item of candidates) item.value = value(item.name)
   const inBatch = new Set([...queued, ...plan.map((item) => item.name)])
@@ -93,7 +99,7 @@ function advise(ns, { now, player, previous, factionRep, queued, plan, candidate
   const covenant = hackExpPerHour ? multFactorNeeded({
     level: player.skills.hacking, exp: player.exp.hacking, target: 850, expPerHour: hackExpPerHour, cycleHours: 24,
   }) : null
-  return { ...advice, weightsFrom: weights === DEFAULT_WEIGHTS ? "default" : "run_target.json", hackExpPerHour, covenantHackingFactor24h: covenant }
+  return { ...advice, weightsFrom: value.weights === DEFAULT_WEIGHTS ? "default" : "run_target.json", hackExpPerHour, covenantHackingFactor24h: covenant }
 }
 
 function assess(ns, previous = null) {
@@ -164,6 +170,11 @@ function assess(ns, previous = null) {
     } catch {}
     const money = Number(player?.money) || 0
     const donated = withDonations(candidates, { money, repMult: Number(player?.mults?.faction_rep) || 0, donating, owned: includingQueued })
+    // Values before the plan: the by-value plan skips offers without one (2026-11-18: set only inside
+    // advise(), after planning, so planByValue returned an empty plan at $1.95b with Neurotrainer III,
+    // Combat Rib I and others affordable).
+    const value = augValuer(ns)
+    for (const item of donated.candidates) item.value = value(item.name)
     const { plan, left } = planPurchases(donated.candidates, includingQueued, donated.left, 1.9, priority, { only: priorityOnly, byValue })
     const installPlan = {
       names: plan.map((item) => item.name), cost: money - left,
@@ -171,7 +182,7 @@ function assess(ns, previous = null) {
       donations: donated.gifts.map((gift) => [gift.faction, gift.amount]),
     }
     let advice
-    try { advice = advise(ns, { now, player, previous, factionRep, queued, plan, candidates: donated.candidates, gangFaction }) } catch (error) { advice = { verdict: "error", reason: String(error?.message || error) } }
+    try { advice = advise(ns, { now, player, previous, factionRep, queued, plan, candidates: donated.candidates, gangFaction, value }) } catch (error) { advice = { verdict: "error", reason: String(error?.message || error) } }
     // After advise(), which sets each one's value. Donatable ones stay listed, marked, so the
     // player controller can see them and skip them.
     const workCandidates = donated.candidates.filter((item) => item.canWorkForRep)

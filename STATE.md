@@ -135,14 +135,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-18 01:15 (scheduled run, BN10 run 4, cycle 3 at 1.9h): cycle review; sleeve aug hold shipped; no install.**
-Live (probe 01:14): BitNode 10, $454m, hacking 125, str/def 138/132, dex/agi 115, karma -80.2k, home 512GB, 12 installed, 0 queued. Gang Slum Snakes rep 632k.
-Measured (23 samples, 23:20-01:10): rep/h Slum Snakes 300k, Tetrads 7.91k, Tian Di Hui 3.1k; hackExp/h 283k; cash/h 120m; MCP avg 19.5k/s. Trend n/a (cycle under 3h).
-Audit 0 of 33. Gap: sleeve_buyer bought 0 augs this cycle; capital's $7m cloud upgrades ($338m, 48 buys) took all early cash.
-Shipped: sleeve aug hold (`augHold` in sleeve_buyer_status.json; capital_manager keeps it from cloud buys in the early phase; policy `sleeveAugHoldMax` $150m, 0 off). 2 tests; 656/656; both restarted 01:38, late phase so hold 0.
-Advisor wait (gang minimum 2.0h); installPlan empty at this cash; allocator projects ABN + INFRARET $15.3b at ~9.9h. Decision wait (agree).
+**2026-11-18 03:15 (scheduled run, BN10 run 4, cycle 3 at 4.0h): fixed the empty by-value install plan; no install.**
+Live (probe 03:14): BitNode 10, $1.95b, hacking 146, str/def 156/154, dex/agi 134, karma -82.4k, home 512GB, 12 installed, 0 queued. Gang Slum Snakes rep 1.73m.
+Measured (24 samples, 01:15-03:10): rep/h Slum Snakes 549k, Tetrads 12.2k; hackExp/h 596k; cash/h 737m; MCP avg 173k/s. Trend: cash STEADY, MCP and hackExp ACCELERATING.
+Audit 0 of 33. Fault: readiness planned by value before values were set, so `installPlan` was always empty and the gang reserved $0 (gang gear $1.95b this cycle, B1 49%). Fixed in augmentation_readiness.js; 656/656; live 03:17: plan 5 augs $1.73b (value 0.27), gang cashBudget $19.6m.
+Advisor install (batch 0.27); decision wait to ~05:15 for Bionic Legs (~0.45 at ~$4.4b): cash-limited gain the advisor does not count.
 End check: 12 installed, no Red Pill, no World Daemon. Not notified.
-**Next run (03:15): install timing vs the by-value plan as cash builds; gang reserve while installPlan is empty; after install 3, confirm sleeve aug buys in the first 1.5h. Grafting G7 still needs $1b+ spare and Ken told first.**
+**Next run (05:15): install if the plan holds Bionic Legs or cash/h stalls (backup first; `planByValue` buys the readiness plan); after install 3, confirm sleeve aug buys in the first 1.5h. Grafting G7 still needs spare cash and Ken told first.**
 
 ## Daedalus ready (2026-11-16 21:35)
 

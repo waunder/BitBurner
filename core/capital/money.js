@@ -90,7 +90,7 @@ function buildLines(view, pos) {
   ]
   lines.push([WHITE, "spent"], ...view.spending.map((row) => [YELLOW, rateRow(row)]))
   // Inside the net "sleeves" figure above; shown here so it is visible (total this cycle only).
-  lines.push([YELLOW, columns(`sleeve augs (${view.sleeveBuys})`, "", "", money(view.sleeveSpend))])
+  lines.push([YELLOW, columns(`sleeve augs (${view.sleeveBuys})`, "", "", money(-view.sleeveSpend))])
   const { augs, yields } = view
   lines.push([WHITE, "per TB of RAM"])
   for (const { label, value } of yields) lines.push([GREEN, fit(label, `${money(value)}/s`)])

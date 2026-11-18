@@ -1,7 +1,8 @@
 import { canBuildTerritoryPower, moneyModePriority, planMoneyTasks, planReputationTasks, planTerritoryPower,
   shouldAscendMember, shouldEngageTerritoryClashes, wantedCleanupPolicy, cheapGearQualifies,
   reputationCleanupMode, withEquipment, planReputationGear, gearCounts, ascensionCooldownElapsed,
-  GANG_ROOTKITS, autoGangObjective, recruitHoldsAscension } from "./gang_logic.js";
+  GANG_ROOTKITS, autoGangObjective, recruitHoldsAscension, equipmentCategory } from "./gang_logic.js";
+import { flagsFor, grantFilter, kindOf } from "./valuation_logic.js";
 
 /**
  * Gang v2: formula-driven money or faction-reputation, wanted, and territory control.
@@ -344,6 +345,19 @@ export async function main(ns) {
         : !phaseAllowsEquipment ? `${capitalPolicy.phase} phase does not buy equipment`
           : !bestEquipment ? "no unowned equipment candidate"
             : !roiQualified ? "candidate fails payback, cash-slice, cheap-gear, or reserve limit" : null;
+    // R2 (docs/allocator-design.md): gang_gear / gang_augs flagged "valued" in valuation_flags.json obey
+    // the allocator's grant (spend_grants.json); otherwise, or with a stale grant, this script's own rules.
+    let grantRefused = [];
+    const allocatorGate = (items) => {
+      const modes = flagsFor(ns.read("valuation_flags.json"), ns.getResetInfo().lastNodeReset);
+      if (modes.gang_gear !== "valued" && modes.gang_augs !== "valued") return items;
+      let grants = null;
+      try { grants = JSON.parse(ns.read("spend_grants.json") || "null"); } catch {}
+      const tagged = items.map((i) => ({ ...i, kind: kindOf("gang", i, equipmentCategory(i.item)) }));
+      const { allowed, refused } = grantFilter(tagged, modes, grants, Date.now(), ns.getResetInfo().lastAugReset);
+      grantRefused = refused.map((r) => ({ item: r.item, member: r.member, cost: r.cost, reason: r.reason }));
+      return allowed;
+    };
     let bought = null;
     let boughtItems = [];
     let reputationGear = false;
@@ -373,20 +387,20 @@ export async function main(ns) {
         const picks = planReputationGear(repCandidates, { cash, isHacking: gang.isHacking,
           rootkitFraction: capitalPolicy.rootkitCashFraction, augFraction: capitalPolicy.gangAugCashFraction,
           ascendAt: C.ascendAt, maxPurchases: C.maxGearPurchasesPerLoop, reserve: augmentationTarget ?? 0 });
-        for (const pick of picks) {
+        for (const pick of allocatorGate(picks)) {
           if (ns.gang.purchaseEquipment(pick.member, pick.item)) boughtItems.push({ item: pick.item, member: pick.member, cost: pick.cost });
         }
         bought = boughtItems[0] || null;
       }
     } else {
-      bought = purchaseAllowed && ns.gang.purchaseEquipment(bestEquipment.member, bestEquipment.item) ? bestEquipment : null;
+      bought = purchaseAllowed && allocatorGate([bestEquipment]).length && ns.gang.purchaseEquipment(bestEquipment.member, bestEquipment.item) ? bestEquipment : null;
       if (bought) boughtItems = [bought];
     }
     if (boughtItems.length) purchaseLog = [...purchaseLog, ...boughtItems.map((b) => ({ ts: statusNow, ok: true, item: b.item, member: b.member, cost: b.cost }))].slice(-100);
     const gear = members.map((m) => ({ member: m.name, ...gearCounts(m) }));
     const gearTotals = { rootkits: gear.reduce((s, g) => s + g.rootkits, 0), augs: gear.reduce((s, g) => s + g.augs, 0),
       rootkitsPossible: members.length * GANG_ROOTKITS.length };
-    const status = { ts: statusNow, mode, gangObjective, objectiveChoice, lastAscension, ascensionCount, recruitHold, gear, gearTotals,
+    const status = { ts: statusNow, grantRefused, mode, gangObjective, objectiveChoice, lastAscension, ascensionCount, recruitHold, gear, gearTotals,
       power: { ours: gang.power, strongestRival: strongestRivalPower },
       ascendAt: C.ascendAt, factionRep: Number.isFinite(factionRep) ? factionRep : null,
       observedFactionRepRate, projectedRespectPerCycle: plans.reduce((sum, p) => sum + (p.choice?.respect || 0), 0),

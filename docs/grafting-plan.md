@@ -240,6 +240,8 @@ billed as `sleeve.travel` 4GB, renamed `needTrip`; owned augs come from readines
 Live in game from about 05:18 in dry mode: status `mode` dry, blocked by prereqs and price cap at $27m after install 3.
 To run G7: tell Ken (done in the 05:15 run report), wait for $1b+ spare above the install plan, set `dry: false`,
 `allow: ["<first pick>"]`, `focus: false`, push the config, and watch the round trip in `graft_log.txt`.
+2026-11-18 09:15: still waiting on cash. Install 4 used the money-mode cash ($29.5b against a $27.4b plan, only
+~$2b spare at the very end); controller restarted dry after the install. Expect the chance in cycle 5's money phase.
 
 ## G6 results (2026-11-17 19:17, BN10 run 4)
 

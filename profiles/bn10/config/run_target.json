@@ -1,7 +1,7 @@
 {
   "run": 4,
   "goal": "BN10 run 4 (entered 2026-11-16 ~21:48, Ken hands-off): The Covenant's 8th sleeve; sleeve memory already 100 on all 7",
-  "updated": "2026-11-17",
+  "updated": "2026-11-18",
   "gangFaction": "Slum Snakes",
   "steps": [
     {
@@ -22,7 +22,7 @@
       }
     },
     {
-      "label": "Covenant (rejoin at hacking 850 after each install)",
+      "label": "Covenant (20 augs met at install 4, 2026-11-18 09:16; rejoin at hacking 850 after each install)",
       "metrics": [
         {
           "kind": "installed",

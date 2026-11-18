@@ -221,6 +221,28 @@ export function grantFor(grants, kind, cost, now, lastAugReset = null) {
     : { ok: false, fallback: false, reason: `over grant ${fmt(grant.max)}: ${grant.reason}` }
 }
 
+/**
+ * Grant gate for a spender that buys several items in one pass (R2). An item whose kind is flagged
+ * "valued" is kept while its kind's running total stays within the allocator's grant; other kinds,
+ * and fallbacks (stale, previous-cycle or missing grants), keep the spender's own rule.
+ * @param {{kind: string, cost: number}[]} items in purchase order
+ * @param {Object<string,string>} modes flagsFor() result
+ * Returns { allowed, refused } (refused items carry `reason`).
+ */
+export function grantFilter(items = [], modes = {}, grants = null, now = Date.now(), lastAugReset = null) {
+  const spent = {}
+  const allowed = []
+  const refused = []
+  for (const item of items) {
+    if (modes?.[item.kind] !== "valued") { allowed.push(item); continue }
+    const total = (spent[item.kind] || 0) + Number(item.cost)
+    const check = grantFor(grants, item.kind, total, now, lastAugReset)
+    if (check.ok || check.fallback) { spent[item.kind] = total; allowed.push(item) }
+    else refused.push({ ...item, reason: `allocator: ${check.reason}` })
+  }
+  return { allowed, refused }
+}
+
 /** Purchase kind of a spender's record. */
 export function kindOf(source, record = {}, gangCategory = null) {
   if (source === "capital") return { tor: "tor", program: "programs", home: "home_ram", cloud: "cloud_ram", upgrade: "cloud_ram" }[record.kind] ?? null

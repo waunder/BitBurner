@@ -1374,6 +1374,11 @@ cleanup at higher wanted removes more per batch and keeps 5 to 6 members on resp
 reads live from the policy file, so it can be tuned without a restart; `gang_status.json` shows it
 as `wantedCleanup.reputationBand`. Money is not weighed in reputation mode (gang cash is negligible
 next to other income).
+Allocator grants (R2, 2026-11-18): when the game-only `valuation_flags.json` (stamped with
+`getResetInfo().lastNodeReset`) marks `gang_gear` or `gang_augs` "valued", every buy passes `grantFilter`
+(valuation_logic.js) against `spend_grants.json`: a running total per kind within the grant's `max`; a
+stale, previous-cycle or missing grant falls back to this script's own rules. Refusals are in
+`gang_status.json` `grantRefused`. With no "valued" flag nothing changes.
 Territory clash odds require at least a 90% win chance against every rival
 with territory and a territory-weighted expected chance of 90%; missing or
 invalid odds fail closed. The gang stops fighting at 99% territory. Power is

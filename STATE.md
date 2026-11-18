@@ -103,6 +103,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 1 | 2026-11-17 17:42 | 7 (Power Recirculation Core, HemoRecirculator from Tetrads; S.N.A, ADR-V1 Pheromone Gene, Wired Reflexes from Tian Di Hui; BitWire, Neurotrainer I from CyberSec; ~$4.20b, `priorityAugs` + `priorityOnly`); no NeuroFlux. Backup saves/pre-install-bn10run4-1-20261117-1742.json.gz | 0 -> 7 |
 | 2 | 2026-11-17 23:16 | 4 (Bionic Spine, Nanofiber Weave, Neurotrainer II, NutriGen Implant from Slum Snakes; ~$2.71b, value 0.54 by hand via `priorityAugs`, vs the advisor plan ADR-V2 + SmartSonar 0.14 for $3.46b) + NeuroFlux x3. Backup saves/pre-install-bn10run4-2-20261117-2318.json.gz | 7 -> 12 |
 | 3 | 2026-11-18 05:15 | 5 (CRTX42-AA Gene Modification, Neurotrainer III, Combat Rib I, Augmented Targeting I, LuminCloaking-V1 from Slum Snakes; ~$3.63b, readiness plan by value 0.38, advisor install) + NeuroFlux x2. Backup saves/pre-install-bn10run4-3-20261118-0517.json.gz | 12 -> 17 |
+| 4 | 2026-11-18 09:16 | 7 (Photosynthetic Cells, Bionic Legs, Combat Rib II, Augmented Targeting II, LuminCloaking-V2, INFRARET Enhancement, Synaptic Enhancement Implant from Slum Snakes; ~$27.4b, value 0.89, advisor plan; gang money mode paid for it) + NeuroFlux x2. Backup saves/pre-install-bn10run4-4-20261118-0920.json.gz | 17 -> 24 |
 
 ## Installs BN6 run 1 (history)
 
@@ -136,14 +137,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-18 07:15 (scheduled run, BN10 run 4): cycle review after install 3; allocator false "sleeves" spend fixed; no install.**
-Live (probe 07:14): BitNode 10, $328m, hacking 161, str/def/dex/agi 151/143/134/128, karma -86.8k, home 512GB, 17 installed, 0 queued. Gang Slum Snakes rep 3.27m of 3.5m, 12 members.
-Measured (23 samples, 05:20-07:10): rep/h Slum Snakes 1.66m, Tetrads 12.3k; hackExp/h 846k; cash/h 144m; MCP avg 147k/s. Trend n/a (cycle under 3h).
-Cycle review: cycle 3 5.99h, rebuild 4.31h; cycle 4 rebuilt in 1.82h, Slum Snakes 3.11m in 1.9h. Early phase worked: sleeve augs $1.0b (29 batches, the hold), cloud $1.0b+, gang gear $0.19b. Audit 0 of 33; all 7 sleeves working.
-Fault fixed: allocator read sleeve crime income (net sleeves counter falling) as an install reset and logged the whole counter every pass ($45b of false "unattributed" rows this cycle). Pushed, allocator restarted 07:17; clean since.
-Advisor wait (gang minimum 2h; plan $0.22b); decision wait. Grafting stays dry (no $1b spare).
-End check: 17 installed, no Red Pill, no World Daemon. Not notified.
-**Next run (09:15): install judgement (Covenant needs 3 more installed: weigh count); gang leaves reputation mode at 3.5m; gang_gear to "valued" needs gang-controller to read grants (build).**
+**2026-11-18 09:15 (scheduled run, BN10 run 4): install 4 at 09:16 (7 Slum Snakes augs + NF x2, 17 -> 24); Covenant 20-aug gate met.**
+Live (probe 09:14, before install): BitNode 10, $29.5b, hacking 183, str/def/dex/agi 173/169/152/145, karma -89.0k, home 512GB. After (09:16): $36m, hacking 1, 24 installed, 0 queued.
+Measured (24 samples, 07:15-09:10): rep/h Slum Snakes 377k, Tetrads 15.8k; hackExp/h 1.87m; cash/h 15.2b (gang money mode since ~07:30); MCP avg 502k/s. Trend: cash/h ACCELERATING; Slum Snakes rep DECELERATING (gang left reputation mode at 3.5m, as designed).
+Install: advisor wait only for the 4h gang minimum (passed 09:15:47); batch value 0.89, $27.4b. Decision install. Backup saves/pre-install-bn10run4-4-20261118-0920.json.gz. Cycle 4: 3.99h, rebuild 1.82h, Slum Snakes 4.13m.
+Shipped: gang-controller.js obeys allocator grants when `gang_gear`/`gang_augs` are "valued" (`grantFilter`, 660/660); flag not flipped yet. Audit 0 of 33; all 7 sleeves on Mug; graft_controller restarted (dry).
+End check: 24 installed, no Red Pill, no World Daemon. Not notified.
+**Next run (11:15): new-cycle `metrics.py cycles`; gang back to 3.5m rep then money mode; first live graft (G7) once $1b+ is spare above the plan; flip `gang_gear` to "valued" after a clean cycle 5 shadow.**
 
 ## Daedalus ready (2026-11-16 21:35)
 

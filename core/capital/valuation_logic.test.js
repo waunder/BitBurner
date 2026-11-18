@@ -2,7 +2,7 @@ import test from "node:test"
 import assert from "node:assert/strict"
 import {
   DEFAULTS, KINDS, batchContext, batchValue, cloudReturn, costInV, expectedInstallHours, flagFor, flagsFor,
-  forecastOffers, grantFor, grantsFor, kindOf, newPurchases, paybackReturn, projectedCash, requestFor, settings, sweepPlan,
+  forecastOffers, grantFilter, grantFor, grantsFor, kindOf, newPurchases, paybackReturn, projectedCash, requestFor, settings, sweepPlan,
   unattributed, valuePurchase,
 } from "./valuation_logic.js"
 
@@ -242,4 +242,19 @@ test("home RAM with a blocked resident is a necessity in the verdict, request an
   assert.equal(requestFor("capital", { kind: "home", cost: 1 }, { homeRam: 512, homeDemand: 0.3, homeBlocked: true }).homeBlocked, true)
   assert.equal(grantsFor(ctx, { homeRam: 512, homeDemand: 0.3 }).home_ram.max, 0)
   assert.ok(grantsFor(ctx, { homeRam: 512, homeDemand: 0.3, homeBlocked: true }).home_ram.max > 0)
+})
+
+test("grantFilter: only valued kinds obey the grant, by running total; fallbacks keep own rules", () => {
+  const now = 1e6
+  const grants = { ts: now - 1000, ttlSec: 600, grants: { gang_gear: { max: 100, reason: "free cash" } } }
+  const modes = { gang_gear: "valued", gang_augs: "shadow" }
+  const items = [{ kind: "gang_gear", cost: 60 }, { kind: "gang_gear", cost: 50 }, { kind: "gang_augs", cost: 500 }, { kind: "gang_gear", cost: 30 }]
+  const { allowed, refused } = grantFilter(items, modes, grants, now)
+  assert.deepEqual(allowed.map((i) => i.cost), [60, 500, 30])
+  assert.equal(refused.length, 1)
+  assert.match(refused[0].reason, /^allocator: over grant/)
+  // Stale grants: everything falls back to the spender's own rule.
+  assert.equal(grantFilter(items, modes, { ...grants, ts: now - 3600e3 }, now).allowed.length, 4)
+  // Not valued: nothing filtered.
+  assert.equal(grantFilter(items, { gang_gear: "shadow" }, grants, now).refused.length, 0)
 })

@@ -4,6 +4,12 @@ Running list kept by Claude on its own initiative (Ken, 2026-11-16: "exercise in
 for flaws and opportunities"). Newest first. Each entry: finding, evidence, expected gain, status.
 The 2-hourly check reviews this once per cycle (first run after an install).
 
+## 2026-11-18 09:15 check (BN10 run 4, install 4)
+
+- **Gang money mode is now the main income.** Evidence: cash/h 15.2b (24 samples, 07:15-09:10) vs 144m in the reputation-mode part of cycle 4; $0.33b -> $29.5b in 2h, which paid for a 7-aug batch (value 0.89). The 21:15 note "gang money mode not worth it" was right at 25k rep/h and 9 members, not at 12 members with ascensions. Gain: the rep-to-3.5m stretch now decides the cycle length. Status: open. The rep target is close to what the next batch needs (Graphene Bionic Spine 3.25m rep, value 0.75; Bone Lacings 2.25m), so no change now; next cycle measure hours to 3.5m and money-mode $/h.
+- **Gang grant read built (allocator R2 for gang).** Status: shipped 09:18 (`grantFilter`; `gang_status.json` `grantRefused`), flag still shadow. Next: flip `gang_gear` to "valued" in the game-only `valuation_flags.json` (stamped with `lastNodeReset`) after cycle 5's shadow agreement holds.
+- **First live graft is near.** Money mode gives $1b+ spare above the install plan late in the cycle (cycle 4: $29.5b vs $27.4b plan, only $2b spare and late). Gain: SPTN-97 ($14.6b, +75% combat) toward the Covenant's 850. Status: open; the G7 rule ($1b+ spare, `allow` one name) applies; SPTN-97 needs a bigger margin or a smaller batch.
+
 ## 2026-11-18 07:15 check (BN10 run 4, cycle review after install 3)
 
 - **Allocator logged sleeve crime income as spending.** Evidence: `allocator_shadow_log.txt` cycle 4: 80 `counter`/`sleeves` rows, $45.0b "unattributed", each ~$825m and falling ~$1.8m a pass. The sleeves money counter is net (crime income minus augs); when income lowered it, `unattributed` took the drop for an install reset and logged the whole counter. Gain: a shadow log fit to judge "valued" moves (S1-S5). Status: shipped 07:17 (a drop counts as a reset only if the counter fell by over half; test assert added, 659/659); clean over two passes.

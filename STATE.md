@@ -104,6 +104,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 2 | 2026-11-17 23:16 | 4 (Bionic Spine, Nanofiber Weave, Neurotrainer II, NutriGen Implant from Slum Snakes; ~$2.71b, value 0.54 by hand via `priorityAugs`, vs the advisor plan ADR-V2 + SmartSonar 0.14 for $3.46b) + NeuroFlux x3. Backup saves/pre-install-bn10run4-2-20261117-2318.json.gz | 7 -> 12 |
 | 3 | 2026-11-18 05:15 | 5 (CRTX42-AA Gene Modification, Neurotrainer III, Combat Rib I, Augmented Targeting I, LuminCloaking-V1 from Slum Snakes; ~$3.63b, readiness plan by value 0.38, advisor install) + NeuroFlux x2. Backup saves/pre-install-bn10run4-3-20261118-0517.json.gz | 12 -> 17 |
 | 4 | 2026-11-18 09:16 | 7 (Photosynthetic Cells, Bionic Legs, Combat Rib II, Augmented Targeting II, LuminCloaking-V2, INFRARET Enhancement, Synaptic Enhancement Implant from Slum Snakes; ~$27.4b, value 0.89, advisor plan; gang money mode paid for it) + NeuroFlux x2. Backup saves/pre-install-bn10run4-4-20261118-0920.json.gz | 17 -> 24 |
+| 5 | 2026-11-18 13:16 | 5 (Graphene Bionic Spine Upgrade, Synfibril Muscle, Combat Rib III, Augmented Targeting III, Cranial Signal Processors - Gen I from Slum Snakes; $51.4b, value 1.25, advisor plan; gang money mode paid) + NeuroFlux x4; leftover cash took home 512GB -> 1TB. Backup saves/pre-install-bn10run4-5-20261118-1318.json.gz | 25 -> 30 (incl. grafted Bionic Arms) |
 
 ## Installs BN6 run 1 (history)
 
@@ -137,19 +138,15 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-18 11:15 (scheduled run, BN10 run 4): cycle review after install 4; first live graft ready but held (permission refused); no install.**
-Live (probe 11:14): BitNode 10, $7.85b, hacking 178, str/def/dex/agi 265/281/185/330, karma -91.3k, home 512GB, 7 sleeves, 24 installed, 0 queued. Gang money mode (Slum Snakes 3.68m rep, past 3.5m before 2h).
-Measured (23 samples, 09:20-11:10): rep/h Slum Snakes 2.09m, Tetrads 20.4k; hackExp/h 1.66m; cash/h 1.76b (last hour 4.74b); MCP avg 229k/s. Trend n/a (cycle under 3h).
-Audit 0 of 33. Spend cycle 5: cloud $2.48b, sleeve augs $173m early, gang $232m; B1 12.7%. All 7 sleeves working (0 Tetrads, 1 Tian Di Hui, 2-6 Mug).
-Install: advisor wait (gang 4h minimum, ~13:16); plan Combat Rib III, Augmented Targeting III, SmartSonar, CSP Gen I, $5.45b, value 0.34. Decision wait.
-Grafting G7: dry controller picks Bionic Arms ($825m, 1.08h, net 0.111; player is 89k Tetrads rep / 3.9h from buying it); $2.5b spare above the plan. Setting `dry: false` was refused by the session's permission check, so reverted; **needs Ken's go-ahead** (or a permission rule for `bb_remote.py ctl-push`).
-End check: 24 installed, no Red Pill, no World Daemon. Not notified.
-**Correction (Ken session 12:25): the first live graft DID run.** `graft_log.txt`: start 11:15:48 Bionic Arms ($825m, unfocused,
-predicted 1.077h), finished 12:20:48 (1.083h actual); now owned (25 installed), entropy 1; player back on work by 12:25. Cause: the
-Remote API daemon syncs every manifest file on change, so editing the repo's `graft_config.json` went live before the refused
-`ctl-push` and the revert; the revert then set dry again. **Rule: an edit to any synced file in profiles/ or core/ is a live push.**
-G7 is therefore done. **Ken 2026-11-18 12:30: "proceed on your judgement"** — live grafting is the agent's call: `graft_config.json` dry false, allow [] (the planner picks within its caps). Change caps or block names in that file; `enabled: false` stops new grafts.
-**Next run (13:15): install judgement (4h minimum passes 13:16); gang_gear "valued" at cycle 5 close; measure Bionic Arms' effect.**
+**2026-11-18 13:15 (scheduled run, BN10 run 4): install 5 at 13:16; live grafting unblocked (autoPick); gang gear "valued".**
+Before install (probe 13:14): BitNode 10, $59.5b, hacking 198, str/def/dex/agi 370/307/263/360, karma -93.9k, home 512GB, 7 sleeves, 25 installed (24 + grafted Bionic Arms).
+Measured (24 samples, 11:15-13:10): rep/h Slum Snakes 532k, Tetrads 6.56k; hackExp/h 3.98m; karma/h -1.26k; cash/h 26b; MCP avg 1.24m/s. Trend: cash/h 5.43b>24.5b>27.4b ACCELERATING, MCP STEADY, hackExp/h STEADY.
+Income by source at 4.0h vs cycle 4: gang 17.7b/h (12.3b), hacking 9.09b/h (4.29b), darknet 578m/h (0, fixed 12:30), sleeves 134m/h (107m). No source fell. Audit 0 of 33.
+Install: advisor wait only for the 4h minimum (2 min), plan 5 Slum Snakes augs $51.4b, value 1.25 (cycle avg 0.32/h). Decision install at 13:16. After: $147m, hacking 1, home 1TB, all residents back, gang reputation mode (rep 134k).
+`metrics.py cycles`: cycle 5 closed 4.00h, rebuild hacking 2.23h, Slum Snakes 4.78m, +6 installed.
+Grafting: live config had `allow: []` but the code required a named allow list, so no graft could start after 12:30. Added `autoPick` (graft_logic.js, test; 660/660); config `autoPick: true`; graft_controller.js restarted (not in startup), status "no pick" (price cap at $22m), as expected early in a cycle.
+Allocator: gang_gear "valued" in game-only valuation_flags.json (cycle 5: 182/182 shadow grants agreed, $0.41b).
+End check: no Red Pill, no World Daemon. Not notified. **Next run (15:15): first auto-picked graft once cash clears the plan; watch gang grant refusals; install judgement ~17:16.**
 
 ## Daedalus ready (2026-11-16 21:35)
 

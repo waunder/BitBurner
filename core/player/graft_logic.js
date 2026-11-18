@@ -309,8 +309,10 @@ export function liveGraftStep({ config, plan, workType, city, previous, now }) {
   const cfg = { ...DEFAULT_GRAFT_CONFIG, ...(config || {}) }
   if (cfg.dry !== false) return { mode: "dry", act: "none", ownsPlayer: false, reason: "dry" }
   if (workType === "GRAFTING") return { mode: "live", act: "hold", ownsPlayer: true, reason: "grafting" }
-  if (!Array.isArray(cfg.allow) || cfg.allow.length === 0) {
-    return { mode: "live", act: "none", ownsPlayer: false, reason: "live needs an allow list" }
+  // autoPick (Ken 2026-11-18 12:30, live on the agent's judgement): an empty allow list lets the planner's
+  // capped pick run. Without autoPick, live still needs grafts named in `allow`.
+  if ((!Array.isArray(cfg.allow) || cfg.allow.length === 0) && cfg.autoPick !== true) {
+    return { mode: "live", act: "none", ownsPlayer: false, reason: "live needs an allow list or autoPick" }
   }
   if (!plan?.pick) return { mode: "live", act: "none", ownsPlayer: false, reason: "no pick" }
   const started = Number(previous?.lastStartedAt)

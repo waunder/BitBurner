@@ -307,7 +307,9 @@ test("liveGraftStep stays dry unless dry is false", () => {
 test("liveGraftStep needs an allow list, holds while grafting, and travels to New Tokyo", () => {
   const plan = { pick: { name: "Bionic Spine" } };
   const live = { dry: false, allow: ["Bionic Spine"] };
-  assert.equal(liveGraftStep({ config: { dry: false }, plan, now: 0 }).reason, "live needs an allow list");
+  assert.equal(liveGraftStep({ config: { dry: false }, plan, now: 0 }).reason, "live needs an allow list or autoPick");
+  assert.equal(liveGraftStep({ config: { dry: false, allow: [], autoPick: true }, plan, city: GRAFT_CITY, now: 0 }).act, "start");
+  assert.equal(liveGraftStep({ config: { dry: true, autoPick: true }, plan, now: 0 }).mode, "dry");
   const hold = liveGraftStep({ config: { dry: false }, plan: null, workType: "GRAFTING", now: 0 });
   assert.equal(hold.act, "hold"); assert.equal(hold.ownsPlayer, true);
   assert.equal(liveGraftStep({ config: live, plan: null, now: 0 }).reason, "no pick");

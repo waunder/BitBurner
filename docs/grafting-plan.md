@@ -245,6 +245,10 @@ To run G7: tell Ken (done in the 05:15 run report), wait for $1b+ spare above th
 2026-11-18 11:15: conditions met ($2.5b spare; dry pick Bionic Arms $825m, 1.08h, net 0.111). The config push
 (`dry: false`, `allow: ["Bionic Arms"]`) was refused by the scheduled session's permission check; reverted, still dry.
 Waiting on Ken's go-ahead or a permission rule for `tools/bb_remote.py ctl-push`.
+2026-11-18 12:20: first live graft done (Bionic Arms, 1.083h vs 1.077h predicted). 12:30 Ken: live on the agent's judgement.
+2026-11-18 13:20: `allow: []` still blocked live grafts ("live needs an allow list"); added `autoPick` (empty allow + autoPick
+uses the capped planner pick). Config `autoPick: true`. graft_controller.js is not in startup: restart it by hand after
+each install until G10 adds it.
 
 ## G6 results (2026-11-17 19:17, BN10 run 4)
 

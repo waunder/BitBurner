@@ -64,6 +64,7 @@ function pass(ns, state) {
   const candidate = gang?.capital?.candidate
   const env = {
     homeRam: ns.getServerMaxRam("home"), homeDemand: Number(capital?.homeDemand),
+    homeBlocked: Array.isArray(capital?.homeBlocked) && capital.homeBlocked.length > 0,
     ...cloudUse(fresh(readJson(ns, "mcp_status.json"), now)), hours: ctx.hours ?? 0,
     gangCategory: equipmentCategory,
     gangPayback: (item) => (candidate && candidate.item === item ? candidate.paybackSeconds : null),

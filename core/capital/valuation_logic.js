@@ -148,9 +148,9 @@ function summary(batch) {
 }
 
 /**
- * Verdict on one purchase. req: { kind, cost, cashReturn?, homeRam?, homeDemand? }.
+ * Verdict on one purchase. req: { kind, cost, cashReturn?, homeRam?, homeDemand?, homeBlocked? }.
  * Returns { verdict: grant | refuse | sweep | n/a, class, costV, gainV, reason }.
- *  - necessity (TOR, programs, home RAM below the floor or in demand) up to necessityMax: grant;
+ *  - necessity (TOR, programs, home RAM below the floor, in demand or with a resident that does not fit) up to necessityMax: grant;
  *  - home RAM nothing would use: refuse in any phase (the 2026-11-10 14:53 step);
  *  - early phase: grant (rebuild; no batch reserve);
  *  - late: grant if it comes out of free cash, or returns more before the install than the batch
@@ -165,7 +165,7 @@ export function valuePurchase(req, ctx, s = DEFAULTS) {
   let cls = WIPED.includes(kind) ? "wiped" : "lasting"
   if (kind === "tor" || kind === "programs") cls = "necessity"
   if (kind === "home_ram") {
-    const needed = Number(req.homeRam) < s.homeRamFloor || Number(req.homeDemand) >= s.homeDemandFloor
+    const needed = Number(req.homeRam) < s.homeRamFloor || Number(req.homeDemand) >= s.homeDemandFloor || req.homeBlocked === true
     if (!needed) return out("refuse", "zero-value", `home RAM nothing would use: demand ${pct(req.homeDemand)} under ${pct(s.homeDemandFloor)}`)
     cls = "necessity"
   }
@@ -276,7 +276,7 @@ export function requestFor(source, record, env = {}, s = DEFAULTS) {
   const raw = record.raw ?? record
   const kind = kindOf(source, raw, source === "gang" ? env.gangCategory?.(record.item) : null)
   const cost = Number(record.cost ?? raw.cost) || 0
-  const req = { kind, cost, homeRam: env.homeRam, homeDemand: env.homeDemand, cashReturn: 0 }
+  const req = { kind, cost, homeRam: env.homeRam, homeDemand: env.homeDemand, homeBlocked: env.homeBlocked === true, cashReturn: 0 }
   if (kind === "cloud_ram") {
     const added = raw.kind === "upgrade" ? Number(raw.toRam) - Number(raw.fromRam) : Number(raw.ram)
     req.cashReturn = cloudReturn({ addedRam: added, totalRam: env.totalCloudRam, utilization: env.utilization, mcpRatePerSec: env.mcpRate, hours: env.hours, s })
@@ -296,7 +296,7 @@ export function grantsFor(ctx, env = {}, s = DEFAULTS) {
     out[kind] = { max: Math.max(0, free), reason: why }
   }
   for (const kind of ["tor", "programs"]) out[kind] = { max: Math.max(free, Math.min(ctx.cash, necessityMax)), reason: `necessity (up to ${fmt(necessityMax)}) or ${why}` }
-  const homeNeeded = Number(env.homeRam) < s.homeRamFloor || Number(env.homeDemand) >= s.homeDemandFloor
+  const homeNeeded = Number(env.homeRam) < s.homeRamFloor || Number(env.homeDemand) >= s.homeDemandFloor || env.homeBlocked === true
   out.home_ram = homeNeeded
     ? { max: Math.max(free, Math.min(ctx.cash, necessityMax)), reason: `home RAM in demand: necessity or ${why}` }
     : { max: 0, reason: `home RAM nothing would use (demand ${pct(env.homeDemand)})` }

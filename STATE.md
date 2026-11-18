@@ -134,14 +134,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-17 19:15 (scheduled run, BN10 run 4, cycle 2 at 1.5h): grafting G6 and gang spend attribution shipped; no install.**
-Live (probe 19:14): BitNode 10, $114m, hacking 113, str/def 66, dex/agi 85, karma -70.7k, home 512GB, 7 installed, 0 queued. All residents running.
-Measured (18 samples, 90 min): rep/h Slum Snakes 18.2k, Tian Di Hui 1.69k, CyberSec 371; hackExp/h 227k; cash/h 19.1m; MCP avg 12.5k/s (rebuilding). Trend n/a (cycle under 3h).
-Cycle review: cycle 1 earned $6.45b (241m/h), gang rep 849; cycle 2 has 29.2k gang rep in 1.5h (11 members, Terrorism). Gang rep now outruns cash (docs/opportunities.md).
-Spenders this cycle: sleeve buyer 21 augs $148m; cloud 50 upgrades $450m; gang gear blocked by its rules. Audit 0 of 33 flagged.
-Shipped: G6 player hold and install refusal while a graft runs; gang `purchases` log for the allocator; aug_install.js -2.4GB. 649/649 tests.
-Advisor verdict wait (gang 4h minimum); decision wait. End check: no Red Pill, no World Daemon.
-**Next run (21:15): gang money vs rep (compare `projectedMoneyRate` with cash/h); confirm attributed gang rows in `allocator_shadow_log.txt`; grafting G7 needs cash ($10b+) and a line to Ken first; then the home-RAM necessity rule.**
+**2026-11-17 21:15 (scheduled run, BN10 run 4, cycle 2 at 3.5h): home-RAM necessity rule shipped; no install.**
+Live (probe 21:14): BitNode 10, $2.62b, hacking 138, str/def 70, dex/agi 103, karma -73.1k, home 512GB, 7 installed, 0 queued. All residents running; gang 12 members, rep 96.4k.
+Measured (24 samples, 120 min): rep/h Slum Snakes 25.7k, Tian Di Hui 3.09k, CyberSec 474; hackExp/h 562k; cash/h 1.4b; MCP avg 164k/s. Trend STEADY.
+Audit 0 of 33. Gang gear buys only above the install plan; capital and sleeve buyer hold (late phase).
+Shipped: `homeBlocked` (a waiting resident that does not fit makes home RAM needed; allocator agrees). 651/651 tests. Gang attribution rows confirmed. Gang money mode closed (tiny vs cash/h).
+Advisor wait (gang 4h minimum, 3 augs $2.61b); decision wait, larger batch by 23:15. End check: no Red Pill, no World Daemon.
+**Next run (23:15): install judgement (cycle ~5.5h, batch size vs cash/h); grafting G7 needs $1b+ spare and Ken told first; move gang gear to "valued" after a cycle of shadow rows; darknet stage MAX_SPREAD_LEVEL 3 if the hour at 16 was steady.**
 
 ## Daedalus ready (2026-11-16 21:35)
 

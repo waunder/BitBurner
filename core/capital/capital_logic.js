@@ -49,7 +49,7 @@ export function lateCycleLimit({ policy = {}, hoursSinceInstall = 0, cash = 0, l
 
 export function chooseCapitalAction({ spendable, hasTor, torCost = 200e3, programs = [], homeRam, homeRamTarget, homeRamCost,
   cloud = [], cloudLimit = 0, cloudQuotes = [], upgradeQuotes = [], cloudFraction = 0.5, incomePerSec = 0, saveWindowSec = 300, homeRamFloor = 128, ramUtilization = 1, cloudDemandFloor = 0.5,
-  homeDemand = 1, homeDemandFloor = 0.5, homeSpendLimit = Infinity, mcpBlocked = false, mcpStarvedRam = 0, portsNeeded = Infinity }) {
+  homeDemand = 1, homeDemandFloor = 0.5, homeSpendLimit = Infinity, mcpBlocked = false, mcpStarvedRam = 0, portsNeeded = Infinity, homeBlocked = false }) {
   if (!hasTor) return spendable >= torCost ? { kind: "tor", cost: torCost } : { kind: "save", reason: "TOR", cost: torCost }
   const missing = programs.find(p => !p.owned && Number.isFinite(p.cost) && p.cost > 0 && !((PORT_OPENERS[p.name] ?? 0) > portsNeeded))
   if (missing && missing.cost <= spendable) return { kind: "program", name: missing.name, cost: missing.cost }
@@ -61,7 +61,10 @@ export function chooseCapitalAction({ spendable, hasTor, torCost = 200e3, progra
   // floor does (BN10 run 3, 2026-11-11: at node start "hours since install" was already past 1.5h, so
   // the 1% late cap held home at 128GB and MCP stayed down about 3h).
   const urgent = homeRam < homeRamFloor || mcpBlocked
-  const homeNeeded = urgent || homeDemand >= homeDemandFloor
+  // homeBlocked: a resident is waiting and does not fit in free home RAM. Demand can sit under the
+  // floor while that happens (2026-11-17 BN10 run 4: $477m of home RAM refused as zero-value while
+  // residents waited), so a blocked resident is need enough; the late-cycle limit still applies.
+  const homeNeeded = urgent || homeDemand >= homeDemandFloor || homeBlocked
   // Late in a cycle home RAM is also held to lateCycleLimit, except when urgent.
   const withinLimit = urgent || homeRamCost <= homeSpendLimit
   const wantsHome = homeRam < homeRamTarget && Number.isFinite(homeRamCost) && homeNeeded && withinLimit
@@ -91,6 +94,11 @@ export function chooseCapitalAction({ spendable, hasTor, torCost = 200e3, progra
   }
   const upgrades = upgradeQuotes.filter(q => q.cost > 0 && q.cost <= budget).sort((a, b) => a.fromRam - b.fromRam || a.cost - b.cost)
   return upgrades[0] ? { kind: "upgrade", ...upgrades[0] } : null
+}
+
+/** Residents not running whose RAM exceeds free home RAM (they wait on a home upgrade). */
+export function blockedResidents(scripts, freeRam) {
+  return scripts.filter(s => !s.running && s.ram > 0 && s.ram > freeRam).map(s => s.name)
 }
 
 /** Next script from a priority list that fits in free home RAM. */

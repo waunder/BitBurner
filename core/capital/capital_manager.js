@@ -12,7 +12,7 @@
  */
 import { readStacks } from "stack_files.js"
 import { flagFor, grantFor, kindOf } from "valuation_logic.js"
-import { PROGRAMS, chooseCapitalAction, portsUseful, cloudDemandFloorFor, lateCycleLimit, nextScriptToStart } from "capital_logic.js"
+import { PROGRAMS, chooseCapitalAction, portsUseful, cloudDemandFloorFor, lateCycleLimit, nextScriptToStart, blockedResidents } from "capital_logic.js"
 
 const POLICY = "capital_policy.json"
 const STATUS = "capital_status.json"
@@ -75,9 +75,21 @@ function startWaitingManager(ns) {
   // (BN10 run 2, 128GB home: residents filled 127.95GB and MCP was down 2.6h).
   // While mcp.js runs but cannot fit a batch, hold that batch's RAM too, so killed monitors
   // (HUD, run_report, mcp_xp; Ken 2026-11-11: monitors may always be killed for RAM) stay down.
-  const mcpHold = ns.scriptRunning("mcp.js", home) ? readMcpWait(ns).need : ns.getScriptRam("mcp.js", home)
-  const name = nextScriptToStart(scripts, ns.getServerMaxRam(home) - ns.getServerUsedRam(home) - mcpHold - readAdvisorHold(ns))
+  const name = nextScriptToStart(scripts, residentFreeRam(ns))
   return name && ns.run(name) ? name : null
+}
+
+/** Free home RAM for residents: what is free minus mcp.js's hold and the install advisor's hold. */
+function residentFreeRam(ns) {
+  const home = "home"
+  const mcpHold = ns.scriptRunning("mcp.js", home) ? readMcpWait(ns).need : ns.getScriptRam("mcp.js", home)
+  return ns.getServerMaxRam(home) - ns.getServerUsedRam(home) - mcpHold - readAdvisorHold(ns)
+}
+
+/** Residents waiting that do not fit in free home RAM (see blockedResidents). */
+function readHomeBlocked(ns) {
+  const scripts = managerList(ns).map(name => ({ name, running: ns.scriptRunning(name, "home"), ram: ns.getScriptRam(name, "home") }))
+  return blockedResidents(scripts, residentFreeRam(ns))
 }
 
 /** GB of home RAM to keep free for the install advisor (augmentation_readiness.js) while the steward
@@ -163,7 +175,7 @@ export async function main(ns) {
     }
     let spent = 0
     const policy = readPolicy(ns)
-    let action = null, ok = null, cyclePhase = null, homeDemand = null, portsNeeded = null
+    let action = null, ok = null, cyclePhase = null, homeDemand = null, portsNeeded = null, homeBlocked = []
     if (policy.enabled !== false) {
       const hoursSinceInstall = (now - ns.getResetInfo().lastAugReset) / 3.6e6
       cyclePhase = cloudDemandFloorFor(policy, hoursSinceInstall)
@@ -172,6 +184,8 @@ export async function main(ns) {
         homeDemand: readHomeDemand(ns), homeDemandFloor: Number(policy.homeDemandFloor ?? 0.5), homeSpendLimit: homeLimit.limit,
         mcpBlocked: !ns.scriptRunning("mcp.js", "home") && ns.getServerMaxRam("home") - ns.getServerUsedRam("home") < ns.getScriptRam("mcp.js", "home"),
         mcpStarvedRam: readMcpStarvedRam(ns), portsNeeded: readPortsNeeded(ns) }
+      homeBlocked = readHomeBlocked(ns)
+      input.homeBlocked = homeBlocked.length > 0
       homeDemand = input.homeDemand
       portsNeeded = input.portsNeeded
       action = chooseCapitalAction(input)
@@ -196,7 +210,7 @@ export async function main(ns) {
     }
     last = { at: now, cash, spent }
     const started = startWaitingManager(ns)
-    ns.write(STATUS, JSON.stringify({ ts: Date.now(), policy, cyclePhase, homeDemand, portsNeeded, incomePerSec, action, ok, started, purchases }), "w")
+    ns.write(STATUS, JSON.stringify({ ts: Date.now(), policy, cyclePhase, homeDemand, homeBlocked, portsNeeded, incomePerSec, action, ok, started, purchases }), "w")
     // Keep buying while purchases succeed; otherwise wait for income.
     await ns.sleep(ok ? 200 : POLL_MS)
   }

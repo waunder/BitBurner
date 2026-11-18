@@ -232,3 +232,12 @@ test("unattributed spending: counter deltas no record explains; an install reset
   assert.deepEqual(unattributed(before, after, records), { gang_expenses: 2_000_000 })
   assert.deepEqual(unattributed({ servers: -9e9 }, { servers: -5e6 }, []), { servers: 5e6 })
 })
+
+test("home RAM with a blocked resident is a necessity in the verdict, request and grant", () => {
+  const ctx = lateCtx(1000e9)
+  assert.equal(valuePurchase({ kind: "home_ram", cost: 5e8, homeRam: 512, homeDemand: 0.3 }, ctx).verdict, "refuse")
+  assert.equal(valuePurchase({ kind: "home_ram", cost: 5e8, homeRam: 512, homeDemand: 0.3, homeBlocked: true }, ctx).verdict, "grant")
+  assert.equal(requestFor("capital", { kind: "home", cost: 1 }, { homeRam: 512, homeDemand: 0.3, homeBlocked: true }).homeBlocked, true)
+  assert.equal(grantsFor(ctx, { homeRam: 512, homeDemand: 0.3 }).home_ram.max, 0)
+  assert.ok(grantsFor(ctx, { homeRam: 512, homeDemand: 0.3, homeBlocked: true }).home_ram.max > 0)
+})

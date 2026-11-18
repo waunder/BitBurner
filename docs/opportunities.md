@@ -4,6 +4,12 @@ Running list kept by Claude on its own initiative (Ken, 2026-11-16: "exercise in
 for flaws and opportunities"). Newest first. Each entry: finding, evidence, expected gain, status.
 The 2-hourly check reviews this once per cycle (first run after an install).
 
+## 2026-11-17 21:15 check (BN10 run 4, cycle 2 at 3.5h)
+
+- **Home RAM refused while a resident waited (Spending review item b).** The necessity rule saw demand only; a waiting resident that does not fit in free home RAM (after MCP's and the advisor's holds) can leave demand under the 0.5 floor. Gain: no resident left down for want of a home step the late cap allows. Status: shipped 21:17 (`blockedResidents` in capital_logic.js; capital_manager publishes `homeBlocked` and treats it as need, still under the late-cycle limit; allocator verdicts and grants treat it as necessity; 2 tests; 651/651). Live: `homeBlocked` [] (nothing waiting), demand 0.57. Home RAM stays `own` in valuation_flags until a blocked case shows up in the shadow log.
+- **Gang money mode is not worth it now.** Evidence: `gang_status.json` 21:15 `projectedMoneyRate` 592 (at most ~$2-11m/h however the unit reads) against cash/h 1.4b (measured, 24 samples); gang rep 25.7k/h. Gain of switching: under 1% of cash. Status: closed; the gang stays on reputation (auto) toward Slum Snakes augs.
+- **Gang gear attribution confirmed.** `allocator_shadow_log.txt` has `source: gang` rows (gang_gear: grant/sweep with cost and free cash) since 19:18. Gang gear now buys only above the install plan (cash $2.62b vs plan $2.61b). Next allocator step: move gang gear to "valued" after a cycle of rows.
+
 ## 2026-11-17 19:15 check (BN10 run 4, cycle review after install 1)
 
 - **Gang rep is no longer the limit; cash is.** Evidence: Slum Snakes rep 18.2k/h (`metrics.py summary --window 90`, 18 samples) and 29.2k earned in the first 1.5h of cycle 2, against 849 in the whole 19.9h cycle 1 (`metrics.py cycles`); 11 members on Terrorism. Cash/h 19.1m (same window; MCP rebuilding after the install), cycle 1 averaged 241m/h. Slum Snakes augs start at $1.25b each (x5 BN10, x1.9 ladder). Gang objective `auto` stays on reputation until rep covers all 3.5m, about 7 days at this rate. Gain: switching the gang to money once rep covers the next affordable batch could add a large share of cash/h (the gang's money rate is unmeasured in BN10 so far). Status: open; next check compare `projectedMoneyRate` with cash/h once MCP has rebuilt, then consider a rep-vs-cash balance rule in place of the 3.5m bar.
@@ -125,7 +131,7 @@ first sleeve augmentation batches; gang power after gear.
   `grantFor`; game-only `valuation_flags.json` cloud_ram "valued"; set "own" to undo). Still open in the allocator:
   (a) gang spending is "unattributed" (98 passes, $12.7b in BN6 c5): gang-controller's purchases are not recorded where
   the allocator reads them, so gang spend is never judged; (b) home RAM refused as "zero-value" ($477m) while residents
-  waited for RAM: the necessity rule misses unstarted scripts. Next kinds to move to "valued": gang gear, then home RAM.
+  waited for RAM: the necessity rule misses unstarted scripts (fixed 2026-11-17 21:17: `homeBlocked`). (a) fixed 19:18 (`purchases` log). Next kinds to move to "valued": gang gear, then home RAM.
 
 - **Early-crime chooser for fresh BitNodes** (Ken, 2026-11-16). player_activity_controller.js (36.8GB) cannot fit on a
   32GB fresh home, so BN10 run 4 sat ~50 min on Shoplift (str/def 1; Shoplift trains only dex/agi; karma 0.05/s).

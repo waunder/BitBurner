@@ -1,6 +1,6 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { chooseCapitalAction, portsUseful, cloudDemandFloorFor, lateCycleLimit, nextScriptToStart } from "./capital_logic.js"
+import { chooseCapitalAction, portsUseful, cloudDemandFloorFor, lateCycleLimit, nextScriptToStart, blockedResidents } from "./capital_logic.js"
 
 const base = { spendable: 0, hasTor: true, homeRam: 512, homeRamTarget: 512, homeRamCost: 1, cloud: [], cloudLimit: 25 }
 
@@ -149,4 +149,14 @@ test("home RAM for a blocked MCP ignores the late cap and outranks cloud", () =>
   const short = chooseCapitalAction({ ...input, mcpBlocked: true, spendable: 1e7 })
   assert.equal(short.kind, "save")
   assert.equal(short.reason, "home RAM for MCP")
+})
+
+test("a waiting resident that does not fit makes home RAM needed, within the late limit", () => {
+  const scripts = [{ name: "hud.js", running: false, ram: 40 }, { name: "small.js", running: false, ram: 2 }, { name: "big.js", running: true, ram: 90 }]
+  assert.deepEqual(blockedResidents(scripts, 10), ["hud.js"])
+  assert.deepEqual(blockedResidents(scripts, 50), [])
+  const input = { ...base, homeRam: 512, homeRamTarget: 262144, homeRamCost: 4.8e8, spendable: 1e9, homeDemand: 0.3 }
+  assert.equal(chooseCapitalAction(input), null)
+  assert.equal(chooseCapitalAction({ ...input, homeBlocked: true }).kind, "home")
+  assert.equal(chooseCapitalAction({ ...input, homeBlocked: true, homeSpendLimit: 1e7 }), null)
 })

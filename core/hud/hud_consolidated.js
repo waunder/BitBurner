@@ -547,8 +547,11 @@ function buildDisplay(ns, state, pos) {
   lines.push(COLORS.HEADER + "╔═══════════════════════════════════╗" + COLORS.RESET)
   lines.push(COLORS.HEADER + "║        CONSOLIDATED HUD           ║" + COLORS.RESET)
   lines.push(COLORS.HEADER + "╚═══════════════════════════════════╝" + COLORS.RESET)
-  lines.push(COLORS.SECTION + goalLine(ns) + COLORS.RESET)
   const target = runTargetStatus(ns, now)
+  // One goal line (Ken, 2026-11-17): "Goal: BN10 Run 4 Cycle 2 — <run_target goal>", the goal's own
+  // "BNx run y (entered ...):" prefix dropped since the numbers now lead.
+  const goalText = target.lines[0]?.startsWith("Goal:") ? target.lines.shift().replace(/^Goal:\s*/, "").replace(/^BN\d+\s+run\s+\d+\s*(\([^)]*\))?\s*:\s*/i, "") : ""
+  for (const part of wrapText(goalLine(ns) + (goalText ? ` — ${goalText}` : ""), HUD_CHARS)) lines.push(COLORS.SECTION + part + COLORS.RESET)
   const finish = nodeCompletionLine(now, json(ns, "bladeburner_status.json"))
   if (finish) target.lines.push(finish)
   for (const [i, line] of target.lines.entries()) {

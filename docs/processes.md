@@ -365,8 +365,8 @@ Hack income returns on its port.
 ### `stack_manager.js`
 
 Keeps `stack_batch.js` running on the best targets. Each minute it prices every rooted target
-as if prepared with `ns.formulas`, picks by income per TB (up to 4 stacks, skipping targets under
-15% of the best income or 25% of the best yield), and gives them up to 60% of cloud RAM. Running
+as if prepared with `ns.formulas`, picks by income per TB (up to 5 stacks, skipping targets under
+15% of the best income or 25% of the best yield), and gives them up to 90% of cloud RAM (60% and 4 stacks before 2026-11-18). Running
 stacks get any budget they lack first and are never stopped. The first stack may start
 short of its full need. Started by `startup.js` and `capital_manager.js`.
 

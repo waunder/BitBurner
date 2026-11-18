@@ -14,8 +14,10 @@ const STATUS = "stack_manager_status.json"
 const BUDGETS = "stack_budgets.json"
 const POLL_MS = 60_000
 const HACK_FRACTION = 0.1, SPACING_MS = 2000, GAP_MS = 200
-// MCP and its preparation work need the rest of the fleet.
-const FLEET_SHARE = 0.6
+// MCP and its preparation work get the rest, plus whatever the stacks leave unused.
+// 2026-11-18: 0.6 -> 0.9 and 4 -> 5 stacks. Live: stacks earned $0.9-1.9m/s per TB, MCP $0.2-0.3m/s on
+// 21TB, and silver-helix (est $55m/s, 29TB) could not fit beside the four running stacks.
+const FLEET_SHARE = 0.9, MAX_STACKS = 5
 const FIRST_PORT = 101
 
 function rootedTargets(ns) {
@@ -65,7 +67,7 @@ export async function main(ns) {
       const player = ns.getPlayer()
       const estimates = rootedTargets(ns).map(t => estimate(ns, t, player)).filter(Boolean)
       const capacity = ns.cloud.getServerNames().reduce((sum, h) => sum + ns.getServerMaxRam(h), 0) * FLEET_SHARE
-      const plan = planStacks(estimates, runningStacks(ns), capacity)
+      const plan = planStacks(estimates, runningStacks(ns), capacity, { maxStacks: MAX_STACKS })
       for (const item of plan.filter(p => p.added)) {
         item.port = freePort(plan)
         const ok = ns.run(RUNNER, 1, item.target, HACK_FRACTION, SPACING_MS, GAP_MS, Math.round(item.ramBudget), item.port)

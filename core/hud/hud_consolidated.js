@@ -477,11 +477,15 @@ function gangStatus(ns, now) {
 
 // Pinned above the sections: the run's goal and the current step, from the
 // hand-edited run_target.json, with live progress.
-/** "Goal: BN10 Cycle 2" (Ken, 2026-11-17). Cycle = installs this BitNode + 1; aug_install.js keeps install_count.json. */
+/** "Goal: BN10 Run 4 Cycle 2" (Ken, 2026-11-17). Run: run_target.json "run", else this node's Source-File level + 1
+ * (right until the Source-File is maxed). Cycle: installs this BitNode + 1; aug_install.js keeps install_count.json. */
 function goalLine(ns) {
   const reset = ns.getResetInfo()
   const counts = json(ns, "install_count.json")
-  return `Goal: BN${reset.currentNode} Cycle ${cycleNumber(counts, reset.lastNodeReset)}`
+  const target = json(ns, "run_target.json")
+  const sfLevel = Number(reset.ownedSF?.get?.(reset.currentNode) ?? 0)
+  const run = Number(target?.run) > 0 ? Number(target.run) : sfLevel + 1
+  return `Goal: BN${reset.currentNode} Run ${run} Cycle ${cycleNumber(counts, reset.lastNodeReset)}`
 }
 
 /** Installs recorded for this BitNode (matched by its lastNodeReset stamp), plus one. */

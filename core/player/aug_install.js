@@ -58,6 +58,12 @@ export async function main(ns) {
     }
     Object.assign(status, { homeRam: ns.getServerMaxRam("home"), homeCores: ns.getServer("home").cpuCores })
     status.installed = true
+    // Install count for this BitNode, read by the HUD's "Goal: BNx Cycle y" line.
+    const reset = ns.getResetInfo()
+    let counts = null
+    try { counts = JSON.parse(ns.read("install_count.json") || "null") } catch { /* rebuilt below */ }
+    const installs = counts && Number(counts.run) === Number(reset.lastNodeReset) ? Number(counts.installs) || 0 : 0
+    ns.write("install_count.json", JSON.stringify({ run: reset.lastNodeReset, node: reset.currentNode, installs: installs + 1 }), "w")
     ns.write("aug_install_status.json", JSON.stringify(status), "w")
     s.installAugmentations("startup.js")
   }

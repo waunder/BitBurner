@@ -477,6 +477,19 @@ function gangStatus(ns, now) {
 
 // Pinned above the sections: the run's goal and the current step, from the
 // hand-edited run_target.json, with live progress.
+/** "Goal: BN10 Cycle 2" (Ken, 2026-11-17). Cycle = installs this BitNode + 1; aug_install.js keeps install_count.json. */
+function goalLine(ns) {
+  const reset = ns.getResetInfo()
+  const counts = json(ns, "install_count.json")
+  return `Goal: BN${reset.currentNode} Cycle ${cycleNumber(counts, reset.lastNodeReset)}`
+}
+
+/** Installs recorded for this BitNode (matched by its lastNodeReset stamp), plus one. */
+export function cycleNumber(counts, lastNodeReset) {
+  const installs = counts && Number(counts.run) === Number(lastNodeReset) ? Number(counts.installs) || 0 : 0
+  return installs + 1
+}
+
 function runTargetStatus(ns, now) {
   const activity = json(ns, "player_activity_status.json")
   const activityFresh = activity?.ok && Number.isFinite(activity.ts) && now - activity.ts <= 300_000
@@ -530,6 +543,7 @@ function buildDisplay(ns, state, pos) {
   lines.push(COLORS.HEADER + "╔═══════════════════════════════════╗" + COLORS.RESET)
   lines.push(COLORS.HEADER + "║        CONSOLIDATED HUD           ║" + COLORS.RESET)
   lines.push(COLORS.HEADER + "╚═══════════════════════════════════╝" + COLORS.RESET)
+  lines.push(COLORS.SECTION + goalLine(ns) + COLORS.RESET)
   const target = runTargetStatus(ns, now)
   const finish = nodeCompletionLine(now, json(ns, "bladeburner_status.json"))
   if (finish) target.lines.push(finish)

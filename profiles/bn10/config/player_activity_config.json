@@ -7,6 +7,7 @@
   "covenantCloseFraction": 0.5,
   "priorityAugs": [],
   "priorityOnly": true,
+  "planByValue": true,
   "favorTarget": "Daedalus",
   "repBeforeGates": true,
   "focusWork": true,

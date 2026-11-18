@@ -10,13 +10,18 @@
  *   skipped, not bought (cheaper ones still are). With `only` and a non-empty `priority`, nothing
  *   outside `priority` is bought (no filler that raises NeuroFlux prices). Defaults change nothing.
  */
-export function planPurchases(offers, owned, money, priceStep = 1.9, priority = [], { maxStepPrice = Infinity, minValue = 0, only = false } = {}) {
+export function planPurchases(offers, owned, money, priceStep = 1.9, priority = [], { maxStepPrice = Infinity, minValue = 0, only = false, byValue = false } = {}) {
   const best = new Map()
   for (const offer of offers) {
     if (offer.rep < offer.repRequired || offer.name === NEUROFLUX) continue
     if (only && priority.length && !priority.includes(offer.name)) continue
     const seen = best.get(offer.name)
     if (!seen || offer.rep > seen.rep) best.set(offer.name, offer)
+  }
+  // `byValue` (needs offer.value): choose the set by value per added cost first, then buy it as below.
+  if (byValue) {
+    const keep = selectByValue([...best.values()], owned, money, priceStep, priority)
+    for (const name of [...best.keys()]) if (!keep.has(name)) best.delete(name)
   }
   const plan = []
   const held = new Set(owned)
@@ -44,6 +49,55 @@ export function planPurchases(offers, owned, money, priceStep = 1.9, priority = 
     plan.push(pick)
   }
   return { plan, left }
+}
+
+/** Total price of buying `prices` dearest first, each buy raising the next by `priceStep`. */
+export function ladderCost(prices, priceStep = 1.9) {
+  let step = 1
+  let cost = 0
+  for (const price of [...prices].sort((a, b) => b - a)) { cost += price * step; step *= priceStep }
+  return cost
+}
+
+/**
+ * Which augmentations to buy when `value` matters (2026-11-17: the dearest-first plan offered ADR-V2 +
+ * SmartSonar, value 0.14 for $3.46b, while Bionic Spine, Nanofiber Weave, Neurotrainer II and NutriGen gave
+ * 0.54 for $2.71b). Greedy on value added per extra ladder cost: each step adds the offer (with any
+ * missing prerequisite) whose value per added cost is highest and whose whole set still fits in `money`.
+ * Priority names are always kept; value-0 offers are never added. Buy order stays planPurchases' job.
+ * @returns {Set<string>} names to keep
+ */
+export function selectByValue(pool, owned, money, priceStep = 1.9, priority = []) {
+  const byName = new Map(pool.map((offer) => [offer.name, offer]))
+  const held = new Set(owned)
+  const keep = new Set(priority.filter((name) => byName.has(name) && !held.has(name)))
+  const withPrereqs = (offer) => {
+    const add = [offer.name]
+    for (const name of offer.prerequisites || []) {
+      if (held.has(name) || keep.has(name)) continue
+      if (!byName.has(name)) return null
+      add.push(name)
+    }
+    return add
+  }
+  const costOf = (names) => ladderCost([...names].map((name) => byName.get(name).price), priceStep)
+  let current = costOf(keep)
+  for (;;) {
+    let pick = null
+    for (const offer of pool) {
+      if (keep.has(offer.name) || held.has(offer.name) || !(Number(offer.value) > 0)) continue
+      const add = withPrereqs(offer)
+      if (!add) continue
+      const cost = costOf([...keep, ...add])
+      if (cost > money) continue
+      const gain = add.reduce((sum, name) => sum + (Number(byName.get(name).value) || 0), 0)
+      const score = gain / Math.max(cost - current, 1)
+      if (!pick || score > pick.score) pick = { add, cost, score }
+    }
+    if (!pick) return keep
+    for (const name of pick.add) keep.add(name)
+    current = pick.cost
+  }
 }
 
 /** Home RAM and cores survive an install, so leftover cash goes on the cheaper of the two. */

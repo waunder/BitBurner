@@ -394,6 +394,8 @@ Rep-ready names in `priorityAugs` (`player_activity_config.json`) always fit: a 
 augmentation is skipped rather than leave too little cash for them.
 With `priorityOnly: true` (same file) only the `priorityAugs` are bought, so no zero-value filler
 raises the price of the NeuroFlux levels bought after them (added 2026-11-13, install 10).
+With `planByValue: true` (same file; bn10 since 2026-11-17) the readiness plan is chosen by value per
+added ladder cost (`selectByValue`), and with `priorityAugs` empty `aug_install.js` buys that plan.
 A donation is made only if the cash left still covers the cheapest augmentation it newly
 unlocks (matters when prices are x5, as in BN10; in BN15 cash was never the limit).
 With `--install` it then spends the rest on home RAM and cores, cheapest first, because

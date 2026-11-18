@@ -155,14 +155,16 @@ function assess(ns, previous = null) {
     // What `aug_install.js` would buy right now, before NeuroFlux and home upgrades.
     let priority = []
     let priorityOnly = false
+    let byValue = false
     try {
       const activity = JSON.parse(ns.read("player_activity_config.json") || "{}")
       priority = activity.priorityAugs || []
       priorityOnly = activity.priorityOnly === true
+      byValue = activity.planByValue === true
     } catch {}
     const money = Number(player?.money) || 0
     const donated = withDonations(candidates, { money, repMult: Number(player?.mults?.faction_rep) || 0, donating, owned: includingQueued })
-    const { plan, left } = planPurchases(donated.candidates, includingQueued, donated.left, 1.9, priority, { only: priorityOnly })
+    const { plan, left } = planPurchases(donated.candidates, includingQueued, donated.left, 1.9, priority, { only: priorityOnly, byValue })
     const installPlan = {
       names: plan.map((item) => item.name), cost: money - left,
       factions: [...new Set(plan.map((item) => item.faction))],

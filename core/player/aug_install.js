@@ -25,7 +25,12 @@ export async function main(ns) {
     money -= gift.amount
     for (const item of offers) if (item.faction === gift.faction) item.rep = flags.dry ? gift.rep : s.getFactionRep(gift.faction)
   }
-  const { plan } = planPurchases(offers, owned, money, 1.9, config.priorityAugs || [], { only: config.priorityOnly === true })
+  // `planByValue`: with no priorityAugs, buy the readiness plan (chosen by value; this script has no values).
+  // An empty result (stale plan, cash moved) falls back to the plain plan.
+  const readinessPlan = JSON.parse(ns.read("augmentation_readiness.json") || "{}").installPlan?.names || []
+  const priority = config.priorityAugs?.length ? config.priorityAugs : (config.planByValue === true ? readinessPlan : [])
+  let { plan } = planPurchases(offers, owned, money, 1.9, priority, { only: config.priorityOnly === true || priority === readinessPlan })
+  if (!plan.length && priority === readinessPlan && priority.length) ({ plan } = planPurchases(offers, owned, money, 1.9, [], {}))
   const status = { ts: Date.now(), money: player.money, donations: made, plan: plan.map((item) => [item.name, item.faction, item.price]), bought: [], failed: [], neuroflux: 0, fluxDonated: 0, homeRam: 0, homeCores: 0, installed: false }
   if (!flags.dry) {
     for (const item of plan) (s.purchaseAugmentation(item.faction, item.name) ? status.bought : status.failed).push(item.name)

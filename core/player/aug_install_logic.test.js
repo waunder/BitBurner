@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { donationFor, donationPlan, fluxSeller, nextHomeUpgrade, planPurchases } from "./aug_install_logic.js"
+import { donationFor, donationPlan, fluxSeller, ladderCost, nextHomeUpgrade, planPurchases, selectByValue } from "./aug_install_logic.js"
 
 const offer = (name, price, extra = {}) => ({ name, faction: "F", rep: 10, repRequired: 5, price, prerequisites: [], ...extra })
 
@@ -82,4 +82,32 @@ test("only: buys nothing outside the priority list, so no filler raises later pr
   assert.deepEqual(planPurchases(offers, [], 100, 1.9, ["want", "also"], { only: true }).plan.map((item) => item.name), ["want", "also"])
   assert.deepEqual(planPurchases(offers, [], 100, 1.9, [], { only: true }).plan.map((item) => item.name), ["filler", "want", "also"])
   assert.deepEqual(planPurchases(offers, [], 100, 1.9, ["want"]).plan.map((item) => item.name), ["filler", "want", "also"])
+})
+
+test("ladderCost buys dearest first with the price step", () => {
+  assert.equal(ladderCost([1, 10], 2), 10 + 1 * 2)
+  assert.equal(ladderCost([], 1.9), 0)
+})
+
+test("byValue picks the cheap valuable set over the dearest low-value one (2026-11-17 batch)", () => {
+  const offers = [
+    offer("ADR-V2", 2.75, { value: 0.091 }), offer("SmartSonar", 0.375, { value: 0.052 }),
+    offer("Bionic Spine", 0.625, { value: 0.224 }), offer("Neurotrainer II", 0.225, { value: 0.098 }),
+    offer("NutriGen", 0.0125, { value: 0.073 }), offer("Speech Processor", 0.25, { value: 0 }),
+  ]
+  assert.deepEqual(planPurchases(offers, [], 3.48).plan.map((o) => o.name), ["ADR-V2", "SmartSonar"])
+  const { plan, left } = planPurchases(offers, [], 3.48, 1.9, [], { byValue: true })
+  assert.deepEqual(plan.map((o) => o.name), ["Bionic Spine", "SmartSonar", "Neurotrainer II", "NutriGen"])
+  assert.ok(!plan.some((o) => o.name === "Speech Processor"), "value 0 is never added")
+  assert.ok(left >= 0)
+  const value = plan.reduce((sum, o) => sum + o.value, 0)
+  assert.ok(value > 0.143, `value ${value}`)
+})
+
+test("selectByValue keeps priority names and adds a missing prerequisite with its dependant", () => {
+  const pool = [offer("p", 5, { value: 0 }), offer("gen2", 2, { value: 0.5, prerequisites: ["gen1"] }), offer("gen1", 1, { value: 0 })]
+  const keep = selectByValue(pool, [], 100, 1.9, ["p"])
+  assert.deepEqual([...keep].sort(), ["gen1", "gen2", "p"])
+  assert.deepEqual([...selectByValue(pool, [], 5, 1.9, ["p"])], ["p"])
+  assert.deepEqual(planPurchases(pool, [], 100, 1.9, [], { byValue: true }).plan.map((o) => o.name), ["gen1", "gen2"])
 })

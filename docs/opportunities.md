@@ -4,6 +4,11 @@ Running list kept by Claude on its own initiative (Ken, 2026-11-16: "exercise in
 for flaws and opportunities"). Newest first. Each entry: finding, evidence, expected gain, status.
 The 2-hourly check reviews this once per cycle (first run after an install).
 
+## 2026-11-17 23:15 check (BN10 run 4, install 2)
+
+- **Install plan chosen by value (open item "Interim install plan is dearest-first").** Evidence at 23:14: `installPlan` ADR-V2 + SmartSonar, value 0.14 for $3.46b, while Bionic Spine, Nanofiber Weave, Neurotrainer II and NutriGen were rep-ready for 0.54 at $2.71b (installed by hand via `priorityAugs`). The gang reserves `installPlan.cost`, so it also guarded the wrong batch. Change: `selectByValue` + `planPurchases(..., { byValue })` in aug_install_logic.js (greedy on value added per extra ladder cost, prerequisites kept, value 0 never added); readiness uses it when `planByValue` is true (bn10 config); aug_install.js buys the readiness plan when `priorityAugs` is empty, falling back to the plain plan if that is empty. Replayed on the 23:14 offers: $0.9b 0.37 (was 0.20), $2b 0.49 (0.07), $3.48b 0.53 (0.14), $8b 0.68 (0.14). Status: shipped 23:25, 654/654; not yet seen choosing a live batch (cash $3m after the install). Revert: `planByValue` false.
+- **Gang absorbs all cash above the plan.** Net cash/h fell to 31.9m in the last hour while income was 478m/h: gang gear spent $5.53b this cycle (B1 60%). With the plan now chosen by value it may be smaller, which lets the gang spend more. Question for next cycles: is that gear worth it against a larger batch? Watch `metrics.py spend` B1 and gang rep/h; status open.
+
 ## 2026-11-17 21:15 check (BN10 run 4, cycle 2 at 3.5h)
 
 - **Home RAM refused while a resident waited (Spending review item b).** The necessity rule saw demand only; a waiting resident that does not fit in free home RAM (after MCP's and the advisor's holds) can leave demand under the 0.5 floor. Gain: no resident left down for want of a home step the late cap allows. Status: shipped 21:17 (`blockedResidents` in capital_logic.js; capital_manager publishes `homeBlocked` and treats it as need, still under the late-cycle limit; allocator verdicts and grants treat it as necessity; 2 tests; 651/651). Live: `homeBlocked` [] (nothing waiting), demand 0.57. Home RAM stays `own` in valuation_flags until a blocked case shows up in the shadow log.
@@ -146,7 +151,7 @@ first sleeve augmentation batches; gang power after gear.
   95, Cloak 91; ops and black ops unlocking), so the dip the 09:15 plan feared did not show. Expected gain:
   shorter cycles once a worthwhile batch is affordable, so combat and Bladeburner augs compound sooner.
   Status: weigh at each install decision; no code.
-- **Interim install plan is dearest-first, not by value** (2026-11-16 13:15). With $0.94b and empty
+- **Interim install plan is dearest-first, not by value** (2026-11-16 13:15; shipped 2026-11-17 23:25 as `planByValue`, see that check). With $0.94b and empty
   `priorityAugs`, `installPlan` is FocusWire ($900m, value 0.06) + Neural Wit Amplifier (value 0), while Bionic
   Spine ($125m, 0.56), Combat Rib I ($24m, 0.19), Augmented Targeting II, Neurotrainer II/III, Bionic Legs
   ($375m, 0.47) are rep-ready. The gang's gear cap reserves `installPlan.cost`, so it guards the wrong batch.

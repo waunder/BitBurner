@@ -60,15 +60,8 @@ export async function main(ns) {
   if (request.startCctHud && !ns.isRunning("cct_hud.js", "home")) {
     if (ns.run("cct_hud.js", 1) === 0) ns.tprint("mcp_launch: failed to start cct_hud.js")
   }
-  // The focused XP panel is intentionally separate from Operations: the
-  // latter reports broad health, while this remains readable beside the money
-  // panel during player-led hacking progression.
-  for (const proc of ns.ps("home")) {
-    if (proc.filename.replace(/^\//, "") !== "mcp_xp.js") continue
-    ns.ui?.closeTail(proc.pid)
-    ns.kill(proc.pid)
-  }
-  if (ns.run("mcp_xp.js", 1) === 0) ns.tprint("mcp_launch: failed to start mcp_xp.js")
+  // mcp_xp.js (the XP/progression panel) was retired 2026-11-17 (Ken: its useful life is done).
+  // The file stays for a hand run; it is no longer started here, from startup.js or startup_browser.js.
   if (request.startScorecard) {
     const scorePid = ns.run("dnet_scorecard.js", 1)
     if (scorePid === 0) ns.tprint("mcp_launch: failed to start dnet_scorecard.js")

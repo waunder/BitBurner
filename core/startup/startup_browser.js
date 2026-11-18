@@ -51,7 +51,6 @@ const SCRIPTS = [
   "dnet_root.js",
   "maintenance_steward.js",
   "hud_consolidated.js",
-  "mcp_xp.js",
 ]
 
 export async function main(ns) {

@@ -79,6 +79,29 @@ def findings(name, data, now, stale_min, running):
     return flags
 
 
+def allocation_findings(money, manager, gap=0.5):
+    """Result checks across scripts: RAM earning far less per TB than another use of it.
+
+    Prompted by 2026-11-18: MCP made $0.2-0.7m/s per TB on ~21TB while stacks made $1-5m/s, and
+    silver-helix (est $55m/s) sat unstacked under a 60% fleet share. Every file was healthy, so
+    the per-file checks above said nothing; Ken spotted it from the money panel.
+    """
+    flags = []
+    yields = {y.get("label"): y.get("value") for y in (money or {}).get("yields", []) if isinstance(y.get("value"), (int, float))}
+    mcp = yields.pop("MCP targets", None)
+    if mcp is not None and yields:
+        low = min(yields.values())
+        if mcp < gap * low:
+            flags.append(f"MCP earns ${mcp / 1e6:.2f}m/s per TB, under {gap:.0%} of the weakest stack (${low / 1e6:.2f}m/s): give stacks more of the fleet?")
+    planned = {p.get("target") for p in (manager or {}).get("plan", [])}
+    floor = mcp if mcp is not None else 0
+    for est in (manager or {}).get("estimates", []):
+        if est.get("target") not in planned and est.get("perTB", 0) > 2 * floor and est.get("perSec", 0) > 0:
+            flags.append(f"{est['target']} not stacked: est ${est['perSec'] / 1e6:.1f}m/s at ${est['perTB'] / 1e6:.2f}m/s per TB, needs {est.get('ramNeeded', 0) / 1024:.0f}TB")
+            break
+    return flags
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--all", action="store_true", help="print healthy files too")
@@ -106,6 +129,17 @@ def main():
         elif args.all:
             print(f"ok {name}")
     print(f"audit: {flagged} of {len(names)} status files flagged")
+    loaded = {}
+    for name in ("money_status.json", "stack_manager_status.json"):
+        try:
+            raw = ctl("ctl-get", name)
+            loaded[name] = json.loads(raw["result"]) if raw.get("ok") else None
+        except Exception:
+            loaded[name] = None
+    results = allocation_findings(loaded["money_status.json"], loaded["stack_manager_status.json"])
+    for line in results:
+        print(f"$  {line}")
+    print(f"audit: {len(results)} allocation findings")
 
 
 if __name__ == "__main__":

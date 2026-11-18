@@ -462,6 +462,9 @@ never touches augmentations. While `mcp.js` is not running on home, it holds bac
 - **Reads:** `capital_policy.json` every pass (`enabled`, `reserve`,
   `homeRamTarget` default 512, `cloudFraction` default 0.5, `cloudDemandFloor` default 0.5, optional `lateCloudDemandFloor` and `earlyCycleHours`, `homeDemandFloor` default 0.5, `lateSpendFraction` default 0.01: after `earlyCycleHours` one home RAM step may cost at most that share of cash; `sleeve_buyer.js` uses the same `lateCycleLimit`). Set `enabled` false
   to stop purchases, or raise `reserve` to protect cash for augmentations.
+  Also reads `sleeve_buyer_status.json` `augHold` (early phase, under 2 min old): a cloud server or upgrade
+  that would leave cash under it saves instead (`sleeve aug hold $Nm`), so the sleeve buyer's batch can form
+  (2026-11-18; `sleeveAugHoldFrom`/`holdsCloudFor` in capital_logic.js). TOR, programs and home RAM ignore it.
 - **Writes:** `capital_status.json` with the last 50 purchases and `cyclePhase` (floor in use; early, late or fixed).
 - **Failure modes:** a refused purchase is recorded with `ok: false` and retried
   after 10s. Purchases are lost on augmentation install.
@@ -1766,7 +1769,9 @@ fresh sleeves buy (2026-11-08: thirty one-at-a-time purchases halved sleeve Homi
   income, scaled by memory/100 because sync restarts at memory. That share is an assumption, not
   a measurement. `paybackHours` is cost over that rate; null while income is 0.
 - **Writes:** `sleeve_buyer_status.json`: `idle` reason, or `income`, `sleeveCost`, `reserve`, `cyclePhase`,
-  `limits` (`lasting`, `wiped`: the most one purchase may cost), last
+  `limits` (`lasting`, `wiped`: the most one purchase may cost), `augHold` (early phase while saving: cash
+  for the cheapest acceptable aug batch over `sleeveAugBatchShare`, 0 above policy `sleeveAugHoldMax`,
+  default $150m, 0 turns it off; capital_manager keeps it from cloud buys), last
   `action` and `outcome`, and `purchases` (last 50) each with cost, payoff model and outcome
   (`ok`, game message, cash before and after).
 - **Failure modes:** a refused purchase is recorded with `ok: false` and retried after 30s.

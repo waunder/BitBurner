@@ -9,7 +9,7 @@
  * Start: run sleeve_buyer.js
  * @param {NS} ns
  */
-import { BN6_SLEEVE_AUGS, boughtFromCost, chooseNextPurchase, chooseSleeveAugBatch, chooseSleevePurchase, eligibility, smoothIncome } from "sleeve_buyer_logic.js"
+import { BN6_SLEEVE_AUGS, boughtFromCost, chooseNextPurchase, chooseSleeveAugBatch, chooseSleevePurchase, eligibility, sleeveAugHold, smoothIncome } from "sleeve_buyer_logic.js"
 import { lateCycleLimit } from "capital_logic.js"
 
 const STATUS = "sleeve_buyer_status.json"
@@ -86,8 +86,11 @@ export async function main(ns) {
     const augTotals = { all: total(() => true), wanted: total((a) => !wanted || wanted.includes(a.name)) }
     const augs = list.map((s, i) => ({ ...s, priority: priorityOf(s.index),
       augs: augLimit > 0 && s.shock === 0 && (!freshOnly || s.exp < 1000) ? offers[i] : [] }))
-    const pick = chooseNextPurchase({ covenant, aug: chooseSleeveAugBatch({ sleeves: augs, spendable: augLimit, wanted, freshOnly,
-      batchShare: Number(policy.sleeveAugBatchShare) || 0.5 }) })
+    const batchShare = Number(policy.sleeveAugBatchShare) || 0.5
+    const pick = chooseNextPurchase({ covenant, aug: chooseSleeveAugBatch({ sleeves: augs, spendable: augLimit, wanted, freshOnly, batchShare }) })
+    // Cash capital_manager keeps from cloud buys while sleeve augs may still buy (early phase only).
+    const augHold = wiped.limit > 0 && pick.kind === "save" ? sleeveAugHold({ batchShare, wanted, freshOnly,
+      max: policy.sleeveAugHoldMax ?? 150e6, sleeves: list.map((s, i) => ({ ...s, augs: offers[i] })) }) : 0
     let outcome = null
     if (pick.kind !== "save") {
       const result = pick.kind === "sleeve" ? ns.sleeve.purchaseSleeve()
@@ -101,7 +104,7 @@ export async function main(ns) {
     }
     last = { at: now, cash: ns.getServerMoneyAvailable("home") }
     write({ ok: true, income, sleeveCost, covenant: covenantBlock ?? "member", reserve: Number(policy.reserve) || 0,
-      cyclePhase, limits: { lasting: lasting.limit, wiped: wiped.limit }, augTotals, action: pick, outcome })
+      cyclePhase, limits: { lasting: lasting.limit, wiped: wiped.limit }, augHold, augTotals, action: pick, outcome })
     await ns.sleep(outcome?.ok ? 200 : POLL_MS)
   }
 }

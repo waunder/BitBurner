@@ -47,6 +47,20 @@ export function lateCycleLimit({ policy = {}, hoursSinceInstall = 0, cash = 0, l
   return { phase: "late", limit: Math.max(0, cash) * Number(policy.lateSpendFraction ?? 0.01) }
 }
 
+/** Cash sleeve_buyer.js asks to be held for its next augmentation batch (`augHold` in its status), or 0
+ * when the status is missing, older than `maxAgeMs`, or not in the early phase. Only cloud buys respect
+ * it (holdsCloudFor); TOR, port openers and home RAM still come first. */
+export function sleeveAugHoldFrom(status, now, maxAgeMs = 120_000) {
+  if (!status || status.cyclePhase !== "early" || !(now - Number(status.ts) < maxAgeMs)) return 0
+  return Math.max(0, Number(status.augHold) || 0)
+}
+
+/** True when a cloud server or upgrade would leave cash under `hold` (sleeveAugHoldFrom). */
+export function holdsCloudFor(action, spendable, hold) {
+  if (!(hold > 0) || !action || (action.kind !== "cloud" && action.kind !== "upgrade")) return false
+  return spendable - (Number(action.cost) || 0) < hold
+}
+
 export function chooseCapitalAction({ spendable, hasTor, torCost = 200e3, programs = [], homeRam, homeRamTarget, homeRamCost,
   cloud = [], cloudLimit = 0, cloudQuotes = [], upgradeQuotes = [], cloudFraction = 0.5, incomePerSec = 0, saveWindowSec = 300, homeRamFloor = 128, ramUtilization = 1, cloudDemandFloor = 0.5,
   homeDemand = 1, homeDemandFloor = 0.5, homeSpendLimit = Infinity, mcpBlocked = false, mcpStarvedRam = 0, portsNeeded = Infinity, homeBlocked = false }) {

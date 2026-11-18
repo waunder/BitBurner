@@ -12,7 +12,7 @@
  */
 import { readStacks } from "stack_files.js"
 import { flagFor, grantFor, kindOf } from "valuation_logic.js"
-import { PROGRAMS, chooseCapitalAction, portsUseful, cloudDemandFloorFor, lateCycleLimit, nextScriptToStart, blockedResidents } from "capital_logic.js"
+import { PROGRAMS, chooseCapitalAction, portsUseful, cloudDemandFloorFor, lateCycleLimit, nextScriptToStart, blockedResidents, holdsCloudFor, sleeveAugHoldFrom } from "capital_logic.js"
 
 const POLICY = "capital_policy.json"
 const STATUS = "capital_status.json"
@@ -189,6 +189,10 @@ export async function main(ns) {
       homeDemand = input.homeDemand
       portsNeeded = input.portsNeeded
       action = chooseCapitalAction(input)
+      // Early in a cycle, leave sleeve_buyer.js the cash for its next aug batch (BN10 run 4 cycle 3: cloud
+      // upgrades took every dollar and no sleeve aug was bought). Set sleeveAugHoldMax 0 to turn off.
+      const sleeveHold = sleeveAugHoldFrom((() => { try { return JSON.parse(ns.read("sleeve_buyer_status.json") || "null") } catch { return null } })(), now)
+      if (holdsCloudFor(action, input.spendable, sleeveHold)) action = { kind: "save", reason: `sleeve aug hold $${Math.round(sleeveHold / 1e6)}m`, refused: { ...action } }
       // R2 (docs/allocator-design.md): a kind flagged "valued" in valuation_flags.json obeys the
       // allocator's grant. Shadow evidence: BN6 run 1's last cycle bought $276b of cloud RAM the
       // allocator refused (hacking earned $211b against $317b of servers); BN10 run 3 it granted all

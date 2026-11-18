@@ -135,13 +135,14 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-17 23:15 (scheduled run, BN10 run 4): install 2 at 23:16 (4 augs + NeuroFlux x3, 7 -> 12); install planner can now choose by value.**
-Before (probe 23:14): BitNode 10, $3.49b, hacking 148, str/def 95, dex/agi 113, karma -75.6k, home 512GB, 7 installed, 0 queued. Gang 12 members, Slum Snakes rep 284k.
-Measured (25 samples, 21:10-23:10): rep/h Slum Snakes 92.1k, Tetrads 10k, Tian Di Hui 3.61k; hackExp/h 580k; cash/h (income) 478m; MCP avg 324k/s. Trend: cash/h DECELERATING (net 31.9m last hour: the gang buys gear with all cash above the install plan, $5.53b this cycle), Slum Snakes rep ACCELERATING.
-Audit 0 of 33. Advisor install (Bionic Arms +2.0%/h < cycle +2.6%/h); decision install, with a value batch instead of its dearest-first plan. Backup checked; all residents back; graft_controller.js (dry) restarted.
-Shipped: `planByValue` (bn10 config): readiness picks the batch by value per added ladder cost (`selectByValue`), aug_install buys that plan. 3 tests; 654/654. Live: runs, empty plan at $3m (correct). Not yet seen choosing a batch.
+**2026-11-18 01:15 (scheduled run, BN10 run 4, cycle 3 at 1.9h): cycle review; sleeve aug hold shipped; no install.**
+Live (probe 01:14): BitNode 10, $454m, hacking 125, str/def 138/132, dex/agi 115, karma -80.2k, home 512GB, 12 installed, 0 queued. Gang Slum Snakes rep 632k.
+Measured (23 samples, 23:20-01:10): rep/h Slum Snakes 300k, Tetrads 7.91k, Tian Di Hui 3.1k; hackExp/h 283k; cash/h 120m; MCP avg 19.5k/s. Trend n/a (cycle under 3h).
+Audit 0 of 33. Gap: sleeve_buyer bought 0 augs this cycle; capital's $7m cloud upgrades ($338m, 48 buys) took all early cash.
+Shipped: sleeve aug hold (`augHold` in sleeve_buyer_status.json; capital_manager keeps it from cloud buys in the early phase; policy `sleeveAugHoldMax` $150m, 0 off). 2 tests; 656/656; both restarted 01:38, late phase so hold 0.
+Advisor wait (gang minimum 2.0h); installPlan empty at this cash; allocator projects ABN + INFRARET $15.3b at ~9.9h. Decision wait (agree).
 End check: 12 installed, no Red Pill, no World Daemon. Not notified.
-**Next run (01:15): check the by-value installPlan once cash builds (and that the gang's reserve follows it); sleeve augs in the early phase; grafting G7 still needs $1b+ spare and Ken told first.**
+**Next run (03:15): install timing vs the by-value plan as cash builds; gang reserve while installPlan is empty; after install 3, confirm sleeve aug buys in the first 1.5h. Grafting G7 still needs $1b+ spare and Ken told first.**
 
 ## Daedalus ready (2026-11-16 21:35)
 

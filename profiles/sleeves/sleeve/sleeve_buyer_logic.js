@@ -130,6 +130,31 @@ export function chooseSleeveAugBatch({ sleeves = [], spendable, batchShare = 0.5
     model: "sleeve augmentation batch: one exp reset, multiplies the sleeve's stats until the next install", paybackHours: null }
 }
 
+/**
+ * Cash chooseSleeveAugBatch needs before it buys anything: the cheapest acceptable batch over all
+ * sleeves (a fresh sleeve's cheapest aug; otherwise its `minAugs` cheapest, or its whole remaining
+ * set), divided by `batchShare`. 0 when no sleeve has a batch to buy or the need is over `max`.
+ * capital_manager holds this much from cloud buys early in a cycle: its ~$7m upgrades otherwise keep
+ * cash under any batch (BN10 run 4 cycle 3: $338m of cloud, 0 sleeve augs).
+ */
+export function sleeveAugHold({ sleeves = [], batchShare = 0.5, wanted = null, freshOnly = false, freshExp = 1000, minAugs = 3, max = 150e6 } = {}) {
+  let least = Infinity
+  for (const s of sleeves) {
+    if (Number(s.shock) !== 0) continue
+    const fresh = (Number(s.exp) || 0) < freshExp
+    if (freshOnly && !fresh) continue
+    const costs = (s.augs || []).filter((a) => !wanted || wanted.includes(a.name))
+      .map((a) => Number(a.cost)).filter(Number.isFinite).sort((a, b) => a - b)
+    if (!costs.length) continue
+    const take = fresh ? 1 : Math.min(minAugs, costs.length)
+    least = Math.min(least, costs.slice(0, take).reduce((t, c) => t + c, 0))
+  }
+  if (!Number.isFinite(least) || !(batchShare > 0)) return 0
+  // Past the cap, holding would stall cloud buys without ever enabling a batch.
+  const need = least / batchShare
+  return need <= Math.max(0, Number(max) || 0) ? need : 0
+}
+
 /** A Covenant sleeve first, then augmentations, then memory; `covenant` is null outside The Covenant. */
 export function chooseNextPurchase({ covenant = null, aug = null } = {}) {
   if (covenant?.kind === "sleeve") return covenant

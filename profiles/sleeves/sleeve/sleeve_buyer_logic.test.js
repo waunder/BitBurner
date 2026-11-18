@@ -1,6 +1,18 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { chooseNextPurchase, chooseSleeveAugBatch, chooseSleevePurchase, eligibility, memoryCost, payoff, smoothIncome } from "./sleeve_buyer_logic.js"
+import { chooseNextPurchase, chooseSleeveAugBatch, chooseSleevePurchase, eligibility, memoryCost, payoff, sleeveAugHold, smoothIncome } from "./sleeve_buyer_logic.js"
+
+test("sleeveAugHold is the cash for the cheapest acceptable batch, capped", () => {
+  const augs = [{ name: "a", cost: 10e6 }, { name: "b", cost: 2e6 }, { name: "c", cost: 5e6 }, { name: "d", cost: 50e6 }]
+  // Seasoned sleeve: three cheapest (2+5+10) at batchShare 0.5.
+  assert.equal(sleeveAugHold({ sleeves: [{ index: 0, shock: 0, exp: 5000, augs }] }), 34e6)
+  // Fresh sleeve: cheapest one is enough.
+  assert.equal(sleeveAugHold({ sleeves: [{ index: 0, shock: 0, exp: 0, augs }] }), 4e6)
+  // Shocked sleeves and empty offers ask nothing; a need over the cap holds nothing.
+  assert.equal(sleeveAugHold({ sleeves: [{ index: 0, shock: 5, exp: 0, augs }, { index: 1, shock: 0, exp: 0, augs: [] }] }), 0)
+  assert.equal(sleeveAugHold({ sleeves: [{ index: 0, shock: 0, exp: 5000, augs }], max: 20e6 }), 0)
+  assert.equal(sleeveAugHold({ sleeves: [{ index: 0, shock: 0, exp: 5000, augs }], freshOnly: true }), 0)
+})
 
 test("memory cost follows the game formula", () => {
   assert.equal(memoryCost(1, 1), 1e12)

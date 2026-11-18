@@ -1,6 +1,19 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { chooseCapitalAction, portsUseful, cloudDemandFloorFor, lateCycleLimit, nextScriptToStart, blockedResidents } from "./capital_logic.js"
+import { chooseCapitalAction, portsUseful, cloudDemandFloorFor, lateCycleLimit, nextScriptToStart, blockedResidents, holdsCloudFor, sleeveAugHoldFrom } from "./capital_logic.js"
+
+test("cloud buys leave the sleeve buyer's early-phase hold; other kinds and stale holds do not", () => {
+  const now = 1_000_000
+  assert.equal(sleeveAugHoldFrom({ ts: now - 10_000, cyclePhase: "early", augHold: 50e6 }, now), 50e6)
+  assert.equal(sleeveAugHoldFrom({ ts: now - 10_000, cyclePhase: "late", augHold: 50e6 }, now), 0)
+  assert.equal(sleeveAugHoldFrom({ ts: now - 300_000, cyclePhase: "early", augHold: 50e6 }, now), 0)
+  assert.equal(sleeveAugHoldFrom(null, now), 0)
+  assert.equal(holdsCloudFor({ kind: "upgrade", cost: 7e6 }, 40e6, 50e6), true)
+  assert.equal(holdsCloudFor({ kind: "cloud", cost: 7e6 }, 60e6, 50e6), false)
+  assert.equal(holdsCloudFor({ kind: "program", cost: 7e6 }, 10e6, 50e6), false)
+  assert.equal(holdsCloudFor({ kind: "home", cost: 7e6 }, 10e6, 50e6), false)
+  assert.equal(holdsCloudFor({ kind: "upgrade", cost: 7e6 }, 10e6, 0), false)
+})
 
 const base = { spendable: 0, hasTor: true, homeRam: 512, homeRamTarget: 512, homeRamCost: 1, cloud: [], cloudLimit: 25 }
 

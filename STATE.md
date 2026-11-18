@@ -44,6 +44,9 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 
 ## Standing settings (live, nothing to undo at installs)
 
+- **Check-in every 3 hours until the weekly limit resets** (2026-11-18 16:40): weekly usage was 70% with 2d 20h
+  left. After the reset (2026-11-21 13:00), put `bitburner-bn15-progress` back to cron `7 1-23/2 * * *` if usage
+  allows. Each check-in now also reviews one row of `docs/number-review.md` (step 5c).
 - **Monitors may always be killed for RAM** (Ken, 2026-11-11): HUD (`hud_consolidated.js`, `ops_hud.js`),
   `run_report.js`, `mcp_xp.js`, `get_target_stats.js`. While MCP waits for room (`capacity-wait`), `capital_manager`
   holds its smallest batch's RAM so they are not relaunched, and buys the cheapest cloud server that fits one batch

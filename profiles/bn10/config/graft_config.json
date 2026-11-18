@@ -1,6 +1,6 @@
 {
   "enabled": true,
-  "dry": true,
+  "dry": false,
   "allow": [],
   "block": [],
   "maxPriceFractionOfCash": 0.25,
@@ -12,5 +12,5 @@
   "allowDuringKarma": false,
   "focus": false,
   "cooldownMs": 600000,
-  "stage": "G5 dry run (BN10 run 4)"
+  "stage": "live, agent's judgement (Ken approved 2026-11-18 12:30 after the first graft, Bionic Arms)"
 }

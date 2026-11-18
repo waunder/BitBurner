@@ -148,7 +148,7 @@ End check: 24 installed, no Red Pill, no World Daemon. Not notified.
 predicted 1.077h), finished 12:20:48 (1.083h actual); now owned (25 installed), entropy 1; player back on work by 12:25. Cause: the
 Remote API daemon syncs every manifest file on change, so editing the repo's `graft_config.json` went live before the refused
 `ctl-push` and the revert; the revert then set dry again. **Rule: an edit to any synced file in profiles/ or core/ is a live push.**
-G7 is therefore done; live grafting is now the agent's judgement per the plan, pending Ken's answer on the permission question.
+G7 is therefore done. **Ken 2026-11-18 12:30: "proceed on your judgement"** — live grafting is the agent's call: `graft_config.json` dry false, allow [] (the planner picks within its caps). Change caps or block names in that file; `enabled: false` stops new grafts.
 **Next run (13:15): install judgement (4h minimum passes 13:16); gang_gear "valued" at cycle 5 close; measure Bionic Arms' effect.**
 
 ## Daedalus ready (2026-11-16 21:35)

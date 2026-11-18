@@ -242,6 +242,9 @@ To run G7: tell Ken (done in the 05:15 run report), wait for $1b+ spare above th
 `allow: ["<first pick>"]`, `focus: false`, push the config, and watch the round trip in `graft_log.txt`.
 2026-11-18 09:15: still waiting on cash. Install 4 used the money-mode cash ($29.5b against a $27.4b plan, only
 ~$2b spare at the very end); controller restarted dry after the install. Expect the chance in cycle 5's money phase.
+2026-11-18 11:15: conditions met ($2.5b spare; dry pick Bionic Arms $825m, 1.08h, net 0.111). The config push
+(`dry: false`, `allow: ["Bionic Arms"]`) was refused by the scheduled session's permission check; reverted, still dry.
+Waiting on Ken's go-ahead or a permission rule for `tools/bb_remote.py ctl-push`.
 
 ## G6 results (2026-11-17 19:17, BN10 run 4)
 

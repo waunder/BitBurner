@@ -137,13 +137,14 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-18 09:15 (scheduled run, BN10 run 4): install 4 at 09:16 (7 Slum Snakes augs + NF x2, 17 -> 24); Covenant 20-aug gate met.**
-Live (probe 09:14, before install): BitNode 10, $29.5b, hacking 183, str/def/dex/agi 173/169/152/145, karma -89.0k, home 512GB. After (09:16): $36m, hacking 1, 24 installed, 0 queued.
-Measured (24 samples, 07:15-09:10): rep/h Slum Snakes 377k, Tetrads 15.8k; hackExp/h 1.87m; cash/h 15.2b (gang money mode since ~07:30); MCP avg 502k/s. Trend: cash/h ACCELERATING; Slum Snakes rep DECELERATING (gang left reputation mode at 3.5m, as designed).
-Install: advisor wait only for the 4h gang minimum (passed 09:15:47); batch value 0.89, $27.4b. Decision install. Backup saves/pre-install-bn10run4-4-20261118-0920.json.gz. Cycle 4: 3.99h, rebuild 1.82h, Slum Snakes 4.13m.
-Shipped: gang-controller.js obeys allocator grants when `gang_gear`/`gang_augs` are "valued" (`grantFilter`, 660/660); flag not flipped yet. Audit 0 of 33; all 7 sleeves on Mug; graft_controller restarted (dry).
+**2026-11-18 11:15 (scheduled run, BN10 run 4): cycle review after install 4; first live graft ready but held (permission refused); no install.**
+Live (probe 11:14): BitNode 10, $7.85b, hacking 178, str/def/dex/agi 265/281/185/330, karma -91.3k, home 512GB, 7 sleeves, 24 installed, 0 queued. Gang money mode (Slum Snakes 3.68m rep, past 3.5m before 2h).
+Measured (23 samples, 09:20-11:10): rep/h Slum Snakes 2.09m, Tetrads 20.4k; hackExp/h 1.66m; cash/h 1.76b (last hour 4.74b); MCP avg 229k/s. Trend n/a (cycle under 3h).
+Audit 0 of 33. Spend cycle 5: cloud $2.48b, sleeve augs $173m early, gang $232m; B1 12.7%. All 7 sleeves working (0 Tetrads, 1 Tian Di Hui, 2-6 Mug).
+Install: advisor wait (gang 4h minimum, ~13:16); plan Combat Rib III, Augmented Targeting III, SmartSonar, CSP Gen I, $5.45b, value 0.34. Decision wait.
+Grafting G7: dry controller picks Bionic Arms ($825m, 1.08h, net 0.111; player is 89k Tetrads rep / 3.9h from buying it); $2.5b spare above the plan. Setting `dry: false` was refused by the session's permission check, so reverted; **needs Ken's go-ahead** (or a permission rule for `bb_remote.py ctl-push`).
 End check: 24 installed, no Red Pill, no World Daemon. Not notified.
-**Next run (11:15): new-cycle `metrics.py cycles`; gang back to 3.5m rep then money mode; first live graft (G7) once $1b+ is spare above the plan; flip `gang_gear` to "valued" after a clean cycle 5 shadow.**
+**Next run (13:15): install judgement (4h minimum passes 13:16); gang_gear "valued" at cycle 5 close; G7 if Ken allows.**
 
 ## Daedalus ready (2026-11-16 21:35)
 

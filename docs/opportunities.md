@@ -4,6 +4,11 @@ Running list kept by Claude on its own initiative (Ken, 2026-11-16: "exercise in
 for flaws and opportunities"). Newest first. Each entry: finding, evidence, expected gain, status.
 The 2-hourly check reviews this once per cycle (first run after an install).
 
+## 2026-11-18 11:15 check (BN10 run 4, cycle review after install 4)
+
+- **Graft Bionic Arms instead of grinding Tetrads rep.** Evidence: `graft_status.json` 11:14 decision Bionic Arms, $825m, 1.08h, net value 0.111 (0.103 v/h vs alternative 0.053); the player has spent cycles 3-5 on Tetrads work and is still 89k rep (3.9h) short; cash $7.96b vs plan $5.45b. Gain: the aug about 3h sooner, the player freed for the next goal, no 1.9x ladder step. Status: blocked; the live config push was refused by the session's permission check. Waiting on Ken.
+- **Gang reaches 3.5m sooner each cycle.** Evidence: cycle 5 3.68m at 1.9h (2.09m/h, 23 samples) vs cycle 4 about 2.25h. Gain: longer money phase per cycle. Status: watch; the 4h minimum now sets the install, not rep.
+
 ## 2026-11-18 09:15 check (BN10 run 4, install 4)
 
 - **Gang money mode is now the main income.** Evidence: cash/h 15.2b (24 samples, 07:15-09:10) vs 144m in the reputation-mode part of cycle 4; $0.33b -> $29.5b in 2h, which paid for a 7-aug batch (value 0.89). The 21:15 note "gang money mode not worth it" was right at 25k rep/h and 9 members, not at 12 members with ascensions. Gain: the rep-to-3.5m stretch now decides the cycle length. Status: open. The rep target is close to what the next batch needs (Graphene Bionic Spine 3.25m rep, value 0.75; Bone Lacings 2.25m), so no change now; next cycle measure hours to 3.5m and money-mode $/h.

@@ -108,6 +108,10 @@ export async function main(ns) {
 
   // This scout's own RAM frees on exit, which keeps room for a later chain to pass through.
   const leavePromoter = () => {
+    // Never on the darkweb gateway (2026-11-18): its 16GB must hold the manager, phishing and the
+    // 7.3GB crawler. A promoter there blocked every recrawl for ~19h after install 1, so the network
+    // never rebuilt and darknet income stayed at zero.
+    if (host === "darkweb") return 0
     const threads = promoteThreads(ns.getServerMaxRam(host), ns.getServerUsedRam(host), PROMOTE_RAM)
     return threads > 0 ? ns.exec(PROMOTE, host, { threads, preventDuplicates: true }) : 0
   }

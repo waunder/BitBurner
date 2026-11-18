@@ -42,7 +42,11 @@ and where it is already built in. Newest BitNode first. Started 2026-11-16 at th
    (HUDs, money, run_report, gang-status, dnet_hud...) close the old copy's window and kill it when a new copy starts; a
    kill first leaves an orphan window the API can no longer close (2026-11-17: three stale HUD windows). Exceptions
    without the cleanup: mcp_status.js, tail_mcp.js.
-11. **One-off probes beat guesses.** Small scripts that write one JSON file (bb_probe.js, bn_probe.js,
+11. **Watch income by source, not just total cash.** After install 1 in BN10 run 4, a charisma worker (`dnet_promote.js`)
+   took the darkweb gateway's spare RAM, the 7.3GB crawler could not run, the darknet never rebuilt after the install, and its
+   income was exactly $0 for ~19h over four cycles while cash still rose. The promoter is now barred from the gateway, and the
+   2-hourly check compares each source's $/h with the previous cycle's.
+12. **One-off probes beat guesses.** Small scripts that write one JSON file (bb_probe.js, bn_probe.js,
    sleeve price reads) settled questions in minutes. Delete them after.
 
 ## BN6 (Bladeburners), run 1: 2026-11-14 17:15 to 2026-11-16 21:47 (about 52.5 hours)

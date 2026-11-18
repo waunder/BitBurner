@@ -296,3 +296,34 @@ export function rankCatalog(rows, weights, { cured = false, noPrereqs = false, c
   ranked.sort((a, b) => b.perHour - a.perHour)
   return ranked
 }
+
+export const GRAFT_CITY = "New Tokyo"
+
+/**
+ * One live-controller step (G7). Pure. Live acts only with config.dry === false AND a non-empty allow
+ * list (the first grafts are supervised by name). While the player's work is GRAFTING the controller
+ * holds the player. lastStartedAt guards against retrying a start that failed within cooldownMs.
+ * Returns {mode, act: "none"|"hold"|"start", ownsPlayer, reason, name?, needTrip?, focus?}.
+ */
+export function liveGraftStep({ config, plan, workType, city, previous, now }) {
+  const cfg = { ...DEFAULT_GRAFT_CONFIG, ...(config || {}) }
+  if (cfg.dry !== false) return { mode: "dry", act: "none", ownsPlayer: false, reason: "dry" }
+  if (workType === "GRAFTING") return { mode: "live", act: "hold", ownsPlayer: true, reason: "grafting" }
+  if (!Array.isArray(cfg.allow) || cfg.allow.length === 0) {
+    return { mode: "live", act: "none", ownsPlayer: false, reason: "live needs an allow list" }
+  }
+  if (!plan?.pick) return { mode: "live", act: "none", ownsPlayer: false, reason: "no pick" }
+  const started = Number(previous?.lastStartedAt)
+  if (Number.isFinite(started) && Number(now) - started < cfg.cooldownMs) {
+    return { mode: "live", act: "none", ownsPlayer: false, reason: "start cooldown" }
+  }
+  return {
+    mode: "live", act: "start", ownsPlayer: true, reason: "start", name: plan.pick.name,
+    needTrip: city !== GRAFT_CITY, focus: Boolean(cfg.focus),
+  }
+}
+
+/** True when the previous status recorded a graft in progress and the player is no longer grafting. */
+export function graftEnded(previous, workType) {
+  return Boolean(previous?.grafting?.name) && workType !== "GRAFTING"
+}

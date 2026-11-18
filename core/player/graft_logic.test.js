@@ -295,3 +295,33 @@ test("graftInputs builds planGraft input from status files (G5 dry controller)",
   assert.equal(planGraft(empty).pick, null);
   assert.equal(decisionKey(planGraft(base({}))), `pick:${planGraft(base({})).pick.name}`);
 });
+
+import { liveGraftStep, graftEnded, GRAFT_CITY } from "./graft_logic.js";
+
+test("liveGraftStep stays dry unless dry is false", () => {
+  const plan = { pick: { name: "Bionic Spine" } };
+  assert.equal(liveGraftStep({ config: {}, plan, now: 0 }).act, "none");
+  assert.equal(liveGraftStep({ config: { dry: true, allow: ["Bionic Spine"] }, plan, now: 0 }).mode, "dry");
+});
+
+test("liveGraftStep needs an allow list, holds while grafting, and travels to New Tokyo", () => {
+  const plan = { pick: { name: "Bionic Spine" } };
+  const live = { dry: false, allow: ["Bionic Spine"] };
+  assert.equal(liveGraftStep({ config: { dry: false }, plan, now: 0 }).reason, "live needs an allow list");
+  const hold = liveGraftStep({ config: { dry: false }, plan: null, workType: "GRAFTING", now: 0 });
+  assert.equal(hold.act, "hold"); assert.equal(hold.ownsPlayer, true);
+  assert.equal(liveGraftStep({ config: live, plan: null, now: 0 }).reason, "no pick");
+  const away = liveGraftStep({ config: live, plan, city: "Chongqing", now: 0 });
+  assert.equal(away.act, "start"); assert.equal(away.needTrip, true); assert.equal(away.name, "Bionic Spine");
+  assert.equal(liveGraftStep({ config: live, plan, city: GRAFT_CITY, now: 0 }).needTrip, false);
+});
+
+test("liveGraftStep waits out the start cooldown; graftEnded sees the finish", () => {
+  const plan = { pick: { name: "Bionic Spine" } };
+  const live = { dry: false, allow: ["Bionic Spine"], cooldownMs: 600000 };
+  assert.equal(liveGraftStep({ config: live, plan, previous: { lastStartedAt: 1000 }, now: 2000 }).reason, "start cooldown");
+  assert.equal(liveGraftStep({ config: live, plan, previous: { lastStartedAt: 1000 }, now: 700000 }).act, "start");
+  assert.equal(graftEnded({ grafting: { name: "Bionic Spine" } }, "FACTION"), true);
+  assert.equal(graftEnded({ grafting: { name: "Bionic Spine" } }, "GRAFTING"), false);
+  assert.equal(graftEnded({ grafting: null }, "FACTION"), false);
+});

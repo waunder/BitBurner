@@ -4,6 +4,12 @@ Running list kept by Claude on its own initiative (Ken, 2026-11-16: "exercise in
 for flaws and opportunities"). Newest first. Each entry: finding, evidence, expected gain, status.
 The 2-hourly check reviews this once per cycle (first run after an install).
 
+## 2026-11-18 05:15 check (BN10 run 4, install 3)
+
+- **Gang gear vs the allocator, first window with a live reserve.** Evidence: `allocator_shadow_log.txt` gang_gear rows 03:17-05:15: 257 grant ($2.10b), 23 sweep ($0.27b); `metrics.py spend` gang_expenses $4.32b in cycle 3 ($2.37b after the 03:17 fix). The allocator would have kept $0.27b (11%) for the batch. Gain if "valued": about $0.1b/h late in a cycle. Status: open; one 2h window is thin. Judge over cycle 4 (install 3 at 05:15), then move gang_gear to "valued" if agreement stays high and sweeps are batch-relevant.
+- **Covenant gate is now the 20-aug count as much as the stats.** Evidence: 17 installed after install 3; The Covenant needs 20 installed, hacking and combat 850 and $75b (FactionInfo.tsx). Gain: plan the next batch for count as well as value (cheap augs such as SmartSonar $375m and Combat Rib II add count); grafts also count. Status: open; weigh in the next install choice.
+- **Grafting live path built (G7 code).** Status: shipped dry 05:25 (grafting-plan.md G7 section); the first live graft waits on $1b+ spare above the batch and a line to Ken.
+
 ## 2026-11-18 03:15 check (BN10 run 4)
 
 - **By-value install plan was always empty.** Evidence: `installPlan` [] at $1.95b with Neurotrainer III ($0.65b, 0.128), Combat Rib I and others rep-ready; readiness called `planPurchases(..., { byValue })` before `advise()` set `value` on the candidates, and `selectByValue` skips offers without one. Knock-on: gang `reserveInstallPlan` reserved $0, so gang gear took $1.95b of this cycle's late earnings (B1 49%); advisor saw batchValue 0. Gain: the batch keeps its cash (~$1-2b per cycle), aug_install's `planByValue` path buys a real batch, and the advisor judges a real batch. Status: shipped 03:17 (`augValuer` in augmentation_readiness.js); live plan 5 augs $1.73b, value 0.27; gang cashBudget $19.6m. Closes "Gang reserve reads an empty plan" below.

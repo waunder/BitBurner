@@ -3472,12 +3472,16 @@ Plan and gates: `docs/grafting-plan.md`. Pure logic in `graft_logic.js` (core/pl
 - `graft_scan_meta.js` (bn10 profile, one-shot): reads `graft_scan_raw.json` and `run_target.json` `augWeights`; adds
   stats and prereqs; writes `graft_catalog.json` {ts, resetAt, graftable, count, top, topCombat, rows}. If it does
   not start for RAM, run it by hand after graft_scan.js.
-- `graft_controller.js` (bn10 profile, 2.1GB, not in startup; dry only, step G5): `run graft_controller.js`. Every 60s reads
-  `graft_catalog.json`, `augmentation_readiness.json`, `sleeve_status.json`, `player_activity_status.json`, `run_target.json`,
-  `graft_config.json`; applies `planGraft` (inputs from `graftInputs`); writes `graft_status.json` {ts, mode, entropy, cash,
-  installPlanCost, alternativeRate, decision, blocked, rejectedCounts} and appends to `graft_log.txt` when the decision
-  changes (trimmed to 400 lines). Never travels, grafts or touches player work. `dry: false` is refused (`mode`
-  "refused-live") until step G7. Missing files give an empty catalog and no pick.
+- `graft_controller.js` (bn10 profile, 12.1GB, not in startup; dry by default, live path built 2026-11-18 for step G7):
+  `run graft_controller.js`. Every 60s reads `graft_catalog.json`, `augmentation_readiness.json`, `sleeve_status.json`,
+  `player_activity_status.json`, `run_target.json`, `graft_config.json` and the player's current work; applies `planGraft`
+  (inputs from `graftInputs`) and `liveGraftStep`; writes `graft_status.json` {ts, mode, note, ownsPlayer, grafting, entropy,
+  cash, installPlanCost, alternativeRate, decision, blocked, rejectedCounts, lastStartedAt, lastFinishedAt} and appends to
+  `graft_log.txt` on a decision change and on `start`, `start-failed` and `finished` events (trimmed to 400 lines).
+  Live only with `dry: false` AND a non-empty `allow` list: claims the player (`ownsPlayer` true), travels to New Tokyo if
+  needed and starts the pick with `ns.grafting.graftAugmentation(name, focus)`; holds while work is GRAFTING (player
+  activity controller and `aug_install.js --install` hold on the fresh status). A failed start is not retried within
+  `cooldownMs`. Missing files give an empty catalog and no pick.
 
 ## Bladeburner (BN6), added 2026-11-16
 

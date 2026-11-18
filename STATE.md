@@ -102,6 +102,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 |---|---|---|---|
 | 1 | 2026-11-17 17:42 | 7 (Power Recirculation Core, HemoRecirculator from Tetrads; S.N.A, ADR-V1 Pheromone Gene, Wired Reflexes from Tian Di Hui; BitWire, Neurotrainer I from CyberSec; ~$4.20b, `priorityAugs` + `priorityOnly`); no NeuroFlux. Backup saves/pre-install-bn10run4-1-20261117-1742.json.gz | 0 -> 7 |
 | 2 | 2026-11-17 23:16 | 4 (Bionic Spine, Nanofiber Weave, Neurotrainer II, NutriGen Implant from Slum Snakes; ~$2.71b, value 0.54 by hand via `priorityAugs`, vs the advisor plan ADR-V2 + SmartSonar 0.14 for $3.46b) + NeuroFlux x3. Backup saves/pre-install-bn10run4-2-20261117-2318.json.gz | 7 -> 12 |
+| 3 | 2026-11-18 05:15 | 5 (CRTX42-AA Gene Modification, Neurotrainer III, Combat Rib I, Augmented Targeting I, LuminCloaking-V1 from Slum Snakes; ~$3.63b, readiness plan by value 0.38, advisor install) + NeuroFlux x2. Backup saves/pre-install-bn10run4-3-20261118-0517.json.gz | 12 -> 17 |
 
 ## Installs BN6 run 1 (history)
 
@@ -135,13 +136,14 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-18 03:15 (scheduled run, BN10 run 4, cycle 3 at 4.0h): fixed the empty by-value install plan; no install.**
-Live (probe 03:14): BitNode 10, $1.95b, hacking 146, str/def 156/154, dex/agi 134, karma -82.4k, home 512GB, 12 installed, 0 queued. Gang Slum Snakes rep 1.73m.
-Measured (24 samples, 01:15-03:10): rep/h Slum Snakes 549k, Tetrads 12.2k; hackExp/h 596k; cash/h 737m; MCP avg 173k/s. Trend: cash STEADY, MCP and hackExp ACCELERATING.
-Audit 0 of 33. Fault: readiness planned by value before values were set, so `installPlan` was always empty and the gang reserved $0 (gang gear $1.95b this cycle, B1 49%). Fixed in augmentation_readiness.js; 656/656; live 03:17: plan 5 augs $1.73b (value 0.27), gang cashBudget $19.6m.
-Advisor install (batch 0.27); decision wait to ~05:15 for Bionic Legs (~0.45 at ~$4.4b): cash-limited gain the advisor does not count.
-End check: 12 installed, no Red Pill, no World Daemon. Not notified.
-**Next run (05:15): install if the plan holds Bionic Legs or cash/h stalls (backup first; `planByValue` buys the readiness plan); after install 3, confirm sleeve aug buys in the first 1.5h. Grafting G7 still needs spare cash and Ken told first.**
+**2026-11-18 05:15 (scheduled run, BN10 run 4): install 3 at 05:15 (5 Slum Snakes augs + NeuroFlux x2, 12 -> 17); grafting live path built, still dry.**
+Live before install (probe 05:14): BitNode 10, $4.19b, hacking 157, str/def 167/165, dex/agi 145, karma -84.7k, home 512GB. Gang Slum Snakes rep 3.53m (covers all).
+Measured (25 samples, 03:10-05:10): rep/h Slum Snakes 954k, Tetrads 13.1k; hackExp/h 751k; cash/h 351m; MCP avg 277k/s. Trend: cash STEADY, MCP STEADY, Slum Snakes rep ACCELERATING.
+Audit 0 of 33. Gang gear $2.37b after the 03:17 reserve fix, above the plan; allocator shadow agreed on 89%.
+Advisor install (batch 0.38, $3.63b); decision install: no sixth aug fits the ladder, the next valuable augs are $14-30b away. After: all residents up; sleeve_buyer early phase, aug hold $45m.
+Grafting: G7 code done (`liveGraftStep`, 12.1GB, 659/659), config `dry: true`; first live graft waits for $1b+ spare above the batch.
+End check: 17 installed, no Red Pill, no World Daemon. Not notified.
+**Next run (07:15): cycle review for cycle 3 vs 2 (`metrics.py cycles`); confirm sleeve aug buys in the early phase; Covenant needs 20 installed (3 more), 850 stats, $75b: weigh aug count in the next batch.**
 
 ## Daedalus ready (2026-11-16 21:35)
 

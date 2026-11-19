@@ -187,6 +187,20 @@ test("Compression III: LZ Compression -- round-trips through the decompressor fo
   assert.ok(solve("Compression III: LZ Compression", longRun).length < longRun.length)
 })
 
+test("Compression III: LZ Compression -- runs of more than 9 unmatched characters need zero-length chunks", () => {
+  // Threw "Cannot read properties of null" before 2026-11-19. The game's own
+  // example: the alphabet encodes as 9abcdefghi09jklmnopqr08stuvwxyz (31).
+  const alphabet = "abcdefghijklmnopqrstuvwxyz"
+  const compressed = solve("Compression III: LZ Compression", alphabet)
+  assert.equal(compressed.length, 31)
+  assert.equal(solve("Compression II: LZ Decompression", compressed), alphabet)
+  for (const original of ["aAAaAAaAaAA", "abracadabra", "2718281828", "qwertyuiopasdfghjklzxcvbnmqwerty1234567890zz"]) {
+    assert.equal(solve("Compression II: LZ Decompression", solve("Compression III: LZ Compression", original)), original)
+  }
+  assert.equal(solve("Compression III: LZ Compression", "aAAaAAaAaAA").length, 9) // game example 3aAA53035
+  assert.equal(solve("Compression III: LZ Compression", "abracadabra").length, 10) // game example 7abracad47
+})
+
 test("Square Root -- BigInt nearest-integer rounding", () => {
   assert.equal(solve("Square Root", 16n), "4")
   assert.equal(solve("Square Root", 2n), "1") // sqrt(2)=1.41... rounds down

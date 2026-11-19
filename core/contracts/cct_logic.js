@@ -596,6 +596,20 @@ function lzCompress(s) {
         }
       }
     }
+    // A zero-length chunk ("0") hands the turn to the other chunk type. It is
+    // required when no backreference matches after a literal (any run of more
+    // than 9 unmatched characters); without it the solver threw on such strings
+    // (2026-11-19, cct_watcher failing for hours). Two in a row never helps.
+    const literal = dp[i][0]
+    const backref = dp[i][1]
+    if (1 + backref < literal) {
+      dp[i][0] = 1 + backref
+      choice[i][0] = { length: 0 }
+    }
+    if (1 + literal < backref) {
+      dp[i][1] = 1 + literal
+      choice[i][1] = { length: 0 }
+    }
   }
 
   let out = ""
@@ -603,7 +617,9 @@ function lzCompress(s) {
   let literalNext = true
   while (i < n) {
     const c = choice[i][literalNext ? 0 : 1]
-    if (literalNext) {
+    if (c.length === 0) {
+      out += "0"
+    } else if (literalNext) {
       out += String(c.length) + s.slice(i, i + c.length)
     } else {
       out += String(c.length) + String(c.distance)

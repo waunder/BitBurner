@@ -77,3 +77,11 @@ One software variable remains: Meta's Quest Link app (OVRService and its "Meta V
 - Turn on System Restore for C: so there is a fallback.
 - Photos or video of the 16-pin power connector via iPhone.
 - Undo MPO test when done: `reg delete HKLM\SOFTWARE\Microsoft\Windows\Dwm /v OverlayTestMode /f` + restart.
+
+## Update 2026-11-19: stable for days, then two hard crashes
+
+- Stable stretch: the 11-15 14:17 boot ran almost four days with only a handful of resets (4 on 11-15/16, 0 on 11-16/17, 1 each on 11-16 11:48 and 11-18 16:54, 3 at 11-19 07:00). Idle 31 °C, ~3 W. Reseat not done yet.
+- Then, while Ken was noting how stable it had been: **unexpected shutdown at 07:52:33** (Kernel-Power 41, no log entries before it, so a hard freeze), reboot 08:16; resets began the moment the desktop came up (08:16:23).
+- **Second hard crash** at ~08:20 (Kernel-Power 41, boot 08:20:52), then ~250 resets 08:21-08:23 (63x Xid 13, 9x 14, 222x 153 across both boots). Game relaunched 08:22.
+- The quiet watch could not alert: a hard freeze kills it before it can count anything.
+- Reads as: the card's fault is intermittent, not gone. Long quiet stretches do not mean it is healed. Same pattern as 11-14: a crash, then bursts right after each boot.

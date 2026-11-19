@@ -202,6 +202,13 @@ first sleeve augmentation batches; gang power after gear.
   the allocator reads them, so gang spend is never judged; (b) home RAM refused as "zero-value" ($477m) while residents
   waited for RAM: the necessity rule misses unstarted scripts (fixed 2026-11-17 21:17: `homeBlocked`). (a) fixed 19:18 (`purchases` log). Next kinds to move to "valued": gang gear, then home RAM.
 
+- **Gang territory from the start of the next run** (Ken, 2026-11-19: "next run (not next cycle) we get into
+  the game earlier and more productively"). Territory and power survive installs, and Human Trafficking's money and
+  respect scale with territory^1.5 (about 6.5x at 50% vs our 14%; wanted gain falls). So land taken early pays in
+  every later cycle of the run. Early trial reading: 4 members took power 1 -> 1,036 in ~25 min vs the rival's +96
+  (docs/gang-territory-trial.md). Plan for the next BitNode with a gang: once the roster is full, keep a Territory
+  Warfare cohort from the first cycle; clash when the odds gates pass; size the cohort from this trial's
+  respect-given-up numbers. Status: for the next run's startup plan; confirm with the trial result first.
 - **Early-crime chooser for fresh BitNodes** (Ken, 2026-11-16). player_activity_controller.js (36.8GB) cannot fit on a
   32GB fresh home, so BN10 run 4 sat ~50 min on Shoplift (str/def 1; Shoplift trains only dex/agi; karma 0.05/s).
   Build a ~12-16GB one-shot loop (getCrimeChance 5GB, commitCrime 5GB, sleeve setToCommitCrime 4GB) that steps player

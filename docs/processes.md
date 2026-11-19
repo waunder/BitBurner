@@ -2720,6 +2720,19 @@ that if `#terminal-input` holds text. **Writes:** `tools/daemon_supervisor.log`,
 a Terminal tab's supervisor died when that tab closed (seen 13:44), so run it
 through the logon task from `tools/install_supervisor_task.ps1`.
 
+**Outage watchdog** (`tools/outage_watchdog.py`, called by the supervisor every
+pass while the game is connected; added 2026-11-19 after the 2026-11-18 21:00:55
+outage, Ken's accidental click on the Active Scripts page's Kill All Scripts
+button, which went unnoticed for 75 min). When the own `ts` of
+`maintenance_status.json`, `player_activity_status.json` and `mcp_status.json`
+in `runtime/` are all older than 10 minutes while the daemon's pulls are fresh,
+it runs `home; run startup.js` through `tools/game_terminal.py`, at most once per
+2 hours; a second outage inside that gap is logged as HOLD and left for a
+person. **Pause it** with an empty `tools/watchdog.pause` before stopping scripts
+on purpose for more than 10 minutes (World Daemon, entering a BitNode); delete
+the file afterwards. **Writes:** `watchdog:` lines in `tools/daemon_supervisor.log`
+(checks should grep them), `tools/watchdog_state.json` (last restart time).
+
 `tools/game_terminal.py "<command>"` runs one terminal command over DevTools and
 prints the lines it wrote, e.g. `run restart_player.js`. It types the command
 and dispatches Enter from page JavaScript (`Runtime.evaluate` only), leaves

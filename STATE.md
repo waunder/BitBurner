@@ -150,6 +150,7 @@ Income at 1.9-2.9h vs cycle 6: hacking 13.3t/h (0.27t), gang 64b/h (24b), darkne
 Fix: five stacks picked early in the cycle held all slots; megacorp (est $516m/s per TB vs $17m/s) was left out. `MAX_STACKS` 10; megacorp, 4sigma, nwo, blade, omnitek started 04:15.
 Install: advisor wait (gang minimum 1h; next aug 0.99/h vs average 0.45); agreed. Plan 9 augs $14.3t.
 **Next run (~07:07): measure the five new stacks (number review row 2 `again`); install judgement (cycle about 6h); `metrics.py cycles` for cycle 8 after the install.**
+**2026-11-19 06:51 (Ken session):** the 11-18 21:00:55 outage was Ken's accidental click on Active Scripts' Kill All Scripts (confirmed). New outage watchdog in the supervisor (`tools/outage_watchdog.py`, docs/processes.md): runs `startup.js` when all resident heartbeats are 10+ min old, once per 2h. Every check: grep `watchdog:` in `tools/daemon_supervisor.log`. Before a World Daemon or BitNode change: create `tools/watchdog.pause` (delete after).
 
 ## Daedalus ready (2026-11-16 21:35)
 

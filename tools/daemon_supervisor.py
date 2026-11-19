@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Windows keep-alive: restart a dead daemon and reconnect the game over DevTools."""
+"""Windows keep-alive: restart a dead daemon, reconnect the game over DevTools, and
+run startup.js when every game script has stopped (outage_watchdog.py)."""
 import argparse
 import asyncio
 import json
@@ -13,6 +14,7 @@ import urllib.request
 import websocket
 
 from bb_remote import _ctl_call
+from outage_watchdog import Watchdog
 
 REPO = Path(__file__).resolve().parent.parent
 LOG = REPO / "tools" / "daemon_supervisor.log"
@@ -78,7 +80,7 @@ def reconnect_game():
         ws.close()
 
 
-def check(args, last_reconnect):
+def check(args, last_reconnect, dog):
     reply = asyncio.run(_ctl_call(args.control_port, {"cmd": "status"}, timeout=5))
     if not reply.get("ok"):
         if reply.get("error_code") == "connection_refused":
@@ -86,7 +88,10 @@ def check(args, last_reconnect):
         else:
             log(f"status unknown: {reply}")
         return last_reconnect
-    if reply["result"].get("connected") or time.time() - last_reconnect < RECONNECT_GAP_S:
+    if reply["result"].get("connected"):
+        dog.check(reply["result"])  # restarts the game's scripts if all of them stopped
+        return last_reconnect
+    if time.time() - last_reconnect < RECONNECT_GAP_S:
         return last_reconnect
     outcome = reconnect_game()
     if outcome == "game not running":
@@ -103,9 +108,10 @@ def main():
     os.chdir(REPO)
     log("supervisor started")
     last_reconnect = 0.0
+    dog = Watchdog(log)
     while True:
         try:
-            last_reconnect = check(args, last_reconnect)
+            last_reconnect = check(args, last_reconnect, dog)
         except Exception as exc:  # A bad pass must never end the keep-alive.
             log(f"check failed: {type(exc).__name__}: {exc}")
         time.sleep(CHECK_S)

@@ -404,8 +404,9 @@ B1_KEYS = ["servers", "sleeves", "gang_expenses", "class", "hospitalization", "h
 HISTORY = REPO / "runtime" / "spend_history.jsonl"
 EARLY_HOURS = 1.5  # capital_policy.json earlyCycleHours, live 2026-11-10
 PRICE_STEP = 1.9
-PURCHASE_SOURCES = {"capital_status.json": "capital", "sleeve_buyer_status.json": "sleeve"}
-# Which money counter each script's purchases land in.
+PURCHASE_SOURCES = {"capital_status.json": "capital", "sleeve_buyer_status.json": "sleeve", "graft_status.json": "graft"}
+# Which money counter each script's purchases land in. Grafts land in `augmentations`, which the install batch
+# shares, so they are left out here (no "unattributed" figure for that counter).
 SOURCE_CATEGORY = {"capital": "servers", "sleeve": "sleeves"}
 
 
@@ -462,6 +463,11 @@ def archive_records(history: list[dict], name: str, status: dict, now_ms: float)
         return new
     seen = {(h.get("source"), h["ts"]) for h in history if h["type"] == "purchase"}
     purchases = [p for p in status.get("purchases") or [] if isinstance(p, dict) and isinstance(p.get("ts"), (int, float))]
+    g = status.get("grafting") if source == "graft" else None
+    if isinstance(g, dict) and isinstance(g.get("startedAt"), (int, float)):
+        # graft_status.json holds only the graft in progress: one start per pull, so a graft that starts and ends
+        # between two pulls is missed (the full record is the game's graft_log.txt).
+        purchases = [{"ts": g["startedAt"], "ok": True, "kind": "graft", "cost": g.get("price"), "name": g.get("name")}]
     for p in purchases:
         ok = p.get("ok", (p.get("outcome") or {}).get("ok"))
         if ok and (source, p["ts"]) not in seen and isinstance(p.get("cost"), (int, float)):

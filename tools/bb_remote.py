@@ -854,6 +854,7 @@ PULL_FILES = [
     "maintenance_history.txt",
     "augmentation_readiness.json",
     "player_activity_status.json",
+    "graft_status.json",
     "purchased_worker_status.json",
     "automation_review.json",
     "automation_review.txt",

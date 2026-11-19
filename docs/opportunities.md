@@ -4,6 +4,12 @@ Running list kept by Claude on its own initiative (Ken, 2026-11-16: "exercise in
 for flaws and opportunities"). Newest first. Each entry: finding, evidence, expected gain, status.
 The 2-hourly check reviews this once per cycle (first run after an install).
 
+## 2026-11-18 22:14 check (BN10 run 4, cycle review after install 6)
+
+- **All game scripts died at once, 21:00:55, and nothing noticed for 75 minutes.** Evidence: `getRecentScripts` showed every host's scripts killed in one second; `lastAugReset` unchanged, renderer up since 2026-11-15, PIDs continuous, no session running, nothing in the Windows log. Cause unknown. Gain of a watchdog: an outage costs ~1t/h of hacking now, and the 3-hourly check leaves up to 3h blind. Idea: the Remote API daemon (outside the game) already pulls status files every few seconds; when every resident status is older than ~10 min and home RAM use is ~0, run `home; run startup.js` once and log it. Status: open; needs care (never during an install, never twice in a row); propose to Ken.
+- **Sleeve augs for money-crime sleeves earn nothing measurable.** Evidence: cycle 7 sleeve_buyer $502b in 1.7h (44% of gross; allocator granted all as "costs the batch nothing"), 5 of 7 sleeves on crime for money (no faction target), sleeve crime ~$0-1b/h vs hacking ~1t/h, karma -160k (gang needs -54k). Gain: ~$0.5t per cycle kept for NeuroFlux and home RAM at the install, or grafts. Fix idea (lesson 6's "buy by role"): buy augs only for sleeves on faction work, or value a sleeve's augs by its task's measured output. Status: open; next build for the sleeve layer.
+- **graft_controller.js was not in startup.** Every restart (installs, this outage) left grafting off until a check noticed. Status: fixed (bn10 startup list).
+
 ## 2026-11-18 19:15 check (BN10 run 4, install 6)
 
 - **Install timing is set by the check-in schedule, not the advisor.** Evidence (`metrics_log` batchValue / cycle hours, cycle 6): 0.57 v/h at 3.1h, 0.49 at 4.1h when the verdict turned "install", 0.375 at 5.98h when this check installed (no check ran between 15:15 and 19:14; cron `7 1-22/3`). Batch value rose only 2.01 -> 2.24 over those 2h. Cycles 4-5 were still rising at 3.6h, so the 4h gang minimum was not binding there. Gain: about 25% more value per hour in a cycle like this one. Options (Ken): run the check at the expected install time, or let a script install when the verdict says install (Ken's 2026-11-05 rule keeps installs a judgement, so that is his call). Status: open, in the run report.

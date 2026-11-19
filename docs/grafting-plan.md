@@ -228,6 +228,14 @@ the Covenant join, cash/h and MCP $/s before and after each graft (payback), ent
 by activity (grafting versus crime, gym, faction work, from `player_activity_status.json` history), and installs avoided or shrunk.
 A graft "paid" if its measured income/rep/time gain beat 0.097 v of entropy plus its cash and hours; otherwise tighten `minNetValue`.
 
+## G9 part and G10 startup (2026-11-18 22:20, BN10 run 4)
+
+graft_controller.js is in the bn10 `startup` list (G10's last bullet, done early: a 21:00 outage and each install left it
+stopped). G9 in part: `metrics.py` archives the graft in progress from `graft_status.json` as a `graft` purchase (a graft that
+starts and ends between two pulls is missed; graft_log.txt is the full record), and `graft_status.json` is in `PULL_FILES`
+(live at the daemon's next restart). Still open in G9: one HUD line.
+Measured: Neuronal Densification predicted 1.02h, detected finished within 1.72h (the outage hid the real end).
+
 ## G8 results (2026-11-18 19:35, BN10 run 4)
 
 Shipped right after install 6. `valuation_flags.json` leaves `graft_augs` at `own`, so grafting still follows graft_config.json

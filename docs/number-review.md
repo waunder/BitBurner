@@ -39,7 +39,7 @@ Resource it competes for in brackets. `Last` is the PC-clock date of the last re
 | 13 | Player activity (`player_activity_status.json` decision) [player time] | Rep/h or exp/h of the chosen work vs the alternatives; focus held? | | |
 | 14 | Grafting (`graft_status.json`, alternativeRate, entropy) [player time, cash] | Value per graft hour vs faction work; now focused, check actual vs predicted hours | | 2026-11-18: focus true instead of grafting Neuroreceptor |
 | 15 | Sleeves (`sleeve_status.json`) [sleeves] | Each sleeve's task and its value per hour; any on a weak task? | | |
-| 16 | Sleeve buyer (`sleeve_buyer_status.json`) [cash] | Aug spend per sleeve vs its gain; augHold delaying cloud buys? | | |
+| 16 | Sleeve buyer (`sleeve_buyer_status.json`) [cash] | Aug spend per sleeve vs its gain; augHold delaying cloud buys? | 2026-11-18 | Cycle 7: $502b in 1.7h (44% of gross), 5 of 7 sleeves on money crime earning ~$0-1b/h; buy by role (opportunities) |
 | 17 | Gang (`gang_status.json`) [gang members] | Respect/money split, territory warfare timing, gear payback | | |
 | 18 | Darknet (`dnet_*_status.json`, money panel darknet row) [home RAM, player?] | $/s and what it costs; the 19h $0 outage of 2026-11-18 was missed | | |
 | 19 | Coding contracts (`cct_*_status.json`) [none] | Solved vs failed vs skipped; reward taken (money or rep) the best? | | |

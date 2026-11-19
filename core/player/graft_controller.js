@@ -24,7 +24,7 @@ function appendLog(ns, line) {
  * Live (graft_config.json dry:false AND a non-empty allow list): travels to New Tokyo and starts the
  * pick with ns.grafting; graft_status.json ownsPlayer:true holds player_activity_controller and
  * aug_install while the player's work is GRAFTING. Logs start and finish events.
- * Start: run graft_controller.js (bn10 profile, not in startup)
+ * Start: run graft_controller.js (bn10 profile startup list)
  */
 export async function main(ns) {
   ns.disableLog("ALL")

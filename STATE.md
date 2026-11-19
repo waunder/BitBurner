@@ -142,14 +142,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-18 19:15 (scheduled run, BN10 run 4): install 6 at 19:16; grafting G8 shipped; install-timing finding for Ken.**
-Live before (probe 19:14): BitNode 10, $1.72t, hacking 298, str/def/dex/agi 2072/824/1313/687, karma -147.5k, home 1TB, 7 sleeves, 32 installed (2 grafts), W1ngs queued.
-Measured (25 samples, 17:10-19:10): rep/h Slum Snakes 1m, Tian Di Hui 14.5k; hackExp/h 58.3m; karma/h -10.9k; cash/h 485b; MCP avg 67.5m/s. Trend STEADY on all lines.
-Income last hour: hacking 463b/h, gang 31b/h, darknet 0.97b/h, sleeves 0.15b/h; none fell. Audit 0 of 33 after the install.
-Install: advisor install (9 augs $1.52t, value 2.24); agreed. Now 42 installed, home 4TB 2 cores; residents back, graft_controller started by hand.
-`metrics.py cycles`: cycle 6 closed 5.98h, rebuild hacking 1.40h, Slum Snakes 8.08m.
-Number review (row 10): value/h peaked 0.57 at 3.1h and the verdict said install at 4.1h (0.49), but no check ran until 5.98h (0.375). Ken: check timing or scripted installs.
-End check: no Red Pill, no World Daemon. **Next run (~22:14): first run after install 6, so cycle review; install verdict due from ~23:16 (4h gang minimum).**
+**2026-11-18 22:14 (scheduled run, BN10 run 4): every game script had stopped at 21:00:55 (cause unknown); restarted 22:16; no install.**
+Live (probe 22:14): BitNode 10, $376b, hacking 412, str/def/dex/agi 7340/4282/1319/2332, karma -160.5k, home 4TB, 7 sleeves, 43 installed, B00ts of Perseus queued. Combat 850 met; hacking 412/850 is the Covenant gate.
+Outage: all scripts on every host killed in one second, 21:00:55; no install, reset, reload or session explains it. ~75 min of all income lost. Restarted with startup.js (18 started); graft_controller by hand (SPTN-97 grafting) and now in the bn10 startup list.
+Measured (21 samples, 19:20-21:00): Slum Snakes 2.49m rep/h; hackExp/h 59.5m; karma/h -5.79k; cash/h 93.6b net; MCP avg 66.1m/s. Trend n/a (young cycle).
+Income (cycle age 0.73-1.75h vs cycle 6): hacking 1,023b/h (31.5b), gang 35.9b/h (14.3b), darknet 2.5b/h (0.81b); none fell. Sleeve augs took $502b (44% of gross).
+Install: advisor wait (gang minimum to 23:16; next aug 0.42/h > average 0.33/h); agreed. Grafting G9 part shipped; number review row 16: sleeve augs on 5 money-crime sleeves pay back nothing measurable.
+**Next run (~01:07): install verdict due (cycle ~5.85h); check the outage did not recur (home `free`, metrics age).**
 
 ## Daedalus ready (2026-11-16 21:35)
 

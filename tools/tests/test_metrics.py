@@ -268,6 +268,14 @@ class SpendTests(unittest.TestCase):
         self.assertEqual(M.archive_records(rec, "aug_install_status.json", inst, 20), [])
         self.assertEqual(M.archive_records([], "aug_install_status.json", {**inst, "installed": False}, 10), [])
 
+    def test_a_graft_in_progress_is_archived_once(self):
+        status = {"grafting": {"name": "SPTN-97 Gene Modification", "startedAt": 7, "price": 14.6e9}}
+        first = M.archive_records([], "graft_status.json", status, now_ms=10)
+        self.assertEqual([(r["type"], r.get("source"), r.get("kind"), r.get("cost")) for r in first],
+                         [("purchase", "graft", "graft", 14.6e9), ("pull", "graft", None, None)])
+        self.assertEqual([r["type"] for r in M.archive_records(first, "graft_status.json", status, 20)], ["pull"])
+        self.assertEqual([r["type"] for r in M.archive_records([], "graft_status.json", {"grafting": None}, 20)], ["pull"])
+
     def test_a_full_purchase_list_newer_than_the_last_pull_is_a_gap(self):
         full = {"purchases": [{"ts": 100 + i, "ok": True, "cost": 1.0} for i in range(50)]}
         history = [{"type": "pull", "source": "capital", "ts": 50}]

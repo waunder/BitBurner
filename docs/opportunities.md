@@ -210,7 +210,9 @@ first sleeve augmentation batches; gang power after gear.
   reaching the Steam game's DevTools port 9222 and the daemon from WSL2 (localhost forwarding or mirrored networking),
   the `.venv` (Windows Python) and path handling in tools/. Steps when picked up: check `wsl -l -v` (WSL2, not 1);
   trial a read-only session in WSL2 against the repo; list which tools break; decide what stays a Windows-side helper
-  the sandboxed agent calls. Status: todo, not started; good fit for a quiet stretch or a new project started there.
+  the sandboxed agent calls. State 2026-11-19: WSL 2.4.12 with kernel 5.15 (dated: `wsl --update` first), one distro
+  Ubuntu 24.04.4 LTS (default, WSL2), user `kth`, Linuxbrew installed, 64G of 1T used. Ken: wants a refresh and a proper
+  sysadmin setup first (updates, packages, user/shell setup, backups of the distro) before the agent moves in. Status: todo, not started; good fit for a quiet stretch or a new project started there.
 - **Gang territory from the start of the next run** (Ken, 2026-11-19: "next run (not next cycle) we get into
   the game earlier and more productively"). Territory and power survive installs, and Human Trafficking's money and
   respect scale with territory^1.5 (about 6.5x at 50% vs our 14%; wanted gain falls). So land taken early pays in

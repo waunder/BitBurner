@@ -202,6 +202,15 @@ first sleeve augmentation batches; gang power after gear.
   the allocator reads them, so gang spend is never judged; (b) home RAM refused as "zero-value" ($477m) while residents
   waited for RAM: the necessity rule misses unstarted scripts (fixed 2026-11-17 21:17: `homeBlocked`). (a) fixed 19:18 (`purchases` log). Next kinds to move to "valued": gang gear, then home RAM.
 
+- **Move the agent into WSL2 for a real sandbox** (Ken, 2026-11-19: "could be a worthwhile step"). On native
+  Windows Claude Code runs commands unsandboxed (docs: sandbox is macOS, Linux and WSL2 only; it silently falls back
+  unless `sandbox.failIfUnavailable`). Today's guards: auto mode, git, save backups; Google Drive, Hugging Face and
+  Microsoft Learn connectors turned off. In WSL2 the sandbox would confine commands to approved folders and network
+  hosts. What would need rework: Windows-side work (GPU event logs, scheduled tasks, the supervisor task, `nvidia-smi`),
+  reaching the Steam game's DevTools port 9222 and the daemon from WSL2 (localhost forwarding or mirrored networking),
+  the `.venv` (Windows Python) and path handling in tools/. Steps when picked up: check `wsl -l -v` (WSL2, not 1);
+  trial a read-only session in WSL2 against the repo; list which tools break; decide what stays a Windows-side helper
+  the sandboxed agent calls. Status: todo, not started; good fit for a quiet stretch or a new project started there.
 - **Gang territory from the start of the next run** (Ken, 2026-11-19: "next run (not next cycle) we get into
   the game earlier and more productively"). Territory and power survive installs, and Human Trafficking's money and
   respect scale with territory^1.5 (about 6.5x at 50% vs our 14%; wanted gain falls). So land taken early pays in

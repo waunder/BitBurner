@@ -109,6 +109,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 4 | 2026-11-18 09:16 | 7 (Photosynthetic Cells, Bionic Legs, Combat Rib II, Augmented Targeting II, LuminCloaking-V2, INFRARET Enhancement, Synaptic Enhancement Implant from Slum Snakes; ~$27.4b, value 0.89, advisor plan; gang money mode paid for it) + NeuroFlux x2. Backup saves/pre-install-bn10run4-4-20261118-0920.json.gz | 17 -> 24 |
 | 5 | 2026-11-18 13:16 | 5 (Graphene Bionic Spine Upgrade, Synfibril Muscle, Combat Rib III, Augmented Targeting III, Cranial Signal Processors - Gen I from Slum Snakes; $51.4b, value 1.25, advisor plan; gang money mode paid) + NeuroFlux x4; leftover cash took home 512GB -> 1TB. Backup saves/pre-install-bn10run4-5-20261118-1318.json.gz | 25 -> 30 (incl. grafted Bionic Arms) |
 | 6 | 2026-11-18 19:16 | 9 (Graphene Bionic Legs Upgrade, Graphene Bone Lacings, NEMEAN Subdermal Weave, Synthetic Heart, Neotra, Neural Accelerator, Embedded Netburner Module, CSP Gen II, SmartSonar Implant from Slum Snakes; $1.52t, value 2.24, advisor install) + NeuroFlux x4 + queued The W1ngs of Icarus; home 1TB -> 4TB, 2 cores. Backup saves/pre-install-bn10run4-6-20261118-1920.json.gz | 32 -> 42 (incl. 2 grafts) |
+| 7 | 2026-11-19 01:15 | 12 (ENM DMA Upgrade, Artificial Bio-neural Network, OmniTek InfoLoad, HyperSight, ENM Core, Enhanced Myelin Sheathing, CSP Gen III, ADR-V2, DataJack from Slum Snakes; Neural-Retention from NiteSec; BrachiBlades from The Syndicate; Artificial Synaptic Potentiation; $4.65t, value 1.60, advisor install) + NeuroFlux x3 + queued The B00ts of Perseus; home 4TB -> 16TB, 4 cores. Backup saves/pre-install-bn10run4-7-20261119-0120.json.gz | 44 -> 57 |
 
 ## Installs BN6 run 1 (history)
 
@@ -142,13 +143,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-18 22:14 (scheduled run, BN10 run 4): every game script had stopped at 21:00:55 (cause unknown); restarted 22:16; no install.**
-Live (probe 22:14): BitNode 10, $376b, hacking 412, str/def/dex/agi 7340/4282/1319/2332, karma -160.5k, home 4TB, 7 sleeves, 43 installed, B00ts of Perseus queued. Combat 850 met; hacking 412/850 is the Covenant gate.
-Outage: all scripts on every host killed in one second, 21:00:55; no install, reset, reload or session explains it. ~75 min of all income lost. Restarted with startup.js (18 started); graft_controller by hand (SPTN-97 grafting) and now in the bn10 startup list.
-Measured (21 samples, 19:20-21:00): Slum Snakes 2.49m rep/h; hackExp/h 59.5m; karma/h -5.79k; cash/h 93.6b net; MCP avg 66.1m/s. Trend n/a (young cycle).
-Income (cycle age 0.73-1.75h vs cycle 6): hacking 1,023b/h (31.5b), gang 35.9b/h (14.3b), darknet 2.5b/h (0.81b); none fell. Sleeve augs took $502b (44% of gross).
-Install: advisor wait (gang minimum to 23:16; next aug 0.42/h > average 0.33/h); agreed. Grafting G9 part shipped; number review row 16: sleeve augs on 5 money-crime sleeves pay back nothing measurable.
-**Next run (~01:07): install verdict due (cycle ~5.85h); check the outage did not recur (home `free`, metrics age).**
+**2026-11-19 01:14 (scheduled run, BN10 run 4): install 7 at 01:15; no recurrence of the 21:00 outage.**
+Before install: $6.3t, hacking 525, str/def/dex/agi 14.1k/8.2k/2.5k/4.5k, karma -162k, 44 installed + B00ts queued. Covenant: only hacking 850 left. Daedalus joined.
+Measured (24 samples, 23:15-01:10): Slum Snakes 1.53m rep/h; hackExp/h 123m; karma/h -488; cash/h 2.13t; MCP avg 428m/s. Trend: cash and MCP ACCELERATING, rest STEADY.
+Income last hour vs cycle 6 same age: hacking 2,845b/h (464b), gang 44b/h (31b), darknet 3.8b/h (0.9b); none fell.
+Install: advisor install (12 augs $4.65t, value 1.60); agreed, 10 are hacking augs for the 850 gate. Backup saves/pre-install-bn10run4-7-20261119-0120.json.gz. Home now 16TB, 4 cores; all residents back incl. graft_controller.
+Number review row 11: plan cost exact; last 4 augs were 62% of the batch cost (opportunities: value floor vs home RAM).
+**Next run (~04:07): add `metrics.py cycles` for cycle 8; watch hacking toward 850 (Covenant invite); sleeve aug spend on Heist sleeves.**
 
 ## Daedalus ready (2026-11-16 21:35)
 

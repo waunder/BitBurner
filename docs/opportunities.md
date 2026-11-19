@@ -4,6 +4,11 @@ Running list kept by Claude on its own initiative (Ken, 2026-11-16: "exercise in
 for flaws and opportunities"). Newest first. Each entry: finding, evidence, expected gain, status.
 The 2-hourly check reviews this once per cycle (first run after an install).
 
+## 2026-11-19 01:14 check (BN10 run 4, install 7)
+
+- **The tail of each install batch costs most of it.** Evidence: install 7's 12 augs cost $4.646t on the x1.9 ladder (the plan's own model, checked to the dollar); the last four (DataJack, Neural-Retention, BrachiBlades, Artificial Synaptic Potentiation, base $8.3b together) cost $2.90t, 62% of the batch. `selectByValue` keeps adding any positive-value aug while cash fits, with no floor against the other lasting use of that cash (home RAM and cores, also kept across installs; the $1.7t left took home 4TB -> 16TB). Gain: unknown until per-aug value per $ is set beside home RAM's value per $; a floor could also lift NeuroFlux levels. Status: open; next step is to log each plan aug's value and marginal ladder cost in `aug_install_status.json`.
+- **Sleeves read pre-install readiness for one tick after an install.** Evidence: 01:16 `sleeve_status.json` ok:false, sleeves 0-2 idle, desired faction work for Speakers, BitRunners, Daedalus (memberships the install had just reset; readiness 112s old); next tick ok, all seven on Heist. Same pattern at install 4 (sleeves 0 and 1 idle at 09:18). Gain: about a minute per install; not worth code beyond ignoring readiness older than `lastAugReset`. Status: noted.
+
 ## 2026-11-18 22:14 check (BN10 run 4, cycle review after install 6)
 
 - **All game scripts died at once, 21:00:55, and nothing noticed for 75 minutes.** Evidence: `getRecentScripts` showed every host's scripts killed in one second; `lastAugReset` unchanged, renderer up since 2026-11-15, PIDs continuous, no session running, nothing in the Windows log. Cause unknown. Gain of a watchdog: an outage costs ~1t/h of hacking now, and the 3-hourly check leaves up to 3h blind. Idea: the Remote API daemon (outside the game) already pulls status files every few seconds; when every resident status is older than ~10 min and home RAM use is ~0, run `home; run startup.js` once and log it. Status: open; needs care (never during an install, never twice in a row); propose to Ken.

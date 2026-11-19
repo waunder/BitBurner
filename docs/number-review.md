@@ -25,7 +25,7 @@ Resource it competes for in brackets. `Last` is the PC-clock date of the last re
 | # | Number (source) | Question to start from | Last | Finding / status |
 |---|---|---|---|---|
 | 1 | Money panel hacking rows: stacks vs MCP (`money_status.json`) [RAM] | Per-TB yield of every hacking use; is the split right? | 2026-11-18 | MCP $0.2-0.7m/s/TB vs stacks $1-5m/s; share 60->90%, 5 stacks, silver-helix added. `again` once omega-net fits |
-| 2 | Stack estimates vs measured (`stack_manager_status.json` estimates, `stack_status_*` perSec) [RAM] | Do stacks earn what the formula predicts? Which run under? | | iron-gym 1-min looked 1/3 of estimate; 10-min matched. Check all five over hours |
+| 2 | Stack estimates vs measured (`stack_manager_status.json` estimates, `stack_status_*` perSec) [RAM] | Do stacks earn what the formula predicts? Which run under? | 2026-11-19 | 2026-11-19: estimate matches measured (alpha-ent $711m/s vs formula ~$0.8b/s); but MAX_STACKS 5 froze the cycle's first five picks ($17m/s/TB) while megacorp est $516m/s/TB went unstacked; cap 5 -> 10, five new stacks started 04:15. Measure next run; `again`. |
 | 3 | Stack parameters: hackFraction 0.1, spacing 2000ms, gap 200ms (`stack_manager.js`) [RAM] | Are these tuned or guessed? Yield per TB at 0.05/0.2? | | |
 | 4 | MCP targets and phases (`mcp_status.json` targets) [RAM] | How much MCP RAM is preparing vs harvesting? Prepping targets nobody will harvest? | | 2026-11-18: MCP prepping silver-helix while a stack took it |
 | 5 | MCP cloud control: prep fraction 0.85, floor 0.25, recovery 0.95 (`mcp_status.json` cloudControl) [RAM] | Still right with stacks holding 90%? | | |

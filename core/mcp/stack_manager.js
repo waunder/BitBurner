@@ -17,7 +17,9 @@ const HACK_FRACTION = 0.1, SPACING_MS = 2000, GAP_MS = 200
 // MCP and its preparation work get the rest, plus whatever the stacks leave unused.
 // 2026-11-18: 0.6 -> 0.9 and 4 -> 5 stacks. Live: stacks earned $0.9-1.9m/s per TB, MCP $0.2-0.3m/s on
 // 21TB, and silver-helix (est $55m/s, 29TB) could not fit beside the four running stacks.
-const FLEET_SHARE = 0.9, MAX_STACKS = 5
+// 2026-11-19: 5 -> 10. Running stacks are never dropped, so the five picked at low hacking early in
+// cycle 8 (121TB of a 6.4PB share) blocked megacorp (est $516m/s per TB vs alpha-ent measured $17m/s).
+const FLEET_SHARE = 0.9, MAX_STACKS = 10
 const FIRST_PORT = 101
 
 function rootedTargets(ns) {

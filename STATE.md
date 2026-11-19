@@ -143,13 +143,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-19 01:14 (scheduled run, BN10 run 4): install 7 at 01:15; no recurrence of the 21:00 outage.**
-Before install: $6.3t, hacking 525, str/def/dex/agi 14.1k/8.2k/2.5k/4.5k, karma -162k, 44 installed + B00ts queued. Covenant: only hacking 850 left. Daedalus joined.
-Measured (24 samples, 23:15-01:10): Slum Snakes 1.53m rep/h; hackExp/h 123m; karma/h -488; cash/h 2.13t; MCP avg 428m/s. Trend: cash and MCP ACCELERATING, rest STEADY.
-Income last hour vs cycle 6 same age: hacking 2,845b/h (464b), gang 44b/h (31b), darknet 3.8b/h (0.9b); none fell.
-Install: advisor install (12 augs $4.65t, value 1.60); agreed, 10 are hacking augs for the 850 gate. Backup saves/pre-install-bn10run4-7-20261119-0120.json.gz. Home now 16TB, 4 cores; all residents back incl. graft_controller.
-Number review row 11: plan cost exact; last 4 augs were 62% of the batch cost (opportunities: value floor vs home RAM).
-**Next run (~04:07): add `metrics.py cycles` for cycle 8; watch hacking toward 850 (Covenant invite); sleeve aug spend on Heist sleeves.**
+**2026-11-19 04:14 (scheduled run, BN10 run 4): stack cap 5 -> 10; The Covenant joined; no install.**
+Live: $18.2t, hacking 1354, str/def/dex/agi 17.2k/10.1k/4.0k/4.8k, karma -163k, 58 installed, 0 queued. Player on Daedalus (favor 55 + 87 pending).
+Measured (25 samples, 02:10-04:10): Slum Snakes 2.75m rep/h; Daedalus 145k; hackExp/h 7.61b; karma/h -386; cash/h 9.55t; MCP avg 1.63b/s. Trend n/a (2 windows), rising.
+Income at 1.9-2.9h vs cycle 6: hacking 13.3t/h (0.27t), gang 64b/h (24b), darknet 3.9b/h (1.1b); none fell.
+Fix: five stacks picked early in the cycle held all slots; megacorp (est $516m/s per TB vs $17m/s) was left out. `MAX_STACKS` 10; megacorp, 4sigma, nwo, blade, omnitek started 04:15.
+Install: advisor wait (gang minimum 1h; next aug 0.99/h vs average 0.45); agreed. Plan 9 augs $14.3t.
+**Next run (~07:07): measure the five new stacks (number review row 2 `again`); install judgement (cycle about 6h); `metrics.py cycles` for cycle 8 after the install.**
 
 ## Daedalus ready (2026-11-16 21:35)
 

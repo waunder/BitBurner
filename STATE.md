@@ -151,6 +151,7 @@ Fix: five stacks picked early in the cycle held all slots; megacorp (est $516m/s
 Install: advisor wait (gang minimum 1h; next aug 0.99/h vs average 0.45); agreed. Plan 9 augs $14.3t.
 **Next run (~07:07): measure the five new stacks (number review row 2 `again`); install judgement (cycle about 6h); `metrics.py cycles` for cycle 8 after the install.**
 **2026-11-19 06:51 (Ken session):** the 11-18 21:00:55 outage was Ken's accidental click on Active Scripts' Kill All Scripts (confirmed). New outage watchdog in the supervisor (`tools/outage_watchdog.py`, docs/processes.md): runs `startup.js` when all resident heartbeats are 10+ min old, once per 2h. Every check: grep `watchdog:` in `tools/daemon_supervisor.log`. Before a World Daemon or BitNode change: create `tools/watchdog.pause` (delete after).
+**2026-11-19 06:57 (Ken session): installs are now automatic** (Ken: "let the install verdict also be the trigger"). `tools/auto_install.py` in the supervisor: verdict `install` for 5 min -> save backup `saves/pre-install-auto-*` -> `aug_install.js --install`. Checks: do not install by hand; grep `autoinstall:` in `tools/daemon_supervisor.log`, review each install like before (cycle review, install table row). Pause with `tools/autoinstall.pause`. Holds itself once The Red Pill is owned.
 
 ## Daedalus ready (2026-11-16 21:35)
 

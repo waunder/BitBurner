@@ -15,6 +15,7 @@ import websocket
 
 from bb_remote import _ctl_call
 from outage_watchdog import Watchdog
+from auto_install import AutoInstall
 
 REPO = Path(__file__).resolve().parent.parent
 LOG = REPO / "tools" / "daemon_supervisor.log"
@@ -80,7 +81,7 @@ def reconnect_game():
         ws.close()
 
 
-def check(args, last_reconnect, dog):
+def check(args, last_reconnect, dog, installer):
     reply = asyncio.run(_ctl_call(args.control_port, {"cmd": "status"}, timeout=5))
     if not reply.get("ok"):
         if reply.get("error_code") == "connection_refused":
@@ -90,6 +91,7 @@ def check(args, last_reconnect, dog):
         return last_reconnect
     if reply["result"].get("connected"):
         dog.check(reply["result"])  # restarts the game's scripts if all of them stopped
+        installer.check(reply["result"])  # installs when the advisor's verdict says install
         return last_reconnect
     if time.time() - last_reconnect < RECONNECT_GAP_S:
         return last_reconnect
@@ -109,9 +111,10 @@ def main():
     log("supervisor started")
     last_reconnect = 0.0
     dog = Watchdog(log)
+    installer = AutoInstall(log)
     while True:
         try:
-            last_reconnect = check(args, last_reconnect, dog)
+            last_reconnect = check(args, last_reconnect, dog, installer)
         except Exception as exc:  # A bad pass must never end the keep-alive.
             log(f"check failed: {type(exc).__name__}: {exc}")
         time.sleep(CHECK_S)

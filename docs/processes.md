@@ -2733,6 +2733,18 @@ on purpose for more than 10 minutes (World Daemon, entering a BitNode); delete
 the file afterwards. **Writes:** `watchdog:` lines in `tools/daemon_supervisor.log`
 (checks should grep them), `tools/watchdog_state.json` (last restart time).
 
+**Auto install** (`tools/auto_install.py`, called by the supervisor right after the
+watchdog; Ken's decision 2026-11-19: the advisor's verdict is the trigger). When
+`advice.verdict` in `runtime/augmentation_readiness.json` has read `install` for
+5 minutes in a row, it backs up the save (`save_export.py --out
+pre-install-auto-<YYYYMMDD-HHMM>`) and runs `home; run aug_install.js --install`
+through `game_terminal.py`. Success is a new `resetAt` within 10 minutes.
+**Never installs:** while `tools/autoinstall.pause` exists; once The Red Pill is
+owned (the endgame stays with a person); in a cycle under 1 hour old; when the
+backup fails; for 2 hours after a failed install. A graft in progress makes
+`aug_install.js` refuse, which holds 10 minutes and retries. **Writes:**
+`autoinstall:` lines in `tools/daemon_supervisor.log`, `tools/autoinstall_state.json`.
+
 `tools/game_terminal.py "<command>"` runs one terminal command over DevTools and
 prints the lines it wrote, e.g. `run restart_player.js`. It types the command
 and dispatches Enter from page JavaScript (`Runtime.evaluate` only), leaves

@@ -25,6 +25,13 @@ BN10 run 2 (Ken, 2026-11-08): Ken entered BN10 again himself and confirmed the s
 installs approved up to readiness to complete it, a save backup before each, and a stop at
 its World Daemon or any other reset.
 
+Install trigger (Ken, 2026-11-19): the install advisor's verdict is the trigger.
+`tools/auto_install.py` (in the supervisor) backs up the save and installs when the
+verdict reads `install` for 5 minutes; checks no longer time installs, they review
+the `autoinstall:` log lines and the advisor. It never acts once The Red Pill is
+owned; the World Daemon stop above is unchanged. To stop it, create
+`tools/autoinstall.pause`.
+
 For everything else, proceed without asking: deploy capital (including stock
 capital), change automation, commit/push, restart scripts, and use reversible
 feature flags when their risk and ROI justify it. Complete authorized

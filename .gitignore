@@ -48,6 +48,8 @@ tools/bb_remote_daemon.log
 tools/daemon_supervisor.log
 tools/watchdog_state.json
 tools/watchdog.pause
+tools/autoinstall_state.json
+tools/autoinstall.pause
 tools/bb_remote_monitor.log
 
 # Generated local governance-auditor heartbeat and logs

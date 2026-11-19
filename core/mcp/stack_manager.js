@@ -13,7 +13,11 @@ const RUNNER = "stack_batch.js"
 const STATUS = "stack_manager_status.json"
 const BUDGETS = "stack_budgets.json"
 const POLL_MS = 60_000
-const HACK_FRACTION = 0.1, SPACING_MS = 2000, GAP_MS = 200
+// 2026-11-19 13:40: HACK_FRACTION 0.1 -> 0.25. Live: nine stacks earned ~$265b/s (measured within 2-15% of
+// estimate) on ~51TB while ~5.7PB of the fleet sat unused and MCP earned $0.12b/s per TB, so stack size, not RAM,
+// was the limit. Expect ~2.5x per stack for ~2.7x RAM (grow threads scale with ln(1/(1-f))). Applies to stacks
+// started after the change (next install). Revert to 0.1 if stacks fall out of isHealthy or earn under 2x.
+const HACK_FRACTION = 0.25, SPACING_MS = 2000, GAP_MS = 200
 // MCP and its preparation work get the rest, plus whatever the stacks leave unused.
 // 2026-11-18: 0.6 -> 0.9 and 4 -> 5 stacks. Live: stacks earned $0.9-1.9m/s per TB, MCP $0.2-0.3m/s on
 // 21TB, and silver-helix (est $55m/s, 29TB) could not fit beside the four running stacks.

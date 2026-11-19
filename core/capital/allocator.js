@@ -50,6 +50,7 @@ function pass(ns, state) {
   const capital = readJson(ns, "capital_status.json")
   const sleeve = readJson(ns, "sleeve_buyer_status.json")
   const gang = readJson(ns, "gang_status.json")
+  const graft = readJson(ns, "graft_status.json")
   const readiness = fresh(readJson(ns, "augmentation_readiness.json"), now)
   const flags = flagsFor(ns.read("valuation_flags.json"), reset.lastNodeReset)
   const hoursSinceInstall = (now - reset.lastAugReset) / 3.6e6
@@ -71,7 +72,7 @@ function pass(ns, state) {
   }
 
   // Purchases since the last pass, each with the verdict the valuation gives it now.
-  const { records, seen } = newPurchases({ capital, sleeve, gang }, state.seen)
+  const { records, seen } = newPurchases({ capital, sleeve, gang, graft }, state.seen)
   state.seen = seen
   const lines = []
   const valued = records.map((r) => {
@@ -100,6 +101,8 @@ function pass(ns, state) {
   if (sleeve?.action && ["aug", "memory", "sleeve"].includes(sleeve.action.kind)) pendingIn.push(["sleeve", sleeve.action])
   const next = gang?.equipment?.nextItem
   if (next?.item) pendingIn.push(["gang", { item: next.item, cost: next.cost }])
+  const graftPick = fresh(graft, now)?.decision
+  if (graftPick?.name && Number(graftPick.price) > 0) pendingIn.push(["graft", { item: graftPick.name, cost: Number(graftPick.price) }])
   const pending = pendingIn.map(([source, action]) => {
     const req = requestFor(source, action, env, s)
     const v = valuePurchase(req, ctx, s)

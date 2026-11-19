@@ -15,7 +15,7 @@ import { planPurchases } from "./aug_install_logic.js"
 
 /** Purchase kinds, the keys of valuation_flags.json. */
 export const KINDS = ["tor", "programs", "home_ram", "home_cores", "cloud_ram", "sleeve_augs", "sleeve_memory",
-  "covenant_sleeve", "gang_gear", "gang_augs", "neuroflux", "donations"]
+  "covenant_sleeve", "gang_gear", "gang_augs", "graft_augs", "neuroflux", "donations"]
 export const MODES = ["own", "shadow", "valued", "sweep", "never"]
 /** Kinds an install wipes: buying them from sweep cash would buy something the install destroys. */
 export const WIPED = ["cloud_ram", "sleeve_augs"]
@@ -251,6 +251,7 @@ export function kindOf(source, record = {}, gangCategory = null) {
   if (source === "capital") return { tor: "tor", program: "programs", home: "home_ram", cloud: "cloud_ram", upgrade: "cloud_ram" }[record.kind] ?? null
   if (source === "sleeve") return { aug: "sleeve_augs", memory: "sleeve_memory", sleeve: "covenant_sleeve" }[record.kind] ?? null
   if (source === "gang") return gangCategory === "augmentation" ? "gang_augs" : "gang_gear"
+  if (source === "graft") return "graft_augs"
   return null
 }
 
@@ -274,7 +275,7 @@ function pct(v) {
  * update (stamped with its status ts), so updates between two allocator passes were missed.
  * Returns { records, seen }.
  */
-export function newPurchases({ capital = null, sleeve = null, gang = null } = {}, seen = {}) {
+export function newPurchases({ capital = null, sleeve = null, gang = null, graft = null } = {}, seen = {}) {
   const records = []
   const next = { ...seen }
   const gangLog = Array.isArray(gang?.purchases)
@@ -291,6 +292,12 @@ export function newPurchases({ capital = null, sleeve = null, gang = null } = {}
   if (!gangLog && Number(gang?.ts) > (Number(seen.gang) || 0)) {
     for (const b of items) records.push({ source: "gang", ts: Number(gang.ts), item: b.item, cost: Number(b.cost) || 0, raw: b })
     next.gang = Number(gang.ts)
+  }
+  // A graft is paid when it starts; graft_status.json keeps the running one under `grafting` (G8).
+  const g = graft?.grafting
+  if (g && Number(g.startedAt) > (Number(seen.graft) || 0)) {
+    records.push({ source: "graft", ts: Number(g.startedAt), item: g.name, cost: Number(g.price) || 0, raw: { ...g, kind: "graft" } })
+    next.graft = Number(g.startedAt)
   }
   return { records: records.sort((a, b) => a.ts - b.ts), seen: next }
 }
@@ -330,7 +337,7 @@ export function grantsFor(ctx, env = {}, s = DEFAULTS) {
 
 /** Money counters (getMoneySources().sinceInstall) each kind lands in. */
 export const COUNTER_OF = { tor: "other", programs: "other", home_ram: "servers", cloud_ram: "servers", sleeve_augs: "sleeves",
-  sleeve_memory: "sleeves", covenant_sleeve: "sleeves", gang_gear: "gang_expenses", gang_augs: "gang_expenses" }
+  sleeve_memory: "sleeves", covenant_sleeve: "sleeves", gang_gear: "gang_expenses", gang_augs: "gang_expenses", graft_augs: "augmentations" }
 
 /** Spending per counter between two samples that no record explains (a missed record or a manual buy).
  * A counter that went backwards (an install reset it) counts from zero. */

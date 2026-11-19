@@ -4,6 +4,12 @@ Running list kept by Claude on its own initiative (Ken, 2026-11-16: "exercise in
 for flaws and opportunities"). Newest first. Each entry: finding, evidence, expected gain, status.
 The 2-hourly check reviews this once per cycle (first run after an install).
 
+## 2026-11-18 19:15 check (BN10 run 4, install 6)
+
+- **Install timing is set by the check-in schedule, not the advisor.** Evidence (`metrics_log` batchValue / cycle hours, cycle 6): 0.57 v/h at 3.1h, 0.49 at 4.1h when the verdict turned "install", 0.375 at 5.98h when this check installed (no check ran between 15:15 and 19:14; cron `7 1-22/3`). Batch value rose only 2.01 -> 2.24 over those 2h. Cycles 4-5 were still rising at 3.6h, so the 4h gang minimum was not binding there. Gain: about 25% more value per hour in a cycle like this one. Options (Ken): run the check at the expected install time, or let a script install when the verdict says install (Ken's 2026-11-05 rule keeps installs a judgement, so that is his call). Status: open, in the run report.
+- **Allocator cash rate, new reading.** At 19:14 gang `observedCashRate` gave 405b/h, capital_manager's average 492b/h, measured 485b/h (25 samples). The 15:15 overstatement was a short-window spike; capital's average tracked better this time. Status: open; candidate fix stays "use capital's average or the metrics slope".
+- **Grafting G8 shipped** (allocator logs and judges grafts in shadow). Status: done; see docs/grafting-plan.md.
+
 ## 2026-11-18 15:15 check (BN10 run 4, cycle review after install 5)
 
 - **Allocator install horizon followed a slow aug (fixed).** Evidence: `spend_grants.json` 15:15 `expectedInstallHours` 7.03 (BrachiBlades 0.016 v/h vs cycle average 0.30), projected $1.26t, ~$35b of cloud granted 14:50-15:07 as "free cash"; installs this run all came at the 4h minimum. Gain: late wiped spend measured against the real ~2h horizon; more cash for the batch (each ~$35b is roughly one more aug on the ladder). Status: shipped 15:18 (`expectedInstallHours`), horizon 1.97h observed.

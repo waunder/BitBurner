@@ -219,7 +219,7 @@ need no game at all and can be written while the run proceeds.
 | G5 | **Live (dry) 2026-11-17 15:18** (see G5 results). `graft_controller.js` in **dry** mode: reads files, writes `graft_status.json` and `graft_log.txt` with the decision, never travels or grafts. Not in `startup`. Add to `profiles/bn10/profile.json`, rebuild the manifest, document in `docs/processes.md`. | Runs at about 13.5GB with a one-line status; decisions look sensible against what the player is doing, for one full cycle. | Day 1 to 2, once home RAM is 64GB+ |
 | G6 | **Done 2026-11-17 19:17** (see G6 results). Handover and interlock: the `externalOwner` and `GRAFTING` hold in `player_activity_controller.js`/`player_activity_logic.js`; `installBlocked` in `aug_install.js`. Tests for hold, for a stale status file (ignored after 2 minutes), and for the install refusal. | Tests green; with a hand-written fresh `graft_status.json` the controller reports "player owned by graft_controller.js". | Before G7 |
 | G7 | **Live path built 2026-11-18 05:18 (dry; see G7 section). First live graft, supervised.** Set `dry: false`, `allow: ["Bionic Spine"]` or the first net-positive cheap aug, `focus: false`. Measure: predicted vs actual hours, price charged, entropy 0 to 1, city trip, player activity restored within 2 polls, the aug in `getOwnedAugmentations`, installed count up by one. Repeat once with `focus: true` to see whether the Work page blocks `tools/game_terminal.py`. | One logged round trip, all of the above recorded; no cancelled work. | Stage 2 or 3, with $1b+ spare |
-| G8 | Allocator shadow: add kind `graft_augs` to `KINDS` (lasting), `valueV` in `valuePurchase`, `COUNTER_OF` for the `augmentations` counter, and read `graft_status.json` for pending verdicts. Tests in `valuation_logic.test.js`. | `spend_grants.json` shows a verdict for the pending graft; flag `shadow` only. | With the allocator already running |
+| G8 | **Done 2026-11-18 19:35** (kind `graft_augs`, lasting; `kindOf("graft")`; `newPurchases` logs a started graft once from `graft_status.json` `grafting`; allocator pends the controller's `decision`; `COUNTER_OF` augmentations, not added to `unattributed` because install buys share that counter; 1 test, 662/662; live, `spend_grants.json` has a `graft_augs` grant). Allocator shadow: add kind `graft_augs` to `KINDS` (lasting), `valueV` in `valuePurchase`, `COUNTER_OF` for the `augmentations` counter, and read `graft_status.json` for pending verdicts. Tests in `valuation_logic.test.js`. | `spend_grants.json` shows a verdict for the pending graft; flag `shadow` only. | With the allocator already running |
 | G9 | Metrics and display: `metrics.py` `PURCHASE_SOURCES`, `run_page.py` `LIVE_FILES`, `PULL_FILES` in `tools/bb_remote.py`, one HUD or run-page line. | Graft rows appear in the ledger; effect-after numbers logged. | After G7 |
 | G10 | **Stage policy on.** Combat set before the Covenant gate (stage 3): `allow` the five-aug set, raise `maxPriceFractionOfCash` if needed, put `graft_controller.js` in the bn10 `startup` list. After the join, switch `augWeights` combat to ~0.1 and let QLink and the rest compete on rate. | Covenant gate met with grafts counted in the 20, with the combat gym hours lower than run 3's. | Stage 3 |
 
@@ -227,6 +227,13 @@ need no game at all and can be written while the run proceeds.
 the Covenant join, cash/h and MCP $/s before and after each graft (payback), entropy stacks and the % loss they imply, player hours
 by activity (grafting versus crime, gym, faction work, from `player_activity_status.json` history), and installs avoided or shrunk.
 A graft "paid" if its measured income/rep/time gain beat 0.097 v of entropy plus its cash and hours; otherwise tighten `minNetValue`.
+
+## G8 results (2026-11-18 19:35, BN10 run 4)
+
+Shipped right after install 6. `valuation_flags.json` leaves `graft_augs` at `own`, so grafting still follows graft_config.json
+caps only; the allocator now logs each graft start to `allocator_shadow_log.txt` and judges the controller's pending pick.
+Cycle 6 grafts: The Black Hand (14:51-16:33) and a second one 16:19-17:25 (installed count 30 -> 32 before install 6).
+Next: G9 (metrics and display), then G10 (graft_controller.js in bn10 startup; it is still restarted by hand after each install, done 19:17).
 
 ## G7 live path built (2026-11-18 05:18, BN10 run 4); first live graft not yet run
 

@@ -108,6 +108,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 3 | 2026-11-18 05:15 | 5 (CRTX42-AA Gene Modification, Neurotrainer III, Combat Rib I, Augmented Targeting I, LuminCloaking-V1 from Slum Snakes; ~$3.63b, readiness plan by value 0.38, advisor install) + NeuroFlux x2. Backup saves/pre-install-bn10run4-3-20261118-0517.json.gz | 12 -> 17 |
 | 4 | 2026-11-18 09:16 | 7 (Photosynthetic Cells, Bionic Legs, Combat Rib II, Augmented Targeting II, LuminCloaking-V2, INFRARET Enhancement, Synaptic Enhancement Implant from Slum Snakes; ~$27.4b, value 0.89, advisor plan; gang money mode paid for it) + NeuroFlux x2. Backup saves/pre-install-bn10run4-4-20261118-0920.json.gz | 17 -> 24 |
 | 5 | 2026-11-18 13:16 | 5 (Graphene Bionic Spine Upgrade, Synfibril Muscle, Combat Rib III, Augmented Targeting III, Cranial Signal Processors - Gen I from Slum Snakes; $51.4b, value 1.25, advisor plan; gang money mode paid) + NeuroFlux x4; leftover cash took home 512GB -> 1TB. Backup saves/pre-install-bn10run4-5-20261118-1318.json.gz | 25 -> 30 (incl. grafted Bionic Arms) |
+| 6 | 2026-11-18 19:16 | 9 (Graphene Bionic Legs Upgrade, Graphene Bone Lacings, NEMEAN Subdermal Weave, Synthetic Heart, Neotra, Neural Accelerator, Embedded Netburner Module, CSP Gen II, SmartSonar Implant from Slum Snakes; $1.52t, value 2.24, advisor install) + NeuroFlux x4 + queued The W1ngs of Icarus; home 1TB -> 4TB, 2 cores. Backup saves/pre-install-bn10run4-6-20261118-1920.json.gz | 32 -> 42 (incl. 2 grafts) |
 
 ## Installs BN6 run 1 (history)
 
@@ -141,13 +142,14 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-18 15:15 (scheduled run, BN10 run 4): cycle review after install 5; allocator install horizon fixed; no install.**
-Live (probe 15:14): BitNode 10, $30.1b, hacking 226, str/def/dex/agi 784/664/519/517, karma -104k, home 1TB, 7 sleeves, 30 installed, 0 queued. Player grafting The Black Hand (first auto-picked graft, $1.65b, 1.70h, 14:51 to ~16:33).
-Measured (23 samples, 13:20-15:10): rep/h Slum Snakes 2.35m, Speakers 7.83k, Tian Di Hui 7.64k, Syndicate 4.75k; hackExp/h 6.91m; karma/h -4.19k; cash/h 5.71b (net of $49b cloud and $15b sleeve augs); MCP avg 1.92m/s. Trend n/a (cycle under 3h).
-Income by source, hour 1-2 vs cycle 5: hacking 73.4b/h (4.69b), gang 19.9b/h (5.49b), darknet 1.0b/h (0), sleeves net -14.7b/h (aug buys). No source fell. Audit 0 of 33.
-Fault fixed: the allocator expected the install 7.0h out (BrachiBlades rep, 0.016 v/h vs cycle average 0.30), so its projected batch was $1.26t and it granted ~$35b of late cloud RAM (14:50-15:07) as "free cash after the projected batch". `expectedInstallHours` now skips a next aug slower than the cycle average; horizon 1.97h after restart (660/660). Still open: the cash rate it projects with reads ~224b/h (gang-controller short window) vs ~95b/h gross.
-Install: advisor wait (gang 4h minimum, ~17:16), plan 5 Slum Snakes augs $26.6b value 0.59. Agree.
-End check: no Red Pill, no World Daemon. Not notified. **Next run (17:15): install judgement; graft finishes ~16:33 (measure); G8.**
+**2026-11-18 19:15 (scheduled run, BN10 run 4): install 6 at 19:16; grafting G8 shipped; install-timing finding for Ken.**
+Live before (probe 19:14): BitNode 10, $1.72t, hacking 298, str/def/dex/agi 2072/824/1313/687, karma -147.5k, home 1TB, 7 sleeves, 32 installed (2 grafts), W1ngs queued.
+Measured (25 samples, 17:10-19:10): rep/h Slum Snakes 1m, Tian Di Hui 14.5k; hackExp/h 58.3m; karma/h -10.9k; cash/h 485b; MCP avg 67.5m/s. Trend STEADY on all lines.
+Income last hour: hacking 463b/h, gang 31b/h, darknet 0.97b/h, sleeves 0.15b/h; none fell. Audit 0 of 33 after the install.
+Install: advisor install (9 augs $1.52t, value 2.24); agreed. Now 42 installed, home 4TB 2 cores; residents back, graft_controller started by hand.
+`metrics.py cycles`: cycle 6 closed 5.98h, rebuild hacking 1.40h, Slum Snakes 8.08m.
+Number review (row 10): value/h peaked 0.57 at 3.1h and the verdict said install at 4.1h (0.49), but no check ran until 5.98h (0.375). Ken: check timing or scripted installs.
+End check: no Red Pill, no World Daemon. **Next run (~22:14): first run after install 6, so cycle review; install verdict due from ~23:16 (4h gang minimum).**
 
 ## Daedalus ready (2026-11-16 21:35)
 

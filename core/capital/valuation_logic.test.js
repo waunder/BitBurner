@@ -261,3 +261,18 @@ test("grantFilter: only valued kinds obey the grant, by running total; fallbacks
   // Not valued: nothing filtered.
   assert.equal(grantFilter(items, { gang_gear: "shadow" }, grants, now).refused.length, 0)
 })
+
+test("grafts: a started graft is one lasting graft_augs purchase, logged once", () => {
+  assert.equal(kindOf("graft", {}), "graft_augs")
+  assert.ok(KINDS.includes("graft_augs"))
+  const graft = { grafting: { name: "The Black Hand", startedAt: 100, hours: 1.7, price: 1.65e9 } }
+  const first = newPurchases({ graft }, {})
+  assert.deepEqual(first.records.map((r) => [r.source, r.item, r.cost]), [["graft", "The Black Hand", 1.65e9]])
+  assert.equal(first.seen.graft, 100)
+  assert.equal(newPurchases({ graft }, first.seen).records.length, 0)
+  assert.equal(newPurchases({ graft: { grafting: null } }, {}).records.length, 0)
+  const ctx = { phase: "late", cash: 10e9, batch: { value: 1 }, freeCash: 5e9, reason: "" }
+  const v = valuePurchase(requestFor("graft", first.records[0]), ctx)
+  assert.equal(v.class, "lasting")
+  assert.equal(v.verdict, "grant")
+})

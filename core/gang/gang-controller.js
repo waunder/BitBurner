@@ -1,3 +1,4 @@
+import { memberPower, territoryTrialCohort, territoryTrialFrom } from "./gang_logic.js";
 import { canBuildTerritoryPower, moneyModePriority, planMoneyTasks, planReputationTasks, planTerritoryPower,
   shouldAscendMember, shouldEngageTerritoryClashes, wantedCleanupPolicy, cheapGearQualifies,
   reputationCleanupMode, withEquipment, planReputationGear, gearCounts, ascensionCooldownElapsed,
@@ -93,6 +94,7 @@ function readCapitalPolicy(ns) {
         ? raw.augmentationCashTarget : null,
       reserveInstallPlan: raw.reserveInstallPlan === true,
       recruitHoldHours: Number.isFinite(raw.recruitHoldHours) && raw.recruitHoldHours > 0 ? raw.recruitHoldHours : 0,
+      territoryTrial: territoryTrialFrom(raw.territoryTrial, Date.now()),
     };
   } catch {
     return safe;
@@ -250,6 +252,16 @@ export async function main(ns) {
       mode = "territory-power";
     }
 
+    // Measured trial (Ken, 2026-11-19): a fixed cohort of the lowest respect earners builds power
+    // on Territory Warfare until the policy's untilMs; clashes stay off unless territoryEnabled.
+    const trial = capitalPolicy.territoryTrial;
+    const trialCohort = trial && tasks.some((t) => t.name === "Territory Warfare")
+      ? territoryTrialCohort(plans, trial.members) : [];
+    for (const plan of trialCohort) {
+      plan.choice = { task: "Territory Warfare", money: 0, respect: 0, wanted: 0 };
+      plan.role = "territory-trial";
+    }
+
     // Ascension reduces stored gang respect, so at most one member ascends per
     // evaluation (the largest gain); the next loop re-reads the game state first.
     // The penalty floor is the reputation band's cleanup entry in reputation mode
@@ -269,7 +281,8 @@ export async function main(ns) {
       const asc = ns.gang.getAscensionResult(plan.member.name);
       const mult = asc && (gang.isHacking ? asc.hack : asc.str);
       ascRatios.set(plan.member.name, mult);
-      const mayAscend = cooledDown && shouldAscendMember({ cleanupMode, severeMode: severeWantedMode,
+      // A trial member keeps its stats so the measured power gain is not reset mid-trial.
+      const mayAscend = cooledDown && plan.role !== "territory-trial" && shouldAscendMember({ cleanupMode, severeMode: severeWantedMode,
         territoryPowerMode: mode === "territory-power", multiplier: mult, threshold: C.ascendAt,
         respect: gang.respect, respectToDeduct: asc?.respect, wantedLevel: gang.wantedLevel, penaltyFloor });
       if (mayAscend && (!ascendBest || mult > ascendBest.mult)) ascendBest = { name: plan.member.name, mult, respect: asc.respect };
@@ -423,7 +436,9 @@ export async function main(ns) {
         reputationBand: gangObjective === "reputation"
           ? { enter: capitalPolicy.reputationCleanupEnter, exit: capitalPolicy.reputationCleanupExit } : null },
       territory: { policyEnabled: territoryEnabled, fight, weightedChance, rivals: clashes.length,
-        lowestCombat: Math.min(...members.map(combatFloor)), clashChance: gang.territoryClashChance },
+        lowestCombat: Math.min(...members.map(combatFloor)), clashChance: gang.territoryClashChance,
+        trial: trial ? { untilMs: trial.untilMs, members: trialCohort.map((p) => p.member.name),
+          cohortPower: trialCohort.reduce((sum, p) => sum + memberPower(p.member), 0) } : null },
       capital: { phase: capitalPolicy.phase, objective: capitalPolicy.objective, cash, observedCashRate,
         augmentationCashTarget: augmentationTarget, policyAllowsPurchases: capitalPolicy.allowEquipmentPurchases,
         sourceMasterEnabled: C.equipmentMasterEnabled, purchaseAllowed, blockedReason,

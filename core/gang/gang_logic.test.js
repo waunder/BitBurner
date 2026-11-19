@@ -318,3 +318,15 @@ test("autoGangObjective: stale, missing or partial readiness keeps reputation", 
   assert.equal(autoGangObjective({ ts: now, gangRep: 9e6, gangRepNeeded: null }, now).objective, "reputation");
   assert.equal(autoGangObjective({ ts: now, gangRep: null, gangRepNeeded: 5 }, now).objective, "reputation");
 });
+
+test("territory trial: policy parsing, cohort and member power", async () => {
+  const { memberPower, territoryTrialFrom, territoryTrialCohort } = await import("./gang_logic.js");
+  assert.deepEqual(territoryTrialFrom({ members: 4, untilMs: 2000 }, 1000), { members: 4, untilMs: 2000 });
+  assert.equal(territoryTrialFrom({ members: 4, untilMs: 2000 }, 2000), null);
+  assert.equal(territoryTrialFrom({ members: 0, untilMs: 2000 }, 1000), null);
+  assert.equal(territoryTrialFrom(null, 1000), null);
+  const plan = (name, respect, trained = true) => ({ member: { name }, choice: { respect }, trained });
+  const cohort = territoryTrialCohort([plan("a", 170), plan("b", 110), plan("c", 120), plan("d", 5, false)], 2);
+  assert.deepEqual(cohort.map((p) => p.member.name), ["b", "c"]);
+  assert.equal(memberPower({ hack: 95, str: 95, def: 0, dex: 0, agi: 0, cha: 0 }), 2);
+});

@@ -328,3 +328,24 @@ export function recruitHoldsAscension({ members, maxMembers = 12, respect, respe
 export function ascensionCooldownElapsed(lastTs, now, minMs = 90_000) {
   return !Number.isFinite(lastTs) || now - lastTs >= minMs;
 }
+
+/** The game's per-member power: the sum of all six stats / 95 (GangMember.calculatePower). */
+export function memberPower(member) {
+  return ["hack", "str", "def", "dex", "agi", "cha"].reduce((sum, k) => sum + (Number(member?.[k]) || 0), 0) / 95;
+}
+
+/** Policy `territoryTrial: { members, untilMs }` while it runs, else null (expired, malformed). */
+export function territoryTrialFrom(raw, now) {
+  if (!raw || typeof raw !== "object") return null;
+  const members = Math.floor(Number(raw.members));
+  const untilMs = Number(raw.untilMs);
+  if (!(members >= 1 && members <= 12) || !Number.isFinite(untilMs) || now >= untilMs) return null;
+  return { members, untilMs };
+}
+
+/** The trial cohort: the trained members earning the least respect (cheapest to divert). */
+export function territoryTrialCohort(plans, count) {
+  return plans.filter((p) => p.trained)
+    .sort((a, b) => (a.choice?.respect || 0) - (b.choice?.respect || 0) || String(a.member.name).localeCompare(String(b.member.name)))
+    .slice(0, count);
+}

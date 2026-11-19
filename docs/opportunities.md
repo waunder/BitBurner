@@ -22,7 +22,7 @@ The 2-hourly check reviews this once per cycle (first run after an install).
 
 ## 2026-11-18 19:15 check (BN10 run 4, install 6)
 
-- **Install timing is set by the check-in schedule, not the advisor.** Evidence (`metrics_log` batchValue / cycle hours, cycle 6): 0.57 v/h at 3.1h, 0.49 at 4.1h when the verdict turned "install", 0.375 at 5.98h when this check installed (no check ran between 15:15 and 19:14; cron `7 1-22/3`). Batch value rose only 2.01 -> 2.24 over those 2h. Cycles 4-5 were still rising at 3.6h, so the 4h gang minimum was not binding there. Gain: about 25% more value per hour in a cycle like this one. Options (Ken): run the check at the expected install time, or let a script install when the verdict says install (Ken's 2026-11-05 rule keeps installs a judgement, so that is his call). Status: open, in the run report.
+- **Install timing is set by the check-in schedule, not the advisor.** Evidence (`metrics_log` batchValue / cycle hours, cycle 6): 0.57 v/h at 3.1h, 0.49 at 4.1h when the verdict turned "install", 0.375 at 5.98h when this check installed (no check ran between 15:15 and 19:14; cron `7 1-22/3`). Batch value rose only 2.01 -> 2.24 over those 2h. Cycles 4-5 were still rising at 3.6h, so the 4h gang minimum was not binding there. Gain: about 25% more value per hour in a cycle like this one. Options (Ken): run the check at the expected install time, or let a script install when the verdict says install (Ken's 2026-11-05 rule keeps installs a judgement, so that is his call). Status: **resolved 2026-11-19** (Ken: "let the install verdict also be the trigger"; `tools/auto_install.py`).
 - **Allocator cash rate, new reading.** At 19:14 gang `observedCashRate` gave 405b/h, capital_manager's average 492b/h, measured 485b/h (25 samples). The 15:15 overstatement was a short-window spike; capital's average tracked better this time. Status: open; candidate fix stays "use capital's average or the metrics slope".
 - **Grafting G8 shipped** (allocator logs and judges grafts in shadow). Status: done; see docs/grafting-plan.md.
 
@@ -35,7 +35,7 @@ The 2-hourly check reviews this once per cycle (first run after an install).
 
 ## 2026-11-18 11:15 check (BN10 run 4, cycle review after install 4)
 
-- **Graft Bionic Arms instead of grinding Tetrads rep.** Evidence: `graft_status.json` 11:14 decision Bionic Arms, $825m, 1.08h, net value 0.111 (0.103 v/h vs alternative 0.053); the player has spent cycles 3-5 on Tetrads work and is still 89k rep (3.9h) short; cash $7.96b vs plan $5.45b. Gain: the aug about 3h sooner, the player freed for the next goal, no 1.9x ladder step. Status: blocked; the live config push was refused by the session's permission check. Waiting on Ken.
+- **Graft Bionic Arms instead of grinding Tetrads rep.** Evidence: `graft_status.json` 11:14 decision Bionic Arms, $825m, 1.08h, net value 0.111 (0.103 v/h vs alternative 0.053); the player has spent cycles 3-5 on Tetrads work and is still 89k rep (3.9h) short; cash $7.96b vs plan $5.45b. Gain: the aug about 3h sooner, the player freed for the next goal, no 1.9x ladder step. Status: resolved 2026-11-18 12:24 (Ken approved live grafting on the agent's judgement; Bionic Arms grafted 11:15-12:20).
 - **Gang reaches 3.5m sooner each cycle.** Evidence: cycle 5 3.68m at 1.9h (2.09m/h, 23 samples) vs cycle 4 about 2.25h. Gain: longer money phase per cycle. Status: watch; the 4h minimum now sets the install, not rep.
 
 ## 2026-11-18 09:15 check (BN10 run 4, install 4)

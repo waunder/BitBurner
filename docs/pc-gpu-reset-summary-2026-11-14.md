@@ -84,4 +84,5 @@ One software variable remains: Meta's Quest Link app (OVRService and its "Meta V
 - Then, while Ken was noting how stable it had been: **unexpected shutdown at 07:52:33** (Kernel-Power 41, no log entries before it, so a hard freeze), reboot 08:16; resets began the moment the desktop came up (08:16:23).
 - **Second hard crash** at ~08:20 (Kernel-Power 41, boot 08:20:52), then ~250 resets 08:21-08:23 (63x Xid 13, 9x 14, 222x 153 across both boots). Game relaunched 08:22.
 - The quiet watch could not alert: a hard freeze kills it before it can count anything.
+- Game save was corrupted (Recovery Mode); restored from the Steam app's 08:18 copy, about 25 min lost. Steps in docs/remote-api-keepalive.md.
 - Reads as: the card's fault is intermittent, not gone. Long quiet stretches do not mean it is healed. Same pattern as 11-14: a crash, then bursts right after each boot.

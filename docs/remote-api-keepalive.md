@@ -97,3 +97,22 @@ may be deleted after diagnosis is complete.
 copy of a host `.log` file. Netscript cannot inspect the host filesystem,
 and that log is not delivered by the manifest. It is not a health probe or
 recovery mechanism; use the local status/recovery tools above.
+
+## Save recovery after a hard PC crash (tested 2026-11-19)
+
+A hard freeze (Kernel-Power 41) mid-save left the game in **RECOVERY MODE** ("Save data exists, but
+its type is invalid"): the `save` record in IndexedDB `bitburnerSave` was empty, and Chromium's blob
+store was damaged, so even a fresh `put` read back as "Data lost due to missing file". Recovery mode
+disables saving, so nothing more is lost while you work.
+
+1. Find the newest good save. The Steam app writes its own copies to
+   `%APPDATA%\bitburner\saves\<gameId>\bitburnerSave_<unix>_BN<n>x<lvl>.json.gz` (one landed at 08:18,
+   between the two crashes, and beat our 07:07 pre-install backup). Check it decodes; copy it into `saves/`.
+2. Over CDP (Runtime.evaluate only, never `Input.*`): `indexedDB.deleteDatabase('bitburnerSave')`. It
+   reports `blocked` because the page holds the DB open; that is fine, it runs on reload.
+3. `location.reload()`. The game starts empty, finds the newer Steam-folder save and shows **Import Save
+   Comparison**. Check the game ID, money and BitNode, then click "Proceed with import" and "Confirm" (DOM `.click()`).
+4. Verify: the Overview shows the run, `ps` shows the script stack, `bb_remote.py ctl-status` says connected,
+   and `tools/save_export.py --out post-recovery-<date>` decodes with values newer than the imported file.
+
+Loss on 2026-11-19: about 25 minutes (08:18 to the 08:20 crash). Offline earnings covered the gap.

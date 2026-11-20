@@ -9,7 +9,7 @@ our WebSocket listener at `127.0.0.1:12526`; local control clients talk to
 Run this from an authorized local terminal (a sandbox may deny loopback):
 
 ```bash
-/Users/Shared/BitBurner/tools/remote_api_monitor.sh
+/Volumes/ExternalData/BitBurner/tools/remote_api_monitor.sh
 ```
 
 This is safe to repeat. It reads daemon health first, takes a kernel-managed
@@ -22,7 +22,7 @@ offline. The shell wrapper selects `.venv/bin/python3` and absolute paths.
 For a read-only check without recovery:
 
 ```bash
-/Users/Shared/BitBurner/.venv/bin/python3 /Users/Shared/BitBurner/tools/remote_api_monitor.py
+/Volumes/ExternalData/BitBurner/.venv/bin/python3 /Volumes/ExternalData/BitBurner/tools/remote_api_monitor.py
 ```
 
 The JSON result distinguishes these states:
@@ -53,10 +53,29 @@ disabled; use `launchctl bootout gui/$(id -u) tools/com.bitburner.remote-api-mon
 to stop supervision, and `launchctl bootstrap gui/$(id -u) tools/com.bitburner.remote-api-monitor.plist`
 to load it again.
 
+### Mac Mini setup (2026-11-20)
+
+The repo lives on the external drive at `/Volumes/ExternalData/BitBurner`; the
+installed copy is `~/Library/LaunchAgents/com.bitburner.remote-api-monitor.plist`
+(same content as `tools/`). macOS privacy rules shape it:
+
+- launchd itself cannot open files on the external drive, so the job's
+  stdout/stderr go to `~/Library/Logs/bitburner-remote-api.{out,err}.log` and its
+  working directory is the home folder. The daemon's own logs stay in `tools/`.
+- `/bin/bash` has Full Disk Access (System Settings → Privacy & Security, granted
+  by Ken). Without it the job fails with exit 126, "Operation not permitted".
+- The game's Remote API "Reconnection delay" is 5 (was 0). With a positive
+  delay the game reconnects by itself after a daemon restart.
+
+Verified 2026-11-20 13:56: daemon killed, launchd restarted it, game
+reconnected and a full 163-file sync passed within about 20 seconds, no clicks.
+The PC's Windows supervisor (`daemon_supervisor.py`: DevTools reconnect, outage
+watchdog, auto install) is not ported to the Mac.
+
 ## Complete source sync without a disconnect
 
 ```bash
-/Users/Shared/BitBurner/tools/force_sync.sh
+/Volumes/ExternalData/BitBurner/tools/force_sync.sh
 ```
 
 This now uses the existing connection and asks for a full manifest push. It

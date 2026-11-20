@@ -33,10 +33,21 @@ function combat(p, level) {
 const KILL_GATED = ["The Dark Army", "Speakers for the Dead"]
 const KILLS_WANTED = 30
 
+// A graft is cancelled (price kept by the game) if other work starts: 2026-11-19 a $150t Congruity graft was lost
+// this way. graft_controller.js claims the player in graft_status.json just before it starts one.
+function graftOwnsPlayer(ns) {
+  try {
+    const status = JSON.parse(ns.read("graft_status.json") || "null")
+    return Boolean(status?.ownsPlayer) && Date.now() - Number(status.ts) <= 120000
+  } catch { return false }
+}
+
 function seekKills(ns, player) {
   if (player.numPeopleKilled >= KILLS_WANTED || KILL_GATED.every((f) => player.factions.includes(f))) return false
   if (!(player.skills.hacking >= 300 && combat(player, 300) && player.karma <= -45)) return false
-  if (ns.singularity.getCurrentWork()?.type === "CRIME") return false
+  const work = ns.singularity.getCurrentWork()?.type
+  if (work === "CRIME" || work === "GRAFTING") return false
+  if (graftOwnsPlayer(ns)) return false
   return ns.singularity.commitCrime("Homicide", false) > 0
 }
 

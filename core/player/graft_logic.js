@@ -146,10 +146,9 @@ export function planGraft(input) {
 
   if (!config.enabled) { rejected.push({ name: null, reason: "disabled" }); return finish() }
   if (working?.type === "GRAFTING") { rejected.push({ name: null, reason: "already grafting" }); return finish() }
-  if (!cured && Number(entropy) >= config.maxEntropy) {
-    rejected.push({ name: null, reason: "entropy cap", detail: `${entropy} >= ${config.maxEntropy}` })
-    return finish()
-  }
+  // At the cap only the cure may be grafted: it clears every stack and adds none.
+  const capped = !cured && Number(entropy) >= config.maxEntropy
+  if (capped) rejected.push({ name: null, reason: "entropy cap", detail: `${entropy} >= ${config.maxEntropy}` })
 
   const have = new Set([...owned, ...queued])
   const hasFocusHelper = have.has(FOCUS_HELPER_NAME)
@@ -161,6 +160,7 @@ export function planGraft(input) {
 
   for (const row of catalog) {
     if (have.has(row.name)) continue
+    if (capped && row.name !== CURE_NAME) continue
     const refuse = (reason, detail) => { rejected.push({ name: row.name, reason, detail }) }
     if (block.has(row.name) || (allow.size > 0 && !allow.has(row.name))) continue // user filter, not a gate
     const missing = (row.prereqs || []).filter(prereq => !have.has(prereq))
@@ -182,7 +182,8 @@ export function planGraft(input) {
     if (offer && offer.repReady && Number(offer.price) * Math.pow(config.factionStepRatio, batchSize) < price) {
       refuse("cheaper via faction"); continue
     }
-    const netV = netValue(row.mults, weights, cured)
+    // The cure's value is the stacks it removes (its own mults are empty and it adds no stack).
+    const netV = row.name === CURE_NAME ? Number(entropy) * entropyValue(weights) : netValue(row.mults, weights, cured)
     if (!(netV > config.minNetValue)) { refuse("net value", netV.toFixed(3)); continue }
     if (hours > config.maxGraftHours) { refuse("max graft hours"); continue }
     const rateV = netV / hours

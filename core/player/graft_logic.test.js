@@ -117,9 +117,21 @@ test("gate: already grafting", () => {
 });
 
 test("gate: entropy cap, lifted when cured", () => {
-  const plan = planGraft(base({ entropy: 6 }));
+  const plan = planGraft(base({ entropy: 6, config: { block: ["violet Congruity Implant"] } }));
   assert.deepEqual(plan.blocked, ["entropy cap"]);
   assert.ok(planGraft(base({ entropy: 6, cured: true })).pick);
+});
+
+test("at the entropy cap only the cure is a candidate, valued by the stacks it removes", () => {
+  const plan = planGraft(base({ entropy: 6, cash: 1e15 }));
+  assert.equal(plan.pick.name, "violet Congruity Implant");
+  assert.deepEqual(plan.candidates.map(c => c.name), ["violet Congruity Implant"]);
+  assert.ok(Math.abs(plan.pick.netV - 6 * entropyValue(WEIGHTS)) < 1e-9);
+});
+
+test("the cure is worth nothing with no entropy", () => {
+  const plan = planGraft(base({ entropy: 0, cash: 1e15, config: { allow: ["violet Congruity Implant"] } }));
+  assert.equal(plan.pick, null);
 });
 
 test("gate: allow and block lists", () => {

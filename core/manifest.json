@@ -116,7 +116,9 @@
     "scripts/share.js": "core/scripts/share.js",
     "scripts/weaken.js": "core/scripts/weaken.js",
     "scripts/weakenGrowHack.js": "core/scripts/weakenGrowHack.js",
-    "formulas_logic.js": "core/mcp/formulas_logic.js"
+    "formulas_logic.js": "core/mcp/formulas_logic.js",
+    "early_crime.js": "core/player/early_crime.js",
+    "early_crime_logic.js": "core/player/early_crime_logic.js"
   },
   "config": {
     "reputation_config.json": "core/config/reputation_config.json",

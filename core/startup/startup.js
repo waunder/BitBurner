@@ -53,7 +53,8 @@
 // come after these: dnet_root.js in bn15 is large and resident, so on a small
 // home (BN10) it must not take the RAM that faction_join.js and gang_create.js need.
 // gang_create.js creates the gang at -54k karma and starts gang-controller.js.
-const SCRIPTS = ["mcp_supervisor.js", "hacking/crawler.js", "mcp.js", "capital_bootstrap.js", "maintenance_steward.js", "money.js", "stack_manager.js", "hud_consolidated.js", "run_report.js", "player_activity_controller.js", "xp_filler.js", "faction_join.js", "gang_create.js", "metrics_logger.js"]
+// early_crime.js (~11GB) picks crimes for the player and sleeves until their controllers fit (fresh node).
+const SCRIPTS = ["mcp_supervisor.js", "hacking/crawler.js", "mcp.js", "capital_bootstrap.js", "early_crime.js", "maintenance_steward.js", "money.js", "stack_manager.js", "hud_consolidated.js", "run_report.js", "player_activity_controller.js", "xp_filler.js", "faction_join.js", "gang_create.js", "metrics_logger.js"]
 const RETRY_DELAY_MS = 3000
 
 export async function main(ns) {

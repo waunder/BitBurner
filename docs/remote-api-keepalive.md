@@ -73,8 +73,17 @@ DevTools (2026-11-20 17:22): Bitburner's Steam launch option is
 `--remote-debugging-port=9222`; the port listens on 127.0.0.1 only. Verified:
 `tools/save_export.py` wrote a validated backup and `tools/game_terminal.py`
 ran a command (`.venv` needs `websocket-client`). The PC's Windows supervisor
-(`daemon_supervisor.py`: DevTools reconnect, outage watchdog, auto install) is
-not ported to the Mac; the scheduled check-in covers those by hand.
+(`daemon_supervisor.py`: DevTools reconnect, outage watchdog) is not ported
+to the Mac; the scheduled check-in covers those by hand.
+
+Auto install (2026-11-21, Ken): `tools/auto_install_mac.py` runs the PC's
+`auto_install.AutoInstall` check every 60s from the LaunchAgent
+`com.bitburner.auto-install` (`tools/com.bitburner.auto-install.plist`, copied
+to `~/Library/LaunchAgents/`, loaded with `launchctl bootstrap gui/$(id -u) ...`).
+Same guards as the PC: verdict `install` for 5 minutes, cycle at least 1h old,
+The Red Pill not owned, save backup first. Pause: `tools/autoinstall.pause`.
+Log: `runtime/autoinstall_mac.log` (and `~/Library/Logs/bitburner-auto-install.*`).
+Stop: `launchctl bootout gui/$(id -u)/com.bitburner.auto-install`.
 
 ## Complete source sync without a disconnect
 

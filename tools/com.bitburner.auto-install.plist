@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.bitburner.auto-install</string>
+	<!-- Auto install on the Mac Mini (Ken, 2026-11-21): tools/auto_install_mac.py, the PC's supervisor
+	     auto install on its own loop. Pause with tools/autoinstall.pause. bash is the launched program
+	     because /bin/bash holds Full Disk Access for the external drive; "; exit" keeps bash as the parent. -->
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/bash</string>
+		<string>-c</string>
+		<string>/Volumes/ExternalData/BitBurner/.venv/bin/python3 /Volumes/ExternalData/BitBurner/tools/auto_install_mac.py --interval 60; exit $?</string>
+	</array>
+	<key>WorkingDirectory</key>
+	<string>/Users/kth</string>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
+	<key>ThrottleInterval</key>
+	<integer>60</integer>
+	<key>ProcessType</key>
+	<string>Background</string>
+	<key>StandardOutPath</key>
+	<string>/Users/kth/Library/Logs/bitburner-auto-install.out.log</string>
+	<key>StandardErrorPath</key>
+	<string>/Users/kth/Library/Logs/bitburner-auto-install.err.log</string>
+</dict>
+</plist>

@@ -18,6 +18,8 @@ Where the game is: it must run on exactly one machine. If STATE.md says the game
 Authority (AGENTS.md): everything in the game is yours except resets and permanent forfeits. Installs are
 approved up to readiness to complete BN12 (Ken, 2026-11-21, same terms as earlier runs), with a validated save
 backup in saves/ before each, and the install advisor's verdict as the trigger: install when it reads `install`.
+The LaunchAgent com.bitburner.auto-install (tools/auto_install_mac.py) normally does this within ~6 minutes of the
+verdict; read its `autoinstall:` lines in runtime/autoinstall_mac.log and install by hand only if it is down or stuck.
 Back up with `tools/save_export.py --out pre-install-bn12-<n>-<date>`; if it fails or does not validate, do not
 install: report the advisor's verdict for Ken instead. Run the install with
 `tools/game_terminal.py "home; run aug_install.js --install"`, then add a row to STATE.md's install table.
@@ -31,8 +33,8 @@ Access on the Mac:
 - DevTools: the Steam launch option is `--remote-debugging-port=9222` (set 2026-11-20). Check
   `curl -s -m 3 http://127.0.0.1:9222/json/version`. tools/game_terminal.py and tools/save_export.py work as on
   the PC (Runtime.evaluate only, never Input.*). If every game script has stopped, run `startup.js` with
-  game_terminal.py. The PC's daemon_supervisor.py (outage watchdog, auto install) is Windows-only and not
-  running here, so those checks are yours.
+  game_terminal.py. The PC's daemon_supervisor.py (outage watchdog) is Windows-only and not running here,
+  so that check is yours; auto install runs here as its own LaunchAgent (above).
 
 Each run:
 1. Refresh live state with timestamps (ctl-pull, then read runtime/): money, hacking, karma and gang, install

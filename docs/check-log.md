@@ -9,6 +9,15 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN10 run 4
 
+**2026-11-20 23:12 Mac, scheduled run: healthy, no restarts; number review row 6 (xp_filler), no change; no install.** Not a stand-aside run (repo clean, last commit 21:13). Remote API connected; DevTools on 9222 answering.
+Live (metrics_log 23:10 sample; ctl-get 23:12): $69.82q, hacking 15741, str 315.7k, sleeve_buyer `income` 3.53e12.
+Measured: cash $57.06q (22:10) -> $69.82q (23:10) = $12.76q/h ($3.54t/s), unchanged from 21:12.
+8th sleeve: action save, "all sleeves at memory cap; saving for sleeve: 1.00e+17"; no sleeve purchase. ($100q - $69.82q) / $12.76q/h = ~2.4h -> about 01:30 Sat 2026-11-21 Mac time; the 01:07 check-in may just miss it, the 03:07 one should find it bought.
+Gang: territory 58.3% (35.3% at 21:12), weighted odds 0.9999, power 417k vs strongest rival 5.7k, 12 members (none lost), objective money. Stacks: 9 targets, started/failed empty. Contracts: watcher ok, idle, 2 contracts.
+Number review, row 6 (xp_filler). Meaning: one-shot xp_weaken runs on joesguns in cloud/rooted RAM that MCP and stacks leave idle. Now: 47 workers, 1,449,206 threads (~2.5PB of ~7.1PB cloud); hacking exp +90G/h (3.12T total, +2.9%/h, ~20 levels/h; not all from the filler). Cost: stacks are budget-bound (row 3) and MCP uses ~0.4% of income (rows 4-5), RAM ~42% used, so the RAM would earn nothing otherwise. Benefit is also small at hacking 15.7k (level barely moves stack yield). No change; revisit if stacks become RAM-bound.
+Install: none. The Red Pill owned; Ken's sleeve-first rule holds; an install would reset the $70q being saved.
+End check: World Daemon not touched. Not notified (nothing new).
+
 **2026-11-20 21:12 Mac, scheduled run: healthy, no restarts; number review row 5 (MCP cloud control), no change; no install.** Not a stand-aside run (repo clean, last commit 19:50). Remote API connected (daemon up 7.3h, 163 synced, 31 pulled); DevTools on 9222 answering.
 Live (metrics_log 21:10 sample; ctl-get 21:12): $44.33q, hacking 15700, str/def/dex/agi 313k/65.1k/16.3k/20.0k, karma -205k, 97 installed, 1 queued, verdict build, RAM 4.21m of 9.96m GB, sleeves all Heist.
 Measured: cash $43.27q (21:05) -> $44.33q (21:10) = $3.54t/s, matching the 19:50 figure ($3.47t/s); stack-spacing change holding. sleeve_buyer `income` 3.54e12.

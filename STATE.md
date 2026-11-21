@@ -50,7 +50,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 
 - **Check-in every 2 hours, on the Mac Mini** (Ken, 2026-11-20 ~14:10, after a credit top-up): Claude app task
   `bitburner-bn10-checkin-mac`, cron `7 1-23/2 * * *`, prompt in `docs/mac-bn10-checkin-task.md`. The PC task
-  `bitburner-bn15-progress` should be disabled on the PC while the game is on the Mini. Each check-in also reviews
+  `bitburner-bn15-progress` is paused (Ken, ~14:10) while the game is on the Mini. Each check-in also reviews
   one row of `docs/number-review.md` (step 5c).
 - **Monitors may always be killed for RAM** (Ken, 2026-11-11): HUD (`hud_consolidated.js`, `ops_hud.js`),
   `run_report.js`, `mcp_xp.js`, `get_target_stats.js`. While MCP waits for room (`capacity-wait`), `capital_manager`

@@ -64,7 +64,8 @@ export async function main(ns) {
     if (!covenantBlock) {
       sleeveCost = ns.sleeve.getSleeveCost()
       covenant = chooseSleevePurchase({
-        spendable: Math.min(spendable, lasting.limit), sleeveCost, boughtCount: boughtFromCost(sleeveCost), sleeves: list, income,
+        // A sleeve is not held to the late-cycle cap; memory still is (sleeveSpendable, chooseSleevePurchase).
+        spendable: Math.min(spendable, lasting.limit), sleeveSpendable: spendable, sleeveCost, boughtCount: boughtFromCost(sleeveCost), sleeves: list, income,
         sleeveShare: Number(policy.sleeveShare) || 0.25,
       })
     }

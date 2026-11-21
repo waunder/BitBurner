@@ -1770,8 +1770,11 @@ fresh sleeves buy (2026-11-08: thirty one-at-a-time purchases halved sleeve Homi
   points that spendable covers. Memory cost is computed locally from the game formula.
   Note `capital_manager.js` spends the same cash above the reserve; raise `reserve` to save.
   **Late in a cycle** (`lateCycleLimit` in `capital_logic.js`, from `earlyCycleHours` after the last
-  install): no sleeve augmentations (an install wipes them), and sleeves or memory at most
+  install): no sleeve augmentations (an install wipes them), and memory at most
   `lateSpendFraction` (default 1%) of cash per purchase, so the cash-limited aug batch keeps the rest.
+  A Covenant sleeve is exempt (2026-11-20, Ken): it may use all cash above the reserve
+  (`sleeveSpendable`), because at 1% a $100q sleeve would wait for $10,000q. Status reason while
+  short: `all sleeves at memory cap; saving for sleeve: <cost>`.
 - **Payoff model:** a full sleeve earns `sleeveShare` (policy key, default 0.25) of smoothed player
   income, scaled by memory/100 because sync restarts at memory. That share is an assumption, not
   a measurement. `paybackHours` is cost over that rate; null while income is 0.

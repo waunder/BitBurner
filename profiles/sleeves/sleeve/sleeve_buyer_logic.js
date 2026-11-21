@@ -56,9 +56,12 @@ export function payoff({ kind, cost, income = 0, sleeveShare = 0.25, memory = 1,
  * Memory comes only once a sleeve was bought here, cheapest next point first, in batches of
  * up to `memoryBatch` that `spendable` covers.
  * sleeves: [{ index, memory }]; sleeveCost: getSleeveCost() (Infinity at the cap).
+ * sleeveSpendable: cash a sleeve may use (default `spendable`). Late in a cycle `spendable` is capped at
+ * lateSpendFraction of cash, which would hold a $100q sleeve until cash reached $10,000q; a sleeve outlasts
+ * installs and BitNodes, so the caller passes the uncapped amount here (Ken, 2026-11-20).
  */
-export function chooseSleevePurchase({ spendable, sleeveCost, boughtCount = 0, sleeves = [], income = 0, sleeveShare = 0.25, memoryBatch = 10 } = {}) {
-  if (Number.isFinite(sleeveCost) && sleeveCost <= spendable) {
+export function chooseSleevePurchase({ spendable, sleeveSpendable = spendable, sleeveCost, boughtCount = 0, sleeves = [], income = 0, sleeveShare = 0.25, memoryBatch = 10 } = {}) {
+  if (Number.isFinite(sleeveCost) && sleeveCost <= sleeveSpendable) {
     // The new sleeve starts at memory 1, which is what the model prices in.
     return { kind: "sleeve", cost: sleeveCost, ...payoff({ kind: "sleeve", cost: sleeveCost, income, sleeveShare, memory: 1 }) }
   }
@@ -74,7 +77,8 @@ export function chooseSleevePurchase({ spendable, sleeveCost, boughtCount = 0, s
       }
     }
   }
-  return { kind: "save", reason: open.length ? "memory upgrade not yet affordable" : "all sleeves at memory cap" }
+  if (open.length) return { kind: "save", reason: "memory upgrade not yet affordable" }
+  return { kind: "save", reason: Number.isFinite(sleeveCost) ? `all sleeves at memory cap; saving for sleeve: ${sleeveCost.toExponential(2)}` : "all sleeves at memory cap" }
 }
 
 /** Smoothed income from cash deltas, as capital_manager.js does it. */

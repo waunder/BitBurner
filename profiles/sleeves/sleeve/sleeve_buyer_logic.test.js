@@ -53,6 +53,24 @@ test("sleeve outranks memory when both are affordable", () => {
   assert.equal(pick.kind, "sleeve")
 })
 
+test("late-cycle cap does not hold a sleeve: sleeveSpendable buys it", () => {
+  // Cash $101q, late-cycle cap 1% ($1.01q): memory is capped, the $100q sleeve is not.
+  const sleeves = [{ index: 0, memory: 100 }]
+  const pick = chooseSleevePurchase({ spendable: 1.01e18, sleeveSpendable: 1.01e20, sleeveCost: 1e20, boughtCount: 7, sleeves })
+  assert.equal(pick.kind, "sleeve")
+  assert.equal(pick.cost, 1e20)
+})
+
+test("short of the sleeve with memory capped, the reason names the sleeve", () => {
+  const pick = chooseSleevePurchase({ spendable: 1.5e17, sleeveSpendable: 1.5e19, sleeveCost: 1e20, boughtCount: 7, sleeves: [{ index: 0, memory: 100 }] })
+  assert.equal(pick.kind, "save")
+  assert.match(pick.reason, /saving for sleeve/)
+})
+
+test("without sleeveSpendable the sleeve still uses spendable", () => {
+  assert.equal(chooseSleevePurchase({ spendable: 1.01e18, sleeveCost: 1e20, boughtCount: 7, sleeves: [{ index: 0, memory: 100 }] }).kind, "save")
+})
+
 test("capped sleeves and capped memory wait cleanly", () => {
   assert.equal(chooseSleevePurchase({ spendable: 1e18, sleeveCost: Infinity, boughtCount: 5, sleeves: [{ index: 0, memory: 100 }] }).kind, "save")
 })

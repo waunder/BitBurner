@@ -9,6 +9,10 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN10 run 4
 
+**2026-11-21 00:17 Mac, Ken session: gang warfare members back to earning; clashes continue.** Ken asked after a review of territory vs money growth. Review: gang income followed the bitburner formula, money = (5 x baseMoney x statWeight x territoryMult x penalty)^(0.2T + 0.8) with territoryMult ~ (100T)^1.5 for Human Trafficking: a fit to the 7-earner samples matches within ~1.5% (14.7% $145b/h, 30% $570b/h, 50% $2.28t/h, 64.5% $5.36t/h). docs/opportunities.md's territory^1.5 note (6.5x at 50%) left out the exponent, so actual growth was ~2.4x that note. Hacking flat at ~12.7q/h; gang ~0.04-0.06% of income.
+Change: policy key `territoryPowerShare` (0-1, default 0.35) in gang-controller.js; 0 skips the territory-power branch and lets `fight` stay on in cash mode when the odds bars pass. bn10 `gang_capital_policy.json` `territoryPowerShare` 0. Tests 670/670 in build/bn10; manifest rebuilt; force_sync pushed (0 failed); gang-controller killed and rerun 00:17 (PID 51610). Live 00:20: mode cash, assignments Human Trafficking x12, territory.fight true, weighted odds 0.99995, rivals 1, lowest combat 313; one ascension at 00:18 (allowed again outside territory-power mode). Territory 71.0% (00:10) -> 73.3% (00:20).
+Risk: power no longer builds; rival power grows slowly. If odds drop under 0.85 the controller disengages and territory holds. Revert: key 0.35, rerun gang-controller.
+
 **2026-11-20 23:12 Mac, scheduled run: healthy, no restarts; number review row 6 (xp_filler), no change; no install.** Not a stand-aside run (repo clean, last commit 21:13). Remote API connected; DevTools on 9222 answering.
 Live (metrics_log 23:10 sample; ctl-get 23:12): $69.82q, hacking 15741, str 315.7k, sleeve_buyer `income` 3.53e12.
 Measured: cash $57.06q (22:10) -> $69.82q (23:10) = $12.76q/h ($3.54t/s), unchanged from 21:12.

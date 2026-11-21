@@ -93,6 +93,10 @@ function readCapitalPolicy(ns) {
       // Clash odds bars (2026-11-20, Ken: 0.90 sat at 0.89 for an hour). Policy keys override C, 0.5-1 only.
       territoryMinWin: Number.isFinite(raw.territoryMinWin) && raw.territoryMinWin >= 0.5 && raw.territoryMinWin <= 1 ? raw.territoryMinWin : C.territoryMinWin,
       territoryWeightedWin: Number.isFinite(raw.territoryWeightedWin) && raw.territoryWeightedWin >= 0.5 && raw.territoryWeightedWin <= 1 ? raw.territoryWeightedWin : C.territoryWeightedWin,
+      // Share of members on Territory Warfare in territory-power mode (2026-11-21, Ken: all earn). 0 keeps
+      // everyone on money and still fights clashes while the odds bars pass: clash deaths only take
+      // members on Territory Warfare, so with none assigned a lost clash costs territory, not members.
+      territoryPowerShare: Number.isFinite(raw.territoryPowerShare) && raw.territoryPowerShare >= 0 && raw.territoryPowerShare <= 1 ? raw.territoryPowerShare : C.territoryPowerShare,
       augmentationCashTarget: Number.isFinite(raw.augmentationCashTarget) && raw.augmentationCashTarget >= 0
         ? raw.augmentationCashTarget : null,
       reserveInstallPlan: raw.reserveInstallPlan === true,
@@ -156,6 +160,7 @@ export async function main(ns) {
     const objectiveChoice = readGangObjective(ns);
     const gangObjective = objectiveChoice.objective;
     const territoryEnabled = capitalPolicy.territoryEnabled;
+    const powerShare = capitalPolicy.territoryPowerShare ?? C.territoryPowerShare;
     const members = ns.gang.getMemberNames().map((name) => ns.gang.getMemberInformation(name));
     const tasks = ns.gang.getTaskNames().map((name) => ns.gang.getTaskStats(name));
     const training = tasks.find((t) => t.name === (gang.isHacking ? "Train Hacking" : "Train Combat"));
@@ -241,7 +246,7 @@ export async function main(ns) {
       }
       if (gangObjective === "money") moneyPlan = null;
       mode = "territory-training";
-    } else if (territoryEnabled && gangObjective === "money" && canBuildTerritoryPower({ objective: gangObjective, cleanupMode,
+    } else if (territoryEnabled && gangObjective === "money" && powerShare > 0 && canBuildTerritoryPower({ objective: gangObjective, cleanupMode,
       territory: gang.territory, rosterFull: members.length >= 12, hasRivals: rivals.length > 0,
       taskAvailable: tasks.some((task) => task.name === "Territory Warfare"),
       combatReady: members.every((member) => combatFloor(member) >= C.territoryCombatStat),
@@ -250,7 +255,7 @@ export async function main(ns) {
       // Territory Warfare builds power even while clashes are disabled. Keep a
       // bounded low-value cohort on it; the odds gate below alone enables risk.
       plans.splice(0, plans.length, ...planTerritoryPower(plans,
-        "Territory Warfare", C.territoryPowerShare));
+        "Territory Warfare", powerShare));
       moneyPlan = null;
       mode = "territory-power";
     }
@@ -296,7 +301,8 @@ export async function main(ns) {
     }
 
     const weightedChance = clashPolicy.weightedChance;
-    const fight = territoryEnabled && mode === "territory-power" && clashPolicy.engage;
+    const fight = territoryEnabled && clashPolicy.engage
+      && (mode === "territory-power" || (powerShare === 0 && mode === "cash"));
     if (fight !== gang.territoryWarfareEngaged) ns.gang.setTerritoryWarfare(fight);
 
     const gross = plans.reduce((sum, p) => sum + (p.choice?.money || 0), 0);

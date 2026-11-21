@@ -3,17 +3,13 @@
   "objective": "BN10: grow respect for gang-faction rep (the gang faction, NiteSec in run 2, sells almost every augmentation); buy rootkits and vehicles under 1% of cash, gang augmentations under 30% (bought one at a time as cash refills); since 2026-11-16 only from cash above the install plan cost (BN6 lesson: gang spent 6x the batch)",
   "allowEquipmentPurchases": true,
   "augmentationCashTarget": null,
-  "territoryEnabled": false,
+  "territoryEnabled": true,
   "reputationCleanupEnter": 0.97,
   "reputationCleanupExit": 0.985,
   "rootkitCashFraction": 0.01,
   "gangAugCashFraction": 0.3,
   "reserveInstallPlan": true,
   "recruitHoldHours": 3,
-  "updatedAt": "2026-11-19",
-  "territoryTrial": {
-    "members": 6,
-    "untilMs": 1795157593000,
-    "note": "power build 2 (2026-11-19 ~12:00): 6 lowest respect earners on Territory Warfare for 12h, clashes off; target 90% odds (~9:1 vs the one rival); see docs/gang-territory-trial.md"
-  }
+  "updatedAt": "2026-11-20",
+  "territoryNote": "Ken 2026-11-20 18:40: take territory now. Power 148.5k vs strongest rival 18.3k, weighted clash odds 0.89 (bar 0.90). Controller trains combat on the lowest-earning third to 300, builds power with 35% on Territory Warfare, and engages clashes at >= 0.90. The 2026-11-19 power-build trial (territoryTrial) ended and was removed; see docs/gang-territory-trial.md."
 }

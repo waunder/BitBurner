@@ -20,8 +20,9 @@ permitted here as they were on the PC (Ken, 2026-11-20): approved up to readines
 validated save backup in saves/ before each, and the install advisor's verdict as the trigger. Two limits:
 (a) an install resets cash, and the run is saving $100q for The Covenant's 8th sleeve, so while that is the goal
 an install needs a clear case that it speeds the sleeve up; the PC's auto install held once The Red Pill was owned.
-(b) If no validated backup can be made (no DevTools on the Mac yet), do not install: report the advisor's verdict
-for Ken instead. Ken's rule (2026-11-19): do not root,
+(b) Back up with `tools/save_export.py --out pre-install-<date>`; if it fails or does not validate, do not
+install: report the advisor's verdict for Ken instead. Run the install with
+`tools/game_terminal.py "home; run aug_install.js --install"`. Ken's rule (2026-11-19): do not root,
 backdoor or destroy w0r1d_daemon until The Covenant's 8th sleeve is bought. When it is bought: back up the save,
 record it in STATE.md, notify Ken, and stop. Do not choose a BitNode.
 
@@ -29,11 +30,11 @@ Access on the Mac:
 - Remote API daemon: LaunchAgent com.bitburner.remote-api-monitor (docs/remote-api-keepalive.md, "Mac Mini setup").
   Check with `.venv/bin/python3 tools/bb_remote.py ctl-status`; use ctl-get, ctl-pull, ctl-push, ctl-restart.
   If the game is disconnected for more than a few minutes, report it; do not try to click in the game.
-- DevTools: check `curl -s -m 3 http://127.0.0.1:9222/json/version`. If it answers, tools/game_terminal.py and
-  tools/save_export.py work as on the PC (Runtime.evaluate only, never Input.*). If not, they and the PC's
-  daemon_supervisor.py (outage watchdog, auto install) do not work here. Use mcp_supervisor.js's
-  file-triggered restarts through the Remote API. If every game script has stopped, tell Ken to run
-  `run startup.js` in the game terminal.
+- DevTools: the Steam launch option is `--remote-debugging-port=9222` (set 2026-11-20). Check
+  `curl -s -m 3 http://127.0.0.1:9222/json/version`. tools/game_terminal.py and tools/save_export.py work as on
+  the PC (Runtime.evaluate only, never Input.*). If every game script has stopped, run `startup.js` with
+  game_terminal.py. The PC's daemon_supervisor.py (outage watchdog, auto install) is Windows-only and not
+  running here, so those checks are yours.
 
 Each run:
 1. Refresh live state with timestamps (ctl-pull, then read runtime/): money, hacking, The Covenant 8th sleeve cost

@@ -69,8 +69,12 @@ installed copy is `~/Library/LaunchAgents/com.bitburner.remote-api-monitor.plist
 
 Verified 2026-11-20 13:56: daemon killed, launchd restarted it, game
 reconnected and a full 163-file sync passed within about 20 seconds, no clicks.
-The PC's Windows supervisor (`daemon_supervisor.py`: DevTools reconnect, outage
-watchdog, auto install) is not ported to the Mac.
+DevTools (2026-11-20 17:22): Bitburner's Steam launch option is
+`--remote-debugging-port=9222`; the port listens on 127.0.0.1 only. Verified:
+`tools/save_export.py` wrote a validated backup and `tools/game_terminal.py`
+ran a command (`.venv` needs `websocket-client`). The PC's Windows supervisor
+(`daemon_supervisor.py`: DevTools reconnect, outage watchdog, auto install) is
+not ported to the Mac; the scheduled check-in covers those by hand.
 
 ## Complete source sync without a disconnect
 

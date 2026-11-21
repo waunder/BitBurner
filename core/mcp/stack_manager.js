@@ -21,7 +21,11 @@ const POLL_MS = 60_000
 // the fleet (~6.9PB) was idle, so RAM is no limit. The fraction stays under 0.5: isHealthy reads money >= 50%, and
 // a check between a batch's hack and grow landing would otherwise reset the stack. A batch's four landings span
 // 3 x GAP_MS = 600ms, under the 1000ms spacing, so batches do not interleave. Expect ~3.2x per stack.
-const HACK_FRACTION = 0.4, SPACING_MS = 1000, GAP_MS = 200
+// 2026-11-20 19:31 (one-time task, Ken approved 18:20): spacing 1000 -> 500ms, gap 200 -> 100ms for more cash
+// toward the 8th sleeve. After an hour stable (9 stacks, 0 resets, $1.54t/s) the stacks were RAM-budget bound,
+// and the budget scales with batches in flight, so twice the batches should roughly double income. Landings now
+// span 3 x 100 = 300ms, under 500ms. Kept only if income beats $1.54t/s by 20% with no resets; else back to 1000/200.
+const HACK_FRACTION = 0.4, SPACING_MS = 500, GAP_MS = 100
 // MCP and its preparation work get the rest, plus whatever the stacks leave unused.
 // 2026-11-18: 0.6 -> 0.9 and 4 -> 5 stacks. Live: stacks earned $0.9-1.9m/s per TB, MCP $0.2-0.3m/s on
 // 21TB, and silver-helix (est $55m/s, 29TB) could not fit beside the four running stacks.

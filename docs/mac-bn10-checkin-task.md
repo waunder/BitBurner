@@ -15,8 +15,13 @@ session is clearly working (fresh uncommitted edits or a commit in the last 15 m
 Where the game is: it must run on exactly one machine. If STATE.md says the game has moved back to the PC, report
 "game on the PC, standing by" and change nothing. Never launch, reload or quit the game.
 
-Authority (AGENTS.md): everything in the game is yours except installing augmentations by hand, resets and
-permanent forfeits. The Red Pill is installed; auto install holds by itself. Ken's rule (2026-11-19): do not root,
+Authority (AGENTS.md): everything in the game is yours except resets and permanent forfeits. Installs are
+permitted here as they were on the PC (Ken, 2026-11-20): approved up to readiness to complete BN10, with a
+validated save backup in saves/ before each, and the install advisor's verdict as the trigger. Two limits:
+(a) an install resets cash, and the run is saving $100q for The Covenant's 8th sleeve, so while that is the goal
+an install needs a clear case that it speeds the sleeve up; the PC's auto install held once The Red Pill was owned.
+(b) If no validated backup can be made (no DevTools on the Mac yet), do not install: report the advisor's verdict
+for Ken instead. Ken's rule (2026-11-19): do not root,
 backdoor or destroy w0r1d_daemon until The Covenant's 8th sleeve is bought. When it is bought: back up the save,
 record it in STATE.md, notify Ken, and stop. Do not choose a BitNode.
 
@@ -24,7 +29,8 @@ Access on the Mac:
 - Remote API daemon: LaunchAgent com.bitburner.remote-api-monitor (docs/remote-api-keepalive.md, "Mac Mini setup").
   Check with `.venv/bin/python3 tools/bb_remote.py ctl-status`; use ctl-get, ctl-pull, ctl-push, ctl-restart.
   If the game is disconnected for more than a few minutes, report it; do not try to click in the game.
-- There is no DevTools access on the Mac, so tools/game_terminal.py, CDP save export and the PC's
+- DevTools: check `curl -s -m 3 http://127.0.0.1:9222/json/version`. If it answers, tools/game_terminal.py and
+  tools/save_export.py work as on the PC (Runtime.evaluate only, never Input.*). If not, they and the PC's
   daemon_supervisor.py (outage watchdog, auto install) do not work here. Use mcp_supervisor.js's
   file-triggered restarts through the Remote API. If every game script has stopped, tell Ken to run
   `run startup.js` in the game terminal.

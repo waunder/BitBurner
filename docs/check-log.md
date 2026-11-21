@@ -9,6 +9,15 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN10 run 4
 
+**2026-11-20 21:12 Mac, scheduled run: healthy, no restarts; number review row 5 (MCP cloud control), no change; no install.** Not a stand-aside run (repo clean, last commit 19:50). Remote API connected (daemon up 7.3h, 163 synced, 31 pulled); DevTools on 9222 answering.
+Live (metrics_log 21:10 sample; ctl-get 21:12): $44.33q, hacking 15700, str/def/dex/agi 313k/65.1k/16.3k/20.0k, karma -205k, 97 installed, 1 queued, verdict build, RAM 4.21m of 9.96m GB, sleeves all Heist.
+Measured: cash $43.27q (21:05) -> $44.33q (21:10) = $3.54t/s, matching the 19:50 figure ($3.47t/s); stack-spacing change holding. sleeve_buyer `income` 3.54e12.
+8th sleeve: action save, "all sleeves at memory cap; saving for sleeve: 1.00e+17"; no sleeve purchase. ($100q - $44.33q) / $3.54t/s = ~4.4h -> about 01:30 Sat 2026-11-21 Mac time; the 03:07 check-in should find it bought.
+Grafts: entropy 0, decisions blocked on net value. Gang: territory 35.3% (16.9% at 19:12), weighted odds 0.9998, power 240k vs strongest rival 5.5k, 12 members (none lost), objective money (gang rep 564m covers every aug). Stacks: 9 targets, started/failed empty. Contracts: watcher ok, idle, 2 contracts; last submit 20:52 solved (Shortest Path in a Grid).
+Number review, row 5 (MCP cloud control: `protectedFloor` 0.25, `recoveryTarget` 0.95, `preparationRamFraction` 0.85; set by the MCP operator ~2026-10-07, before stacks). Meaning: MCP harvests a target from 95% of max money down to 25% (mcp_cloud.js `planCloudBatch`), and prep may hold up to 85% of the pool. Doubt: prep uses 2.5TB on 22 targets against 8.47PB the cap allows, so the 0.85 cap never binds; the harvest phase uses 3.6TB on 32 targets for a projected $12.5b/s, i.e. ~0.35% of the $3.54t/s hacking income. Better: tuning floor/recovery can only move that 0.35%; RAM is not scarce (42% used), so MCP costs the stacks nothing. Lowest yield seen: fulcrumassets, one 8.3TB grow-heavy harvest batch for $0.6m/s (moneyPct 0.29); harmless while RAM is idle. No change.
+Install: none. The Red Pill owned; Ken's sleeve-first rule holds; an install would reset the $44q being saved.
+End check: World Daemon not touched. Not notified (nothing new).
+
 **2026-11-20 19:15 Mac, scheduled run: healthy, no restarts; number review row 4 (MCP) with a metrics.py label fix; no install.** Not a stand-aside run (repo clean, last commit 18:46). Remote API connected (daemon up 5.3h, 163 synced, 31 pulled); DevTools on 9222 answering.
 Live (`metrics.py summary`, 19:10 sample; ctl-get 19:12): BitNode 10, $21.5-21.7q, hacking 15656, str/def/dex/agi 309k/64.5k/16.1k/19.8k, karma -203k, Chongqing, player idle (no actionable work), 97 installed, 1 queued, verdict build, RAM 4.2m of 9.96m GB. Cycle since 2026-11-19 19:27 (23.7h).
 Measured (60 min, 13 samples, 18:10-19:10): cash/h 5.49q (trend 1.11q > 976t > 5.49q, the 18:17 stack fix); hacking income 1.22t/s now (1.92t/s in mcp_status at 19:12); hackExp/h 88.9b; Slum Snakes rep 29.8m/h.

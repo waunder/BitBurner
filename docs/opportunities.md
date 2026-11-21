@@ -4,6 +4,12 @@ Running list kept by Claude on its own initiative (Ken, 2026-11-16: "exercise in
 for flaws and opportunities"). Newest first. Each entry: finding, evidence, expected gain, status.
 The 2-hourly check reviews this once per cycle (first run after an install).
 
+## 2026-11-20 18:17 (Ken session, BN10 run 4, after The Red Pill; saving $100q for the 8th sleeve)
+
+- **The stack fleet was idle because high hacking shortened every stack below the 20-batch floor.** Evidence: `stack_manager_status.json` plan empty, no `stack_batch.js` in `ps`, HUD cloud 7680TB idle; megacorp estimate 52GB/batch, 321GB needed (6.2 batches). Shipped: floor applies only to partial budgets; HACK_FRACTION 0.4 (kept under isHealthy's 50% money floor), spacing 1000ms; 670/670 tests. Result 18:18: 9 stacks $1.34t/s measured, 0 resets (before: ~$0.27t/s total income). Status: done; measure again over an hour.
+- **Old stacks vanished without a trace.** `stack_batch.js` never exits by itself, yet none were running on the Mini; most likely they were not running in the 11-19 23:59 cloud save the Mini loaded, or were lost at that load. With the floor fixed the manager restarts them. Status: noted; watch for it after any reload.
+- **Company work is not a cash lever.** Blade Industries by `formulas.work.companyGains`: CEO $173k/s, Head of Security 35.6k rep/s. Status: closed.
+
 ## 2026-11-19 13:15 check (BN10 run 4, cycle 10 at 2h, after auto installs 8 and 9)
 
 - **Result of the 04:14 stack change: cash/h rose about 100x.** Cash/h was 9.55t at 04:14; this cycle measured 943t/h (24 samples, 11:15-13:10). Nine stacks (ecorp, megacorp, blade, kuai-gong, nwo, clarkinc, 4sigma, b-and-a, omnitek) earn ~$265b/s of ~$279b/s; each measured within 2-15% of its estimate (ecorp the lowest, ~87%). Installs 8 and 9 add to it. Status: done.

@@ -76,7 +76,10 @@ export function planStacks(estimates, running, capacity, { maxStacks = 4, minInc
   for (const e of pool) {
     if (plan.length >= maxStacks) break
     const budget = e.ramNeeded <= room ? e.ramNeeded : plan.length ? 0 : room
-    if (budget < e.ram * minBudgetBatches) continue
+    // The batch floor guards against a partial budget. A stack whose whole need fits always starts:
+    // at high hacking weaken is short and a full stack is only a few batches (2026-11-20: hacking 17.9k,
+    // megacorp 6 batches in flight, so the old floor of 20 refused every target and the fleet sat idle).
+    if (budget < Math.min(e.ram * minBudgetBatches, e.ramNeeded)) continue
     plan.push({ target: e.target, ramBudget: budget, added: true })
     room -= budget
   }

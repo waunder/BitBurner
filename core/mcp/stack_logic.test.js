@@ -57,6 +57,14 @@ test("planStacks grows a running stack before adding one and never drops it", ()
   assert.deepEqual(planStacks([est("b", 9, 90, 50)], [{ target: "gone", ramBudget: 40 }], 10).map(p => p.target), ["gone"])
 })
 
+test("planStacks starts a short stack whose whole need fits, under the batch floor", () => {
+  // Hacking 17.9k live (2026-11-20): megacorp batch 52GB, 321GB needed (6 batches), floor 20 batches.
+  const short = { target: "megacorp", perTB: 2.47e11, perSec: 7.7e10, ramNeeded: 321, ram: 52 }
+  assert.deepEqual(planStacks([short], [], 7e6).map(p => [p.target, p.ramBudget]), [["megacorp", 321]])
+  // A partial budget under the floor still waits.
+  assert.deepEqual(planStacks([{ ...short, ramNeeded: 5000 }], [], 300), [])
+})
+
 test("planStacks stops at the stack limit", () => {
   assert.equal(planStacks([est("a", 10, 100, 1), est("b", 9, 90, 1), est("c", 8, 80, 1)], [], 100, { maxStacks: 2, minBudgetBatches: 1 }).length, 2)
 })

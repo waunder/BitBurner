@@ -17,7 +17,11 @@ const POLL_MS = 60_000
 // estimate) on ~51TB while ~5.7PB of the fleet sat unused and MCP earned $0.12b/s per TB, so stack size, not RAM,
 // was the limit. Expect ~2.5x per stack for ~2.7x RAM (grow threads scale with ln(1/(1-f))). Applies to stacks
 // started after the change (next install). Revert to 0.1 if stacks fall out of isHealthy or earn under 2x.
-const HACK_FRACTION = 0.25, SPACING_MS = 2000, GAP_MS = 200
+// 2026-11-20: 0.25 -> 0.4 and spacing 2000 -> 1000ms (Ken: max cash for the 8th sleeve). No stack was running and
+// the fleet (~6.9PB) was idle, so RAM is no limit. The fraction stays under 0.5: isHealthy reads money >= 50%, and
+// a check between a batch's hack and grow landing would otherwise reset the stack. A batch's four landings span
+// 3 x GAP_MS = 600ms, under the 1000ms spacing, so batches do not interleave. Expect ~3.2x per stack.
+const HACK_FRACTION = 0.4, SPACING_MS = 1000, GAP_MS = 200
 // MCP and its preparation work get the rest, plus whatever the stacks leave unused.
 // 2026-11-18: 0.6 -> 0.9 and 4 -> 5 stacks. Live: stacks earned $0.9-1.9m/s per TB, MCP $0.2-0.3m/s on
 // 21TB, and silver-helix (est $55m/s, 29TB) could not fit beside the four running stacks.

@@ -243,7 +243,7 @@ def trend(samples: list[dict], windows: int = 3, window_min: float = 60) -> dict
         metrics[name] = {"values": vals, "changes": ch, "flag": f}
 
     plain("cash/h", lambda w: slope_per_hour(w, "money"))
-    plain("MCP", lambda w: mean(w, "mcpRate"))
+    plain("hacking $/s", lambda w: mean(w, "mcpRate"))  # all hacking income since install (mcp_cloud.js rate), stacks included
     plain("hackExp/h", lambda w: slope_per_hour(w, "exp.hacking"))
     plain("lvl/h", lambda w: slope_per_hour(w, "skills.hacking"), judged=False)
 
@@ -322,7 +322,7 @@ def rates_lines(r: dict, label: str) -> list[str]:
         head,
         f"  rep/h: {rep or 'none'}",
         f"  hackExp/h {num(r['hackExpPerHour'])}  hacking lvl/h {num(r['hackingPerHour'])}  karma/h {num(r['karmaPerHour'])}",
-        f"  cash/h {num(r['cashPerHour'])}  income/h {num(r['incomePerHour'])}  MCP rate {num(r['mcpRate'])}/s avg {num(r['mcpAvgRate'])}/s  share {num(r['sharePower'])}",
+        f"  cash/h {num(r['cashPerHour'])}  income/h {num(r['incomePerHour'])}  hacking {num(r['mcpRate'])}/s (all scripts) avg {num(r['mcpAvgRate'])}/s  share {num(r['sharePower'])}",
     ]
 
 
@@ -580,7 +580,7 @@ def spend_text(rows: list[dict]) -> str:
     out = []
     for r in rows:
         out.append(f"{pt(r['start'])}  {r['hours']:.2f}h {'open' if r['open'] else 'closed'}  cash/h {num(r['cashPerHour'])}"
-                   f"  MCP avg {num(r['mcpAvg'])}/s  earned {num(r['earnTotal'])}")
+                   f"  hacking avg {num(r['mcpAvg'])}/s  earned {num(r['earnTotal'])}")
         parts = [f"{k} {num(c['total'])} ({num(c['early'])} early, {num(c['late'])} late)"
                  for k, c in r["categories"].items() if c is not None and c["total"] >= 1e6]
         out.append("  spend: " + ("; ".join(parts) or "none over $1m"))

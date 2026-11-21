@@ -129,7 +129,7 @@ def curve(reset, hours, rate, faction=lambda h: "NiteSec"):
 class TrendTests(unittest.TestCase):
     def test_decelerating(self):
         t = M.trend(curve(R1, 3.5, lambda h: 10000 * 0.7 ** int(h)))
-        for name in ("cash/h", "MCP", "hackExp/h", "rep work", "rep best"):
+        for name in ("cash/h", "hacking $/s", "hackExp/h", "rep work", "rep best"):
             self.assertEqual(t["metrics"][name]["flag"], "DECELERATING", name)
         self.assertEqual(t["metrics"]["lvl/h"]["flag"], "context")
         self.assertEqual(t["metrics"]["rep work"]["faction"], "NiteSec")
@@ -143,7 +143,7 @@ class TrendTests(unittest.TestCase):
         # one drop then flat is not two drops in a row
         t = M.trend(curve(R1, 3.5, lambda h: 10000 if h <= 1.5 else 5000))
         self.assertNotEqual(t["metrics"]["cash/h"]["flag"], "DECELERATING")
-        self.assertEqual(M.trend(curve(R1, 3.5, lambda h: 10000 * 1.5 ** int(h)))["metrics"]["MCP"]["flag"], "ACCELERATING")
+        self.assertEqual(M.trend(curve(R1, 3.5, lambda h: 10000 * 1.5 ** int(h)))["metrics"]["hacking $/s"]["flag"], "ACCELERATING")
 
     def test_faction_switch_is_not_a_slowdown(self):
         fac = lambda h: "NiteSec" if h <= 2.1 else "The Black Hand"

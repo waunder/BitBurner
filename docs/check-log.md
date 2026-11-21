@@ -7,6 +7,10 @@ measurement or decision, not at every session start.
 Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 `docs/archive/state-2026-11-10/STATE-full.md`, the full STATE.md as it stood on 2026-11-10.
 
+## BN12 run 1
+
+**2026-11-21 11:08 Mac, Ken session: BN12.1 entered (Ken's choice; Ken destroyed the BN10 World Daemon by hand ~11:06). BN10 run 4 complete: 8 sleeves, memory 100 on all.** Backups: `saves/bn10-run4-end-pre-bn12-20261121.json.gz` (BN10, $118.6q, 8 sleeves) and `saves/pre-switch-bn12-20261121-110916.json.gz`. SF10 already max, so no new SF from BN10; owned SF 1.2, 2.1, 4.3, 5.3, 6.1, 10.3, 15.1. Profile bn12 (copy of bn10: core, bn15 darknet, sleeves, grafts, shadow allocator; covenantTarget off; gang territory from the first full roster, power share 0.35; route in profiles/bn12/config/run_target.json). `profile.py switch bn12 --live`: pushed 163, deleted 0. Bootstrap on 32GB home (Ken watching): startup 5 of 19; player and all 8 sleeves on Shoplift by one-shots (`crime_now.js`, new `core/dev/sleeves_crime_now.js`, pushed by hand); capital_bootstrap bought 64GB at ~11:21 ($10.2m) and handed to capital_manager; mcp.js would not start: mcp_launch restarted steward, cct watcher and ops HUD first, leaving 11.6GB of 16.95GB, every minute. Started mcp.js by hand 11:30; fixed mcp_launch (HUD only if MCP still fits; stop the watcher and retry once). Next: home 128GB ($32.5m) then player_activity_controller and sleeve_controller fit (crime chooser takes over); gang at karma -54k; World Daemon stop for Ken as always. The BN10 notes below are history.
+
 ## BN10 run 4
 
 **2026-11-21 01:36 Mac, scheduled run: 8th Covenant sleeve bought; backup, notify, stop.** Not a stand-aside run (repo clean, last commit 00:20, a Ken session 52 min earlier). Remote API connected (daemon up 11.3h, 163 synced, 31 pulled); DevTools on 9222 answering.

@@ -40,7 +40,11 @@ export async function main(ns) {
   // ordinary controller restarts.
   const opsVersion = "2026-11-02.1"
   const refreshOpsHud = !ns.isRunning("ops_hud.js", "home") || String(ns.read("ops_hud_version.txt") || "").trim() !== opsVersion
-  if (refreshOpsHud) {
+  // Fresh-node home (BN12 day one, 64GB): the HUD is a monitor and may always yield, so it starts
+  // only if MCP still fits after it. Otherwise this launcher failed every minute with 11.6GB free.
+  const homeFree = () => ns.getServerMaxRam("home") - ns.getServerUsedRam("home")
+  const mcpRam = ns.getScriptRam("mcp.js", "home")
+  if (refreshOpsHud && homeFree() - ns.getScriptRam("ops_hud.js", "home") >= mcpRam) {
     for (const proc of ns.ps("home")) {
       if (proc.filename.replace(/^\//, "") !== "ops_hud.js") continue
       ns.ui?.closeTail(proc.pid)
@@ -48,11 +52,16 @@ export async function main(ns) {
     }
     if (ns.run("ops_hud.js", 1) === 0) ns.tprint("mcp_launch: failed to start ops_hud.js")
   }
-  const pid = ns.run("mcp.js", 1, ...mcpArgs)
+  let pid = ns.run("mcp.js", 1, ...mcpArgs)
+  // MCP comes before the contract watcher on a small home: stop the watcher and try once more
+  // (the steward starts it again when there is room).
+  if (pid === 0 && watcherPid !== 0 && homeFree() + ns.getScriptRam("cct_watcher.js", "home") >= mcpRam) {
+    ns.kill(watcherPid)
+    pid = ns.run("mcp.js", 1, ...mcpArgs)
+    if (pid !== 0) ns.tprint("mcp_launch: stopped cct_watcher.js so MCP fits")
+  }
   if (pid === 0) {
-    const max = ns.getServerMaxRam("home")
-    const used = ns.getServerUsedRam("home")
-    ns.tprint(`mcp_launch: MCP did not start (free ${(max - used).toFixed(1)}GB; need ${ns.getScriptRam("mcp.js", "home").toFixed(1)}GB)`)
+    ns.tprint(`mcp_launch: MCP did not start (free ${homeFree().toFixed(1)}GB; need ${mcpRam.toFixed(1)}GB)`)
     return
   }
   ns.tprint(`mcp_launch: started mcp.js (pid ${pid})${mcpArgs.length ? " args=" + JSON.stringify(mcpArgs) : ""}`)

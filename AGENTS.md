@@ -25,6 +25,11 @@ BN10 run 2 (Ken, 2026-11-08): Ken entered BN10 again himself and confirmed the s
 installs approved up to readiness to complete it, a save backup before each, and a stop at
 its World Daemon or any other reset.
 
+BN12 run 1 (Ken, 2026-11-21): same terms. Installs approved up to readiness to complete
+BN12, a validated save backup before each, the install advisor's verdict as the trigger,
+and a stop at its World Daemon or any other reset. Ken prefers "I'll proceed unless you
+say otherwise" over asking for in-scope work.
+
 Install trigger (Ken, 2026-11-19): the install advisor's verdict is the trigger.
 `tools/auto_install.py` (in the supervisor) backs up the save and installs when the
 verdict reads `install` for 5 minutes; checks no longer time installs, they review

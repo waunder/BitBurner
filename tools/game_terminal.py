@@ -41,6 +41,9 @@ TYPE_AND_ENTER = """(async (cmd) => {
   if (!term) return { ok: false, error: "no terminal input" };
   if (term.value) return { ok: false, error: "terminal holds typed text: " + term.value };
   const lines = () => [...document.querySelectorAll("#terminal li")].map(e => e.innerText);
+  // The terminal keeps at most 500 lines, so once full a count of lines before is useless (every
+  // result came back empty, BN12 2026-11-21). Output = everything after the last echo of this command.
+  const echoOf = l => /^\\[[^\\]]*\\]>/.test(l) && l.replace(/\\s+/g, " ").trim().endsWith(cmd.replace(/\\s+/g, " ").trim());
   const before = lines().length;
   const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set;
   set.call(term, cmd);
@@ -48,7 +51,10 @@ TYPE_AND_ENTER = """(async (cmd) => {
   await wait(100);
   term.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", code: "Enter", keyCode: 13, which: 13, bubbles: true, cancelable: true }));
   await wait(%(settle_ms)d);
-  return { ok: term.value === "", leftWork, output: lines().slice(before) };
+  const after = lines();
+  let echo = -1;
+  for (let i = after.length - 1; i >= 0; i--) if (echoOf(after[i])) { echo = i; break; }
+  return { ok: term.value === "", leftWork, output: echo >= 0 ? after.slice(echo) : after.slice(before) };
 })(%(cmd)s)"""
 
 REFOCUS = """(async () => {

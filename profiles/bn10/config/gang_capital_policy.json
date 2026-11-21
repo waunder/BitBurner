@@ -11,5 +11,7 @@
   "reserveInstallPlan": true,
   "recruitHoldHours": 3,
   "updatedAt": "2026-11-20",
-  "territoryNote": "Ken 2026-11-20 18:40: take territory now. Power 148.5k vs strongest rival 18.3k, weighted clash odds 0.89 (bar 0.90). Controller trains combat on the lowest-earning third to 300, builds power with 35% on Territory Warfare, and engages clashes at >= 0.90. The 2026-11-19 power-build trial (territoryTrial) ended and was removed; see docs/gang-territory-trial.md."
+  "territoryNote": "Ken 2026-11-20 18:40: take territory now. Power 148.5k vs strongest rival 18.3k, weighted clash odds 0.89 (bar 0.90). Controller trains combat on the lowest-earning third to 300, builds power with 35% on Territory Warfare, and engages clashes at >= 0.90. The 2026-11-19 power-build trial (territoryTrial) ended and was removed; see docs/gang-territory-trial.md. 18:50: odds bar 0.90 -> 0.85 (Ken: over-conservative; odds sat at 0.89).",
+  "territoryMinWin": 0.85,
+  "territoryWeightedWin": 0.85
 }

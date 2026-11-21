@@ -90,6 +90,9 @@ function readCapitalPolicy(ns) {
       objective: typeof raw.objective === "string" && raw.objective ? raw.objective : safe.objective,
       allowEquipmentPurchases: raw.allowEquipmentPurchases === true,
       territoryEnabled: raw.territoryEnabled === true,
+      // Clash odds bars (2026-11-20, Ken: 0.90 sat at 0.89 for an hour). Policy keys override C, 0.5-1 only.
+      territoryMinWin: Number.isFinite(raw.territoryMinWin) && raw.territoryMinWin >= 0.5 && raw.territoryMinWin <= 1 ? raw.territoryMinWin : C.territoryMinWin,
+      territoryWeightedWin: Number.isFinite(raw.territoryWeightedWin) && raw.territoryWeightedWin >= 0.5 && raw.territoryWeightedWin <= 1 ? raw.territoryWeightedWin : C.territoryWeightedWin,
       augmentationCashTarget: Number.isFinite(raw.augmentationCashTarget) && raw.augmentationCashTarget >= 0
         ? raw.augmentationCashTarget : null,
       reserveInstallPlan: raw.reserveInstallPlan === true,
@@ -147,11 +150,11 @@ export async function main(ns) {
     const rivals = otherGangs.filter(([, info]) => info.territory > 0);
     const clashes = rivals.map(([name, info]) => ({ territory: info.territory,
       chance: ns.gang.getChanceToWinClash(name) }));
+    const capitalPolicy = readCapitalPolicy(ns);
     const clashPolicy = shouldEngageTerritoryClashes(gang.territory, clashes,
-      C.territoryMinWin, C.territoryWeightedWin);
+      capitalPolicy.territoryMinWin ?? C.territoryMinWin, capitalPolicy.territoryWeightedWin ?? C.territoryWeightedWin);
     const objectiveChoice = readGangObjective(ns);
     const gangObjective = objectiveChoice.objective;
-    const capitalPolicy = readCapitalPolicy(ns);
     const territoryEnabled = capitalPolicy.territoryEnabled;
     const members = ns.gang.getMemberNames().map((name) => ns.gang.getMemberInformation(name));
     const tasks = ns.gang.getTaskNames().map((name) => ns.gang.getTaskStats(name));

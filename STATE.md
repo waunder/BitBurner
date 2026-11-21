@@ -170,10 +170,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-21 01:36 Mac (scheduled run, BN10 run 4): THE COVENANT'S 8TH SLEEVE IS BOUGHT. Backup taken, Ken notified; stopped, waiting for Ken.**
-`sleeve_buyer_status.json` purchase kind sleeve at 01:35:39 Mac, cost $100q, ok, cash $100.04q -> $42.3t; `sleeveCost` now null (cap reached). Backup `saves/bn10-run4-8th-sleeve-20261121.json.gz` (15.2MB, decoded: node 10, hacking 15789, 97 installed). Before it: cash $94.55q at 01:10, $3.50t/s; gang territory 84.3%, 12 members; stacks running, none failed; entropy 0; contracts ok.
-Ken's sleeve-first rule is met, so the World Daemon is no longer held for the sleeve, but nothing touched it and no BitNode is chosen: that is Ken's call. Scripts keep running (the sleeve buyer now spends on the 8th sleeve's memory). Number review row 7 (home RAM) done, no change.
-**Next run: standing by for Ken. Change nothing; do not root, backdoor or destroy w0r1d_daemon, do not install, do not choose a BitNode. Report only real problems (game disconnected, scripts dead).**
+**2026-11-21 15:15 Mac (scheduled run, BN12 run 1): healthy, cycle 2 building; no install, nothing restarted.**
+Remote API connected, DevTools answering, all 20 residents plus 7 stacks running (ps 15:14). Cash $49.6t (15:12), hacking 788,
+income ~$46.9t since install 1 (13:39). Advisor verdict build (next: Artificial Synaptic Potentiation, rep gap 1.2k); 9 installed
+of 31 for Daedalus. Karma -8.34k, ~4.5-4.7k/h (player Homicide 1/s; 8 sleeves Homicide at 4.8% odds, shock 92), so the gang
+(-54k) comes around 00:30-01:00 Sun. Auto install LaunchAgent loaded (pid 87095); no `autoinstall:` line since 13:43 because it
+logs only on action. Entropy 0, no graft (karma phase). Contracts none. Number review row 15 (sleeves): no change.
+**Next run: confirm karma pace and the gang's creation near 01:00; review any `autoinstall:` line.**
 **2026-11-19 06:51 (Ken session):** the 11-18 21:00:55 outage was Ken's accidental click on Active Scripts' Kill All Scripts (confirmed). New outage watchdog in the supervisor (`tools/outage_watchdog.py`, docs/processes.md): runs `startup.js` when all resident heartbeats are 10+ min old, once per 2h. Every check: grep `watchdog:` in `tools/daemon_supervisor.log`. Before a World Daemon or BitNode change: create `tools/watchdog.pause` (delete after).
 **2026-11-19 06:57 (Ken session): installs are now automatic** (Ken: "let the install verdict also be the trigger"). `tools/auto_install.py` in the supervisor: verdict `install` for 5 min -> save backup `saves/pre-install-auto-*` -> `aug_install.js --install`. Checks: do not install by hand; grep `autoinstall:` in `tools/daemon_supervisor.log`, review each install like before (cycle review, install table row). Pause with `tools/autoinstall.pause`. Holds itself once The Red Pill is owned.
 **2026-11-19 07:05 (Ken session): gang territory trial running to 10:03** (docs/gang-territory-trial.md; `territoryTrial` in the bn10 gang policy, ends by itself). Next check: fill in its Result section (power gained/h vs rival, respect/money given up, hours to a 9:1 lead), then remove `territoryTrial` from the policy. Weekly usage limit is near: check-ins cut to once a day until Ken restores them; the game runs on its own (auto install, outage watchdog).

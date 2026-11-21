@@ -1,0 +1,64 @@
+{
+  "run": 1,
+  "goal": "BN12 run 1 (entered 2026-11-21, Ken's choice): SF12.1 via the hacking route, World Daemon then stop for Ken",
+  "updated": "2026-11-21",
+  "gangFaction": "Slum Snakes",
+  "steps": [
+    {
+      "label": "Gang: Slum Snakes (karma -54k)",
+      "metric": {
+        "kind": "karma",
+        "target": -54000
+      }
+    },
+    {
+      "label": "Early installs for multipliers",
+      "install": true,
+      "metric": {
+        "kind": "installed",
+        "target": 3
+      }
+    },
+    {
+      "label": "Daedalus: 30 augs installed, $100b, hacking 2500",
+      "metrics": [
+        {
+          "kind": "installed",
+          "target": 30
+        },
+        {
+          "kind": "money",
+          "target": 100000000000.0
+        },
+        {
+          "kind": "hacking",
+          "target": 2500
+        }
+      ]
+    },
+    {
+      "label": "The Red Pill from Daedalus, then hack level for the World Daemon"
+    },
+    {
+      "label": "World Daemon: stop for Ken (backup first)"
+    }
+  ],
+  "augWeightsWhy": "BN12 start: as BN10 run 4's start (hacking leads via stacks/MCP; faction rep; combat only for the gang and gates).",
+  "augWeights": {
+    "hacking": 1,
+    "strength": 0.2,
+    "defense": 0.2,
+    "dexterity": 0.2,
+    "agility": 0.2,
+    "hacking_exp": 0.3,
+    "strength_exp": 0.1,
+    "defense_exp": 0.1,
+    "dexterity_exp": 0.1,
+    "agility_exp": 0.1,
+    "faction_rep": 0.5,
+    "hacking_money": 0.4,
+    "hacking_grow": 0.2,
+    "hacking_chance": 0.2,
+    "hacking_speed": 0.3
+  }
+}

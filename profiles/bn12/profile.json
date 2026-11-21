@@ -1,0 +1,28 @@
+{
+  "name": "bn12",
+  "description": "BitNode 12 (The Recursion), run 1: same stack as bn10 (core, bn15 darknet, sleeves, grafts, shadow allocator) with a BN12 route: gang -> augs -> Daedalus -> The Red Pill -> World Daemon.",
+  "extends": [
+    "core",
+    "bn15",
+    "sleeves"
+  ],
+  "bitnodes": [
+    12
+  ],
+  "files": {
+    "graft_scan.js": "core/player/graft_scan.js",
+    "graft_scan_meta.js": "core/player/graft_scan_meta.js",
+    "graft_controller.js": "core/player/graft_controller.js"
+  },
+  "config": {
+    "player_activity_config.json": "profiles/bn12/config/player_activity_config.json",
+    "run_target.json": "profiles/bn12/config/run_target.json",
+    "gang_capital_policy.json": "profiles/bn12/config/gang_capital_policy.json",
+    "graft_config.json": "profiles/bn12/config/graft_config.json"
+  },
+  "startup": [
+    "allocator.js",
+    "graft_controller.js"
+  ],
+  "notes": "Copied from bn10 on 2026-11-21 (Ken chose BN12). No Covenant sleeve shop outside BN10, so covenantTarget is off; sleeve_buyer still buys sleeve augs. Gang takes territory from the first cycle (Ken 2026-11-19): territoryEnabled with the default 35% power share."
+}

@@ -116,6 +116,12 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
   Its first pass granted all 13 sleeve aug batches bought after install 4 (early phase, no batch reserve). Next:
   judge it this cycle, then R2 (the gang's reserveInstallPlan is a local stand-in for its batch reserve).
 
+## Installs BN12 run 1
+
+| # | When (Mac clock) | Bought | Installed after |
+|---|---|---|---|
+| 1 | 2026-11-21 13:39 | 7 (CSP Gen I, BitWire, Synaptic Enhancement, Neurotrainer I from CyberSec; S.N.A, ADR-V1, Wired Reflexes from Tian Di Hui; $1.11b, advisor verdict install) + NeuroFlux x11 (dry run) + queued The W1ngs of Icarus; leftover took home to 32TB, 3 cores. Backup saves/pre-install-bn12-1-20261121.json.gz | 0 -> 9 (save) |
+
 ## Installs BN10 run 4
 
 | # | When (PC clock) | Bought | Installed after |

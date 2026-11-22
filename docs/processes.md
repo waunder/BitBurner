@@ -1628,7 +1628,8 @@ ZB Institute of Technology, twice Rothman's rate).
 The sole persistent controller allowed to change the player's current work.
 It evaluates once per minute, records its decision and reason in
 `player_activity_status.json`, and changes activity only when the selected
-evidence-backed goal changes. A ten-minute hysteresis prevents churn.
+evidence-backed goal changes. A ten-minute hysteresis prevents churn, except
+that a gym stat at its target is left at once (`gymFinished`, 2026-11-21).
 Faction work uses `factionWorkType` when the faction offers it, else the first of
 hacking, field, security that it does (`getFactionWorkTypes`); gangs such as Slum
 Snakes offer no hacking work, which the game rejected every pass until 2026-11-03.

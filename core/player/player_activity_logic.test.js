@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { actionKey, choosePlayerActivity, covenantGymHours, expForLevel, externalPlayerOwner, pickCrime, shouldFocus, shouldSwitch } from "./player_activity_logic.js"
+import { actionKey, choosePlayerActivity, covenantGymHours, expForLevel, externalPlayerOwner, gymFinished, pickCrime, shouldFocus, shouldSwitch } from "./player_activity_logic.js"
 
 test("externalPlayerOwner: a fresh graft status or GRAFTING work holds; stale files do not", () => {
   const now = 1_000_000_000
@@ -344,4 +344,22 @@ test("rep work skips augmentations the gang faction sells", () => {
   assert.equal(choosePlayerActivity({ ...args, augmentation: young }).faction, "CyberSec")
   // Once the gang is closer than the player, the gang covers it.
   assert.equal(choosePlayerActivity({ ...args, augmentation: { ...young, gangRep: 19000 } }).action, "algorithms")
+})
+
+test("a gym stat at its target releases the switch cooldown", () => {
+  const config = { physicalTarget: 30 }
+  const str = { type: "CLASS", classType: "str" }
+  const gym = { action: "gym", gym: "Powerhouse Gym", stat: "defense", target: 30 }
+  const crime = { action: "crime", crime: "Homicide" }
+  const done = { skills: { strength: 30, defense: 6 } }
+  assert.equal(gymFinished({ currentWork: str, player: done, desired: gym, config }), true)
+  assert.equal(gymFinished({ currentWork: str, player: done, desired: crime, config }), true)
+  assert.equal(gymFinished({ currentWork: str, player: { skills: { strength: 29 } }, desired: gym, config }), false)
+  assert.equal(gymFinished({ currentWork: str, player: { skills: { strength: 400 } }, desired: { ...gym, target: 850 }, config }), false)
+  assert.equal(gymFinished({ currentWork: { type: "CLASS", classType: "Algorithms" }, player: done, desired: crime, config }), false)
+  assert.equal(gymFinished({ currentWork: { type: "CRIME", crimeType: "Mug" }, player: done, desired: crime, config }), false)
+  const previous = { actionKey: null, lastSwitchAt: 1_000 }
+  assert.equal(shouldSwitch({ now: 61_000, previous, desired: crime }).switch, false)
+  assert.equal(shouldSwitch({ now: 61_000, previous, desired: crime, finished: true }).switch, true)
+  assert.equal(shouldSwitch({ now: 61_000, previous, desired: { action: "hold" }, finished: true }).switch, false)
 })

@@ -123,6 +123,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | # | When (Mac clock) | Bought | Installed after |
 |---|---|---|---|
 | 1 | 2026-11-21 13:39 | 7 (CSP Gen I, BitWire, Synaptic Enhancement, Neurotrainer I from CyberSec; S.N.A, ADR-V1, Wired Reflexes from Tian Di Hui; $1.11b, advisor verdict install) + NeuroFlux x11 (dry run) + queued The W1ngs of Icarus; leftover took home to 32TB, 3 cores. Backup saves/pre-install-bn12-1-20261121.json.gz | 0 -> 9 (save) |
+| 2 | 2026-11-21 18:36 | Auto install (Mac LaunchAgent, first through it): 7 (Artificial Synaptic Potentiation, Speech Processor Implant, Neurotrainer II, Nuoptimal Nootropic Injector Implant, Speech Enhancement, Neural Wit Amplifier, LuminCloaking-V1; $227m list) + NeuroFlux x16; home 32TB -> 1PB, 6 cores. Backup saves/pre-install-auto-20261121-1836.json.gz | 9 -> 16 (metrics_log) |
 
 ## Installs BN10 run 4
 
@@ -170,12 +171,14 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-21 17:15 Mac (scheduled run, BN12 run 1): healthy, cycle 2 building; no install. Install buyer adds value-0 augs toward Daedalus.**
-Cash $207t (17:14), hacking 861, income ~$75-80t/h. Advisor verdict wait (rep-limited; plan ASP); 9 installed of 31. Karma -18.3k
-at ~5.1k/h, so the gang (-54k) ~00:10 Sun. Rep, not cash, limits augs, so new bn12 `countFillersTo` 31 makes `aug_install.js`
-add the cheapest rep-ready augs (value 0 too) while the ladder stays within 10% of cash: dry run plans 4 instead of 1 (unverified
-until the next install). run_target Daedalus step 30 -> 31. Number review row 8 (capital): no change.
-**Next run: karma pace; first install with fillers (check `aug_install_status.json` bought); gang near 00:10.**
+**2026-11-21 19:15 Mac (scheduled run, BN12 run 1): install 2 fired by itself at 18:36 and recovered; gym cooldown fixed.**
+16 installed of 31 for Daedalus. 19:13 cash $7.6t, hacking ~$34t/h, all residents up. Verdict build (next Cranial Signal
+Processors Gen II, 4.9h of rep). Karma -30.7k at ~8.3k/h (19:10-19:14): gang (-54k) about 22:00. Entropy 0; grafts wait for karma.
+Fixed: after installs the 10-minute switch cooldown kept each gym stat training past 30 (~30 min, strength to 181); the controller
+now leaves a finished stat within a minute (restarted 19:13; the gym case is untested live until the next install).
+Graft catalog was 4 days old, from BN10: rescanned 19:13, 84 rows. Number review row 9 (allocator): no change.
+**Next run: gang created near 22:00 and gang-controller started (gang_status.json was last written 11:05 in BN10); first graft pick
+after karma, against the new catalog; gym minutes after install 3.**
 **2026-11-19 06:51 (Ken session):** the 11-18 21:00:55 outage was Ken's accidental click on Active Scripts' Kill All Scripts (confirmed). New outage watchdog in the supervisor (`tools/outage_watchdog.py`, docs/processes.md): runs `startup.js` when all resident heartbeats are 10+ min old, once per 2h. Every check: grep `watchdog:` in `tools/daemon_supervisor.log`. Before a World Daemon or BitNode change: create `tools/watchdog.pause` (delete after).
 **2026-11-19 06:57 (Ken session): installs are now automatic** (Ken: "let the install verdict also be the trigger"). `tools/auto_install.py` in the supervisor: verdict `install` for 5 min -> save backup `saves/pre-install-auto-*` -> `aug_install.js --install`. Checks: do not install by hand; grep `autoinstall:` in `tools/daemon_supervisor.log`, review each install like before (cycle review, install table row). Pause with `tools/autoinstall.pause`. Holds itself once The Red Pill is owned.
 **2026-11-19 07:05 (Ken session): gang territory trial running to 10:03** (docs/gang-territory-trial.md; `territoryTrial` in the bn10 gang policy, ends by itself). Next check: fill in its Result section (power gained/h vs rival, respect/money given up, hours to a 9:1 lead), then remove `territoryTrial` from the policy. Weekly usage limit is near: check-ins cut to once a day until Ken restores them; the game runs on its own (auto install, outage watchdog).

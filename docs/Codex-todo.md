@@ -10,6 +10,12 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
 
 ## Active work
 
+- From the 2026-11-21 19:15 check (BN12):
+  - Fresh node only: train strength/defense to ~100 while karma is far from -54000 (modelled ~0.4h
+    sooner to the gang than the target of 30; no gain later in a run).
+  - `automation_review.js` is not in startup, so its alerts go stale after every install, and its
+    darknet manager cap (2) predates the 16-manager push. Start it at startup or retire it.
+
 - Open items from the 2026-11-07/08 Claude session (BN10 run 1 end, run 2 start):
   - Gang, reputation mode: rank gear by respect added per dollar, not money payback
     (ascension removes bought gear, so weigh that too). Ascension allowed 2026-11-09. Retune the

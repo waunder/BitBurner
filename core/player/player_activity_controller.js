@@ -8,7 +8,7 @@
  *
  * @param {NS} ns
  */
-import { actionKey, choosePlayerActivity, externalPlayerOwner, pickCrime, shouldFocus, shouldSwitch } from "./player_activity_logic.js"
+import { actionKey, choosePlayerActivity, externalPlayerOwner, gymFinished, pickCrime, shouldFocus, shouldSwitch } from "./player_activity_logic.js"
 
 const CONFIG = "player_activity_config.json"
 const STATUS = "player_activity_status.json"
@@ -176,7 +176,7 @@ export async function main(ns) {
     const switchDecision = !capability.available
       ? { switch: false, reason: `blocked: player-action API unavailable (SF4 level ${capability.sf4Level}, BitNode ${capability.currentNode ?? "unknown"})` }
       : alreadySelected ? { switch: false, reason: "already performing selected activity" }
-        : shouldSwitch({ now, previous: { ...prior, actionKey: null }, desired: decision, cooldownMs: Number(config.cooldownMs) || DEFAULT_CONFIG.cooldownMs })
+        : shouldSwitch({ now, previous: { ...prior, actionKey: null }, desired: decision, cooldownMs: Number(config.cooldownMs) || DEFAULT_CONFIG.cooldownMs, finished: gymFinished({ currentWork, player, desired: decision, config }) })
     let started = null
     let error = null
     if (switchDecision.switch) {

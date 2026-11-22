@@ -245,13 +245,28 @@ export function actionKey(decision) {
   return String(decision.action)
 }
 
-export function shouldSwitch({ now, previous = {}, desired, cooldownMs = 10 * 60 * 1000 } = {}) {
+const GYM_STATS = { str: "strength", def: "defense", dex: "dexterity", agi: "agility" }
+
+/**
+ * A gym class at or past the target it was started for. The cooldown would only keep it training:
+ * after BN12 install 2 (2026-11-21 18:36-19:06) each of the four 30s took 10 minutes, strength to 181.
+ * A Covenant pick (target 850) below target keeps the cooldown, or the weakest stat would change every minute.
+ */
+export function gymFinished({ currentWork = null, player = {}, desired = null, config = {} } = {}) {
+  const skill = currentWork?.type === "CLASS" ? GYM_STATS[currentWork.classType] : null
+  if (!skill) return false
+  const target = desired?.action === "gym" ? number(desired.target) : number(config.physicalTarget ?? 30)
+  return number(player.skills?.[skill]) >= target
+}
+
+export function shouldSwitch({ now, previous = {}, desired, cooldownMs = 10 * 60 * 1000, finished = false } = {}) {
   if (!desired || desired.action === "hold") return { switch: false, reason: desired?.reason || "hold" }
   const key = actionKey(desired)
   // A prior failed launch must not permanently masquerade as an active
   // activity merely because it recorded the desired key. A finite timestamp
   // is our durable proof that the Singularity call actually accepted it.
   if (previous.actionKey === key && Number.isFinite(previous.lastSwitchAt)) return { switch: false, reason: "already selected" }
+  if (finished) return { switch: true, reason: "current training reached its target" }
   if (Number.isFinite(previous.lastSwitchAt) && now - previous.lastSwitchAt < cooldownMs) {
     return { switch: false, reason: `cooldown ${Math.ceil((cooldownMs - (now - previous.lastSwitchAt)) / 1000)}s` }
   }

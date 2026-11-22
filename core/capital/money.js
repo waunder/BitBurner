@@ -72,7 +72,7 @@ function summarize(ns, samples, now) {
   const sleeveSpend = sleeveBuys.reduce((sum, p) => sum + (Number(p.cost) || 0), 0)
   return {
     ts: now, cash, net, ...flows, sleeveSpend, sleeveBuys: sleeveBuys.length,
-    augs: augOutlook(cash, readinessCandidates(json(ns, "augmentation_readiness.json")), net[1] ?? net[0] ?? 0),
+    augs: augOutlook(cash, readinessCandidates(json(ns, "augmentation_readiness.json")), net[1] ?? net[0] ?? 0, json(ns, "augmentation_readiness.json")?.rules?.priceStep),
     yields: [
       ...flows.income.filter((r) => r.key.startsWith("stack:")).map((r) => ({ label: r.label, value: ramYield(steady(r), last.stackRam[r.label]) })),
       { label: "MCP targets", value: ramYield(steady(flows.income.find((r) => r.key === "rest")), mcpRam) },

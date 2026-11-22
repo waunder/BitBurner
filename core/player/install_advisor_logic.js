@@ -183,7 +183,7 @@ export function withDonations(candidates, { money, repMult, donating = [], owned
  * @param {{batch:{name:string,value:number}[], candidates:{name:string,repGap:number,value:number}[],
  *          cycleHours:number, repPerHour:number|null}} input
  */
-export function installAdvice({ batch = [], candidates = [], cycleHours, repPerHour, gang = null, money = 0, cashPerHour = null, floor = null, gate = null, pillAlone = false }) {
+export function installAdvice({ batch = [], candidates = [], cycleHours, repPerHour, gang = null, money = 0, cashPerHour = null, floor = null, gate = null, pillAlone = false, priceStep = 1.9 }) {
   const batchValue = batch.reduce((sum, item) => sum + Math.max(0, item.value), 0)
   const average = cycleHours > 0 ? batchValue / cycleHours : 0
   const cashLimited = candidates.filter((item) => item.donatable && item.repGap > 0).map((item) => item.name)
@@ -198,7 +198,7 @@ export function installAdvice({ batch = [], candidates = [], cycleHours, repPerH
   const next = scored[0] || null
   const base = { batchValue, average, cycleHours, repPerHour, next, cashLimited }
   const valuedRemains = batchValue > 0 || scored.length > 0 || (gang?.candidates || []).some((item) => item.value > 0 && item.repGap > 0)
-  const gangVerdict = gangAdvice({ gang, batch, cycleHours, money, cashPerHour, valuedRemains, floor, gate })
+  const gangVerdict = gangAdvice({ gang, batch, cycleHours, money, cashPerHour, valuedRemains, floor, gate, priceStep })
   if (gangVerdict) return { ...base, ...gangVerdict, next: gangVerdict.next || next }
   // Before the rate check: with nothing left to earn, no rep rate is needed to decide.
   if (pillAlone && batchValue <= 0 && batch.some((item) => item.name === RUN_GATE)) {

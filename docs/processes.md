@@ -1527,6 +1527,12 @@ flag a batch holding it and nothing of value says `install` from 1h, with no 4h 
 unless a valued augmentation is reachable inside the 12h cap (then it waits and they install together).
 The steward runs readiness on home when no worker fits it, killing monitors and then `xp_filler.js` for the room.
 
+**Per-run numbers (`runRules`, aug_install_logic.js, 2026-11-22).** Readiness and aug_install derive the price step
+(SF11), the donation rep gain and Daedalus's augmentation count from `getResetInfo`; readiness publishes them as
+`rules` (with `nodeResetAt`) for the allocator, money panel and graft controller. A number in
+player_activity_config.json still wins; `countFillersTo: "auto"` takes the derived count. The run number is the
+Source-File level + 1. To stop grafting for one run set graft_config.json `disabledInRun` to `nodeResetAt`.
+
 **Donations (2026-11-06, after install 11).** At favor `favorToDonate` (150) rep is bought with cash, so readiness
 plans as `aug_install.js` acts: `withDonations` (install_advisor_logic.js) runs the same `donationPlan` (25% of cash)
 over the joined non-gang factions at the threshold (readiness `donating`). Candidates a gift covers read as rep-ready

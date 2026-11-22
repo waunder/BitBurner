@@ -34,7 +34,7 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
     if aug_install buys the pill but then refuses or fails to install, auto install holds (the pill reads as owned
     while only queued), so a check must notice. Was: verdict `install` as soon as a run gate (The Red Pill) is rep-ready. Also covers
     verdict `build` forever when the pill is the only thing in the batch (batch value 0).
-  - `donationRepGain` is a per-profile constant: set it for any BitNode where FactionWorkRepGain is not 1 (BN12: again every run, 1/1.02^run; run 2 done).
+  - `donationRepGain` is a per-profile constant: set it for any BitNode where FactionWorkRepGain is not 1 (done 2026-11-22: derived by runRules, no constant in bn12).
   - Grafting: an alternative rate that is not ~0 early in a cycle and knows gates (re-enabled for run 2, 2026-11-22; the rate is still open).
 - From the 2026-11-21 23:32 check (BN12):
   - `aug_install.js`: when the readiness plan is empty because everything is queued, the plain-plan

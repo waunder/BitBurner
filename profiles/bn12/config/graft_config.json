@@ -13,5 +13,5 @@
   "allowDuringKarma": false,
   "focus": true,
   "cooldownMs": 600000,
-  "stage": "live again for BN12 run 2 (Codex-todo 2026-11-22 01:18: re-enable for the next run; Ken approved live grafting 2026-11-18 12:30). Run 1 turned it off at 01:15 once Daedalus favor was the only gate."
+  "stage": "live again for BN12 run 2 (Codex-todo 2026-11-22 01:18: re-enable for the next run; Ken approved live grafting 2026-11-18 12:30). To stop it late in a run set disabledInRun to the run's nodeResetAt, not enabled false."
 }

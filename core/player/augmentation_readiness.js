@@ -11,7 +11,7 @@
  * @param {NS} ns
  */
 
-import { donationRate, planPurchases, readyGates } from "./aug_install_logic.js"
+import { donationRate, planPurchases, readyGates, runRules } from "./aug_install_logic.js"
 import { DEFAULT_WEIGHTS, augValue, batchMark, bestRepRate, factionRepRates, favorGate, floorState, gangRepPerHour, installAdvice, multFactorNeeded, withDonations } from "./install_advisor_logic.js"
 
 const STATUS = "augmentation_readiness.json"
@@ -47,7 +47,7 @@ function augValuer(ns) {
   return value
 }
 
-function advise(ns, { now, player, previous, factionRep, queued, plan, candidates, gangFaction = null, route = null, pillAlone = false, value = augValuer(ns) }) {
+function advise(ns, { now, player, previous, factionRep, queued, plan, candidates, gangFaction = null, route = null, pillAlone = false, priceStep = 1.9, value = augValuer(ns) }) {
   // The player controller ranks rep targets by this value per rep (player_activity_logic.js).
   for (const item of candidates) item.value = value(item.name)
   const inBatch = new Set([...queued, ...plan.map((item) => item.name)])
@@ -96,7 +96,7 @@ function advise(ns, { now, player, previous, factionRep, queued, plan, candidate
     floor = floorState({ cycleHours, mark, now, gangRep: factionRep[gangFaction], gangRepNeeded: route.gangRepNeeded, gate, endgame: route.endgame })
   }
   const advice = installAdvice({
-    floor, gate, pillAlone,
+    floor, gate, pillAlone, priceStep,
     batch, cycleHours, repPerHour,
     candidates: [...gaps].map(([name, { repGap, donatable, faction }]) => ({ name, repGap, donatable, value: value(name), repPerHour: rates[faction] || null })),
     gang: gangFaction ? { rate: gangRate, candidates: [...gangGaps.values()] } : null,
@@ -180,13 +180,15 @@ function assess(ns, previous = null) {
       byValue = activity.planByValue === true
     } catch {}
     const money = Number(player?.money) || 0
-    const donated = withDonations(candidates, { money, repMult: donationRate(player?.mults?.faction_rep, activity), donating, owned: includingQueued })
+    const resetInfo = ns.getResetInfo()
+    const rules = runRules(resetInfo, activity)
+    const donated = withDonations(candidates, { money, repMult: donationRate(player?.mults?.faction_rep, rules), donating, owned: includingQueued })
     // Values before the plan: the by-value plan skips offers without one (2026-11-18: set only inside
     // advise(), after planning, so planByValue returned an empty plan at $1.95b with Neurotrainer III,
     // Combat Rib I and others affordable).
     const value = augValuer(ns)
     for (const item of donated.candidates) item.value = value(item.name)
-    const { plan, left } = planPurchases(donated.candidates, includingQueued, donated.left, 1.9,
+    const { plan, left } = planPurchases(donated.candidates, includingQueued, donated.left, rules.priceStep,
       [...priority, ...readyGates(donated.candidates, includingQueued)], { only: priorityOnly && priority.length > 0, byValue })
     const installPlan = {
       names: plan.map((item) => item.name), cost: money - left,
@@ -202,12 +204,12 @@ function assess(ns, previous = null) {
         gangRepNeeded, endgame: installed.includes("The Red Pill"),
         favorInput: {
           faction, joined, threshold: favorToDonate, held: includingQueued,
-          eligible: installed.length >= (Number(activity.countFillersTo) || 30),
+          eligible: installed.length >= rules.daedalusAugs,
           favor: joined ? favor[faction].favor : 0, gain: joined ? favor[faction].gain : 0,
         },
       }
     }
-    try { advice = advise(ns, { now, player, previous, factionRep, queued, plan, candidates: donated.candidates, gangFaction, route, pillAlone: activity.installRedPillAlone === true, value }) } catch (error) { advice = { verdict: "error", reason: String(error?.message || error) } }
+    try { advice = advise(ns, { now, player, previous, factionRep, queued, plan, candidates: donated.candidates, gangFaction, route, pillAlone: activity.installRedPillAlone === true, priceStep: rules.priceStep, value }) } catch (error) { advice = { verdict: "error", reason: String(error?.message || error) } }
     // After advise(), which sets each one's value. Donatable ones stay listed, marked, so the
     // player controller can see them and skip them.
     const workCandidates = donated.candidates.filter((item) => item.canWorkForRep)
@@ -223,6 +225,7 @@ function assess(ns, previous = null) {
     return {
       offers, owned: includingQueued, priority,
       ts: now, ok: true, resetAt: resetAt(ns), money, factionRep, favor, favorToDonate, hackingExp: Number(player?.exp?.hacking) || 0, advice,
+      nodeResetAt: resetInfo.lastNodeReset ?? null, rules,
       installedCount: installed.length, queuedCount: queued.length, queued, installPlan,
       factionCount: factions.length, candidate, workCandidate, workCandidates, donating,
       gangFaction, gangSells, gangRep, gangRepNeeded: gangFaction ? gangRepNeeded : null, candidatesConsidered: candidates.length,

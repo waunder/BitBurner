@@ -79,7 +79,7 @@ export function readinessCandidates(readiness) {
 }
 
 /** What the current faction offers would cost, and whether cash or rep is what limits them. */
-export function augOutlook(cash, candidates, netRate) {
+export function augOutlook(cash, candidates, netRate, step = PRICE_STEP) {
   const best = new Map()
   for (const item of candidates || []) {
     const seen = best.get(item.name)
@@ -88,8 +88,8 @@ export function augOutlook(cash, candidates, netRate) {
   const offers = [...best.values()]
   const ready = offers.filter((item) => item.repGap <= 0)
   const waiting = offers.filter((item) => item.repGap > 0).sort((a, b) => a.repGap - b.repGap)
-  const readyCost = orderedCost(ready.map((item) => item.price))
-  const allCost = orderedCost(offers.map((item) => item.price))
+  const readyCost = orderedCost(ready.map((item) => item.price), step)
+  const allCost = orderedCost(offers.map((item) => item.price), step)
   const shortfall = (cost) => Math.max(0, cost - cash)
   return {
     ready: ready.length, readyCost, all: offers.length, allCost, next: waiting[0] || null, spare: cash - readyCost,

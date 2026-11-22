@@ -111,15 +111,15 @@ export function forecastOffers(offers = [], { gangFaction = null, gangRepPerHour
 }
 
 /** Value of the batch planPurchases buys with `money`: { value, plan, cost, left }. */
-export function batchValue(offers, owned, money, priority = []) {
-  const { plan, left } = planPurchases(offers, owned, Math.max(0, money), PRICE_STEP, priority)
+export function batchValue(offers, owned, money, priority = [], step = PRICE_STEP) {
+  const { plan, left } = planPurchases(offers, owned, Math.max(0, money), step, priority)
   return { value: plan.reduce((sum, o) => sum + offerValue(o), 0), plan, cost: Math.max(0, money) - left, left }
 }
 
 /** v the batch loses if `amount` is spent now. */
-export function costInV(offers, owned, money, amount, priority = []) {
+export function costInV(offers, owned, money, amount, priority = [], step = PRICE_STEP) {
   if (!(amount > 0)) return 0
-  return batchValue(offers, owned, money, priority).value - batchValue(offers, owned, money - amount, priority).value
+  return batchValue(offers, owned, money, priority, step).value - batchValue(offers, owned, money - amount, priority, step).value
 }
 
 /**
@@ -138,13 +138,14 @@ export function batchContext({ cash = 0, cashPerHour = 0, hoursSinceInstall = 0,
   const priority = Array.isArray(readiness.priority) ? readiness.priority : []
   const offers = forecastOffers(offersIn, { gangFaction: readiness.gangFaction, gangRepPerHour, hours })
   const projected = projectedCash({ cash, cashPerHour, hours, s })
-  const batch = batchValue(offers, owned, projected, priority)
+  const step = Number(readiness.rules?.priceStep) || PRICE_STEP
+  const batch = batchValue(offers, owned, projected, priority, step)
   if (!(batch.value > 0)) return { ...base, hours, projected, batch: summary(batch), reason: "projected batch has no value: no reserve" }
   // The next aug the batch cannot afford: what the free cash is short of.
-  const next = planPurchases(offers, owned, Number.MAX_SAFE_INTEGER, PRICE_STEP, priority).plan[batch.plan.length] || null
-  const marginal = next ? { name: next.name, steppedPrice: next.price * PRICE_STEP ** batch.plan.length, value: offerValue(next) } : null
+  const next = planPurchases(offers, owned, Number.MAX_SAFE_INTEGER, step, priority).plan[batch.plan.length] || null
+  const marginal = next ? { name: next.name, steppedPrice: next.price * step ** batch.plan.length, value: offerValue(next) } : null
   const freeCash = Math.max(0, Math.min(cash, batch.left))
-  return { ...base, hours, projected, batch: summary(batch), reserve: batch.cost, freeCash, marginal, offers, owned, priority,
+  return { ...base, hours, projected, batch: summary(batch), reserve: batch.cost, freeCash, marginal, offers, owned, priority, step,
     reason: `batch of ${batch.plan.length} at projected cash` }
 }
 
@@ -179,10 +180,10 @@ export function valuePurchase(req, ctx, s = DEFAULTS) {
   if (!ctx.batch || !(ctx.batch.value > 0)) return out("grant", cls, ctx.reason || "no batch reserve")
   const charged = cost * (1 + s.costMargin)
   if (charged <= ctx.freeCash) return out("grant", cls, `out of free cash ${fmt(ctx.freeCash)}: costs the batch nothing`)
-  const costV = costInV(ctx.offers, ctx.owned, ctx.projected, charged, ctx.priority)
+  const costV = costInV(ctx.offers, ctx.owned, ctx.projected, charged, ctx.priority, ctx.step)
   const back = Math.max(0, Number(req.cashReturn) || 0)
-  const gainV = back > 0 ? batchValue(ctx.offers, ctx.owned, ctx.projected - charged + back, ctx.priority).value
-    - batchValue(ctx.offers, ctx.owned, ctx.projected - charged, ctx.priority).value : 0
+  const gainV = back > 0 ? batchValue(ctx.offers, ctx.owned, ctx.projected - charged + back, ctx.priority, ctx.step).value
+    - batchValue(ctx.offers, ctx.owned, ctx.projected - charged, ctx.priority, ctx.step).value : 0
   if (costV <= 0) return out("grant", cls, "costs the batch nothing at projected cash", costV, gainV)
   if (gainV >= costV) return out("grant", cls, `returns ${fmt(back)} before the install, worth more than it costs`, costV, gainV)
   if (cls === "lasting") return out("sweep", cls, `lasting: would cost the batch ${costV.toFixed(3)} v; buy from install-sweep cash`, costV, gainV)

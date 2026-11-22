@@ -1,4 +1,4 @@
-import { NEUROFLUX, countFillers, donationFor, donationPlan, donationRate, fluxSeller, nextHomeUpgrade, planPurchases } from "./aug_install_logic.js"
+import { NEUROFLUX, countFillers, donationFor, donationPlan, donationRate, fluxSeller, nextHomeUpgrade, planPurchases, runRules } from "./aug_install_logic.js"
 import { installBlocked } from "./graft_logic.js"
 
 /** Buys what rep and cash allow, then installs on --install. See docs/processes.md. @param {NS} ns */
@@ -12,11 +12,12 @@ export async function main(ns) {
     price: s.getAugmentationPrice(name), prerequisites: s.getAugmentationPrereq(name),
   })))
   const config = JSON.parse(ns.read("player_activity_config.json") || "{}")
+  const rules = runRules(ns.getResetInfo(), config)
   // Factions past the favor threshold sell rep for cash, so rep stops limiting their augmentations.
   // The game refuses donations to the gang's own faction; the readiness file names it (no ns.gang RAM here).
   const gangFaction = JSON.parse(ns.read("augmentation_readiness.json") || "{}").gangFaction ?? null
   const donating = player.factions.filter((faction) => faction !== gangFaction && s.getFactionFavor(faction) >= ns.getFavorToDonate())
-  const donations = donationPlan(offers, owned, player.money, donationRate(player.mults.faction_rep, config), donating)
+  const donations = donationPlan(offers, owned, player.money, donationRate(player.mults.faction_rep, rules), donating)
   let money = player.money
   const made = []
   for (const gift of donations) {
@@ -29,12 +30,12 @@ export async function main(ns) {
   // An empty result (stale plan, cash moved) falls back to the plain plan.
   const readinessPlan = JSON.parse(ns.read("augmentation_readiness.json") || "{}").installPlan?.names || []
   const priority = config.priorityAugs?.length ? config.priorityAugs : (config.planByValue === true ? readinessPlan : [])
-  let { plan } = planPurchases(offers, owned, money, 1.9, priority, { only: config.priorityOnly === true || priority === readinessPlan })
-  if (!plan.length && priority === readinessPlan && priority.length) ({ plan } = planPurchases(offers, owned, money, 1.9, [], {}))
+  let { plan } = planPurchases(offers, owned, money, rules.priceStep, priority, { only: config.priorityOnly === true || priority === readinessPlan })
+  if (!plan.length && priority === readinessPlan && priority.length) ({ plan } = planPurchases(offers, owned, money, rules.priceStep, [], {}))
   // `countFillersTo` (Daedalus's augmentation count): value-0 augs count too, so cheap ones ride along while short.
-  const fillTo = Number(config.countFillersTo) || 0
-  const fillers = fillTo ? countFillers(offers, owned, plan.map((item) => item.name), money, fillTo, Number(config.countFillerShare) || 0.1) : []
-  if (fillers.length) ({ plan } = planPurchases(offers, owned, money, 1.9, [...plan.map((item) => item.name), ...fillers], { only: true }))
+  const fillTo = rules.fillersTo
+  const fillers = fillTo ? countFillers(offers, owned, plan.map((item) => item.name), money, fillTo, Number(config.countFillerShare) || 0.1, rules.priceStep) : []
+  if (fillers.length) ({ plan } = planPurchases(offers, owned, money, rules.priceStep, [...plan.map((item) => item.name), ...fillers], { only: true }))
   const status = { ts: Date.now(), money: player.money, donations: made, plan: plan.map((item) => [item.name, item.faction, item.price]), bought: [], failed: [], neuroflux: 0, fluxDonated: 0, homeRam: 0, homeCores: 0, installed: false }
   if (!flags.dry) {
     for (const item of plan) (s.purchaseAugmentation(item.faction, item.name) ? status.bought : status.failed).push(item.name)
@@ -43,7 +44,7 @@ export async function main(ns) {
     while (fluxFaction && status.neuroflux < 100) {
       // Each level asks more rep; a donating faction buys the gap when cash covers it and the price.
       const gap = s.getAugmentationRepReq(NEUROFLUX) - s.getFactionRep(fluxFaction)
-      const gift = donating.includes(fluxFaction) ? donationFor(gap, donationRate(ns.getPlayer().mults.faction_rep, config)) : 0
+      const gift = donating.includes(fluxFaction) ? donationFor(gap, donationRate(ns.getPlayer().mults.faction_rep, rules)) : 0
       if (gift && gift + s.getAugmentationPrice(NEUROFLUX) <= ns.getPlayer().money && s.donateToFaction(fluxFaction, gift)) status.fluxDonated += gift
       if (!s.purchaseAugmentation(fluxFaction, NEUROFLUX)) break
       status.neuroflux++

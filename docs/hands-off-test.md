@@ -26,7 +26,7 @@ is whether the scripts and monitoring are approaching their end state.
 |---|---|
 | Outage watchdog on the Mac, including a fresh node with nothing running | built and installed 10:54 (Ken's OK); restart of a dead game to be proved in the rehearsal |
 | Freshness and delivery alarms, on the page | built (page only, no push to Ken); no false alarm over run 1's 256 samples |
-| Per-run settings derived: donation rate, Daedalus count, run number, price step | not built |
+| Per-run settings derived: donation rate, Daedalus count, run number, price step | built and live; values match the ones set by hand. Still per run: valuation_flags.json is stamped with the run and falls back to `own` in a new one |
 | Auto install holds by itself in a run Ken has not approved | built: tools/run_approval.py, fails closed; run 3 is not yet approved |
 | Fresh-run rehearsal from a 32GB home in a disposable browser save | not built |
 | Auto install recovers from a pill bought but not installed | not built (Codex-todo) |

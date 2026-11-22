@@ -33,12 +33,17 @@ export async function main(ns) {
     const now = Date.now()
     const config = { ...DEFAULT_GRAFT_CONFIG, ...(readJson(ns, "graft_config.json") || {}) }
     const previous = readJson(ns, STATUS)
+    const readiness = readJson(ns, "augmentation_readiness.json")
+    if (readiness?.rules?.priceStep > 0) config.factionStepRatio = readiness.rules.priceStep
+    // To stop grafting late in a run, set disabledInRun to that run's nodeResetAt (readiness has it). It lapses
+    // by itself at the next BitNode; `enabled: false` carried into BN12 run 2.
+    if (config.disabledInRun && config.disabledInRun === readiness?.nodeResetAt) config.enabled = false
     const player = ns.getPlayer()
     const work = ns.singularity.getCurrentWork()
     const workType = work?.type ?? null
     const files = {
       catalog: readJson(ns, "graft_catalog.json"),
-      readiness: readJson(ns, "augmentation_readiness.json"),
+      readiness,
       sleeve: readJson(ns, "sleeve_status.json"),
       activity: readJson(ns, "player_activity_status.json"),
       target: readJson(ns, "run_target.json"),

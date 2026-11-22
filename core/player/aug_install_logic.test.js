@@ -141,3 +141,21 @@ test("BN12: a donation reaches The Red Pill's rep and the by-value plan keeps it
   const bought = planPurchases([pill, other], [], 1000, 1.9, plan.map((item) => item.name), { only: true })
   assert.equal(bought.plan.length, 2)
 })
+
+import { runRules } from "./aug_install_logic.js"
+
+test("runRules: BN12 run 2, BN11 at each Source-File level, and config still wins", () => {
+  const at = (currentNode, levels = [], config = {}) => runRules({ currentNode, ownedSF: new Map(levels) }, config)
+  const now = at(12, [[12, 1]], { countFillersTo: "auto" })
+  assert.ok(Math.abs(now.donationRepGain - 0.9611687812379854) < 1e-12) // the value set by hand at 09:31
+  assert.equal(now.daedalusAugs, 31)
+  assert.equal(now.fillersTo, 31)
+  assert.equal(now.priceStep, 1.9)
+  const crash = at(11, [], { countFillersTo: "auto" })
+  assert.deepEqual([crash.donationRepGain, crash.daedalusAugs, crash.fillersTo, crash.priceStep], [1, 30, 30, 1.9])
+  for (const [level, step] of [[1, 1.824], [2, 1.786], [3, 1.767]]) assert.ok(Math.abs(at(11, [[11, level]]).priceStep - step) < 1e-9)
+  assert.equal(at(15).daedalusAugs, 20)
+  assert.equal(at(1).fillersTo, 0) // fillers stay off where the profile does not ask for them
+  const set = at(12, [], { donationRepGain: 0.5, countFillersTo: 25 })
+  assert.deepEqual([set.donationRepGain, set.fillersTo], [0.5, 25])
+})

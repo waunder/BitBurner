@@ -108,7 +108,7 @@ export function selectByValue(pool, owned, money, priceStep = 1.9, priority = []
  * `money`. Never NeuroFlux; a filler's prerequisites must already be owned or planned.
  * @returns {string[]} names to add to the plan
  */
-export function countFillers(offers, owned, planNames, money, target, share = 0.1) {
+export function countFillers(offers, owned, planNames, money, target, share = 0.1, priceStep = 1.9) {
   const held = new Set([...owned, ...planNames])
   const prices = new Map()
   for (const offer of offers) {
@@ -121,7 +121,7 @@ export function countFillers(offers, owned, planNames, money, target, share = 0.
   for (const offer of [...prices.values()].sort((a, b) => a.price - b.price)) {
     if (held.size >= target) break
     if (!(offer.prerequisites || []).every((name) => held.has(name))) continue
-    const cost = ladderCost([...planPrices, ...add.map((name) => prices.get(name).price), offer.price])
+    const cost = ladderCost([...planPrices, ...add.map((name) => prices.get(name).price), offer.price], priceStep)
     if (cost > money * share) break
     add.push(offer.name)
     held.add(offer.name)
@@ -133,6 +133,26 @@ export function countFillers(offers, owned, planNames, money, target, share = 0.
 export function nextHomeUpgrade(ramCost, coreCost, money) {
   const pick = coreCost < ramCost ? { kind: "cores", cost: coreCost } : { kind: "ram", cost: ramCost }
   return pick.cost <= money ? pick : null
+}
+
+/**
+ * The numbers that change with the BitNode, the run and the Source-Files, so no profile copies them by hand
+ * (hands-off test, 2026-11-22). From the installed game's v3.0.1 bundle: getBitNodeMultipliers and
+ * getGenericAugmentationPriceMultiplier. A number in player_activity_config.json still wins.
+ * @param {{currentNode?:number, ownedSF?:Map<number,number>}} reset ns.getResetInfo()
+ */
+export function runRules(reset, config = {}) {
+  const node = Number(reset?.currentNode) || 1
+  const level = (n) => Number(reset?.ownedSF?.get?.(n)) || 0
+  const scale = 1.02 ** (level(12) + 1) // BitNode-12 grows 2% a run
+  const repGain = node === 12 ? 1 / scale : ({ 2: 0.5, 4: 0.75, 13: 0.6, 14: 0.2 })[node] ?? 1
+  const augs = node === 12 ? Math.floor(Math.min(30 + scale, 40)) : ({ 6: 35, 7: 35, 15: 20 })[node] ?? 30
+  return {
+    priceStep: 1.9 * [1, 0.96, 0.94, 0.93][Math.min(3, level(11))],
+    donationRepGain: Number(config?.donationRepGain) > 0 ? Number(config.donationRepGain) : repGain,
+    daedalusAugs: Number(config?.countFillersTo) > 0 ? Number(config.countFillersTo) : augs,
+    fillersTo: config?.countFillersTo === "auto" ? augs : Number(config?.countFillersTo) || 0,
+  }
 }
 
 export const NEUROFLUX = "NeuroFlux Governor"

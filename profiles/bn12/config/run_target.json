@@ -1,6 +1,5 @@
 {
-  "run": 2,
-  "goal": "BN12 run 2 (entered 2026-11-22 09:25 by Ken): SF12.2 via the hacking route, World Daemon (hacking 3121) then stop for Ken",
+  "goal": "BN12: SF12 via the hacking route, World Daemon (3000 x 1.02^run) then stop for Ken",
   "updated": "2026-11-22",
   "gangFaction": "Slum Snakes",
   "steps": [

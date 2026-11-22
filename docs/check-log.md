@@ -9,6 +9,13 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN12 run 2
 
+**2026-11-22 11:16 Mac, Ken session: hands-off preparation, first pass.** Ken: "Yes, install it". LaunchAgent
+com.bitburner.watchdog (10:54); auto install fails closed on unapproved runs; delivery alarms on the page; per-run
+numbers derived (runRules; live values equal the hand-set ones); rehearsal in a disposable game: dead 32GB entry started
+by the watchdog in 1.2 min, 64GB and MCP by 14.7 min, untouched. Open: alarms are page-only, 128GB on not rehearsed,
+valuation_flags per run, pill bought-not-installed recovery (alarm only), pruning. Ken floated handing over World Daemon
+and node entry: an idea, not a grant (docs/hands-off-test.md).
+
 **2026-11-22 10:47 Mac, Ken session: The Red Pill alone may install.** Ken: "Yes, allow it". `installRedPillAlone` (bn12)
 in install_advisor_logic.js: from 1h, unless something of value is reachable inside 12h. Tested from donation through plan
 to verdict (693 tests); run 1 replay unchanged at 3.85h saved. Live file fresh, not yet exercised.

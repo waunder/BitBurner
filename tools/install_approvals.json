@@ -1,0 +1,6 @@
+{
+  "_comment": "BitNode runs Ken has approved installs for. Add one only on Ken's own word, quoting it. Auto install holds in any other run. run = Source-File level + 1; a run repeating a maxed Source-File (not BN12) also needs its nodeResetAt.",
+  "approved": [
+    {"node": 12, "run": 2, "nodeResetAt": 1795364708703, "ken": "Approve installs", "date": "2026-11-22"}
+  ]
+}

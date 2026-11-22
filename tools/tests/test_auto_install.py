@@ -58,6 +58,26 @@ class Guards(unittest.TestCase):
         self.assertEqual(decide(None, self.seen)[0], "ok")
 
 
+class Approval(unittest.TestCase):
+    def test_an_unapproved_run_holds_and_drops_confirmation(self):
+        r = {**readiness(), "ts": (NOW - 30) * 1000}
+        action, reason, state = A.decide(status(), r, NOW, {"install_seen_s": NOW - 3600}, False, None, (False, "not approved"))
+        self.assertEqual(action, "hold")
+        self.assertIn("not approved", reason)
+        self.assertNotIn("install_seen_s", state)
+
+    def test_check_asks_before_installing_and_never_runs_the_command(self):
+        import run_approval
+        r = {**readiness(), "ts": (NOW - 30) * 1000}
+        with mock.patch.object(run_approval, "current", return_value=(False, "not approved")) as asked, \
+                mock.patch.object(A, "read_readiness", return_value=r), \
+                mock.patch.object(A, "load_state", return_value={"install_seen_s": NOW - 3600}), \
+                mock.patch.object(A, "save_state"), mock.patch.object(A, "run_install") as ran:
+            self.assertEqual(A.AutoInstall(lambda line: None).check(status(), NOW)[0], "hold")
+        asked.assert_called_once_with(RESET_MS)
+        ran.assert_not_called()
+
+
 class AfterTheCommand(unittest.TestCase):
     pending = {"pending": {"started_s": NOW - 120, "resetAt": RESET_MS}}
 

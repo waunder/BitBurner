@@ -13,6 +13,7 @@ Guards (any one stops it):
   older than READINESS_FRESH_S.
 - the verdict must read "install" continuously for CONFIRM_S (one flicker of the
   advisor is not enough).
+- Ken has not approved installs for this BitNode run (run_approval.py; fails closed).
 - The Red Pill is owned: the endgame (World Daemon) stays with a person.
 - the cycle is younger than MIN_CYCLE_S (anti-loop floor).
 - the save backup fails: no backup, no install.
@@ -52,7 +53,7 @@ def read_readiness(path=READINESS):
         return None
 
 
-def decide(status, readiness, now_s, state, paused, graft=None):
+def decide(status, readiness, now_s, state, paused, graft=None, approval=(True, "")):
     """Return (action, reason, new_state). action: install, installed, failed, hold, wait, ok."""
     state = dict(state)
     if not status.get("connected"):
@@ -82,6 +83,9 @@ def decide(status, readiness, now_s, state, paused, graft=None):
     reason = advice.get("reason") or "install"
     if paused:
         return "hold", f"verdict install ({reason}), but autoinstall.pause is set", state
+    if not approval[0]:
+        state.pop("install_seen_s", None)
+        return "hold", f"verdict install, but {approval[1]}", state
     if ENDGAME_AUG in (readiness.get("owned") or []):
         return "hold", f"verdict install, but {ENDGAME_AUG} is owned: endgame installs stay with a person", state
     if now_s < state.get("hold_until_s", 0):
@@ -142,7 +146,14 @@ class AutoInstall:
     def check(self, status, now_s=None):
         now_s = time.time() if now_s is None else now_s
         readiness = read_readiness()
-        action, reason, state = decide(status, readiness, now_s, load_state(), PAUSE.exists(), read_readiness(GRAFT))
+        approval = (True, "")
+        if ((readiness or {}).get("advice") or {}).get("verdict") == "install":
+            try:
+                import run_approval
+                approval = run_approval.current(readiness.get("resetAt"))
+            except Exception as error:
+                approval = (False, f"the approval check failed: {error}")
+        action, reason, state = decide(status, readiness, now_s, load_state(), PAUSE.exists(), read_readiness(GRAFT), approval)
         if action == "install":
             ok, name, out = backup(readiness, now_s)
             if not ok:

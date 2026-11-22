@@ -3609,3 +3609,19 @@ Ken's run page, http://localhost:8790 (LaunchAgent `com.bitburner.run-page`; add
 - **Failure modes:** a save format or path change shows "autosave can't be read"; the charts need
   cdnjs (Chart.js), the rest works offline.
 - **Tests:** `python -m unittest discover -s tools/tests -p test_run_page.py`. Logic in `tools/run_page_data.py`.
+
+### `tools/watchdog_mac.py`
+
+The Mac's outage watchdog (LaunchAgent `com.bitburner.watchdog`, 2026-11-22).
+
+- **Judge:** the autosave on disk. No resident on home (supervisor, bootstrap, capital manager, MCP, steward)
+  in two saves 55s+ apart runs `home; run startup.js`, normally 1-3 minutes after the scripts died.
+- **Holds:** `tools/watchdog.pause`; game not saving; BitNode outside the active profile; a second outage in
+  the same run within 2h. A command that failed to type retries after 5 minutes.
+- **Args:** `--interval` (30), `--once` (prints the decision, acts on nothing).
+- **Writes:** `runtime/watchdog_mac.log`, `tools/watchdog_mac_state.json` (every pass: its heartbeat).
+
+### `tools/run_approval.py`
+
+Asked by auto install before every install: is this BitNode run in `tools/install_approvals.json`? Fails
+closed (unreadable save, save behind the cycle, no entry). Run by itself it prints the current answer.

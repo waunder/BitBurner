@@ -20,6 +20,7 @@ approved per run, up to readiness to complete BN12 (Ken: run 1 2026-11-21, run 2
 backup in saves/ before each, and the install advisor's verdict as the trigger: install when it reads `install`.
 The LaunchAgent com.bitburner.auto-install (tools/auto_install_mac.py) normally does this within ~6 minutes of the
 verdict; read its `autoinstall:` lines in runtime/autoinstall_mac.log and install by hand only if it is down or stuck.
+A run not in tools/install_approvals.json has no install approval: do not install by hand and do not add it.
 If tools/autoinstall.pause exists it is not stuck: do not install and do not remove the file (STATE.md says why).
 Back up with `tools/save_export.py --out pre-install-bn12-<n>-<date>`; if it fails or does not validate, do not
 install: report the advisor's verdict for Ken instead. Run the install with

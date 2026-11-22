@@ -33,12 +33,16 @@ say otherwise" over asking for in-scope work.
 BN12 run 2 (Ken, 2026-11-22, "Approve installs"): same terms, for this run. Installs
 approved up to readiness to complete it, a validated save backup before each, the advisor's
 verdict as the trigger, and a stop at its World Daemon (`w0r1d_d43m0n`) or any other reset.
-A later run needs Ken's approval again: set `tools/autoinstall.pause` on entering one.
+A later run needs Ken's approval again: auto install holds in any run not listed in
+`tools/install_approvals.json` (add one only on Ken's own word). Do not install by hand in one either.
 
 Gang minimum (Ken, 2026-11-22, "Yes, replace it"): in BN12 the advisor may say `install` before
 its 4h gang minimum once the batch has settled (`gangCycleSettles`; docs/processes.md, Install advisor).
 It may also say `install` when The Red Pill is the only valued augmentation in the batch
 (Ken, 2026-11-22, "Yes, allow it"; `installRedPillAlone`). Auto install's own guards are unchanged.
+
+Outage watchdog on the Mac (Ken, 2026-11-22, "Yes, install it"): `tools/watchdog_mac.py` runs
+`startup.js` when no resident script runs. Create `tools/watchdog.pause` before stopping scripts on purpose.
 
 Install trigger (Ken, 2026-11-19): the install advisor's verdict is the trigger.
 `tools/auto_install.py` (in the supervisor) backs up the save and installs when the

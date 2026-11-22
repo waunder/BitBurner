@@ -9,7 +9,7 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN12 run 2
 
-**2026-11-22 09:50 Mac, Ken session: run 2 bootstrap; three stalls fixed.** Entry 09:25:08 (save); nothing was running at 09:27.
+**2026-11-22 09:48 Mac, Ken session: run 2 bootstrap; three stalls fixed.** Entry 09:25:08 (save); nothing was running at 09:27.
 1. 32GB: early_crime (11.25GB) missed by 0.15GB, so nothing earned (09:27). startup now uses ns.ps instead of scriptRunning (4.55 -> 3.55GB)
    and lists capital_bootstrap and early_crime before mcp.js. Restarted 09:29: 4 started, all on Shoplift, $12.9k/s; 64GB by 09:42.
 2. 64GB: MCP and the steward deadlocked (manager holds MCP's RAM, the steward starts MCP, both need 24.3GB of 23.05 free).

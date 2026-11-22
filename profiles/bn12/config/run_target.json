@@ -20,11 +20,11 @@
       }
     },
     {
-      "label": "Daedalus: 30 augs installed, $100b, hacking 2500",
+      "label": "Daedalus: 31 augs installed, $100b, hacking 2500",
       "metrics": [
         {
           "kind": "installed",
-          "target": 30
+          "target": 31
         },
         {
           "kind": "money",

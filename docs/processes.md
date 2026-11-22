@@ -394,6 +394,9 @@ Rep-ready names in `priorityAugs` (`player_activity_config.json`) always fit: a 
 augmentation is skipped rather than leave too little cash for them.
 With `priorityOnly: true` (same file) only the `priorityAugs` are bought, so no zero-value filler
 raises the price of the NeuroFlux levels bought after them (added 2026-11-13, install 10).
+With `countFillersTo: N` (same file; bn12 31 since 2026-11-21, Daedalus's count) and owned + plan short of N,
+the cheapest rep-ready augmentations outside the plan are added, value 0 included, while the whole ladder
+stays within `countFillerShare` (default 0.1) of cash (`countFillers`). Each counts toward Daedalus.
 With `planByValue: true` (same file; bn10 since 2026-11-17) the readiness plan is chosen by value per
 added ladder cost (`selectByValue`), and with `priorityAugs` empty `aug_install.js` buys that plan.
 A donation is made only if the cash left still covers the cheapest augmentation it newly
@@ -405,7 +408,7 @@ While a fresh `graft_status.json` (under 2 minutes old) says `ownsPlayer`, `--in
 refuses to install (installing cancels a graft with no refund) and records `installRefused` (grafting G6, 2026-11-17).
 
 - **Args:** `--dry` plans only; `--install` installs after buying.
-- **Reads:** `player_activity_config.json` (`priorityAugs`, `priorityOnly`), `graft_status.json` (install interlock).
+- **Reads:** `player_activity_config.json` (`priorityAugs`, `priorityOnly`, `planByValue`, `countFillersTo`, `countFillerShare`), `graft_status.json` (install interlock).
 - **Writes:** `aug_install_status.json` (plan, bought, failed, money before, final home RAM and cores).
 - **Test:** `node --test aug_install_logic.test.js`
 

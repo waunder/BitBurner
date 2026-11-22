@@ -100,6 +100,35 @@ export function selectByValue(pool, owned, money, priceStep = 1.9, priority = []
   }
 }
 
+/**
+ * Count fillers (2026-11-21, BN12): Daedalus invites at `target` installed augmentations (the game counts
+ * `player.augmentations.length`, NeuroFlux once), and a value-0 augmentation counts like any other. While
+ * owned + `planNames` is short of `target`, add rep-ready offers outside the plan, cheapest first (they cost
+ * the least ladder), as long as the whole ladder (plan + fillers, dearest first) stays within `share` of
+ * `money`. Never NeuroFlux; a filler's prerequisites must already be owned or planned.
+ * @returns {string[]} names to add to the plan
+ */
+export function countFillers(offers, owned, planNames, money, target, share = 0.1) {
+  const held = new Set([...owned, ...planNames])
+  const prices = new Map()
+  for (const offer of offers) {
+    if (offer.rep < offer.repRequired || offer.name === NEUROFLUX || held.has(offer.name)) continue
+    if (!prices.has(offer.name) || offer.price < prices.get(offer.name).price) prices.set(offer.name, offer)
+  }
+  const byName = new Map(offers.map((offer) => [offer.name, offer]))
+  const planPrices = planNames.map((name) => byName.get(name)?.price || 0)
+  const add = []
+  for (const offer of [...prices.values()].sort((a, b) => a.price - b.price)) {
+    if (held.size >= target) break
+    if (!(offer.prerequisites || []).every((name) => held.has(name))) continue
+    const cost = ladderCost([...planPrices, ...add.map((name) => prices.get(name).price), offer.price])
+    if (cost > money * share) break
+    add.push(offer.name)
+    held.add(offer.name)
+  }
+  return add
+}
+
 /** Home RAM and cores survive an install, so leftover cash goes on the cheaper of the two. */
 export function nextHomeUpgrade(ramCost, coreCost, money) {
   const pick = coreCost < ramCost ? { kind: "cores", cost: coreCost } : { kind: "ram", cost: ramCost }

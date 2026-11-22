@@ -18,5 +18,7 @@
   "repInvestmentMaxPriceMultiple": 250,
   "crimeKarmaTarget": -54000,
   "karmaFirst": true,
-  "charismaAugs": []
+  "charismaAugs": [],
+  "countFillersTo": 31,
+  "countFillerShare": 0.1
 }

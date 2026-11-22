@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { donationFor, donationPlan, fluxSeller, ladderCost, nextHomeUpgrade, planPurchases, selectByValue } from "./aug_install_logic.js"
+import { countFillers, donationFor, donationPlan, fluxSeller, ladderCost, nextHomeUpgrade, planPurchases, selectByValue } from "./aug_install_logic.js"
 
 const offer = (name, price, extra = {}) => ({ name, faction: "F", rep: 10, repRequired: 5, price, prerequisites: [], ...extra })
 
@@ -110,4 +110,16 @@ test("selectByValue keeps priority names and adds a missing prerequisite with it
   assert.deepEqual([...keep].sort(), ["gen1", "gen2", "p"])
   assert.deepEqual([...selectByValue(pool, [], 5, 1.9, ["p"])], ["p"])
   assert.deepEqual(planPurchases(pool, [], 100, 1.9, [], { byValue: true }).plan.map((o) => o.name), ["gen1", "gen2"])
+})
+
+test("count fillers add the cheapest rep-ready augs until the Daedalus count, within the cash share", () => {
+  const offer = (name, price, extra = {}) => ({ name, faction: "F", rep: 10, repRequired: 5, price, prerequisites: [], ...extra })
+  const offers = [offer("Plan", 100), offer("A", 10), offer("B", 20), offer("C", 30), offer("Locked", 1, { rep: 0 }),
+    offer("NeuroFlux Governor", 1), offer("Needs", 2, { prerequisites: ["Missing"] })]
+  // owned 2 + plan 1 = 3; target 5 needs two fillers: A and B (cheapest), skipping locked, NeuroFlux and prereq-blocked.
+  assert.deepEqual(countFillers(offers, ["X", "Y"], ["Plan"], 1e6, 5), ["A", "B"])
+  // Already at the target: nothing added.
+  assert.deepEqual(countFillers(offers, ["X", "Y", "Z", "W"], ["Plan"], 1e6, 5), [])
+  // Cash share: ladder Plan 100 + A 10x1.9 = 119 fits 10% of 1200; adding B (100 + 20x1.9 + 10x3.61 = 174.1) does not.
+  assert.deepEqual(countFillers(offers, [], ["Plan"], 1200, 10), ["A"])
 })

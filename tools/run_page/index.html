@@ -3,290 +3,359 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BN10 Run</title>
+<title>BitBurner run</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root {
-  --bg: #f6f5f1; --panel: #ffffff; --ink: #1d1d1b; --muted: #6b6a64; --line: #e3e1da;
-  --accent: #2f6db5; --good: #2f7d4f; --warn: #b8860b; --bad: #b3261e;
-  --s1: #b5562d; --s2: #2f6db5; --s3: #2f7d4f; --s4: #8a4fb5; --s5: #b8860b; --s6: #1f8a8a; --s7: #7a6a55;
+  color-scheme: light dark;
+  --bg: #f6f5f1; --panel: #fff; --ink: #1d1d1b; --muted: #66655f; --line: #e3e1da;
+  --accent: #2f6db5; --good: #2f7d4f; --warn: #8a6508; --bad: #b3261e; --past: #a3a198;
+  --c-hacking: #2f6db5; --c-darknet: #8a4fb5; --c-sleeves: #2f7d4f; --c-gang: #b5562d; --c-servers: #1f8a8a;
+  --c-contract: #c69214; --c-crime: #8a6a4f; --c-augs: #c2477f; --c-other: #8d8c86;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #161614; --panel: #201f1c; --ink: #ecebe6; --muted: #9b998f; --line: #34332e;
-    --accent: #6fa3e8; --good: #6cc08b; --warn: #e3b64d; --bad: #ef6b60;
-    --s1: #e0855a; --s2: #6fa3e8; --s3: #6cc08b; --s4: #b98ae3; --s5: #e3b64d; --s6: #5cc6c6; --s7: #b9a78e;
+    --bg: #161614; --panel: #201f1c; --ink: #ecebe6; --muted: #a09e94; --line: #34332e;
+    --accent: #6fa3e8; --good: #6cc08b; --warn: #e3b64d; --bad: #ef6b60; --past: #6f6e67;
+    --c-hacking: #6fa3e8; --c-darknet: #b98ae3; --c-sleeves: #6cc08b; --c-gang: #e0855a; --c-servers: #5cc6c6;
+    --c-contract: #e3b64d; --c-crime: #b9a78e; --c-augs: #e583b0; --c-other: #85847d;
   }
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
-header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; padding: 20px 24px 8px; }
-h1 { margin: 0; font-size: 22px; letter-spacing: .2px; }
-h1 small { color: var(--muted); font-weight: 400; font-size: 14px; margin-left: 8px; }
-#updated { color: var(--muted); font-size: 13px; }
-#updated a { color: var(--muted); }
-main { padding: 8px 24px 32px; display: grid; gap: 16px; grid-template-columns: repeat(12, 1fr); }
-.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; min-width: 0; }
-.panel h2 { margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); font-weight: 600; }
-.tiles { grid-column: span 12; display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
-.tile { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
-.tile .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .6px; }
-.tile .value { font-size: 26px; font-weight: 650; margin-top: 2px; font-variant-numeric: tabular-nums; }
-.tile .sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
-.tile.hero { border-color: var(--accent); }
-.tile.hero .value { color: var(--accent); }
-.bar { height: 6px; background: var(--line); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+.page { max-width: 1240px; margin: 0 auto; padding: 20px 24px 32px; }
+header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px 16px; margin-bottom: 12px; }
+h1 { margin: 0; font-size: 24px; }
+#where, #updated, .sub, .note { color: var(--muted); font-size: 13px; }
+#updated.old { color: var(--bad); font-weight: 600; }
+.alert { border: 1px solid var(--line); border-left: 4px solid var(--good); background: var(--panel); border-radius: 8px; padding: 9px 14px; margin-bottom: 12px; }
+.alert.bad { border-left-color: var(--bad); } .alert.bad b { color: var(--bad); }
+.alert.you { border-left-color: var(--warn); } .alert.you b { color: var(--warn); }
+.alert b { margin-right: 6px; }
+.tiles { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+.tile, .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+.tile { padding: 12px 14px; }
+.label, h2 { color: var(--muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; }
+.value { font-size: 25px; font-weight: 650; font-variant-numeric: tabular-nums; margin-top: 2px; white-space: nowrap; }
+.sub { margin-top: 2px; }
+.bar { height: 5px; background: var(--line); border-radius: 3px; margin-top: 6px; overflow: hidden; }
 .bar > div { height: 100%; background: var(--accent); }
-.wide { grid-column: span 12; } .half { grid-column: span 6; } .third { grid-column: span 4; } .twothird { grid-column: span 8; }
-@media (max-width: 900px) { .half, .third, .twothird { grid-column: span 12; } main, header { padding-left: 16px; padding-right: 16px; } }
-.chart { position: relative; height: 260px; }
-.chart.tall { height: 320px; }
+main { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; }
+.panel { padding: 14px 16px; grid-column: span 6; }
+.panel.route { grid-column: span 7; } .panel.now { grid-column: span 5; }
+.panel.third { grid-column: span 4; } .panel.wide { grid-column: span 12; }
+h2 { margin: 0 0 8px; }
+.head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; }
+ol.steps { list-style: none; margin: 0; padding: 0; }
+.steps li { display: grid; grid-template-columns: 24px minmax(0, 1fr); padding: 7px 0; border-bottom: 1px solid var(--line); }
+.steps li:last-child { border: 0; }
+.steps .mark { color: var(--past); }
+.steps .done .mark { color: var(--good); }
+.steps .done .name { color: var(--muted); }
+.steps .next .mark { color: var(--accent); }
+.steps .next .name { font-weight: 650; }
+.measure { color: var(--muted); font-size: 13px; margin-top: 4px; font-variant-numeric: tabular-nums; }
+dl { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); }
+dt, dd { margin: 0; padding: 7px 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+dt { color: var(--muted); padding-right: 14px; font-size: 13px; }
+dl > :nth-last-child(-n+2) { border: 0; }
+.why { display: block; color: var(--muted); font-size: 13px; }
+.chart { position: relative; height: 230px; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
-th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
-th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
-td .bar { margin-top: 4px; }
-.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
-.ok { color: var(--good); } .warn { color: var(--warn); } .bad { color: var(--bad); }
-#opps { max-height: 420px; overflow: auto; font-size: 14px; }
-#opps h3 { font-size: 14px; margin: 12px 0 4px; color: var(--accent); }
-#opps ul { margin: 0; padding-left: 18px; } #opps li { margin: 4px 0; }
-.note { color: var(--muted); font-size: 13px; margin-top: 6px; }
+th, td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+th { color: var(--muted); font-weight: 600; font-size: 12px; }
+th.n, td.n { text-align: right; white-space: nowrap; }
+tr:last-child td { border: 0; }
+button { font: inherit; font-size: 13px; color: var(--accent); background: none; border: 1px solid var(--line); border-radius: 6px; padding: 2px 10px; cursor: pointer; }
+footer { margin-top: 14px; color: var(--muted); font-size: 13px; display: flex; gap: 6px 16px; flex-wrap: wrap; }
+footer a { color: inherit; }
+@media (max-width: 1050px) { .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 760px) {
+  .page { padding: 14px 16px 24px; }
+  .panel, .panel.route, .panel.now, .panel.third { grid-column: span 12; }
+  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .tile { padding: 10px 11px; } .value { font-size: 21px; }
+  .chart { height: 200px; }
+}
 </style>
 </head>
 <body>
-<header>
-  <h1>BitNode 10 <small>Digital Carbon · run 4 · goal: The Covenant's 8th sleeve and sleeve memory</small></h1>
-  <div id="updated">loading…</div>
-</header>
-<main>
+<div class="page">
+  <header>
+    <div><h1 id="title">BitBurner run</h1><div id="where"></div></div>
+    <div id="updated">loading…</div>
+  </header>
+  <div id="alerts" aria-live="polite"></div>
   <section class="tiles" id="tiles"></section>
+  <main>
+    <section class="panel route"><h2>Route to the World Daemon</h2><ol class="steps" id="route"></ol></section>
+    <section class="panel now"><h2>Happening now</h2><dl id="now"></dl></section>
 
-  <section class="panel twothird"><h2>Levels against The Covenant's 850</h2><div class="chart tall"><canvas id="levelChart"></canvas></div>
-    <div class="note">The Covenant invites at hacking 850 and all four combat stats 850, with 20 installed augmentations and $75b. BN10 halves hacking and combat growth, so augmentation multipliers carry this. Grey verticals are installs.</div></section>
-  <section class="panel third"><h2>Road to The Covenant</h2><div id="route"></div></section>
+    <section class="panel wide">
+      <div class="head"><h2 id="raceTitle">Against the last run</h2><button id="span" type="button"></button></div>
+      <div class="note" id="raceNote"></div>
+    </section>
+    <section class="panel third"><h2>Cash</h2><div class="chart"><canvas id="cashChart"></canvas></div></section>
+    <section class="panel third"><h2>Hacking level</h2><div class="chart"><canvas id="hackChart"></canvas></div></section>
+    <section class="panel third"><h2>Augmentations installed</h2><div class="chart"><canvas id="augChart"></canvas></div></section>
 
-  <section class="panel half"><h2>Cash</h2><div class="chart"><canvas id="cashChart"></canvas></div></section>
-  <section class="panel half"><h2>Faction reputation this cycle</h2><div class="chart"><canvas id="repChart"></canvas></div></section>
+    <section class="panel" id="earnPanel"><h2>Earning per hour, this cycle</h2><div class="chart"><canvas id="earnChart"></canvas></div></section>
+    <section class="panel" id="spendPanel"><h2>Spending per hour, this cycle</h2><div class="chart"><canvas id="spendChart"></canvas></div></section>
 
-  <section class="panel half"><h2>Earnings per hour by source</h2><div class="chart"><canvas id="earnChart"></canvas></div></section>
-  <section class="panel half"><h2>Spending per hour by category</h2><div class="chart"><canvas id="spendChart"></canvas></div></section>
-
-  <section class="panel half"><h2>Sleeves now</h2><div id="sleeves"></div></section>
-  <section class="panel half"><h2>Gang</h2><div id="gang"></div></section>
-
-  <section class="panel twothird"><h2>Grafting: augmentations for cash and time, no reputation</h2><div id="graftAugs"></div></section>
-  <section class="panel third"><h2>Grafting plan</h2><div id="graftPlan"></div></section>
-
-  <section class="panel wide"><h2>Opportunities and ideas</h2><div id="opps"></div></section>
-</main>
+    <section class="panel third"><h2>Money, whole run</h2><table id="money"></table></section>
+    <section class="panel third"><h2>Gang</h2><dl id="gang"></dl></section>
+    <section class="panel third"><h2>Factions</h2><table id="factions"></table></section>
+  </main>
+  <footer>
+    <span>Numbers come from the game's autosave, about once a minute.</span>
+    <a href="/api/opportunities">Ideas log</a>
+    <a href="/bn6">Old BN6 page</a>
+  </footer>
+</div>
 <script>
-const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim()
-const PAL = ["--s1", "--s2", "--s3", "--s4", "--s5", "--s6", "--s7"].map(css)
-const GATE = { level: 850, augs: 20, cash: 75e9 }
-const COVENANT_SLEEVES = [10e12, 100e12, 1e15, 10e15, 100e15] // 4th..8th sleeve (docs/bn10-assessment-2026-11-03.md)
-const fmt = (n, d = 1) => n == null || !isFinite(n) ? "–" : Math.abs(n) >= 1e15 ? (n / 1e15).toFixed(d) + "q" : Math.abs(n) >= 1e12 ? (n / 1e12).toFixed(d) + "t" : Math.abs(n) >= 1e9 ? (n / 1e9).toFixed(d) + "b"
-  : Math.abs(n) >= 1e6 ? (n / 1e6).toFixed(d) + "m" : Math.abs(n) >= 1e3 ? (n / 1e3).toFixed(d) + "k" : n.toFixed(d)
-const clock = (ts) => new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-const dayClock = (ts) => new Date(ts).toLocaleString([], { weekday: "short", hour: "2-digit", minute: "2-digit" })
-const dur = (h) => !isFinite(h) || h < 0 ? "–" : h >= 48 ? (h / 24).toFixed(1) + " days" : h >= 1 ? h.toFixed(1) + " h" : Math.round(h * 60) + " min"
-const esc = (s) => String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]))
-const barHtml = (f) => `<div class="bar"><div style="width:${Math.min(100, Math.max(0, f * 100)).toFixed(1)}%"></div></div>`
+"use strict"
+const NAMES = { 1: "Source Genesis", 2: "Rise of the Underworld", 3: "Corporatocracy", 4: "The Singularity", 5: "Artificial Intelligence",
+  6: "Bladeburners", 7: "Bladeburners 2079", 8: "Ghost of Wall Street", 9: "Hacktocracy", 10: "Digital Carbon", 11: "The Big Crash",
+  12: "The Recursion", 13: "They're Lunatics", 14: "IPvGO Subnet Takeover", 15: "The Secrets of the Dark Net" }
+// One fixed colour per money source on both charts. Gang income and gang spending share theirs on purpose.
+const SOURCE = { hacking: ["Hacking", "hacking"], darknet: ["Darknet", "darknet"], sleeves: ["Sleeves", "sleeves"],
+  gang: ["Gang", "gang"], gang_expenses: ["Gang", "gang"], servers: ["Home and cloud", "servers"],
+  codingcontract: ["Contracts", "contract"], crime: ["Your crimes", "crime"], augmentations: ["Augmentations", "augs"],
+  other: ["Programs and other", "other"] }
+const source = (key) => SOURCE[key] || [key.replaceAll("_", " ").replace(/^./, (c) => c.toUpperCase()), "other"]
 
-Chart.defaults.color = css("--muted"); Chart.defaults.borderColor = css("--line"); Chart.defaults.font.family = "system-ui, sans-serif"
-const timeAxis = { type: "linear", ticks: { callback: (v) => dayClock(v), maxTicksLimit: 7 } }
-function lineChart(id, opts = {}) {
-  return new Chart(document.getElementById(id), { type: "line", data: { datasets: [] },
-    options: { animation: false, maintainAspectRatio: false, parsing: false, normalized: true, interaction: { mode: "nearest", intersect: false },
-      plugins: { legend: { display: opts.legend ?? false, labels: { boxWidth: 10 } }, tooltip: { callbacks: { title: (it) => dayClock(it[0].parsed.x) } } },
-      scales: { x: timeAxis, y: { beginAtZero: opts.zero ?? true, stacked: opts.stacked ?? false, ...(opts.y || {}) } } } })
+const el = (id) => document.getElementById(id)
+const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]))
+function fmt(value) {
+  if (value == null || !Number.isFinite(value)) return "–"
+  const units = ["", "k", "m", "b", "t", "q", "Q", "s", "S", "o", "n"]
+  let n = Math.abs(value), i = 0
+  while (n >= 999.5 && i < units.length - 1) { n /= 1000; i++ }
+  const text = i === 0 ? String(Math.round(n)) : String(Number(n.toPrecision(3)))
+  return (value < 0 && text !== "0" ? "-" : "") + text + units[i]
 }
-const levelChart = lineChart("levelChart", { legend: true }), cashChart = lineChart("cashChart", { y: { type: "logarithmic", beginAtZero: false } })
-const repChart = lineChart("repChart", { legend: true })
-const earnChart = lineChart("earnChart", { legend: true, stacked: true }), spendChart = lineChart("spendChart", { legend: true, stacked: true })
+const cash = (n) => n == null || !Number.isFinite(n) ? "–" : (n < 0 ? "-$" : "$") + fmt(Math.abs(n))
+const whole = (n) => n == null ? "–" : Math.round(n).toLocaleString()
+const ram = (gb) => gb >= 1048576 ? `${+(gb / 1048576).toFixed(1)}PB` : gb >= 1024 ? `${+(gb / 1024).toFixed(1)}TB` : `${+Number(gb).toFixed(1)}GB`
+const dur = (ms) => ms < 3.6e6 ? `${Math.max(0, Math.round(ms / 60000))} min`
+  : ms < 48 * 3.6e6 ? `${(ms / 3.6e6).toFixed(1)} h` : `${(ms / 86.4e6).toFixed(1)} days`
+const clock = (ts) => new Date(ts).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+const bar = (share) => `<div class="bar"><div style="width:${Math.max(0, Math.min(100, share * 100)) || 0}%"></div></div>`
+const total = (o) => Object.values(o || {}).reduce((a, b) => a + b, 0)
+const pairs = (rows) => rows.map(([name, value, why]) => `<dt>${esc(name)}</dt><dd>${value}${why ? `<span class="why">${esc(why)}</span>` : ""}</dd>`).join("")
 
-function installMarks(rows) {
-  const marks = []
-  for (let i = 1; i < rows.length; i++) if (rows[i].resetAt && rows[i].resetAt !== rows[i - 1].resetAt) marks.push(rows[i].resetAt)
-  return marks
+let state = null, history = null, wholeRun = false, pageVersion = null
+const charts = {}
+
+/** The sample about `windowMs` before `at`, within one cycle. */
+function earlier(rows, at, windowMs) {
+  return rows.find((r) => r.ts >= at - windowMs && r.ts <= at - 60000)
 }
-/** Per-hour rate of a cumulative series over the last `win` samples of this cycle. */
-function hourly(rows, get, win = 12) {
-  const cyc = rows.filter((r) => r.resetAt === rows.at(-1)?.resetAt && get(r) != null)
-  if (cyc.length < 2) return null
-  const a = cyc[Math.max(0, cyc.length - 1 - win)], b = cyc.at(-1), h = (b.ts - a.ts) / 3.6e6
-  return h > 0 ? (get(b) - get(a)) / h : null
+function hourlyRate(get, windowMs = 15 * 60000) {
+  const rows = history.current.filter((r) => r.resetAt === state.resetAt && r.earned)
+  const b = rows.at(-1), a = b && earlier(rows, b.ts, windowMs)
+  return a ? (get(b) - get(a)) / ((b.ts - a.ts) / 3.6e6) : null
 }
-// One colour per money source, the same on both charts (Ken, 2026-11-17: darknet earnings and gang spend looked alike).
-// Gang income and gang expenses share the gang colour on purpose; everything else is distinct.
-const SOURCE_COLOR = { hacking: "--s2", darknet: "--s4", sleeves: "--s3", gang: "--s1", servers: "--s6", codingcontract: "--s5",
-  crime: "--s7", hacknet: "--s5", work: "--s7", hospitalization: "--bad", class: "--muted", other: "--muted", augmentations: "--warn", stock: "--good" }
-const sourceColor = (label, i) => css(SOURCE_COLOR[label] || ["--s1", "--s2", "--s3", "--s4", "--s5", "--s6", "--s7"][i % 7])
-function perHourSeries(cyc, field) {
-  const keys = [...new Set(cyc.flatMap((r) => Object.keys(r[field] || {})))]
-  return keys.map((k, i) => { const label = k.replace("_expenses", ""), col = sourceColor(label, i); return { label, fill: true, borderColor: col, backgroundColor: col + "55", pointRadius: 0, borderWidth: 1,
-    data: cyc.slice(6).map((r, j) => { const a = cyc[j], h = (r.ts - a.ts) / 3.6e6; return { x: r.ts, y: h > 0 ? Math.max(0, ((r[field][k] || 0) - (a[field][k] || 0)) / h) : 0 } }) } })
+function nextPurchase(gross) {
+  const action = state.capital?.action
+  if (!action?.cost || action.kind !== "save") return null
+  const left = action.cost - state.money
+  const reason = action.reason === "home RAM floor" ? `home ${ram(state.homeRam * 2)}` : action.reason
+  return `${esc(reason)} at ${cash(action.cost)}${left > 0 && gross > 0 ? `, in about ${dur(left / gross * 3.6e6)}` : ""}`
+}
+function lastRunAt(age) {
+  const at = history.previousStart + age
+  const rows = history.previous
+  if (!rows.length || at < rows[0].ts || at > rows.at(-1).ts) return null
+  return rows.reduce((found, r) => (r.ts <= at ? r : found), rows[0])
 }
 
-async function refresh() {
-  let all = [], live = {}
-  try { [all, live] = await Promise.all([fetch("/api/metrics").then((r) => r.json()), fetch("/api/live").then((r) => r.json())]) }
-  catch (e) { document.getElementById("updated").textContent = "cannot reach the run page server"; return }
-  const now = live.serverTs || Date.now()
-  const readiness = live.augmentation_readiness || {}
-  // This run only: samples since the BitNode began (first install mark after a gap, or the karma reset).
-  const runStart = (() => { let start = 0; for (let i = 1; i < all.length; i++) if ((all[i].installed ?? 0) < (all[i - 1].installed ?? 0)) start = i; return start })()
-  const rows = all.slice(runStart)
-  const last = rows.at(-1) || {}
-  const sk = last.skills || {}
-  const combatMin = Math.min(sk.strength ?? 0, sk.defense ?? 0, sk.dexterity ?? 0, sk.agility ?? 0)
-  const installed = readiness.installedCount ?? last.installed ?? 0
-  const cash = readiness.money ?? last.money
-  const cashRate = hourly(rows, (r) => r.earned ? Object.values(r.earned).reduce((a, b) => a + b, 0) - Object.values(r.spent || {}).reduce((a, b) => a + b, 0) : null)
-  const cycleH = readiness.resetAt ? (now - readiness.resetAt) / 3.6e6 : null
-  const runH = rows.length ? (now - rows[0].ts) / 3.6e6 : null
-  const gangLive = live.gang?.gang || {}
-  const sleeves = live.sleeve?.sleeves || []
-  const nSleeves = sleeves.length || (last.sleeves || []).length
-  const nextSleeveCost = COVENANT_SLEEVES[nSleeves - 3] ?? null
-  const gateParts = [Math.min(1, (sk.hacking ?? 0) / GATE.level), Math.min(1, combatMin / GATE.level), Math.min(1, installed / GATE.augs), Math.min(1, (cash ?? 0) / GATE.cash)]
-  const gateShare = gateParts.reduce((a, b) => a + b) / gateParts.length
-  const advice = readiness.advice || {}
-  const pa = live.player_activity || {}
+function drawHeader() {
+  const name = `BitNode ${state.node}, run ${state.run}`
+  el("title").textContent = document.title = name
+  el("where").textContent = `${NAMES[state.node] || ""} · cycle ${state.cycle} · ${dur(state.serverTs - state.nodeResetAt)} into the run`
+  el("updated").textContent = `game saved ${clock(state.savedAt)}`
+  el("updated").className = state.serverTs - state.savedAt > 240000 ? "old" : ""
+  el("alerts").innerHTML = state.alerts.length
+    ? state.alerts.map((a) => `<div class="alert ${esc(a.level)}"><b>${esc(a.title)}.</b>${esc(a.text)}</div>`).join("")
+    : '<div class="alert"><b>Nothing needs you.</b>Scripts are running and the game is saving.</div>'
+}
 
+function drawTiles() {
+  const gross = hourlyRate((r) => total(r.earned))
+  const rows = history.current.filter((r) => r.resetAt === state.resetAt && r.earned)
+  const since = rows.length ? earlier(rows, rows.at(-1).ts, 15 * 60000) : null
+  const age = state.savedAt - state.nodeResetAt, past = lastRunAt(age)
+  const versus = (key, show) => past?.[key] != null ? `last run by now: ${show(past[key])}` : ""
+  const karmaRate = hourlyRate((r) => -r.karma)
   const tiles = [
-    { hero: true, label: "Covenant gate", value: `${Math.round(gateShare * 100)}%`, sub: "average of hacking, combat, augs, cash against their bars", bar: gateShare },
-    { hero: true, label: "Sleeves", value: `${nSleeves} / 8`, sub: nextSleeveCost ? `next from The Covenant $${fmt(nextSleeveCost, 0)}` : "all eight", bar: nSleeves / 8 },
-    { label: "Cash", value: "$" + fmt(cash), sub: `${cashRate != null ? (cashRate >= 0 ? "+" : "") + "$" + fmt(cashRate) + "/h net" : ""}` },
-    { label: "Hacking", value: fmt(sk.hacking, 0), sub: `of 850 · MCP avg $${fmt(last.mcpAvgRate)}/s`, bar: (sk.hacking ?? 0) / GATE.level },
-    { label: "Combat (lowest)", value: fmt(combatMin, 0), sub: `str ${sk.strength ?? "–"} def ${sk.defense ?? "–"} dex ${sk.dexterity ?? "–"} agi ${sk.agility ?? "–"}`, bar: combatMin / GATE.level },
-    { label: "Installed augs", value: installed, sub: `${readiness.queuedCount ?? 0} queued · advisor: ${esc(advice.verdict ?? "–")}`, bar: installed / GATE.augs },
-    { label: "Install batch", value: "$" + fmt(readiness.installPlan?.cost), sub: `${(readiness.installPlan?.names || []).length} augs · cycle ${dur(cycleH)} old`,
-      bar: readiness.installPlan?.cost ? Math.min(1, (cash || 0) / readiness.installPlan.cost) : null },
-    { label: "Karma", value: fmt(last.karma, 1), sub: (last.karma ?? 0) <= -54000 ? "gang threshold passed" : "gang needs -54k", bar: Math.min(1, -(last.karma ?? 0) / 54000) },
-    { label: "Gang respect", value: fmt(gangLive.respect ?? last.respect, 1), sub: `${gangLive.members?.length ?? last.gangMembers ?? "–"} members · power ${fmt(live.gang?.power?.ours, 0)} vs ${fmt(live.gang?.power?.strongestRival, 0)}` },
+    ["Cash", cash(state.money), versus("money", cash)],
+    ["Earning", gross == null ? "–" : `${cash(gross)}/h`, gross == null ? "measuring" : `over the last ${dur(rows.at(-1).ts - since.ts)}`],
+    ["Hacking", whole(state.skills.hacking), state.daemonRequired ? `World Daemon needs ${whole(state.daemonRequired)}` : versus("hacking", whole),
+      state.daemonRequired ? state.skills.hacking / state.daemonRequired : null],
+    ["Augs installed", whole(state.installed), state.queued.length ? `${state.queued.length} waiting for an install` : versus("installed", whole)],
+    state.gang
+      ? ["Gang", `${state.gang.members} of 12`, `${((state.gang.territory || 0) * 100).toFixed(0)}% territory`]
+      : ["Karma for gang", fmt(state.karma), `of -54k${karmaRate >= 1 ? `, ${fmt(karmaRate)}/h now` : ""}`, -state.karma / 54000],
+    ["Home", ram(state.homeRam), `${ram(state.ramUsed)} in use${state.cores > 1 ? `, ${state.cores} cores` : ""}`, state.ramUsed / state.homeRam],
   ]
-  document.getElementById("tiles").innerHTML = tiles.map((t) => `<div class="tile${t.hero ? " hero" : ""}"><div class="label">${t.label}</div><div class="value">${t.value}</div><div class="sub">${t.sub}</div>${t.bar != null ? barHtml(t.bar) : ""}</div>`).join("")
+  el("tiles").innerHTML = tiles.map(([label, value, sub, share]) =>
+    `<div class="tile"><div class="label">${label}</div><div class="value">${value}</div><div class="sub">${esc(sub)}</div>${share != null ? bar(share) : ""}</div>`).join("")
+}
 
-  // ---- levels chart with the 850 bar and install markers
-  const marks = installMarks(rows)
-  const stat = (k, i) => ({ label: k, data: rows.filter((r) => r.skills?.[k] != null).map((r) => ({ x: r.ts, y: r.skills[k] })), borderColor: PAL[i], pointRadius: 0, borderWidth: k === "hacking" ? 2.5 : 1.5 })
-  const top = Math.max(GATE.level, ...rows.map((r) => Math.max(...Object.values(r.skills || { a: 0 }))))
-  levelChart.data.datasets = [stat("hacking", 1), stat("strength", 0), stat("defense", 2), stat("dexterity", 3), stat("agility", 4),
-    ...(rows.length ? [{ label: "850", data: [{ x: rows[0].ts, y: GATE.level }, { x: now, y: GATE.level }], borderColor: css("--muted"), borderDash: [5, 4], pointRadius: 0, borderWidth: 1 }] : []),
-    ...marks.map((m) => ({ label: "install", data: [{ x: m, y: 0 }, { x: m, y: top }], borderColor: css("--line"), borderWidth: 1, pointRadius: 0 }))]
-  levelChart.options.plugins.legend.labels.filter = (item) => item.text !== "install"
-  levelChart.update()
+function drawRoute() {
+  const next = state.route.findIndex((s) => !s.done)
+  const show = (kind, n) => kind === "money" ? cash(n) : kind === "karma" ? fmt(n) : whole(n)
+  el("route").innerHTML = state.route.map((s, i) => {
+    const measures = s.done ? "" : s.metrics.map((m) => `<div class="measure">${esc(m.kind)} ${show(m.kind, m.have)} of ${show(m.kind, m.target)}${i === next ? bar(m.have / m.target) : ""}</div>`).join("")
+    return `<li class="${s.done ? "done" : i === next ? "next" : ""}"><span class="mark" aria-label="${s.done ? "done" : "to do"}">${s.done ? "✓" : i === next ? "●" : "○"}</span><div><span class="name">${esc(s.label)}</span>${measures}</div></li>`
+  }).join("") || '<li><span></span><span class="sub">The route needs the Remote API connection.</span></li>'
+}
 
-  // ---- route panel
-  const cell = (have, need, money) => `${money ? "$" + fmt(have) : fmt(have, 0)} / ${money ? "$" + fmt(need, 0) : fmt(need, 0)} ${have >= need ? '<span class="ok">✓</span>' : ""}${barHtml(have / need)}`
-  const routeRows = [
-    ["Hacking", cell(sk.hacking ?? 0, GATE.level)],
-    ["Strength", cell(sk.strength ?? 0, GATE.level)], ["Defense", cell(sk.defense ?? 0, GATE.level)],
-    ["Dexterity", cell(sk.dexterity ?? 0, GATE.level)], ["Agility", cell(sk.agility ?? 0, GATE.level)],
-    ["Installed augs", cell(installed, GATE.augs)], ["Cash", cell(cash ?? 0, GATE.cash, true)],
-  ]
-  document.getElementById("route").innerHTML = `<table>${routeRows.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join("")}</table>
-    <div class="note">Then: Covenant sleeves ($10t, $100t, $1q, $10q, $100q for the 4th to 8th; we own ${nSleeves}) and sleeve memory. Run ${dur(runH)} old.
-    Advisor: ${esc(advice.reason || "–")}</div>`
+function drawNow() {
+  const groups = new Map()
+  for (const s of state.sleeves) groups.set(s.task, [...(groups.get(s.task) || []), s])
+  const sleeves = [...groups].map(([task, list]) => {
+    const shocks = list.map((s) => Math.round(s.shock)), low = Math.min(...shocks), high = Math.max(...shocks)
+    return `${list.length === state.sleeves.length ? "All " : ""}${list.length} on ${esc(task)}<span class="why">shock ${low === high ? low : `${low} to ${high}`}</span>`
+  }).join("")
+  const advice = state.advisor?.advice
+  const install = state.redPill ? "Finished: endgame installs are yours"
+    : state.autoInstall.paused ? "Paused"
+      : !advice ? "On, waiting for the advisor to start"
+        : advice.verdict === "install" ? "Installing within about 6 min" : "On, not time yet"
+  const rows = [["You", esc(state.work), state.playerReason], ["Sleeves", sleeves || "None"]]
+  const next = nextPurchase(hourlyRate((r) => total(r.earned)))
+  if (next) rows.push(["Saving for", next])
+  const blocked = state.capital?.homeBlocked || []
+  if (blocked.length) rows.push(["Waiting for RAM", `${blocked.length} scripts`, blocked.map((s) => s.replace(".js", "").replaceAll("_", " ")).join(", ")])
+  rows.push(["Installs", install, advice?.reason])
+  if (state.advisor?.installPlan?.cost) rows.push(["Next batch", `${(state.advisor.installPlan.names || []).length} augs for ${cash(state.advisor.installPlan.cost)}`])
+  if (state.autoInstall.installs.length) rows.push(["Last auto install", esc(state.autoInstall.installs.at(-1).slice(5, 16))])
+  if (state.cloud.count) rows.push(["Cloud", `${state.cloud.count} servers, ${ram(state.cloud.ram)}`])
+  if (state.graft?.grafting) rows.push(["Grafting", esc(state.graft.note || "In progress")])
+  if (state.entropy) rows.push(["Entropy", String(state.entropy), `every multiplier at ${(100 * 0.98 ** state.entropy).toFixed(0)}%`])
+  el("now").innerHTML = pairs(rows)
+}
 
-  // ---- cash
-  cashChart.data.datasets = [{ label: "cash", data: rows.filter((r) => r.money > 0).map((r) => ({ x: r.ts, y: r.money })), borderColor: css("--accent"), backgroundColor: css("--accent") + "22", fill: true, pointRadius: 0, borderWidth: 2 },
-    ...marks.map((m) => ({ label: "install", data: [{ x: m, y: 1 }, { x: m, y: Math.max(...rows.map((r) => r.money || 1)) }], borderColor: css("--line"), borderWidth: 1, pointRadius: 0 }))]
-  cashChart.options.scales.y.ticks = { callback: (v) => "$" + fmt(v, 0) }
-  cashChart.update()
+function drawTables() {
+  const money = [...Object.entries(state.runEarned).map(([k, v]) => [k, v]), ...Object.entries(state.runSpent).map(([k, v]) => [k, -v])]
+    .sort((a, b) => b[1] - a[1])
+  el("money").innerHTML = money.map(([key, v]) =>
+    `<tr><td>${esc(source(key)[0])}${key === "gang_expenses" ? " gear" : ""}</td><td class="n">${cash(v)}</td></tr>`).join("") || '<tr><td class="sub">Nothing yet.</td></tr>'
 
-  // ---- faction rep this cycle
-  const cyc = rows.filter((r) => r.resetAt === last.resetAt)
-  const facs = [...new Set(cyc.flatMap((r) => Object.keys(r.factionRep || {})))]
-    .sort((a, b) => (last.factionRep?.[b] || 0) - (last.factionRep?.[a] || 0)).slice(0, 7)
-  repChart.data.datasets = facs.map((f, i) => ({ label: f, data: cyc.filter((r) => r.factionRep?.[f] != null).map((r) => ({ x: r.ts, y: r.factionRep[f] })), borderColor: PAL[i % 7], pointRadius: 0, borderWidth: 1.8 }))
-  repChart.options.scales.y.ticks = { callback: (v) => fmt(v, 0) }
-  repChart.update()
+  const g = state.gang
+  el("gang").innerHTML = pairs(g ? [
+    ["Faction", esc(g.faction), state.gangMode],
+    ["Respect", fmt(g.respect)],
+    ["Territory", `${((g.territory || 0) * 100).toFixed(1)}%`],
+    ["Power", fmt(g.power)],
+    ["Members", Object.entries(g.tasks).map(([task, n]) => `${n} ${esc(task)}`).join("<br>")],
+  ] : [["Status", "Not formed yet", "It forms by itself at karma -54,000."]])
 
-  // ---- earnings and spending (this cycle)
-  earnChart.data.datasets = perHourSeries(cyc.filter((r) => r.earned), "earned")
-  spendChart.data.datasets = perHourSeries(cyc.filter((r) => r.spent), "spent")
-  // Same y scale on both (Ken, 2026-11-17), so earnings and spending compare at a glance: the larger stacked peak sets it.
-  const stackedPeak = (sets) => { const t = new Map(); for (const s of sets) for (const p of s.data) t.set(p.x, (t.get(p.x) || 0) + p.y); return Math.max(0, ...t.values()) }
-  const sharedMax = Math.max(stackedPeak(earnChart.data.datasets), stackedPeak(spendChart.data.datasets)) * 1.05 || undefined
-  for (const c of [earnChart, spendChart]) {
-    c.options.scales.y.ticks = { callback: (v) => "$" + fmt(v, 0) }
-    c.options.scales.y.max = sharedMax
-    c.update()
+  el("factions").innerHTML = state.factions.length
+    ? `<tr><th>Faction</th><th class="n">Rep</th><th class="n">Favor</th></tr>` + state.factions.slice(0, 9).map((f) =>
+      `<tr><td>${esc(f.name)}</td><td class="n">${fmt(f.rep)}</td><td class="n">${fmt(f.favor)}</td></tr>`).join("")
+    : '<tr><td class="sub">None joined yet.</td></tr>'
+}
+
+function draw(id, datasets, { max, xMin, xMax, log = false, stacked = false, hours = false, show = fmt, legend = true } = {}) {
+  if (typeof Chart === "undefined") return
+  const muted = css("--muted"), grid = css("--line")
+  const options = {
+    animation: false, maintainAspectRatio: false, parsing: false, normalized: true,
+    interaction: { mode: "nearest", intersect: false },
+    elements: { point: { radius: 0, hitRadius: 8 } },
+    plugins: {
+      legend: { display: legend, labels: { color: muted, boxWidth: 10, boxHeight: 10 } },
+      tooltip: { callbacks: { title: (items) => items.length ? (hours ? `${items[0].parsed.x.toFixed(1)} h into the run` : clock(items[0].parsed.x)) : "",
+        label: (item) => `${item.dataset.label}: ${show(item.parsed.y)}` } },
+    },
+    scales: {
+      x: { type: "linear", max: xMax, min: hours ? 0 : xMin, grid: { color: grid },
+        ticks: { color: muted, maxTicksLimit: 6, maxRotation: 0, callback: (v) => hours ? `${+v.toFixed(1)}h` : clock(v) } },
+      y: { type: log ? "logarithmic" : "linear", beginAtZero: !log, max, stacked, grid: { color: grid },
+        ticks: { color: muted, maxTicksLimit: 6, callback: (v) => show(v) } },
+    },
   }
-
-  // ---- sleeves
-  const buyer = live.sleeve_buyer || {}
-  const playerRow = `<tr><td><span class="dot" style="background:var(--ink)"></span>player</td><td>${esc(pa.decision?.action === "faction" ? `FACTION:${pa.decision.faction}:${pa.decision.workType}` : (last.work ? `${last.work.type}${last.work.faction ? ":" + last.work.faction : ""}` : "–"))}</td><td colspan="2">${esc(pa.decision?.reason || last.reason || "")}</td></tr>`
-  document.getElementById("sleeves").innerHTML = `<table><tr><th>Who</th><th>Doing</th><th>Shock · sync</th><th>Why</th></tr>${playerRow}${sleeves.map((s) =>
-    `<tr><td><span class="dot" style="background:${PAL[s.index % 7]}"></span>S${s.index}</td><td>${esc(s.current)}</td>
-      <td>${Math.round(s.shock)} · ${Math.round(s.sync)}</td><td class="${s.error ? "bad" : ""}">${esc(s.error || s.reason || "")}</td></tr>`).join("")}</table>
-    <div class="note">Sleeve augmentations: ${esc(buyer.action?.kind === "save" ? buyer.action.reason : buyer.action?.kind || "–")} · cycle phase ${esc(buyer.cyclePhase || "–")} ·
-    available $${fmt(buyer.augTotals?.all?.cost)} for ${buyer.augTotals?.all?.count ?? "–"} · last batch ${(buyer.purchases || []).filter((p) => p.kind === "aug" && p.ts > (rows[0]?.ts || 0)).slice(-1).map((p) => `${dayClock(p.ts)} S${p.sleeve}`)[0] || "none this run"}</div>`
-
-  // ---- gang and grafting
-  const g = live.gang || {}, graft = live.graft
-  const gangRows = [
-    ["Gang", `${esc(g.gang?.faction || last.gang?.faction || "–")} · ${esc(g.gangObjective || "–")} mode`],
-    ["Respect", `${fmt(gangLive.respect ?? last.respect, 1)}`],
-    ["Gang faction rep", (() => { const have = last.factionRep?.[readiness.gangFaction || "Slum Snakes"] ?? 0, need = Number((/of (\d+) needed/.exec(g.objectiveChoice?.reason || "") || [])[1])
-      return `${fmt(have, 1)}${need ? ` of ${fmt(need, 1)} for its augmentations${barHtml(have / need)}` : ""}` })()],
-    ["What the spending buys", `${g.ascensionCount ?? "–"} ascensions (each ×${fmt(g.lastAscension?.mult ?? 1.25, 2)} to that member's stats; gear is lost at ascension, augmentations kept).
-      Return comes later: run 3's gang went from $0.1b to $56b income per cycle once members compounded.`],
-    ["Power", `${fmt(g.power?.ours, 0)} vs strongest rival ${fmt(g.power?.strongestRival, 0)} (territory off)`],
-  ]
-  document.getElementById("gang").innerHTML = `<table>${gangRows.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join("")}</table>`
-
-  // ---- grafting
-  const probe = await fetch("/api/grafting").then((r) => r.json()).catch(() => null)
-  const rowsG = Object.entries(probe?.price || {}).filter(([, p]) => p.graftPrice).sort((a, b) => a[1].graftPrice - b[1].graftPrice)
-  document.getElementById("graftAugs").innerHTML = graft
-    ? `<table><tr><th>Mode</th><td>${esc(graft.mode || "–")}</td></tr><tr><th>Pick</th><td>${esc(graft.decision?.name || graft.aug || "none")}</td></tr>
-       <tr><th>Blocked by</th><td>${esc((graft.blocked || []).join(", ") || "–")}</td></tr><tr><th>Entropy</th><td>${graft.entropy ?? 0} stacks (each costs 2% of every multiplier)</td></tr></table>`
-    : `<table><tr><th>Augmentation</th><th>Graft price</th><th>Time</th><th>Prerequisites</th><th>Cash covers</th></tr>${rowsG.map(([n, p]) => {
-        const pre = probe.stats?.[n]?.prereq || []
-        return `<tr><td>${esc(n)}</td><td>$${fmt(p.graftPrice)}</td><td>${dur(p.graftTimeMs / 3.6e6)}</td><td>${pre.length ? esc(pre.join(", ")) : "none"}</td>
-          <td>${(cash || 0) >= p.graftPrice ? '<span class="ok">yes</span>' : Math.round((cash || 0) / p.graftPrice * 100) + "%"}</td></tr>` }).join("")}</table>
-       <div class="note">Live prices and times from the read-only probe (${probe ? dayClock(probe.ts) : "–"}; intelligence ${probe?.player?.intelligence ?? "–"}). A graft costs 3x the augmentation's base price,
-       skips the faction's 1.9x climb, takes effect at once and counts as installed, but takes the player's time and adds 2% entropy. The controller's live picks replace this table once it runs.</div>`
-
-  // ---- the plan's steps (docs/grafting-plan.md section 5)
-  const STEPS = [["G1", "Read-only probe of prices and times", "done"], ["G2–G4", "Decision logic and 26 tests", "done"], ["G3", "Catalog scan script", "next"],
-    ["G5", "Controller in dry mode (logs what it would graft)", "next"], ["G6", "Safeguards: nothing interrupts a graft", ""], ["G7", "First real graft, supervised", ""],
-    ["G8", "Allocator shadow", ""], ["G9", "Metrics and this page", ""], ["G10", "Covenant combat set", ""]]
-  const auto = graft ? { G3: "done", G5: graft.mode === "dry" ? "running" : "done" } : {}
-  document.getElementById("graftPlan").innerHTML = `<table>${STEPS.map(([k, v, st]) => { const st2 = auto[k] || st
-    return `<tr><th>${k}</th><td>${esc(v)}</td><td class="${st2 === "done" ? "ok" : st2 ? "warn" : ""}">${st2 || ""}</td></tr>` }).join("")}</table>
-    <div class="note">Plan: docs/grafting-plan.md. Nothing grafts until the dry run has been reviewed.</div>`
-
-  document.getElementById("updated").innerHTML = `updated ${clock(now)} · ${rows.length} samples this run · <a href="/bn6">BN6 page</a>`
+  if (charts[id]) { charts[id].data.datasets = datasets; charts[id].options = options; charts[id].update() }
+  else charts[id] = new Chart(el(id), { type: "line", data: { datasets }, options })
 }
 
-async function refreshOpps() {
-  try {
-    const md = await fetch("/api/opportunities").then((r) => r.text())
-    let html = "", inList = false
-    for (const line of md.split("\n")) {
-      if (/^##\s/.test(line)) { if (inList) { html += "</ul>"; inList = false } html += `<h3>${esc(line.replace(/^##\s*/, ""))}</h3>` }
-      else if (/^- /.test(line)) { if (!inList) { html += "<ul>"; inList = true } html += `<li>${esc(line.slice(2)).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")}` }
-      else if (/^\s+\S/.test(line) && inList) html += " " + esc(line.trim()).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")
-    }
-    document.getElementById("opps").innerHTML = html + (inList ? "</ul>" : "")
-  } catch { /* keep the last copy */ }
+function drawRace() {
+  const age = (state.savedAt - state.nodeResetAt) / 3.6e6
+  const past = history.previous, hasPast = past.length > 1
+  const pastLength = hasPast ? (past.at(-1).ts - history.previousStart) / 3.6e6 : 0
+  const xMax = Math.ceil(wholeRun ? Math.max(age, pastLength) : Math.max(3, age * 1.25))
+  el("raceTitle").textContent = hasPast ? "This run against the last" : `Run ${state.run} so far`
+  el("raceNote").textContent = hasPast ? `Both lined up by hours since entering the BitNode. The last run (grey) took about ${pastLength.toFixed(1)} h.` : ""
+  el("span").hidden = !hasPast
+  el("span").textContent = wholeRun ? "Zoom to now" : "Show the whole run"
+  const series = (rows, start, key, label, color, width) => ({ label, borderColor: color, backgroundColor: color, borderWidth: width, pointRadius: rows.length < 4 ? 2 : 0,
+    data: rows.filter((r) => r[key] != null && (key !== "money" || r.money > 0)).map((r) => ({ x: (r.ts - start) / 3.6e6, y: r[key] })).filter((p) => p.x <= xMax) })
+  for (const [id, key, show, log] of [["cashChart", "money", cash, true], ["hackChart", "hacking", fmt, true], ["augChart", "installed", fmt, false]]) {
+    const sets = [series(history.current, state.nodeResetAt, key, "this run", css("--accent"), 2.5)]
+    if (hasPast) sets.push(series(past, history.previousStart, key, "last run", css("--past"), 1.5))
+    draw(id, sets, { xMax, log, hours: true, show })
+  }
 }
 
-refresh(); refreshOpps()
-setInterval(refresh, 30000); setInterval(refreshOpps, 300000)
-// Reload when the server restarts or the page changes, so an open tab always shows the current page.
-let pageVersion = null
+function drawFlows() {
+  const rows = history.current.filter((r) => r.resetAt === state.resetAt && r.earned)
+  const windowMs = state.savedAt - state.resetAt > 2 * 3.6e6 ? 30 * 60000 : 10 * 60000
+  const points = rows.map((r) => [earlier(rows, r.ts, windowMs), r]).filter(([a]) => a)
+  const flows = (field) => {
+    const keys = [...new Set(rows.flatMap((r) => Object.keys(r[field] || {})))]
+    return keys.map((key) => {
+      const [label, tone] = source(key), color = css(`--c-${tone}`)
+      return { label, fill: true, borderColor: color, backgroundColor: color + "55", borderWidth: 1, pointRadius: points.length < 4 ? 3 : 0,
+        data: points.map(([a, b]) => ({ x: b.ts, y: Math.max(0, ((b[field]?.[key] || 0) - (a[field]?.[key] || 0)) / ((b.ts - a.ts) / 3.6e6)) })) }
+    })
+  }
+  const earn = flows("earned"), spend = flows("spent")
+  // Same y scale on both, so earning and spending compare at a glance.
+  const peak = (sets) => Math.max(0, ...points.map((_, i) => sets.reduce((sum, s) => sum + s.data[i].y, 0)))
+  const max = Math.max(peak(earn), peak(spend)) * 1.05 || undefined
+  const span = { max, xMin: state.resetAt, xMax: state.savedAt, stacked: true, show: cash }
+  draw("earnChart", earn, span)
+  draw("spendChart", spend, span)
+}
+
+function render() {
+  drawHeader(); drawTiles(); drawRoute(); drawNow(); drawTables(); drawRace(); drawFlows()
+}
+
+function offline(text) {
+  el("alerts").innerHTML = `<div class="alert bad"><b>${esc(text)}.</b>Anything below may be out of date.</div>`
+  el("updated").className = "old"
+}
+async function getJson(url) {
+  const reply = await fetch(url)
+  if (!reply.ok) throw new Error(`${url}: ${reply.status}`)
+  return reply.json()
+}
+async function refresh() {
+  let next
+  try { next = await Promise.all([getJson("/api/state"), getJson("/api/history")]) }
+  catch { return offline("The page can't reach its server on the Mac") }
+  if (next[0].error || next[1].error) return offline("The game's autosave can't be read")
+  ;[state, history] = next
+  render()
+}
 async function checkVersion() {
   try {
-    const { version } = await fetch("/api/version").then((r) => r.json())
+    const { version } = await getJson("/api/version")
     if (pageVersion && version !== pageVersion) location.reload()
     pageVersion = version
   } catch { /* server down: keep trying */ }
 }
-checkVersion(); setInterval(checkVersion, 15000)
+
+el("span").addEventListener("click", () => { wholeRun = !wholeRun; if (state) drawRace() })
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (state) render() })
+refresh(); checkVersion()
+setInterval(refresh, 20000); setInterval(checkVersion, 15000)
 </script>
 </body>
 </html>

@@ -3575,3 +3575,22 @@ Plan and gates: `docs/grafting-plan.md`. Pure logic in `graft_logic.js` (core/pl
   contract wins give the player's division full rank and use no player stamina. Off with `{"bladeburner": false}` in
   `sleeve_config.json`. The Bladeburners faction is marked `canWorkForRep: false` in `augmentation_readiness.js`
   (it offers no work; rep comes from rank).
+
+### `tools/run_page.py`
+
+Ken's run page, http://localhost:8790 (LaunchAgent `com.bitburner.run-page`; addresses in
+`docs/governance.md`). Rebuilt 2026-11-22: it showed run 1's final numbers as live in run 2.
+
+- **Args:** `--port` (8790), `--host` (0.0.0.0).
+- **Reads:** the game's autosave blob on disk every 20s (the truth; no DevTools, no game load);
+  `runtime/metrics_log.txt` for history; through the daemon `run_target.json` (the route),
+  `install_count.json`, and the capital, advisor, player, gang and graft status files, each only
+  while under 5 minutes old and from this cycle; `tools/autoinstall.pause` and `autoinstall_state.json`.
+- **Writes:** `runtime/run_page_samples.jsonl`, one point per 2 minutes, so the charts work before
+  `metrics_logger.js` fits. Nothing to the game.
+- **Banner:** game not saving, nothing running, daemon down, auto install paused or dead, World Daemon ready
+  (needs The Red Pill: the server is in every save from the start).
+- **Per BitNode:** nothing to edit in the page; the route is the profile's `run_target.json`.
+- **Failure modes:** a save format or path change shows "autosave can't be read"; the charts need
+  cdnjs (Chart.js), the rest works offline.
+- **Tests:** `python -m unittest discover -s tools/tests -p test_run_page.py`. Logic in `tools/run_page_data.py`.

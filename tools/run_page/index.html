@@ -290,7 +290,7 @@ function drawRace() {
   const pastLength = hasPast ? (past.at(-1).ts - history.previousStart) / 3.6e6 : 0
   const xMax = Math.ceil(wholeRun ? Math.max(age, pastLength) : Math.max(3, age * 1.25))
   el("raceTitle").textContent = hasPast ? "This run against the last" : `Run ${state.run} so far`
-  el("raceNote").textContent = hasPast ? `Both lined up by hours since entering the BitNode. The last run (grey) took about ${pastLength.toFixed(1)} h.` : ""
+  el("raceNote").textContent = hasPast ? `Both lined up by hours since entering the BitNode. The last run (grey) was ended at about ${pastLength.toFixed(1)} h, including any wait at the World Daemon.` : ""
   el("span").hidden = !hasPast
   el("span").textContent = wholeRun ? "Zoom to now" : "Show the whole run"
   const series = (rows, start, key, label, color, width) => ({ label, borderColor: color, backgroundColor: color, borderWidth: width, pointRadius: rows.length < 4 ? 2 : 0,

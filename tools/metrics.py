@@ -187,6 +187,7 @@ def cycle_rows(samples: list[dict]) -> list[dict]:
 # ---------------------------------------------------------------- trend
 
 TREND_PCT = 10.0
+DARKNET_SILENT_MIN = 30  # caches land minutes apart; this long at $0 means it stopped (19h unseen on 2026-11-18)
 
 
 def work_faction(samples: list[dict]) -> tuple[str | None, bool]:
@@ -326,6 +327,18 @@ def rates_lines(r: dict, label: str) -> list[str]:
     ]
 
 
+def darknet_line(win: list[dict]) -> str | None:
+    """Darknet $/h over the window, flagged when it earned nothing for DARKNET_SILENT_MIN or more."""
+    rate = slope_per_hour(win, "income.darknet")
+    if rate is None:
+        return None
+    line = f"  darknet/h {num(rate)}"
+    minutes = (win[-1]["ts"] - win[0]["ts"]) / 60_000
+    if rate <= 0 and minutes >= DARKNET_SILENT_MIN:
+        line += f"  NO DARKNET INCOME for {minutes:.0f} min"
+    return line
+
+
 def summary_text(samples: list[dict], window_min: float, now_ms: float | None = None) -> str:
     cyc = current_cycle(samples)
     if not cyc:
@@ -348,6 +361,9 @@ def summary_text(samples: list[dict], window_min: float, now_ms: float | None = 
         lines.append(f"  stale sources (age s): {json.dumps(last['stale'])}")
     win = [s for s in cyc if s["ts"] >= last["ts"] - window_min * 60_000]
     lines += rates_lines(window_rates(win), f"rates over last {window_min:g} min")
+    dark = darknet_line(win)
+    if dark:
+        lines.append(dark)
     lines.append(trend_line(trend(samples)))
     return "\n".join(lines)
 

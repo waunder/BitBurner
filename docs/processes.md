@@ -2310,7 +2310,8 @@ hacking/servers/augmentations/darknet/codingcontract/total, and since 2026-11-10
 - **Logic:** `metrics_logic.js` (`buildSample`, `trimLog`, `msToNextTick`), tests beside it.
 - **Local side:** `tools/bb_remote.py` pulls it to `runtime/metrics_log.txt` (slow pull set,
   after a daemon restart); until then `tools/metrics.py pull` fetches it with `ctl-get`.
-  `metrics.py summary [--window MIN]` prints latest values and least-squares rates this cycle;
+  `metrics.py summary [--window MIN]` prints latest values and least-squares rates this cycle
+  (with darknet $/h, flagged `NO DARKNET INCOME` after 30+ minutes at $0);
   `cycles` one row per install (length, rebuild hours, rep earned, favor banked, installed delta);
   `rates --from ISO --to ISO [--before MIN]` an experiment window against the one before it;
   `trend [--windows 3] [--window 60]` (also the last line of `summary`) compares consecutive

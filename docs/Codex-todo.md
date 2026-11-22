@@ -10,6 +10,9 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
 
 ## Active work
 
+- From the 2026-11-22 05:14 check (BN12):
+  - The pull set still fetches `dnet_status.json` and `dnet_roi_current.json`, months stale: drop them or revive their writers.
+  - Darknet manager registry: 18 fresh against a cap of 16 (concurrent spawns). Harmless at this size.
 - From the 2026-11-22 03:43 check (BN12):
   - Gang: reputation mode sets `fight` false, so territory stops growing until gang rep covers the augs
     even at 40x rival power. Consider clashes there when the odds bars pass and no one is on warfare.

@@ -175,6 +175,18 @@ class TextTests(unittest.TestCase):
         self.assertIn("after:", out)
         self.assertNotIn("before:", M.rates_text(s, R1 + HOUR, R1 + 2 * HOUR, 0))
 
+    def test_summary_flags_a_silent_darknet(self):
+        s = series(R1, 2, 6000)
+        self.assertNotIn("darknet", M.summary_text(s, 60))  # not in the log: no line
+        for i, row in enumerate(s):
+            row["income"]["darknet"] = i * 1e6
+        self.assertIn("darknet/h 12m", M.summary_text(s, 60))
+        self.assertNotIn("NO DARKNET INCOME", M.summary_text(s, 60))
+        for row in s:
+            row["income"]["darknet"] = 5e6
+        self.assertIn("NO DARKNET INCOME for 60 min", M.summary_text(s, 60))
+        self.assertNotIn("NO DARKNET INCOME", M.summary_text(s, 10))  # too short a window to judge
+
     def test_parse_time_defaults_to_pacific(self):
         self.assertEqual(M.parse_time("2026-11-05T17:30"), M.parse_time("2026-11-06T00:30+00:00"))
         self.assertEqual(M.pt(M.parse_time("2026-11-05T17:30")), "2026-11-05 17:30 PT")

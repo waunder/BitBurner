@@ -173,13 +173,14 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-22 03:43 Mac (scheduled run, BN12 run 1): install 4 done (03:37, auto); The Red Pill is planned for install 5, ~07:43.**
-At 03:41 the advisor's plan held the Daedalus donation ($733b; favor 173.8, threshold 153), The Red Pill and 12 other augs; a dry run of the buyer at 03:42 agreed, cash $258t.
-The verdict is `wait` only for the 4h gang minimum (ends ~07:37; auto install confirms 5 min). The purchase and donation themselves are not observed.
-Hacking was 13185 three minutes after install 4, far over the World Daemon's ~3060 (3000 x 1.02, not read live: the server does not exist yet).
-So the World Daemon should be ready minutes after install 5. Gang money units fixed (payback read 5x long).
+**2026-11-22 05:14 Mac (scheduled run, BN12 run 1): healthy, waiting for install 5 (~07:43) with The Red Pill.**
+At 05:13 the advisor read `wait`, only for the 4h gang minimum (ends ~07:37; auto install confirms 5 min). Its plan had 13 augs including The Red Pill and a $528b Daedalus donation; cash ~$20q.
+The advisor's function, run offline on simplified live numbers at 4.05h, returns `install`. The purchase and donation themselves are not observed.
+Hacking 16754 (05:10). After install 4 it was 13185 within 3 minutes, against the World Daemon's ~3060 (3000 x 1.02, not read live: the server does not exist yet).
 **Next runs: before ~07:43 leave the cycle alone unless the plan loses The Red Pill or the verdict is not `install` after 07:37 (then report why).
+Auto install also holds if The Red Pill is bought but not installed (its `owned` includes queued augs): then follow the install rule by hand (verdict `install`, backup first), else report.
 After install 5: auto install holds by itself; verify w0r1d_d43m0n is unrooted, read its required hacking live, back up the save, record it here, notify Ken and stop.
+The 07:07 run ends before the install unless it waits; otherwise the 09:07 run does this.
 Do not root, backdoor or destroy it; do not choose a BitNode.**
 **2026-11-19 06:51 (Ken session):** the 11-18 21:00:55 outage was Ken's accidental click on Active Scripts' Kill All Scripts (confirmed). New outage watchdog in the supervisor (`tools/outage_watchdog.py`, docs/processes.md): runs `startup.js` when all resident heartbeats are 10+ min old, once per 2h. Every check: grep `watchdog:` in `tools/daemon_supervisor.log`. Before a World Daemon or BitNode change: create `tools/watchdog.pause` (delete after).
 **2026-11-19 06:57 (Ken session): installs are now automatic** (Ken: "let the install verdict also be the trigger"). `tools/auto_install.py` in the supervisor: verdict `install` for 5 min -> save backup `saves/pre-install-auto-*` -> `aug_install.js --install`. Checks: do not install by hand; grep `autoinstall:` in `tools/daemon_supervisor.log`, review each install like before (cycle review, install table row). Pause with `tools/autoinstall.pause`. Holds itself once The Red Pill is owned.

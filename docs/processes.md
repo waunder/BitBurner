@@ -1449,7 +1449,10 @@ target; a separate source-level master gate remains off for this run. The
 controller evaluates the best unowned equipment candidate even while spending
 is disabled, using exact gang formulas to report cost, projected incremental
 gang income, projected payback, a rolling observed net player-cash rate, and
-estimated cost-recovery time (`phaseDelaySeconds`) in `gang_status.json`. The
+estimated cost-recovery time (`phaseDelaySeconds`) in `gang_status.json`.
+Money gains there are per second: `moneyPerSecond` multiplies the formulas' per-200ms-cycle value by 5
+(2026-11-22; before that they were per cycle, so payback read 5x too long and the 30-minute bar was
+really 6 minutes). Respect and wanted stay per cycle. The
 cash rate is an observed whole-player net rate over a 60-second window, not a
 causal attribution to the gang purchase. Only `earning-capacity` can buy
 anything, and then only if the policy and source master gates are enabled,

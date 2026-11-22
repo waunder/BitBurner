@@ -10,6 +10,11 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
 
 ## Active work
 
+- From the 2026-11-22 03:43 check (BN12):
+  - Gang: reputation mode sets `fight` false, so territory stops growing until gang rep covers the augs
+    even at 40x rival power. Consider clashes there when the odds bars pass and no one is on warfare.
+  - `player_activity` reports hold and leaves the player in an Algorithms class when donations remove
+    every rep target; give it a deliberate fallback for the next run.
 - From the 2026-11-22 01:18 check (BN12):
   - Waiting on Ken: verdict `install` as soon as a run gate (The Red Pill) is rep-ready. Also covers
     verdict `build` forever when the pill is the only thing in the batch (batch value 0).

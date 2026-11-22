@@ -125,6 +125,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 1 | 2026-11-21 13:39 | 7 (CSP Gen I, BitWire, Synaptic Enhancement, Neurotrainer I from CyberSec; S.N.A, ADR-V1, Wired Reflexes from Tian Di Hui; $1.11b, advisor verdict install) + NeuroFlux x11 (dry run) + queued The W1ngs of Icarus; leftover took home to 32TB, 3 cores. Backup saves/pre-install-bn12-1-20261121.json.gz | 0 -> 9 (save) |
 | 2 | 2026-11-21 18:36 | Auto install (Mac LaunchAgent, first through it): 7 (Artificial Synaptic Potentiation, Speech Processor Implant, Neurotrainer II, Nuoptimal Nootropic Injector Implant, Speech Enhancement, Neural Wit Amplifier, LuminCloaking-V1; $227m list) + NeuroFlux x16; home 32TB -> 1PB, 6 cores. Backup saves/pre-install-auto-20261121-1836.json.gz | 9 -> 16 (metrics_log) |
 | 3 | 2026-11-21 23:29 | By hand (auto install stuck): 23 bought at 22:53 by auto install (Neuralstimulator, FocusWire, ADR-V2, The Shadow's Simulacrum, Neuregen, Embedded Netburner Module, CSP Gen II and 16 more from Slum Snakes) + NeuroFlux x2 + queued The B00ts of Perseus; grafted QLink (entropy 1); Hacknet Node Cache filler at 23:29. Home stays 1PB, 6 cores. Backup saves/pre-install-bn12-3-20261121.json.gz | 16 -> 42 (readiness 23:31; 17 with QLink before the install) |
+| 4 | 2026-11-22 03:37 | Auto install: 28 from Slum Snakes (Hydroflame Left Arm, ENM DMA and Core, ECorp HVMind, BitRunners Neurolink, PC Direct-Neural Interface, CSP Gen III, The Black Hand and 20 more) + NeuroFlux x2 + queued The H4mmer of Daedalus; home 1PB -> 4PB, 7 cores; banked Daedalus favor (173.8 after). Backup saves/pre-install-auto-20261122-0337.json.gz | 43 -> 72 (metrics_log) |
 
 ## Installs BN10 run 4
 
@@ -172,13 +173,14 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-22 01:18 Mac (scheduled run, BN12 run 1): Daedalus joined ~00:42; two bugs on the path to The Red Pill fixed.**
-Player works Daedalus (140.7k rep at 01:17, ~250k/h); favor 153 is banked at 492.5k rep, projected ~02:41. The advisor's 4h minimum ends 03:29, so auto install ~03:35.
-After that install, the next donates for The Red Pill: donations now allow for BN12's 1/1.02 (they fell ~2% short) and the plan keeps the pill (value 0 dropped it).
-Tested and simulated, not yet seen live. Grafting is off for the rest of the run (`graft_config.json` enabled false) so nothing takes the player off Daedalus.
-**Next run: Daedalus favor + gain >= 153 before the install fires (if not, create tools/autoinstall.pause, then remove it once banked); after install 4: favor >= 153,
-the player's work, and once cash rebuilds `installPlan` shows the Daedalus donation and The Red Pill. Once the pill is installed auto install holds:
-verify w0r1d_d43m0n is unrooted, wait for hacking >= its requirement (~3060, read it live), then back up, record here, notify Ken and stop.**
+**2026-11-22 03:43 Mac (scheduled run, BN12 run 1): install 4 done (03:37, auto); The Red Pill is planned for install 5, ~07:43.**
+At 03:41 the advisor's plan held the Daedalus donation ($733b; favor 173.8, threshold 153), The Red Pill and 12 other augs; a dry run of the buyer at 03:42 agreed, cash $258t.
+The verdict is `wait` only for the 4h gang minimum (ends ~07:37; auto install confirms 5 min). The purchase and donation themselves are not observed.
+Hacking was 13185 three minutes after install 4, far over the World Daemon's ~3060 (3000 x 1.02, not read live: the server does not exist yet).
+So the World Daemon should be ready minutes after install 5. Gang money units fixed (payback read 5x long).
+**Next runs: before ~07:43 leave the cycle alone unless the plan loses The Red Pill or the verdict is not `install` after 07:37 (then report why).
+After install 5: auto install holds by itself; verify w0r1d_d43m0n is unrooted, read its required hacking live, back up the save, record it here, notify Ken and stop.
+Do not root, backdoor or destroy it; do not choose a BitNode.**
 **2026-11-19 06:51 (Ken session):** the 11-18 21:00:55 outage was Ken's accidental click on Active Scripts' Kill All Scripts (confirmed). New outage watchdog in the supervisor (`tools/outage_watchdog.py`, docs/processes.md): runs `startup.js` when all resident heartbeats are 10+ min old, once per 2h. Every check: grep `watchdog:` in `tools/daemon_supervisor.log`. Before a World Daemon or BitNode change: create `tools/watchdog.pause` (delete after).
 **2026-11-19 06:57 (Ken session): installs are now automatic** (Ken: "let the install verdict also be the trigger"). `tools/auto_install.py` in the supervisor: verdict `install` for 5 min -> save backup `saves/pre-install-auto-*` -> `aug_install.js --install`. Checks: do not install by hand; grep `autoinstall:` in `tools/daemon_supervisor.log`, review each install like before (cycle review, install table row). Pause with `tools/autoinstall.pause`. Holds itself once The Red Pill is owned.
 **2026-11-19 07:05 (Ken session): gang territory trial running to 10:03** (docs/gang-territory-trial.md; `territoryTrial` in the bn10 gang policy, ends by itself). Next check: fill in its Result section (power gained/h vs rival, respect/money given up, hours to a 9:1 lead), then remove `territoryTrial` from the policy. Weekly usage limit is near: check-ins cut to once a day until Ken restores them; the game runs on its own (auto install, outage watchdog).
@@ -225,5 +227,5 @@ Bladeburner keeps working Assassination meanwhile.
 
 ## Open questions
 
-- For Ken (2026-11-22 01:18, not done): may the install advisor read `install` as soon as The Red Pill is rep-ready? Today the 4h gang
-  minimum (cap 12h) holds that last install, so roughly 3h of a finished cycle is idle. Left alone because it changes the trigger Ken approved for resets.
+- For Ken (asked 2026-11-22 01:18, still open): may the install advisor read `install` as soon as The Red Pill is rep-ready? It was ready at 03:41,
+  4 minutes into cycle 5, and the 4h gang minimum holds it to ~07:43. Left alone: it changes the trigger Ken approved for resets. Without an answer the wait simply runs out.

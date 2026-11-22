@@ -1,5 +1,5 @@
 import { memberPower, territoryTrialCohort, territoryTrialFrom } from "./gang_logic.js";
-import { canBuildTerritoryPower, moneyModePriority, planMoneyTasks, planReputationTasks, planTerritoryPower,
+import { canBuildTerritoryPower, moneyModePriority, moneyPerSecond, planMoneyTasks, planReputationTasks, planTerritoryPower,
   shouldAscendMember, shouldEngageTerritoryClashes, wantedCleanupPolicy, cheapGearQualifies,
   reputationCleanupMode, withEquipment, planReputationGear, gearCounts, ascensionCooldownElapsed,
   GANG_ROOTKITS, autoGangObjective, recruitHoldsAscension, equipmentCategory } from "./gang_logic.js";
@@ -57,7 +57,7 @@ function isOwned(member, item) {
 function projected(ns, gang, member, task) {
   return {
     task: task.name,
-    money: Math.max(0, ns.formulas.gang.moneyGain(gang, member, task)),
+    money: moneyPerSecond(ns.formulas.gang.moneyGain(gang, member, task)),
     respect: ns.formulas.gang.respectGain(gang, member, task),
     wanted: ns.formulas.gang.wantedLevelGain(gang, member, task),
   };

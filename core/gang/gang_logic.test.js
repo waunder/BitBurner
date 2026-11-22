@@ -1,9 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { autoGangObjective, canBuildTerritoryPower, moneyModePriority, planMoneyTasks, planReputationTasks,
+import { autoGangObjective, canBuildTerritoryPower, moneyModePriority, moneyPerSecond, planMoneyTasks, planReputationTasks,
   planTerritoryPower, shouldAscendMember, shouldEngageTerritoryClashes, wantedCleanupPolicy, cheapGearQualifies, reputationCleanupMode,
   withEquipment, planReputationGear, equipmentCategory, gearCounts, ascensionCooldownElapsed,
   recruitHoldsAscension } from "./gang_logic.js";
+
+test("gang money per 200ms cycle is five times that per second", () => {
+  assert.equal(moneyPerSecond(1_010_000), 5_050_000);
+  assert.equal(moneyPerSecond(-3), 0);
+});
 
 test("recruit hold blocks ascension only while the next recruit is within holdHours", () => {
   const base = { members: 8, respect: 7300, respectForNextRecruit: 15625, respectPerHour: 3750, holdHours: 3 };

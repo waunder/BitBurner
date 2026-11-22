@@ -145,6 +145,11 @@ export function autoGangObjective(readiness, now, maxAgeMs = 10 * 60_000) {
     : { objective: "reputation", reason: `gang rep ${Math.round(rep)} of ${Math.round(needed)} needed` }
 }
 
+/** ns.formulas.gang.moneyGain is per 200ms game cycle (src/Gang/Gang.ts processGains). */
+export function moneyPerSecond(gainPerCycle) {
+  return Math.max(0, gainPerCycle) * 5;
+}
+
 export function moneyModePriority(cleanupMode, hasCleaner, recruitGrowth) {
   if (cleanupMode && hasCleaner) return "wanted-recovery";
   if (recruitGrowth) return "respect";

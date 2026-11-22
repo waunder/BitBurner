@@ -9,7 +9,7 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN12 run 2
 
-**2026-11-22 12:10 Mac, Ken session: finish-and-enter rehearsed; handover recorded.** "Yes, copy only": 30 of 30 in a
+**2026-11-22 12:07 Mac, Ken session: finish-and-enter rehearsed; handover recorded.** "Yes, copy only": 30 of 30 in a
 disposable copy (BN12 -> 12 and -> 11, with and without the startup callback, refusals, backup restore); the real game's
 node, stamps, install count and daemon connection identical before and after. Found: a startup callback starts the wrong
 profile in a new node; a finish script can die silently between rooting and finishing; the game enforces the pill.

@@ -9,6 +9,15 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN12 run 2
 
+**2026-11-22 10:40 Mac, Ken session: install floor replaced; advisor blind spot fixed.** Ken: "Yes, replace it".
+`install_advisor_logic.js` batchMark, favorGate, floorState; wired in augmentation_readiness.js (RAM unchanged, 35.35GB);
+allocator reads an `install` verdict as 0h even before 4h. On for bn12 only. Replay of run 1's six cycles
+(docs/evidence/install-floor-2026-11-22/): cycle 4 4.13 -> 3.26h (favor 153.3 of 153), cycle 5 4.10 -> 1.13h, same batches,
+1-3 and 6 unchanged; same result at settle 6-45 min and growth 0.5-5%. Control without the two guards: cycle 3 would have
+installed 10% of its batch and cycle 4 without favor. Tests 691 (bn12), 648 (bn15).
+Found while verifying: readiness stale since 10:26 ("no safe rooted worker; home lacks 35.35GB"; 256GB home, 30.4GB free).
+Steward now kills xp_filler.js after the monitors; fresh on home 10:38:47, auto install reads verdict build.
+
 **2026-11-22 09:50 Mac, Ken session: installs approved for run 2.** Ken: "Approve installs". Recorded in AGENTS.md; `tools/autoinstall.pause` removed. World Daemon stop unchanged.
 
 **2026-11-22 09:48 Mac, Ken session: run 2 bootstrap; three stalls fixed.** Entry 09:25:08 (save); nothing was running at 09:27.

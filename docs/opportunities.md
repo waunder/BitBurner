@@ -14,7 +14,8 @@ The 2-hourly check reviews this once per cycle (first run after an install).
   Gain (estimate, not replayed): ~3h from cycle 5, ~0.9h from cycle 4. Fix: let the minimum lapse once the batch has
   stopped growing, but wait for a favor gate (Daedalus) before installing; removing the minimum alone would have
   installed cycle 4 before the favor and cost a cycle. Auto install's own 1h floor stays. Replay run 1's samples first.
-  Status: open; put to Ken, since it changes when installs fire.
+  Status: shipped 10:40 (Ken: "Yes, replace it"; `gangCycleSettles`, bn12). Replay: 3.85h saved, cycles 1-3 unchanged;
+  docs/evidence/install-floor-2026-11-22/. Measure run 2's cycle lengths against run 1's on the run page.
 
 ## 2026-11-20 18:17 (Ken session, BN10 run 4, after The Red Pill; saving $100q for the 8th sleeve)
 

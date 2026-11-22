@@ -1514,6 +1514,16 @@ cheaper one there), so a faction selling several wanted augmentations beats one 
 `favorTarget` (player_activity_config.json) runs before them: the controller works that faction until favor plus
 pending gain (readiness `favor`) reaches `favorToDonate`, after which `aug_install.js` donates for rep and NeuroFlux. No script installs on it: installs stay with the hourly task's judgement (Ken, 2026-11-05), which weighs the
 advice as one input and records its decision beside the verdict.
+**Settling (2026-11-22, Ken; `gangCycleSettles` in player_activity_config.json, on in bn12 only).** With a gang
+the advisor waits 4h. With the flag it may say `install` sooner, once all of these hold: cycle at least 1h; batch
+value not up over 2% for 15 min (`advice.settling`, carried between passes); gang-faction rep covers `gangRepNeeded`
+(a young gang's batch sits still before its rep takes off); no favor gate at `favorTarget`; The Red Pill not installed.
+The gate, until the pill is held: waiting to join once `countFillersTo` augmentations are installed; favor plus pending
+under `favorToDonate`; donations open but the pill not yet in the batch. A favor wait that can finish inside the 12h
+cap also holds past 4h. `advice.reason` names the condition still open. The ordinary waits (a reachable gang aug, a
+better next aug) still apply afterwards. Evidence and replay: `docs/evidence/install-floor-2026-11-22/`.
+The steward runs readiness on home when no worker fits it, killing monitors and then `xp_filler.js` for the room.
+
 **Donations (2026-11-06, after install 11).** At favor `favorToDonate` (150) rep is bought with cash, so readiness
 plans as `aug_install.js` acts: `withDonations` (install_advisor_logic.js) runs the same `donationPlan` (25% of cash)
 over the joined non-gang factions at the threshold (readiness `donating`). Candidates a gift covers read as rep-ready

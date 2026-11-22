@@ -64,20 +64,73 @@ export function gangRepPerHour(status) {
 
 export const GANG_MIN_CYCLE_HOURS = 4
 export const GANG_CAP_HOURS = 12
+// Early end of the gang minimum (`gangCycleSettles` in player_activity_config.json; Ken 2026-11-22).
+// BN12 run 1 waited out 4h in two cycles whose batch was complete within the first hour.
+export const SETTLE_MIN_CYCLE_HOURS = 1 // the same floor as tools/auto_install.py
+export const SETTLE_HOURS = 0.25
+export const SETTLE_GROWTH = 0.02
+const RUN_GATE = "The Red Pill"
+
+/**
+ * When the batch last grew by over 2%, carried from one readiness pass to the next. Creep adds up
+ * against the same mark; a fall is not growth; a new cycle starts again.
+ */
+export function batchMark({ batchValue, now, reset, previous = null }) {
+  if (previous && previous.resetAt === reset && batchValue <= previous.value * (1 + SETTLE_GROWTH)) return previous
+  return { value: batchValue, since: now, resetAt: reset }
+}
+
+/**
+ * What the route still needs from this cycle at the favor faction (Daedalus), or null.
+ * join: eligible by augmentations and not yet a member. favor: not enough banked or pending to donate.
+ * pill: donations are open and The Red Pill is not in the batch yet.
+ * `hours` (favor only) is the time left at the measured rep rate (game: rep = 25000 x (1.02^favor - 1)).
+ */
+export function favorGate({ faction, joined, eligible, favor = 0, gain = 0, threshold = 150, held = [], planned = [], rate = null }) {
+  if (!faction || held.includes(RUN_GATE)) return null
+  if (!joined) return eligible ? { kind: "join", reason: `waiting to join ${faction}` } : null
+  if (favor >= threshold) {
+    return planned.includes(RUN_GATE) ? null : { kind: "pill", reason: `waiting for ${RUN_GATE} to join the batch` }
+  }
+  const projected = favor + gain
+  if (projected >= threshold) return null
+  const left = rate > 0 ? 25000 * (1.02 ** threshold - 1.02 ** projected) / rate : null
+  return {
+    kind: "favor", hours: left,
+    reason: `waiting for ${faction} favor ${Math.floor(projected)} of ${threshold}${left === null ? "" : `, ${hours(left)} left`}`,
+  }
+}
+
+/** May the cycle end before the gang minimum? Every condition must hold; otherwise the reason says which does not. */
+export function floorState({ cycleHours, mark, now, gangRep, gangRepNeeded, gate = null, endgame = false }) {
+  if (endgame) return { lapsed: false, reason: `${RUN_GATE} is installed` }
+  if (gate) return { lapsed: false, reason: gate.reason }
+  // A young gang's batch sits still before its rep takes off (run 1 cycle 3: flat 25 min, then x10 in an hour).
+  if (!(Number.isFinite(gangRep) && gangRep >= gangRepNeeded)) return { lapsed: false, reason: "gang rep does not cover its augmentations yet" }
+  if (cycleHours < SETTLE_MIN_CYCLE_HOURS) return { lapsed: false, reason: `can end at ${SETTLE_MIN_CYCLE_HOURS}h` }
+  const still = (now - mark.since) / 3_600_000
+  if (still < SETTLE_HOURS) return { lapsed: false, reason: `batch still growing, ${hours(SETTLE_HOURS - still)} to settle` }
+  return { lapsed: true, reason: "batch settled" }
+}
 
 /**
  * Gang-tier wait decision. The gang faction sells nearly everything and its rep is measured, so
  * its gaps are timed by the gang's own rate. Null means no opinion (use the ordinary rule).
- * Waits while the cycle is under `minCycleHours` (valued things remain), or while the next valued
+ * With `gate` (favor still to bank, reachable before `capHours`) waits whatever the cycle's age.
+ * Waits while the cycle is under `minCycleHours` (valued things remain) unless `floor.lapsed`, or while the next valued
  * gang augmentation is reachable before the cycle hits `capHours` and affordable at its place in
  * the batch: price x step^(batch size) <= money + cashPerHour x hours (cash rate optional).
  * @param {{rate:number|null, candidates:{name:string,repGap:number,value:number,price?:number}[]}} gang
  */
-export function gangAdvice({ gang, batch = [], cycleHours, money = 0, cashPerHour = null, valuedRemains = true,
+export function gangAdvice({ gang, batch = [], cycleHours, money = 0, cashPerHour = null, valuedRemains = true, floor = null, gate = null,
   minCycleHours = GANG_MIN_CYCLE_HOURS, capHours = GANG_CAP_HOURS, priceStep = 1.9 }) {
   if (!gang) return null
-  if (cycleHours < minCycleHours && valuedRemains) {
-    return { verdict: "wait", reason: `gang cycle minimum: ${hours(minCycleHours - cycleHours)} more before an install (min ${minCycleHours}h)` }
+  if (gate?.kind === "favor" && Number.isFinite(gate.hours) && cycleHours + gate.hours <= capHours) {
+    return { verdict: "wait", reason: gate.reason }
+  }
+  if (cycleHours < minCycleHours && valuedRemains && !floor?.lapsed) {
+    const why = floor ? `; ${floor.reason}` : ""
+    return { verdict: "wait", reason: `gang cycle minimum: ${hours(minCycleHours - cycleHours)} more before an install (min ${minCycleHours}h)${why}` }
   }
   const rate = gang.rate
   if (!(rate > 0)) return null
@@ -127,7 +180,7 @@ export function withDonations(candidates, { money, repMult, donating = [], owned
  * @param {{batch:{name:string,value:number}[], candidates:{name:string,repGap:number,value:number}[],
  *          cycleHours:number, repPerHour:number|null}} input
  */
-export function installAdvice({ batch = [], candidates = [], cycleHours, repPerHour, gang = null, money = 0, cashPerHour = null }) {
+export function installAdvice({ batch = [], candidates = [], cycleHours, repPerHour, gang = null, money = 0, cashPerHour = null, floor = null, gate = null }) {
   const batchValue = batch.reduce((sum, item) => sum + Math.max(0, item.value), 0)
   const average = cycleHours > 0 ? batchValue / cycleHours : 0
   const cashLimited = candidates.filter((item) => item.donatable && item.repGap > 0).map((item) => item.name)
@@ -142,7 +195,7 @@ export function installAdvice({ batch = [], candidates = [], cycleHours, repPerH
   const next = scored[0] || null
   const base = { batchValue, average, cycleHours, repPerHour, next, cashLimited }
   const valuedRemains = batchValue > 0 || scored.length > 0 || (gang?.candidates || []).some((item) => item.value > 0 && item.repGap > 0)
-  const gangVerdict = gangAdvice({ gang, batch, cycleHours, money, cashPerHour, valuedRemains })
+  const gangVerdict = gangAdvice({ gang, batch, cycleHours, money, cashPerHour, valuedRemains, floor, gate })
   if (gangVerdict) return { ...base, ...gangVerdict, next: gangVerdict.next || next }
   if (!(repPerHour > 0)) return { ...base, verdict: "unknown", reason: "rep rate not sampled yet" }
   if (batchValue <= 0) {

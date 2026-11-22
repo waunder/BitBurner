@@ -19,6 +19,7 @@
   "crimeKarmaTarget": -54000,
   "karmaFirst": true,
   "charismaAugs": [],
+  "gangCycleSettles": true,
   "countFillersTo": 31,
   "countFillerShare": 0.1,
   "donationRepGain": 0.9611687812379854

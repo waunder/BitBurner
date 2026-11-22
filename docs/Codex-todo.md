@@ -30,7 +30,8 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
   - `player_activity` reports hold and leaves the player in an Algorithms class when donations remove
     every rep target; give it a deliberate fallback for the next run.
 - From the 2026-11-22 01:18 check (BN12):
-  - Waiting on Ken: verdict `install` as soon as a run gate (The Red Pill) is rep-ready. Also covers
+  - Waiting on Ken (2026-11-22 10:40: settling now installs a valued batch holding the pill from 1h; the
+    pill-alone case below is what is left): verdict `install` as soon as a run gate (The Red Pill) is rep-ready. Also covers
     verdict `build` forever when the pill is the only thing in the batch (batch value 0).
   - `donationRepGain` is a per-profile constant: set it for any BitNode where FactionWorkRepGain is not 1 (BN12: again every run, 1/1.02^run; run 2 done).
   - Grafting: an alternative rate that is not ~0 early in a cycle and knows gates (re-enabled for run 2, 2026-11-22; the rate is still open).

@@ -12,7 +12,7 @@
  */
 
 import { donationRate, planPurchases, readyGates } from "./aug_install_logic.js"
-import { DEFAULT_WEIGHTS, augValue, bestRepRate, factionRepRates, gangRepPerHour, installAdvice, multFactorNeeded, withDonations } from "./install_advisor_logic.js"
+import { DEFAULT_WEIGHTS, augValue, batchMark, bestRepRate, factionRepRates, favorGate, floorState, gangRepPerHour, installAdvice, multFactorNeeded, withDonations } from "./install_advisor_logic.js"
 
 const STATUS = "augmentation_readiness.json"
 const POLL_MS = 120_000
@@ -47,7 +47,7 @@ function augValuer(ns) {
   return value
 }
 
-function advise(ns, { now, player, previous, factionRep, queued, plan, candidates, gangFaction = null, value = augValuer(ns) }) {
+function advise(ns, { now, player, previous, factionRep, queued, plan, candidates, gangFaction = null, route = null, value = augValuer(ns) }) {
   // The player controller ranks rep targets by this value per rep (player_activity_logic.js).
   for (const item of candidates) item.value = value(item.name)
   const inBatch = new Set([...queued, ...plan.map((item) => item.name)])
@@ -86,8 +86,18 @@ function advise(ns, { now, player, previous, factionRep, queued, plan, candidate
   const cashRate = Number(gangStatus?.capital?.observedCashRate)
   const cashFresh = Number(gangStatus?.ts) > now - 10 * 60_000
   const cashPerHour = cashFresh && Number.isFinite(cashRate) && cashRate > 0 ? cashRate * 3600 : null
+  const cycleHours = reset ? (now - reset) / 3_600_000 : 0
+  // Off unless the profile sets `gangCycleSettles` (route is null then): the plain 4h minimum.
+  let mark = null, floor = null, gate = null
+  if (route && gangFaction) {
+    const batchValue = batch.reduce((sum, item) => sum + Math.max(0, item.value), 0)
+    mark = batchMark({ batchValue, now, reset, previous: previous?.advice?.settling })
+    gate = favorGate({ ...route.favorInput, planned: plan.map((item) => item.name), rate: rates[route.favorInput.faction] || null })
+    floor = floorState({ cycleHours, mark, now, gangRep: factionRep[gangFaction], gangRepNeeded: route.gangRepNeeded, gate, endgame: route.endgame })
+  }
   const advice = installAdvice({
-    batch, cycleHours: reset ? (now - reset) / 3_600_000 : 0, repPerHour,
+    floor, gate,
+    batch, cycleHours, repPerHour,
     candidates: [...gaps].map(([name, { repGap, donatable, faction }]) => ({ name, repGap, donatable, value: value(name), repPerHour: rates[faction] || null })),
     gang: gangFaction ? { rate: gangRate, candidates: [...gangGaps.values()] } : null,
     money: Number(player?.money) || 0, cashPerHour,
@@ -99,7 +109,7 @@ function advise(ns, { now, player, previous, factionRep, queued, plan, candidate
   const covenant = hackExpPerHour ? multFactorNeeded({
     level: player.skills.hacking, exp: player.exp.hacking, target: 850, expPerHour: hackExpPerHour, cycleHours: 24,
   }) : null
-  return { ...advice, weightsFrom: value.weights === DEFAULT_WEIGHTS ? "default" : "run_target.json", hackExpPerHour, covenantHackingFactor24h: covenant }
+  return { ...advice, ...(mark ? { settling: mark, floor } : {}), weightsFrom: value.weights === DEFAULT_WEIGHTS ? "default" : "run_target.json", hackExpPerHour, covenantHackingFactor24h: covenant }
 }
 
 function assess(ns, previous = null) {
@@ -184,7 +194,20 @@ function assess(ns, previous = null) {
       donations: donated.gifts.map((gift) => [gift.faction, gift.amount]),
     }
     let advice
-    try { advice = advise(ns, { now, player, previous, factionRep, queued, plan, candidates: donated.candidates, gangFaction, value }) } catch (error) { advice = { verdict: "error", reason: String(error?.message || error) } }
+    let route = null
+    if (activity.gangCycleSettles === true && gangFaction) {
+      const faction = activity.favorTarget || null
+      const joined = factions.includes(faction)
+      route = {
+        gangRepNeeded, endgame: installed.includes("The Red Pill"),
+        favorInput: {
+          faction, joined, threshold: favorToDonate, held: includingQueued,
+          eligible: installed.length >= (Number(activity.countFillersTo) || 30),
+          favor: joined ? favor[faction].favor : 0, gain: joined ? favor[faction].gain : 0,
+        },
+      }
+    }
+    try { advice = advise(ns, { now, player, previous, factionRep, queued, plan, candidates: donated.candidates, gangFaction, route, value }) } catch (error) { advice = { verdict: "error", reason: String(error?.message || error) } }
     // After advise(), which sets each one's value. Donatable ones stay listed, marked, so the
     // player controller can see them and skip them.
     const workCandidates = donated.candidates.filter((item) => item.canWorkForRep)

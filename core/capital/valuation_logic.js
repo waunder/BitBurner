@@ -85,6 +85,8 @@ export function flagsFor(text, run = null) {
 export function expectedInstallHours({ advice = null, cycleHours = 0, gang = false, s = DEFAULTS }) {
   const verdict = advice?.verdict
   if (verdict !== "wait" && verdict !== "install") return null
+  // The advisor can end a cycle before the gang minimum (gangCycleSettles): install means now.
+  if (verdict === "install") return 0
   const minLeft = gang ? Math.max(0, s.gangMinCycleHours - cycleHours) : 0
   // A next aug that earns less per hour than the cycle average is not waited for (the advisor installs
   // instead); counting it put the install 7h out on 2026-11-18 while installs came at the 4h minimum.

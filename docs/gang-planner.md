@@ -64,6 +64,9 @@ zero-value augs are still bought in later cycles when cheaper.
 A4. **Weights.** Add `hacking_money`, `hacking_grow`, `hacking_chance`, `hacking_speed` to the run target's
 `augWeights` (and `augValue` if it filters keys), so ECorp HVMind and ENM DMA stop scoring 0.
 
+Update 2026-11-22: the 4h minimum can lapse early where a profile sets `gangCycleSettles` (bn12);
+see docs/processes.md, Install advisor, "Settling".
+
 ### B. Gang (coder B): `core/gang/gang-controller.js`, `core/gang/gang_logic.js`, `core/gang/gang_logic.test.js`,
 `profiles/bn10/config/gang_capital_policy.json` (and `core/config/gang_capital_policy.json` defaults)
 

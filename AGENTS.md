@@ -35,6 +35,10 @@ approved up to readiness to complete it, a validated save backup before each, th
 verdict as the trigger, and a stop at its World Daemon (`w0r1d_d43m0n`) or any other reset.
 A later run needs Ken's approval again: set `tools/autoinstall.pause` on entering one.
 
+Gang minimum (Ken, 2026-11-22, "Yes, replace it"): in BN12 the advisor may say `install` before
+its 4h gang minimum once the batch has settled (`gangCycleSettles`; docs/processes.md, Install advisor).
+Auto install's own guards are unchanged.
+
 Install trigger (Ken, 2026-11-19): the install advisor's verdict is the trigger.
 `tools/auto_install.py` (in the supervisor) backs up the save and installs when the
 verdict reads `install` for 5 minutes; checks no longer time installs, they review

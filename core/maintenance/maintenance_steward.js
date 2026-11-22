@@ -13,6 +13,9 @@ const POLL_MS = 30_000
 const HISTORY_LIMIT = 100
 const AUGMENTATION_REFRESH_MS = 120_000
 const MONITORS = ["hud_consolidated.js", "ops_hud.js", "tail_mcp.js", "run_report.js", "mcp_xp.js", "get_target_stats.js"]
+// The leftovers filler gives way after the monitors (BN12 run 2, 256GB home: it held 8.9GB and the install
+// advisor, 4.95GB short, was blind from 10:26). capital_manager starts it again when there is room.
+const FILLER = "xp_filler.js"
 
 function readJson(ns, file, fallback = null) {
   try { const raw = ns.read(file); return raw ? JSON.parse(raw) : fallback } catch { return fallback }
@@ -30,9 +33,11 @@ function startWatcher(ns) {
  * always be killed for RAM). capital_manager holds this RAM while `source` is "home", so they stay down. */
 function homeRoomFor(ns, ram) {
   const free = () => ns.getServerMaxRam("home") - ns.getServerUsedRam("home")
-  for (const proc of ns.ps("home")) {
-    if (free() >= ram) break
-    if (MONITORS.includes(proc.filename)) ns.kill(proc.pid)
+  for (const names of [MONITORS, [FILLER]]) {
+    for (const proc of ns.ps("home")) {
+      if (free() >= ram) break
+      if (names.includes(proc.filename)) ns.kill(proc.pid)
+    }
   }
   return free() >= ram
 }

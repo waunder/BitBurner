@@ -1,0 +1,12 @@
+cycle 1: unchanged (2.51h)
+cycle 2: unchanged (4.95h)
+cycle 3: unchanged (4.89h)
+cycle 4: 4.13h -> 3.26h (0.87h saved); batch 3.425 against 3.425 at the real install (100.0%); Daedalus favor 153.3; batch settled
+cycle 5: 4.10h -> 1.13h (2.97h saved); batch 0.772 against 0.772 at the real install (100.0%); Daedalus favor 197.1; batch settled
+cycle 6: unchanged (endgame, no install)
+saved 3.85h of 20.61h to The Red Pill installed (19%)
+
+Sensitivity (2026-11-22): identical for SETTLE_HOURS 0.1, 0.5, 0.75 and SETTLE_GROWTH 0.005, 0.05.
+Control without the favor gate and the gang-cover condition: cycle 3 installs at 3.40h with 10.3% of its batch;
+cycle 4 at 1.17h with no Daedalus favor (an extra cycle). Both guards are needed.
+Limits: 5-minute samples (live passes are 2 minutes); later cycles are not re-simulated from an earlier start.

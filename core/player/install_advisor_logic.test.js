@@ -165,3 +165,60 @@ test("planPurchases batch stop skips dear low-value offers, default unchanged", 
   assert.deepEqual(planPurchases(offers, [], 1e6, 1.9, [], { maxStepPrice: 5, minValue: 0.01 }).plan.map((o) => o.name), [])
   assert.deepEqual(planPurchases(offers, [], 1e6, 1.9, [], { maxStepPrice: 50, minValue: 0.01 }).plan.map((o) => o.name), ["B"])
 })
+
+import { batchMark, favorGate, floorState } from "./install_advisor_logic.js"
+
+const HOUR = 3_600_000
+const settled = { cycleHours: 1.1, now: 1.1 * HOUR, mark: { since: 0.2 * HOUR }, gangRep: 2e6, gangRepNeeded: 1.785e6 }
+
+test("settling: creep adds up against one mark, a fall is not growth, a new cycle starts again", () => {
+  const first = batchMark({ batchValue: 1, now: 10, reset: 1 })
+  assert.equal(batchMark({ batchValue: 1.015, now: 20, reset: 1, previous: first }), first)
+  assert.equal(batchMark({ batchValue: 0.8, now: 20, reset: 1, previous: first }), first)
+  assert.equal(batchMark({ batchValue: 1.021, now: 30, reset: 1, previous: first }).since, 30)
+  assert.equal(batchMark({ batchValue: 0.5, now: 40, reset: 2, previous: first }).since, 40)
+})
+
+test("the floor lapses only when every condition holds", () => {
+  assert.equal(floorState(settled).lapsed, true)
+  assert.equal(floorState({ ...settled, cycleHours: 0.9 }).lapsed, false)
+  assert.equal(floorState({ ...settled, mark: { since: 1.0 * HOUR } }).lapsed, false)
+  assert.equal(floorState({ ...settled, gangRep: undefined }).lapsed, false)
+  assert.equal(floorState({ ...settled, gate: { reason: "gate" } }).lapsed, false)
+  assert.equal(floorState({ ...settled, endgame: true }).lapsed, false)
+})
+
+test("run 1 cycle 3: a young gang's flat batch does not lapse the floor", () => {
+  const young = { cycleHours: 3.4, now: 3.4 * HOUR, mark: { since: 3.06 * HOUR }, gangRep: 11, gangRepNeeded: 1.785e6 }
+  assert.equal(floorState(young).lapsed, false)
+})
+
+test("favor gate: join, favor, pill, then nothing", () => {
+  const at = { faction: "Daedalus", threshold: 153 }
+  assert.equal(favorGate({ ...at, joined: false, eligible: false }), null)
+  assert.equal(favorGate({ ...at, joined: false, eligible: true }).kind, "join")
+  // donations open but not yet a member: still wait to join, or the pill misses the batch
+  assert.equal(favorGate({ ...at, joined: false, eligible: true, favor: 173 }).kind, "join")
+  const short = favorGate({ ...at, joined: true, gain: 100, rate: 261000 })
+  assert.equal(short.kind, "favor")
+  assert.ok(Math.abs(short.hours - 25000 * (1.02 ** 153 - 1.02 ** 100) / 261000) < 1e-9)
+  assert.equal(favorGate({ ...at, joined: true, gain: 154 }), null)
+  assert.equal(favorGate({ ...at, joined: true, favor: 173 }).kind, "pill")
+  assert.equal(favorGate({ ...at, joined: true, favor: 173, planned: ["The Red Pill"] }), null)
+  assert.equal(favorGate({ ...at, joined: false, eligible: true, held: ["The Red Pill"] }), null)
+})
+
+test("gang: a lapsed floor installs before 4h, but not over a reachable gang aug", () => {
+  const input = { batch, candidates: [], cycleHours: 1.1, repPerHour: 1000, floor: { lapsed: true } }
+  assert.equal(installAdvice({ ...input, gang: { rate: null, candidates: [] } }).verdict, "install")
+  const waiting = installAdvice({ ...input, money: 5e9, gang: { rate: 100000, candidates: gangItems } })
+  assert.equal(waiting.verdict, "wait")
+  assert.match(waiting.reason, /gang aug G1/)
+})
+
+test("gang: a favor gate in reach holds past 4h; out of reach or unmeasured it does not", () => {
+  const input = { batch, candidates: [], cycleHours: 5, repPerHour: 1000, gang: { rate: null, candidates: [] } }
+  assert.equal(installAdvice({ ...input, gate: { kind: "favor", hours: 1, reason: "favor" } }).verdict, "wait")
+  assert.equal(installAdvice({ ...input, gate: { kind: "favor", hours: 8, reason: "favor" } }).verdict, "install")
+  assert.equal(installAdvice({ ...input, gate: { kind: "favor", hours: null, reason: "favor" } }).verdict, "install")
+})

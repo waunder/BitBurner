@@ -10,7 +10,7 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
 
 ## Active work
 
-- From the 2026-11-22 09:16 check (BN12), for the next run:
+- From the 2026-11-22 09:15 check (BN12), for the next run:
   - `faction_join.js` `seekKills` skips on any crime, so a Heist (no kills) blocks The Dark Army and Speakers
     for the Dead indefinitely. Skip only for crimes that kill (Homicide, Assassination); add a test.
   - `cct_audit.js` finds hosts with `ns.scan`, so it never sees contracts on darknet servers.

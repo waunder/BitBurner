@@ -9,7 +9,7 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN12 run 1
 
-**2026-11-22 09:16 Mac, scheduled run: waiting for Ken at the World Daemon; healthy; number review row 20.** Not a stand-aside run (repo clean, last commit 07:49). Remote API connected, DevTools answering; pull 09:12 and 09:15; both LaunchAgent runners up.
+**2026-11-22 09:15 Mac, scheduled run: waiting for Ken at the World Daemon; healthy; number review row 20.** Not a stand-aside run (repo clean, last commit 07:49). Remote API connected, DevTools answering; pull 09:12 and 09:15; both LaunchAgent runners up.
 State (save 09:12:07, metrics 09:10): cash $12.2q, +$8.7q/h over 60 min; hacking 21803; karma -56.1k; 86 installed, 1 queued (The L4w of Bayes); entropy 2, grafting disabled; gang controller, capital, MCP, sleeves and 10 stack batchers in the save's running list; darknet $494b/h, 16 managers; MCP, graft and player statuses seconds old. Nothing had died.
 World Daemon (save 09:14:07): not rooted, 0 ports, no backdoor. `profile.py check`: 165 files, 0 missing, 0 stale, the same 54 unmanifested scripts. Auto install: no line since install 5; verdict wait (gang minimum, 2.5h more at 09:10); `decide` on live readiness with the verdict forced to install gave hold (Red Pill owned). Ready backup decodes.
 07:14 ledger fix now seen live: the ledger grew past install 5 with its 17 earlier entries intact plus the new ones (25 entries at 09:15, all accepted).

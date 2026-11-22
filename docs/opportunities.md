@@ -4,6 +4,18 @@ Running list kept by Claude on its own initiative (Ken, 2026-11-16: "exercise in
 for flaws and opportunities"). Newest first. Each entry: finding, evidence, expected gain, status.
 The 2-hourly check reviews this once per cycle (first run after an install).
 
+## 2026-11-22 10:30 (Ken session, BN12 run 2; found with the run page's cycle view)
+
+- **The 4h gang cycle minimum cost run 1 about 4 of its 20.6 hours.** Evidence (`metrics_log`, run 1): cycle 5 (03:37)
+  had batch value 0.768 of its final 0.772 at h0.13, Daedalus favor 173 (donations open) and $775t, then waited to h4.04.
+  Cycle 4 (23:29) had 3.36 of 3.43 at h0.59; the real gate was Daedalus favor (~493k rep at ~261k/h from h1.26, so ~h3.2),
+  installed at h4.09. Cycles 2 and 3 were rep-limited (batch arrived h3.5-4.9): little or nothing lost. The minimum
+  (`GANG_MIN_CYCLE_HOURS`, install_advisor_logic.js) came from a ~3.8h BN10 rebuild; here rebuild takes ~0.5h.
+  Gain (estimate, not replayed): ~3h from cycle 5, ~0.9h from cycle 4. Fix: let the minimum lapse once the batch has
+  stopped growing, but wait for a favor gate (Daedalus) before installing; removing the minimum alone would have
+  installed cycle 4 before the favor and cost a cycle. Auto install's own 1h floor stays. Replay run 1's samples first.
+  Status: open; put to Ken, since it changes when installs fire.
+
 ## 2026-11-20 18:17 (Ken session, BN10 run 4, after The Red Pill; saving $100q for the 8th sleeve)
 
 - **The stack fleet was idle because high hacking shortened every stack below the 20-batch floor.** Evidence: `stack_manager_status.json` plan empty, no `stack_batch.js` in `ps`, HUD cloud 7680TB idle; megacorp estimate 52GB/batch, 321GB needed (6.2 batches). Shipped: floor applies only to partial budgets; HACK_FRACTION 0.4 (kept under isHealthy's 50% money floor), spacing 1000ms; 670/670 tests. Result 18:18: 9 stacks $1.34t/s measured, 0 resets (before: ~$0.27t/s total income). Status: done; measure again over an hour.

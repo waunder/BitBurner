@@ -37,7 +37,8 @@ A later run needs Ken's approval again: set `tools/autoinstall.pause` on enterin
 
 Gang minimum (Ken, 2026-11-22, "Yes, replace it"): in BN12 the advisor may say `install` before
 its 4h gang minimum once the batch has settled (`gangCycleSettles`; docs/processes.md, Install advisor).
-Auto install's own guards are unchanged.
+It may also say `install` when The Red Pill is the only valued augmentation in the batch
+(Ken, 2026-11-22, "Yes, allow it"; `installRedPillAlone`). Auto install's own guards are unchanged.
 
 Install trigger (Ken, 2026-11-19): the install advisor's verdict is the trigger.
 `tools/auto_install.py` (in the supervisor) backs up the save and installs when the

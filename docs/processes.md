@@ -1522,6 +1522,9 @@ The gate, until the pill is held: waiting to join once `countFillersTo` augmenta
 under `favorToDonate`; donations open but the pill not yet in the batch. A favor wait that can finish inside the 12h
 cap also holds past 4h. `advice.reason` names the condition still open. The ordinary waits (a reachable gang aug, a
 better next aug) still apply afterwards. Evidence and replay: `docs/evidence/install-floor-2026-11-22/`.
+**The Red Pill alone (2026-11-22, Ken; `installRedPillAlone`, bn12).** The pill scores 0 (no multipliers). With the
+flag a batch holding it and nothing of value says `install` from 1h, with no 4h minimum and no rep rate needed,
+unless a valued augmentation is reachable inside the 12h cap (then it waits and they install together).
 The steward runs readiness on home when no worker fits it, killing monitors and then `xp_filler.js` for the room.
 
 **Donations (2026-11-06, after install 11).** At favor `favorToDonate` (150) rep is bought with cash, so readiness

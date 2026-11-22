@@ -69,3 +69,32 @@ test("eligible for Daedalus but not yet joined waits", async () => {
   assert.equal(second.verdict, "wait")
   assert.match(second.reason, /join Daedalus/)
 })
+
+test("pill alone, through donation and plan: install, and not yet counted as owned", async () => {
+  const reset = Date.now() - 1.5 * 3_600_000
+  const files = {
+    "player_activity_config.json": JSON.stringify({ gangCycleSettles: true, installRedPillAlone: true, favorTarget: "Daedalus", countFillersTo: 31, planByValue: true }),
+    "run_target.json": "{}", "gang_status.json": "{}",
+  }
+  const ns = {
+    args: ["--once"], disableLog() {},
+    read: (file) => files[file] ?? "", write: (file, text) => { files[file] = text },
+    getResetInfo: () => ({ lastAugReset: reset }), getFavorToDonate: () => 156,
+    getPlayer: () => ({ money: 1e15, mults: { faction_rep: 1 }, exp: { hacking: 1e9 }, skills: { hacking: 3000 }, factions: ["Slum Snakes", "Daedalus"] }),
+    gang: { inGang: () => true, getGangInformation: () => ({ faction: "Slum Snakes" }) },
+    singularity: {
+      getOwnedAugmentations: () => ["NeuroFlux Governor"],
+      getFactionRep: (faction) => (faction === "Daedalus" ? 1000 : 2e6),
+      getAugmentationsFromFaction: (faction) => (faction === "Daedalus" ? ["The Red Pill"] : []),
+      getAugmentationRepReq: () => 2.6e6, getAugmentationPrereq: () => [], getAugmentationPrice: () => 0,
+      getAugmentationStats: () => ({}),
+      getFactionFavor: (faction) => (faction === "Daedalus" ? 160 : 0), getFactionFavorGain: () => 0,
+    },
+  }
+  await main(ns)
+  const status = JSON.parse(files["augmentation_readiness.json"])
+  assert.deepEqual(status.installPlan.names, ["The Red Pill"])
+  assert.equal(status.installPlan.donations[0][0], "Daedalus")
+  assert.equal(status.advice.verdict, "install")
+  assert.ok(!status.owned.includes("The Red Pill")) // auto install holds once it is
+})

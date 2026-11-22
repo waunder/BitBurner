@@ -177,10 +177,13 @@ export function withDonations(candidates, { money, repMult, donating = [], owned
 /**
  * Candidates marked `donatable` are never rep targets: cash buys their rep, so they
  * join the batch once cash allows and are listed in `cashLimited` until then.
+ * `pillAlone` (installRedPillAlone; Ken 2026-11-22): The Red Pill carries no multipliers, so a batch holding
+ * nothing else of value scores 0 and would read `build` for good. It installs from 1h, unless something of
+ * value is within reach before the 12h cap.
  * @param {{batch:{name:string,value:number}[], candidates:{name:string,repGap:number,value:number}[],
  *          cycleHours:number, repPerHour:number|null}} input
  */
-export function installAdvice({ batch = [], candidates = [], cycleHours, repPerHour, gang = null, money = 0, cashPerHour = null, floor = null, gate = null }) {
+export function installAdvice({ batch = [], candidates = [], cycleHours, repPerHour, gang = null, money = 0, cashPerHour = null, floor = null, gate = null, pillAlone = false }) {
   const batchValue = batch.reduce((sum, item) => sum + Math.max(0, item.value), 0)
   const average = cycleHours > 0 ? batchValue / cycleHours : 0
   const cashLimited = candidates.filter((item) => item.donatable && item.repGap > 0).map((item) => item.name)
@@ -197,6 +200,15 @@ export function installAdvice({ batch = [], candidates = [], cycleHours, repPerH
   const valuedRemains = batchValue > 0 || scored.length > 0 || (gang?.candidates || []).some((item) => item.value > 0 && item.repGap > 0)
   const gangVerdict = gangAdvice({ gang, batch, cycleHours, money, cashPerHour, valuedRemains, floor, gate })
   if (gangVerdict) return { ...base, ...gangVerdict, next: gangVerdict.next || next }
+  // Before the rate check: with nothing left to earn, no rep rate is needed to decide.
+  if (pillAlone && batchValue <= 0 && batch.some((item) => item.name === RUN_GATE)) {
+    if (cycleHours < SETTLE_MIN_CYCLE_HOURS) {
+      return { ...base, verdict: "wait", reason: `${RUN_GATE} alone: can install at ${SETTLE_MIN_CYCLE_HOURS}h` }
+    }
+    const soon = scored.filter((item) => cycleHours + item.hours <= GANG_CAP_HOURS).sort((a, b) => a.hours - b.hours)[0]
+    if (soon) return { ...base, next: soon, verdict: "wait", reason: `wait ${hours(soon.hours)} for ${soon.name} to go in with ${RUN_GATE}` }
+    return { ...base, verdict: "install", reason: `install now: ${RUN_GATE}, and nothing else of value in reach` }
+  }
   if (!(repPerHour > 0)) return { ...base, verdict: "unknown", reason: "rep rate not sampled yet" }
   if (batchValue <= 0) {
     return { ...base, verdict: "build", reason: next ? `nothing to install yet; best next ${next.name} in ${hours(next.hours)}` : "nothing to install; no valued augmentation in joined factions (value lies in factions not yet joined)" }

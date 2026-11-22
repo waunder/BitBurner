@@ -47,7 +47,7 @@ function augValuer(ns) {
   return value
 }
 
-function advise(ns, { now, player, previous, factionRep, queued, plan, candidates, gangFaction = null, route = null, value = augValuer(ns) }) {
+function advise(ns, { now, player, previous, factionRep, queued, plan, candidates, gangFaction = null, route = null, pillAlone = false, value = augValuer(ns) }) {
   // The player controller ranks rep targets by this value per rep (player_activity_logic.js).
   for (const item of candidates) item.value = value(item.name)
   const inBatch = new Set([...queued, ...plan.map((item) => item.name)])
@@ -96,7 +96,7 @@ function advise(ns, { now, player, previous, factionRep, queued, plan, candidate
     floor = floorState({ cycleHours, mark, now, gangRep: factionRep[gangFaction], gangRepNeeded: route.gangRepNeeded, gate, endgame: route.endgame })
   }
   const advice = installAdvice({
-    floor, gate,
+    floor, gate, pillAlone,
     batch, cycleHours, repPerHour,
     candidates: [...gaps].map(([name, { repGap, donatable, faction }]) => ({ name, repGap, donatable, value: value(name), repPerHour: rates[faction] || null })),
     gang: gangFaction ? { rate: gangRate, candidates: [...gangGaps.values()] } : null,
@@ -207,7 +207,7 @@ function assess(ns, previous = null) {
         },
       }
     }
-    try { advice = advise(ns, { now, player, previous, factionRep, queued, plan, candidates: donated.candidates, gangFaction, route, value }) } catch (error) { advice = { verdict: "error", reason: String(error?.message || error) } }
+    try { advice = advise(ns, { now, player, previous, factionRep, queued, plan, candidates: donated.candidates, gangFaction, route, pillAlone: activity.installRedPillAlone === true, value }) } catch (error) { advice = { verdict: "error", reason: String(error?.message || error) } }
     // After advise(), which sets each one's value. Donatable ones stay listed, marked, so the
     // player controller can see them and skip them.
     const workCandidates = donated.candidates.filter((item) => item.canWorkForRep)

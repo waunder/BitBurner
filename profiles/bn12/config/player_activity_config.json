@@ -20,6 +20,7 @@
   "karmaFirst": true,
   "charismaAugs": [],
   "gangCycleSettles": true,
+  "installRedPillAlone": true,
   "countFillersTo": 31,
   "countFillerShare": 0.1,
   "donationRepGain": 0.9611687812379854

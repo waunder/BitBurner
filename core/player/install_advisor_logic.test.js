@@ -222,3 +222,19 @@ test("gang: a favor gate in reach holds past 4h; out of reach or unmeasured it d
   assert.equal(installAdvice({ ...input, gate: { kind: "favor", hours: 8, reason: "favor" } }).verdict, "install")
   assert.equal(installAdvice({ ...input, gate: { kind: "favor", hours: null, reason: "favor" } }).verdict, "install")
 })
+
+test("The Red Pill alone installs from 1h, only with the flag and nothing else in reach", () => {
+  const alone = { batch: [{ name: "The Red Pill", value: 0 }], candidates: [], cycleHours: 1.1, repPerHour: null, pillAlone: true }
+  assert.equal(installAdvice(alone).verdict, "install") // no gang and no rep rate needed
+  assert.equal(installAdvice({ ...alone, gang: { rate: null, candidates: [] } }).verdict, "install") // no 4h wait
+  assert.equal(installAdvice({ ...alone, cycleHours: 0.5 }).verdict, "wait")
+  assert.notEqual(installAdvice({ ...alone, pillAlone: false }).verdict, "install")
+  assert.equal(installAdvice({ ...alone, batch: [{ name: "Filler", value: 0 }], repPerHour: 1000 }).verdict, "build")
+  const near = { name: "X", repGap: 2000, value: 0.1 }, far = { name: "Y", repGap: 50000, value: 5 }
+  const waits = installAdvice({ ...alone, repPerHour: 1000, candidates: [far, near] })
+  assert.equal(waits.verdict, "wait")
+  assert.equal(waits.next.name, "X")
+  assert.equal(installAdvice({ ...alone, repPerHour: 1000, candidates: [far] }).verdict, "install")
+  const gang = { rate: 100000, candidates: gangItems }
+  assert.equal(installAdvice({ ...alone, cycleHours: 5, money: 5e9, gang }).verdict, "wait") // a gang aug in reach goes in with it
+})

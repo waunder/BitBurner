@@ -9,6 +9,10 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN12 run 2
 
+**2026-11-22 10:47 Mac, Ken session: The Red Pill alone may install.** Ken: "Yes, allow it". `installRedPillAlone` (bn12)
+in install_advisor_logic.js: from 1h, unless something of value is reachable inside 12h. Tested from donation through plan
+to verdict (693 tests); run 1 replay unchanged at 3.85h saved. Live file fresh, not yet exercised.
+
 **2026-11-22 10:40 Mac, Ken session: install floor replaced; advisor blind spot fixed.** Ken: "Yes, replace it".
 `install_advisor_logic.js` batchMark, favorGate, floorState; wired in augmentation_readiness.js (RAM unchanged, 35.35GB);
 allocator reads an `install` verdict as 0h even before 4h. On for bn12 only. Replay of run 1's six cycles

@@ -23,6 +23,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
 import bb_remote  # noqa: E402
 import run_page_data as rpd  # noqa: E402
+import run_approval  # noqa: E402
 
 PAGE = ROOT / "tools" / "run_page" / "index.html"
 METRICS = ROOT / "runtime" / "metrics_log.txt"
@@ -33,6 +34,7 @@ LIVE_TTL_S = 10
 SAMPLES = ROOT / "runtime" / "run_page_samples.jsonl"
 PAUSE = ROOT / "tools" / "autoinstall.pause"
 INSTALL_STATE = ROOT / "tools" / "autoinstall_state.json"
+WATCHDOG_STATE = ROOT / "tools" / "watchdog_mac_state.json"
 INSTALL_LOG = ROOT / "runtime" / "autoinstall_mac.log"
 STATUS_FILES = {"capital": "capital_status.json", "advisor": "augmentation_readiness.json",
                 "player": "player_activity_status.json", "gangControl": "gang_status.json",
@@ -175,6 +177,13 @@ def mtime_ms(path):
         return None
 
 
+def read_json(path):
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+
+
 def last_installs(node_reset):
     """Auto install's confirmed installs in this run, newest last."""
     if not INSTALL_LOG.exists():
@@ -210,11 +219,15 @@ def page_state():
                    len({r["resetAt"] for r in current} - {state["nodeResetAt"]}))
     paused = PAUSE.exists()
     player = pick("player", "reason", "decision")
+    cycle_rows = [r for r in current if r["resetAt"] == state["resetAt"] and r["ts"] < state["savedAt"]] + [rpd.sample_of(state)]
+    delivery = rpd.delivery_alerts(state, now_ms, cycle_rows, files.get("advisor") if ext["connected"] else None,
+                                   read_json(INSTALL_STATE), run_approval.approved(state, run_approval.load()),
+                                   mtime_ms(WATCHDOG_STATE), read_json(WATCHDOG_STATE))
     return {
         **state, "serverTs": now_ms, "run": run, "cycle": installs + 1,
         "daemonRequired": rpd.daemon_requirement(state, run),
         "route": rpd.route(state, files.get("target"), current),
-        "alerts": rpd.alerts(state, now_ms, ext["connected"], paused, mtime_ms(INSTALL_STATE)),
+        "alerts": rpd.alerts(state, now_ms, ext["connected"], paused, mtime_ms(INSTALL_STATE)) + delivery,
         "capital": pick("capital", "action", "incomePerSec", "homeBlocked"),
         "advisor": pick("advisor", "advice", "installPlan"),
         "playerReason": ((player.get("decision") or {}).get("reason") or player.get("reason")) if player else None,

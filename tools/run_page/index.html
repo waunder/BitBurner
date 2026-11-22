@@ -196,7 +196,7 @@ function drawHeader() {
   el("updated").className = state.serverTs - state.savedAt > 240000 ? "old" : ""
   el("alerts").innerHTML = state.alerts.length
     ? state.alerts.map((a) => `<div class="alert ${esc(a.level)}"><b>${esc(a.title)}.</b>${esc(a.text)}</div>`).join("")
-    : '<div class="alert"><b>Nothing needs you.</b>Scripts are running and the game is saving.</div>'
+    : '<div class="alert"><b>Nothing needs you.</b>The game is saving and the delivery checks pass.</div>'
 }
 
 function drawTiles() {

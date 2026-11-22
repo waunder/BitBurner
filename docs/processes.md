@@ -3603,6 +3603,10 @@ Ken's run page, http://localhost:8790 (LaunchAgent `com.bitburner.run-page`; add
   `metrics_logger.js` fits. Nothing to the game.
 - **Banner:** game not saving, nothing running, daemon down, auto install paused or dead, World Daemon ready
   (needs The Red Pill: the server is in every save from the start).
+- **Delivery alarms** (`delivery_alerts`, 2026-11-22): advisor blind (home 256GB+, no reading from this cycle in
+  5 min), no money for 5 min, karma flat 30 min, capital/MCP/gang controller down, install failed or not approved,
+  The Red Pill bought but not installed, watchdog down or holding. No false alarm over run 1's 256 samples.
+  They show on the page only; nothing is pushed to Ken.
 - **Comparison panel:** this run against the last, or every cycle of either run overlaid from its install
   (cash, hacking, earned in the cycle). The browser remembers the chosen view.
 - **Per BitNode:** nothing to edit in the page; the route is the profile's `run_target.json`.

@@ -75,6 +75,28 @@ class RunPage(unittest.TestCase):
         self.assertIn("The game has stopped saving", titles(save(), at=now + 600_000))
         self.assertIn("Auto install is paused", titles(save(), paused=True))
 
+    def test_delivery_alarms(self):
+        now = NODE_RESET + 20 * 60_000
+        base = {**rpd.state_from_save(save(scripts=("mcp.js", "capital_manager.js"))), "homeRam": 256}
+        rows = [{"ts": now - (19 - i) * 60_000, "earned": {"hacking": i + 1}, "karma": -i} for i in range(20)]
+        good = {"ts": now - 60_000}
+
+        def titles(state=base, rows=rows, readiness=good, approval=(True, ""), dog=now, install=None):
+            return [a["title"] for a in rpd.delivery_alerts(state, now, rows, readiness, install, approval, dog)]
+
+        self.assertEqual(titles(), [])
+        # 2026-11-22 10:26-10:38: 256GB home, scripts running, advisor last read 6 minutes ago
+        self.assertIn("The install advisor is blind", titles(readiness={"ts": now - 6 * 60_000}))
+        self.assertIn("The install advisor is blind", titles(readiness={"ts": NODE_RESET - 1}))  # the last run's file
+        self.assertIn("No money is arriving", titles(rows=[{**r, "earned": {"hacking": 5}} for r in rows]))
+        self.assertIn("MCP is not running", titles({**base, "scripts": ["capital_manager.js"]}))
+        self.assertIn("Nothing is buying RAM", titles({**base, "scripts": ["mcp.js"]}))
+        self.assertIn("Installs need your approval", titles(approval=(False, "not approved")))
+        self.assertIn("An install failed", titles(install={"hold_until_s": now / 1000 + 60}))
+        self.assertIn("The outage watchdog is not running", titles(dog=now - 240_000))
+        self.assertIn("The Red Pill is bought but not installed", titles({**base, "queued": ["The Red Pill"]}))
+        self.assertEqual(titles({**base, "homeRam": 32, "scripts": ["capital_bootstrap.js"]}, readiness=None), [])  # bootstrap
+
     def test_thin_keeps_cycle_edges(self):
         rows = [{"ts": i, "resetAt": i // 333} for i in range(2000)]
         kept = {r["ts"] for r in rpd.thin(rows, 50)}

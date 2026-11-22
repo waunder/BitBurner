@@ -25,7 +25,7 @@ is whether the scripts and monitoring are approaching their end state.
 | Item | Status |
 |---|---|
 | Outage watchdog on the Mac, including a fresh node with nothing running | built and installed 10:54 (Ken's OK); restart of a dead game to be proved in the rehearsal |
-| Freshness and delivery alarms, on the page | not built (the advisor was blind 12 min under "Nothing needs you") |
+| Freshness and delivery alarms, on the page | built (page only, no push to Ken); no false alarm over run 1's 256 samples |
 | Per-run settings derived: donation rate, Daedalus count, run number, price step | not built |
 | Auto install holds by itself in a run Ken has not approved | built: tools/run_approval.py, fails closed; run 3 is not yet approved |
 | Fresh-run rehearsal from a 32GB home in a disposable browser save | not built |

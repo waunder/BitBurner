@@ -226,6 +226,65 @@ def alerts(state, now_ms, connected, paused, install_pass_ms):
     return out
 
 
+def unchanged_for(rows, value, now_ms):
+    """ms that value(row) has been the same up to the last row; None without two readings."""
+    points = [(r["ts"], value(r)) for r in rows if value(r) is not None]
+    if len(points) < 2:
+        return None
+    since = points[-1][0]
+    for ts, seen in reversed(points):
+        if seen != points[-1][1]:
+            break
+        since = ts
+    return now_ms - since
+
+
+def delivery_alerts(state, now_ms, rows, readiness=None, install_state=None, approval=(True, ""),
+                    watchdog_pass_ms=None, watchdog=None):
+    """Is it delivering, not just running? (hands-off test, 2026-11-22: "Nothing needs you" showed for the 12
+    minutes the install advisor was blind.) Thresholds were replayed over BN12 run 1 with no false alarm."""
+    out = []
+    def add(level, title, text):
+        out.append({"level": level, "title": title, "text": text})
+
+    minute = 60_000
+    age = now_ms - state["resetAt"]
+    up, home = set(state["scripts"]), state["homeRam"]
+    if watchdog_pass_ms is None or now_ms - watchdog_pass_ms > 3 * minute:
+        add("bad", "The outage watchdog is not running", "Nothing would restart the scripts if they died.")
+    elif (watchdog or {}).get("action") == "hold":
+        add("bad", "The watchdog is holding", (watchdog.get("reason") or "") + ".")
+    if up and age > 5 * minute:
+        if not up & {"capital_bootstrap.js", "capital_manager.js"}:
+            add("bad", "Nothing is buying RAM", "Neither the capital bootstrap nor the capital manager is running.")
+        if home >= 64 and "mcp.js" not in up:
+            add("bad", "MCP is not running", "The main earner is down.")
+        if state["gang"] and home >= 512 and "gang-controller.js" not in up:
+            add("bad", "The gang has no controller", "The gang is not being managed.")
+    if age > 10 * minute:
+        still = unchanged_for(rows, lambda r: sum(r["earned"].values()) if r.get("earned") else None, now_ms)
+        if still is not None and still > 5 * minute:
+            add("bad", "No money is arriving", f"Nothing earned for {int(still // minute)} min.")
+    if not state["gang"] and home >= 128 and age > 15 * minute:
+        still = unchanged_for(rows, lambda r: r.get("karma"), now_ms)
+        if still is not None and still > 30 * minute:
+            add("bad", "Karma has stopped", f"No movement toward the gang for {int(still // minute)} min.")
+    if state["redPill"]:
+        return out
+
+    read_at = (readiness or {}).get("ts") or 0
+    blind = read_at < state["resetAt"] or now_ms - read_at > 5 * minute
+    if blind and home >= 256 and age > 10 * minute:
+        add("bad", "The install advisor is blind", "It has no fresh reading from this cycle, so no install can happen.")
+    if not approval[0]:
+        add("you", "Installs need your approval", approval[1][:1].upper() + approval[1][1:] + ".")
+    if (install_state or {}).get("hold_until_s", 0) * 1000 > now_ms:
+        add("bad", "An install failed", "Auto install is holding before it tries again.")
+    if "The Red Pill" in state["queued"] and age > 10 * minute:
+        add("bad", "The Red Pill is bought but not installed", "Auto install holds in this state. The install has to be finished.")
+    return out
+
+
 def split_runs(rows, node_reset):
     """(this run, the run before it) from rows of either source. A run begins where installed augs drop."""
     current, cycles = [], {}

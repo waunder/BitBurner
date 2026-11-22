@@ -10,6 +10,11 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
 
 ## Active work
 
+- From the 2026-11-21 23:32 check (BN12):
+  - `aug_install.js`: when the readiness plan is empty because everything is queued, the plain-plan
+    fallback buys value-0 augs (install 3: $99.2t Hacknet Node Cache) before the home upgrades.
+  - Grafts lose 20% speed once unfocused and nothing refocuses them (`shouldFocus` is company and
+    faction only). Retry focus during a graft as for faction work.
 - From the 2026-11-21 19:15 check (BN12):
   - Fresh node only: train strength/defense to ~100 while karma is far from -54000 (modelled ~0.4h
     sooner to the gang than the target of 30; no gain later in a run).

@@ -81,7 +81,9 @@ Auto install (2026-11-21, Ken): `tools/auto_install_mac.py` runs the PC's
 `com.bitburner.auto-install` (`tools/com.bitburner.auto-install.plist`, copied
 to `~/Library/LaunchAgents/`, loaded with `launchctl bootstrap gui/$(id -u) ...`).
 Same guards as the PC: verdict `install` for 5 minutes, cycle at least 1h old,
-The Red Pill not owned, save backup first. Pause: `tools/autoinstall.pause`.
+The Red Pill not owned, save backup first; it waits while a graft runs.
+After changing `tools/auto_install.py`, reload it with
+`launchctl kickstart -k gui/$(id -u)/com.bitburner.auto-install`. Pause: `tools/autoinstall.pause`.
 Log: `runtime/autoinstall_mac.log` (and `~/Library/Logs/bitburner-auto-install.*`).
 Stop: `launchctl bootout gui/$(id -u)/com.bitburner.auto-install`.
 

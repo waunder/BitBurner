@@ -124,6 +124,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 |---|---|---|---|
 | 1 | 2026-11-21 13:39 | 7 (CSP Gen I, BitWire, Synaptic Enhancement, Neurotrainer I from CyberSec; S.N.A, ADR-V1, Wired Reflexes from Tian Di Hui; $1.11b, advisor verdict install) + NeuroFlux x11 (dry run) + queued The W1ngs of Icarus; leftover took home to 32TB, 3 cores. Backup saves/pre-install-bn12-1-20261121.json.gz | 0 -> 9 (save) |
 | 2 | 2026-11-21 18:36 | Auto install (Mac LaunchAgent, first through it): 7 (Artificial Synaptic Potentiation, Speech Processor Implant, Neurotrainer II, Nuoptimal Nootropic Injector Implant, Speech Enhancement, Neural Wit Amplifier, LuminCloaking-V1; $227m list) + NeuroFlux x16; home 32TB -> 1PB, 6 cores. Backup saves/pre-install-auto-20261121-1836.json.gz | 9 -> 16 (metrics_log) |
+| 3 | 2026-11-21 23:29 | By hand (auto install stuck): 23 bought at 22:53 by auto install (Neuralstimulator, FocusWire, ADR-V2, The Shadow's Simulacrum, Neuregen, Embedded Netburner Module, CSP Gen II and 16 more from Slum Snakes) + NeuroFlux x2 + queued The B00ts of Perseus; grafted QLink (entropy 1); Hacknet Node Cache filler at 23:29. Home stays 1PB, 6 cores. Backup saves/pre-install-bn12-3-20261121.json.gz | 16 -> 42 (readiness 23:31; 17 with QLink before the install) |
 
 ## Installs BN10 run 4
 
@@ -171,14 +172,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-21 21:15 Mac (scheduled run, BN12 run 1): healthy; aug weights corrected for BN12 before the first graft.**
-16 installed of 31 for Daedalus (The B00ts of Perseus queued). 21:10-21:15 cash $302t (~$150t/h), hacking 1046, all residents up.
-Karma -50.3k at ~10.5k/h: gang (-54k) about 21:35. Verdict wait (Embedded Netburner Module, 29m); once a gang exists the advisor
-holds installs until the cycle is 4h old (about 22:36). Entropy 0. Number review row 12: combat weights 0.2 -> 0.05 (exp 0.1 -> 0.01),
-hacking_exp 0.3 -> 0.1 (`run_target.json`); the advisor read them at 21:14. At the old weights the first graft was SPTN-97 (mostly combat).
-Gang handover checked but not seen: Slum Snakes joined, Formulas.exe owned, controller 42GB with 996TB free, policy equals the repo.
-**Next run: confirm the gang exists and gang-controller writes a fresh gang_status.json (last written 11:05 in BN10); first graft
-(simulated: OmniTek InfoLoad, but it waits while a nearly-ready faction aug pays more per hour); install 3 after ~22:36, and its gym minutes.**
+**2026-11-21 23:32 Mac (scheduled run, BN12 run 1): install 3 done by hand; 42 installed, so Daedalus's 31 is met.**
+Daedalus now needs only $100b and hacking 2500. Gang exists (Slum Snakes, 12 members, rep mode, ~625 rep/s at 23:32). QLink grafted 21:36-23:29, entropy 1.
+Auto install fault at 22:53: it bought the augs, the install was refused for the graft, and the refusal was cut off before it was read, so it held 2h.
+Fixed (b9c250e: waits for a graft before buying, reads the whole output); agent restarted 23:13. Unit-tested, not yet seen through a live graft.
+At 23:31 main scripts were up; at 23:32 the first stack (kuai-gong) was planned and income was $11m/s. Income recovery and the end of the gym baseline were not yet seen.
+**Next run: stacks and income back, gym finished; hacking against 2500 and the Daedalus invite; the gang's 1.91m rep shelf; next install no
+earlier than ~03:30 (4h gang minimum; the stale 01:03 hold expires by itself); watch the first auto install that meets a graft.**
 **2026-11-19 06:51 (Ken session):** the 11-18 21:00:55 outage was Ken's accidental click on Active Scripts' Kill All Scripts (confirmed). New outage watchdog in the supervisor (`tools/outage_watchdog.py`, docs/processes.md): runs `startup.js` when all resident heartbeats are 10+ min old, once per 2h. Every check: grep `watchdog:` in `tools/daemon_supervisor.log`. Before a World Daemon or BitNode change: create `tools/watchdog.pause` (delete after).
 **2026-11-19 06:57 (Ken session): installs are now automatic** (Ken: "let the install verdict also be the trigger"). `tools/auto_install.py` in the supervisor: verdict `install` for 5 min -> save backup `saves/pre-install-auto-*` -> `aug_install.js --install`. Checks: do not install by hand; grep `autoinstall:` in `tools/daemon_supervisor.log`, review each install like before (cycle review, install table row). Pause with `tools/autoinstall.pause`. Holds itself once The Red Pill is owned.
 **2026-11-19 07:05 (Ken session): gang territory trial running to 10:03** (docs/gang-territory-trial.md; `territoryTrial` in the bn10 gang policy, ends by itself). Next check: fill in its Result section (power gained/h vs rival, respect/money given up, hours to a 9:1 lead), then remove `territoryTrial` from the policy. Weekly usage limit is near: check-ins cut to once a day until Ken restores them; the game runs on its own (auto install, outage watchdog).

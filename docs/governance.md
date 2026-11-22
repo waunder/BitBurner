@@ -65,6 +65,7 @@ Everything inside the game and this repository, within `AGENTS.md`'s standing au
 | Item | What it does | Where it lives | Status (2026-11-20) |
 | --- | --- | --- | --- |
 | LaunchAgent `com.bitburner.remote-api-monitor` | Keeps the Remote API daemon alive (127.0.0.1:12526/12527) | `~/Library/LaunchAgents`, copy in `tools/` | Running; kill test recovered in ~20s |
+| LaunchAgent `com.bitburner.auto-install` | Backs up the save and installs when the advisor says install; waits for grafts; never with The Red Pill owned. Pause: `tools/autoinstall.pause` | `~/Library/LaunchAgents`, copy in `tools/` | Since 2026-11-21; restarted 23:13 that day with the graft fix |
 | LaunchAgent `com.bitburner.run-page` | Ken's run page, read-only, port 8790 on all interfaces (LAN 192.168.68.56, Tailscale 100.103.184.36) | `~/Library/LaunchAgents`, copy in `tools/` | Running; network access needs the firewall to allow Homebrew Python (Ken) |
 | Full Disk Access for `/bin/bash` | Lets the LaunchAgents read the external drive | System Settings, granted by Ken | On. Claude Code also got Full Disk Access by accident at 13:44; Ken may remove it |
 | Steam launch option `--remote-debugging-port=9222` | DevTools for save backups and the game terminal | Steam, Bitburner properties; 127.0.0.1 only | Listening |

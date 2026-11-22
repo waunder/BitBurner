@@ -37,8 +37,11 @@ new Promise((resolve, reject) => {
 """
 
 
-def read_raw():
-    tabs = json.load(urllib.request.urlopen("http://127.0.0.1:9222/json"))
+def read_raw(port=None):
+    """port: DevTools port; default $BB_CDP_PORT or 9222 (a disposable copy sets it, tools/finish_node.py)."""
+    import os
+    port = port or int(os.environ.get("BB_CDP_PORT") or 9222)
+    tabs = json.load(urllib.request.urlopen(f"http://127.0.0.1:{port}/json"))
     page = next(t for t in tabs if t["type"] == "page")
     ws = websocket.create_connection(page["webSocketDebuggerUrl"], timeout=60, suppress_origin=True)
     try:

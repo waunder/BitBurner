@@ -3635,6 +3635,22 @@ The Mac's outage watchdog (LaunchAgent `com.bitburner.watchdog`, 2026-11-22).
 - **Args:** `--interval` (30), `--once` (prints the decision, acts on nothing).
 - **Writes:** `runtime/watchdog_mac.log`, `tools/watchdog_mac_state.json` (every pass: its heartbeat).
 
+### `tools/finish_node.py` and `tools/finish_node.js`
+
+Finish this BitNode and enter the next (2026-11-22; docs/finish-procedure.md). Run by hand in a hands-on session,
+never by a scheduled check-in.
+
+- **Preflight (no `--go`):** route, Red Pill, hacking, no graft, a profile that builds and passes its tests, the
+  procedure READY, real ports. Prints the plan and changes nothing.
+- **`--go`:** watchdog pause, decoded backup `saves/pre-finish-*`, push `finish_node.js` (in no manifest), run it,
+  read the result from the save, remove it, profile switch and startup if needed, install approval for the new run,
+  unpause, residents check. Never restores.
+- **`finish_node.js`:** refuses a stale run stamp, no pill, low hacking, a graft, a missing callback; status in
+  `finish_node.json`. Every game call named.
+- **Copy:** `--copy --cdp-port --control-port` from a cloned tree with its own daemon (evidence/finish-tool-2026-11-22).
+- **Writes:** `runtime/finish_node.log`, `tools/install_approvals.json`.
+- **Tests:** `tools/tests/test_finish_node.py`.
+
 ### `tools/run_approval.py`
 
 Asked by auto install before every install: is this BitNode run in `tools/install_approvals.json`? Fails

@@ -1,0 +1,66 @@
+14:57:10 copy loaded {'node': 12, 'nodeResetAt': 1795284499475, 'sfLevel': 0, 'installed': 86, 'redPill': True, 'hacking': 17057, 'scripts': []} {1: 2, 5: 3, 4: 3, 2: 1, 15: 1, 10: 3, 6: 1}
+14:58:13 restarting the clone daemon
+14:58:18 driver --next 12 --go -> exit 2
+[2026-11-22 14:58:18] finish: plan {"from": 12, "next": 12, "profile": "bn12", "switch": false, "callback": "startup.js", "resetAt": 1795364708703}
+[2026-11-22 14:58:18] finish: REFUSED: The Red Pill is not installed
+[2026-11-22 14:58:18] finish: REFUSED: hacking 364 is below the World Daemon's 3121.2
+14:58:23 PASS low save: driver refuses pill and hacking, changes nothing "[2026-11-22 14:58:18] finish: plan {\"from\": 12, \"next\": 12, \"profile\": \"bn12\", \"switch\": false, \"callback\": \"startup.js\", \"resetAt\": 1795364708703}\n[2026-11-22 14:58:18] finish: REFUSED: The Red Pill is not installed\n[2026-11-22 14:58:18] finish: REFUSED: hacking 364 is below the World Daemon's 3121.2\n"
+14:59:23 restarting the clone daemon
+14:59:29 driver --next 10 --go -> exit 2
+[2026-11-22 14:59:29] finish: plan {"from": 12, "next": 10, "profile": "bn10", "switch": true, "callback": "none", "resetAt": 1795284499475}
+[2026-11-22 14:59:29] finish: REFUSED: BitNode 10 is not on docs/route.md ([12, 11, 7, 14, 3, 8, 9, 13])
+14:59:29 PASS off-route: driver refuses "[2026-11-22 14:59:29] finish: plan {\"from\": 12, \"next\": 10, \"profile\": \"bn10\", \"switch\": true, \"callback\": \"none\", \"resetAt\": 1795284499475}\n[2026-11-22 14:59:29] finish: REFUSED: BitNode 10 is not on docs/route.md ([12, 11, 7, 14, 3, 8, 9, 13])\n"
+14:59:30 driver --next 13 --go -> exit 2
+[2026-11-22 14:59:30] finish: plan {"from": 12, "next": 13, "profile": null, "switch": false, "callback": "startup.js", "resetAt": 1795284499475}
+[2026-11-22 14:59:30] finish: REFUSED: no single profile covers BitNode 13
+14:59:30 PASS on route, no profile yet: driver refuses "[2026-11-22 14:59:30] finish: plan {\"from\": 12, \"next\": 13, \"profile\": null, \"switch\": false, \"callback\": \"startup.js\", \"resetAt\": 1795284499475}\n[2026-11-22 14:59:30] finish: REFUSED: no single profile covers BitNode 13\n"
+14:59:32 driver --next 11 --go -> exit 2
+[2026-11-22 14:59:32] finish: plan {"from": 12, "next": 11, "profile": null, "switch": false, "callback": "startup.js", "resetAt": 1795284499475}
+[2026-11-22 14:59:32] finish: REFUSED: no single profile covers BitNode 11
+14:59:32 PASS no profile: driver refuses "[2026-11-22 14:59:32] finish: plan {\"from\": 12, \"next\": 11, \"profile\": null, \"switch\": false, \"callback\": \"startup.js\", \"resetAt\": 1795284499475}\n[2026-11-22 14:59:32] finish: REFUSED: no single profile covers BitNode 11\n"
+14:59:32 PASS script pushed to the copy {"ok": true, "result": "OK"}
+14:59:38 PASS script refuses: stale run "{\"ts\":1795384773012,\"args\":[12,\"startup.js\",123],\"step\":\"refused\",\"node\":12,\"lastNodeReset\":1795284499475,\"hacking\":17057,\"required\":3060,\"pill\":true,\"work\":\"CRIME\",\"why\":\"not the run the driver checked\"}"
+14:59:43 PASS script refuses: missing callback "{\"ts\":1795384778464,\"args\":[12,\"nothere.js\",1795284499475],\"step\":\"refused\",\"node\":12,\"lastNodeReset\":1795284499475,\"hacking\":17057,\"required\":3060,\"pill\":true,\"work\":\"CRIME\",\"why\":\"no callback nothere.js\"}"
+15:00:52 driver --next 12 --go -> exit 0
+[2026-11-22 15:00:13] finish: profile bn12: builds and passes its tests
+[2026-11-22 15:00:13] finish: plan {"from": 12, "next": 12, "profile": "bn12", "switch": false, "callback": "startup.js", "resetAt": 1795284499475}
+[2026-11-22 15:00:14] finish: backup pre-finish-bn12-20261122-150014.json.gz decoded: BitNode 12, run stamp 1795284499475, pill installed
+[2026-11-22 15:00:20] finish: ran finish_node.js 12 callback=startup.js: typed
+[2026-11-22 15:00:52] finish: DONE: entered BitNode 12; Source-File 12.1, run stamp 1795384815870
+[2026-11-22 15:00:52] finish: removed finish_node.js
+[2026-11-22 15:00:52] finish: installs approved for BitNode 12 run 2 (handover)
+[2026-11-22 15:00:52] finish: residents running in BitNode 12: ['capital_bootstrap.js', 'early_crime.js', 'hacking/crawler.js', 'mcp_supervisor.js']
+15:00:53 PASS A: BN12 to BN12 finishes, enters, residents run [{"node": 12, "nodeResetAt": 1795384815870, "sfLevel": 1, "installed": 1, "redPill": false, "hacking": 1, "scripts": ["capital_bootstrap.js", "early_crime.js", "hacking/crawler.js", "mcp_supervisor.js"]}, {"1": 2, "5": 3, "4": 3, "2": 1, "15": 1, "10": 3, "6": 1, "12": 1}]
+15:00:53 PASS A: script removed, pause removed [".claude/settings.local.json", ".venv/lib/python3.9/site-packages/pip-21.2.4.dist-info/LICENSE.txt", ".venv/lib/python3.9/site-packages/pip-21.2.4.dist-info/entry_points.txt", ".venv/lib/python3.9/site-packages/pip-21.2.4.dist-info/top_level.txt", ".venv/lib/python3.9/site-packages/pip/_vendor/vendor.txt"]
+15:00:53 PASS A: installs approved for the new run, quoting the handover {"node": 12, "run": 2, "nodeResetAt": 1795384815870, "ken": "I have almost completely following your guidance for our path through the bitnodes. I am content to hand that to you completely. For completion of this game, its in your hands", "date": "2026-11-22", "by": "tools/finish_node.py under the handover of 2026-11-22 (AGENTS.md)"}
+15:00:53 restore options
+15:00:55 restore file given
+15:00:59 restore Compare Save clicked
+15:01:03 restore Proceed with import clicked
+15:01:07 restore Confirm clicked
+15:01:32 PASS A: Load From File restores the backup exactly [{"node": 12, "nodeResetAt": 1795284499475, "sfLevel": 0, "installed": 86, "redPill": true, "hacking": 17057, "scripts": []}, {"1": 2, "5": 3, "4": 3, "2": 1, "15": 1, "10": 3, "6": 1}]
+15:02:33 restarting the clone daemon
+15:03:11 driver --next 10 --go -> exit 0
+[2026-11-22 15:02:41] finish: profile bn10: builds and passes its tests
+[2026-11-22 15:02:41] finish: plan {"from": 12, "next": 10, "profile": "bn10", "switch": true, "callback": "none", "resetAt": 1795284499475}
+[2026-11-22 15:02:42] finish: backup pre-finish-bn12-20261122-150242.json.gz decoded: BitNode 12, run stamp 1795284499475, pill installed
+[2026-11-22 15:02:47] finish: ran finish_node.js 10 callback=none: typed
+[2026-11-22 15:02:54] finish: DONE: entered BitNode 10; Source-File 12.1, run stamp 1795384963493
+[2026-11-22 15:02:54] finish: removed finish_node.js
+[2026-11-22 15:02:55] finish: profile switch to bn10: exit 0: and validated: <scratchpad>/tree/saves/pre-switch-bn10-20261122-150255.json.gz
+profile bn10 active: pushed 165, deleted 0
+next: `run startup.js` in the game, then `python tools/profile.py check`
+[2026-11-22 15:03:00] finish: run startup.js: typed
+[2026-11-22 15:03:00] finish: installs approved for BitNode 10 run 4 (handover)
+[2026-11-22 15:03:11] finish: residents running in BitNode 10: ['capital_bootstrap.js', 'early_crime.js', 'hacking/crawler.js', 'mcp_supervisor.js']
+15:03:12 PASS B: BN12 to BN10 finishes and enters [{"node": 10, "nodeResetAt": 1795384963493, "sfLevel": 3, "installed": 1, "redPill": false, "hacking": 1, "scripts": ["capital_bootstrap.js", "early_crime.js", "hacking/crawler.js", "mcp_supervisor.js"]}, {"1": 2, "5": 3, "4": 3, "2": 1, "15": 1, "10": 3, "6": 1, "12": 1}]
+15:03:12 PASS B: profile switched to bn10, startup run, residents up ["bn10", ["capital_bootstrap.js", "early_crime.js", "hacking/crawler.js", "mcp_supervisor.js"]]
+15:03:12 PASS B: the game holds the bn10 profile files, no finish script []
+15:03:12 PASS B: installs approved for BitNode 10 run {"node": 10, "run": 4, "nodeResetAt": 1795384963493, "ken": "I have almost completely following your guidance for our path through the bitnodes. I am content to hand that to you completely. For completion of this game, its in your hands", "date": "2026-11-22", "by": "tools/finish_node.py under the handover of 2026-11-22 (AGENTS.md)"}
+15:03:12 restore options
+15:03:14 restore file given
+15:03:18 restore Compare Save clicked
+15:03:22 restore Proceed with import clicked
+15:03:26 restore Confirm clicked
+15:03:52 PASS B: Load From File restores BN12 exactly [{"node": 12, "nodeResetAt": 1795284499475, "sfLevel": 0, "installed": 86, "redPill": true, "hacking": 17057, "scripts": []}, {"1": 2, "5": 3, "4": 3, "2": 1, "15": 1, "10": 3, "6": 1}]
+15:03:52 TOTAL 16 of 16

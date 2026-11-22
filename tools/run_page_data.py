@@ -239,11 +239,12 @@ def split_runs(rows, node_reset):
             cycles.setdefault(reset, []).append(row)
     start, before = None, None
     for reset in sorted(cycles):
-        counts = [r["installed"] for r in cycles[reset] if r.get("installed") is not None]
-        if start is None or (counts and before is not None and max(counts) < before):
+        # The cycle's last count: its first samples can still carry the advisor's pre-reset figure.
+        counts = [r["installed"] for r in sorted(cycles[reset], key=lambda r: r["ts"]) if r.get("installed") is not None]
+        if start is None or (counts and before is not None and counts[-1] < before):
             start = reset
         if counts:
-            before = max(counts)
+            before = counts[-1]
     previous = [r for reset, group in cycles.items() if start is not None and reset >= start for r in group]
     by_time = lambda r: r["ts"]
     return sorted(current, key=by_time), sorted(previous, key=by_time), start

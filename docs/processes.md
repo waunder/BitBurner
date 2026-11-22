@@ -3590,6 +3590,8 @@ Ken's run page, http://localhost:8790 (LaunchAgent `com.bitburner.run-page`; add
   `metrics_logger.js` fits. Nothing to the game.
 - **Banner:** game not saving, nothing running, daemon down, auto install paused or dead, World Daemon ready
   (needs The Red Pill: the server is in every save from the start).
+- **Comparison panel:** this run against the last, or every cycle of either run overlaid from its install
+  (cash, hacking, earned in the cycle). The browser remembers the chosen view.
 - **Per BitNode:** nothing to edit in the page; the route is the profile's `run_target.json`.
 - **Failure modes:** a save format or path change shows "autosave can't be read"; the charts need
   cdnjs (Chart.js), the rest works offline.

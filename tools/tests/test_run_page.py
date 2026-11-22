@@ -53,6 +53,11 @@ class RunPage(unittest.TestCase):
         self.assertEqual(([r["resetAt"] for r in current], [r["resetAt"] for r in previous], start),
                          ([NODE_RESET], [3, 4], 3))
 
+    def test_a_run_starts_even_if_its_first_sample_has_the_last_runs_count(self):
+        rows = [{"ts": 2, "resetAt": 1, "installed": 86}, {"ts": 4, "resetAt": 3, "installed": 86},
+                {"ts": 5, "resetAt": 3, "installed": 1}]
+        self.assertEqual(rpd.split_runs(rows, NODE_RESET)[2], 3)
+
     def test_a_step_reached_stays_done(self):
         target = {"steps": [{"label": "Cash", "metric": {"kind": "money", "target": 1000}}]}
         s = rpd.state_from_save(save())

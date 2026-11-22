@@ -68,6 +68,12 @@ th { color: var(--muted); font-weight: 600; font-size: 12px; }
 th.n, td.n { text-align: right; white-space: nowrap; }
 tr:last-child td { border: 0; }
 button { font: inherit; font-size: 13px; color: var(--accent); background: none; border: 1px solid var(--line); border-radius: 6px; padding: 2px 10px; cursor: pointer; }
+.controls { display: flex; flex-wrap: wrap; gap: 6px; }
+button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+#cycleKey { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+#cycleKey button { color: var(--ink); display: inline-flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+#cycleKey button[aria-pressed="true"] { background: var(--line); border-color: var(--muted); }
+.swatch { width: 14px; height: 4px; border-radius: 2px; display: inline-block; }
 footer { margin-top: 14px; color: var(--muted); font-size: 13px; display: flex; gap: 6px 16px; flex-wrap: wrap; }
 footer a { color: inherit; }
 @media (max-width: 1050px) { .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
@@ -93,12 +99,19 @@ footer a { color: inherit; }
     <section class="panel now"><h2>Happening now</h2><dl id="now"></dl></section>
 
     <section class="panel wide">
-      <div class="head"><h2 id="raceTitle">Against the last run</h2><button id="span" type="button"></button></div>
+      <div class="head"><h2 id="raceTitle">Against the last run</h2>
+        <div class="controls" id="views">
+          <button type="button" data-view="runs">Runs</button>
+          <button type="button" data-view="current">This run's cycles</button>
+          <button type="button" data-view="previous">Last run's cycles</button>
+          <button type="button" id="span"></button>
+        </div></div>
       <div class="note" id="raceNote"></div>
+      <div id="cycleKey" hidden></div>
     </section>
     <section class="panel third"><h2>Cash</h2><div class="chart"><canvas id="cashChart"></canvas></div></section>
     <section class="panel third"><h2>Hacking level</h2><div class="chart"><canvas id="hackChart"></canvas></div></section>
-    <section class="panel third"><h2>Augmentations installed</h2><div class="chart"><canvas id="augChart"></canvas></div></section>
+    <section class="panel third"><h2 id="thirdTitle">Augmentations installed</h2><div class="chart"><canvas id="augChart"></canvas></div></section>
 
     <section class="panel" id="earnPanel"><h2>Earning per hour, this cycle</h2><div class="chart"><canvas id="earnChart"></canvas></div></section>
     <section class="panel" id="spendPanel"><h2>Spending per hour, this cycle</h2><div class="chart"><canvas id="spendChart"></canvas></div></section>
@@ -146,6 +159,9 @@ const bar = (share) => `<div class="bar"><div style="width:${Math.max(0, Math.mi
 const total = (o) => Object.values(o || {}).reduce((a, b) => a + b, 0)
 const pairs = (rows) => rows.map(([name, value, why]) => `<dt>${esc(name)}</dt><dd>${value}${why ? `<span class="why">${esc(why)}</span>` : ""}</dd>`).join("")
 
+const VIEWS = ["runs", "current", "previous"]
+let view = "runs", picked = null
+try { const saved = localStorage.getItem("raceView"); if (VIEWS.includes(saved)) view = saved } catch { /* storage off */ }
 let state = null, history = null, wholeRun = false, pageVersion = null
 const charts = {}
 
@@ -270,7 +286,7 @@ function draw(id, datasets, { max, xMin, xMax, log = false, stacked = false, hou
     elements: { point: { radius: 0, hitRadius: 8 } },
     plugins: {
       legend: { display: legend, labels: { color: muted, boxWidth: 10, boxHeight: 10 } },
-      tooltip: { callbacks: { title: (items) => items.length ? (hours ? `${items[0].parsed.x.toFixed(1)} h into the run` : clock(items[0].parsed.x)) : "",
+      tooltip: { callbacks: { title: (items) => items.length ? (hours ? `${items[0].parsed.x.toFixed(1)} h into the ${hours}` : clock(items[0].parsed.x)) : "",
         label: (item) => `${item.dataset.label}: ${show(item.parsed.y)}` } },
     },
     scales: {
@@ -284,7 +300,57 @@ function draw(id, datasets, { max, xMin, xMax, log = false, stacked = false, hou
   else charts[id] = new Chart(el(id), { type: "line", data: { datasets }, options })
 }
 
+/** A run's samples as cycles, oldest first; hours count from each cycle's own install. */
+function cyclesOf(rows) {
+  const groups = new Map()
+  for (const r of rows) groups.set(r.resetAt, [...(groups.get(r.resetAt) || []), r])
+  const starts = [...groups.keys()].sort((a, b) => a - b)
+  return starts.map((start, i) => {
+    const list = groups.get(start)
+    return { number: i + 1, start, rows: list, hours: ((starts[i + 1] ?? list.at(-1).ts) - start) / 3.6e6,
+      augs: list.filter((r) => r.installed != null).at(-1)?.installed }
+  })
+}
+
+function drawCycles() {
+  const live = view === "current"
+  const cycles = cyclesOf(history[view])
+  if (!cycles.some((c) => c.number === picked)) picked = null
+  el("raceTitle").textContent = live ? "Every cycle of this run" : "Every cycle of the last run"
+  el("thirdTitle").textContent = "Earned in the cycle"
+  el("raceNote").textContent = "Each line starts at its install. "
+    + (live && cycles.length < 2 ? "Only one cycle so far: the next line appears after the first install." : "Tap a cycle to pick it out.")
+  el("span").hidden = true
+  el("cycleKey").hidden = false
+  const dark = matchMedia("(prefers-color-scheme: dark)").matches
+  // Oldest to newest runs violet to orange, so progress through the run reads as colour; the live cycle is heavy.
+  const colorOf = (i) => live && i === cycles.length - 1 ? css("--ink")
+    : `hsl(${285 - 260 * i / Math.max(1, cycles.length - 1)}, 60%, ${dark ? 65 : 43}%)`
+  el("cycleKey").innerHTML = cycles.map((c, i) => `<button type="button" data-cycle="${c.number}" aria-pressed="${picked === c.number}">`
+    + `<span class="swatch" style="background:${colorOf(i)}"></span>${c.number} · ${dur(c.hours * 3.6e6)}${live && i === cycles.length - 1 ? " so far" : ""} · ${whole(c.augs)} ${c.augs === 1 ? "aug" : "augs"}</button>`).join("")
+  const xMax = Math.ceil(Math.max(1, ...cycles.map((c) => c.hours)))
+  for (const [id, key, show] of [["cashChart", "money", cash], ["hackChart", "hacking", fmt], ["augChart", "earnedTotal", cash]]) {
+    const sets = cycles.map((c, i) => {
+      const color = picked && picked !== c.number ? css("--line") : colorOf(i)
+      const strong = picked ? picked === c.number : live && i === cycles.length - 1
+      return { label: `cycle ${c.number}`, borderColor: color, backgroundColor: color, borderWidth: strong ? 3 : 1.5,
+        order: strong ? 0 : 1, pointRadius: c.rows.length < 4 ? 2 : 0,
+        // a log scale has no place for zero or the brief negative balance right after an install
+        data: c.rows.filter((r) => r[key] > 0).map((r) => ({ x: (r.ts - c.start) / 3.6e6, y: r[key] })) }
+    })
+    draw(id, sets, { xMax, log: true, hours: "cycle", show, legend: false })
+  }
+}
+
 function drawRace() {
+  if (!history.previous.length && view === "previous") view = "runs"
+  for (const b of el("views").querySelectorAll("[data-view]")) {
+    b.setAttribute("aria-pressed", b.dataset.view === view)
+    b.hidden = b.dataset.view === "previous" && !history.previous.length
+  }
+  if (view !== "runs") return drawCycles()
+  el("cycleKey").hidden = true
+  el("thirdTitle").textContent = "Augmentations installed"
   const age = (state.savedAt - state.nodeResetAt) / 3.6e6
   const past = history.previous, hasPast = past.length > 1
   const pastLength = hasPast ? (past.at(-1).ts - history.previousStart) / 3.6e6 : 0
@@ -298,7 +364,7 @@ function drawRace() {
   for (const [id, key, show, log] of [["cashChart", "money", cash, true], ["hackChart", "hacking", fmt, true], ["augChart", "installed", fmt, false]]) {
     const sets = [series(history.current, state.nodeResetAt, key, "this run", css("--accent"), 2.5)]
     if (hasPast) sets.push(series(past, history.previousStart, key, "last run", css("--past"), 1.5))
-    draw(id, sets, { xMax, log, hours: true, show })
+    draw(id, sets, { xMax, log, hours: "run", show })
   }
 }
 
@@ -352,6 +418,20 @@ async function checkVersion() {
   } catch { /* server down: keep trying */ }
 }
 
+el("views").addEventListener("click", (event) => {
+  const next = event.target.closest("[data-view]")?.dataset.view
+  if (!next) return
+  view = next
+  picked = null
+  try { localStorage.setItem("raceView", view) } catch { /* storage off */ }
+  if (state) drawRace()
+})
+el("cycleKey").addEventListener("click", (event) => {
+  const number = Number(event.target.closest("[data-cycle]")?.dataset.cycle)
+  if (!number) return
+  picked = picked === number ? null : number
+  drawRace()
+})
 el("span").addEventListener("click", () => { wholeRun = !wholeRun; if (state) drawRace() })
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (state) render() })
 refresh(); checkVersion()

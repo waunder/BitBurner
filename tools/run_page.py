@@ -232,7 +232,8 @@ def page_history():
     fields = ("ts", "resetAt", "money", "karma", "installed", "earned", "spent")
 
     def slim(rows, keep):
-        return [{**{k: r.get(k) for k in keep}, "hacking": (r.get("skills") or {}).get("hacking")} for r in rows]
+        return [{**{k: r.get(k) for k in keep}, "hacking": (r.get("skills") or {}).get("hacking"),
+                 "earnedTotal": sum((r.get("earned") or {}).values())} for r in rows]
 
     if not current or current[-1]["ts"] < state["savedAt"]:
         current = current + [rpd.sample_of(state)]

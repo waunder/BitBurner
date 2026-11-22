@@ -14,7 +14,8 @@ Everything inside the game and this repository, within `AGENTS.md`'s standing au
 
 ## What always comes to Ken first
 
-- **Game milestones:** destroying `w0r1d_daemon`, choosing or entering a BitNode, any other reset.
+- **Game milestones:** handed to Claude for this game on 2026-11-22 (AGENTS.md, "Handover"), usable once
+  `docs/finish-procedure.md` says READY. Still Ken's: starting a new game over this save, deleting or overwriting it.
 - **Anything real outside the game:** Ken's email, calendar or Drive; real money; GitHub
   repository settings, collaborators or visibility.
 - **Changes to the PC:** new scheduled tasks, services, startup items, open network ports,

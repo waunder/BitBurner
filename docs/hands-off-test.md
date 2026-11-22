@@ -24,6 +24,7 @@ is whether the scripts and monitoring are approaching their end state.
 
 | Item | Status |
 |---|---|
+| Finish and enter the next BitNode | rehearsed 30 of 30 in a copy; procedure written, NOT READY for the real game (four boxes in docs/finish-procedure.md) |
 | Outage watchdog on the Mac, including a fresh node with nothing running | built and installed 10:54 (Ken's OK); proved on a dead game in the rehearsal (1.2 min) |
 | Freshness and delivery alarms, on the page | built (page only, no push to Ken); no false alarm over run 1's 256 samples |
 | Per-run settings derived: donation rate, Daedalus count, run number, price step | built and live; values match the ones set by hand. Still per run: valuation_flags.json is stamped with the run and falls back to `own` in a new one |
@@ -42,11 +43,11 @@ is whether the scripts and monitoring are approaching their end state.
 | 09:45 | money crime until 128GB | income halved at 64GB |
 | 10:36 | steward displaces xp_filler | install advisor blind from 10:26 |
 
-## An idea of Ken's, not a grant (2026-11-22 10:56)
+## Handover (Ken, 2026-11-22, after the idea of 10:56)
 
-"I'm thinking about putting bitnode completion and new node selection and startup in your hands", toward a
-final play-through both of us only watch. Until Ken grants it in so many words, every stop stands: the World
-Daemon, choosing and entering a BitNode, and `profile.py switch` unattended. Build nothing that can do them.
+Ken handed over the route and the completion of this game (AGENTS.md quotes the words), scripted as soon as
+possible, the agent hands-on only as long as necessary. Route: docs/route.md. A real finish waits on
+docs/finish-procedure.md. Count every hands-on step in the log: driving that count to zero is the test.
 
 ## After it: BitNode 11, three runs (Ken, 2026-11-22: "I think")
 

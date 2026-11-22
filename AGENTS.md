@@ -10,6 +10,18 @@ Everything is Codex's call unless it installs an augmentation, resets the
 game, or permanently forfeits progress. Stop for Ken's explicit approval for
 that one category only.
 
+Handover for this game (Ken, 2026-11-22): "I have almost completely following your guidance for our
+path through the bitnodes. I am content to hand that to you completely. For completion of this game,
+its in your hands", and "our targetting is scripted asap and that you run the game hands on, therefore,
+only so long as necessary".
+- The route is the agent's: `docs/route.md`. Tell Ken of changes, with the reason.
+- Completing this game is the agent's: installs, finishing a BitNode, choosing, entering and starting
+  the next. A real finish waits until `docs/finish-procedure.md` says READY and then follows it. Until
+  then, and always for a scheduled check-in, stop at the World Daemon and tell Ken as below.
+- Not covered: starting a new game over this save, deleting or overwriting it, permanently deleting
+  game files, and everything outside the game (`docs/governance.md`). Those still go to Ken.
+Where the older per-run paragraphs below disagree, this one holds.
+
 Standing exception (Ken, 2026-11-03, BN15): installs are approved up to
 readiness to complete this BitNode. Back up the save before each one. Still
 stop before destroying `w0r1d_daemon`, entering or choosing a BitNode, or any

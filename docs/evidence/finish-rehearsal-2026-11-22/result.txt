@@ -1,0 +1,42 @@
+Finish-and-enter rehearsal, 2026-11-22, disposable copy only (Ken: "Yes, copy only"). 30 of 30.
+The script that destroys the World Daemon was kept out of the repo and the manifest on purpose.
+Real game before and after (identical):
+{"connected": true, "connection_count": 3, "installed": 4, "node": 12, "nodeResetAt": 1795364708703, "redPill": false, "resetAt": 1795371286025, "sfLevel": 1, "steamPage": ["file:///Users/kth/Library/Application%20Support/Steam/steamapps/common/Bitburner/bitburner.app/Contents/Resources/app/index.html"], "worldDaemon": {"required": 3121.2, "rooted": false}}
+
+11:51:01 PASS unrooted: game refuses, silently [{"node": 12, "sfLevel": 0, "installed": 86, "redPill": true, "homeRam": 8388608, "hacking": 17057, "money": 18380549500, "wdRooted": false, "scripts": 0}, {"ts": 1795373447358, "args": [12, "unrooted"], "node": 12, "hacking": 17057, "step": "destroy returned", "rooted": false}]
+11:51:16 PASS off-route node: script refuses [{"node": 12, "sfLevel": 0, "installed": 86, "redPill": true, "homeRam": 8388608, "hacking": 17057, "money": 18380549500, "wdRooted": false, "scripts": 0}, {"ts": 1795373461798, "args": [13], "node": 12, "hacking": 17057, "step": "refused", "pill": true, "why": "not on the route"}]
+11:52:26 PASS no pill, low hacking: script refuses [{"node": 12, "sfLevel": 1, "installed": 1, "redPill": false, "homeRam": 512, "hacking": 364, "money": 190081161, "wdRooted": false, "scripts": 0}, {"ts": 1795373505454, "args": [12], "node": 12, "hacking": 364, "step": "refused", "pill": false, "why": "The Red Pill is not installed"}]
+11:53:42 PASS QUESTION: does the game itself demand The Red Pill? (pass = yes) [{"node": 12, "sfLevel": 0, "installed": 72, "redPill": false, "homeRam": 4194304, "hacking": 15273, "money": 52916085023499160, "wdRooted": false, "scripts": 0}, {"ts": 1795373578317, "args": [12, "raw"], "node": 12, "hacking": 15273, "step": "root failed", "why": "RUNTIME ERROR\ncopy_finish.js@home (PID - 1)\n\nbrutessh: Invalid host: 'w
+11:54:51 PASS BN12 to BN12: backup decodes and is finishable {"node": 12, "sfLevel": 0, "installed": 86, "redPill": true, "homeRam": 8388608, "hacking": 17057, "money": 131442058539, "wdRooted": false, "scripts": 0}
+11:55:06 PASS BN12 to BN12: entered, one Source-File level gained {"node": 12, "sfLevel": 1, "installed": 1, "redPill": false, "homeRam": 32, "hacking": 1, "money": 1262, "wdRooted": false, "scripts": 4}
+11:55:06 PASS BN12 to BN12: SF12.1 granted {"1": 2, "5": 3, "4": 3, "2": 1, "15": 1, "10": 3, "6": 1, "12": 1}
+11:55:06 entry seconds 0.9 scripts ['capital_bootstrap.js', 'early_crime.js', 'hacking/crawler.js', 'mcp_supervisor.js'] terminal {'ok': True, 'leftWork': True, 'output': ['startup.js: startup: killed everything else on home', 'startup.js: startup: profile adds dnet_root.js, sleeve_controller.js, sleeve_buyer.js, allocator.js, graft_controller.js', 'startup.js: startup: started mcp_supervisor.js (pid 2)', 'startup.js
+11:55:06 PASS BN12 to BN12: scripts after entry = residents ["capital_bootstrap.js", "early_crime.js", "hacking/crawler.js", "mcp_supervisor.js"]
+11:55:06 PASS BN12 to BN12: installs hold in the new run "installs are not approved for BitNode 12 run 2"
+11:56:14 PASS BN12 to BN12: watchdog leaves it alone [{"node": 12, "sfLevel": 1, "installed": 1, "redPill": false, "homeRam": 32, "hacking": 1, "money": 580684, "wdRooted": false, "scripts": 4}, "Shoplift", ["capital_bootstrap.js", "early_crime.js", "hacking/crawler.js", "mcp_supervisor.js"]]
+11:57:22 PASS BN12 to BN12: the backup undoes it {"node": 12, "sfLevel": 0, "installed": 86, "redPill": true, "homeRam": 8388608, "hacking": 17057, "money": 164253101464, "wdRooted": false, "scripts": 0}
+11:58:31 PASS BN12 to BN12, callback missing: backup decodes and is finishable {"node": 12, "sfLevel": 0, "installed": 86, "redPill": true, "homeRam": 8388608, "hacking": 17057, "money": 235389249089, "wdRooted": false, "scripts": 0}
+11:58:46 PASS BN12 to BN12, callback missing: entered, one Source-File level gained {"node": 12, "sfLevel": 1, "installed": 1, "redPill": false, "homeRam": 32, "hacking": 1, "money": 1262, "wdRooted": false, "scripts": 0}
+11:58:46 PASS BN12 to BN12, callback missing: SF12.1 granted {"1": 2, "5": 3, "4": 3, "2": 1, "15": 1, "10": 3, "6": 1, "12": 1}
+11:58:46 entry seconds 0.9 scripts [] terminal {'ok': True, 'leftWork': True, 'output': []}
+11:58:46 PASS BN12 to BN12, callback missing: scripts after entry = none []
+11:58:46 PASS BN12 to BN12, callback missing: installs hold in the new run "installs are not approved for BitNode 12 run 2"
+11:59:46 watchdog restart no resident script in two autosaves
+12:00:16 PASS BN12 to BN12, callback missing: watchdog starts it ["capital_bootstrap.js", "early_crime.js", "hacking/crawler.js", "mcp_supervisor.js"]
+12:01:25 PASS BN12 to BN11: backup decodes and is finishable {"node": 12, "sfLevel": 0, "installed": 86, "redPill": true, "homeRam": 8388608, "hacking": 17057, "money": 316456634362, "wdRooted": false, "scripts": 0}
+12:01:40 PASS BN12 to BN11: entered, one Source-File level gained {"node": 11, "sfLevel": 0, "installed": 1, "redPill": false, "homeRam": 32, "hacking": 1, "money": 1262, "wdRooted": false, "scripts": 4}
+12:01:40 PASS BN12 to BN11: SF12.1 granted {"1": 2, "5": 3, "4": 3, "2": 1, "15": 1, "10": 3, "6": 1, "12": 1}
+12:01:40 entry seconds 0.9 scripts ['capital_bootstrap.js', 'early_crime.js', 'hacking/crawler.js', 'mcp_supervisor.js'] terminal {'ok': True, 'leftWork': True, 'output': ['startup.js: startup: killed everything else on home', 'startup.js: startup: profile adds dnet_root.js, sleeve_controller.js, sleeve_buyer.js, allocator.js, graft_controller.js', 'startup.js: startup: started mcp_supervisor.js (pid 2)', 'startup.js
+12:01:40 PASS BN12 to BN11: scripts after entry = residents ["capital_bootstrap.js", "early_crime.js", "hacking/crawler.js", "mcp_supervisor.js"]
+12:01:40 PASS BN12 to BN11: installs hold in the new run "installs are not approved for BitNode 11 run 1"
+12:02:48 PASS BN12 to BN11: watchdog leaves it alone [{"node": 11, "sfLevel": 0, "installed": 1, "redPill": false, "homeRam": 32, "hacking": 1, "money": 1385683, "wdRooted": false, "scripts": 4}, "Shoplift", ["capital_bootstrap.js", "early_crime.js", "hacking/crawler.js", "mcp_supervisor.js"]]
+12:03:56 PASS BN12 to BN11: the backup undoes it {"node": 12, "sfLevel": 0, "installed": 86, "redPill": true, "homeRam": 8388608, "hacking": 17057, "money": 348665629488, "wdRooted": false, "scripts": 0}
+12:05:05 PASS BN12 to BN11, callback missing: backup decodes and is finishable {"node": 12, "sfLevel": 0, "installed": 86, "redPill": true, "homeRam": 8388608, "hacking": 17057, "money": 419553327377, "wdRooted": false, "scripts": 0}
+12:05:20 PASS BN12 to BN11, callback missing: entered, one Source-File level gained {"node": 11, "sfLevel": 0, "installed": 1, "redPill": false, "homeRam": 32, "hacking": 1, "money": 1262, "wdRooted": false, "scripts": 0}
+12:05:20 PASS BN12 to BN11, callback missing: SF12.1 granted {"1": 2, "5": 3, "4": 3, "2": 1, "15": 1, "10": 3, "6": 1, "12": 1}
+12:05:20 entry seconds 0.9 scripts [] terminal {'ok': True, 'leftWork': True, 'output': []}
+12:05:20 PASS BN12 to BN11, callback missing: scripts after entry = none []
+12:05:20 PASS BN12 to BN11, callback missing: installs hold in the new run "installs are not approved for BitNode 11 run 1"
+12:06:20 watchdog hold nothing running in BitNode 11, which the active profile does not cover
+12:06:20 PASS BN12 to BN11, callback missing: watchdog holds outside the profile "nothing running in BitNode 11, which the active profile does not cover"
+12:06:20 TOTAL 30 of 30

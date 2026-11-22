@@ -1,4 +1,6 @@
-**2026-11-22 10:55 (Ken session): BN12 run 3 will be a hands-off test (Ken); then probably BN11 x3.** Pass marks, preparation, the intervention log and the BN11 traps are in docs/hands-off-test.md. Log every intervention in run 2 there. Preparation first pass done 11:16: watchdog service live (create tools/watchdog.pause before stopping scripts on purpose), run approval guard, delivery alarms, derived per-run numbers, rehearsal to 64GB. Ken is THINKING about handing over World Daemon and node entry: not granted; every stop stands.
+**2026-11-22 12:10 (Ken session): Ken handed over the route and completion of this game** (AGENTS.md "Handover"; docs/route.md). **The World Daemon is still a stop until docs/finish-procedure.md says READY; check-ins never finish a BitNode.** Finish and entry rehearsed in a copy, 30 of 30. Next hands-on work, before run 2's World Daemon: tick that procedure's four boxes. Install 1 of run 2 fired by itself at 11:14.
+
+**2026-11-22 10:55 (Ken session): BN12 run 3 will be a hands-off test (Ken); then probably BN11 x3.** Pass marks, preparation, the intervention log and the BN11 traps are in docs/hands-off-test.md. Log every intervention in run 2 there. Preparation first pass done 11:16: watchdog service live (create tools/watchdog.pause before stopping scripts on purpose), run approval guard, delivery alarms, derived per-run numbers, rehearsal to 64GB. Ken then handed over route and completion (AGENTS.md "Handover").
 
 **2026-11-22 10:40 (Ken session): the 4h gang minimum can lapse in BN12 (Ken approved).** `gangCycleSettles` (player_activity_config.json; false reverts): the advisor may say install from 1h once the batch is flat for 15 min, gang rep covers its augs and no Daedalus gate (join, favor, pill) is open. Run 1 replay: 20.6h -> ~16.8h; cycles 1-3 unchanged. Live but not yet exercised (needs the gang). Also fixed: the advisor was blind 10:26-10:38 (home 4.95GB short); the steward now kills xp_filler.js for it. Also approved (10:45, `installRedPillAlone`): a batch whose only value is The Red Pill installs from 1h. Next check: advice fresh (<5 min); after the gang, `advice.floor.reason` sensible and no install before favor is banked once Daedalus is in play.
 
@@ -182,6 +184,7 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 | # | When (Mac clock) | Bought | Installed after |
 |---|---|---|---|
+| 1 | 2026-11-22 11:14 | Auto install: Synaptic Enhancement Implant, Neurotrainer I, Wired Reflexes + NeuroFlux x4; home 512GB. Backup saves/pre-install-auto-20261122-1114.json.gz | 1 -> 4 |
 
 ## Latest check
 

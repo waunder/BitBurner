@@ -172,13 +172,13 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-21 23:32 Mac (scheduled run, BN12 run 1): install 3 done by hand; 42 installed, so Daedalus's 31 is met.**
-Daedalus now needs only $100b and hacking 2500. Gang exists (Slum Snakes, 12 members, rep mode, ~625 rep/s at 23:32). QLink grafted 21:36-23:29, entropy 1.
-Auto install fault at 22:53: it bought the augs, the install was refused for the graft, and the refusal was cut off before it was read, so it held 2h.
-Fixed (b9c250e: waits for a graft before buying, reads the whole output); agent restarted 23:13. Unit-tested, not yet seen through a live graft.
-At 23:31 main scripts were up; at 23:32 the first stack (kuai-gong) was planned and income was $11m/s. Income recovery and the end of the gym baseline were not yet seen.
-**Next run: stacks and income back, gym finished; hacking against 2500 and the Daedalus invite; the gang's 1.91m rep shelf; next install no
-earlier than ~03:30 (4h gang minimum; the stale 01:03 hold expires by itself); watch the first auto install that meets a graft.**
+**2026-11-22 01:18 Mac (scheduled run, BN12 run 1): Daedalus joined ~00:42; two bugs on the path to The Red Pill fixed.**
+Player works Daedalus (140.7k rep at 01:17, ~250k/h); favor 153 is banked at 492.5k rep, projected ~02:41. The advisor's 4h minimum ends 03:29, so auto install ~03:35.
+After that install, the next donates for The Red Pill: donations now allow for BN12's 1/1.02 (they fell ~2% short) and the plan keeps the pill (value 0 dropped it).
+Tested and simulated, not yet seen live. Grafting is off for the rest of the run (`graft_config.json` enabled false) so nothing takes the player off Daedalus.
+**Next run: Daedalus favor + gain >= 153 before the install fires (if not, create tools/autoinstall.pause, then remove it once banked); after install 4: favor >= 153,
+the player's work, and once cash rebuilds `installPlan` shows the Daedalus donation and The Red Pill. Once the pill is installed auto install holds:
+verify w0r1d_d43m0n is unrooted, wait for hacking >= its requirement (~3060, read it live), then back up, record here, notify Ken and stop.**
 **2026-11-19 06:51 (Ken session):** the 11-18 21:00:55 outage was Ken's accidental click on Active Scripts' Kill All Scripts (confirmed). New outage watchdog in the supervisor (`tools/outage_watchdog.py`, docs/processes.md): runs `startup.js` when all resident heartbeats are 10+ min old, once per 2h. Every check: grep `watchdog:` in `tools/daemon_supervisor.log`. Before a World Daemon or BitNode change: create `tools/watchdog.pause` (delete after).
 **2026-11-19 06:57 (Ken session): installs are now automatic** (Ken: "let the install verdict also be the trigger"). `tools/auto_install.py` in the supervisor: verdict `install` for 5 min -> save backup `saves/pre-install-auto-*` -> `aug_install.js --install`. Checks: do not install by hand; grep `autoinstall:` in `tools/daemon_supervisor.log`, review each install like before (cycle review, install table row). Pause with `tools/autoinstall.pause`. Holds itself once The Red Pill is owned.
 **2026-11-19 07:05 (Ken session): gang territory trial running to 10:03** (docs/gang-territory-trial.md; `territoryTrial` in the bn10 gang policy, ends by itself). Next check: fill in its Result section (power gained/h vs rival, respect/money given up, hours to a 9:1 lead), then remove `territoryTrial` from the policy. Weekly usage limit is near: check-ins cut to once a day until Ken restores them; the game runs on its own (auto install, outage watchdog).
@@ -225,4 +225,5 @@ Bladeburner keeps working Assassination meanwhile.
 
 ## Open questions
 
-None.
+- For Ken (2026-11-22 01:18, not done): may the install advisor read `install` as soon as The Red Pill is rep-ready? Today the 4h gang
+  minimum (cap 12h) holds that last install, so roughly 3h of a finished cycle is idle. Left alone because it changes the trigger Ken approved for resets.

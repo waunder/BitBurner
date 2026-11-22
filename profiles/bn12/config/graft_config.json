@@ -1,5 +1,5 @@
 {
-  "enabled": true,
+  "enabled": false,
   "dry": false,
   "allow": [],
   "autoPick": true,
@@ -13,5 +13,5 @@
   "allowDuringKarma": false,
   "focus": true,
   "cooldownMs": 600000,
-  "stage": "live, agent's judgement (Ken approved 2026-11-18 12:30 after the first graft, Bionic Arms)"
+  "stage": "off for the rest of BN12 run 1 (2026-11-22 01:15 check): Daedalus favor, then The Red Pill, is the only gate left and needs the player; was live (Ken approved 2026-11-18 12:30). Set enabled true to revert."
 }

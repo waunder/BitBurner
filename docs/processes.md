@@ -401,6 +401,9 @@ With `planByValue: true` (same file; bn10 since 2026-11-17) the readiness plan i
 added ladder cost (`selectByValue`), and with `priorityAugs` empty `aug_install.js` buys that plan.
 A donation is made only if the cash left still covers the cheapest augmentation it newly
 unlocks (matters when prices are x5, as in BN10; in BN15 cash was never the limit).
+Donations are sized with `donationRepGain` (`player_activity_config.json`, default 1; bn12 1/1.02, raise the
+power with the BN12 level): the game scales donations by FactionWorkRepGain, and without it each fell ~2% short.
+A rep-ready run gate (The Red Pill, value 0) is always kept in the readiness plan (`readyGates`, 2026-11-22).
 With `--install` it then spends the rest on home RAM and cores, cheapest first, because
 both survive an install (only a BitNode reset clears them), then installs and restarts
 through `startup.js`. Back up the save first.
@@ -408,7 +411,7 @@ While a fresh `graft_status.json` (under 2 minutes old) says `ownsPlayer`, `--in
 refuses to install (installing cancels a graft with no refund) and records `installRefused` (grafting G6, 2026-11-17).
 
 - **Args:** `--dry` plans only; `--install` installs after buying.
-- **Reads:** `player_activity_config.json` (`priorityAugs`, `priorityOnly`, `planByValue`, `countFillersTo`, `countFillerShare`), `graft_status.json` (install interlock).
+- **Reads:** `player_activity_config.json` (`priorityAugs`, `priorityOnly`, `planByValue`, `countFillersTo`, `countFillerShare`, `donationRepGain`), `graft_status.json` (install interlock).
 - **Writes:** `aug_install_status.json` (plan, bought, failed, money before, final home RAM and cores).
 - **Test:** `node --test aug_install_logic.test.js`
 
@@ -2188,6 +2191,8 @@ One thing to remember instead of two: `run sync_from_github.js` followed by
   target and started running.
 
 ### `cct_audit.js`
+
+BigInt contract data (Square Root) is stored and fingerprinted as a decimal string (2026-11-22).
 
 Read-only coding-contract inventory. It breadth-first scans rooted servers,
 records each `.cct` file's type, input, description, and remaining attempts

@@ -1,4 +1,4 @@
-import { NEUROFLUX, countFillers, donationFor, donationPlan, fluxSeller, nextHomeUpgrade, planPurchases } from "./aug_install_logic.js"
+import { NEUROFLUX, countFillers, donationFor, donationPlan, donationRate, fluxSeller, nextHomeUpgrade, planPurchases } from "./aug_install_logic.js"
 import { installBlocked } from "./graft_logic.js"
 
 /** Buys what rep and cash allow, then installs on --install. See docs/processes.md. @param {NS} ns */
@@ -16,7 +16,7 @@ export async function main(ns) {
   // The game refuses donations to the gang's own faction; the readiness file names it (no ns.gang RAM here).
   const gangFaction = JSON.parse(ns.read("augmentation_readiness.json") || "{}").gangFaction ?? null
   const donating = player.factions.filter((faction) => faction !== gangFaction && s.getFactionFavor(faction) >= ns.getFavorToDonate())
-  const donations = donationPlan(offers, owned, player.money, player.mults.faction_rep, donating)
+  const donations = donationPlan(offers, owned, player.money, donationRate(player.mults.faction_rep, config), donating)
   let money = player.money
   const made = []
   for (const gift of donations) {
@@ -43,7 +43,7 @@ export async function main(ns) {
     while (fluxFaction && status.neuroflux < 100) {
       // Each level asks more rep; a donating faction buys the gap when cash covers it and the price.
       const gap = s.getAugmentationRepReq(NEUROFLUX) - s.getFactionRep(fluxFaction)
-      const gift = donating.includes(fluxFaction) ? donationFor(gap, ns.getPlayer().mults.faction_rep) : 0
+      const gift = donating.includes(fluxFaction) ? donationFor(gap, donationRate(ns.getPlayer().mults.faction_rep, config)) : 0
       if (gift && gift + s.getAugmentationPrice(NEUROFLUX) <= ns.getPlayer().money && s.donateToFaction(fluxFaction, gift)) status.fluxDonated += gift
       if (!s.purchaseAugmentation(fluxFaction, NEUROFLUX)) break
       status.neuroflux++

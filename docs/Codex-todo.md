@@ -10,6 +10,11 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
 
 ## Active work
 
+- From the 2026-11-22 01:18 check (BN12):
+  - Waiting on Ken: verdict `install` as soon as a run gate (The Red Pill) is rep-ready. Also covers
+    verdict `build` forever when the pill is the only thing in the batch (batch value 0).
+  - `donationRepGain` is a per-profile constant: set it for any BitNode where FactionWorkRepGain is not 1.
+  - Grafting: an alternative rate that is not ~0 early in a cycle and knows gates; re-enable for the next run.
 - From the 2026-11-21 23:32 check (BN12):
   - `aug_install.js`: when the readiness plan is empty because everything is queued, the plain-plan
     fallback buys value-0 augs (install 3: $99.2t Hacknet Node Cache) before the home upgrades.

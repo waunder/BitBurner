@@ -6,8 +6,11 @@
  */
 const OUTPUT = "cct_inventory.json"
 
+// Square Root's data is a BigInt, which JSON.stringify refuses: write it as a string (the solver takes either).
+const plain = (_key, value) => (typeof value === "bigint" ? value.toString() : value)
+
 export function contractFingerprint(type, data) {
-  const text = `${type}\n${JSON.stringify(data)}`
+  const text = `${type}\n${JSON.stringify(data, plain)}`
   let hash = 2166136261
   for (let i = 0; i < text.length; i++) {
     hash ^= text.charCodeAt(i)
@@ -73,7 +76,7 @@ export async function main(ns, quiet = false) {
     hostsScanned: scanAll(ns).length,
     inaccessibleHosts: inaccessible,
   }
-  ns.write(OUTPUT, JSON.stringify(report, null, 2), "w")
+  ns.write(OUTPUT, JSON.stringify(report, plain, 2), "w")
   if (!quiet && !ns.args.some((arg) => String(arg) === "--quiet")) {
     ns.tprint(`cct_audit: ${contracts.length} contract(s), ${Object.keys(byType).length} type(s); no submissions made.`)
   }

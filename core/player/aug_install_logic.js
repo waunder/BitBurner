@@ -138,6 +138,29 @@ export function nextHomeUpgrade(ramCost, coreCost, money) {
 export const NEUROFLUX = "NeuroFlux Governor"
 
 /**
+ * Augmentations the run cannot finish without. They carry no multipliers, so the by-value plan would
+ * never add them. (valuation_logic.js keeps its own list: the steward's remote advisor copies only this file.)
+ */
+const RUN_GATES = ["The Red Pill"]
+
+/** Names of run gates that are rep-ready among `offers` and not yet held, for the plan's priority. */
+export function readyGates(offers, owned) {
+  const held = new Set(owned)
+  return [...new Set(offers.filter((offer) => RUN_GATES.includes(offer.name) && !held.has(offer.name) && offer.rep >= offer.repRequired)
+    .map((offer) => offer.name))]
+}
+
+/**
+ * Rep per $1m donated. The game multiplies by the BitNode's FactionWorkRepGain as well as the player's
+ * faction rep multiplier (src/Faction/formulas/donation.ts); `donationRepGain` in player_activity_config.json
+ * carries the former, so the 4GB getBitNodeMultipliers call is not needed. Missing means 1.
+ */
+export function donationRate(repMult, config) {
+  const gain = Number(config?.donationRepGain)
+  return (Number(repMult) || 0) * (gain > 0 ? gain : 1)
+}
+
+/**
  * Faction to buy NeuroFlux from. Every faction but a gang sells it at one rep requirement, so the
  * best seller is a donating one (cash tops up its rep), then the one with the most rep.
  * @param {{faction:string, rep:number}[]} sellers
@@ -146,7 +169,7 @@ export function fluxSeller(sellers, donating) {
   return [...sellers].sort((a, b) => Number(donating.includes(b.faction)) - Number(donating.includes(a.faction)) || b.rep - a.rep)[0]?.faction || null
 }
 
-/** Money that buys `gap` faction rep: the game gives amount / 1e6 * the faction rep multiplier. */
+/** Money that buys `gap` faction rep: the game gives amount / 1e6 * `repMult` (pass donationRate). */
 export function donationFor(gap, repMult) {
   return gap > 0 ? Math.ceil(gap * 1e6 / repMult * 1.001) : 0
 }

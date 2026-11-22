@@ -11,7 +11,7 @@
  * @param {NS} ns
  */
 
-import { planPurchases } from "./aug_install_logic.js"
+import { donationRate, planPurchases, readyGates } from "./aug_install_logic.js"
 import { DEFAULT_WEIGHTS, augValue, bestRepRate, factionRepRates, gangRepPerHour, installAdvice, multFactorNeeded, withDonations } from "./install_advisor_logic.js"
 
 const STATUS = "augmentation_readiness.json"
@@ -162,20 +162,22 @@ function assess(ns, previous = null) {
     let priority = []
     let priorityOnly = false
     let byValue = false
+    let activity = {}
     try {
-      const activity = JSON.parse(ns.read("player_activity_config.json") || "{}")
+      activity = JSON.parse(ns.read("player_activity_config.json") || "{}")
       priority = activity.priorityAugs || []
       priorityOnly = activity.priorityOnly === true
       byValue = activity.planByValue === true
     } catch {}
     const money = Number(player?.money) || 0
-    const donated = withDonations(candidates, { money, repMult: Number(player?.mults?.faction_rep) || 0, donating, owned: includingQueued })
+    const donated = withDonations(candidates, { money, repMult: donationRate(player?.mults?.faction_rep, activity), donating, owned: includingQueued })
     // Values before the plan: the by-value plan skips offers without one (2026-11-18: set only inside
     // advise(), after planning, so planByValue returned an empty plan at $1.95b with Neurotrainer III,
     // Combat Rib I and others affordable).
     const value = augValuer(ns)
     for (const item of donated.candidates) item.value = value(item.name)
-    const { plan, left } = planPurchases(donated.candidates, includingQueued, donated.left, 1.9, priority, { only: priorityOnly, byValue })
+    const { plan, left } = planPurchases(donated.candidates, includingQueued, donated.left, 1.9,
+      [...priority, ...readyGates(donated.candidates, includingQueued)], { only: priorityOnly && priority.length > 0, byValue })
     const installPlan = {
       names: plan.map((item) => item.name), cost: money - left,
       factions: [...new Set(plan.map((item) => item.faction))],

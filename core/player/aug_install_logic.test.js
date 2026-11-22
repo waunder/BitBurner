@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { countFillers, donationFor, donationPlan, fluxSeller, ladderCost, nextHomeUpgrade, planPurchases, selectByValue } from "./aug_install_logic.js"
+import { countFillers, donationFor, donationPlan, fluxSeller, ladderCost, nextHomeUpgrade, planPurchases, selectByValue, donationRate, readyGates } from "./aug_install_logic.js"
 
 const offer = (name, price, extra = {}) => ({ name, faction: "F", rep: 10, repRequired: 5, price, prerequisites: [], ...extra })
 
@@ -122,4 +122,22 @@ test("count fillers add the cheapest rep-ready augs until the Daedalus count, wi
   assert.deepEqual(countFillers(offers, ["X", "Y", "Z", "W"], ["Plan"], 1e6, 5), [])
   // Cash share: ladder Plan 100 + A 10x1.9 = 119 fits 10% of 1200; adding B (100 + 20x1.9 + 10x3.61 = 174.1) does not.
   assert.deepEqual(countFillers(offers, [], ["Plan"], 1200, 10), ["A"])
+})
+
+test("BN12: a donation reaches The Red Pill's rep and the by-value plan keeps it", () => {
+  const dec = 1 / 1.02
+  const rate = donationRate(2.5, { donationRepGain: dec })
+  const amount = donationFor(2550000, rate)
+  assert.ok((amount / 1e6) * 2.5 * dec >= 2550000)
+  assert.ok((donationFor(2550000, donationRate(2.5, {})) / 1e6) * 2.5 * dec < 2550000) // the old sizing fell short
+  const pill = { name: "The Red Pill", faction: "Daedalus", rep: 2550000, repRequired: 2550000, price: 0, prerequisites: [], value: 0 }
+  const other = { name: "A", faction: "G", rep: 9, repRequired: 1, price: 100, prerequisites: [], value: 1 }
+  const gates = readyGates([pill, other], [])
+  assert.deepEqual(gates, ["The Red Pill"])
+  assert.deepEqual(readyGates([{ ...pill, rep: 2549999 }], []), [])
+  assert.deepEqual(readyGates([pill], ["The Red Pill"]), [])
+  const { plan } = planPurchases([pill, other], [], 1000, 1.9, gates, { byValue: true })
+  assert.deepEqual(plan.map((item) => item.name), ["A", "The Red Pill"])
+  const bought = planPurchases([pill, other], [], 1000, 1.9, plan.map((item) => item.name), { only: true })
+  assert.equal(bought.plan.length, 2)
 })

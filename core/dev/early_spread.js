@@ -15,7 +15,7 @@ export async function main(ns) {
   let rooted = 0, threads = 0
   while (queue.length) {
     for (const next of ns.scan(queue.shift())) {
-      if (seen.has(next) || next === "darkweb" || next.startsWith("pserv")) continue
+      if (seen.has(next) || next === "darkweb" || next === "w0r1d_d43m0n" || next.startsWith("pserv")) continue
       seen.add(next)
       queue.push(next)
       if (!ns.hasRootAccess(next) && ns.getServerNumPortsRequired(next) <= openers.length) {

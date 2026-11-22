@@ -206,6 +206,10 @@ test("Square Root -- BigInt nearest-integer rounding", () => {
   assert.equal(solve("Square Root", 2n), "1") // sqrt(2)=1.41... rounds down
   assert.equal(solve("Square Root", 3n), "2") // sqrt(3)=1.73... rounds up
   assert.equal(solve("Square Root", 10n ** 30n), (10n ** 15n).toString())
+  // The audit stores the BigInt as a string, at the game's ~200 digits and both rounding edges.
+  const root = (1n << 332n) + 987654321n
+  assert.equal(solve("Square Root", String(root * root + root)), String(root))
+  assert.equal(solve("Square Root", String(root * root - root + 1n)), String(root))
 })
 
 test("Largest Rectangle in a Matrix -- the game's two examples and a matching brute-force area", () => {

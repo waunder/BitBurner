@@ -21,10 +21,13 @@ const OPENING_BALANCE = {
   note: "Verified aggregate before durable per-submission ledger; CSEC outcome unconfirmed.",
 }
 
+// Square Root's data is a BigInt, which JSON.stringify refuses: write it as a string (the solver takes either).
+const plain = (_key, value) => (typeof value === "bigint" ? value.toString() : value)
+
 // Keep this small helper local so the finite submit task does not import the
 // audit's network-scan API footprint when home RAM is tight.
 function contractFingerprint(type, data) {
-  const text = `${type}\n${JSON.stringify(data)}`
+  const text = `${type}\n${JSON.stringify(data, plain)}`
   let hash = 2166136261
   for (let i = 0; i < text.length; i++) {
     hash ^= text.charCodeAt(i)

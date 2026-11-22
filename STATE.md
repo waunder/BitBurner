@@ -126,6 +126,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 2 | 2026-11-21 18:36 | Auto install (Mac LaunchAgent, first through it): 7 (Artificial Synaptic Potentiation, Speech Processor Implant, Neurotrainer II, Nuoptimal Nootropic Injector Implant, Speech Enhancement, Neural Wit Amplifier, LuminCloaking-V1; $227m list) + NeuroFlux x16; home 32TB -> 1PB, 6 cores. Backup saves/pre-install-auto-20261121-1836.json.gz | 9 -> 16 (metrics_log) |
 | 3 | 2026-11-21 23:29 | By hand (auto install stuck): 23 bought at 22:53 by auto install (Neuralstimulator, FocusWire, ADR-V2, The Shadow's Simulacrum, Neuregen, Embedded Netburner Module, CSP Gen II and 16 more from Slum Snakes) + NeuroFlux x2 + queued The B00ts of Perseus; grafted QLink (entropy 1); Hacknet Node Cache filler at 23:29. Home stays 1PB, 6 cores. Backup saves/pre-install-bn12-3-20261121.json.gz | 16 -> 42 (readiness 23:31; 17 with QLink before the install) |
 | 4 | 2026-11-22 03:37 | Auto install: 28 from Slum Snakes (Hydroflame Left Arm, ENM DMA and Core, ECorp HVMind, BitRunners Neurolink, PC Direct-Neural Interface, CSP Gen III, The Black Hand and 20 more) + NeuroFlux x2 + queued The H4mmer of Daedalus; home 1PB -> 4PB, 7 cores; banked Daedalus favor (173.8 after). Backup saves/pre-install-auto-20261122-0337.json.gz | 43 -> 72 (metrics_log) |
+| 5 | 2026-11-22 07:43 | Auto install: 13 (PC DNI NeuroNet Injector and Optimization Submodule, ENM Analyze Engine and Core V2, CSP Gen IV, 7 more from Slum Snakes, The Red Pill from Daedalus after a $158.5b donation) + NeuroFlux x15 + queued The St4ff of Asclepius; home 4PB -> 8PB, 8 cores. Backup saves/pre-install-auto-20261122-0743.json.gz | 72 -> 86 (save) |
 
 ## Installs BN10 run 4
 
@@ -173,15 +174,15 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-22 05:14 Mac (scheduled run, BN12 run 1): healthy, waiting for install 5 (~07:43) with The Red Pill.**
-At 05:13 the advisor read `wait`, only for the 4h gang minimum (ends ~07:37; auto install confirms 5 min). Its plan had 13 augs including The Red Pill and a $528b Daedalus donation; cash ~$20q.
-The advisor's function, run offline on simplified live numbers at 4.05h, returns `install`. The purchase and donation themselves are not observed.
-Hacking 16754 (05:10). After install 4 it was 13185 within 3 minutes, against the World Daemon's ~3060 (3000 x 1.02, not read live: the server does not exist yet).
-**Next runs: before ~07:43 leave the cycle alone unless the plan loses The Red Pill or the verdict is not `install` after 07:37 (then report why).
-Auto install also holds if The Red Pill is bought but not installed (its `owned` includes queued augs): then follow the install rule by hand (verdict `install`, backup first), else report.
-After install 5: auto install holds by itself; verify w0r1d_d43m0n is unrooted, read its required hacking live, back up the save, record it here, notify Ken and stop.
-The 07:07 run ends before the install unless it waits; otherwise the 09:07 run does this.
-Do not root, backdoor or destroy it; do not choose a BitNode.**
+**2026-11-22 07:48 Mac (scheduled run): BN12 run 1 is ready to complete. STOPPED at the World Daemon for Ken.**
+The Red Pill installed at 07:43 (install 5; 86 installed, 0 queued). `w0r1d_d43m0n` hangs off The-Cave: requires hacking 3060 and 5 ports.
+At 07:48:11 (live save read): hacking 18106, all 5 port openers owned, daemon not rooted, 0 ports open, no backdoor; every other ordinary server rooted.
+Backup: `saves/bn12-world-daemon-ready-20261122.json.gz` (decoded: node 12, 86 installed with The Red Pill, hacking 17057).
+Notification to Ken: no phone push (Remote Control inactive), desktop delivery not confirmed; in-game Run report updated.
+**Next runs: do not root, backdoor or destroy it, do not install, do not choose a BitNode. Check only that the game is healthy and the
+daemon still unrooted (use the exact name `w0r1d_d43m0n`; `w0r1d_daemon` does not exist and reads as absent), and do not notify again
+unless that changes. Ken finishes the run and picks the next BitNode.**
+Before any BitNode switch: `profile.py check` works again (ctl-list fixed this run); see Codex-todo's 07:14 items (42.9k home files, stray scripts).
 **2026-11-19 06:51 (Ken session):** the 11-18 21:00:55 outage was Ken's accidental click on Active Scripts' Kill All Scripts (confirmed). New outage watchdog in the supervisor (`tools/outage_watchdog.py`, docs/processes.md): runs `startup.js` when all resident heartbeats are 10+ min old, once per 2h. Every check: grep `watchdog:` in `tools/daemon_supervisor.log`. Before a World Daemon or BitNode change: create `tools/watchdog.pause` (delete after).
 **2026-11-19 06:57 (Ken session): installs are now automatic** (Ken: "let the install verdict also be the trigger"). `tools/auto_install.py` in the supervisor: verdict `install` for 5 min -> save backup `saves/pre-install-auto-*` -> `aug_install.js --install`. Checks: do not install by hand; grep `autoinstall:` in `tools/daemon_supervisor.log`, review each install like before (cycle review, install table row). Pause with `tools/autoinstall.pause`. Holds itself once The Red Pill is owned.
 **2026-11-19 07:05 (Ken session): gang territory trial running to 10:03** (docs/gang-territory-trial.md; `territoryTrial` in the bn10 gang policy, ends by itself). Next check: fill in its Result section (power gained/h vs rival, respect/money given up, hours to a 9:1 lead), then remove `territoryTrial` from the policy. Weekly usage limit is near: check-ins cut to once a day until Ken restores them; the game runs on its own (auto install, outage watchdog).
@@ -228,5 +229,6 @@ Bladeburner keeps working Assassination meanwhile.
 
 ## Open questions
 
-- For Ken (asked 2026-11-22 01:18, still open): may the install advisor read `install` as soon as The Red Pill is rep-ready? It was ready at 03:41,
-  4 minutes into cycle 5, and the 4h gang minimum holds it to ~07:43. Left alone: it changes the trigger Ken approved for resets. Without an answer the wait simply runs out.
+- For Ken (2026-11-22 07:48): end BN12 and choose the next BitNode.
+- The 01:18 question (install as soon as The Red Pill is rep-ready) lapsed: the wait ran out and install 5 went through.
+  Raise it again only for the next run's endgame.

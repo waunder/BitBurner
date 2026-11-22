@@ -1,0 +1,63 @@
+{
+  "goal": "BN11: SF11 (cheaper aug batches every later run). World Daemon at hacking 4500 (3000 x 1.5); finish by docs/finish-procedure.md",
+  "updated": "2026-11-22",
+  "gangFaction": "Slum Snakes",
+  "steps": [
+    {
+      "label": "Gang: Slum Snakes (karma -54k); crime pays x3 here",
+      "metric": {
+        "kind": "karma",
+        "target": -54000
+      }
+    },
+    {
+      "label": "Early installs for multipliers",
+      "install": true,
+      "metric": {
+        "kind": "installed",
+        "target": 3
+      }
+    },
+    {
+      "label": "Daedalus: 30 augs installed, $100b, hacking 2500",
+      "metrics": [
+        {
+          "kind": "installed",
+          "target": 30
+        },
+        {
+          "kind": "money",
+          "target": 100000000000.0
+        },
+        {
+          "kind": "hacking",
+          "target": 2500
+        }
+      ]
+    },
+    {
+      "label": "The Red Pill from Daedalus, then hack level for the World Daemon (4500)"
+    },
+    {
+      "label": "World Daemon: finish by docs/finish-procedure.md (backup first)"
+    }
+  ],
+  "augWeightsWhy": "2026-11-22 (BN11 start, unmeasured): hacking money is ~1% here, so hacking_money/grow/chance count little; level x0.6 and exp x0.5 make the 4500 World Daemon the long pole, so hacking and hacking_exp lead. Review after the first cycle (docs/number-review.md).",
+  "augWeights": {
+    "hacking": 1,
+    "strength": 0.05,
+    "defense": 0.05,
+    "dexterity": 0.05,
+    "agility": 0.05,
+    "hacking_exp": 0.6,
+    "strength_exp": 0.01,
+    "defense_exp": 0.01,
+    "dexterity_exp": 0.01,
+    "agility_exp": 0.01,
+    "faction_rep": 0.5,
+    "hacking_money": 0.05,
+    "hacking_grow": 0.02,
+    "hacking_chance": 0.05,
+    "hacking_speed": 0.4
+  }
+}

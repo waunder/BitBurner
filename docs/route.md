@@ -7,7 +7,7 @@ Owned 2026-11-22: SF 1.2, 2.1, 4.3, 5.3, 6.1, 10.3, 12.1, 15.1. Never finished: 
 | Order | BitNode | Runs | Why here | Engine we lack |
 |---|---|---|---|---|
 | 1 | 12 | run 2, then run 3 | preparation, then the hands-off test | none |
-| 2 | 11 | 3 | cheaper augmentation batches for everything after; portability exam | a profile; economy at 1% server money |
+| 2 | 11 | 3 | cheaper augmentation batches for everything after; portability exam | economy at 1% server money (profile bn11 built 2026-11-22) |
 | 3 | 7 | 1 | Bladeburner engine exists (bn6) | a profile |
 | 4 | 14 | 1 | IPvGO player exists | a profile; reputation at 20% |
 | 5 | 3 | 1 | expected to fall to gang and hacking | a profile; corporation only if that proves false |
@@ -21,3 +21,8 @@ Owned 2026-11-22: SF 1.2, 2.1, 4.3, 5.3, 6.1, 10.3, 12.1, 15.1. Never finished: 
 
 A new game from BitNode 1, scripted as soon as possible, the agent hands-on only as long as necessary. It runs as a
 separate game. It never replaces, deletes or overwrites this save (the handover does not cover that).
+
+## Progress
+
+- 2026-11-22: profile bn11 built from bn12 (tests 696 pass; finish tool plans BN12 to BN11 as a profile switch).
+  Not yet: an earning plan for 1% server money and a rehearsal from a fresh BN11 start in a disposable copy.

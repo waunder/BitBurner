@@ -176,7 +176,7 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 **2026-11-22 07:48 Mac (scheduled run): BN12 run 1 is ready to complete. STOPPED at the World Daemon for Ken.**
 The Red Pill installed at 07:43 (install 5; 86 installed, 0 queued). `w0r1d_d43m0n` hangs off The-Cave: requires hacking 3060 and 5 ports.
-At 07:48:11 (live save read): hacking 18106, all 5 port openers owned, daemon not rooted, 0 ports open, no backdoor; every other ordinary server rooted.
+At 07:48:11 and again at 07:49:48 (the game's latest autosave, read over DevTools): hacking 18106 then 18436, all 5 port openers owned, daemon not rooted, 0 ports open, no backdoor; every other ordinary server rooted.
 Backup: `saves/bn12-world-daemon-ready-20261122.json.gz` (decoded: node 12, 86 installed with The Red Pill, hacking 17057).
 Notification to Ken: no phone push (Remote Control inactive), desktop delivery not confirmed; in-game Run report updated.
 **Next runs: do not root, backdoor or destroy it, do not install, do not choose a BitNode. Check only that the game is healthy and the

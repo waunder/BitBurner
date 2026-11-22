@@ -3651,6 +3651,15 @@ never by a scheduled check-in.
 - **Writes:** `runtime/finish_node.log`, `tools/install_approvals.json`.
 - **Tests:** `tools/tests/test_finish_node.py`.
 
+### `tools/notify.py`
+
+Alerts to Ken's iPhone by Pushover (Ken, 2026-11-22). Keys in `~/.config/bitburner/pushover.json` (mode 600, never in
+the repo); `--setup` asks for them and sends a test. The watchdog runs `alarm_pass()` every 30 s: a run-page alarm
+is sent once it has lasted 3 min ("waits on Ken" alarms at once, high priority), again every 6 h while it lasts, and
+"Cleared" when it goes; the run page silent for 10 min is itself an alarm; at most 8 messages an hour. Check-ins send
+one line with `notify.py "<text>"`. Writes `runtime/notify.log`, `runtime/notify_state.json`. Tests
+`tools/tests/test_notify.py`.
+
 ### `tools/run_approval.py`
 
 Asked by auto install before every install: is this BitNode run in `tools/install_approvals.json`? Fails

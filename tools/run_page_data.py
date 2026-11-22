@@ -215,7 +215,7 @@ def alerts(state, now_ms, connected, paused, install_pass_ms):
     world = state["worldDaemon"]
     # The server is in the save from the start of every run; it is reachable only with The Red Pill.
     if world and state["redPill"] and state["skills"].get("hacking", 0) >= world["required"]:
-        add("you", "The World Daemon is ready: your call", "The agent will not root or destroy it, or choose the next BitNode.")
+        add("you", "The World Daemon is ready", "The agent finishes it in a session (docs/finish-procedure.md); check-ins only stop here.")
     if not connected:
         add("bad", "The Remote API is disconnected", "Scripts can't be updated and status files can't be read. The numbers from the save are still good.")
     if not state["redPill"]:

@@ -69,9 +69,9 @@ class RunPage(unittest.TestCase):
         self.assertEqual(rpd.alerts(rpd.state_from_save(save()), now, True, False, now), [])
         titles = lambda s, at=now, paused=False: [a["title"] for a in rpd.alerts(rpd.state_from_save(s), at, True, paused, at)]
         self.assertIn("Nothing is running", titles(save(scripts=())))
-        self.assertIn("The World Daemon is ready: your call", titles(save(world=3121, hacking=3200, pill=True)))
+        self.assertIn("The World Daemon is ready", titles(save(world=3121, hacking=3200, pill=True)))
         # in the save from minute one, out of reach until The Red Pill: not a call for Ken
-        self.assertNotIn("The World Daemon is ready: your call", titles(save(world=3121, hacking=16_000)))
+        self.assertNotIn("The World Daemon is ready", titles(save(world=3121, hacking=16_000)))
         self.assertIn("The game has stopped saving", titles(save(), at=now + 600_000))
         self.assertIn("Auto install is paused", titles(save(), paused=True))
 

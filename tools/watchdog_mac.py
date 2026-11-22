@@ -12,6 +12,7 @@ It only ever runs startup.js. It holds when:
 - the active profile does not cover the BitNode (profile.py switch is never run unattended);
 - it already restarted this run in the last RESTART_GAP_S (something keeps killing scripts).
 A command that could not be typed is retried after RETRY_S.
+Each pass also forwards the run page's alarms to Ken's iPhone (tools/notify.py).
 
 Log runtime/watchdog_mac.log; state tools/watchdog_mac_state.json, whose mtime is the heartbeat.
 
@@ -26,6 +27,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import run_page_data as rpd  # noqa: E402
 from outage_watchdog import PAUSE, REPO, run_startup  # noqa: E402
+import notify  # noqa: E402
 
 STATE = REPO / "tools" / "watchdog_mac_state.json"
 LOG = REPO / "runtime" / "watchdog_mac.log"
@@ -131,6 +133,7 @@ def main():
             said = reason
             state.update(action=action, reason=reason)
             STATE.write_text(json.dumps(state), encoding="utf-8")
+            notify.alarm_pass()  # run page alarms to Ken's iPhone; does nothing until the keys exist
         except Exception as error:
             if args.once:
                 print(f"watchdog: once: error {error!r}")

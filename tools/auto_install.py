@@ -16,8 +16,9 @@ Guards (any one stops it):
 - The Red Pill is owned: the endgame (World Daemon) stays with a person.
 - the cycle is younger than MIN_CYCLE_S (anti-loop floor).
 - the save backup fails: no backup, no install.
-- after a failed install, nothing for FAIL_HOLD_S. aug_install.js refuses during a
-  graft; that is a short hold (GRAFT_HOLD_S), not a failure.
+- a fresh graft_status.json says a graft is running: wait, before buying anything.
+- after a failed install, nothing for FAIL_HOLD_S. Should aug_install.js still refuse
+  for a graft, that is a short hold (GRAFT_HOLD_S), not a failure.
 Success = the readiness file's resetAt changes within VERIFY_S.
 Events go to the supervisor log, prefixed "autoinstall:".
 """
@@ -29,6 +30,7 @@ import time
 
 REPO = Path(__file__).resolve().parent.parent
 READINESS = REPO / "runtime" / "augmentation_readiness.json"
+GRAFT = REPO / "runtime" / "graft_status.json"
 PAUSE = REPO / "tools" / "autoinstall.pause"
 STATE = REPO / "tools" / "autoinstall_state.json"
 READINESS_FRESH_S = 5 * 60
@@ -36,6 +38,7 @@ PULL_FRESH_MS = 3 * 60 * 1000
 CONFIRM_S = 5 * 60
 MIN_CYCLE_S = 60 * 60
 VERIFY_S = 10 * 60
+GRAFT_FRESH_S = 3 * 60
 FAIL_HOLD_S = 2 * 3600
 GRAFT_HOLD_S = 10 * 60
 INSTALL_COMMAND = "home; run aug_install.js --install"
@@ -49,7 +52,7 @@ def read_readiness(path=READINESS):
         return None
 
 
-def decide(status, readiness, now_s, state, paused):
+def decide(status, readiness, now_s, state, paused, graft=None):
     """Return (action, reason, new_state). action: install, installed, failed, hold, wait, ok."""
     state = dict(state)
     if not status.get("connected"):
@@ -89,6 +92,8 @@ def decide(status, readiness, now_s, state, paused):
     seen = state.setdefault("install_seen_s", now_s)
     if now_s - seen < CONFIRM_S:
         return "wait", f"verdict install, confirming ({int(now_s - seen)}s of {CONFIRM_S}s)", state
+    if graft and graft.get("ownsPlayer") and now_s - float(graft.get("ts") or 0) / 1000 <= GRAFT_FRESH_S:
+        return "wait", "verdict install, waiting for the graft to finish", state
     return "install", reason, state
 
 
@@ -119,7 +124,7 @@ def backup(readiness, now_s):
 
 def run_install():
     code, out = _run([str(REPO / "tools" / "game_terminal.py"), INSTALL_COMMAND, "--settle", "8", "--stay"], 120)
-    return code, out[:600]
+    return code, out  # uncut: the refusal is printed after the long status line
 
 
 class AutoInstall:
@@ -137,7 +142,7 @@ class AutoInstall:
     def check(self, status, now_s=None):
         now_s = time.time() if now_s is None else now_s
         readiness = read_readiness()
-        action, reason, state = decide(status, readiness, now_s, load_state(), PAUSE.exists())
+        action, reason, state = decide(status, readiness, now_s, load_state(), PAUSE.exists(), read_readiness(GRAFT))
         if action == "install":
             ok, name, out = backup(readiness, now_s)
             if not ok:

@@ -2748,8 +2748,9 @@ pre-install-auto-<YYYYMMDD-HHMM>`) and runs `home; run aug_install.js --install`
 through `game_terminal.py`. Success is a new `resetAt` within 10 minutes.
 **Never installs:** while `tools/autoinstall.pause` exists; once The Red Pill is
 owned (the endgame stays with a person); in a cycle under 1 hour old; when the
-backup fails; for 2 hours after a failed install. A graft in progress makes
-`aug_install.js` refuse, which holds 10 minutes and retries. **Writes:**
+backup fails; for 2 hours after a failed install. While a fresh
+`runtime/graft_status.json` has `ownsPlayer`, it waits without buying (2026-11-21); if
+`aug_install.js` still refuses for a graft, it holds 10 minutes and retries. **Writes:**
 `autoinstall:` lines in `tools/daemon_supervisor.log`, `tools/autoinstall_state.json`.
 
 `tools/game_terminal.py "<command>"` runs one terminal command over DevTools and

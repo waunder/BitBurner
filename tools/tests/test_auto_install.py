@@ -1,4 +1,5 @@
 import unittest
+from unittest import mock
 
 from helpers import load
 
@@ -71,6 +72,25 @@ class AfterTheCommand(unittest.TestCase):
         action, _, state = decide(readiness(), self.pending, NOW + A.VERIFY_S)
         self.assertEqual(action, "failed")
         self.assertGreater(state["hold_until_s"], NOW + 3600)
+
+
+class Graft(unittest.TestCase):
+    def run_decide(self, graft):
+        r = {**readiness(), "ts": (NOW - 30) * 1000}
+        return A.decide(status(), r, NOW, {"install_seen_s": NOW - 3600}, False, graft)
+
+    def test_a_running_graft_waits_and_keeps_confirmation(self):
+        action, _, state = self.run_decide({"ownsPlayer": True, "ts": (NOW - 60) * 1000})
+        self.assertEqual(action, "wait")
+        self.assertIn("install_seen_s", state)
+
+    def test_finished_or_stale_graft_status_does_not_block(self):
+        self.assertEqual(self.run_decide({"ownsPlayer": False, "ts": NOW * 1000})[0], "install")
+        self.assertEqual(self.run_decide({"ownsPlayer": True, "ts": (NOW - A.GRAFT_FRESH_S - 1) * 1000})[0], "install")
+
+    def test_refusal_after_a_long_status_line_is_kept(self):
+        with mock.patch.object(A, "_run", return_value=(0, "x" * 5000 + " install refused")):
+            self.assertIn("install refused", A.run_install()[1])
 
 
 class Logging(unittest.TestCase):

@@ -9,6 +9,15 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN12 run 1
 
+**2026-11-22 09:16 Mac, scheduled run: waiting for Ken at the World Daemon; healthy; number review row 20.** Not a stand-aside run (repo clean, last commit 07:49). Remote API connected, DevTools answering; pull 09:12 and 09:15; both LaunchAgent runners up.
+State (save 09:12:07, metrics 09:10): cash $12.2q, +$8.7q/h over 60 min; hacking 21803; karma -56.1k; 86 installed, 1 queued (The L4w of Bayes); entropy 2, grafting disabled; gang controller, capital, MCP, sleeves and 10 stack batchers in the save's running list; darknet $494b/h, 16 managers; MCP, graft and player statuses seconds old. Nothing had died.
+World Daemon (save 09:14:07): not rooted, 0 ports, no backdoor. `profile.py check`: 165 files, 0 missing, 0 stale, the same 54 unmanifested scripts. Auto install: no line since install 5; verdict wait (gang minimum, 2.5h more at 09:10); `decide` on live readiness with the verdict forced to install gave hold (Red Pill owned). Ready backup decodes.
+07:14 ledger fix now seen live: the ledger grew past install 5 with its 17 earlier entries intact plus the new ones (25 entries at 09:15, all accepted).
+Number review row 20 (faction joins): `joined` is this process's own joins, so 10 against the save's 11 (the gang's faction was never left). Rep is not short where it matters: the two gaps (Illuminati, The Covenant, 119k of 1.785m) are for an aug Slum Snakes and Daedalus already cover.
+Fault found: The Dark Army and Speakers for the Dead were never joined. `seekKills` skips whenever the player is on any crime, and Heist (current, no kills) is one: kills 0 with combat 10.9k+. No loss now (the four of their special augs checked are owned), so logged for the next run, not changed.
+Also found: `cct_audit` walks `ns.scan`, so contracts on darknet servers are invisible (EZ_BAKE_OVEN held one in both saves while the inventory read 0). Row 19's "0 waiting" covered ordinary servers only. Logged, not changed.
+Install: none. World Daemon not touched; no BitNode choice; no new notification.
+
 **2026-11-22 07:48 Mac, scheduled run: install 5 with The Red Pill; World Daemon ready; backup, notify, stop. Contract ledger and ctl-list fixed; number review row 19.** Not a stand-aside run (repo clean, last commit 05:14). Remote API connected, DevTools answering; ps 07:12 and 07:44: residents up.
 State 07:10-07:12: cash $45.7q +$13.1q/h (metrics.py, 60 min); hacking 17444; karma -55.6k; 72 installed, 1 queued; entropy 2, grafting disabled; gang 12 members, territory 65%; darknet $183b/h, 20 registry entries; 0 contracts open; 8 sleeves on recovery, shock ~25; MCP status fresh.
 Install 5: verdict install seen 07:38:13, backup and command 07:43:26, confirmed 07:44:34. Pre-install backup decoded (node 12, 72 installed, hacking 17564). aug_install_status: 13 bought, 0 failed, $158.5b donated to Daedalus, NeuroFlux x15. First live sight of the donation and readyGates fixes working: The Red Pill is installed.

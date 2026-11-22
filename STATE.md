@@ -174,15 +174,16 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-22 07:48 Mac (scheduled run): BN12 run 1 is ready to complete. STOPPED at the World Daemon for Ken.**
-The Red Pill installed at 07:43 (install 5; 86 installed, 0 queued). `w0r1d_d43m0n` hangs off The-Cave: requires hacking 3060 and 5 ports.
-At 07:48:11 and again at 07:49:48 (the game's latest autosave, read over DevTools): hacking 18106 then 18436, all 5 port openers owned, daemon not rooted, 0 ports open, no backdoor; every other ordinary server rooted.
-Backup: `saves/bn12-world-daemon-ready-20261122.json.gz` (decoded: node 12, 86 installed with The Red Pill, hacking 17057).
-Notification to Ken: no phone push (Remote Control inactive), desktop delivery not confirmed; in-game Run report updated.
+**2026-11-22 09:16 Mac (scheduled run): BN12 run 1 is still ready to complete and waiting for Ken. Game healthy; no game change.**
+`w0r1d_d43m0n` in the 09:14:07 autosave: not rooted, 0 ports open, no backdoor (requires hacking 3060 and 5 ports; hacking 21828).
+86 installed; The L4w of Bayes queued (darknet labyrinth) and left queued. Verdict `wait` until about 11:43, then it may read `install`:
+auto install holds because The Red Pill is owned (its `decide` run offline on the live readiness gave `hold`).
+Ready backup: `saves/bn12-world-daemon-ready-20261122.json.gz` (decoded again: 86 installed). Ken was notified at 07:48
+(no phone push as Remote Control was inactive; desktop delivery not confirmed; the in-game Run report says the same).
 **Next runs: do not root, backdoor or destroy it, do not install, do not choose a BitNode. Check only that the game is healthy and the
 daemon still unrooted (use the exact name `w0r1d_d43m0n`; `w0r1d_daemon` does not exist and reads as absent), and do not notify again
 unless that changes. Ken finishes the run and picks the next BitNode.**
-Before any BitNode switch: `profile.py check` works again (ctl-list fixed this run); see Codex-todo's 07:14 items (42.9k home files, stray scripts).
+Before any BitNode switch: see Codex-todo's 07:14 items (43k home files, stray scripts) and 09:16 items (darknet contracts, kill-gated joins).
 **2026-11-19 06:51 (Ken session):** the 11-18 21:00:55 outage was Ken's accidental click on Active Scripts' Kill All Scripts (confirmed). New outage watchdog in the supervisor (`tools/outage_watchdog.py`, docs/processes.md): runs `startup.js` when all resident heartbeats are 10+ min old, once per 2h. Every check: grep `watchdog:` in `tools/daemon_supervisor.log`. Before a World Daemon or BitNode change: create `tools/watchdog.pause` (delete after).
 **2026-11-19 06:57 (Ken session): installs are now automatic** (Ken: "let the install verdict also be the trigger"). `tools/auto_install.py` in the supervisor: verdict `install` for 5 min -> save backup `saves/pre-install-auto-*` -> `aug_install.js --install`. Checks: do not install by hand; grep `autoinstall:` in `tools/daemon_supervisor.log`, review each install like before (cycle review, install table row). Pause with `tools/autoinstall.pause`. Holds itself once The Red Pill is owned.
 **2026-11-19 07:05 (Ken session): gang territory trial running to 10:03** (docs/gang-territory-trial.md; `territoryTrial` in the bn10 gang policy, ends by itself). Next check: fill in its Result section (power gained/h vs rival, respect/money given up, hours to a 9:1 lead), then remove `territoryTrial` from the policy. Weekly usage limit is near: check-ins cut to once a day until Ken restores them; the game runs on its own (auto install, outage watchdog).

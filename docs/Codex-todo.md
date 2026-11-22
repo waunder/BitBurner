@@ -10,6 +10,11 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
 
 ## Active work
 
+- From the 2026-11-22 09:16 check (BN12), for the next run:
+  - `faction_join.js` `seekKills` skips on any crime, so a Heist (no kills) blocks The Dark Army and Speakers
+    for the Dead indefinitely. Skip only for crimes that kill (Homicide, Assassination); add a test.
+  - `cct_audit.js` finds hosts with `ns.scan`, so it never sees contracts on darknet servers.
+    Have the darknet scripts report them, or accept the gap and say so in the status.
 - From the 2026-11-22 07:14 check (BN12):
   - Home holds ~42.9k files, ~42.5k of them darknet shards (cred, loot, deployer, manager) kept since September;
     saves are ~12MB gzipped. Archive outside the game first, then prune. Nothing deleted.

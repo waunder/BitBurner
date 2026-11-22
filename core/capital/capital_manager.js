@@ -12,7 +12,7 @@
  */
 import { readStacks } from "stack_files.js"
 import { flagFor, grantFor, kindOf } from "valuation_logic.js"
-import { PROGRAMS, chooseCapitalAction, portsUseful, cloudDemandFloorFor, lateCycleLimit, nextScriptToStart, blockedResidents, holdsCloudFor, sleeveAugHoldFrom } from "capital_logic.js"
+import { PROGRAMS, chooseCapitalAction, portsUseful, cloudDemandFloorFor, lateCycleLimit, nextScriptToStart, blockedResidents, mcpNeedsDirectStart, holdsCloudFor, sleeveAugHoldFrom } from "capital_logic.js"
 
 const POLICY = "capital_policy.json"
 const STATUS = "capital_status.json"
@@ -75,6 +75,10 @@ function startWaitingManager(ns) {
   // (BN10 run 2, 128GB home: residents filled 127.95GB and MCP was down 2.6h).
   // While mcp.js runs but cannot fit a batch, hold that batch's RAM too, so killed monitors
   // (HUD, run_report, mcp_xp; Ken 2026-11-11: monitors may always be killed for RAM) stay down.
+  const steward = scripts.find(s => s.name === "maintenance_steward.js")
+  const direct = mcpNeedsDirectStart({ mcpRunning: ns.scriptRunning("mcp.js", home), stewardRunning: steward.running,
+    freeRam: ns.getServerMaxRam(home) - ns.getServerUsedRam(home), mcpRam: ns.getScriptRam("mcp.js", home), stewardRam: steward.ram })
+  if (direct && ns.run("mcp.js")) return "mcp.js"
   const name = nextScriptToStart(scripts, residentFreeRam(ns))
   return name && ns.run(name) ? name : null
 }

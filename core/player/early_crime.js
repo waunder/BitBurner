@@ -6,12 +6,12 @@ import { earlyGoal, FRESH_SLEEVE_SKILLS, pickEarlyCrime } from "./early_crime_lo
  * sleeve_controller.js run, hands each side over as its controller starts, and exits when both run.
  * Start: startup.js launches it right after capital_bootstrap.js. Kept small (~11GB): no
  * getCrimeChance, getSleeve or getNumSleeves.
- * Args: --money-until-gb N (default 64), --poll-ms N (default 30000)
+ * Args: --money-until-gb N (default 128), --poll-ms N (default 30000)
  * @param {NS} ns
  */
 export async function main(ns) {
   ns.disableLog("ALL")
-  const flags = ns.flags([["money-until-gb", 64], ["poll-ms", 30000]])
+  const flags = ns.flags([["money-until-gb", 128], ["poll-ms", 30000]])
   const STATUS = "early_crime_status.json"
   let player = null
   let sleeves = null

@@ -13,8 +13,9 @@ test("chance mirrors Crime.successRate and caps at 1", () => {
 
 test("goal is money under the home threshold, karma at or above it", () => {
   assert.equal(earlyGoal(32), "money")
-  assert.equal(earlyGoal(64), "karma")
-  assert.equal(earlyGoal(64, 128), "money")
+  assert.equal(earlyGoal(64), "money")
+  assert.equal(earlyGoal(128), "karma")
+  assert.equal(earlyGoal(64, 64), "karma")
 })
 
 test("fresh player and fresh sleeves: Shoplift for money, Homicide for karma", () => {

@@ -115,6 +115,13 @@ export function blockedResidents(scripts, freeRam) {
   return scripts.filter(s => !s.running && s.ram > 0 && s.ram > freeRam).map(s => s.name)
 }
 
+/** mcp.js is normally started by the steward's recovery. When home fits MCP but not MCP plus the steward,
+ * the hold for MCP keeps the steward down and nobody starts either (BN12 run 2, 64GB home: 23.05GB free
+ * against 16.95 + 7.35). Only then does capital_manager start MCP itself. */
+export function mcpNeedsDirectStart({ mcpRunning, stewardRunning, freeRam, mcpRam, stewardRam }) {
+  return !mcpRunning && !stewardRunning && mcpRam > 0 && freeRam >= mcpRam && freeRam < mcpRam + stewardRam
+}
+
 /** Next script from a priority list that fits in free home RAM. */
 export function nextScriptToStart(scripts, freeRam) {
   return scripts.find(s => !s.running && s.ram > 0 && s.ram <= freeRam)?.name ?? null

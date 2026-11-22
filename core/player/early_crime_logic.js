@@ -3,7 +3,7 @@
  * On a fresh 32GB home the crime controller (36.8GB) and sleeve controller (30.4GB) do not fit for
  * about an hour, so this picks crimes for the player and the sleeves until they do.
  *
- * Mode: money while home RAM is under `moneyUntilHomeGB` (the first upgrades start MCP), then karma
+ * Mode: money while home RAM is under `moneyUntilHomeGB` (until the controllers start to fit), then karma
  * (the gang gate). Crimes are ranked by expected money or karma per second.
  *
  * Crime data and the chance formula mirror bitburner-src Crime.ts / CrimeType data (as sleeve_logic.js).
@@ -49,8 +49,9 @@ export function rankCrimes(skills, goal, successMult = 1) {
   }).filter((row) => row.score > 0).sort((a, b) => b.score - a.score || a.crime.localeCompare(b.crime))
 }
 
-/** money while home is small, karma after. */
-export function earlyGoal(homeMaxRam, moneyUntilHomeGB = 64) {
+/** money while home is small, karma after. 128GB is where the controllers start to fit; switching at 64
+ * halved income ($12.9k/s to $5.7k/s) with $33m still to save (BN12 run 2). */
+export function earlyGoal(homeMaxRam, moneyUntilHomeGB = 128) {
   return number(homeMaxRam) < moneyUntilHomeGB ? "money" : "karma"
 }
 

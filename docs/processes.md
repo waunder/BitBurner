@@ -2605,8 +2605,12 @@ runs the same sequence for the browser save, plus a GitHub sync step first.
   `mcp.js`'s 23.6GB, so `capital_bootstrap.js` (5.6GB) gets its RAM and raises home RAM. A home of
   8GB cannot hold startup beside the bootstrap: run `run capital_bootstrap.js` by hand first.
   (Static call counts, not measured.)
-- **Cost:** about 4.5GB while running (momentary) — 1.6GB baseline + `ns.ps`
-  (0.2GB) + `ns.killall` (0.5GB) + `ns.scriptRunning` (1.0GB) + `ns.run`
+- **32GB home, measured BN12 run 2:** startup (3.55GB), supervisor (3.65), crawler (7.1),
+  `capital_bootstrap.js` (5.6) and `early_crime.js` (11.25) total 31.15GB, so those two come before
+  `mcp.js` in the list and nothing else starts. Any growth over 0.85GB in these five drops the chooser.
+  At 64GB `capital_manager.js` starts `mcp.js` itself when the steward cannot fit beside it.
+- **Cost:** 3.55GB while running (momentary) — 1.6GB baseline + `ns.ps`
+  (0.2GB) + `ns.killall` (0.5GB) + `ns.run`
   (1.0GB) + `ns.getScriptRam`/`getServerMaxRam`/`getServerUsedRam` for the
   failure report; check with `mem startup.js`
 - **Closes tail windows *before* killing, not after — order was a real bug.**
@@ -2626,12 +2630,11 @@ runs the same sequence for the browser save, plus a GitHub sync step first.
   confirmed against the actual implementation in the game's bundle (it
   compares the target PID to the caller's and excludes a match), not just
   the doc text.
-- Still checks `ns.scriptRunning` before each launch even though `killall`
+- Still checks `ns.ps` for a running copy before each launch even though `killall`
   already cleared the host — cheap, and belt-and-suspenders against an edge
   case rather than the primary duplicate-prevention it was before `killall`
-  got folded in. Checked *without* passing arguments, since the function
-  matches "any script with this filename" regardless of what it was started
-  with (confirmed against the game's own doc text); a live
+  got folded in. Matched on filename only, regardless of what it was started
+  with; a live
   `mcp.js target=n00dles` still correctly reads as running.
 - `mcp_supervisor.js` launches first deliberately: once it's up, restarts and
   file dumps are remote-triggerable, so everything after it in the list is in

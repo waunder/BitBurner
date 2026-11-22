@@ -1,6 +1,6 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { chooseCapitalAction, portsUseful, cloudDemandFloorFor, lateCycleLimit, nextScriptToStart, blockedResidents, holdsCloudFor, sleeveAugHoldFrom } from "./capital_logic.js"
+import { chooseCapitalAction, portsUseful, cloudDemandFloorFor, lateCycleLimit, nextScriptToStart, blockedResidents, mcpNeedsDirectStart, holdsCloudFor, sleeveAugHoldFrom } from "./capital_logic.js"
 
 test("cloud buys leave the sleeve buyer's early-phase hold; other kinds and stale holds do not", () => {
   const now = 1_000_000
@@ -69,6 +69,15 @@ test("starts the first waiting script that fits", () => {
   const scripts = [{ name: "done", running: true, ram: 1 }, { name: "large", running: false, ram: 30 }, { name: "small", running: false, ram: 3 }]
   assert.equal(nextScriptToStart(scripts, 5), "small")
   assert.equal(nextScriptToStart(scripts, 2), null)
+})
+
+test("MCP is started directly only when the steward cannot fit beside its hold", () => {
+  const at = { mcpRunning: false, stewardRunning: false, freeRam: 23.05, mcpRam: 16.95, stewardRam: 7.35 }
+  assert.equal(mcpNeedsDirectStart(at), true)
+  assert.equal(mcpNeedsDirectStart({ ...at, freeRam: 30 }), false) // the steward fits and does the recovery
+  assert.equal(mcpNeedsDirectStart({ ...at, freeRam: 16 }), false)
+  assert.equal(mcpNeedsDirectStart({ ...at, stewardRunning: true }), false)
+  assert.equal(mcpNeedsDirectStart({ ...at, mcpRunning: true }), false)
 })
 
 test("BN10 cloud shape: 15 slots, half max RAM and 5x prices still fill, then upgrade the smallest", () => {

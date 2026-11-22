@@ -1,5 +1,5 @@
 {
-  "enabled": false,
+  "enabled": true,
   "dry": false,
   "allow": [],
   "autoPick": true,
@@ -13,5 +13,5 @@
   "allowDuringKarma": false,
   "focus": true,
   "cooldownMs": 600000,
-  "stage": "off for the rest of BN12 run 1 (2026-11-22 01:15 check): Daedalus favor, then The Red Pill, is the only gate left and needs the player; was live (Ken approved 2026-11-18 12:30). Set enabled true to revert."
+  "stage": "live again for BN12 run 2 (Codex-todo 2026-11-22 01:18: re-enable for the next run; Ken approved live grafting 2026-11-18 12:30). Run 1 turned it off at 01:15 once Daedalus favor was the only gate."
 }

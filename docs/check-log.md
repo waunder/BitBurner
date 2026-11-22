@@ -7,6 +7,17 @@ measurement or decision, not at every session start.
 Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 `docs/archive/state-2026-11-10/STATE-full.md`, the full STATE.md as it stood on 2026-11-10.
 
+## BN12 run 2
+
+**2026-11-22 09:50 Mac, Ken session: run 2 bootstrap; three stalls fixed.** Entry 09:25:08 (save); nothing was running at 09:27.
+1. 32GB: early_crime (11.25GB) missed by 0.15GB, so nothing earned (09:27). startup now uses ns.ps instead of scriptRunning (4.55 -> 3.55GB)
+   and lists capital_bootstrap and early_crime before mcp.js. Restarted 09:29: 4 started, all on Shoplift, $12.9k/s; 64GB by 09:42.
+2. 64GB: MCP and the steward deadlocked (manager holds MCP's RAM, the steward starts MCP, both need 24.3GB of 23.05 free).
+   `mcpNeedsDirectStart` in capital_logic; MCP up by 09:46.
+3. 64GB: the chooser went to karma and income fell to $5.7k/s with $33.1m to save. Threshold 64 -> 128GB; $17.0k/s at 09:48.
+Config corrected from run 1: run 2, World Daemon 3121, donationRepGain 1/1.02^2 (installed bundle's BN12 formula), grafts on again.
+Auto install paused: AGENTS.md approves installs for run 1 only. Tests 681/681. Not yet seen: 128GB, controller handover, gang, a graft.
+
 ## BN12 run 1
 
 **2026-11-22 09:15 Mac, scheduled run: waiting for Ken at the World Daemon; healthy; number review row 20.** Not a stand-aside run (repo clean, last commit 07:49). Remote API connected, DevTools answering; pull 09:12 and 09:15; both LaunchAgent runners up.

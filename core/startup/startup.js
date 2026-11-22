@@ -27,7 +27,7 @@
  * rather than staying resident, so its own RAM footprint doesn't compete
  * with what it just started.
  *
- * Still checks ns.scriptRunning before each launch even though killall
+ * Still checks for a running copy (ns.ps) before each launch even though killall
  * already cleared the host — cheap, and it's the belt-and-suspenders
  * against any edge case (killall failing to report success, a future call
  * site that skips the kill step) rather than the primary duplicate
@@ -37,8 +37,8 @@
  * file dumps are remote-triggerable, so everything after it in this list is
  * (in principle) also recoverable without a repeat of this script.
  *
- * Cost: about 4.5GB while running (check with `mem startup.js`) — 1.6GB
- * baseline + ns.ps (0.2GB) + ns.killall (0.5GB) + ns.scriptRunning (1.0GB)
+ * Cost: about 3.55GB while running (check with `mem startup.js`) — 1.6GB
+ * baseline + ns.ps (0.2GB) + ns.killall (0.5GB)
  * + ns.run (1.0GB), plus small getScriptRam/getServerMaxRam/
  * getServerUsedRam calls for the failure report. Momentary only: this needs that much free on
  * top of whatever it's about to launch, but only for the instant it takes
@@ -53,8 +53,10 @@
 // come after these: dnet_root.js in bn15 is large and resident, so on a small
 // home (BN10) it must not take the RAM that faction_join.js and gang_create.js need.
 // gang_create.js creates the gang at -54k karma and starts gang-controller.js.
+// On a fresh 32GB home only the first four fit (31.15GB with this script), so capital_bootstrap.js
+// (buys the 64GB upgrade) and early_crime.js (earns for it) come before mcp.js, which cannot fit beside them.
 // early_crime.js (~11GB) picks crimes for the player and sleeves until their controllers fit (fresh node).
-const SCRIPTS = ["mcp_supervisor.js", "hacking/crawler.js", "mcp.js", "capital_bootstrap.js", "early_crime.js", "maintenance_steward.js", "money.js", "stack_manager.js", "hud_consolidated.js", "run_report.js", "player_activity_controller.js", "xp_filler.js", "faction_join.js", "gang_create.js", "metrics_logger.js"]
+const SCRIPTS = ["mcp_supervisor.js", "hacking/crawler.js", "capital_bootstrap.js", "early_crime.js", "mcp.js", "maintenance_steward.js", "money.js", "stack_manager.js", "hud_consolidated.js", "run_report.js", "player_activity_controller.js", "xp_filler.js", "faction_join.js", "gang_create.js", "metrics_logger.js"]
 const RETRY_DELAY_MS = 3000
 
 export async function main(ns) {
@@ -88,12 +90,15 @@ export async function main(ns) {
   let skipped = 0
   let failed = 0
 
+  // ns.ps is already paid for; the dedicated API for this costs 1GB more, which on a
+  // fresh 32GB home is what keeps early_crime.js out.
+  const isUp = (file) => ns.ps(host).some((proc) => proc.filename.replace(/^\//, "") === file)
   const retry = []
   for (const file of SCRIPTS) {
-    // scriptRunning(script, host) checks for any instance regardless of the
+    // Matches any instance regardless of the
     // arguments it was launched with, so a live mcp.js target=n00dles still
     // correctly reads as "running" here.
-    if (ns.scriptRunning(file, host)) {
+    if (isUp(file)) {
       ns.tprint(`startup: ${file} already running, skipping`)
       skipped += 1
       continue
@@ -110,7 +115,7 @@ export async function main(ns) {
   if (retry.length) {
     await ns.sleep(RETRY_DELAY_MS)
     for (const file of retry) {
-      const pid = ns.scriptRunning(file, host) ? -1 : ns.run(file, 1)
+      const pid = isUp(file) ? -1 : ns.run(file, 1)
       if (pid === 0) {
         const need = ns.getScriptRam(file, host)
         const free = ns.getServerMaxRam(host) - ns.getServerUsedRam(host)

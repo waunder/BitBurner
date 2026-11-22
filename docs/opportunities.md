@@ -4,6 +4,13 @@ Running list kept by Claude on its own initiative (Ken, 2026-11-16: "exercise in
 for flaws and opportunities"). Newest first. Each entry: finding, evidence, expected gain, status.
 The 2-hourly check reviews this once per cycle (first run after an install).
 
+## 2026-11-22 13:15 check (BN12 run 2, cycle 2)
+
+- **The karma wait was slower than it needed to be, twice over.** Evidence: sleeves at strength 7 committed Homicide at
+  4.2% odds, and the player's crime ran unfocused at 80% karma. Gain (model from the installed bundle's formulas):
+  gang in ~4.7h from 13:15 in place of ~6.7h; from a fresh node 9.2 -> 6.9h. Status: both shipped 13:15-13:19
+  (`sleeveKarmaTrainTo` 50 in bn12, crime in `shouldFocus`); compare the gang's actual time with ~18:00.
+
 ## 2026-11-22 10:30 (Ken session, BN12 run 2; found with the run page's cycle view)
 
 - **The 4h gang cycle minimum cost run 1 about 4 of its 20.6 hours.** Evidence (`metrics_log`, run 1): cycle 5 (03:37)

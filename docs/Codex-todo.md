@@ -10,6 +10,12 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
 
 ## Active work
 
+- From the 2026-11-22 13:22 check (BN12 run 2):
+  - Check the gang arrives near 18:00 (sleeve gym + crime focus). If not, revisit `sleeveKarmaTrainTo` before run 3.
+  - No alarm notices a slow karma rate, only a stopped one (hands-off pass mark 2).
+  - Darknet manager registry holds 23 fresh entries against `MAX_ACTIVE_MANAGERS` 16 (18 at 05:14): the cap leaks.
+  - The in-game Run report stayed on run 1's "ready to finish" into run 2: only check-ins write it.
+    Generate it, or clear it on a new node, before the hands-off run.
 - From the 2026-11-22 09:15 check (BN12), for the next run:
   - `faction_join.js` `seekKills` skips on any crime, so a Heist (no kills) blocks The Dark Army and Speakers
     for the Dead indefinitely. Skip only for crimes that kill (Homicide, Assassination); add a test.

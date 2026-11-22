@@ -1677,7 +1677,7 @@ only a status older than 5 minutes reads "controller status stale".
   current activity instead of inventing a goal.
 - **Control:** `repBeforeGates` puts faction rep ahead of hacking gates in auto mode.
   `companyTarget` (`company`, `field`) puts company work ahead of training until that faction has joined, once cash passes `minTrainingCash`, and applies again each pass to take promotions.
-  `focusWork` focuses company and faction work, which pays 25% more rep than unfocused, retried hourly. The terminal page is hidden while focused: click "Do something else" for an hour of terminal use, or clear the flag. `restart_player.js` restarts the controller and restores focus.
+  `focusWork` focuses company and faction work and crime (since 2026-11-22; unfocused crime pays 80% karma, money and exp), which pays 25% more than unfocused, retried hourly. The terminal page is hidden while focused: click "Do something else" for an hour of terminal use, or clear the flag. `restart_player.js` restarts the controller and restores focus.
   `priorityAugs` take faction work ahead of everything after the cash and company steps, `charismaAugs` included, and `aug_install.js` keeps cash for them in its plan.
   `charismaAugs` take faction work ahead of every other faction, whatever the charisma; `charismaTarget` only governs Leadership.
   `player_activity_config.json` is committed and synced. Set
@@ -1731,7 +1731,11 @@ Priority per sleeve, each rule checked against bitburner-src `dev` (file paths i
    adds 0.0002, so recovery is 3x faster. `karmaWhileShocked: true` lets shocked sleeves
    earn karma anyway (off by default).
 2. While player karma is above `crimeKarmaTarget`: synchronize if sync is below `syncBelow`
-   (60; kept until 99), else the crime with the best karma rate. Karma credit is
+   (60; kept until 99). Then gym training (2026-11-22): while a sleeve's strength or defense is
+   below `karmaTrainTo` (0 = off; bn12 sets 50 as `sleeveKarmaTrainTo` in player_activity_config.json),
+   more than `karmaTrainMinLeft` (15,000) karma is left, cash is at least `karmaTrainMinCash` ($1b)
+   and the sleeve is in Sector-12, it trains the lower stat at Powerhouse Gym (~$2.4k/s a sleeve; it
+   does not travel). Else the crime with the best karma rate. Karma credit is
    crime.karma x sync/100 on success. Rep and money are not scaled by sync, so sync is
    ignored for them.
 3. Faction rep from the readiness planner's `workCandidates`. One sleeve per faction (the
@@ -1760,9 +1764,9 @@ and is assumed to be 1, so chances can be slightly optimistic.
   `playerFaction`, `readinessAgeMs`, and per sleeve `shock`, `sync`, `memory`, `current`,
   `desired`, `reason`, `changed`, `error`. The HUD's Sleeves section (`hl`) shows it, or
   "unavailable" when it is older than 3 minutes or the API is unavailable.
-- **RAM:** six `ns.sleeve` functions (getSleeve, getTask, setToShockRecovery,
-  setToSynchronize, setToCommitCrime, setToFactionWork) at 4GB each, plus `ns.heart.break`
-  and `ns.ps`, about 26GB. Sleeves are counted by probing `getSleeve` until it throws.
+- **RAM:** 34.5GB (`mem`, 2026-11-22): eight `ns.sleeve` functions (getSleeve, getTask, setToShockRecovery,
+  setToSynchronize, setToCommitCrime, setToFactionWork, setToGymWorkout, setToBladeburnerAction) at 4GB each,
+  plus `ns.heart.break`, the cash read and `ns.ps`. Sleeves are counted by probing `getSleeve` until it throws.
 - **Failure modes:** without the Sleeve API it prints one line, writes
   `available: false`, and rechecks every 5 minutes. Any other error is reported in the
   status and retried a minute later. A refused task (for example a faction not yet joined)

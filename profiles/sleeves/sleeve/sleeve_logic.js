@@ -10,6 +10,8 @@
  *  - NetscriptFunctions/Sleeve.ts setToFactionWork: needs faction membership and throws when another
  *    sleeve already works that faction. The player's own work is not checked, so sharing with the
  *    player is allowed. Sleeve.workForFaction returns false when the faction does not offer the type.
+ *  - Work/SleeveClassWork.ts (installed v3.0.1 bundle, checked 2026-11-22): gym exp is scaled by shock;
+ *    Sleeve.workoutAtGym returns false outside the gym's city. An install puts every sleeve on recovery.
  *  - Sleeve.process: any work drains shock 0.0001/cycle; recovery adds 0.0002 on top
  *    (x intelligence bonus). Synchronize adds sync 0.0002/cycle (player intelligence bonus).
  */
@@ -41,6 +43,9 @@ export const DEFAULT_SLEEVE_CONFIG = {
   factionWorkTypes: ["hacking", "field", "security"],
   crimeKeepRatio: 0.9,      // keep the current crime unless the best beats it by more than 1/ratio
   statusMaxAgeMs: 5 * 60 * 1000,
+  karmaTrainTo: 0,          // gym strength and defense to here before karma crime (0 = off)
+  karmaTrainMinLeft: 15_000, // with less karma left the training does not pay back
+  karmaTrainMinCash: 1e9,   // eight sleeves at Powerhouse spend ~$19k/s
   bladeburner: true,        // spare sleeves take Bladeburner contracts when bladeburner.js reports odds (BN6+)
   bladeburnerMinChance: 0.8, // low end of the sleeve's own estimate, to start a contract
   bladeburnerKeepChance: 0.7, // a sleeve already on a contract keeps it down to here (no flapping at the bar)
@@ -71,6 +76,27 @@ export function rankCrimes(sleeve, goal, bitNodeMult = 1) {
     const perSecond = crime.time > 0 ? chance / (crime.time / 1000) : 0
     return { crime: crime.name, chance, score: goal === "karma" ? crime.karma * sync * perSecond : crime.money * perSecond }
   }).filter((row) => row.score > 0).sort((a, b) => b.score - a.score || a.crime.localeCompare(b.crime))
+}
+
+const KARMA_GYM = { name: "Powerhouse Gym", city: "Sector-12" }
+
+/**
+ * Gym task while training raises the total karma rate enough to pay back, else null. Homicide odds are
+ * 2 str + 2 def + dex/2 + agi/2 over 975, so the two are trained evenly. The current stat is kept until
+ * it leads by 5 levels.
+ */
+export function karmaTraining(sleeve, { karma, cash, config }) {
+  const to = number(config.karmaTrainTo)
+  if (!(to > 0) || !sleeve.skills || sleeve.city !== KARMA_GYM.city) return null
+  if (!(number(cash) >= number(config.karmaTrainMinCash))) return null
+  if (!(number(karma) - number(config.crimeKarmaTarget) > number(config.karmaTrainMinLeft))) return null
+  const str = number(sleeve.skills.strength), def = number(sleeve.skills.defense)
+  if (Math.min(str, def) >= to) return null
+  const now = sleeve.task?.type === "CLASS" ? sleeve.task.classType : null
+  let stat = str <= def ? "str" : "def"
+  if (now === "str" && str < to && str < def + 5) stat = "str"
+  if (now === "def" && def < to && def < str + 5) stat = "def"
+  return { action: "gym", gym: KARMA_GYM.name, stat, until: to, goal: "karma" }
 }
 
 function pickCrime(sleeve, goal, config, bitNodeMult) {
@@ -125,6 +151,7 @@ export function sameTask(current, desired) {
   if (!current) return false
   if (desired.action === "recovery") return current.type === "RECOVERY"
   if (desired.action === "synchronize") return current.type === "SYNCHRO"
+  if (desired.action === "gym") return current.type === "CLASS" && current.classType === desired.stat && current.location === desired.gym
   if (desired.action === "crime") return current.type === "CRIME" && current.crimeType === desired.crime
   if (desired.action === "bladeburner") return desired.bbAction === "Infiltrate Synthoids"
     ? current.type === "INFILTRATE"
@@ -145,7 +172,7 @@ export function sameTask(current, desired) {
  * One task per sleeve. Each sleeve is {index, shock, sync, skills, mults, task}. Returns
  * [{index, task, reason}], task.action being recovery | synchronize | crime | faction | hold.
  */
-export function chooseSleeveTasks({ sleeves = [], karma = null, config = {}, activity = null, readiness = null, money = 0, now = Date.now(), bitNodeMult = 1, bladeburner = null } = {}) {
+export function chooseSleeveTasks({ sleeves = [], karma = null, config = {}, activity = null, readiness = null, money = 0, cash = 0, now = Date.now(), bitNodeMult = 1, bladeburner = null } = {}) {
   const cfg = { ...DEFAULT_SLEEVE_CONFIG, ...config }
   if (cfg.enabled === false) return sleeves.map((s) => ({ index: s.index, task: { action: "hold" }, reason: "disabled in sleeve_config.json" }))
 
@@ -174,6 +201,11 @@ export function chooseSleeveTasks({ sleeves = [], karma = null, config = {}, act
       const syncing = sleeve.task?.type === "SYNCHRO"
       if (sync < cfg.syncBelow || (syncing && sync < cfg.syncResumeAt)) {
         results.set(sleeve.index, { index: sleeve.index, task: { action: "synchronize" }, reason: `sync ${sync.toFixed(1)}: karma is scaled by sync` })
+        continue
+      }
+      const training = karmaTraining(sleeve, { karma, cash, config: cfg })
+      if (training) {
+        results.set(sleeve.index, { index: sleeve.index, task: training, reason: `gym ${training.stat} to ${training.until} for Homicide odds (karma ${Number(karma).toFixed(0)})` })
         continue
       }
       const pick = pickCrime(sleeve, "karma", cfg, bitNodeMult)

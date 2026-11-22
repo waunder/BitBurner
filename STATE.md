@@ -188,10 +188,12 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-22 09:48 Mac (Ken session): BN12 run 2 bootstrapping on 64GB** (top of this file has the detail).
-Running: supervisor, crawler, early_crime (player and 8 sleeves on Shoplift), capital_manager, MCP (first prep).
-Waiting for RAM: steward, both controllers, darknet, HUD, the rest. **Installs approved for run 2 (Ken, 09:50); auto install is live.**
-World Daemon: stop for Ken as always.
+**2026-11-22 13:22 Mac (scheduled): healthy; BN12 run 2 cycle 2, waiting on karma for the gang.** $25.5t at 13:12 and $31.7t at 13:18,
+hacking 663, home 2TB, 24 cloud servers at 512TB, 4 augs installed + The W1ngs of Icarus queued, entropy 0, advisor `wait`, no page alarms.
+Two karma fixes live, both measured: sleeves train strength/defense to 50 before Homicide (`sleeveKarmaTrainTo`; 1.19 exp/s against
+1.17 modelled), and the player's crime is now focused (karma 48 -> 65/min). Gang modelled ~18:00 instead of ~20:00 (not yet observed).
+Next check: sleeves back on Homicide by ~14:10 at ~30% odds, karma rate well above 4k/h; then the gang.
+World Daemon: still a stop (docs/finish-procedure.md NOT READY). The live check-in prompt still says run 1; AGENTS.md's run 2 terms apply.
 
 ## Daedalus ready (2026-11-16 21:35)
 
@@ -235,6 +237,5 @@ Bladeburner keeps working Assassination meanwhile.
 
 ## Open questions
 
-- For Ken (2026-11-22 07:48): end BN12 and choose the next BitNode.
 - The 01:18 question (install as soon as The Red Pill is rep-ready) lapsed: the wait ran out and install 5 went through.
   Raise it again only for the next run's endgame.

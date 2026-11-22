@@ -3,8 +3,8 @@
  * sleeve_logic.js and changes a sleeve only when its task differs. It never
  * touches the player's own work, buys sleeves, or installs augmentations.
  *
- * RAM: six ns.sleeve functions at 4GB each (getSleeve, getTask, setToShockRecovery,
- * setToSynchronize, setToCommitCrime, setToFactionWork). Sleeves are counted by probing
+ * RAM: eight ns.sleeve functions at 4GB each (getSleeve, getTask, setToShockRecovery, setToBladeburnerAction,
+ * setToSynchronize, setToCommitCrime, setToFactionWork, setToGymWorkout). Sleeves are counted by probing
  * getSleeve until it throws, instead of paying 4GB for getNumSleeves.
  *
  * @param {NS} ns
@@ -37,7 +37,7 @@ function readSleeves(ns) {
       if (/Invalid sleeve number/i.test(String(error?.message || error))) break
       throw error
     }
-    sleeves.push({ index, shock: info.shock, sync: info.sync, memory: info.memory, skills: info.skills, mults: info.mults, task: ns.sleeve.getTask(index) })
+    sleeves.push({ index, shock: info.shock, sync: info.sync, memory: info.memory, skills: info.skills, city: info.city, mults: info.mults, task: ns.sleeve.getTask(index) })
   }
   return sleeves
 }
@@ -50,6 +50,7 @@ function apply(ns, index, task) {
   if (task.action === "recovery") return ns.sleeve.setToShockRecovery(index)
   if (task.action === "synchronize") return ns.sleeve.setToSynchronize(index)
   if (task.action === "crime") return ns.sleeve.setToCommitCrime(index, task.crime)
+  if (task.action === "gym") return ns.sleeve.setToGymWorkout(index, task.gym, task.stat)
   if (task.action === "bladeburner") return ns.sleeve.setToBladeburnerAction(index, task.bbAction, task.contract)
   if (task.action === "faction") {
     // A faction that does not offer a work type makes the game return false, so walk the preference list.
@@ -66,7 +67,7 @@ function apply(ns, index, task) {
 
 function describe(task) {
   if (!task) return "idle"
-  return [task.type, task.crimeType || task.factionName || task.actionName, task.factionWorkType].filter(Boolean).join(":")
+  return [task.type, task.crimeType || task.factionName || task.actionName || task.classType, task.factionWorkType].filter(Boolean).join(":")
 }
 
 export async function main(ns) {
@@ -83,12 +84,16 @@ export async function main(ns) {
       try { karma = Number(ns.heart.break()) } catch { /* Karma unknown: the logic treats it as not needed. */ }
       const playerConfig = readJson(ns, "player_activity_config.json", {}) || {}
       const override = readJson(ns, "sleeve_config.json", {}) || {}
-      const config = { ...(playerConfig.crimeKarmaTarget === undefined ? {} : { crimeKarmaTarget: playerConfig.crimeKarmaTarget }), ...override }
+      const config = {
+        ...(playerConfig.crimeKarmaTarget === undefined ? {} : { crimeKarmaTarget: playerConfig.crimeKarmaTarget }),
+        ...(playerConfig.sleeveKarmaTrainTo === undefined ? {} : { karmaTrainTo: playerConfig.sleeveKarmaTrainTo }),
+        ...override,
+      }
       const activity = readJson(ns, "player_activity_status.json", null)
       const readiness = readJson(ns, "augmentation_readiness.json", null)
       // BN6+: bladeburner.js measures per-sleeve contract odds (it already pays the Bladeburner RAM).
       const bladeburner = readJson(ns, "bladeburner_status.json", null)?.sleeveContracts || null
-      const decisions = chooseSleeveTasks({ sleeves, karma, config, activity, readiness, money: Number(readiness?.money) || 0, now, bladeburner })
+      const decisions = chooseSleeveTasks({ sleeves, karma, config, activity, readiness, money: Number(readiness?.money) || 0, cash: ns.getServerMoneyAvailable("home"), now, bladeburner })
       const rows = []
       for (const sleeve of sleeves) {
         const decision = decisions[sleeve.index]

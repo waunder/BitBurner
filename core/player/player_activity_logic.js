@@ -228,10 +228,10 @@ export function choosePlayerActivity({ player = {}, nextGate = null, augmentatio
   return { action: "hold", reason: "no actionable Hack gate, reachable faction reputation target, or karma requirement", confidence: "LOW" }
 }
 
-/** Unfocused work pays 80% rep. Retried hourly, so anyone can leave the work page for a while. */
+/** Unfocused work pays 80% rep, and unfocused crime 80% karma, money and exp (v3.0.1 CrimeWork.commit). Retried hourly, so anyone can leave the work page for a while. */
 export function shouldFocus({ config = {}, action, selected, focused, now, lastFocusAt = 0, retryMs = 60 * 60 * 1000 } = {}) {
   return config.focusWork === true && selected === true && focused === false
-    && (action === "company" || action === "faction") && now - lastFocusAt >= retryMs
+    && ["company", "faction", "crime"].includes(action) && now - lastFocusAt >= retryMs
 }
 
 export function actionKey(decision) {

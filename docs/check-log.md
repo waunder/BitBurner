@@ -9,6 +9,23 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN12 run 2
 
+**2026-11-22 13:22 Mac, scheduled check: karma to the gang faster.** Live (ctl-pull 13:12, autosave, page API): daemon, DevTools,
+auto install, watchdog and residents up; no alarms. $25.5t, hacking 655, karma -7,925; installed 4, queued 1; advisor `wait`
+(6.5h for ADR-V1); grafts held by the karma phase, entropy 0; MCP and 9 stacks running; darknet $2.8b this cycle; contracts 0 waiting.
+auto install held a 12:02 `install` verdict at 47 min (1h floor); it lapsed.
+- Found: 8 sleeves on Homicide at 4.2% odds (strength 7), ~1.2 karma/s total. Built `karmaTraining` (sleeve_logic.js): gym to 50
+  while >15k karma is left and cash >= $1b. Threshold from a simulation on the installed v3.0.1 formulas (best 50-60; saves
+  from any start tested down to 15k left). Restarted 13:15:27: all 8 at the gym by 13:16, alternating str/def, 1.19 exp/s
+  (model 1.17), ~$19.4k/s. Expected ~$60m over ~0.86h.
+- Found: player crime pays karma x focusPenalty (0.8) and `shouldFocus` skipped crime. Fixed, restarted 13:19:43: focused by
+  13:21, karma 48 -> 65/min. game_terminal.py checked afterwards: left the work page and refocused.
+- Model: gang in ~4.7h (~18:00) instead of ~6.7h (~20:00). Unverified until it happens; the install path with focused crime
+  has not fired either (same button and flow as focused faction work).
+- Tests in staged copies: bn12 696, bn10 696, bn15 651, 0 failed. Not tested in a disposable game.
+- Number review row 21 (Hacknet): correctly $0, not worth buying here. Rows 13 and 15 updated with the fixes.
+- Queued (Codex-todo): darknet manager cap leaks (23/16), stale Run report across runs, no alarm for a slow rate.
+- No install, reset or backup this check.
+
 **2026-11-22 12:07 Mac, Ken session: finish-and-enter rehearsed; handover recorded.** "Yes, copy only": 30 of 30 in a
 disposable copy (BN12 -> 12 and -> 11, with and without the startup callback, refusals, backup restore); the real game's
 node, stamps, install count and daemon connection identical before and after. Found: a startup callback starts the wrong

@@ -42,6 +42,8 @@ is whether the scripts and monitoring are approaching their end state.
 | 09:45 | capital_manager starts MCP | deadlock at 64GB |
 | 09:45 | money crime until 128GB | income halved at 64GB |
 | 10:36 | steward displaces xp_filler | install advisor blind from 10:26 |
+| 13:15 | sleeve gym training built, controller restarted | sleeves at 4% Homicide odds; found by looking |
+| 13:19 | crime focus built, player controller restarted | player karma at 80% unfocused; found by looking, no alarm covers a slow rate |
 
 ## Handover (Ken, 2026-11-22, after the idea of 10:56)
 

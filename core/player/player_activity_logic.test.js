@@ -263,12 +263,13 @@ test("works for the target company until its faction has joined", () => {
   assert.notEqual(decide([], 100).action, "company")
 })
 
-test("focuses rep work hourly only while it is the selected activity", () => {
+test("focuses rep work and crime hourly only while it is the selected activity", () => {
   const base = { config: { focusWork: true }, action: "company", selected: true, focused: false, now: 4e6, lastFocusAt: 0 }
   assert.equal(shouldFocus(base), true)
   assert.equal(shouldFocus({ ...base, lastFocusAt: 3e6 }), false)
   assert.equal(shouldFocus({ ...base, focused: true }), false)
-  assert.equal(shouldFocus({ ...base, action: "crime" }), false)
+  assert.equal(shouldFocus({ ...base, action: "crime" }), true)
+  assert.equal(shouldFocus({ ...base, action: "algorithms" }), false)
   assert.equal(shouldFocus({ ...base, selected: false }), false)
   assert.equal(shouldFocus({ ...base, config: {} }), false)
 })

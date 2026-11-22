@@ -18,6 +18,7 @@
   "repInvestmentMaxPriceMultiple": 250,
   "crimeKarmaTarget": -54000,
   "karmaFirst": true,
+  "sleeveKarmaTrainTo": 50,
   "charismaAugs": [],
   "gangCycleSettles": true,
   "installRedPillAlone": true,

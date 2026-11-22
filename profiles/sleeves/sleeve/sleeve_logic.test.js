@@ -235,3 +235,28 @@ test("workTypeRank: a combat sleeve prefers security/field over hacking; sameTas
   assert.equal(sameTask({ type: "FACTION", factionName: "NiteSec", factionWorkType: "hacking" }, { ...desired, workScores: null }), true)
   assert.deepEqual(workTypeRank(null).types, ["hacking", "field", "security"])
 })
+
+test("karma training: gym evenly to the bar, only while it pays back and is affordable", () => {
+  const config = { karmaWhileShocked: true, karmaTrainTo: 50, crimeKarmaTarget: -54_000 }
+  const weak = (extra = {}, skills = {}) => sleeve(0, { shock: 92, city: "Sector-12", skills: { ...strong, strength: 7, defense: 7, ...skills }, ...extra })
+  const act = (s, extra = {}) => run({ sleeves: [s], karma: -8_000, cash: 2e9, config, ...extra })[0].task
+  assert.deepEqual(act(weak()), { action: "gym", gym: "Powerhouse Gym", stat: "str", until: 50, goal: "karma" })
+  assert.equal(act(weak({}, { strength: 20 })).stat, "def")
+  assert.equal(act(weak({ task: { type: "CLASS", classType: "str" } }, { strength: 10 })).stat, "str")
+  assert.equal(act(weak({ task: { type: "CLASS", classType: "str" } }, { strength: 12 })).stat, "def")
+  assert.equal(act(weak({ task: { type: "CLASS", classType: "str" } }, { strength: 50, defense: 48 })).stat, "def")
+  assert.equal(act(weak({}, { strength: 50, defense: 50 })).action, "crime")
+  assert.equal(act(weak({ city: "Aevum" })).action, "crime")
+  assert.equal(act(weak(), { cash: 999e6 }).action, "crime")
+  assert.equal(act(weak(), { cash: undefined, money: 1e15 }).action, "crime") // a stale planner reading is not cash
+  assert.equal(act(weak(), { karma: -39_001 }).action, "crime")
+  assert.equal(act(weak(), { config: { karmaWhileShocked: true } }).action, "crime") // off by default
+  assert.equal(act(weak(), { karma: -55_000 }).action, "recovery")
+})
+
+test("sameTask recognises a gym task by stat and gym", () => {
+  const want = { action: "gym", gym: "Powerhouse Gym", stat: "str" }
+  assert.equal(sameTask({ type: "CLASS", classType: "str", location: "Powerhouse Gym" }, want), true)
+  assert.equal(sameTask({ type: "CLASS", classType: "def", location: "Powerhouse Gym" }, want), false)
+  assert.equal(sameTask({ type: "CRIME", crimeType: "Homicide" }, want), false)
+})

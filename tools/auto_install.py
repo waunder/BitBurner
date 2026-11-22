@@ -167,7 +167,7 @@ class AutoInstall:
             state.pop("install_seen_s", None)
             if "install refused" in out:
                 state["hold_until_s"] = now_s + GRAFT_HOLD_S
-                self.log(f"autoinstall: HOLD aug_install refused (graft in progress); retry after {GRAFT_HOLD_S // 60} min")
+                self.log(f"autoinstall: HOLD aug_install refused (graft in progress or shares held); retry after {GRAFT_HOLD_S // 60} min")
                 self.last = "hold"
             else:
                 state["pending"] = {"started_s": now_s, "resetAt": readiness.get("resetAt")}

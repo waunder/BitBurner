@@ -50,6 +50,8 @@
     "tail_geometry.js": "core/lib/tail_geometry.js",
     "progression_guidance_logic.js": "core/mcp/progression_guidance_logic.js",
     "mcp_stock_trader.js": "core/capital/mcp_stock_trader.js",
+    "stock_engine.js": "core/capital/stock_engine.js",
+    "stock_engine_logic.js": "core/capital/stock_engine_logic.js",
     "mcp_stock_trader_logic.js": "core/capital/mcp_stock_trader_logic.js",
     "mcp_stocks.js": "core/hud/mcp_stocks.js",
     "mcp_status.js": "core/mcp/mcp_status.js",

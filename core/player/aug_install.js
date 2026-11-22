@@ -1,9 +1,21 @@
 import { NEUROFLUX, countFillers, donationFor, donationPlan, donationRate, fluxSeller, nextHomeUpgrade, planPurchases, runRules } from "./aug_install_logic.js"
 import { installBlocked } from "./graft_logic.js"
+import { sharesBlockInstall } from "./stock_engine_logic.js"
 
 /** Buys what rep and cash allow, then installs on --install. See docs/processes.md. @param {NS} ns */
 export async function main(ns) {
   const flags = ns.flags([["dry", false], ["install", false]])
+  // An install resets the stock market and every held share is lost. Refuse before buying anything (shares are
+  // not cash), ask stock_engine.js to sell, and let auto install retry. No ns.stock RAM: the engine's status file.
+  let stockStatus = null
+  try { stockStatus = JSON.parse(ns.read("stock_engine_status.json") || "null") } catch { stockStatus = null }
+  const sharesHeld = sharesBlockInstall(stockStatus)
+  if (flags.install && !flags.dry && sharesHeld) {
+    ns.write("stock_liquidate.txt", String(Date.now()), "w")
+    ns.write("aug_install_status.json", JSON.stringify({ ts: Date.now(), installRefused: sharesHeld, installed: false }), "w")
+    ns.tprint(`aug_install: install refused: ${sharesHeld}`)
+    return
+  }
   const s = ns.singularity
   const player = ns.getPlayer()
   const owned = s.getOwnedAugmentations(true)

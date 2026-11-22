@@ -1,4 +1,4 @@
-**2026-11-22 09:48 (Ken session): BN12 run 2 running (entered by Ken 09:25). INSTALLS ARE ON HOLD until Ken confirms them for this run:** `tools/autoinstall.pause` is set on purpose; do not install by hand and do not remove it. Once Ken confirms: delete the file and add a run 2 line to AGENTS.md. Run 1 complete (SF12.1: a run now starts with NeuroFlux 1). Carried over: 8 sleeves, memory 100 (shock back to ~100, no augs). Gone, as every BitNode does: all augs including both grafts (QLink, Neuronal Densification) and their entropy (2 -> 0). BN12.2 is x0.9612 on levels and gains, x1.0404 on costs; Daedalus still 31 augs, World Daemon hacking 3121. Config: run 2, grafts enabled again, donationRepGain 0.96117. Bootstrap fixes live: startup fits the crime chooser at 32GB; capital_manager starts MCP at 64GB; money crime until 128GB. 64GB at 09:42; MCP up 09:46; $17.0k/s at 09:48, 128GB ($33.1m) expected by ~10:17. Backups: saves/bn12-run2-entered-20261122.json.gz, saves/bn12-run2-64gb-20261122.json.gz. Next check: 128GB and up bought, controllers take over from early_crime, then gang.
+**2026-11-22 09:48 (Ken session): BN12 run 2 running (entered by Ken 09:25). Installs approved for this run (Ken, 09:50; AGENTS.md):** same terms as run 1; auto install is the trigger, pause lifted 09:50. World Daemon is still a stop. Run 1 complete (SF12.1: a run now starts with NeuroFlux 1). Carried over: 8 sleeves, memory 100 (shock back to ~100, no augs). Gone, as every BitNode does: all augs including both grafts (QLink, Neuronal Densification) and their entropy (2 -> 0). BN12.2 is x0.9612 on levels and gains, x1.0404 on costs; Daedalus still 31 augs, World Daemon hacking 3121. Config: run 2, grafts enabled again, donationRepGain 0.96117. Bootstrap fixes live: startup fits the crime chooser at 32GB; capital_manager starts MCP at 64GB; money crime until 128GB. 64GB at 09:42; MCP up 09:46; $17.0k/s at 09:48, 128GB ($33.1m) expected by ~10:17. Backups: saves/bn12-run2-entered-20261122.json.gz, saves/bn12-run2-64gb-20261122.json.gz. Next check: 128GB and up bought, controllers take over from early_crime, then gang.
 
 **2026-11-21 13:45 (Ken session): auto install runs on the Mac.** LaunchAgent `com.bitburner.auto-install` (pid 87095 at load) runs `tools/auto_install_mac.py`: the PC's AutoInstall guards every 60s (verdict install for 5 min, cycle >= 1h, no Red Pill, backup first). Log `runtime/autoinstall_mac.log`; pause `tools/autoinstall.pause`; details docs/remote-api-keepalive.md. Check-ins review its `autoinstall:` lines instead of timing installs. Verified: loaded, writing state on its own passes (13:44); fired install 2 at 18:36.
 
@@ -174,11 +174,16 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 
 Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave_pre-install<N>_BN10run3_<date>.json.gz`.
 
+## Installs BN12 run 2
+
+| # | When (Mac clock) | Bought | Installed after |
+|---|---|---|---|
+
 ## Latest check
 
 **2026-11-22 09:48 Mac (Ken session): BN12 run 2 bootstrapping on 64GB** (top of this file has the detail).
 Running: supervisor, crawler, early_crime (player and 8 sleeves on Shoplift), capital_manager, MCP (first prep).
-Waiting for RAM: steward, both controllers, darknet, HUD, the rest. **Installs on hold for Ken's confirmation.**
+Waiting for RAM: steward, both controllers, darknet, HUD, the rest. **Installs approved for run 2 (Ken, 09:50); auto install is live.**
 World Daemon: stop for Ken as always.
 
 ## Daedalus ready (2026-11-16 21:35)

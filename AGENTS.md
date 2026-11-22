@@ -30,6 +30,11 @@ BN12, a validated save backup before each, the install advisor's verdict as the 
 and a stop at its World Daemon or any other reset. Ken prefers "I'll proceed unless you
 say otherwise" over asking for in-scope work.
 
+BN12 run 2 (Ken, 2026-11-22, "Approve installs"): same terms, for this run. Installs
+approved up to readiness to complete it, a validated save backup before each, the advisor's
+verdict as the trigger, and a stop at its World Daemon (`w0r1d_d43m0n`) or any other reset.
+A later run needs Ken's approval again: set `tools/autoinstall.pause` on entering one.
+
 Install trigger (Ken, 2026-11-19): the install advisor's verdict is the trigger.
 `tools/auto_install.py` (in the supervisor) backs up the save and installs when the
 verdict reads `install` for 5 minutes; checks no longer time installs, they review

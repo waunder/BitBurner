@@ -16,7 +16,7 @@ Where the game is: it must run on exactly one machine. If STATE.md says the game
 "game on the PC, standing by" and change nothing. Never launch, reload or quit the game.
 
 Authority (AGENTS.md): everything in the game is yours except resets and permanent forfeits. Installs are
-approved up to readiness to complete BN12 (Ken, 2026-11-21, same terms as earlier runs), with a validated save
+approved per run, up to readiness to complete BN12 (Ken: run 1 2026-11-21, run 2 2026-11-22; same terms as earlier runs), with a validated save
 backup in saves/ before each, and the install advisor's verdict as the trigger: install when it reads `install`.
 The LaunchAgent com.bitburner.auto-install (tools/auto_install_mac.py) normally does this within ~6 minutes of the
 verdict; read its `autoinstall:` lines in runtime/autoinstall_mac.log and install by hand only if it is down or stuck.

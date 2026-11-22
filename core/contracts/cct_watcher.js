@@ -1,6 +1,6 @@
 /** Low-frequency Coding Contract discovery and one-at-a-time guarded queue. */
 import { solveContract } from "cct_logic.js"
-import { selectContractWork } from "maintenance_logic.js"
+import { contractSubmitFiles, selectContractWork } from "maintenance_logic.js"
 import { prepareContractWorker, selectContractWorker } from "cct_worker_pool.js"
 
 const POLL_MS = 10 * 60 * 1000
@@ -68,7 +68,7 @@ export async function main(ns) {
         const submitCandidate = selectContractWorker(ns, submitRam)
         const submitWorker = await prepareContractWorker(ns, submitCandidate, submitRam)
         if (!submitWorker.ok) throw new Error(`no safe worker can host cct_submit.js: ${submitWorker.reason}`)
-        const copiedSubmit = await ns.scp(["cct_submit.js", "cct_logic.js", "cct_inventory.json"], submitWorker.worker, "home")
+        const copiedSubmit = await ns.scp(contractSubmitFiles(ns.read("cct_reward_ledger.json")), submitWorker.worker, "home")
         const submitReady = copiedSubmit && await prepareContractWorker(ns, submitCandidate, submitRam)
         const submitPid = submitReady?.ok ? ns.exec("cct_submit.js", submitWorker.worker, 1, target.host, target.file, MIN_TRIES) : 0
         if (submitPid === 0) throw new Error(`could not start guarded submission on ${submitWorker.worker}`)

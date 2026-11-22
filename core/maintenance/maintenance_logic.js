@@ -28,3 +28,12 @@ export function shouldRequestMcpRecovery({ now, mcp, previous, cooldownMs = 15 *
   if (now - previous.mcpStaleSince < 60_000) return false
   return !Number.isFinite(previous?.lastRecoveryAt) || now - previous.lastRecoveryAt >= cooldownMs
 }
+
+/**
+ * Files a contract submit worker needs. The ledger goes out with them: cct_submit appends to the worker's
+ * copy and that copy replaces home's, so without it each worker (and each install) restarted the history.
+ */
+export function contractSubmitFiles(ledgerText) {
+  const files = ["cct_submit.js", "cct_logic.js", "cct_inventory.json"]
+  return ledgerText ? [...files, "cct_reward_ledger.json"] : files // scp fails on a missing file
+}

@@ -40,3 +40,9 @@ test("requires a persistent stale period and honors cooldown", () => {
   assert.equal(shouldRequestMcpRecovery({ now, mcp: { ts: now - 100_000 }, previous: { mcpStaleSince: now - 70_000 } }), true)
   assert.equal(shouldRequestMcpRecovery({ now, mcp: { ts: now - 100_000 }, previous: { mcpStaleSince: now - 70_000, lastRecoveryAt: now - 10_000 } }), false)
 })
+
+test("contract submit worker receives the home ledger when there is one", async () => {
+  const { contractSubmitFiles } = await import("./maintenance_logic.js")
+  assert.ok(contractSubmitFiles('{"entries":[]}').includes("cct_reward_ledger.json"))
+  assert.deepEqual(contractSubmitFiles(""), ["cct_submit.js", "cct_logic.js", "cct_inventory.json"])
+})

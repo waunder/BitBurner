@@ -150,3 +150,7 @@ disables saving, so nothing more is lost while you work.
    and `tools/save_export.py --out post-recovery-<date>` decodes with values newer than the imported file.
 
 Loss on 2026-11-19: about 25 minutes (08:18 to the 08:20 crash). Offline earnings covered the gap.
+
+**2026-11-22:** `ctl-list` (and `profile.py check`, which uses it) failed once the game held ~43k files: the
+reply (1.67MB) was over the client's 1MB line limit. Replies now allow 32MB (`CONTROL_REPLY_LIMIT`); requests
+keep 1MB. The daemon did not need a restart.

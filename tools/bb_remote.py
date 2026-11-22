@@ -871,6 +871,8 @@ SLOW_PULL_FILES = {"mcp_status_log.txt", "mcp_events.txt", "mcp_multi_status_log
 # already larger than asyncio's default 64 KiB stream limit, so keep a bounded
 # release-sized allowance on both ends of this loopback-only protocol.
 CONTROL_MESSAGE_LIMIT = 1_048_576
+# Replies can be far larger: the file list was 1.67MB at 42,906 game files (2026-11-22).
+CONTROL_REPLY_LIMIT = 32 * 1_048_576
 
 
 def _remote_name(relpath: str) -> str:
@@ -1349,7 +1351,7 @@ async def cmd_daemon(args):
 async def _ctl_call(control_port: int, req: dict, timeout: float = 15.0) -> dict:
     try:
         reader, writer = await asyncio.wait_for(
-            asyncio.open_connection("127.0.0.1", control_port, limit=CONTROL_MESSAGE_LIMIT), timeout=5
+            asyncio.open_connection("127.0.0.1", control_port, limit=CONTROL_REPLY_LIMIT), timeout=5
         )
     except (OSError, asyncio.TimeoutError) as e:
         if isinstance(e, PermissionError) or getattr(e, "errno", None) in (errno.EPERM, errno.EACCES):

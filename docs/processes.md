@@ -2230,6 +2230,9 @@ one explicit submission, not a distributed batch.
 
 ### `cct_hud.js`
 
+The ledger goes out to the submit worker with the script (`contractSubmitFiles`, 2026-11-22). Before that each
+worker appended to its own copy, which then replaced home's, so older totals in it are not a full history.
+
 Low-refresh, read-only reward ledger panel for completed Coding Contracts.
 `cct_submit.js` appends one bounded (latest 100) outcome record after every
 attempt; the ledger starts with the verified 12-contract aggregate that

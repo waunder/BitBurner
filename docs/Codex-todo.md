@@ -10,6 +10,12 @@ revalidation. The current session handoff is `STATE.md`; project rules are in
 
 ## Active work
 
+- From the 2026-11-22 07:14 check (BN12):
+  - Home holds ~42.9k files, ~42.5k of them darknet shards (cred, loot, deployer, manager) kept since September;
+    saves are ~12MB gzipped. Archive outside the game first, then prune. Nothing deleted.
+  - 54 game scripts are in no manifest (`profile.py check`), including the spent one-off `enter_bn12.js`
+    (destroy call; inert, its hostname is misspelt `w0r1d_daemon`). Archive and remove before the next run.
+  - `AGENTS.md` spells the host `w0r1d_daemon`; the game's name is `w0r1d_d43m0n` (installed bundle).
 - From the 2026-11-22 05:14 check (BN12):
   - The pull set still fetches `dnet_status.json` and `dnet_roi_current.json`, months stale: drop them or revive their writers.
   - Darknet manager registry: 18 fresh against a cap of 16 (concurrent spawns). Harmless at this size.

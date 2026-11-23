@@ -24,6 +24,8 @@ separate game. It never replaces, deletes or overwrites this save (the handover 
 
 ## Progress
 
+- 2026-11-23 00:40: BN12 run 2 finished by the agent with tools/finish_node.py (Ken: "Yes, finish it"); Source-File 12.2.
+  BN12 run 3, the hands-off test, began on profile bn12 with startup.js as the callback.
 - 2026-11-22: profile bn11 built from bn12 (tests 696 pass; finish tool plans BN12 to BN11 as a profile switch).
   Not yet: an earning plan for 1% server money and a rehearsal from a fresh BN11 start in a disposable copy.
 - 2026-11-22: stock engine built for BN11 (and BN8): copy rehearsal from $1t +47% in 29 min; installs refuse while

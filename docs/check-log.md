@@ -9,6 +9,15 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN12 run 3
 
+**2026-11-23 09:15 Mac, scheduled check: install 3 of run 3 by auto install; gang formed; nothing to fix.** Live (ctl-pull 09:12, page API):
+daemon connected, DevTools up, no pause file, page alarms none. Auto install: HOLD at 07:44 (cycle 57 min), verdict install confirmed 07:47-07:52
+("best next ADR-V1 Pheromone Gene adds +1.4%/h, under the cycle's +1.9%/h"), backup saves/pre-install-auto-20261123-0752.json.gz (13.2MB),
+installed 07:53: 9 -> 10. At 09:12: cycle 4 (1.3h), $45.5t, ~$17.3b/s, hacking 850 (World Daemon 3,184), karma -54.1k, entropy 0, 24 scripts;
+gang Slum Snakes 11 members, respect 634k, reputation mode (9 Terrorism, 2 Train Combat), territory 14.3%, power 1 (no clashes yet);
+player grafting OmniTek InfoLoad ($8.6b, 0.8h, started ~08:40); 8 sleeves shock recovery (shock ~81, sync 100). Advisor wait: gang minimum
+2.7h more, gang rep does not cover its augs yet (next Embedded Netburner Module ~1.3h).
+- Interventions: none. Built ahead: nothing this run. Number review row: skipped.
+
 **2026-11-23 07:15 Mac, scheduled check: install 2 of run 3 by auto install; nothing to fix.** Live (ctl-pull 07:12, page API): daemon
 connected, DevTools up, no pause file, page alarms none. Auto install: verdict install 06:40 ("best next ADR-V1 Pheromone Gene adds +1.7%/h,
 under the cycle's +2.3%/h"), confirmed 5 min, backup saves/pre-install-auto-20261123-0646.json.gz (10.3MB), installed 06:46-06:47: 4 -> 9

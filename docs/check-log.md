@@ -9,6 +9,17 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN12 run 3
 
+**2026-11-23 03:20 Mac, scheduled check: install 1 of run 3 by auto install; nothing to fix.** Live (ctl-pull 03:12, page API): daemon
+connected, DevTools up, LaunchAgents auto-install, watchdog, run-page and remote-api-monitor up; no pause file; page alarms none. Cycle 1
+at 2.6h: $874b (up from $22m at 01:12; ~$0.32b/s, hacking $912b earned, darknet $2.6b, crime $127m, contracts $71m), hacking 518 (World
+Daemon 3,184), karma -5,177 (~-60/min), no gang, factions NiteSec/Tian Di Hui/CyberSec/Black Hand/Slum Snakes/BitRunners/Tetrads at
+140-1,700 rep, home 1TB/1 core, 24 cloud (400TB), entropy 0, player Homicide, 8 sleeves gym, shock ~95. Advisor verdict install at
+03:12 ("best next BitWire adds +0.4%/h, under the cycle's +0.9%/h"; plan Neurotrainer I + Wired Reflexes $17.6m). The auto-install log
+was silent 23:52-03:12 only because it logs on change (verified by evaluating decide(): approval "BitNode 12 run 3 is approved"). It
+confirmed 5 min, backed up saves/pre-install-auto-20261123-0317.json.gz (11.5MB) and installed 03:18-03:19: 1 -> 4 (Neurotrainer I,
+Wired Reflexes, The W1ngs of Icarus), home 32TB, 4 cores. At 03:20: 21 scripts back up, cycle 2, no alarms.
+- Interventions: none. Built ahead: nothing this run. Number review row: skipped.
+
 **2026-11-23 01:15 Mac, scheduled check: run 3 (hands-off test) bootstrapping by itself; nothing to fix.** Live (ctl-pull 01:12, autosave
 01:12, page API): daemon connected, DevTools up, LaunchAgents auto-install, watchdog, run-page and remote-api-monitor up; no pause file;
 page alarms none. Entered 00:40 by finish_node.py (run stamp 1795419575839). At 01:12: $22.3m, hacking 60 (World Daemon 3,184), karma

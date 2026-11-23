@@ -199,14 +199,20 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 | 3 | 2026-11-22 21:39 | Auto install after the SPTN-97 graft (verdict: nothing left worth waiting for): The B00ts of Perseus, QLink, The Black Hand, BitRunners Neurolink, Xanipher, The Shadow's Simulacrum and 18 others + NeuroFlux. Backup saves/pre-install-auto-20261122-2138.json.gz | 12 -> 37 |
 | 4 | 2026-11-22 22:47 | Auto install at 1.1h (gang minimum lapsed: batch settled): The H4mmer of Daedalus and 29 more incl. NeuroFlux. Backup saves/pre-install-auto-20261122-2245.json.gz | 37 -> 67 |
 
+## Installs BN12 run 3 (hands-off test)
+
+| # | When (Mac clock) | Bought | Installed after |
+|---|---|---|---|
+| 1 | 2026-11-23 03:19 | Auto install at 2.6h (verdict: best next BitWire +0.4%/h, under the cycle's +0.9%/h): Neurotrainer I, Wired Reflexes ($17.6m) + queued The W1ngs of Icarus; leftover cash ($874b) took home 1TB -> 32TB, 4 cores. Backup saves/pre-install-auto-20261123-0317.json.gz | 1 -> 4 (readiness) |
+
 ## Latest check
 
-**2026-11-23 01:15 Mac (scheduled): BN12 run 3 (hands-off test) bootstrapping on its own, no interventions.** Live 01:12 (ctl-pull, page
-API): daemon connected, DevTools up; auto install, watchdog, run page LaunchAgents up; no pause file; page alarms none. Run 3 cycle 1,
-0.5h after entry: $22.3m, hacking 60, karma -164, home 64GB, scripts capital_manager, early_crime, crawler, mcp, mcp_supervisor,
-money.js; player on Mug, 8 sleeves Shoplift (shock ~99). capital_manager saving for 128GB ($33.8m) at ~$18k/s, so ~01:22; then
-player_activity_controller and sleeve_controller fit. Run 3 install approval recorded by finish_node.py at 00:40 (committed now).
-World Daemon: still a stop for check-ins.
+**2026-11-23 03:20 Mac (scheduled): BN12 run 3 (hands-off test) healthy; install 1 done by auto install, no interventions.** Live 03:12
+(ctl-pull, page API): daemon connected, DevTools up; auto install, watchdog, run page LaunchAgents up; no pause file; page alarms none.
+Cycle 1 at 2.6h: $874b, income ~$0.32b/s, hacking 518 (World Daemon 3,184), karma -5.1k (gang at -54k), home 1TB, 24 cloud servers
+(400TB), player Homicide, 8 sleeves gym (shock ~95). Advisor install at 03:12; auto install confirmed 5 min, backed up and installed
+03:19 (1 -> 4; home 32TB, 4 cores). After: scripts back up (21 incl. gang_create, mcp, stack_manager), cycle 2. World Daemon: still a
+stop for check-ins.
 
 ## Daedalus ready (2026-11-16 21:35)
 

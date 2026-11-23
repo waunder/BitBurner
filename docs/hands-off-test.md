@@ -36,7 +36,7 @@ is whether the scripts and monitoring are approaching their end state.
 
 | Time | Intervention | Cause |
 |---|---|---|
-| (none to 2026-11-23 01:15) | | |
+| (none to 2026-11-23 03:20; install 1 by auto install 03:19) | | |
 
 ## Interventions, BN12 run 2 (baseline, not under test)
 

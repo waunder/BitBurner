@@ -8,7 +8,7 @@ Owned 2026-11-22: SF 1.2, 2.1, 4.3, 5.3, 6.1, 10.3, 12.1, 15.1. Never finished: 
 |---|---|---|---|---|
 | 1 | 12 | run 2, then run 3 | preparation, then the hands-off test | none |
 | 2 | 11 | 3 | cheaper augmentation batches for everything after; portability exam | economy at 1% server money (profile bn11 built 2026-11-22) |
-| 3 | 7 | 1 | Bladeburner engine exists (bn6) | a profile |
+| 3 | 7 | 1 | Bladeburner engine exists (bn6) | a Bladeburner finish in the finish tool (profile bn7 built 2026-11-22) |
 | 4 | 14 | 1 | IPvGO player exists | a profile; reputation at 20% |
 | 5 | 3 | 1 | expected to fall to gang and hacking | a profile; corporation only if that proves false |
 | 6 | 8 | 1 | stock trading is the only income; donations open at favor 0 | a proven stock engine (mcp_stock_trader.js is a start) |
@@ -28,3 +28,8 @@ separate game. It never replaces, deletes or overwrites this save (the handover 
   Not yet: an earning plan for 1% server money and a rehearsal from a fresh BN11 start in a disposable copy.
 - 2026-11-22: stock engine built for BN11 (and BN8): copy rehearsal from $1t +47% in 29 min; installs refuse while
   shares are held and the engine sells within one update. On in bn11, off elsewhere. Not yet: a fresh-BN11 copy run.
+- 2026-11-22 (check-in): profile bn7 built from bn12 plus profiles/bn6/bladeburner (unchanged). BN7 numbers from the
+  game bundle: as BN6 but augmentations x3, script hack money 0.5, Bladeburner rank x0.6, skill cost x2. Tested: builds,
+  staged copy 725 of 725 pass, finish_node preflight plans BN12 -> BN7 as a bn7 switch. Not yet: Operation Daedalus as a
+  finish in docs/finish-procedure.md and tools/finish_node.py (World Daemon only today), a fresh-BN7 copy rehearsal,
+  and skill weights at x2 skill cost.

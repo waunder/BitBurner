@@ -9,6 +9,21 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN12 run 2
 
+**2026-11-22 19:14 Mac, scheduled check: healthy; profile bn7 built.** Live (ctl-pull 19:12, autosave 19:11, page API): daemon
+connected, DevTools up, auto install up (no pause file; install 2 fired 16:51 with backup saves/pre-install-auto-20261122-1651.json.gz,
+confirmed 16:52; added to STATE.md's table), watchdog up; page alarms none. BN12 run 2 cycle 3: $108.6t, income ~$35b/s (metrics
+$79.2t at 18:50 -> $105.8t at 19:10), hacking 1030 (World Daemon 3121), karma -54.4k, installed 11 + 1 queued, entropy 1,
+grafting ECorp HVMind Implant ($16.5b, 0.95h). Gang Slum Snakes, 12 members, reputation mode (one wanted-recovery spell, cleared),
+territory 14.3%, power 1. Sleeves 8 on Recovery (shock 76). Contracts 0. Advisor `wait`: gang cycle minimum, 1.7h more. MCP preparing
+galactic-cyber plus stacks running. automation_review.json's darknet manager cap alarm is from 2026-11-21 (stale, not on the page).
+- Nothing to restart or fix.
+- Built ahead (route order 3, BN7): profiles/bn7 from bn12's stack plus profiles/bn6/bladeburner unchanged. BN7 multipliers read from
+  the installed game bundle (3.0.1): as BN6 except augmentations x3, script hack money 0.5, Bladeburner rank x0.6, skill cost x2,
+  Stanek 0.9/-1. physicalTarget 100 (Bladeburner entry). Tested: profile.py build (170 files), stage.py bn7 + node --test 725/725,
+  finish_node.py preflight (no --go) plans BN12 -> BN7 with a bn7 switch. Not yet: Operation Daedalus as a finish path in the
+  finish procedure and tool, a fresh-BN7 copy rehearsal, skill weights at x2 skill cost.
+- Number review (step 4) skipped this run.
+
 **2026-11-22 13:22 Mac, scheduled check: karma to the gang faster.** Live (ctl-pull 13:12, autosave, page API): daemon, DevTools,
 auto install, watchdog and residents up; no alarms. $25.5t, hacking 655, karma -7,925; installed 4, queued 1; advisor `wait`
 (6.5h for ADR-V1); grafts held by the karma phase, entropy 0; MCP and 9 stacks running; darknet $2.8b this cycle; contracts 0 waiting.

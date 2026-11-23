@@ -191,15 +191,16 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 | # | When (Mac clock) | Bought | Installed after |
 |---|---|---|---|
 | 1 | 2026-11-22 11:14 | Auto install: Synaptic Enhancement Implant, Neurotrainer I, Wired Reflexes + NeuroFlux x4; home 512GB. Backup saves/pre-install-auto-20261122-1114.json.gz | 1 -> 4 |
+| 2 | 2026-11-22 16:51 | Auto install (verdict: best next S.N.A +1.4%/h, under the cycle's +2.2%/h). Backup saves/pre-install-auto-20261122-1651.json.gz | 4 -> 11 |
 
 ## Latest check
 
-**2026-11-22 13:22 Mac (scheduled): healthy; BN12 run 2 cycle 2, waiting on karma for the gang.** $25.5t at 13:12 and $31.7t at 13:18,
-hacking 663, home 2TB, 24 cloud servers at 512TB, 4 augs installed + The W1ngs of Icarus queued, entropy 0, advisor `wait`, no page alarms.
-Two karma fixes live, both measured: sleeves train strength/defense to 50 before Homicide (`sleeveKarmaTrainTo`; 1.19 exp/s against
-1.17 modelled), and the player's crime is now focused (karma 48 -> 65/min). Gang modelled ~18:00 instead of ~20:00 (not yet observed).
-Next check: sleeves back on Homicide by ~14:10 at ~30% odds, karma rate well above 4k/h; then the gang.
-World Daemon: still a stop (docs/finish-procedure.md NOT READY). The live check-in prompt still says run 1; AGENTS.md's run 2 terms apply.
+**2026-11-22 19:14 Mac (scheduled): healthy; BN12 run 2 cycle 3, gang up; profile bn7 built ahead.** $108.6t at 19:11 (income
+~$35b/s), hacking 1030 of 3121, 11 augs installed + The B00ts of Perseus queued, entropy 1, grafting ECorp HVMind Implant (~1h,
+started 18:52). Gang Slum Snakes, 12 members, rep mode, territory 14.3%. Sleeves recovering shock (~76). Advisor `wait` (gang
+4h minimum: 1.7h more). Daemon, DevTools, auto install (install 2 at 16:51), watchdog up; no page alarms.
+Built: profiles/bn7 (route order 3), 725 of 725 staged tests; not yet a Bladeburner finish in the finish tool (docs/route.md).
+World Daemon: still a stop for check-ins.
 
 ## Daedalus ready (2026-11-16 21:35)
 

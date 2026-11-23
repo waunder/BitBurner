@@ -1,0 +1,32 @@
+{
+  "name": "bn7",
+  "description": "BitNode 7 (Bladeburners 2079), run 1: the bn12 stack (core, bn15 darknet, sleeves, grafts, shadow allocator) plus the bn6 Bladeburner controller. Route: hacking economy -> combat 100 -> Bladeburner -> gang -> black ops -> Operation Daedalus (stop for the finish procedure).",
+  "extends": [
+    "core",
+    "bn15",
+    "sleeves"
+  ],
+  "bitnodes": [
+    7
+  ],
+  "files": {
+    "bladeburner_logic.js": "profiles/bn6/bladeburner/bladeburner_logic.js",
+    "bladeburner.js": "profiles/bn6/bladeburner/bladeburner.js",
+    "bb_probe.js": "profiles/bn6/bladeburner/bb_probe.js",
+    "graft_scan.js": "core/player/graft_scan.js",
+    "graft_scan_meta.js": "core/player/graft_scan_meta.js",
+    "graft_controller.js": "core/player/graft_controller.js"
+  },
+  "config": {
+    "player_activity_config.json": "profiles/bn7/config/player_activity_config.json",
+    "run_target.json": "profiles/bn7/config/run_target.json",
+    "gang_capital_policy.json": "profiles/bn7/config/gang_capital_policy.json",
+    "graft_config.json": "profiles/bn7/config/graft_config.json"
+  },
+  "startup": [
+    "bladeburner.js",
+    "allocator.js",
+    "graft_controller.js"
+  ],
+  "notes": "Built 2026-11-22 19:14 by a scheduled check-in (route order 3). BN7 multipliers read from the game bundle (Bitburner 3.0.1, main.bundle.js): hacking level x0.35, hack exp x0.25, server max money x0.2, starting money x0.5, starting security x1.5, script hack money x0.5, crime money x0.75, company money x0.5, augmentations x3 cost, 4S data x2, Bladeburner rank x0.6, Bladeburner skill cost x2, gang softcap 0.7, gang unique augs x0.2, Daedalus 35 augs, World Daemon x2 (6000 hacking). Same as BN6 except augs x3 (BN6 x1), script hack money 0.5 (BN6 0.75), rank x0.6 and skill cost x2 (BN6 x1), Stanek 0.9/-1. SF7.1 adds +8% Bladeburner stamina, analysis and success chance. The finish is Operation Daedalus (BN6 run 1: 400k rank and all prior black ops; 52.5 h, 'about a day' with the tuned settings); at x0.6 rank expect ~1.7x the rank work. BUILT: profile, configs, run target; reuses profiles/bn6/bladeburner unchanged (allowDaedalus false by default). NOT YET: a Bladeburner path in docs/finish-procedure.md and tools/finish_node.py (both are written for the World Daemon); a rehearsal from a fresh BN7 start in a disposable copy; whether skillWeights should change at x2 skill cost."
+}

@@ -206,14 +206,16 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 | 1 | 2026-11-23 03:19 | Auto install at 2.6h (verdict: best next BitWire +0.4%/h, under the cycle's +0.9%/h): Neurotrainer I, Wired Reflexes ($17.6m) + queued The W1ngs of Icarus; leftover cash ($874b) took home 1TB -> 32TB, 4 cores. Backup saves/pre-install-auto-20261123-0317.json.gz | 1 -> 4 (readiness) |
 | 2 | 2026-11-23 06:46 | Auto install at 3.5h (verdict: best next ADR-V1 Pheromone Gene +1.7%/h, under the cycle's +2.3%/h): BitWire, Neural Wit Amplifier, Neurotrainer II, Speech Enhancement, Synaptic Enhancement Implant; home 32TB -> 512TB, 6 cores. Backup saves/pre-install-auto-20261123-0646.json.gz | 4 -> 9 (readiness) |
 | 3 | 2026-11-23 07:53 | Auto install at 1.3h (verdict: best next ADR-V1 Pheromone Gene +1.4%/h, under the cycle's +1.9%/h). Backup saves/pre-install-auto-20261123-0752.json.gz | 9 -> 10 (readiness) |
+| 4 | 2026-11-23 12:08 | Auto install after the SPTN-97 graft (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261123-1206.json.gz | 12 -> 38 (metrics_log) |
+| 5 | 2026-11-23 13:13 | Auto install at 1.1h (verdict: nothing left worth waiting for) after cycle 5 earned ~$10.5q. Backup saves/pre-install-auto-20261123-1311.json.gz | 38 -> 69 (readiness) |
 
 ## Latest check
 
-**2026-11-23 11:15 Mac (scheduled): BN12 run 3 (hands-off test) healthy; no install since 07:53, no interventions.** Live 11:12
-(ctl-pull, page API): daemon connected, DevTools up; no pause file; page alarms none. Cycle 4 at 3.3h: $281.6t, income ~$35.9b/s, hacking 1,058
-(World Daemon 3,184), karma -54.4k, installed 12 (grafts OmniTek InfoLoad done, SPTN-97 running 10:28 to ~12:05, entropy 2), home 512TB/6 cores,
-24 cloud, 24 scripts. Gang Slum Snakes, 12 members, respect 8.55m, reputation mode (12 Terrorism), territory 14.3%. 8 sleeves shock recovery (~70).
-Advisor wait (gang minimum 41m more; gang rep does not cover its augs yet); aug_install refuses while the graft runs. World Daemon: still a stop.
+**2026-11-23 13:15 Mac (scheduled): BN12 run 3 (hands-off test) installs 4 and 5 by auto install; no interventions.** Install 4 at 12:08
+(12 -> 38 augs; hacking 1,072 -> ~6,000), cycle 5 earned ~$10.5q in an hour, install 5 at 13:13 (38 -> 69). Live 13:14 (ctl-pull, page API):
+daemon connected, DevTools up, no pause file, page alarms none. Cycle 6: $154m, hacking 8,689 (World Daemon 3,184), karma -55.2k, entropy 3,
+home 2PB/7 cores, 22 scripts, gang Slum Snakes 12 on Terrorism, territory 20.1%; 8 sleeves shock recovery (~58). Red Pill not owned:
+advisor waits (gang minimum 4h; waiting to join Daedalus, needs cash). World Daemon: still a stop; next is Daedalus, then The Red Pill.
 
 ## Daedalus ready (2026-11-16 21:35)
 

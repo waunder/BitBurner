@@ -9,6 +9,16 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN12 run 3
 
+**2026-11-23 13:15 Mac, scheduled check: installs 4 and 5 of run 3 by auto install; nothing to fix.** Auto install: verdict install 11:54,
+backup saves/pre-install-auto-20261123-1206.json.gz, installed 12:08 ("nothing left worth waiting for", after SPTN-97): 12 -> 38, hacking
+1,072 -> 5,965 at once, 8,900 by 13:10. Cycle 5 ran $32.5t (12:15) to $10.52q (13:10), ~$3.2t/s, nearly all hacking. Verdict install again
+13:06, confirmed, backup saves/pre-install-auto-20261123-1311.json.gz (16.0MB), installed 13:13: 38 -> 69. Live 13:14 (ctl-pull, page API):
+daemon connected, DevTools up, no pause file, page alarms none; cycle 6 at 1 min: $154m, hacking 8,689 (World Daemon 3,184), karma -55.2k,
+entropy 3, home 2PB/7 cores, 17 cloud, 22 scripts; gang Slum Snakes 12 members on Terrorism, respect 15.2m, territory 20.1%, power 3,930;
+8 sleeves shock recovery (~58, sync 100); graft no pick. Advisor wait: gang minimum 4h, waiting to join Daedalus (69 augs and hacking pass;
+cash is the gate, minutes away at this income). Red Pill not owned, so the World Daemon is not ready.
+- Interventions: none. Built ahead: nothing this run. Number review row: skipped.
+
 **2026-11-23 11:15 Mac, scheduled check: cycle 4 running by itself; nothing to fix.** Live (ctl-pull 11:12, page API): daemon connected,
 DevTools up, no pause file, page alarms none. Auto install: no lines since install 3 (07:53). At 11:12: cycle 4 (3.3h), $281.6t, ~$35.9b/s,
 hacking 1,058 (World Daemon 3,184), karma -54.4k, installed 12 (OmniTek InfoLoad graft finished; SPTN-97 graft $14.6b started 10:28, 1.6h, so

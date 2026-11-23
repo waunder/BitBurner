@@ -15,6 +15,9 @@ Owned 2026-11-22: SF 1.2, 2.1, 4.3, 5.3, 6.1, 10.3, 12.1, 15.1. Never finished: 
 | 7 | 9 | 1 | no cloud servers, hacking income 10%, exp 5% | Hacknet servers |
 | 8 | 13 | 1 | hardest: hacking level 25%, exp 10%, gang softcap 0.3 | Stanek's Gift |
 
+**Next finish: BitNode 11** (BN11 run 1 is live; runs 2 and 3 follow, then BitNode 7). Check-ins read this line
+when the World Daemon is ready and update it after each finish.
+
 11 runs from here, counting the current one. Revisit after each; give Ken the reason with any change.
 
 ## After it: the full play-through

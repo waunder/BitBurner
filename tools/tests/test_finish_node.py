@@ -77,7 +77,11 @@ class Documents(unittest.TestCase):
     def test_script_is_outside_every_manifest(self):
         root = F.REPO
         for path in [root / "core" / "manifest.json", *root.glob("profiles/*/profile.json"), root / "sync_manifest.json"]:
-            self.assertNotIn("finish_node", path.read_text(encoding="utf-8"), path)
+            data = json.loads(path.read_text(encoding="utf-8"))
+            listed = json.dumps([data.get(k) for k in ("files", "config", "startup", "scripts", "entries", "map")])
+            if path.name == "sync_manifest.json":
+                listed = json.dumps(data)   # generated: names only
+            self.assertNotIn("finish_node", listed, path)   # notes and descriptions may mention the tool
 
 
 class Result(unittest.TestCase):

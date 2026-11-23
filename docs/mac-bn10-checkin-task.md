@@ -25,9 +25,21 @@ If tools/autoinstall.pause exists it is not stuck: do not install and do not rem
 Back up with `tools/save_export.py --out pre-install-<node>-<n>-<date>`; if it fails or does not validate, do not
 install. Run an install with `tools/game_terminal.py "home; run aug_install.js --install"`, then add a row to
 STATE.md's install table.
-World Daemon: a check-in never roots, backdoors or destroys w0r1d_d43m0n and never runs tools/finish_node.py --go.
-When it is ready (The Red Pill installed and hacking at its requirement): back up the save, record it in STATE.md,
-alert Ken, and stop. Finishing is done in a session by docs/finish-procedure.md.
+World Daemon (Ken, 2026-11-23: "Yes, automate it"): a check-in finishes a ready BitNode itself, only through
+tools/finish_node.py (never root, backdoor or destroy w0r1d_d43m0n any other way). Ready means The Red Pill installed,
+hacking at the requirement, no graft running. Then, in order:
+  a. Read the next node N from docs/route.md "Next finish". If that line is missing or unclear, alert Ken and stop.
+  b. `.venv/bin/python3 tools/finish_node.py --next N` (preflight, changes nothing). If it refuses, alert Ken with
+     its reason and stop.
+  c. Alert Ken: `tools/notify.py "Finishing BitNode <from> into <N> now (route.md); backup first"`.
+  d. Run `.venv/bin/python3 tools/finish_node.py --next N --go > runtime/finish-<from>-to-<N>-<yyyymmdd-hhmm>.log 2>&1`
+     in the background (it takes 2 to 4 minutes, beyond the 120-second cap) and read that log every 30 seconds for
+     up to 10 minutes, until a `DONE:` line and a `residents running` line, or a `STOP` line.
+  e. On DONE: check the run page (node, no alarms), update docs/route.md (a Progress line, and "Next finish" from the
+     route table: the same node while it has runs left, else the next row), STATE.md and docs/check-log.md, commit,
+     and alert Ken with the new Source-File level and the node entered.
+  f. On STOP, a timeout or anything unexpected: change nothing more, record it, alert Ken at priority 1
+     (`--priority 1`), and stop. Never restore a backup: that is Ken's.
 
 Access on the Mac:
 - Remote API daemon: LaunchAgent com.bitburner.remote-api-monitor (docs/remote-api-keepalive.md, "Mac Mini setup").

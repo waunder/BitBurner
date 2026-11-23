@@ -1,8 +1,9 @@
 # Finishing a BitNode and entering the next
 
 **Status: READY** (2026-11-22 15:05). All four boxes below are ticked. A real finish follows this procedure, by
-`tools/finish_node.py`, in a hands-on session. Scheduled check-ins never finish a BitNode: they stop at the World
-Daemon, back up and tell Ken.
+`tools/finish_node.py`, in a session or a scheduled check-in. Since 2026-11-23 (Ken: "Yes, automate it") check-ins
+finish a ready BitNode themselves into docs/route.md "Next finish", by docs/mac-bn10-checkin-task.md, telling Ken
+before and after; on any STOP they alert Ken and change nothing more.
 
 ## What the rehearsals established
 
@@ -35,7 +36,7 @@ its own Remote API daemon, so pushes, the profile switch and every file written 
 
 1. Next node is on docs/route.md and a profile covers it (the tool builds it and runs its tests).
 2. The Red Pill installed, hacking at the requirement, no graft running.
-3. Tell Ken what is about to happen and why that node.
+3. Tell Ken what is about to happen and why that node (a check-in: `tools/notify.py`).
 4. `.venv/bin/python3 tools/finish_node.py --next <N>` (preflight only; changes nothing). Then the same with `--go`,
    which: pauses the watchdog; backs up the save to `saves/pre-finish-bn<node>-<time>.json.gz` and decodes it (same
    node and run stamp, pill installed; no backup, no finish); pushes `tools/finish_node.js` (which is in no manifest);

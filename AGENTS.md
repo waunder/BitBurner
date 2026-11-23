@@ -16,8 +16,9 @@ its in your hands", and "our targetting is scripted asap and that you run the ga
 only so long as necessary".
 - The route is the agent's: `docs/route.md`. Tell Ken of changes, with the reason.
 - Completing this game is the agent's: installs, finishing a BitNode, choosing, entering and starting
-  the next. A real finish waits until `docs/finish-procedure.md` says READY and then follows it. Until
-  then, and always for a scheduled check-in, stop at the World Daemon and tell Ken as below.
+  the next. A real finish waits until `docs/finish-procedure.md` says READY and then follows it.
+  Scheduled check-ins finish a ready BitNode themselves (Ken, 2026-11-23: "Yes, automate it"), into the
+  node named by `docs/route.md` "Next finish", by `docs/mac-bn10-checkin-task.md`; Ken is told before and after.
 - Not covered: starting a new game over this save, deleting or overwriting it, permanently deleting
   game files, and everything outside the game (`docs/governance.md`). Those still go to Ken.
 Where the older per-run paragraphs below disagree, this one holds.

@@ -66,7 +66,7 @@ export async function main(ns) {
         const stocks = readMarket(ns)
         const verdict = readJson(ns, READINESS)?.advice?.verdict
         const requestTs = Number(ns.read(REQUEST)) || 0
-        const liq = shouldLiquidate({ verdict, requestTs, now: Date.now() })
+        const liq = shouldLiquidate({ verdict, requestTs, now: Date.now(), resetAt: ns.getResetInfo().lastAugReset })
         const orders = decide({ stocks, cash, config, liquidate: liq.liquidate })
         status.mode = liq.liquidate ? `liquidating: ${liq.why}` : "trading"
         if (config.trade) {

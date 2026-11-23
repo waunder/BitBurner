@@ -1,0 +1,12 @@
+17:16:22 copy loaded, cash 1e+12
+17:16:24 mem ['  0.05GB | stock.hasWseAccount (fn)', '  0.05GB | stock.hasTixApiAccess (fn)', '  0.05GB | stock.has4SDataTixApi (fn)']
+17:16:28 run ['Connected to home', 'Running script with 1 thread, pid 1 and args: [].']
+17:17:28 min 1.0 net 9.803e+11 cash 9.66e+10 held 4 trades 0 mode trading access owned
+17:18:29 min 2.0 net 9.852e+11 cash 9.66e+10 held 4 trades 0 mode trading access owned
+17:19:29 min 3.0 net 9.818e+11 cash 9.66e+10 held 4 trades 0 mode trading access owned
+17:20:30 min 4.0 net 9.879e+11 cash 9.66e+10 held 4 trades 0 mode trading access owned
+17:21:31 min 5.1 net 9.948e+11 cash 9.66e+10 held 4 trades 0 mode trading access owned
+17:22:32 min 6.1 net 1.016e+12 cash 1.01e+11 held 3 trades 3 mode trading access owned
+17:22:36 install attempt ['Connected to home', 'Running script with 1 thread, pid 2 and args: ["--install"].', 'aug_install.js: aug_install: install refused: shares held (ECP, MGCP, FSIG); stock_engine sells them first']
+17:22:51 after install attempt: node 12 installed 86 mode liquidating: liquidate requested held 0 holdingsValue 0 cash 1.011e+12
+17:22:52 done

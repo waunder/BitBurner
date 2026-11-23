@@ -1,6 +1,6 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { decide, expectedReturn, holdingsValue, accessPurchase, shouldLiquidate, sharesBlockInstall, COMMISSION } from "./stock_engine_logic.js"
+import { decide, expectedReturn, holdingsValue, accessPurchase, shouldLiquidate, sharesBlockInstall, spendableShares, COMMISSION } from "./stock_engine_logic.js"
 
 const stock = (o) => ({ sym: "A", forecast: 0.6, volatility: 0.01, ask: 101, bid: 99, maxShares: 1e7, shares: 0, ...o })
 const cfg = { enabled: true, trade: true, minOrder: 1e6, investFraction: 1, reserveCash: 0 }
@@ -77,4 +77,22 @@ test("an install is refused while shares are held", () => {
   assert.equal(sharesBlockInstall(null), "")
   assert.equal(sharesBlockInstall({ holdings: [], holdingsValue: 0 }), "")
   assert.match(sharesBlockInstall({ holdings: [{ sym: "ECP", shares: 5 }], holdingsValue: 1e9 }), /ECP/)
+})
+
+test("invests a share of net worth, not of what cash is left each update", () => {
+  const c = { ...cfg, investFraction: 0.9 }
+  const held = stock({ sym: "HELD", forecast: 0.6, shares: 9e6, bid: 100 })   // 9e8 in shares
+  const { buys } = decide({ stocks: [held, stock({ sym: "NEW", forecast: 0.7 })], cash: 1e8, config: c })
+  assert.equal(buys.length, 0)   // 9e8 of 1e9 already invested
+})
+
+test("a liquidate request from before the last install is spent", () => {
+  assert.equal(shouldLiquidate({ verdict: "wait", requestTs: 1000, now: 5000, resetAt: 2000 }).liquidate, false)
+  assert.equal(shouldLiquidate({ verdict: "wait", requestTs: 3000, now: 5000, resetAt: 2000 }).liquidate, true)
+})
+
+test("fresh holdings count as spendable for the advisor, stale ones do not", () => {
+  assert.equal(spendableShares({ ts: 1000, holdingsValue: 5e9 }, 2000), 5e9)
+  assert.equal(spendableShares({ ts: 1000, holdingsValue: 5e9 }, 1000 + 300e3), 0)
+  assert.equal(spendableShares(null, 0), 0)
 })

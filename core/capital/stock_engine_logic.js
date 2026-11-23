@@ -49,8 +49,11 @@ export function decide({ stocks, cash, config, liquidate = false }) {
   if (liquidate) return { sells, buys: [] }
 
   const sold = new Set(sells.map((o) => o.sym))
-  let budget = (cash + stocks.filter((s) => sold.has(s.sym)).reduce((n, s) => n + s.shares * s.bid - COMMISSION, 0)
-    - c.reserveCash) * c.investFraction
+  // investFraction is of net worth (cash and held shares), so cash stays at the reserve plus the rest every update
+  const freed = stocks.filter((s) => sold.has(s.sym)).reduce((n, s) => n + s.shares * s.bid - COMMISSION, 0)
+  const kept = stocks.filter((s) => s.shares > 0 && !sold.has(s.sym)).reduce((n, s) => n + s.shares * s.bid, 0)
+  const free = cash + freed - c.reserveCash
+  let budget = Math.min(free, Math.max(0, free + kept) * c.investFraction - kept)
   const buys = []
   const ranked = stocks.filter((s) => !sold.has(s.sym) && s.forecast >= c.buyAbove && s.ask > 0)
     .sort((a, b) => expectedReturn(b) - expectedReturn(a))
@@ -77,9 +80,10 @@ export function accessPurchase({ cash, costs, config }) {
 }
 
 /** Sell everything before an install: the advisor says install, or a liquidate request is fresh. */
-export function shouldLiquidate({ verdict, requestTs, now, maxRequestAgeMs = 3600e3 }) {
+export function shouldLiquidate({ verdict, requestTs, now, resetAt = 0, maxRequestAgeMs = 3600e3 }) {
   if (verdict === "install") return { liquidate: true, why: "install advisor says install" }
-  if (requestTs && now - requestTs < maxRequestAgeMs) return { liquidate: true, why: "liquidate requested" }
+  // a request from before the last install has done its job
+  if (requestTs && requestTs > resetAt && now - requestTs < maxRequestAgeMs) return { liquidate: true, why: "liquidate requested" }
   return { liquidate: false, why: "" }
 }
 
@@ -88,4 +92,10 @@ export function sharesBlockInstall(status) {
   const held = (status?.holdings || []).filter((h) => h.shares > 0)
   if (!held.length && !(status?.holdingsValue > 0)) return ""
   return `shares held (${held.map((h) => h.sym).join(", ") || "value " + status.holdingsValue}); stock_engine sells them first`
+}
+
+/** Held shares the advisor may count as cash: sold within one market update when an install is due. */
+export function spendableShares(status, now, maxAgeMs = 120e3) {
+  if (!status || !(status.holdingsValue > 0) || !(now - status.ts < maxAgeMs)) return 0
+  return status.holdingsValue
 }

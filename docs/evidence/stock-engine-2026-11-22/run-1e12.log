@@ -1,0 +1,35 @@
+16:44:13 copy loaded, cash 1e+12
+16:44:16 mem ['  0.05GB | stock.hasWseAccount (fn)', '  0.05GB | stock.hasTixApiAccess (fn)', '  0.05GB | stock.has4SDataTixApi (fn)']
+16:44:19 run ['Connected to home', 'Running script with 1 thread, pid 1 and args: [].']
+16:45:19 min 1.0 net 9.923e+11 cash 9.76e+07 held 5 trades 0 mode trading access owned
+16:46:20 min 2.0 net 1.031e+12 cash 9.76e+07 held 5 trades 0 mode trading access owned
+16:47:21 min 3.0 net 1.045e+12 cash 9.76e+07 held 5 trades 0 mode trading access owned
+16:48:22 min 4.1 net 1.076e+12 cash 9.76e+07 held 5 trades 0 mode trading access owned
+16:49:23 min 5.1 net 1.088e+12 cash 9.76e+07 held 5 trades 0 mode trading access owned
+16:50:23 min 6.1 net 1.105e+12 cash 5.31e+07 held 4 trades 2 mode trading access owned
+16:51:24 min 7.1 net 1.132e+12 cash 1.73e+07 held 4 trades 2 mode trading access owned
+16:52:25 min 8.1 net 1.132e+12 cash 1.73e+07 held 4 trades 2 mode trading access owned
+16:53:25 min 9.1 net 1.155e+12 cash 1.73e+07 held 4 trades 2 mode trading access owned
+16:54:26 min 10.1 net 1.18e+12 cash 1.73e+07 held 4 trades 2 mode trading access owned
+16:55:27 min 11.1 net 1.171e+12 cash 1.73e+07 held 4 trades 2 mode trading access owned
+16:56:27 min 12.1 net 1.194e+12 cash 1.73e+07 held 4 trades 2 mode trading access owned
+16:57:28 min 13.2 net 1.218e+12 cash 1e+10 held 5 trades 5 mode trading access owned
+16:58:29 min 14.2 net 1.22e+12 cash 1e+08 held 5 trades 5 mode trading access owned
+16:59:30 min 15.2 net 1.238e+12 cash 1e+08 held 5 trades 5 mode trading access owned
+17:00:30 min 16.2 net 1.255e+12 cash 1e+08 held 5 trades 5 mode trading access owned
+17:01:31 min 17.2 net 1.277e+12 cash 1.78e+07 held 5 trades 5 mode trading access owned
+17:02:32 min 18.2 net 1.287e+12 cash 1.78e+07 held 5 trades 5 mode trading access owned
+17:03:32 min 19.2 net 1.301e+12 cash 1.78e+07 held 5 trades 5 mode trading access owned
+17:04:33 min 20.2 net 1.306e+12 cash 1.78e+07 held 5 trades 5 mode trading access owned
+17:05:34 min 21.2 net 1.308e+12 cash 1.11e+08 held 6 trades 8 mode trading access owned
+17:06:34 min 22.3 net 1.342e+12 cash 1.11e+08 held 6 trades 8 mode trading access owned
+17:07:35 min 23.3 net 1.355e+12 cash 1.11e+08 held 6 trades 8 mode trading access owned
+17:08:35 min 24.3 net 1.378e+12 cash 1.11e+08 held 6 trades 8 mode trading access owned
+17:09:36 min 25.3 net 1.41e+12 cash 1.11e+08 held 6 trades 8 mode trading access owned
+17:10:37 min 26.3 net 1.403e+12 cash 1.11e+08 held 6 trades 8 mode trading access owned
+17:11:37 min 27.3 net 1.422e+12 cash 1.79e+07 held 7 trades 8 mode trading access owned
+17:12:38 min 28.3 net 1.441e+12 cash 7.36e+07 held 6 trades 12 mode trading access owned
+17:13:38 min 29.3 net 1.449e+12 cash 7.36e+07 held 6 trades 12 mode trading access owned
+17:14:39 min 30.3 net 1.461e+12 cash 7.36e+07 held 6 trades 12 mode trading access owned
+17:15:21 after liquidate request: mode trading held 6 holdingsValue 1.47e+12 cash 7.36e+07
+17:15:21 done

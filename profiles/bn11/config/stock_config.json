@@ -1,0 +1,12 @@
+{
+  "enabled": true,
+  "trade": true,
+  "buyAccess": true,
+  "accessCashMultiple": 3,
+  "reserveCash": 0,
+  "investFraction": 0.8,
+  "buyAbove": 0.575,
+  "sellBelow": 0.5,
+  "minOrder": 100000000.0,
+  "why": "2026-11-22: BN11 cuts hacking money to 1%; the market is untouched apart from 4S costing x4 (API $100b). Copy rehearsal from $1t: +47% in 29 min (evidence/stock-engine-2026-11-22). 20% stays cash for RAM and the rest of the farm; revisit after the first cycle."
+}

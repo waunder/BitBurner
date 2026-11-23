@@ -12,6 +12,7 @@
  */
 
 import { donationRate, planPurchases, readyGates, runRules } from "./aug_install_logic.js"
+import { spendableShares } from "./stock_engine_logic.js"
 import { DEFAULT_WEIGHTS, augValue, batchMark, bestRepRate, factionRepRates, favorGate, floorState, gangRepPerHour, installAdvice, multFactorNeeded, withDonations } from "./install_advisor_logic.js"
 
 const STATUS = "augmentation_readiness.json"
@@ -114,7 +115,11 @@ function advise(ns, { now, player, previous, factionRep, queued, plan, candidate
 
 function assess(ns, previous = null) {
   const now = Date.now()
-  const player = ns.getPlayer()
+  // Held shares count as cash: stock_engine.js sells them all as soon as the verdict reads install.
+  let stockStatus = null
+  try { stockStatus = JSON.parse(ns.read("stock_engine_status.json") || "null") } catch { stockStatus = null }
+  const rawPlayer = ns.getPlayer()
+  const player = { ...rawPlayer, money: rawPlayer.money + spendableShares(stockStatus, now) }
   // Keep calls directly qualified. Netscript's static RAM analyser charges
   // the entire Singularity namespace if it is assigned to an alias, whereas
   // direct members are charged individually.

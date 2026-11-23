@@ -18,11 +18,13 @@
     "player_activity_config.json": "profiles/bn11/config/player_activity_config.json",
     "run_target.json": "profiles/bn11/config/run_target.json",
     "gang_capital_policy.json": "profiles/bn11/config/gang_capital_policy.json",
-    "graft_config.json": "profiles/bn11/config/graft_config.json"
+    "graft_config.json": "profiles/bn11/config/graft_config.json",
+    "stock_config.json": "profiles/bn11/config/stock_config.json"
   },
   "startup": [
     "allocator.js",
-    "graft_controller.js"
+    "graft_controller.js",
+    "stock_engine.js"
   ],
-  "notes": "Started 2026-11-22 from bn12 (route order 2, three runs). BN11 (game source, Bitburner 3.0.1): hacking level x0.6, hack exp x0.5, server max money x0.01, growth x0.2, starting money x0.1, weaken x2, crime money x3, company money x0.5, hacknet x0.1, contracts x0.25, augmentations x2 cost, gang unique augs x0.75, World Daemon x1.5 (4500). Gang softcap is the default (better than BN12's 0.8). SF11 lowers the aug price step each run (aug_install_logic runRules). BUILT: profile, configs, run target. NOT YET: an earning plan for 1% server money (MCP earns ~nothing; its job here is hacking exp), rehearsal in a disposable copy from a fresh BN11 start."
+  "notes": "Started 2026-11-22 from bn12 (route order 2, three runs). BN11 (game source, Bitburner 3.0.1): hacking level x0.6, hack exp x0.5, server max money x0.01, growth x0.2, starting money x0.1, weaken x2, crime money x3, company money x0.5, hacknet x0.1, contracts x0.25, augmentations x2 cost, gang unique augs x0.75, World Daemon x1.5 (4500). Gang softcap is the default (better than BN12's 0.8). SF11 lowers the aug price step each run (aug_install_logic runRules). BUILT: profile, configs, run target; stock engine on (buys 4S API at 3x its $105b cost, keeps 20% cash; sells everything before an install). NOT YET: rehearsal from a fresh BN11 start in a disposable copy (when does cash first reach ~$315b?), and whether MCP should move to hacking exp."
 }

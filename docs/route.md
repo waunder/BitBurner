@@ -26,3 +26,5 @@ separate game. It never replaces, deletes or overwrites this save (the handover 
 
 - 2026-11-22: profile bn11 built from bn12 (tests 696 pass; finish tool plans BN12 to BN11 as a profile switch).
   Not yet: an earning plan for 1% server money and a rehearsal from a fresh BN11 start in a disposable copy.
+- 2026-11-22: stock engine built for BN11 (and BN8): copy rehearsal from $1t +47% in 29 min; installs refuse while
+  shares are held and the engine sells within one update. On in bn11, off elsewhere. Not yet: a fresh-BN11 copy run.

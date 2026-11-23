@@ -64,7 +64,10 @@ async function refreshAugmentationReadiness(ns) {
     // batches, no 64GB server rooted at hacking 81), and the advisor went 1.5h stale. Home is the fallback.
     if (!prepared.ok) return await readinessOnHome(ns, ram, current, prepared.reason)
     // The planner and advisor it imports, the files it reads and its last status (for rates) travel with it.
-    const copied = await ns.scp(["augmentation_readiness.js", "aug_install_logic.js", "install_advisor_logic.js", "player_activity_config.json", "run_target.json", "augmentation_readiness.json"], prepared.worker, "home")
+    // scp fails on a missing file: the stock status exists only where stock_engine.js runs.
+    const travel = ["augmentation_readiness.js", "aug_install_logic.js", "install_advisor_logic.js", "stock_engine_logic.js", "player_activity_config.json", "run_target.json", "augmentation_readiness.json"]
+    if (ns.fileExists("stock_engine_status.json", "home")) travel.push("stock_engine_status.json")
+    const copied = await ns.scp(travel, prepared.worker, "home")
     const pid = copied ? ns.exec("augmentation_readiness.js", prepared.worker, 1, "--once") : 0
     if (!pid) return { refreshed: false, error: `could not start on ${prepared.worker}`, status: current }
     while (ns.isRunning(pid, prepared.worker)) await ns.sleep(100)

@@ -1952,6 +1952,21 @@ is bought — what looks worth buying.
 +----------------------------------+
 ```
 
+### `stock_engine.js` (with `stock_engine_logic.js`)
+
+The market earner for BN11 (hacking money x0.01) and BN8 (2026-11-22). Off unless the profile's `stock_config.json`
+says `enabled` (bn11 only so far); decides without trading unless `trade`.
+- **Each market update:** buy WSE, TIX API and 4S TIX API once cash is 3x their cost; sell longs whose 4S forecast fell
+  below 0.5; buy forecasts of 0.575+ by expected return (volatility x (forecast - 0.5)) up to maxShares, keeping
+  `investFraction` of net worth invested. Long only.
+- **Installs:** an install resets the market (every share lost). The engine sells everything when the advisor's
+  verdict is `install` or `stock_liquidate.txt` is newer than the last install; `aug_install.js --install` refuses
+  before buying while `stock_engine_status.json` shows shares and writes that request; auto install retries after
+  its 10-min hold. The advisor counts fresh holdings as cash (`spendableShares`).
+- **Writes:** `stock_engine_status.json` (holdings, holdingsValue, netWorth, mode, realized).
+- **Evidence:** docs/evidence/stock-engine-2026-11-22 (copy from $1t: +47% in 29 min; install guard refused and the
+  engine sold everything within one update).
+
 ### `mcp_stock_trader.js`
 
 **Current state: live since 2026-08-18.** The approved instance runs as

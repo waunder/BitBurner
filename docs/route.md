@@ -24,6 +24,8 @@ separate game. It never replaces, deletes or overwrites this save (the handover 
 
 ## Progress
 
+- 2026-11-23 15:55: BN12 run 3 (hands-off test) finished with no intervention, ~13.7h to a ready World Daemon;
+  Source-File 12.3. BN11 run 1 entered on profile bn11 (switch by tools/finish_node.py, startup.js run after it).
 - 2026-11-23 00:40: BN12 run 2 finished by the agent with tools/finish_node.py (Ken: "Yes, finish it"); Source-File 12.2.
   BN12 run 3, the hands-off test, began on profile bn12 with startup.js as the callback.
 - 2026-11-22: profile bn11 built from bn12 (tests 696 pass; finish tool plans BN12 to BN11 as a profile switch).

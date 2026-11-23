@@ -32,6 +32,15 @@ is whether the scripts and monitoring are approaching their end state.
 | Fresh-run rehearsal from a 32GB home in a disposable browser save | done to 64GB (docs/evidence/rehearsal-2026-11-22): watchdog start at 1.2 min, 64GB and MCP by 14.7 min, money crime kept, no intervention. Not rehearsed: 128GB on, gang, an install |
 | Auto install recovers from a pill bought but not installed | not built (Codex-todo) |
 
+## Result (2026-11-23 15:55, agent)
+
+1. **Needs nobody: passed.** Entry 00:40 to a ready World Daemon 14:21 (~13.7h), installs 1 to 6 by auto install, no intervention.
+   The finish (15:55, tools/finish_node.py, Source-File 12.3) is the handed-over decision, not an intervention.
+2. **Failures announce themselves: not exercised.** Nothing failed, so no alarm was needed; the 15:12 World Daemon alert reached Ken.
+3. **Improvement flattened: not yet shown.** 13.7h against run 1's ~20.6h is still a large gain; the next node is different, so this
+   mark moves to BN11 runs 2 and 3.
+4. **Smaller: open.** Stray scripts and leftover files not yet pruned (needs Ken's OK); STATE.md still long.
+
 ## Interventions, BN12 run 3 (under test)
 
 | Time | Intervention | Cause |

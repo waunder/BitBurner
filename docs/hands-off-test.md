@@ -32,6 +32,12 @@ is whether the scripts and monitoring are approaching their end state.
 | Fresh-run rehearsal from a 32GB home in a disposable browser save | done to 64GB (docs/evidence/rehearsal-2026-11-22): watchdog start at 1.2 min, 64GB and MCP by 14.7 min, money crime kept, no intervention. Not rehearsed: 128GB on, gang, an install |
 | Auto install recovers from a pill bought but not installed | not built (Codex-todo) |
 
+## Interventions, BN12 run 3 (under test)
+
+| Time | Intervention | Cause |
+|---|---|---|
+| (none to 2026-11-23 01:15) | | |
+
 ## Interventions, BN12 run 2 (baseline, not under test)
 
 | Time | Intervention | Cause |

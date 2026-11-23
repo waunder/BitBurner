@@ -7,6 +7,18 @@ measurement or decision, not at every session start.
 Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 `docs/archive/state-2026-11-10/STATE-full.md`, the full STATE.md as it stood on 2026-11-10.
 
+## BN12 run 3
+
+**2026-11-23 01:15 Mac, scheduled check: run 3 (hands-off test) bootstrapping by itself; nothing to fix.** Live (ctl-pull 01:12, autosave
+01:12, page API): daemon connected, DevTools up, LaunchAgents auto-install, watchdog, run-page and remote-api-monitor up; no pause file;
+page alarms none. Entered 00:40 by finish_node.py (run stamp 1795419575839). At 01:12: $22.3m, hacking 60 (World Daemon 3,184), karma
+-164, installed 1 (NeuroFlux from SF12), home 64GB / 1 core, 61.9GB used, no cloud; running capital_manager, early_crime, crawler, mcp,
+mcp_supervisor, money.js; player on Mug; 8 sleeves Shoplift, shock ~99. capital_manager: save for 128GB ($33.8m) at ~$18.4k/s, ~01:22;
+13 residents wait for home RAM (as in run 2). No gang, factions, graft or advisor yet. Auto install: no installs this run.
+- Interventions: none (docs/hands-off-test.md, run 3 table started). Committed tools/install_approvals.json (run 3 entry written by
+  finish_node.py at 00:40, left uncommitted).
+- Built ahead: nothing this run. Number review row: skipped.
+
 ## BN12 run 2
 
 **2026-11-22 23:15 Mac, scheduled check: healthy; The Red Pill in the next batch; profile bn3 built.** Live (ctl-pull 23:12, autosave

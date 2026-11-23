@@ -201,12 +201,12 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-22 23:15 Mac (scheduled): healthy; The Red Pill is in the next batch; profile bn3 built ahead.** Installs 3 (21:39) and 4 (22:47)
-fired by auto install with backups. Live 23:12: cycle 5 (0.4h), $3.52q, hacking 12,782 (World Daemon 3,121), 67 installed, entropy 3,
-Daedalus favor 167 (donations open). Advisor `wait`, plan of 11 incl. The Red Pill (Daedalus donation $742b); the gang minimum can lapse
-from 1h, so install 5 with The Red Pill is expected ~23:45-00:00. After it the World Daemon should be ready within the cycle: the
-watchdog forwards the run page's "World Daemon is ready" alarm to Ken; the 01:07 check backs up, records and stops. Gang 12 members,
-territory 26.6%. No alarms. Built: profiles/bn3 (route order 5), 712 of 712 staged tests. World Daemon: still a stop for check-ins.
+**2026-11-23 01:15 Mac (scheduled): BN12 run 3 (hands-off test) bootstrapping on its own, no interventions.** Live 01:12 (ctl-pull, page
+API): daemon connected, DevTools up; auto install, watchdog, run page LaunchAgents up; no pause file; page alarms none. Run 3 cycle 1,
+0.5h after entry: $22.3m, hacking 60, karma -164, home 64GB, scripts capital_manager, early_crime, crawler, mcp, mcp_supervisor,
+money.js; player on Mug, 8 sleeves Shoplift (shock ~99). capital_manager saving for 128GB ($33.8m) at ~$18k/s, so ~01:22; then
+player_activity_controller and sleeve_controller fit. Run 3 install approval recorded by finish_node.py at 00:40 (committed now).
+World Daemon: still a stop for check-ins.
 
 ## Daedalus ready (2026-11-16 21:35)
 

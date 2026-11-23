@@ -36,7 +36,8 @@ hacking at the requirement, no graft running. Then, in order:
      in the background (it takes 2 to 4 minutes, beyond the 120-second cap) and read that log every 30 seconds for
      up to 10 minutes, until a `DONE:` line and a `residents running` line, or a `STOP` line.
   e. On DONE: check the run page (node, no alarms), update docs/route.md (a Progress line, and "Next finish" from the
-     route table: the same node while it has runs left, else the next row), STATE.md and docs/check-log.md, commit,
+     route table: the same node while it has runs left, else the next row), STATE.md and docs/check-log.md, commit
+     (with the tool's own changes: tools/install_approvals.json and, after a switch, sync_manifest.json),
      and alert Ken with the new Source-File level and the node entered.
   f. On STOP, a timeout or anything unexpected: change nothing more, record it, alert Ken at priority 1
      (`--priority 1`), and stop. Never restore a backup: that is Ken's.

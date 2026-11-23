@@ -9,6 +9,13 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN12 run 3
 
+**2026-11-23 05:15 Mac, scheduled check: cycle 2 running by itself; nothing to fix.** Live (ctl-pull 05:12, page API): daemon connected,
+DevTools up, no pause file, page alarms none. Cycle 2 at 1.9h after install 1: $44.0t (hacking $45.6t earned this cycle, darknet $4.0b,
+crime $136m, contracts $47m; cloud spend $1.6t), income ~$12b/s, hacking 687 (World Daemon 3,184), karma -17,515 (~-870 per 5 min,
+so -54k and the gang around 08:45), home 32TB/4 cores, 24 cloud (12.6PB), entropy 0, 21 scripts incl. mcp, stack_manager, gang_create;
+player and 8 sleeves Homicide (shock ~91, sync 100). Advisor verdict build (next ADR-V1 Pheromone Gene in 11.5h; rep is the limit until
+the gang). Graft: no pick (karma phase). No build-ahead this run.
+
 **2026-11-23 03:20 Mac, scheduled check: install 1 of run 3 by auto install; nothing to fix.** Live (ctl-pull 03:12, page API): daemon
 connected, DevTools up, LaunchAgents auto-install, watchdog, run-page and remote-api-monitor up; no pause file; page alarms none. Cycle 1
 at 2.6h: $874b (up from $22m at 01:12; ~$0.32b/s, hacking $912b earned, darknet $2.6b, crime $127m, contracts $71m), hacking 518 (World

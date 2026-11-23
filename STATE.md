@@ -207,12 +207,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-23 03:20 Mac (scheduled): BN12 run 3 (hands-off test) healthy; install 1 done by auto install, no interventions.** Live 03:12
-(ctl-pull, page API): daemon connected, DevTools up; auto install, watchdog, run page LaunchAgents up; no pause file; page alarms none.
-Cycle 1 at 2.6h: $874b, income ~$0.32b/s, hacking 518 (World Daemon 3,184), karma -5.1k (gang at -54k), home 1TB, 24 cloud servers
-(400TB), player Homicide, 8 sleeves gym (shock ~95). Advisor install at 03:12; auto install confirmed 5 min, backed up and installed
-03:19 (1 -> 4; home 32TB, 4 cores). After: scripts back up (21 incl. gang_create, mcp, stack_manager), cycle 2. World Daemon: still a
-stop for check-ins.
+**2026-11-23 05:15 Mac (scheduled): BN12 run 3 (hands-off test) healthy, no interventions.** Live 05:12 (ctl-pull, page API):
+daemon connected, DevTools up; no pause file; page alarms none. Cycle 2 at 1.9h: $44.0t, income ~$12b/s, hacking 687 (World Daemon
+3,184), karma -17.5k (~-10k/h; gang at -54k around 08:45), home 32TB/4 cores, 24 cloud (12.6PB), 21 scripts, player and 8 sleeves
+Homicide (shock ~91). Advisor build ("best next ADR-V1 Pheromone Gene in 11.5h"). World Daemon: still a stop for check-ins.
 
 ## Daedalus ready (2026-11-16 21:35)
 

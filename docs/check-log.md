@@ -9,6 +9,21 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN12 run 2
 
+**2026-11-22 23:15 Mac, scheduled check: healthy; The Red Pill in the next batch; profile bn3 built.** Live (ctl-pull 23:12, autosave
+23:11, page API): daemon connected, DevTools up, auto install, watchdog, run page LaunchAgents up, no pause file; page alarms none.
+Installs since the last check, both by auto install with backups: 3 at 21:39 after the graft (12 -> 37: B00ts of Perseus, QLink, The
+Black Hand, BitRunners Neurolink, Xanipher, Shadow's Simulacrum and others), 4 at 22:47 after a 1.1h cycle (gang minimum lapsed, batch
+settled; 37 -> 67 incl. The H4mmer of Daedalus). Cycle 5 (0.4h): $3.52q, income ~$2.6t/s, hacking 12,782 (World Daemon 3,121), entropy 3,
+karma -55.0k, Daedalus rep 115k favor 167. Advisor `wait` (gang minimum, can end at 1h); plan 11 augs incl. The Red Pill by Daedalus
+donation ($742b; total $877b). Red Pill is in the plan, so favorGate is clear and the floor can lapse from 1h: install 5 expected
+~23:45-00:00. Gang Slum Snakes 12 (7 Traffick Illegal Arms, 5 Territory Warfare), mode territory-power, territory 26.6% (15.5% at 21:51).
+Sleeves 8 on shock recovery (~53). Graft: no pick.
+- Nothing to restart or fix. Not observed: install 5 and the World Daemon becoming ready (after this check). The run page raises
+  "The World Daemon is ready" and the watchdog forwards page alarms to Ken's iPhone; the next check backs up, records and stops.
+- Built ahead (route order 5, BN3): profiles/bn3 from bn12's stack (route.md Progress has the numbers). Staged copy 712 of 712 pass;
+  live sync_manifest.json unchanged; finish_node preflight (no --go) plans BN12 -> BN3 as a bn3 switch.
+- Number review row: skipped this run.
+
 **2026-11-22 21:20 Mac, scheduled check: healthy; install 3 waits on a graft; profile bn14 built.** Live (ctl-pull 21:12, autosave
 21:11, page API): daemon connected, DevTools up, auto install, watchdog and run page LaunchAgents up, no pause file; page alarms none.
 BN12 run 2 cycle 3 (4.3h): $357.7t, hacking 1060 (World Daemon 3121), karma -54.7k, installed 12 + 1 queued, entropy 2, grafting

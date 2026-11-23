@@ -194,14 +194,17 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 |---|---|---|---|
 | 1 | 2026-11-22 11:14 | Auto install: Synaptic Enhancement Implant, Neurotrainer I, Wired Reflexes + NeuroFlux x4; home 512GB. Backup saves/pre-install-auto-20261122-1114.json.gz | 1 -> 4 |
 | 2 | 2026-11-22 16:51 | Auto install (verdict: best next S.N.A +1.4%/h, under the cycle's +2.2%/h). Backup saves/pre-install-auto-20261122-1651.json.gz | 4 -> 11 |
+| 3 | 2026-11-22 21:39 | Auto install after the SPTN-97 graft (verdict: nothing left worth waiting for): The B00ts of Perseus, QLink, The Black Hand, BitRunners Neurolink, Xanipher, The Shadow's Simulacrum and 18 others + NeuroFlux. Backup saves/pre-install-auto-20261122-2138.json.gz | 12 -> 37 |
+| 4 | 2026-11-22 22:47 | Auto install at 1.1h (gang minimum lapsed: batch settled): The H4mmer of Daedalus and 29 more incl. NeuroFlux. Backup saves/pre-install-auto-20261122-2245.json.gz | 37 -> 67 |
 
 ## Latest check
 
-**2026-11-22 21:20 Mac (scheduled): healthy; install due after the graft; profile bn14 built ahead.** $357.7t at 21:11, hacking 1060
-of 3121, 12 augs installed + The B00ts of Perseus queued, entropy 2, grafting SPTN-97 Gene Modification (ends ~21:37). Advisor
-`install` ("nothing left worth waiting for", cycle 4.3h); auto install is waiting for the graft by design and should fire ~21:40
-(install 3). Gang Slum Snakes, 12 members, territory 14.3%. Sleeves recovering shock (~65). Daemon, DevTools, auto install,
-watchdog, run page up; no page alarms. Built: profiles/bn14 (route order 4), 711 of 711 staged tests. World Daemon: still a stop for check-ins.
+**2026-11-22 23:15 Mac (scheduled): healthy; The Red Pill is in the next batch; profile bn3 built ahead.** Installs 3 (21:39) and 4 (22:47)
+fired by auto install with backups. Live 23:12: cycle 5 (0.4h), $3.52q, hacking 12,782 (World Daemon 3,121), 67 installed, entropy 3,
+Daedalus favor 167 (donations open). Advisor `wait`, plan of 11 incl. The Red Pill (Daedalus donation $742b); the gang minimum can lapse
+from 1h, so install 5 with The Red Pill is expected ~23:45-00:00. After it the World Daemon should be ready within the cycle: the
+watchdog forwards the run page's "World Daemon is ready" alarm to Ken; the 01:07 check backs up, records and stops. Gang 12 members,
+territory 26.6%. No alarms. Built: profiles/bn3 (route order 5), 712 of 712 staged tests. World Daemon: still a stop for check-ins.
 
 ## Daedalus ready (2026-11-16 21:35)
 

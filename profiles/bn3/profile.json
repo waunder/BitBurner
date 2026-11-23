@@ -1,0 +1,28 @@
+{
+  "name": "bn3",
+  "description": "BitNode 3 (Corporatocracy), run 1: the bn12 stack (core, bn15 darknet, sleeves, grafts, shadow allocator), no corporation. Route: gang first (hacking income is tiny here) -> augs -> Daedalus -> The Red Pill -> hacking 6000 -> World Daemon (stop for the finish procedure).",
+  "extends": [
+    "core",
+    "bn15",
+    "sleeves"
+  ],
+  "bitnodes": [
+    3
+  ],
+  "files": {
+    "graft_scan.js": "core/player/graft_scan.js",
+    "graft_scan_meta.js": "core/player/graft_scan_meta.js",
+    "graft_controller.js": "core/player/graft_controller.js"
+  },
+  "config": {
+    "player_activity_config.json": "profiles/bn3/config/player_activity_config.json",
+    "run_target.json": "profiles/bn3/config/run_target.json",
+    "gang_capital_policy.json": "profiles/bn3/config/gang_capital_policy.json",
+    "graft_config.json": "profiles/bn3/config/graft_config.json"
+  },
+  "startup": [
+    "allocator.js",
+    "graft_controller.js"
+  ],
+  "notes": "Built 2026-11-22 23:3x by a scheduled check-in (route order 5). BN3 multipliers read from the game bundle (Bitburner 3.0.1, main.bundle.js): hacking level x0.8, server growth x0.2, server max money x0.04, server starting money x0.2, script hack money x0.2, home RAM cost x1.5, cloud server cost x2 (softcap 1.3), company work money x0.25, crime money x0.25, Hacknet money x0.25, darknet money x0.4, augmentations x3 money AND x3 rep, favor to donate x0.5 (donations at favor 75), gang softcap 0.9, gang unique augs x0.5, Stanek 0.75/-2, World Daemon x2 (hacking 6000). Daedalus at the default 30 augs. BUILT: profile and configs (bn12's; gang territory early because gang money is the best leg; route with Daedalus 30). The favor threshold is read from the game (ns.getFavorToDonate) everywhere it gates. NOT YET: whether hacking money at x0.04 x0.2 (about 1/125 of BN1 per server) carries the early economy or the gang must (karma pace at crime money x0.25); whether gangCycleSettles/installRedPillAlone (Ken-approved for BN12) should carry over; corporation only if the route stalls; a rehearsal from a fresh BN3 start in a disposable copy."
+}

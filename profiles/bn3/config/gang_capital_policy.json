@@ -1,0 +1,18 @@
+{
+  "phase": "earning-capacity",
+  "objective": "BN3 run 1 (from bn12): gang-faction rep for augmentations first (augs x3 rep), then money: gang money is the main income here (hacking x0.04 x0.2, crime x0.25). Gear only from cash above the install plan.",
+  "allowEquipmentPurchases": true,
+  "augmentationCashTarget": null,
+  "territoryEnabled": true,
+  "reputationCleanupEnter": 0.97,
+  "reputationCleanupExit": 0.985,
+  "rootkitCashFraction": 0.01,
+  "gangAugCashFraction": 0.3,
+  "reserveInstallPlan": true,
+  "recruitHoldHours": 3,
+  "updatedAt": "2026-11-22",
+  "territoryNote": "Inherited from bn12 (territory from the first full roster, odds bars, power share 0.35). Gang softcap 0.9 here (1.0 in BN1): gang money matters more than anywhere so far; unmeasured in BN3.",
+  "territoryMinWin": 0.8,
+  "territoryMinWinNote": "0.80 from 2026-11-22 (Ken: take territory early, since we can): the weighted bar 0.85 still guards the whole field; one big rival at 0.845 had stopped every clash.",
+  "territoryWeightedWin": 0.85
+}

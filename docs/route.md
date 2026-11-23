@@ -39,3 +39,9 @@ separate game. It never replaces, deletes or overwrites this save (the handover 
   711 of 711 pass, finish_node preflight plans BN12 -> BN14 as a bn14 switch. Not yet: whether hacking 15000 is reachable in
   reasonable time (likely the long pole; may move BN14 later in the order), karma pace at x0.4 crime success, the IPvGO
   opponent for x4 power, a fresh-BN14 copy rehearsal.
+- 2026-11-22 23:15 (check-in): profile bn3 built from bn12 (no corporation). BN3 numbers from the game bundle: server max money
+  x0.04, script hack money x0.2, growth x0.2, crime and company money x0.25, darknet money x0.4, home RAM x1.5 and cloud servers x2
+  cost, augs x3 money and x3 rep, favor to donate x0.5 (75), gang softcap 0.9, World Daemon x2 (hacking 6000). faction_rep aug weight
+  0.5 -> 0.8; Daedalus 30. The donation threshold is read from the game everywhere it gates. Tested: builds, staged copy 712 of 712
+  pass, finish_node preflight plans BN12 -> BN3 as a bn3 switch. Not yet: whether hacking carries the early economy at 1/125 of
+  BN1 server money or the gang must; whether BN12's approved gangCycleSettles/installRedPillAlone carry over; a fresh-BN3 copy rehearsal.

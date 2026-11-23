@@ -208,14 +208,16 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 | 3 | 2026-11-23 07:53 | Auto install at 1.3h (verdict: best next ADR-V1 Pheromone Gene +1.4%/h, under the cycle's +1.9%/h). Backup saves/pre-install-auto-20261123-0752.json.gz | 9 -> 10 (readiness) |
 | 4 | 2026-11-23 12:08 | Auto install after the SPTN-97 graft (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261123-1206.json.gz | 12 -> 38 (metrics_log) |
 | 5 | 2026-11-23 13:13 | Auto install at 1.1h (verdict: nothing left worth waiting for) after cycle 5 earned ~$10.5q. Backup saves/pre-install-auto-20261123-1311.json.gz | 38 -> 69 (readiness) |
+| 6 | 2026-11-23 14:21 | Auto install at 1.1h (verdict: nothing left worth waiting for), with The Red Pill; World Daemon ready. Backup saves/pre-install-auto-20261123-1418.json.gz | 69 -> 81 (page API) |
 
 ## Latest check
 
-**2026-11-23 13:15 Mac (scheduled): BN12 run 3 (hands-off test) installs 4 and 5 by auto install; no interventions.** Install 4 at 12:08
-(12 -> 38 augs; hacking 1,072 -> ~6,000), cycle 5 earned ~$10.5q in an hour, install 5 at 13:13 (38 -> 69). Live 13:14 (ctl-pull, page API):
-daemon connected, DevTools up, no pause file, page alarms none. Cycle 6: $154m, hacking 8,689 (World Daemon 3,184), karma -55.2k, entropy 3,
-home 2PB/7 cores, 22 scripts, gang Slum Snakes 12 on Terrorism, territory 20.1%; 8 sleeves shock recovery (~58). Red Pill not owned:
-advisor waits (gang minimum 4h; waiting to join Daedalus, needs cash). World Daemon: still a stop; next is Daedalus, then The Red Pill.
+**2026-11-23 15:12 Mac (scheduled): BN12 run 3 World Daemon READY; backup taken, Ken alerted, check-ins stop here.** Install 6 by auto install
+at 14:21 installed The Red Pill (69 -> 81 augs). Live 15:12 (ctl-pull, page API): daemon connected, DevTools up, no pause file; hacking 23,602
+of 3,184, w0r1d_d43m0n not rooted; $10.46q, karma -56.0k, entropy 0; gang 12 members, territory 38%; page alert "The World Daemon is ready".
+Backup saves/pre-finish-ready-bn12-run3-20261123.json.gz (22.3MB, gzip ok). Notified Ken 15:12 (sent). Run 3 needed no interventions:
+entry 00:40 to ready 14:21, ~13.7h (run 1 ~20.6h). Auto install holds by its Red Pill guard. Next: a session finishes the node by
+docs/finish-procedure.md (route: BN11, profile bn11).
 
 ## Daedalus ready (2026-11-16 21:35)
 

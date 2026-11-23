@@ -9,6 +9,16 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN12 run 3
 
+**2026-11-23 15:12 Mac, scheduled check: install 6 by auto install with The Red Pill; World Daemon ready; backup, notify, stop.** Not a
+stand-aside run (repo clean, last commit 13:14). Auto install: verdict install 14:13, confirmed, backup saves/pre-install-auto-20261123-1418.json.gz,
+installed 14:21 (69 -> 81, The Red Pill among them). Live 15:12 (ctl-pull, page API): daemon connected, DevTools up, no pause file; cycle 7 at
+0.9h: $10.46q, ~$3.5t/s, hacking 23,602 (World Daemon 3,184, not rooted), karma -56.0k, entropy 0, home 2PB/7 cores, 24 cloud; gang Slum
+Snakes 12 (7 Traffick Illegal Arms, 5 Territory Warfare), territory 38.0%, power 18.4k; 8 sleeves shock recovery (~47); player on Algorithms
+at Rothman. Advisor wait ("The Red Pill is installed"); auto install holds by its Red Pill guard. Page alert: "The World Daemon is ready".
+Backup saves/pre-finish-ready-bn12-run3-20261123.json.gz (22.3MB, gzip ok) at 15:12. Ken notified 15:12 (notify.py: sent).
+Hands-off test: entry 00:40 to ready 14:21, ~13.7h with no interventions (run 1 ~20.6h).
+- Interventions: none. Built ahead: nothing (stopped at the World Daemon). Number review row: skipped.
+
 **2026-11-23 13:15 Mac, scheduled check: installs 4 and 5 of run 3 by auto install; nothing to fix.** Auto install: verdict install 11:54,
 backup saves/pre-install-auto-20261123-1206.json.gz, installed 12:08 ("nothing left worth waiting for", after SPTN-97): 12 -> 38, hacking
 1,072 -> 5,965 at once, 8,900 by 13:10. Cycle 5 ran $32.5t (12:15) to $10.52q (13:10), ~$3.2t/s, nearly all hacking. Verdict install again

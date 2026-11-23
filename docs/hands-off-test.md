@@ -36,7 +36,7 @@ is whether the scripts and monitoring are approaching their end state.
 
 | Time | Intervention | Cause |
 |---|---|---|
-| (none to 2026-11-23 07:15; installs 1 and 2 by auto install 03:19, 06:46) | | |
+| (none from entry 00:40 to World Daemon ready 14:21, ~13.7h; installs 1-6 all by auto install, The Red Pill in install 6) | | |
 
 ## Interventions, BN12 run 2 (baseline, not under test)
 

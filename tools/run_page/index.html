@@ -238,7 +238,7 @@ function drawNow() {
     return `${list.length === state.sleeves.length ? "All " : ""}${list.length} on ${esc(task)}<span class="why">shock ${low === high ? low : `${low} to ${high}`}</span>`
   }).join("")
   const advice = state.advisor?.advice
-  const install = state.redPill ? "Finished: endgame installs are yours"
+  const install = state.redPill ? "Done for this run: the agent finishes the BitNode"
     : state.autoInstall.paused ? "Paused"
       : !advice ? "On, waiting for the advisor to start"
         : advice.verdict === "install" ? "Installing within about 6 min" : "On, not time yet"

@@ -1,5 +1,5 @@
 {
-  "goal": "BN12: SF12 via the hacking route, World Daemon (3000 x 1.02^run) then stop for Ken",
+  "goal": "BN12: SF12 via the hacking route, World Daemon (3000 x 1.02^run); the agent finishes it by docs/finish-procedure.md",
   "updated": "2026-11-22",
   "gangFaction": "Slum Snakes",
   "steps": [
@@ -39,7 +39,7 @@
       "label": "The Red Pill from Daedalus, then hack level for the World Daemon"
     },
     {
-      "label": "World Daemon: stop for Ken (backup first)"
+      "label": "World Daemon: the agent finishes it (docs/finish-procedure.md, backup first)"
     }
   ],
   "augWeightsWhy": "2026-11-21 21:15 (number review row 12): BN12 has no Covenant combat gate and the karma crime is at 100% odds, so combat only serves small faction gates: 0.2 -> 0.05, exp 0.1 -> 0.01. Hacking (2500 for Daedalus, ~3060 for the World Daemon) binds. hacking_exp 0.3 -> 0.1: level moves 0.06 per log exp at 6.7e9 exp.",

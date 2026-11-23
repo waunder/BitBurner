@@ -9,6 +9,15 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN12 run 3
 
+**2026-11-23 11:15 Mac, scheduled check: cycle 4 running by itself; nothing to fix.** Live (ctl-pull 11:12, page API): daemon connected,
+DevTools up, no pause file, page alarms none. Auto install: no lines since install 3 (07:53). At 11:12: cycle 4 (3.3h), $281.6t, ~$35.9b/s,
+hacking 1,058 (World Daemon 3,184), karma -54.4k, installed 12 (OmniTek InfoLoad graft finished; SPTN-97 graft $14.6b started 10:28, 1.6h, so
+~12:05), entropy 2, home 512TB/6 cores, 24 cloud (12.6PB), 24 scripts; gang Slum Snakes 12 members, respect 8.55m, reputation mode (12 Terrorism),
+territory 14.3%, power 1; 8 sleeves shock recovery (~70, sync 100). Advisor wait: gang minimum 41m more, gang rep does not cover its augs yet
+(batch value 2.49 vs average 0.75). aug_install.js refuses --install while graft_status says a graft owns the player, so the next install waits
+for SPTN-97 at the earliest.
+- Interventions: none. Built ahead: nothing this run (next route items need disposable-copy rehearsals, too long for a check-in). Number review row: skipped.
+
 **2026-11-23 09:15 Mac, scheduled check: install 3 of run 3 by auto install; gang formed; nothing to fix.** Live (ctl-pull 09:12, page API):
 daemon connected, DevTools up, no pause file, page alarms none. Auto install: HOLD at 07:44 (cycle 57 min), verdict install confirmed 07:47-07:52
 ("best next ADR-V1 Pheromone Gene adds +1.4%/h, under the cycle's +1.9%/h"), backup saves/pre-install-auto-20261123-0752.json.gz (13.2MB),

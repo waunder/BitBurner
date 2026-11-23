@@ -209,11 +209,11 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-23 09:15 Mac (scheduled): BN12 run 3 (hands-off test) healthy; install 3 by auto install 07:53, gang formed, no interventions.** Live 09:12
-(ctl-pull, page API): daemon connected, DevTools up; no pause file; page alarms none. Cycle 4 at 1.3h: $45.5t, income ~$17b/s, hacking 850
-(World Daemon 3,184), karma -54.1k, installed 10, home 512TB/6 cores, 24 cloud, 24 scripts. Gang Slum Snakes, 11 members, reputation mode
-(9 Terrorism, 2 training), territory 14.3%. Player grafting OmniTek InfoLoad ($8.6b, ~0.8h); 8 sleeves shock recovery (~81). Advisor wait
-(gang minimum 2.7h more). World Daemon: still a stop.
+**2026-11-23 11:15 Mac (scheduled): BN12 run 3 (hands-off test) healthy; no install since 07:53, no interventions.** Live 11:12
+(ctl-pull, page API): daemon connected, DevTools up; no pause file; page alarms none. Cycle 4 at 3.3h: $281.6t, income ~$35.9b/s, hacking 1,058
+(World Daemon 3,184), karma -54.4k, installed 12 (grafts OmniTek InfoLoad done, SPTN-97 running 10:28 to ~12:05, entropy 2), home 512TB/6 cores,
+24 cloud, 24 scripts. Gang Slum Snakes, 12 members, respect 8.55m, reputation mode (12 Terrorism), territory 14.3%. 8 sleeves shock recovery (~70).
+Advisor wait (gang minimum 41m more; gang rep does not cover its augs yet); aug_install refuses while the graft runs. World Daemon: still a stop.
 
 ## Daedalus ready (2026-11-16 21:35)
 

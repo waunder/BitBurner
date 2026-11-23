@@ -204,13 +204,14 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 | # | When (Mac clock) | Bought | Installed after |
 |---|---|---|---|
 | 1 | 2026-11-23 03:19 | Auto install at 2.6h (verdict: best next BitWire +0.4%/h, under the cycle's +0.9%/h): Neurotrainer I, Wired Reflexes ($17.6m) + queued The W1ngs of Icarus; leftover cash ($874b) took home 1TB -> 32TB, 4 cores. Backup saves/pre-install-auto-20261123-0317.json.gz | 1 -> 4 (readiness) |
+| 2 | 2026-11-23 06:46 | Auto install at 3.5h (verdict: best next ADR-V1 Pheromone Gene +1.7%/h, under the cycle's +2.3%/h): BitWire, Neural Wit Amplifier, Neurotrainer II, Speech Enhancement, Synaptic Enhancement Implant; home 32TB -> 512TB, 6 cores. Backup saves/pre-install-auto-20261123-0646.json.gz | 4 -> 9 (readiness) |
 
 ## Latest check
 
-**2026-11-23 05:15 Mac (scheduled): BN12 run 3 (hands-off test) healthy, no interventions.** Live 05:12 (ctl-pull, page API):
-daemon connected, DevTools up; no pause file; page alarms none. Cycle 2 at 1.9h: $44.0t, income ~$12b/s, hacking 687 (World Daemon
-3,184), karma -17.5k (~-10k/h; gang at -54k around 08:45), home 32TB/4 cores, 24 cloud (12.6PB), 21 scripts, player and 8 sleeves
-Homicide (shock ~91). Advisor build ("best next ADR-V1 Pheromone Gene in 11.5h"). World Daemon: still a stop for check-ins.
+**2026-11-23 07:15 Mac (scheduled): BN12 run 3 (hands-off test) healthy; install 2 by auto install 06:46, no interventions.** Live 07:12
+(ctl-pull, page API): daemon connected, DevTools up; no pause file; page alarms none. Cycle 3 at 0.4h: $3.1b, income ~$36m/s, hacking 720
+(World Daemon 3,184), karma -39.1k (~-10.8k/h; gang at -54k around 08:35), installed 9, home 512TB/6 cores, 24 cloud, 25 scripts, player
+and 8 sleeves Homicide (shock ~88). Advisor build (next ADR-V1 Pheromone Gene in ~8.5h; rep waits on the gang). World Daemon: still a stop.
 
 ## Daedalus ready (2026-11-16 21:35)
 

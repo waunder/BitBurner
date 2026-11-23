@@ -9,6 +9,14 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN12 run 3
 
+**2026-11-23 07:15 Mac, scheduled check: install 2 of run 3 by auto install; nothing to fix.** Live (ctl-pull 07:12, page API): daemon
+connected, DevTools up, no pause file, page alarms none. Auto install: verdict install 06:40 ("best next ADR-V1 Pheromone Gene adds +1.7%/h,
+under the cycle's +2.3%/h"), confirmed 5 min, backup saves/pre-install-auto-20261123-0646.json.gz (10.3MB), installed 06:46-06:47: 4 -> 9
+(BitWire, Neural Wit Amplifier, Neurotrainer II, Speech Enhancement, Synaptic Enhancement Implant), home 512TB, 6 cores. At 07:12: cycle 3
+(0.4h), $3.1b, ~$36m/s, hacking 720, karma -39.1k (from -17.5k at 05:12; gang around 08:35), 25 scripts incl. mcp, stack_manager, gang_create,
+graft_controller; player and 8 sleeves Homicide, shock ~88. Advisor build (ADR-V1 in ~8.5h). Graft: no pick (karma phase).
+- Interventions: none. Built ahead: nothing this run. Number review row: skipped.
+
 **2026-11-23 05:15 Mac, scheduled check: cycle 2 running by itself; nothing to fix.** Live (ctl-pull 05:12, page API): daemon connected,
 DevTools up, no pause file, page alarms none. Cycle 2 at 1.9h after install 1: $44.0t (hacking $45.6t earned this cycle, darknet $4.0b,
 crime $136m, contracts $47m; cloud spend $1.6t), income ~$12b/s, hacking 687 (World Daemon 3,184), karma -17,515 (~-870 per 5 min,

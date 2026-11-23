@@ -354,3 +354,14 @@ export function territoryTrialCohort(plans, count) {
     .sort((a, b) => (a.choice?.respect || 0) - (b.choice?.respect || 0) || String(a.member.name).localeCompare(String(b.member.name)))
     .slice(0, count);
 }
+
+/**
+ * Clash or not (2026-11-22, Ken: "Take territory from gangs early, since we can?"). Clash deaths only
+ * take members on Territory Warfare, so with none assigned a clash risks territory alone, and the odds
+ * gates decide it in any mode (reputation and cash included). With members on Warfare, clash only in
+ * territory-power mode (the accepted risk); a trial cohort builds power with clashes off.
+ */
+export function shouldFightClashes({ territoryEnabled, engage, mode, warfareMembers }) {
+  if (!territoryEnabled || !engage) return false
+  return mode === "territory-power" || !(warfareMembers > 0)
+}

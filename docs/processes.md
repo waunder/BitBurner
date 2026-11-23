@@ -1409,6 +1409,7 @@ ascension is reconsidered only after the next loop reads fresh gang state.
 Ascensions remain disabled in reputation mode. The observed clash value
 appears in `gang_status.json` as `territory.clashChance`; a restart does not
 rely on a guessed decay timer.
+**Clashes in any mode (2026-11-22, Ken: "Take territory from gangs early, since we can?"):** `shouldFightClashes` (gang_logic.js) engages clashes whenever the odds gates pass and no member is on Territory Warfare, in reputation and cash modes too (a clash kills only Warfare members, so this risks territory alone); with Warfare members it clashes only in territory-power mode, so a trial cohort still builds power with clashes off. Respect from Terrorism scales with (100T)^2, so territory also speeds gang-faction rep. Profiles bn7, 11, 12, 14 set the single-rival bar `territoryMinWin` 0.80 (weighted stays 0.85): one rival at 0.845 had blocked every clash.
 
 All territory work is additionally guarded by the synced
 `territoryEnabled` field in `gang_capital_policy.json`. Its checked-in default

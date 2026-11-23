@@ -1,6 +1,6 @@
 import { memberPower, territoryTrialCohort, territoryTrialFrom } from "./gang_logic.js";
 import { canBuildTerritoryPower, moneyModePriority, moneyPerSecond, planMoneyTasks, planReputationTasks, planTerritoryPower,
-  shouldAscendMember, shouldEngageTerritoryClashes, wantedCleanupPolicy, cheapGearQualifies,
+  shouldAscendMember, shouldEngageTerritoryClashes, shouldFightClashes, wantedCleanupPolicy, cheapGearQualifies,
   reputationCleanupMode, withEquipment, planReputationGear, gearCounts, ascensionCooldownElapsed,
   GANG_ROOTKITS, autoGangObjective, recruitHoldsAscension, equipmentCategory } from "./gang_logic.js";
 import { flagsFor, grantFilter, kindOf } from "./valuation_logic.js";
@@ -301,8 +301,8 @@ export async function main(ns) {
     }
 
     const weightedChance = clashPolicy.weightedChance;
-    const fight = territoryEnabled && clashPolicy.engage
-      && (mode === "territory-power" || (powerShare === 0 && mode === "cash"));
+    const warfareMembers = plans.filter((p) => (p.choice?.task ?? p.member.task) === "Territory Warfare").length;
+    const fight = shouldFightClashes({ territoryEnabled, engage: clashPolicy.engage, mode, warfareMembers });
     if (fight !== gang.territoryWarfareEngaged) ns.gang.setTerritoryWarfare(fight);
 
     const gross = plans.reduce((sum, p) => sum + (p.choice?.money || 0), 0);

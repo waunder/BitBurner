@@ -12,6 +12,7 @@
   "recruitHoldHours": 3,
   "updatedAt": "2026-11-21",
   "territoryNote": "BN12 start 2026-11-21: territoryEnabled with odds bars 0.85 and the default power share 0.35 (Territory Warfare cohort once the roster is full and combat >= 300). BN10 run 4 lesson: gang money grows as (..)^(0.2T+0.8) with territoryMult ~ T^1.5, about 15x from 14% to 50%. Set territoryPowerShare 0 once territory is near full to put everyone on money; clashes continue while odds pass.",
-  "territoryMinWin": 0.85,
+  "territoryMinWin": 0.8,
+  "territoryMinWinNote": "0.80 from 2026-11-22 (Ken: take territory early, since we can): the weighted bar 0.85 still guards the whole field; one big rival at 0.845 had stopped every clash.",
   "territoryWeightedWin": 0.85
 }

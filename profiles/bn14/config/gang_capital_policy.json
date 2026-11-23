@@ -12,6 +12,7 @@
   "recruitHoldHours": 3,
   "updatedAt": "2026-11-22",
   "territoryNote": "Inherited from bn12 (territory from the first full roster, odds bars 0.85, power share 0.35). Combat levels are x0.5 here: unmeasured in BN14.",
-  "territoryMinWin": 0.85,
+  "territoryMinWin": 0.8,
+  "territoryMinWinNote": "0.80 from 2026-11-22 (Ken: take territory early, since we can): the weighted bar 0.85 still guards the whole field; one big rival at 0.845 had stopped every clash.",
   "territoryWeightedWin": 0.85
 }

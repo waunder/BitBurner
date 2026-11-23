@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { autoGangObjective, canBuildTerritoryPower, moneyModePriority, moneyPerSecond, planMoneyTasks, planReputationTasks,
-  planTerritoryPower, shouldAscendMember, shouldEngageTerritoryClashes, wantedCleanupPolicy, cheapGearQualifies, reputationCleanupMode,
+  planTerritoryPower, shouldAscendMember, shouldEngageTerritoryClashes, shouldFightClashes, wantedCleanupPolicy, cheapGearQualifies, reputationCleanupMode,
   withEquipment, planReputationGear, equipmentCategory, gearCounts, ascensionCooldownElapsed,
   recruitHoldsAscension } from "./gang_logic.js";
 
@@ -335,3 +335,13 @@ test("territory trial: policy parsing, cohort and member power", async () => {
   assert.deepEqual(cohort.map((p) => p.member.name), ["b", "c"]);
   assert.equal(memberPower({ hack: 95, str: 95, def: 0, dex: 0, agi: 0, cha: 0 }), 2);
 });
+
+test("clashes run in any mode while nobody is on Territory Warfare", () => {
+  const on = { territoryEnabled: true, engage: true }
+  assert.equal(shouldFightClashes({ ...on, mode: "reputation", warfareMembers: 0 }), true)
+  assert.equal(shouldFightClashes({ ...on, mode: "cash", warfareMembers: 0 }), true)
+  assert.equal(shouldFightClashes({ ...on, mode: "territory-power", warfareMembers: 4 }), true)
+  assert.equal(shouldFightClashes({ ...on, mode: "cash", warfareMembers: 4 }), false)   // trial cohort
+  assert.equal(shouldFightClashes({ ...on, engage: false, mode: "cash", warfareMembers: 0 }), false)
+  assert.equal(shouldFightClashes({ territoryEnabled: false, engage: true, mode: "cash", warfareMembers: 0 }), false)
+})

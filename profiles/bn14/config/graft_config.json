@@ -1,0 +1,17 @@
+{
+  "enabled": true,
+  "dry": false,
+  "allow": [],
+  "autoPick": true,
+  "block": [],
+  "maxPriceFractionOfCash": 0.25,
+  "reserveInstallPlan": true,
+  "maxEntropy": 6,
+  "minNetValue": 0.05,
+  "maxGraftHours": 2.5,
+  "maxKarmaDelayHours": 0.25,
+  "allowDuringKarma": false,
+  "focus": true,
+  "cooldownMs": 600000,
+  "stage": "BN14 run 1 (copied from bn12 2026-11-22): live grafting as in BN12 (Ken approved live grafting 2026-11-18 12:30). Hacking level x0.4 makes hacking-multiplier grafts worth more here. To stop it late in a run set disabledInRun to the run's nodeResetAt."
+}

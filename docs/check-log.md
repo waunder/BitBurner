@@ -9,6 +9,19 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN12 run 2
 
+**2026-11-22 21:20 Mac, scheduled check: healthy; install 3 waits on a graft; profile bn14 built.** Live (ctl-pull 21:12, autosave
+21:11, page API): daemon connected, DevTools up, auto install, watchdog and run page LaunchAgents up, no pause file; page alarms none.
+BN12 run 2 cycle 3 (4.3h): $357.7t, hacking 1060 (World Daemon 3121), karma -54.7k, installed 12 + 1 queued, entropy 2, grafting
+SPTN-97 Gene Modification ($14.6b, 1.6h, ends ~21:37). Advisor `install` since ~20:53 (nothing left worth waiting for; floor not
+lapsed); auto install logged WAIT at 20:53 and is holding for the graft (auto_install.py: wait while graft_status owns the player),
+so install 3 should fire ~21:40 with its own backup. Gang Slum Snakes, 12 on Terrorism, territory 14.3%. Sleeves 8 on shock recovery (~65).
+- Nothing to restart or fix. Not observed: install 3 itself (after this check).
+- Built ahead (route order 4, BN14): profiles/bn14 from bn12's stack plus core ipvgo_player.js at startup. BN14 multipliers read from
+  the installed bundle (3.0.1): Go power x4, hacking level x0.4, speed x0.3, faction work rep x0.2, crime success x0.4, augs x1.5,
+  World Daemon x5 (hacking 15000). Tested: profile.py build, stage.py bn14 + node --test 711/711, finish_node.py preflight (no --go)
+  plans BN12 -> BN14 with a bn14 switch. Not yet: hacking-15000 feasibility, karma pace, IPvGO opponent at x4, a fresh-BN14 copy rehearsal.
+- Number review (step 4) skipped this run.
+
 **2026-11-22 19:14 Mac, scheduled check: healthy; profile bn7 built.** Live (ctl-pull 19:12, autosave 19:11, page API): daemon
 connected, DevTools up, auto install up (no pause file; install 2 fired 16:51 with backup saves/pre-install-auto-20261122-1651.json.gz,
 confirmed 16:52; added to STATE.md's table), watchdog up; page alarms none. BN12 run 2 cycle 3: $108.6t, income ~$35b/s (metrics

@@ -195,12 +195,11 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-22 19:14 Mac (scheduled): healthy; BN12 run 2 cycle 3, gang up; profile bn7 built ahead.** $108.6t at 19:11 (income
-~$35b/s), hacking 1030 of 3121, 11 augs installed + The B00ts of Perseus queued, entropy 1, grafting ECorp HVMind Implant (~1h,
-started 18:52). Gang Slum Snakes, 12 members, rep mode, territory 14.3%. Sleeves recovering shock (~76). Advisor `wait` (gang
-4h minimum: 1.7h more). Daemon, DevTools, auto install (install 2 at 16:51), watchdog up; no page alarms.
-Built: profiles/bn7 (route order 3), 725 of 725 staged tests; not yet a Bladeburner finish in the finish tool (docs/route.md).
-World Daemon: still a stop for check-ins.
+**2026-11-22 21:20 Mac (scheduled): healthy; install due after the graft; profile bn14 built ahead.** $357.7t at 21:11, hacking 1060
+of 3121, 12 augs installed + The B00ts of Perseus queued, entropy 2, grafting SPTN-97 Gene Modification (ends ~21:37). Advisor
+`install` ("nothing left worth waiting for", cycle 4.3h); auto install is waiting for the graft by design and should fire ~21:40
+(install 3). Gang Slum Snakes, 12 members, territory 14.3%. Sleeves recovering shock (~65). Daemon, DevTools, auto install,
+watchdog, run page up; no page alarms. Built: profiles/bn14 (route order 4), 711 of 711 staged tests. World Daemon: still a stop for check-ins.
 
 ## Daedalus ready (2026-11-16 21:35)
 

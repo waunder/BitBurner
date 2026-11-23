@@ -1,0 +1,29 @@
+{
+  "name": "bn14",
+  "description": "BitNode 14 (IPvGO Subnet Takeover), run 1: the bn12 stack (core, bn15 darknet, sleeves, grafts, shadow allocator) plus the core IPvGO player at startup. Route: hacking economy + IPvGO -> gang -> augs -> Daedalus -> The Red Pill -> hacking 15000 -> World Daemon (stop for the finish procedure).",
+  "extends": [
+    "core",
+    "bn15",
+    "sleeves"
+  ],
+  "bitnodes": [
+    14
+  ],
+  "files": {
+    "graft_scan.js": "core/player/graft_scan.js",
+    "graft_scan_meta.js": "core/player/graft_scan_meta.js",
+    "graft_controller.js": "core/player/graft_controller.js"
+  },
+  "config": {
+    "player_activity_config.json": "profiles/bn14/config/player_activity_config.json",
+    "run_target.json": "profiles/bn14/config/run_target.json",
+    "gang_capital_policy.json": "profiles/bn14/config/gang_capital_policy.json",
+    "graft_config.json": "profiles/bn14/config/graft_config.json"
+  },
+  "startup": [
+    "allocator.js",
+    "graft_controller.js",
+    "ipvgo_player.js"
+  ],
+  "notes": "Built 2026-11-22 21:2x by a scheduled check-in (route order 4). BN14 multipliers read from the game bundle (Bitburner 3.0.1, main.bundle.js): Go power x4, hacking level x0.4, hacking speed x0.3, server max money x0.7, starting money x0.5, starting security x1.5, script hack money x0.3, crime money x0.75, crime success x0.4, Hacknet money x0.25, combat levels x0.5, augmentations x1.5 cost, infiltration x0.75, faction and company work rep x0.2, Bladeburner rank x0.6 / skill cost x2, gang softcap 0.7, gang unique augs x0.4, Stanek 0.5/-1, World Daemon x5 (hacking 15000). Daedalus at the default 30 augs. BUILT: profile, configs (bn12's, with faction_rep weight 0.5 -> 0.8), run target, ipvgo_player.js added to startup (core file, already in the core manifest; not running in BN12). NOT YET: whether 15000 hacking is reachable in reasonable time at x0.4/x0.3 (may need a long run or many installs); karma pace at crime success x0.4; IPvGO opponent choice for x4 power; a rehearsal from a fresh BN14 start in a disposable copy."
+}

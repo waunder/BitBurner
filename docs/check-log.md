@@ -9,6 +9,17 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 1
 
+**2026-11-23 21:12 Mac, scheduled check: cycle 3 healthy; nothing to fix; finish-procedure wording for BN7.** Not a stand-aside run
+(repo clean, last commit 19:16). Live 21:12 (ctl-pull, page API): daemon connected (168 watched, 31 pulled), DevTools up, no pause file,
+page alerts none. BN11 run 1 cycle 3 (install 3 at 18:39, 2.5h): $897m, ~$852k/s; this run darknet $11.1b, crime $981m, hacking $178m;
+hacking 279 (World Daemon 4500), karma -17.43k, installed 6, queued none; home 512GB/1 core, 25 cloud 14.3TB; scripts incl. stock_engine,
+stack_manager, gang_create; player and 8 sleeves Homicide (shock 89.8, sync 100); no gang; graft no pick; entropy 0. Advisor build
+(ADR-V1 Pheromone Gene next). Auto install log quiet since 18:40 (correct: verdict build).
+- Karma pace: -7.69k at 19:14 -> -17.43k at 21:12, ~4.9k/h (up from ~2.8k/h as stats grow); -54k about 7.4h away, ~04:30 on 2026-11-24.
+- Built ahead (BN7): docs/finish-procedure.md step 2 names both ready paths, and a new section describes the Bladeburner path and what is
+  untested (copy rehearsal). Doc only; no code or manifest touched.
+- Interventions: none. Number review row: skipped.
+
 **2026-11-23 19:12 Mac, scheduled check: cycle 3 running by itself; BN7 build-ahead (Daedalus allowed in bn7); one slip, fixed.** Not a
 stand-aside run (repo clean, last commit 17:15). Live 19:12 (ctl-pull, page API): daemon connected (168 synced, 31 pulled), DevTools up,
 no pause file, page alerts none; LaunchAgents auto-install, watchdog, run-page, remote-api-monitor loaded. BN11 run 1 cycle 3 (install 3

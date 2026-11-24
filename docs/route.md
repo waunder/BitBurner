@@ -27,6 +27,8 @@ separate game. It never replaces, deletes or overwrites this save (the handover 
 
 ## Progress
 
+- 2026-11-23 21:12 (check-in): BN7: docs/finish-procedure.md describes the Bladeburner finish path. Still needed: core HUD
+  wording when bn7 is next, and a disposable-copy rehearsal of a Bladeburner finish.
 - 2026-11-23 19:12 (check-in): BN7: profiles/bn7/config/bladeburner_config.json allows the controller to win Operation Daedalus
   (in Bitburner 3.0.1 that only counts the black op; finish_node.py's bladeburner path ends the node), and the check-in's "ready"
   includes all 21 black ops won. Tested in the staged copy (726 pass). Still needed: core HUD wording when bn7 is next,

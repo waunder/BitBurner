@@ -224,14 +224,11 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-23 19:12 Mac (scheduled): BN11 run 1 cycle 3 running by itself; BN7 can now win Operation Daedalus; one slip fixed.** Live
-19:12 (ctl-pull, page API): daemon connected, DevTools up, no pause file, page alerts none; LaunchAgents loaded. Auto installs 2 (17:33)
-and 3 (18:39), both backed up, installed 1 -> 6. $65m, ~$656k/s (darknet carries: $979m this cycle), hacking 189, karma -7.69k (~2.8k/h
-since 17:13, so -54k and the gang around 11:00 tomorrow at this pace), player and 8 sleeves Homicide (shock 93.7), no gang, no graft;
-advisor build (ADR-V1 in 24.6h). Built ahead: bn7 config allowDaedalus true (winning Daedalus only counts the black op in 3.0.1; the
-finish stays finish_node.py's), check-in "ready" includes all 21 black ops. Slip: `profile.py build bn7` rewrote the live manifest and
-the daemon pushed 9 bn7 files; reverted and resynced within ~3 min, nothing acted on it; 4 inert Bladeburner files stay in the game
-(profile.py check: stale; a switch deletes them; deleting is Ken's). Guard added (lessons 13, task file).
+**2026-11-23 21:12 Mac (scheduled): BN11 run 1 cycle 3 healthy, nothing to fix.** Live 21:12 (ctl-pull, page API): daemon
+connected (168 watched), DevTools up, no pause file, page alerts none. No install since 18:39 (installed 6, queue empty; advisor build,
+ADR-V1 next). $897m (from $65m at 19:14), ~$852k/s, hacking 279, karma -17.4k (~4.9k/h since 19:14, so -54k and the gang around
+04:30 tomorrow), player and 8 sleeves Homicide (shock 89.8), no gang, no graft, entropy 0. Built ahead: docs/finish-procedure.md
+now describes the Bladeburner finish path (step 2 and a new section); still owed for BN7: a copy rehearsal and the core HUD wording.
 
 ## Daedalus ready (2026-11-16 21:35)
 

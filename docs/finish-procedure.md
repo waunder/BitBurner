@@ -35,7 +35,10 @@ its own Remote API daemon, so pushes, the profile switch and every file written 
 ## Procedure
 
 1. Next node is on docs/route.md and a profile covers it (the tool builds it and runs its tests).
-2. The Red Pill installed, hacking at the requirement, no graft running.
+2. Ready one of two ways, no graft running in either: the World Daemon path (The Red Pill installed, hacking at the
+   requirement), or, in a Bladeburner node (BN6, BN7), the Bladeburner path (all 21 black operations won, run page
+   `blackOps`; no pill or root needed, per Bitburner 3.0.1 `destroyW0r1dD43m0n`). The tool picks the path
+   (`finish_path`: World Daemon first) and checks the backup is ready the same way.
 3. Tell Ken what is about to happen and why that node (a check-in: `tools/notify.py`).
 4. `.venv/bin/python3 tools/finish_node.py --next <N>` (preflight only; changes nothing). Then the same with `--go`,
    which: pauses the watchdog; backs up the save to `saves/pre-finish-bn<node>-<time>.json.gz` and decodes it (same
@@ -58,6 +61,14 @@ Restoring overwrites the save, so it is Ken's call (AGENTS.md, "Not covered"). T
 
 The rehearsal used the browser build's Options > Import Game > Compare Save, which opens the same comparison page and
 calls the same import. Steam's File > Load From File itself has not been run (it would overwrite the real save).
+
+## Bladeburner path (built 2026-11-23, not yet rehearsed)
+
+`finish_node.js` takes the path as its 4th argument; on `bladeburner` it checks `getNextBlackOp()` is null and skips
+rooting, then calls `destroyW0r1dD43m0n` as on the other path. Unit-tested (tools/tests/test_finish_node.py) only:
+a disposable-copy rehearsal from a save with 21 black ops won is still owed before BN7's finish. Winning Operation
+Daedalus itself only counts the black op and gives rank; the node ends only through this tool. bn7's
+bladeburner_config.json sets `allowDaedalus` true so the controller attempts it; bn6's default stays false.
 
 ## Before first real use
 

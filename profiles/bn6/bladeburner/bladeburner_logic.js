@@ -11,7 +11,7 @@
 
 export const DEFAULT_CONFIG = {
   enabled: true,
-  allowDaedalus: false, // Operation Daedalus ends the BitNode; never set true without Ken
+  allowDaedalus: false, // true in bn7 only (profiles/bn7/config/bladeburner_config.json): winning Daedalus counts the black op; the node ends at destroyW0r1dD43m0n (tools/finish_node.py)
   ownPlayer: true, // player_activity_controller stands down while this is true and the status is fresh
   minChance: { Contracts: 0.8, Operations: 0.8 },
   // Black ops gate the road to Daedalus and pay large rank. 2026-11-16: Typhoon sat at 0.61-0.66 for hours
@@ -66,7 +66,7 @@ export function chooseAction(s, config = DEFAULT_CONFIG) {
 
   const actions = s.actions || []
   const bo = s.nextBlackOp
-  // Operation Daedalus ends the BitNode: Ken's call, never automatic (allowDaedalus stays false).
+  // Operation Daedalus opens the Bladeburner finish; only where allowDaedalus is set (bn7). The finish itself is finish_node.py.
   if (bo && bo.name === "Operation Daedalus" && !cfg.allowDaedalus) {
     // fall through to rank work; the controller reports daedalusReady for the stop-and-notify step
   } else if (bo && num(s.rank) >= num(bo.rank)) {

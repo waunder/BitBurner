@@ -48,6 +48,12 @@ and where it is already built in. Newest BitNode first. Started 2026-11-16 at th
    2-hourly check compares each source's $/h with the previous cycle's.
 12. **One-off probes beat guesses.** Small scripts that write one JSON file (bb_probe.js, bn_probe.js,
    sleeve price reads) settled questions in minutes. Delete them after.
+13. **`tools/profile.py build <other profile>` pushes to the live game.** It rewrites `sync_manifest.json`, and the
+   daemon pushes whatever that file names within seconds. 2026-11-23 ~19:15 a check-in ran `build bn7` to test BN7:
+   the daemon pushed 9 bn7 files (bn7's configs over bn11's for ~3 minutes, plus 4 Bladeburner files). Fixed by
+   `git checkout sync_manifest.json` and `bb_remote.py ctl-resync`; nothing in the game acted on it.
+   *Do:* test a future profile only with `tools/stage.py <profile>` (writes `build/<profile>`), or
+   `profile.py build <profile> --out <scratch path>`; never `build` without `--out` for a profile that is not live.
 
 ## BN6 (Bladeburners), run 1: 2026-11-14 17:15 to 2026-11-16 21:47 (about 52.5 hours)
 

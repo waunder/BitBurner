@@ -27,7 +27,8 @@ install. Run an install with `tools/game_terminal.py "home; run aug_install.js -
 STATE.md's install table.
 World Daemon (Ken, 2026-11-23: "Yes, automate it"): a check-in finishes a ready BitNode itself, only through
 tools/finish_node.py (never root, backdoor or destroy w0r1d_d43m0n any other way). Ready means The Red Pill installed,
-hacking at the requirement, no graft running. Then, in order:
+hacking at the requirement, no graft running; or, in a Bladeburner node (BN7), all 21 black operations won
+(run page `blackOps`), no graft running. Then, in order:
   a. Read the next node N from docs/route.md "Next finish". If that line is missing or unclear, alert Ken and stop.
   b. `.venv/bin/python3 tools/finish_node.py --next N` (preflight, changes nothing). If it refuses, alert Ken with
      its reason and stop.
@@ -62,7 +63,8 @@ Each run:
 3. Build ahead (when the live run needs nothing): take the next unfinished item for the route (docs/route.md "Engine
    we lack" for the next BitNodes, then docs/opportunities.md). Work only in profiles/<next> and new core files
    that no live manifest names; never edit the live profile's files for a future node, never run profile.py switch.
-   Every change is tested (unit tests, stage.py, node --test). Leave a dated note in that profile's notes or
+   Every change is tested (unit tests, stage.py, node --test). Never `profile.py build` a profile that is not live
+   without `--out` to a scratch path: it rewrites sync_manifest.json and the daemon pushes it (docs/lessons.md 13). Leave a dated note in that profile's notes or
    docs/route.md saying what is built, what is tested, and what still needs a disposable-copy rehearsal.
 4. Review one row of docs/number-review.md (step 5c) if time remains.
 5. Replace "Latest check" in STATE.md and put the full entry at the top of docs/check-log.md.

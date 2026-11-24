@@ -9,6 +9,30 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 1
 
+**2026-11-23 19:12 Mac, scheduled check: cycle 3 running by itself; BN7 build-ahead (Daedalus allowed in bn7); one slip, fixed.** Not a
+stand-aside run (repo clean, last commit 17:15). Live 19:12 (ctl-pull, page API): daemon connected (168 synced, 31 pulled), DevTools up,
+no pause file, page alerts none; LaunchAgents auto-install, watchdog, run-page, remote-api-monitor loaded. BN11 run 1 cycle 3 (install 3
+at 18:39): $57.7m -> $65.1m at 19:14, ~$656k/s; this cycle darknet $979m, crime $86m, hacking $3.0m; hacking 189, karma -7.69k, installed 6,
+queued none; home 512GB/1 core, 25 cloud 5.2TB, 22 scripts incl. stock_engine (waiting for capital), stack_manager; player and 8 sleeves
+Homicide (shock 93.7, sync 100); no gang; graft no pick; entropy 0. Advisor: build, best next ADR-V1 Pheromone Gene in 24.6h.
+- Auto install: 17:33 (verdict install, BitWire +0.5%/h under the cycle's +4.5%/h; backup ok) and 18:39 (ADR-V1 +0.2%/h under +5.8%/h;
+  backup ok), each confirmed by resetAt; installed 1 -> 4 -> 6. Rows added to STATE.md.
+- Karma pace: -2.07k at 17:13 -> -7.69k at 19:14, ~2.8k/h; at that pace -54k is ~16.5h away (about 11:00 on 2026-11-24). The 17:30
+  note's "~8h" was BN12 run 3's pace and is not holding here; sleeve shock (93.7) is still falling.
+- Built ahead (route order 3, BN7): read the game's source (bitburner-src dev, src/Bladeburner/Bladeburner.ts completeAction): winning a
+  black op, Operation Daedalus included, only increments numBlackOpsComplete and gives rank; nothing ends the node until
+  destroyW0r1dD43m0n, which tools/finish_node.py calls on its bladeburner path. So profiles/bn7/config/bladeburner_config.json sets
+  allowDaedalus true (bn6 default stays false), the bn7 run target says so, and docs/mac-bn10-checkin-task.md's "ready" now includes
+  all 21 black ops won (run page blackOps). Tested: stage.py bn7 (171 files), node --test 726 of 726, a chooseAction check (bn7 config
+  picks Operation Daedalus at rank 500k / 0.9 odds, the default picks Training), tools tests 130 OK. Not yet: the core HUD still says
+  "Ken decides" at daedalusReady (core is live in bn11), finish-procedure.md wording, a disposable-copy rehearsal.
+- Slip: to test bn7 the check-in first ran `tools/profile.py build bn7`, which rewrote sync_manifest.json; the daemon pushed 9 bn7 files
+  (bn7's player_activity_config, run_target, gang_capital_policy, graft_config over bn11's, plus bladeburner.js, bladeburner_logic.js,
+  bb_probe.js, bladeburner_config.json). Within ~3 min: `git checkout sync_manifest.json`, `bb_remote.py ctl-resync` (168 files, all of
+  bn11's back; ctl-get of the four configs shows bn11's). Afterwards: work Homicide, sleeves Homicide, spending unchanged, no graft, no
+  alerts. profile.py check now lists the 4 Bladeburner files as stale (inert; nothing runs them; a profile switch deletes them; left
+  because deleting game files is Ken's). Guard: docs/lessons.md 13 and a line in the task file's build-ahead step.
+
 **2026-11-23 17:30 Mac, scheduled check: cycle 1 running by itself; nothing to fix; built the BN7 finish path.** Not a stand-aside run
 (repo clean, last commit 16:02). Live 17:13 (ctl-pull, page API): daemon connected (168 files synced, 31 pulled), DevTools up, no pause
 file, page alerts none; LaunchAgents auto-install, watchdog, run-page, remote-api-monitor loaded. BN11 run 1 (entered 15:55), cycle 1 at

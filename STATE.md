@@ -140,6 +140,14 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
   Its first pass granted all 13 sleeve aug batches bought after install 4 (early phase, no batch reserve). Next:
   judge it this cycle, then R2 (the gang's reserveInstallPlan is a local stand-in for its batch reserve).
 
+## Installs BN11 run 1
+
+| # | When (Mac clock) | Bought | Installed after |
+|---|---|---|---|
+| 1 | 2026-11-23 15:55 | Entered by tools/finish_node.py (run starts with NeuroFlux from SF12; The W1ngs of Icarus queued) | 0 -> 1 |
+| 2 | 2026-11-23 17:33 | Auto install at 1.6h (verdict: best next BitWire +0.5%/h, under the cycle's +4.5%/h). Backup saves/pre-install-auto-20261123-1732.json.gz | 1 -> 4 (metrics_log) |
+| 3 | 2026-11-23 18:39 | Auto install at 1.1h (verdict: best next ADR-V1 Pheromone Gene +0.2%/h, under the cycle's +5.8%/h). Backup saves/pre-install-auto-20261123-1839.json.gz | 4 -> 6 (metrics_log) |
+
 ## Installs BN12 run 1
 
 | # | When (Mac clock) | Bought | Installed after |
@@ -216,12 +224,14 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-23 17:30 Mac (scheduled): BN11 run 1 cycle 1 running by itself; nothing to fix; BN7 finish path built.** Live 17:13
-(ctl-pull, page API): daemon connected, DevTools up, no pause file, page alerts none; auto install, watchdog, run page LaunchAgents
-loaded; BitNode 11 run 1 (entered 15:55), $56.2m, ~$277k/s, hacking 144 (World Daemon 4500), karma -2.07k (BN12 run 3 had -7.4k at
-3h: same pace), installed 1, queued W1ngs of Icarus; home 512GB, 25 cloud (3.2TB), 12 scripts; player and 8 sleeves on Homicide
-(shock ~97.5); no gang yet. Advisor wait 6.3h for Neurotrainer I. Built ahead: Bladeburner finish path in tools/finish_node.py
-(route.md Progress). Next: gang at karma -54k (~8h at this pace).
+**2026-11-23 19:12 Mac (scheduled): BN11 run 1 cycle 3 running by itself; BN7 can now win Operation Daedalus; one slip fixed.** Live
+19:12 (ctl-pull, page API): daemon connected, DevTools up, no pause file, page alerts none; LaunchAgents loaded. Auto installs 2 (17:33)
+and 3 (18:39), both backed up, installed 1 -> 6. $65m, ~$656k/s (darknet carries: $979m this cycle), hacking 189, karma -7.69k (~2.8k/h
+since 17:13, so -54k and the gang around 11:00 tomorrow at this pace), player and 8 sleeves Homicide (shock 93.7), no gang, no graft;
+advisor build (ADR-V1 in 24.6h). Built ahead: bn7 config allowDaedalus true (winning Daedalus only counts the black op in 3.0.1; the
+finish stays finish_node.py's), check-in "ready" includes all 21 black ops. Slip: `profile.py build bn7` rewrote the live manifest and
+the daemon pushed 9 bn7 files; reverted and resynced within ~3 min, nothing acted on it; 4 inert Bladeburner files stay in the game
+(profile.py check: stale; a switch deletes them; deleting is Ken's). Guard added (lessons 13, task file).
 
 ## Daedalus ready (2026-11-16 21:35)
 

@@ -1,6 +1,6 @@
 {
   "run": 1,
-  "goal": "BN7 run 1 (Bladeburners 2079): SF7.1. Finish by Operation Daedalus (400k rank, all prior black ops); the World Daemon needs hacking 6000 at hacking level x0.35, so Bladeburner is the road. Stop before Daedalus: finishing follows docs/finish-procedure.md.",
+  "goal": "BN7 run 1 (Bladeburners 2079): SF7.1. Finish by Operation Daedalus (400k rank, all prior black ops); the World Daemon needs hacking 6000 at hacking level x0.35, so Bladeburner is the road. The controller wins Daedalus; a check-in then finishes through tools/finish_node.py (docs/finish-procedure.md).",
   "updated": "2026-11-22",
   "gangFaction": "Slum Snakes",
   "steps": [
@@ -29,7 +29,7 @@
       "install": true
     },
     {
-      "label": "Operation Daedalus (final black op): ends the BitNode; never from a check-in, only by docs/finish-procedure.md (allowDaedalus false)"
+      "label": "Operation Daedalus (final black op): the controller wins it (allowDaedalus true in bn7); the next check-in then finishes the BitNode with tools/finish_node.py (bladeburner path)"
     }
   ],
   "augWeightsWhy": "BN7 (2026-11-22, unmeasured): BN6 run 1's weights. Same reasoning: combat and Bladeburner success chance drive rank; hacking still funds through MCP. Augs cost x3, so batches are smaller: review after the first cycle (docs/number-review.md).",

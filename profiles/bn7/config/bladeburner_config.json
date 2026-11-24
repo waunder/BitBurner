@@ -1,0 +1,4 @@
+{
+  "_why": "2026-11-23 (check-in, BN7 build-ahead): winning Operation Daedalus does not end the BitNode in Bitburner 3.0.1 (Bladeburner.ts completeAction only counts it in numBlackOpsComplete); the node ends only at destroyW0r1dD43m0n, which tools/finish_node.py calls on its bladeburner path. Under the handover (AGENTS.md, 2026-11-22) and Ken's 'Yes, automate it' (2026-11-23), BN7's controller may therefore win Daedalus itself, at the same odds bar as every black op; the finish stays with the check-in through finish_node.py.",
+  "allowDaedalus": true
+}

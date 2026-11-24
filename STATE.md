@@ -227,10 +227,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-24 11:12 Mac (scheduled): BN11 run 1 cycle 6 healthy; graft Neurotrainer III in progress; nothing to fix.** Live 11:12 (ctl-pull, page API):
-daemon connected, DevTools up, no pause file, page alerts none. Installed 12, queue empty. Gang Slum Snakes 8 members (all Mug People), respect 10.6k,
-territory 14.3%, mode reputation; 8 sleeves Shock recovery (shock ~23). $1.14b, hacking 406 (World Daemon 4500); player grafting Neurotrainer III
-(started ~09:43, 1.5h, $390m); entropy 0; advisor wait (gang 4h minimum, 55m more; gang rep does not cover its augs yet).
+**2026-11-24 13:12 Mac (scheduled): BN11 run 1 cycle 6 healthy; graft Neurotrainer III finished (entropy 1); nothing to fix.** Live 13:12 (ctl-pull, page API):
+daemon connected, DevTools up, no pause file, page alerts none. Installed 13 (graft), queued The B00ts of Perseus. Gang Slum Snakes 9 members (8 Mug People,
+1 Train Combat), respect 2.30k (ascension), territory 14.3%, mode reputation; 8 sleeves Shock recovery (shock ~12). $2.76b, hacking 435 (World Daemon 4500);
+advisor wait (12m for Neuralstimulator; gang rep does not cover its augs yet). Player The Black Hand hacking work.
 
 ## Daedalus ready (2026-11-16 21:35)
 

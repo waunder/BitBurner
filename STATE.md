@@ -150,6 +150,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 4 | 2026-11-23 23:01 | Auto install at 4.4h (verdict: best next S.N.A +0.5%/h, under the cycle's +1.1%/h); names not pulled. Backup saves/pre-install-auto-20261123-2301.json.gz | 6 -> 7 (page API) |
 | 5 | 2026-11-24 03:58 | Auto install at 4.9h (verdict: best next LuminCloaking-V1 +6.7%/h, under the cycle's +6.7%/h). Backup saves/pre-install-auto-20261124-0357.json.gz | 7 -> 10 (page API) |
 | 6 | 2026-11-24 08:06 | Auto install at 4.1h (verdict: best next Neuralstimulator +3.5%/h, under the cycle's +4.6%/h). Backup saves/pre-install-auto-20261124-0806.json.gz | 10 -> 12 (page API) |
+| 7 | 2026-11-24 13:58 | Auto install at 5.8h (verdict: best next Enhanced Myelin Sheathing +0.3%/h, under the cycle's +2.4%/h); incl. queued The B00ts of Perseus and 2 grafts. Backup saves/pre-install-auto-20261124-1357.json.gz | 13 -> 18 (page API) |
 
 ## Installs BN12 run 1
 
@@ -227,10 +228,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-24 13:12 Mac (scheduled): BN11 run 1 cycle 6 healthy; graft Neurotrainer III finished (entropy 1); nothing to fix.** Live 13:12 (ctl-pull, page API):
-daemon connected, DevTools up, no pause file, page alerts none. Installed 13 (graft), queued The B00ts of Perseus. Gang Slum Snakes 9 members (8 Mug People,
-1 Train Combat), respect 2.30k (ascension), territory 14.3%, mode reputation; 8 sleeves Shock recovery (shock ~12). $2.76b, hacking 435 (World Daemon 4500);
-advisor wait (12m for Neuralstimulator; gang rep does not cover its augs yet). Player The Black Hand hacking work.
+**2026-11-24 15:12 Mac (scheduled): BN11 run 1 cycle 7 healthy; install 7 by auto install 13:58; nothing to fix.** Live 15:12 (ctl-pull, page API):
+daemon connected, DevTools up, no pause file, page alerts none. Installed 13 -> 18, queue empty; a second graft finished 13:56 (entropy 2), graft now no pick.
+Gang Slum Snakes 9 members (all Mug People), respect 7.23k, territory 14.3%, mode reputation; 8 sleeves (7 Mug, 1 Black Hand field work; shock ~3.5).
+$303m, ~$1.84m/s, hacking 370 (World Daemon 4500); player Tetrads field work (HemoRecirculator); advisor wait (gang 4h minimum, 2.8h more).
 
 ## Daedalus ready (2026-11-16 21:35)
 

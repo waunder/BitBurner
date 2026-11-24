@@ -9,6 +9,15 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 1
 
+**2026-11-24 15:12 Mac, scheduled check: cycle 7 healthy; install 7 by auto install; nothing to fix.** Not a stand-aside run (repo clean, last commit 13:12).
+Live 15:12 (ctl-pull, page API): daemon connected (31 pulled), DevTools up, no pause file, page alerts none. Auto install fired 13:58 (verdict install at
+5.8h: best next Enhanced Myelin Sheathing +0.3%/h vs cycle +2.4%/h; backup saves/pre-install-auto-20261124-1357.json.gz; confirmed 14:00). A second
+graft finished 13:56 (graft_status lastFinishedAt; entropy 1 -> 2); graft now no pick. Installed 13 -> 18, queue empty, cycle 7 (1.2h). Gang Slum Snakes
+9 members (all Mug People), respect 2.30k -> 7.23k, territory 14.3%, mode reputation; 8 sleeves (7 Mug, 1 The Black Hand field work; shock 12 -> 3.5,
+sync 100). $2.76b -> $303m (spent on the install); ~$1.84m/s; hacking 435 -> 370 (reset; World Daemon 4500); karma -57.72k; home 1TB; 23 scripts.
+Player Tetrads field work (+4.9k rep for HemoRecirculator, cash ready). Advisor wait: gang 4h minimum, 2.8h more; gang rep does not cover its augs yet.
+- Interventions: none. No build-ahead; number review row skipped.
+
 **2026-11-24 13:12 Mac, scheduled check: cycle 6 healthy; graft finished; nothing to fix.** Not a stand-aside run (repo clean, last commit 11:12).
 Live 13:12 (ctl-pull, page API): daemon connected (31 pulled), DevTools up, no pause file, page alerts none. Auto install log quiet since 08:07
 (correct: advisor wait). Graft Neurotrainer III finished ~11:15 (graft_status lastFinishedAt); installed 12 -> 13, entropy 0 -> 1; graft now no pick.

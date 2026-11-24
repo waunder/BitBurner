@@ -9,6 +9,16 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 1
 
+**2026-11-24 09:12 Mac, scheduled check: cycle 6 healthy; install 6 by auto install; nothing to fix.** Not a stand-aside run (repo clean,
+last commit 07:12). Live 09:12 (ctl-pull, page API): daemon connected, DevTools up, no pause file, page alerts none. Auto install: verdict install
+at 08:01 (best next Neuralstimulator +3.5%/h, under the cycle's +4.6%/h), confirmed 5 min, backup saves/pre-install-auto-20261124-0806.json.gz ok,
+install sent 08:06:42, confirmed 08:07:42. Installed 10 -> 12, queue empty, cycle 6 (1.1h). Gang Slum Snakes 8 members (all Mug People), respect
+1.64k -> 5.10k, territory 14.3%, mode reputation; 8 sleeves Shock recovery (shock 46 -> 35, sync 100). $316m, ~$1.75m/s; hacking 326 (reset by
+install; World Daemon 4500); karma -55.45k; home 1TB, 25 cloud 9.5TB; 23 scripts incl. stock_engine, gang-controller, mcp, stack_manager. Player
+NiteSec hacking work. Advisor wait (gang cycle minimum, 2.9h more; next CSP Gen II). Graft none; entropy 0. STATE install table: added rows 5 and 6
+(row 5 had been missed at 05:12).
+- Interventions: none. No build-ahead; number review row skipped.
+
 **2026-11-24 07:12 Mac, scheduled check: cycle 5 healthy; nothing to fix.** Not a stand-aside run (repo clean, last commit 05:12).
 Live 07:12 (ctl-pull, page API): daemon connected (31 pulled), DevTools up, no pause file, page alerts none. Gang Slum Snakes 8 members
 (all Mug People), respect 3.30k -> 1.64k (ascension resets respect), territory 14.3%, mode reputation; 8 sleeves Shock recovery (shock 58 -> 46,

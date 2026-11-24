@@ -148,6 +148,8 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 2 | 2026-11-23 17:33 | Auto install at 1.6h (verdict: best next BitWire +0.5%/h, under the cycle's +4.5%/h). Backup saves/pre-install-auto-20261123-1732.json.gz | 1 -> 4 (metrics_log) |
 | 3 | 2026-11-23 18:39 | Auto install at 1.1h (verdict: best next ADR-V1 Pheromone Gene +0.2%/h, under the cycle's +5.8%/h). Backup saves/pre-install-auto-20261123-1839.json.gz | 4 -> 6 (metrics_log) |
 | 4 | 2026-11-23 23:01 | Auto install at 4.4h (verdict: best next S.N.A +0.5%/h, under the cycle's +1.1%/h); names not pulled. Backup saves/pre-install-auto-20261123-2301.json.gz | 6 -> 7 (page API) |
+| 5 | 2026-11-24 03:58 | Auto install at 4.9h (verdict: best next LuminCloaking-V1 +6.7%/h, under the cycle's +6.7%/h). Backup saves/pre-install-auto-20261124-0357.json.gz | 7 -> 10 (page API) |
+| 6 | 2026-11-24 08:06 | Auto install at 4.1h (verdict: best next Neuralstimulator +3.5%/h, under the cycle's +4.6%/h). Backup saves/pre-install-auto-20261124-0806.json.gz | 10 -> 12 (page API) |
 
 ## Installs BN12 run 1
 
@@ -225,11 +227,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-24 07:12 Mac (scheduled): BN11 run 1 cycle 5 healthy; nothing to fix.** Live 07:12 (ctl-pull, page API):
-daemon connected, DevTools up, no pause file, page alerts none. Gang Slum Snakes 8 members (all Mug People), respect 1.64k (down from 3.30k:
-ascension), territory 14.3%, mode reputation; 8 sleeves Shock recovery (shock ~46). $889m, ~$1.05m/s, hacking 363 (World Daemon 4500);
-installed 10, queue empty; player Tian Di Hui hacking work (Nanofiber Weave, +1.2k rep); advisor wait (gang 4h minimum, 47m more);
-no graft, entropy 0.
+**2026-11-24 09:12 Mac (scheduled): BN11 run 1 cycle 6 healthy; install 6 by auto install 08:06; nothing to fix.** Live 09:12 (ctl-pull, page API):
+daemon connected, DevTools up, no pause file, page alerts none. Installed 10 -> 12, queue empty. Gang Slum Snakes 8 members (all Mug People), respect 5.10k,
+territory 14.3%, mode reputation; 8 sleeves Shock recovery (shock ~35). $316m, ~$1.75m/s, hacking 326 (World Daemon 4500); player NiteSec hacking work;
+advisor wait (gang 4h minimum, 2.9h more); no graft, entropy 0.
 
 ## Daedalus ready (2026-11-16 21:35)
 

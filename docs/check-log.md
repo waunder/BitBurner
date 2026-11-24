@@ -7,6 +7,24 @@ measurement or decision, not at every session start.
 Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 `docs/archive/state-2026-11-10/STATE-full.md`, the full STATE.md as it stood on 2026-11-10.
 
+## BN11 run 1
+
+**2026-11-23 17:30 Mac, scheduled check: cycle 1 running by itself; nothing to fix; built the BN7 finish path.** Not a stand-aside run
+(repo clean, last commit 16:02). Live 17:13 (ctl-pull, page API): daemon connected (168 files synced, 31 pulled), DevTools up, no pause
+file, page alerts none; LaunchAgents auto-install, watchdog, run-page, remote-api-monitor loaded. BN11 run 1 (entered 15:55), cycle 1 at
+1.3h: $56.2m, ~$277k/s (darknet $716m and crime $127m earned so far, hacking $0.4m: server money is 1% here), hacking 144 (World Daemon
+4500), karma -2.07k, installed 1, queued The W1ngs of Icarus; home 512GB/1 core, 25 cloud 3.2TB; scripts allocator, capital_manager,
+cct_watcher, dnet_root, faction_join, graft_controller, crawler, HUD, steward, mcp, mcp_supervisor, metrics_logger; player and 8 sleeves
+Homicide (shock ~97.5, sync 100); no gang. Karma pace matches BN12 run 3 (-7.4k at 3h, -54k at ~8h). Advisor wait 6.3h for
+Neurotrainer I; auto install log quiet since 14:21 (BN12). Graft: no pick.
+- Built ahead (route order 3, BN7): Bladeburner finish path. Read from the game's source (Bitburner 3.0.1 Singularity.ts):
+  destroyW0r1dD43m0n accepts numBlackOpsComplete >= 21 instead of hacking and root. run_page_data.state_from_save gains `blackOps`;
+  finish_node.py `finish_path` (worldDaemon first, else bladeburner), preflight and backup check use it, plan carries `path`;
+  finish_node.js takes the path as a 4th argument (worldDaemon unchanged and the default; bladeburner checks getNextBlackOp() is null
+  and skips rooting). Tests: 3 new in test_finish_node.py; 130 tool tests OK; node --check OK; live save reads blackOps None, path None.
+  Not done: a copy rehearsal; Operation Daedalus is never started (allowDaedalus false); check-in/finish-procedure wording.
+- Interventions: none. Number review row: skipped.
+
 ## BN12 run 3
 
 **2026-11-23 15:12 Mac, scheduled check: install 6 by auto install with The Red Pill; World Daemon ready; backup, notify, stop.** Not a

@@ -27,6 +27,10 @@ separate game. It never replaces, deletes or overwrites this save (the handover 
 
 ## Progress
 
+- 2026-11-23 17:30 (check-in): BN7 build-ahead: tools/finish_node.py/finish_node.js gained a Bladeburner finish path
+  (all 21 black ops won, no Red Pill or root needed, per the game's destroyW0r1dD43m0n); 3 new unit tests, 130 tool tests
+  pass. Still needed for BN7: a way for Operation Daedalus to be won (allowDaedalus is false), the check-in and
+  finish-procedure wording for that path, and a disposable-copy rehearsal.
 - 2026-11-23 15:55: BN12 run 3 (hands-off test) finished with no intervention, ~13.7h to a ready World Daemon;
   Source-File 12.3. BN11 run 1 entered on profile bn11 (switch by tools/finish_node.py, startup.js run after it).
 - 2026-11-23 00:40: BN12 run 2 finished by the agent with tools/finish_node.py (Ken: "Yes, finish it"); Source-File 12.2.

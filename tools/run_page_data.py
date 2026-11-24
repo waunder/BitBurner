@@ -137,6 +137,8 @@ def state_from_save(save):
         "scripts": sorted({r.get("filename", "").lstrip("/") for r in running}),
         "worldDaemon": {"required": world.get("requiredHackingSkill"), "rooted": bool(world.get("hasAdminRights"))}
         if world else None,
+        # Black operations won (Operation Daedalus is the last); None when not in the Bladeburner division.
+        "blackOps": (p.get("bladeburner") or {}).get("numBlackOpsComplete") if isinstance(p.get("bladeburner"), dict) else None,
     }
 
 

@@ -41,6 +41,7 @@ LOG = REPO / "runtime" / "finish_node.log"
 RESIDENTS = {"mcp_supervisor.js", "capital_bootstrap.js", "capital_manager.js", "mcp.js", "maintenance_steward.js"}
 HANDOVER = ("I have almost completely following your guidance for our path through the bitnodes. I am content to hand "
             "that to you completely. For completion of this game, its in your hands")
+BLACK_OPS = 21   # Object.keys(BladeburnerBlackOpName).length, Bitburner 3.0.1
 ENTRY_WAIT_S = 180
 RESIDENT_WAIT_S = 180
 
@@ -72,6 +73,17 @@ def profile_for(node, profiles, active):
     return others[0] if len(others) == 1 else None
 
 
+def finish_path(state):
+    """How the game will let this BitNode end, or None. destroyW0r1dD43m0n accepts either hacking at the World Daemon
+    (rooted; we also require The Red Pill) or every black operation won (Bitburner 3.0.1 Singularity.ts)."""
+    world = state.get("worldDaemon") or {}
+    if state.get("redPill") and world.get("required") is not None and state["skills"]["hacking"] >= world["required"]:
+        return "worldDaemon"
+    if (state.get("blackOps") or 0) >= BLACK_OPS:
+        return "bladeburner"
+    return None
+
+
 def preflight(*, state, nxt, route, ready, copy, ports, profiles, active, script_in_manifest):
     """(refusals, plan). `state` is run_page_data.state_from_save of the save read just now."""
     refusals = []
@@ -85,11 +97,15 @@ def preflight(*, state, nxt, route, ready, copy, ports, profiles, active, script
             refusals.append("docs/finish-procedure.md does not say READY: stop at the World Daemon and tell Ken")
     if nxt not in route:
         refusals.append(f"BitNode {nxt} is not on docs/route.md ({route})")
-    if not state["redPill"]:
-        refusals.append("The Red Pill is not installed")
-    world = state.get("worldDaemon") or {}
-    if world.get("required") is None or state["skills"]["hacking"] < world["required"]:
-        refusals.append(f"hacking {state['skills']['hacking']} is below the World Daemon's {world.get('required')}")
+    path = finish_path(state)
+    if path is None:
+        if state.get("blackOps") is not None:
+            refusals.append(f"black operations {state['blackOps']} of {BLACK_OPS} won (Operation Daedalus is the last)")
+        if not state["redPill"]:
+            refusals.append("The Red Pill is not installed")
+        world = state.get("worldDaemon") or {}
+        if world.get("required") is None or state["skills"]["hacking"] < world["required"]:
+            refusals.append(f"hacking {state['skills']['hacking']} is below the World Daemon's {world.get('required')}")
     if str(state.get("work", "")).startswith("Grafting"):
         refusals.append("a graft is running")
     profile = profile_for(nxt, profiles, active)
@@ -98,7 +114,7 @@ def preflight(*, state, nxt, route, ready, copy, ports, profiles, active, script
     if script_in_manifest:
         refusals.append(f"{GAME_SCRIPT} is in the manifest; it must stay outside it")
     switch = profile is not None and profile != active
-    plan = {"from": state["node"], "next": nxt, "profile": profile, "switch": switch,
+    plan = {"from": state["node"], "next": nxt, "path": path, "profile": profile, "switch": switch,
             # A startup.js callback in a node the active profile does not cover starts the wrong profile at once.
             "callback": "none" if switch else "startup.js", "resetAt": state["nodeResetAt"]}
     return refusals, plan
@@ -109,8 +125,8 @@ def backup_matches(state, backup_state):
     for key in ("node", "nodeResetAt"):
         if backup_state.get(key) != state.get(key):
             problems.append(f"backup {key} {backup_state.get(key)} != {state.get(key)}")
-    if not backup_state.get("redPill"):
-        problems.append("backup has no Red Pill")
+    if finish_path(backup_state) is None or finish_path(backup_state) != finish_path(state):
+        problems.append(f"backup is not ready the same way ({finish_path(backup_state)} vs {finish_path(state)})")
     return problems
 
 
@@ -278,7 +294,7 @@ def act(game, args, state, sf_before, plan):
     if problems:
         log(f"REFUSED: backup {path.name} does not match: {problems}")
         return 2
-    log(f"backup {path.name} decoded: BitNode {backup_state['node']}, run stamp {backup_state['nodeResetAt']}, pill installed")
+    log(f"backup {path.name} decoded: BitNode {backup_state['node']}, run stamp {backup_state['nodeResetAt']}, ready by {plan['path']}")
 
     res = game.ctl({"cmd": "push", "file": "/" + GAME_SCRIPT, "content": SCRIPT.read_text(encoding="utf-8")})
     if not res.get("ok"):
@@ -286,8 +302,8 @@ def act(game, args, state, sf_before, plan):
         return 1
     started_ms = time.time() * 1000
     cb = plan["callback"]
-    ok, out = game.terminal(f'home; run {GAME_SCRIPT} {args.nxt} {cb} {plan["resetAt"]}')
-    log(f"ran {GAME_SCRIPT} {args.nxt} callback={cb}: {'typed' if ok else 'NOT typed'}")
+    ok, out = game.terminal(f'home; run {GAME_SCRIPT} {args.nxt} {cb} {plan["resetAt"]} {plan["path"]}')
+    log(f"ran {GAME_SCRIPT} {args.nxt} callback={cb} path={plan['path']}: {'typed' if ok else 'NOT typed'}")
 
     done, last = wait_for(game, lambda s, sf, _save: entered(state, sf_before, s, sf, args.nxt, started_ms)[0], ENTRY_WAIT_S)
     why = entered(state, sf_before, last[0], last[1], args.nxt, started_ms)[1] if last else "no save read"

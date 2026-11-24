@@ -60,6 +60,22 @@ class Preflight(unittest.TestCase):
         self.assertIn("real game's ports", " ".join(check(copy=True, ports=(9333, 12527))[0]))
         self.assertIn("needs --copy", " ".join(check(ports=(9333, 12627))[0]))
 
+    def test_bladeburner_path_needs_no_pill_or_hacking(self):
+        bb = state(node=7, redPill=False, skills={"hacking": 900}, worldDaemon={"required": 6000}, blackOps=21)
+        refusals, plan = check(state=bb, nxt=7, active="bn6")
+        self.assertEqual(refusals, [])
+        self.assertEqual(plan["path"], "bladeburner")
+
+    def test_bladeburner_path_refuses_with_black_ops_left(self):
+        bb = state(node=7, redPill=False, skills={"hacking": 900}, worldDaemon={"required": 6000}, blackOps=20)
+        text = " ".join(check(state=bb, nxt=7, active="bn6")[0])
+        self.assertIn("20 of 21", text)
+        self.assertIn("Red Pill", text)
+
+    def test_world_daemon_path_is_named(self):
+        self.assertEqual(check()[1]["path"], "worldDaemon")
+        self.assertEqual(check(state=state(blackOps=21))[1]["path"], "worldDaemon")   # hacking path first
+
     def test_script_must_stay_outside_the_manifest(self):
         self.assertIn("manifest", " ".join(check(script_in_manifest=True)[0]))
 
@@ -102,6 +118,9 @@ class Result(unittest.TestCase):
         self.assertEqual(F.backup_matches(state(), state()), [])
         self.assertTrue(F.backup_matches(state(), state(nodeResetAt=999)))
         self.assertTrue(F.backup_matches(state(), state(redPill=False)))
+        bb = state(redPill=False, blackOps=21)
+        self.assertEqual(F.backup_matches(bb, bb), [])
+        self.assertTrue(F.backup_matches(bb, state(redPill=False, blackOps=20)))
 
     def test_sf_levels_from_save_map(self):
         save = {"data": {"PlayerSave": json.dumps({"data": {"sourceFiles": {"ctor": "JSONMap", "data": [[12, 2], [1, 2]]}}})}}

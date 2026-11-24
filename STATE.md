@@ -216,12 +216,12 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-23 15:12 Mac (scheduled): BN12 run 3 World Daemon READY; backup taken, Ken alerted, check-ins stop here.** Install 6 by auto install
-at 14:21 installed The Red Pill (69 -> 81 augs). Live 15:12 (ctl-pull, page API): daemon connected, DevTools up, no pause file; hacking 23,602
-of 3,184, w0r1d_d43m0n not rooted; $10.46q, karma -56.0k, entropy 0; gang 12 members, territory 38%; page alert "The World Daemon is ready".
-Backup saves/pre-finish-ready-bn12-run3-20261123.json.gz (22.3MB, gzip ok). Notified Ken 15:12 (sent). Run 3 needed no interventions:
-entry 00:40 to ready 14:21, ~13.7h (run 1 ~20.6h). Auto install holds by its Red Pill guard. Next: a session finishes the node by
-docs/finish-procedure.md (route: BN11, profile bn11).
+**2026-11-23 17:30 Mac (scheduled): BN11 run 1 cycle 1 running by itself; nothing to fix; BN7 finish path built.** Live 17:13
+(ctl-pull, page API): daemon connected, DevTools up, no pause file, page alerts none; auto install, watchdog, run page LaunchAgents
+loaded; BitNode 11 run 1 (entered 15:55), $56.2m, ~$277k/s, hacking 144 (World Daemon 4500), karma -2.07k (BN12 run 3 had -7.4k at
+3h: same pace), installed 1, queued W1ngs of Icarus; home 512GB, 25 cloud (3.2TB), 12 scripts; player and 8 sleeves on Homicide
+(shock ~97.5); no gang yet. Advisor wait 6.3h for Neurotrainer I. Built ahead: Bladeburner finish path in tools/finish_node.py
+(route.md Progress). Next: gang at karma -54k (~8h at this pace).
 
 ## Daedalus ready (2026-11-16 21:35)
 

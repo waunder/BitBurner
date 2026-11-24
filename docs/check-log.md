@@ -9,6 +9,16 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 1
 
+**2026-11-24 05:12 Mac, scheduled check: cycle 5 healthy; install 5 by auto install; nothing to fix.** Not a stand-aside run (repo clean,
+last commit 03:12). Live 05:12 (ctl-pull, page API): daemon connected (31 pulled), DevTools up, no pause file, page alerts none. Auto install:
+verdict install at 03:52 (best next LuminCloaking-V1 +6.7%/h, under the cycle's +6.7%/h), confirmed 5 min, backup
+saves/pre-install-auto-20261124-0357.json.gz ok, install sent 03:58:13, confirmed 03:59:21. Installed 7 -> 10, queue empty, cycle 5 (1.2h).
+Gang Slum Snakes 8 members (all Mug People), respect 2.88k -> 3.30k, territory 14.3%, mode reputation; 8 sleeves Shock recovery (shock 69 -> 58,
+sync 100). $306m, ~$1.64m/s; hacking 298 (reset by install; World Daemon 4500); karma -54.81k; home 1TB; 24 scripts incl. stock_engine,
+gang-controller, mcp, stack_manager. Player Tian Di Hui hacking work (NiteSec Neural-Retention Enhancement needs +9.2k rep). Advisor wait
+(next Embedded Netburner Module, ~2.7h). Graft no pick; entropy 0.
+- Interventions: none. No build-ahead; number review row skipped.
+
 **2026-11-24 03:12 Mac, scheduled check: cycle 4 healthy; nothing to fix.** Not a stand-aside run (repo clean, last commit 01:12).
 Live 03:12 (ctl-pull, page API): daemon connected (31 pulled), DevTools up, no pause file, page alerts none. Gang Slum Snakes 7 members
 (5 -> 7 since 01:12, all Mug People), respect 103 -> 2.88k, territory 14.3%, power 1, mode reputation; 8 sleeves Shock recovery (shock

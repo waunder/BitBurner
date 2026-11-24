@@ -9,6 +9,14 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 1
 
+**2026-11-24 11:12 Mac, scheduled check: cycle 6 healthy; graft in progress; nothing to fix.** Not a stand-aside run (repo clean, last commit 09:12).
+Live 11:12 (ctl-pull, page API): daemon connected (31 pulled), DevTools up, no pause file, page alerts none. Auto install log quiet since 08:07
+(correct). Installed 12, queue empty, cycle 6 (3.1h). Gang Slum Snakes 8 members (all Mug People), respect 5.10k -> 10.6k, territory 14.3%, mode
+reputation; 8 sleeves Shock recovery (shock 35 -> 23, sync 100). $1.14b; hacking 326 -> 406 (World Daemon 4500); karma -55.81k; home 1TB; 23 scripts
+incl. stock_engine, gang-controller, mcp, stack_manager, graft_controller. Player owned by graft_controller: Neurotrainer III ($390m, 1.53h, started
+~09:43, due ~11:15). Advisor wait (gang cycle minimum 55m more; gang rep does not cover its augs; next Nanofiber Weave, rep gap 10.1k). Entropy 0.
+- Interventions: none. No build-ahead; number review row skipped.
+
 **2026-11-24 09:12 Mac, scheduled check: cycle 6 healthy; install 6 by auto install; nothing to fix.** Not a stand-aside run (repo clean,
 last commit 07:12). Live 09:12 (ctl-pull, page API): daemon connected, DevTools up, no pause file, page alerts none. Auto install: verdict install
 at 08:01 (best next Neuralstimulator +3.5%/h, under the cycle's +4.6%/h), confirmed 5 min, backup saves/pre-install-auto-20261124-0806.json.gz ok,

@@ -227,10 +227,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-24 09:12 Mac (scheduled): BN11 run 1 cycle 6 healthy; install 6 by auto install 08:06; nothing to fix.** Live 09:12 (ctl-pull, page API):
-daemon connected, DevTools up, no pause file, page alerts none. Installed 10 -> 12, queue empty. Gang Slum Snakes 8 members (all Mug People), respect 5.10k,
-territory 14.3%, mode reputation; 8 sleeves Shock recovery (shock ~35). $316m, ~$1.75m/s, hacking 326 (World Daemon 4500); player NiteSec hacking work;
-advisor wait (gang 4h minimum, 2.9h more); no graft, entropy 0.
+**2026-11-24 11:12 Mac (scheduled): BN11 run 1 cycle 6 healthy; graft Neurotrainer III in progress; nothing to fix.** Live 11:12 (ctl-pull, page API):
+daemon connected, DevTools up, no pause file, page alerts none. Installed 12, queue empty. Gang Slum Snakes 8 members (all Mug People), respect 10.6k,
+territory 14.3%, mode reputation; 8 sleeves Shock recovery (shock ~23). $1.14b, hacking 406 (World Daemon 4500); player grafting Neurotrainer III
+(started ~09:43, 1.5h, $390m); entropy 0; advisor wait (gang 4h minimum, 55m more; gang rep does not cover its augs yet).
 
 ## Daedalus ready (2026-11-16 21:35)
 

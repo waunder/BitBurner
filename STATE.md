@@ -225,10 +225,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-24 01:12 Mac (scheduled): BN11 run 1 cycle 4 healthy; the gang is formed.** Live 01:12 (ctl-pull, page API): daemon
-connected, DevTools up, no pause file, page alerts none. Karma -54.17k: Slum Snakes gang created (5 members, 3 Mug People, 2 Train
-Combat, territory 14.3%, mode reputation); sleeves moved to Shock recovery (shock ~81). $1.27b, ~$1.06m/s, hacking 296, installed 7,
-player NiteSec hacking work (Artificial Synaptic Potentiation +153 rep); no graft, entropy 0. Auto install quiet since 23:02 (verdict build).
+**2026-11-24 03:12 Mac (scheduled): BN11 run 1 cycle 4 healthy; nothing to fix.** Live 03:12 (ctl-pull, page API): daemon
+connected, DevTools up, no pause file, page alerts none. Gang Slum Snakes 7 members (all Mug People), respect 2.88k, territory 14.3%,
+mode reputation; 8 sleeves Shock recovery (shock ~69). $1.29b, ~$1.53m/s, hacking 337, installed 7, queue empty; player NiteSec hacking
+work; advisor wait 42m for CRTX42-AA; no graft, entropy 0. Auto install quiet since 23:02 (correct).
 
 ## Daedalus ready (2026-11-16 21:35)
 

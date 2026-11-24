@@ -147,6 +147,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 1 | 2026-11-23 15:55 | Entered by tools/finish_node.py (run starts with NeuroFlux from SF12; The W1ngs of Icarus queued) | 0 -> 1 |
 | 2 | 2026-11-23 17:33 | Auto install at 1.6h (verdict: best next BitWire +0.5%/h, under the cycle's +4.5%/h). Backup saves/pre-install-auto-20261123-1732.json.gz | 1 -> 4 (metrics_log) |
 | 3 | 2026-11-23 18:39 | Auto install at 1.1h (verdict: best next ADR-V1 Pheromone Gene +0.2%/h, under the cycle's +5.8%/h). Backup saves/pre-install-auto-20261123-1839.json.gz | 4 -> 6 (metrics_log) |
+| 4 | 2026-11-23 23:01 | Auto install at 4.4h (verdict: best next S.N.A +0.5%/h, under the cycle's +1.1%/h); names not pulled. Backup saves/pre-install-auto-20261123-2301.json.gz | 6 -> 7 (page API) |
 
 ## Installs BN12 run 1
 
@@ -224,11 +225,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-23 21:12 Mac (scheduled): BN11 run 1 cycle 3 healthy, nothing to fix.** Live 21:12 (ctl-pull, page API): daemon
-connected (168 watched), DevTools up, no pause file, page alerts none. No install since 18:39 (installed 6, queue empty; advisor build,
-ADR-V1 next). $897m (from $65m at 19:14), ~$852k/s, hacking 279, karma -17.4k (~4.9k/h since 19:14, so -54k and the gang around
-04:30 tomorrow), player and 8 sleeves Homicide (shock 89.8), no gang, no graft, entropy 0. Built ahead: docs/finish-procedure.md
-now describes the Bladeburner finish path (step 2 and a new section); still owed for BN7: a copy rehearsal and the core HUD wording.
+**2026-11-23 23:12 Mac (scheduled): BN11 run 1 cycle 4 healthy, nothing to fix.** Live 23:12 (ctl-pull, page API): daemon
+connected, DevTools up, no pause file, page alerts none. Auto install fired install 4 at 23:01 (backup ok, confirmed 23:02;
+installed 7, queue empty; advisor build, S.N.A next). $12.8m after the install, ~$426k/s, hacking 128, karma -36.0k (~9.3k/h
+since 21:12, so -54k and the gang around 01:10), player Deal Drugs, 8 sleeves Homicide (shock 86), no gang, no graft, entropy 0.
 
 ## Daedalus ready (2026-11-16 21:35)
 

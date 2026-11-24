@@ -225,10 +225,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-23 23:12 Mac (scheduled): BN11 run 1 cycle 4 healthy, nothing to fix.** Live 23:12 (ctl-pull, page API): daemon
-connected, DevTools up, no pause file, page alerts none. Auto install fired install 4 at 23:01 (backup ok, confirmed 23:02;
-installed 7, queue empty; advisor build, S.N.A next). $12.8m after the install, ~$426k/s, hacking 128, karma -36.0k (~9.3k/h
-since 21:12, so -54k and the gang around 01:10), player Deal Drugs, 8 sleeves Homicide (shock 86), no gang, no graft, entropy 0.
+**2026-11-24 01:12 Mac (scheduled): BN11 run 1 cycle 4 healthy; the gang is formed.** Live 01:12 (ctl-pull, page API): daemon
+connected, DevTools up, no pause file, page alerts none. Karma -54.17k: Slum Snakes gang created (5 members, 3 Mug People, 2 Train
+Combat, territory 14.3%, mode reputation); sleeves moved to Shock recovery (shock ~81). $1.27b, ~$1.06m/s, hacking 296, installed 7,
+player NiteSec hacking work (Artificial Synaptic Potentiation +153 rep); no graft, entropy 0. Auto install quiet since 23:02 (verdict build).
 
 ## Daedalus ready (2026-11-16 21:35)
 

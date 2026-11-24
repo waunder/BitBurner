@@ -225,11 +225,11 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-24 05:12 Mac (scheduled): BN11 run 1 cycle 5 healthy; install 5 by auto install at 03:58.** Live 05:12 (ctl-pull, page API):
-daemon connected, DevTools up, no pause file, page alerts none. Install 5: verdict install, backup saves/pre-install-auto-20261124-0357.json.gz ok,
-confirmed 03:59:21; installed 7 -> 10, queue empty. Gang Slum Snakes 8 members (all Mug People), respect 3.30k, territory 14.3%, mode reputation;
-8 sleeves Shock recovery (shock ~58). $306m, ~$1.64m/s, hacking 298 (World Daemon 4500); player Tian Di Hui hacking work; advisor wait
-(next Embedded Netburner Module ~2.7h); no graft, entropy 0.
+**2026-11-24 07:12 Mac (scheduled): BN11 run 1 cycle 5 healthy; nothing to fix.** Live 07:12 (ctl-pull, page API):
+daemon connected, DevTools up, no pause file, page alerts none. Gang Slum Snakes 8 members (all Mug People), respect 1.64k (down from 3.30k:
+ascension), territory 14.3%, mode reputation; 8 sleeves Shock recovery (shock ~46). $889m, ~$1.05m/s, hacking 363 (World Daemon 4500);
+installed 10, queue empty; player Tian Di Hui hacking work (Nanofiber Weave, +1.2k rep); advisor wait (gang 4h minimum, 47m more);
+no graft, entropy 0.
 
 ## Daedalus ready (2026-11-16 21:35)
 

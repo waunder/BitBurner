@@ -9,6 +9,13 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 1
 
+**2026-11-25 15:12 Mac, scheduled check: BN11 run 1 cycle 12 healthy; install 12 by auto install at 13:38.** Not a stand-aside run (repo clean,
+last commit 13:12). ctl-status connected, DevTools up, save 15:11. Auto install: verdict install confirmed 13:31-13:36 ("nothing left worth waiting
+for"), backup saves/pre-install-auto-20261125-1336.json.gz, installed 13:38 (36 -> 41). Now $7.43b, hacking 1070, karma -313.0k, entropy 2; 24 scripts;
+gang 12 members, territory-power mode (7 Human Trafficking, 5 Territory Warfare), territory 14.3%; 8 sleeves Heist, sync 100, shock 0. Advisor wait
+(gang cycle minimum 2.4h; waiting to join Daedalus). Graft: no pick. No alarms; no pause files.
+- Interventions: none needed. Added the install 12 row to STATE.md. No alert. No build-ahead; number review row skipped. run_report.json pushed.
+
 **2026-11-25 13:12 Mac, scheduled check: BN11 run 1 cycle 11 healthy after a Mac restart.** Not a stand-aside run (repo clean, last commit 11:12).
 The Mac booted at 11:43 (auto install and watchdog LaunchAgents restarted 11:44); notify.log shows the Remote API, advisor, saving and money alerts sent
 11:45-11:49 and all cleared 11:58-11:59, so the game came back by ~11:58 (not relaunched by a check-in). A second disconnect 12:12-12:22 cleared by itself.

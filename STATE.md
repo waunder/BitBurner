@@ -155,6 +155,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 9 | 2026-11-25 02:44 | Auto install at 2.6h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261125-0244.json.gz | 23 -> 27 (page API) |
 | 10 | 2026-11-25 05:21 | Auto install at 2.6h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261125-0521.json.gz | 27 -> 31 (page API) |
 | 11 | 2026-11-25 09:28 | Auto install at 4.1h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261125-0928.json.gz | 31 -> 36 (page API) |
+| 12 | 2026-11-25 13:36 | Auto install at 4.1h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261125-1336.json.gz | 36 -> 41 (page API) |
 
 ## Installs BN12 run 1
 
@@ -232,11 +233,11 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-25 13:12 Mac (scheduled): BN11 run 1 cycle 11 healthy after a Mac restart.** The Mac booted at 11:43 (LaunchAgents back 11:44); the game was
-disconnected ~11:40-11:58 (alerts sent and cleared 11:45-11:59) and again 12:12-12:22; connected since, DevTools up, saved 13:11. $20.9b, hacking 972,
-karma -311.6k, entropy 2, 36 installed, no queued augs, no Red Pill. 23 scripts. Gang 12 members, territory-power mode (7 Human Trafficking, 5 Territory
-Warfare), territory 14.3%. Player studying Algorithms; 8 sleeves on Heist, sync 100. Advisor: wait (gang cycle minimum 17m; waiting to join Daedalus). Run
-page: no alarms. Daedalus: augs met; still needs $100b and hacking 2500.
+**2026-11-25 15:12 Mac (scheduled): BN11 run 1 cycle 12 healthy; install 12 by auto install at 13:38.** ctl-status connected, DevTools up, saved 15:11.
+Auto install: verdict install confirmed 13:31-13:36, backup saves/pre-install-auto-20261125-1336.json.gz, installed 13:38 (36 -> 41). Now $7.43b, hacking 1070,
+karma -313.0k, entropy 2, no queued augs, no Red Pill; 24 scripts; home 4TB. Gang 12 members, territory-power mode (7 Human Trafficking, 5 Territory
+Warfare), territory 14.3%. Player studying Algorithms; 8 sleeves Heist, sync 100. Advisor wait (gang cycle minimum 2.4h; waiting to join Daedalus). Run
+page: no alarms. World Daemon needs hacking 4500.
 
 ## Daedalus ready (2026-11-16 21:35)
 

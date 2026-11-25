@@ -9,6 +9,13 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 1
 
+**2026-11-25 03:12 Mac, scheduled check: BN11 run 1 cycle 9 healthy; install 9 by auto install at 02:45.** Not a stand-aside run (repo clean,
+last commit 01:12). ctl-status connected, DevTools up, save 03:11. Auto install: verdict install confirmed 02:39-02:45 ("nothing left worth waiting
+for"), backup saves/pre-install-auto-20261125-0244.json.gz, installed 02:46 (23 -> 27). Now $515m, hacking 362, karma -294.9k, entropy 2; 23 scripts;
+gang 12 members (8 Terrorism, 4 Mug), territory 14.3%; 8 sleeves sync 100, shock 0. Advisor wait (gang cycle minimum 3.6h). Graft: no pick. No alarms;
+no pause files.
+- Interventions: none needed. No alert (nothing for Ken to act on). No build-ahead; number review row skipped. run_report.json pushed.
+
 **2026-11-25 01:12 Mac, scheduled check: BN11 run 1 cycle 8 healthy; install 8 by auto install at 00:06.** Not a stand-aside run (repo clean,
 last commit 23:12). ctl-status connected, DevTools up, save 01:11. Auto install: verdict install confirmed 00:01-00:06, backup
 saves/pre-install-auto-20261125-0006.json.gz, installed 00:09 (18 -> 23). Now $238m, hacking 402, karma -260.8k, entropy 2; 23 scripts; gang 12

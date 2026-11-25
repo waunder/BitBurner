@@ -9,6 +9,13 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 1
 
+**2026-11-25 09:12 Mac, scheduled check: BN11 run 1 cycle 10 healthy.** Not a stand-aside run (repo clean, last commit 07:12). ctl-status
+connected, DevTools up, save 09:11. $16.0b (income ~$16m/s), hacking 692, karma -310.0k, installed 31, entropy 2; 22 scripts; gang 12 members,
+territory-power mode (7 Human Trafficking, 5 Territory Warfare), territory 14.3%; 8 sleeves Heist, sync 100, shock 0. Advisor wait (gang cycle minimum
+12m; waiting to join Daedalus; install plan OmniTek InfoLoad, Neuronal Densification, The Shadow's Simulacrum, Augmented Targeting II, $14.4b). Graft: no
+pick. No alarms; no pause files; auto install last fired 05:24.
+- Interventions: none needed. No alert. No build-ahead; number review row skipped. run_report.json pushed.
+
 **2026-11-25 07:12 Mac, scheduled check: BN11 run 1 cycle 10 healthy; install 10 by auto install at 05:22.** Not a stand-aside run (repo clean,
 last commit 05:12). ctl-status connected, DevTools up, save 07:11. Auto install: verdict install confirmed 05:16-05:22 ("nothing left worth waiting
 for"), backup saves/pre-install-auto-20261125-0521.json.gz, installed 05:24 (27 -> 31). Now $5.20b, hacking 591, karma -309.4k, entropy 2; 22 scripts;

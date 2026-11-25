@@ -9,6 +9,13 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 1
 
+**2026-11-25 01:12 Mac, scheduled check: BN11 run 1 cycle 8 healthy; install 8 by auto install at 00:06.** Not a stand-aside run (repo clean,
+last commit 23:12). ctl-status connected, DevTools up, save 01:11. Auto install: verdict install confirmed 00:01-00:06, backup
+saves/pre-install-auto-20261125-0006.json.gz, installed 00:09 (18 -> 23). Now $238m, hacking 402, karma -260.8k, entropy 2; 23 scripts; gang 12
+members (reputation mode, 7 Terrorism, 5 Mug), territory 14.3%; 8 sleeves sync 100, shock 0. Advisor wait (gang cycle minimum 2.9h). Graft: no pick.
+No alarms; no pause files.
+- Interventions: none needed. No alert (nothing for Ken to act on). No build-ahead; number review row skipped. run_report.json pushed.
+
 **2026-11-24 23:12 Mac, scheduled check: game running again (relaunched ~22:52); BN11 run 1 cycle 7 healthy.** Not a stand-aside run (repo clean,
 last commit 21:12). ctl-status connected (last connect 22:52), DevTools up, save 23:11. $770m, hacking 457, karma -182.6k, installed 18, entropy 2;
 23 scripts; gang 12 members, territory 14.3%; 8 sleeves sync 100, shock 0. Advisor wait (23m for The Black Hand). No alarms; no pause files; auto

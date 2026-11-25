@@ -228,10 +228,9 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-24 17:12 Mac (scheduled): the game is not running since 16:33; Steam was exited on purpose (steam://exit 16:33:37), so standing by.** Steam
-restarted 16:55 and launched a different game (Rail Route, failed AppError_46); Bitburner was not relaunched. The watchdog already sent Ken the four
-alarms (16:37-16:42). Last save 16:33 (BN11 run 1 cycle 7): $712m, hacking 416, karma -78.2k, installed 18, entropy 2; gang 9 (7 Vigilante Justice,
-2 Mug), respect 13.4k; sleeves 7 Homicide, 1 Black Hand. Daemon, auto install, watchdog and run page LaunchAgents all up, waiting for the game.
+**2026-11-24 19:12 Mac (scheduled): the game is still not running (closed since 16:33, Steam exited on purpose); standing by.** No Bitburner launch in
+Steam's log since (only the failed Rail Route launches at 16:56); DevTools 9222 down, daemon game_disconnected. Last save 16:33 (BN11 run 1 cycle 7):
+$712m, hacking 416, karma -78.2k, installed 18, entropy 2. Daemon, auto install, watchdog and run page LaunchAgents up, waiting for the game.
 Needs Ken: relaunch Bitburner in Steam when he is done; scripts resume from the save (run startup.js by game_terminal.py if none are running).
 
 ## Daedalus ready (2026-11-16 21:35)

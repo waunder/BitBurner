@@ -9,6 +9,12 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 1
 
+**2026-11-24 21:12 Mac, scheduled check: game still not running (closed since 16:33); standing by.** Not a stand-aside run (repo clean, last commit
+19:12). ctl-status game_disconnected (last disconnect 16:33:57); DevTools 9222 not answering; Steam running, no Bitburner launch in its log after the
+16:33 exit. LaunchAgents running; no pause files.
+- Interventions: none. No new alert (watchdog alarms reached Ken 16:37-16:42; launching is Ken's). No build-ahead; number review row skipped.
+  run_report.json written, not pushed (no game connection).
+
 **2026-11-24 19:12 Mac, scheduled check: game still not running (closed since 16:33); standing by.** Not a stand-aside run (repo clean, last commit
 17:13). ctl-status game_disconnected (last disconnect 16:33:57); DevTools 9222 not answering; Steam running but its console log shows no Bitburner
 launch after the 16:33 exit. Run page state unchanged from the 16:33 save. LaunchAgents running; no pause files; auto install log quiet since 14:00.

@@ -154,6 +154,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 8 | 2026-11-25 00:06 | Auto install at 10.1h wall clock (game closed 16:33-22:52; verdict: best next NEMEAN Subdermal Weave +0.0%/h, under the cycle's +2.1%/h). Backup saves/pre-install-auto-20261125-0006.json.gz | 18 -> 23 (page API) |
 | 9 | 2026-11-25 02:44 | Auto install at 2.6h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261125-0244.json.gz | 23 -> 27 (page API) |
 | 10 | 2026-11-25 05:21 | Auto install at 2.6h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261125-0521.json.gz | 27 -> 31 (page API) |
+| 11 | 2026-11-25 09:28 | Auto install at 4.1h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261125-0928.json.gz | 31 -> 36 (page API) |
 
 ## Installs BN12 run 1
 
@@ -231,10 +232,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-25 09:12 Mac (scheduled): BN11 run 1 cycle 10 healthy.** Remote API connected, DevTools up, saved 09:11. $16.0b, hacking 692,
-karma -310.0k, entropy 2, 31 installed, no queued augs, no Red Pill. 22 scripts. Gang 12 members, territory-power mode (7 Human Trafficking,
-5 Territory Warfare), territory 14.3%. Player studying Algorithms; 8 sleeves on Heist, sync 100. Advisor: wait (gang cycle minimum 12m; waiting to
-join Daedalus; plan 4 augs $14.4b). Run page: no alarms. Daedalus: 31 of 30 installed met; still needs $100b and hacking 2500.
+**2026-11-25 11:12 Mac (scheduled): BN11 run 1 cycle 11 healthy; install 11 by auto install at 09:29.** Remote API connected, DevTools up, saved 11:11.
+$4.23b (income ~$21m/s), hacking 880, karma -311.0k, entropy 2, 36 installed, no queued augs, no Red Pill. 23 scripts. Gang 12 members, territory-power
+mode (7 Human Trafficking, 5 Territory Warfare), territory 14.3%. Player studying Algorithms; 8 sleeves on Heist, sync 100. Advisor: wait (gang cycle
+minimum 2.3h; waiting to join Daedalus). Run page: no alarms. Daedalus: augs met; still needs $100b and hacking 2500.
 
 ## Daedalus ready (2026-11-16 21:35)
 

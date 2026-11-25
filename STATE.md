@@ -152,6 +152,8 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 6 | 2026-11-24 08:06 | Auto install at 4.1h (verdict: best next Neuralstimulator +3.5%/h, under the cycle's +4.6%/h). Backup saves/pre-install-auto-20261124-0806.json.gz | 10 -> 12 (page API) |
 | 7 | 2026-11-24 13:58 | Auto install at 5.8h (verdict: best next Enhanced Myelin Sheathing +0.3%/h, under the cycle's +2.4%/h); incl. queued The B00ts of Perseus and 2 grafts. Backup saves/pre-install-auto-20261124-1357.json.gz | 13 -> 18 (page API) |
 | 8 | 2026-11-25 00:06 | Auto install at 10.1h wall clock (game closed 16:33-22:52; verdict: best next NEMEAN Subdermal Weave +0.0%/h, under the cycle's +2.1%/h). Backup saves/pre-install-auto-20261125-0006.json.gz | 18 -> 23 (page API) |
+| 9 | 2026-11-25 02:44 | Auto install at 2.6h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261125-0244.json.gz | 23 -> 27 (page API) |
+| 10 | 2026-11-25 05:21 | Auto install at 2.6h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261125-0521.json.gz | 27 -> 31 (page API) |
 
 ## Installs BN12 run 1
 
@@ -229,10 +231,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-25 05:12 Mac (scheduled): BN11 run 1 cycle 9 healthy.** Remote API connected, DevTools up, saved 05:11. $2.74b, hacking 498,
-karma -305.9k, entropy 2, 27 installed, no queued augs, no Red Pill. 22 scripts running (stock_engine among them). Gang 12 members, territory-power
+**2026-11-25 07:12 Mac (scheduled): BN11 run 1 cycle 10 healthy; install 10 by auto install at 05:22.** Remote API connected, DevTools up,
+saved 07:11. $5.20b, hacking 591, karma -309.4k, entropy 2, 31 installed, no queued augs, no Red Pill. 22 scripts. Gang 12 members, territory-power
 mode (7 Human Trafficking, 5 Territory Warfare), territory 14.3%. Player studying Algorithms; 8 sleeves on Heist, sync 100. Advisor: wait (gang cycle
-minimum, 1.6h more). Run page: no alarms. Next: auto install on its verdict; Daedalus needs 30 installed (27 now), $100b, hacking 2500.
+minimum, 2.2h more; waiting to join Daedalus). Run page: no alarms. Daedalus: 31 of 30 installed met; still needs $100b and hacking 2500.
 
 ## Daedalus ready (2026-11-16 21:35)
 

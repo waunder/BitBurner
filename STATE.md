@@ -232,10 +232,11 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-25 11:12 Mac (scheduled): BN11 run 1 cycle 11 healthy; install 11 by auto install at 09:29.** Remote API connected, DevTools up, saved 11:11.
-$4.23b (income ~$21m/s), hacking 880, karma -311.0k, entropy 2, 36 installed, no queued augs, no Red Pill. 23 scripts. Gang 12 members, territory-power
-mode (7 Human Trafficking, 5 Territory Warfare), territory 14.3%. Player studying Algorithms; 8 sleeves on Heist, sync 100. Advisor: wait (gang cycle
-minimum 2.3h; waiting to join Daedalus). Run page: no alarms. Daedalus: augs met; still needs $100b and hacking 2500.
+**2026-11-25 13:12 Mac (scheduled): BN11 run 1 cycle 11 healthy after a Mac restart.** The Mac booted at 11:43 (LaunchAgents back 11:44); the game was
+disconnected ~11:40-11:58 (alerts sent and cleared 11:45-11:59) and again 12:12-12:22; connected since, DevTools up, saved 13:11. $20.9b, hacking 972,
+karma -311.6k, entropy 2, 36 installed, no queued augs, no Red Pill. 23 scripts. Gang 12 members, territory-power mode (7 Human Trafficking, 5 Territory
+Warfare), territory 14.3%. Player studying Algorithms; 8 sleeves on Heist, sync 100. Advisor: wait (gang cycle minimum 17m; waiting to join Daedalus). Run
+page: no alarms. Daedalus: augs met; still needs $100b and hacking 2500.
 
 ## Daedalus ready (2026-11-16 21:35)
 

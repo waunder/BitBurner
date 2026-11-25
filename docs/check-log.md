@@ -9,6 +9,12 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 1
 
+**2026-11-24 23:12 Mac, scheduled check: game running again (relaunched ~22:52); BN11 run 1 cycle 7 healthy.** Not a stand-aside run (repo clean,
+last commit 21:12). ctl-status connected (last connect 22:52), DevTools up, save 23:11. $770m, hacking 457, karma -182.6k, installed 18, entropy 2;
+23 scripts; gang 12 members, territory 14.3%; 8 sleeves sync 100, shock 0. Advisor wait (23m for The Black Hand). No alarms; no pause files; auto
+install last fired 13:58 (install 7).
+- Interventions: none needed. No alert (nothing for Ken to act on). No build-ahead; number review row skipped. run_report.json pushed.
+
 **2026-11-24 21:12 Mac, scheduled check: game still not running (closed since 16:33); standing by.** Not a stand-aside run (repo clean, last commit
 19:12). ctl-status game_disconnected (last disconnect 16:33:57); DevTools 9222 not answering; Steam running, no Bitburner launch in its log after the
 16:33 exit. LaunchAgents running; no pause files.

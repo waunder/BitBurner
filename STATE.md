@@ -228,10 +228,11 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-24 21:12 Mac (scheduled): the game is still not running (closed since 16:33, Steam exited on purpose); standing by.** Steam's log shows no
-Bitburner launch since 16:18 (last entries: exit 16:33:37, failed Rail Route launches 16:56); DevTools 9222 down, daemon game_disconnected. Last save
-16:33 (BN11 run 1 cycle 7): $712m, hacking 416, karma -78.2k, installed 18, entropy 2. Daemon, auto install, watchdog and run page LaunchAgents up.
-Needs Ken: relaunch Bitburner in Steam when he is done; scripts resume from the save (run startup.js by game_terminal.py if none are running).
+**2026-11-24 23:12 Mac (scheduled): the game is running again (relaunched ~22:52); BN11 run 1 cycle 7 healthy.** Remote API connected since 22:52,
+DevTools 9222 up, saved 23:11. $770m, hacking 457, karma -182.6k, installed 18, entropy 2, no queued augs, no Red Pill. 23 scripts running
+(mcp, stack_manager, stock_engine, gang, sleeves, darknet, steward). Gang 12 members, territory 14.3%. Player on The Black Hand hacking work,
+sleeves Homicide/field work. Advisor: wait 23m for The Black Hand (cycle 9.2h). Run page: no alarms. Next: auto install on its verdict; Daedalus
+needs 30 installed, $100b, hacking 2500.
 
 ## Daedalus ready (2026-11-16 21:35)
 

@@ -9,6 +9,16 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 1
 
+**2026-11-24 17:12 Mac, scheduled check: game not running since 16:33 (Steam exited on purpose); standing by.** Not a stand-aside run (repo clean, last
+commit 15:12). Run page alarms: stopped saving, Remote API disconnected, no money, advisor blind (all forwarded by the watchdog 16:37-16:42). ctl-status
+game_disconnected since 16:33:57; DevTools 9222 not answering. Steam console_log: `ExecuteSteamURL "steam://open/steam://exit"` 16:33:37, bootstrap
+Shutdown 16:33:51, Steam restarted 16:55:56, then launched app 1896900 (Rail Route) twice, failed AppError_46; no Bitburner launch. So a deliberate
+exit, not a crash; launching is Ken's (never the check-in's). Last save 16:33: cycle 7 (2.6h), $712m, hacking 416, karma -78.23k, installed 18, queue
+empty, entropy 2; gang Slum Snakes 9 (7 Vigilante Justice, 2 Mug People), respect 7.23k -> 13.4k, territory 14.3%; sleeves 7 Homicide, 1 The Black
+Hand (shock ~0.9); player Tetrads field work. LaunchAgents (daemon, auto install, watchdog, run page) running. run_report.json written, not pushed
+(no game connection).
+- Interventions: none. No extra alert (the watchdog's alarms already reached Ken). No build-ahead; number review row skipped.
+
 **2026-11-24 15:12 Mac, scheduled check: cycle 7 healthy; install 7 by auto install; nothing to fix.** Not a stand-aside run (repo clean, last commit 13:12).
 Live 15:12 (ctl-pull, page API): daemon connected (31 pulled), DevTools up, no pause file, page alerts none. Auto install fired 13:58 (verdict install at
 5.8h: best next Enhanced Myelin Sheathing +0.3%/h vs cycle +2.4%/h; backup saves/pre-install-auto-20261124-1357.json.gz; confirmed 14:00). A second

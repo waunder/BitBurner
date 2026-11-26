@@ -9,6 +9,14 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 2
 
+**2026-11-26 13:12 Mac, scheduled check: BN11 run 2 cycle 3 healthy; install 2 by auto install at 11:37.** Not a stand-aside run (repo clean, last commit 11:12).
+ctl-status connected (31 pulled), DevTools up, save 13:10. Auto install: verdict install confirmed 11:31-11:36 ("best next Social Negotiation Assistant (S.N.A)
+adds +0.6%/h, under the cycle's +2.2%/h"), backup saves/pre-install-auto-20261126-1136.json.gz, installed (confirmed 11:38); installed 3 -> 7, no pause files.
+At 13:12: $345m, hacking 271, karma -45.7k (~-7.7k/h, gang in ~1h), entropy 0, nothing queued; player Homicide, 8 sleeves Homicide, shock 85, sync 100; no gang yet;
+home 1TB (750GB used), 25 cloud servers 11.5TB; this cycle darknet $5.31b, sleeves $0.56b, crime $0.33b, hacking $0.10b; spent $5.96b on servers; graft no pick.
+Run page no alarms.
+- Nothing to fix. No build-ahead (as at 07:12). Number review skipped this run.
+
 **2026-11-26 11:12 Mac, scheduled check: BN11 run 2 cycle 2 healthy; no install since 06:49.** Not a stand-aside run (repo clean, last commit 09:13).
 ctl-status connected (168 synced, 31 pulled), DevTools up, save 11:11. Auto install: no lines since the 07:35 HOLD (verdict wait since); no pause files.
 At 11:12: $1.19b, hacking 290, karma -25.1k (-7.7k/h, so -54k in ~3.7h), entropy 0, installed 3, queued The W1ngs of Icarus; player Homicide (karmaFirst),

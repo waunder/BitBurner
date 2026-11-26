@@ -147,6 +147,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | # | When (Mac clock) | Bought | Installed after |
 |---|---|---|---|
 | 1 | 2026-11-26 06:49 | Auto install at ~1.6h (verdict: best next BitWire +2.5%/h, under the cycle's +4.8%/h). Backup saves/pre-install-auto-20261126-0648.json.gz | 0 -> 3 (page API) |
+| 2 | 2026-11-26 11:37 | Auto install at ~4.8h (verdict: best next Social Negotiation Assistant (S.N.A) +0.6%/h, under the cycle's +2.2%/h; queued The W1ngs of Icarus and others, names not kept). Backup saves/pre-install-auto-20261126-1136.json.gz | 3 -> 7 (page API) |
 
 ## Installs BN11 run 1
 
@@ -246,10 +247,9 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-26 11:12 Mac (scheduled): BN11 run 2 cycle 2 healthy; no install since 06:49.** ctl-status connected, DevTools up, save 11:11.
-Now $1.19b, hacking 290, karma -25.1k (player and 8 sleeves on Homicide for the gang at -54k, shock 89), installed 3, queued The W1ngs of Icarus, home 512GB,
-25 cloud (15.9TB), darknet ~$2.5b/h; advisor wait 18m for BitWire (+17.4%/h); auto install idle since the 07:35 hold. Run page no alarms.
-No build-ahead (as at 07:12); number review row 24 (metrics trend): no DECELERATING line.
+**2026-11-26 13:12 Mac (scheduled): BN11 run 2 cycle 3 healthy; install 2 by auto install at 11:37.** ctl-status connected, DevTools up, save 13:10.
+Now $345m, hacking 271, karma -45.7k (player and 8 sleeves on Homicide, gang at -54k in ~1h), installed 7, nothing queued, home 1TB, 25 cloud (11.5TB),
+cycle darknet $5.31b; graft none. Run page no alarms. Nothing to fix; no build-ahead; number review skipped.
 
 ## Daedalus ready (2026-11-16 21:35)
 

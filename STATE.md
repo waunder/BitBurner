@@ -246,10 +246,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-26 09:12 Mac (scheduled): BN11 run 2 cycle 2 healthy; no install since 06:49.** ctl-status connected, DevTools up, save 09:11.
-Now $194m, hacking 258, karma -12.2k (player and 8 sleeves on Homicide for the gang at -54k, shock 92), installed 3, queued The W1ngs of Icarus, home 512GB,
-25 cloud (11TB), income ~$583k/s; advisor wait 2.5h for BitWire; auto install idle (held 07:25/07:35 on the 1h cycle minimum, then verdict wait). Run page no alarms.
-No build-ahead (same reasons as 07:12); number review row 23 (cycle spending).
+**2026-11-26 11:12 Mac (scheduled): BN11 run 2 cycle 2 healthy; no install since 06:49.** ctl-status connected, DevTools up, save 11:11.
+Now $1.19b, hacking 290, karma -25.1k (player and 8 sleeves on Homicide for the gang at -54k, shock 89), installed 3, queued The W1ngs of Icarus, home 512GB,
+25 cloud (15.9TB), darknet ~$2.5b/h; advisor wait 18m for BitWire (+17.4%/h); auto install idle since the 07:35 hold. Run page no alarms.
+No build-ahead (as at 07:12); number review row 24 (metrics trend): no DECELERATING line.
 
 ## Daedalus ready (2026-11-16 21:35)
 

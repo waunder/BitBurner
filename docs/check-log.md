@@ -9,6 +9,16 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 2
 
+**2026-11-26 11:12 Mac, scheduled check: BN11 run 2 cycle 2 healthy; no install since 06:49.** Not a stand-aside run (repo clean, last commit 09:13).
+ctl-status connected (168 synced, 31 pulled), DevTools up, save 11:11. Auto install: no lines since the 07:35 HOLD (verdict wait since); no pause files.
+At 11:12: $1.19b, hacking 290, karma -25.1k (-7.7k/h, so -54k in ~3.7h), entropy 0, installed 3, queued The W1ngs of Icarus; player Homicide (karmaFirst),
+8 sleeves Homicide, shock 89, sync 100; no gang yet; home 512GB (375GB used), 25 cloud servers 15.9TB; hacking xp 3.7m/h; darknet $2.47b/h (this cycle $9.13b
+of $10.9b earned); advisor wait 18m for BitWire (+17.4%/h vs the cycle's +1.3%/h; plan ADR-V1 Pheromone Gene, Wired Reflexes, $80m). Run page no alarms.
+- Nothing to fix. No build-ahead (as at 07:12).
+- Number review row 24 (metrics.py summary/trend): no DECELERATING line. hackExp/h ACCELERATING (2.3m > 2.94m > 3.72m); lvl/h falling is the level curve
+  (context); net cash/h swings with cloud purchases ($9.69b on servers this cycle); rep best SWITCH is CyberSec from hacking. Stale gang/bladeburner sources
+  are expected (no gang yet, no Bladeburner in BN11). Times print as "PT", fixed UTC-7 (BC), the same offset as the Mac's MST. No change; `again` after the gang.
+
 **2026-11-26 09:12 Mac, scheduled check: BN11 run 2 cycle 2 healthy; no install since 06:49.** Not a stand-aside run (repo clean, last commit 07:13).
 ctl-status connected (168 synced, 31 pulled), DevTools up, save 09:11. Auto install: HOLD at 07:25 and 07:35 (cycle under 1h), then the verdict turned to wait;
 no pause files. At 09:12: $194m, hacking 258, karma -12.2k, entropy 0, installed 3, queued The W1ngs of Icarus; player Homicide (karmaFirst), 8 sleeves Homicide,

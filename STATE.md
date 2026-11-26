@@ -247,9 +247,9 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-26 13:12 Mac (scheduled): BN11 run 2 cycle 3 healthy; install 2 by auto install at 11:37.** ctl-status connected, DevTools up, save 13:10.
-Now $345m, hacking 271, karma -45.7k (player and 8 sleeves on Homicide, gang at -54k in ~1h), installed 7, nothing queued, home 1TB, 25 cloud (11.5TB),
-cycle darknet $5.31b; graft none. Run page no alarms. Nothing to fix; no build-ahead; number review skipped.
+**2026-11-26 15:12 Mac (scheduled): BN11 run 2 cycle 3 healthy; gang formed (Slum Snakes, 7 members).** ctl-status connected, DevTools up, save 15:11.
+Now $1.34b, hacking 318, karma -54.3k, installed 7, nothing queued, home 1TB, 25 cloud (17.4TB), player NiteSec hacking work, 8 sleeves Shock recovery (76).
+Advisor wait (gang 4h minimum, 25m more; gang rep does not cover its augs yet). Run page no alarms. Nothing to fix; number review row 15.
 
 ## Daedalus ready (2026-11-16 21:35)
 

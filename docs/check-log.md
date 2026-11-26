@@ -9,6 +9,18 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 2
 
+**2026-11-26 15:12 Mac, scheduled check: BN11 run 2 cycle 3 healthy; gang formed.** Not a stand-aside run (repo clean, last commit 13:12).
+ctl-status connected (168 synced, 31 pulled), DevTools up, save 15:11. Auto install: no lines since 11:38 (verdict wait); no pause files.
+At 15:12: $1.34b, hacking 318, karma -54.3k, entropy 0, installed 7, nothing queued; gang Slum Snakes 7 members on Mug People, reputation mode, territory 14.3%;
+player NiteSec hacking work (+1590 rep for Neural-Retention Enhancement); 8 sleeves Shock recovery at shock 76, sync 100; home 1TB (767GB used), 25 cloud 17.4TB;
+this cycle darknet $12.3b, sleeves $0.83b, crime $0.52b, hacking $0.41b, gang $6.5m; spent $12.7b on servers; income ~$629k/s. Advisor wait: gang cycle minimum
+(25m more of 4h), gang rep does not cover its augs yet. Graft no pick (prereqs, price cap, net value). Run page no alarms.
+- Nothing to fix. No build-ahead (as at 07:12).
+- Number review row 15 (sleeves, `again` at the gang): at karma -54k all 8 moved from Homicide to Shock recovery, by design (shock 76 above `shockRecoverAbove` 40;
+  recover to `shockResumeBelow` 5). Shock fell 85 -> 76 over 13:12-15:12, mostly while still on Homicide (~4.5/h), so recovery to 5 takes roughly 12-14h.
+  The cost is small: sleeves earned $0.83b of $14.1b this cycle, and recovery is what opens sleeve augs and full crime/exp output later (run 1 had shock 0, Heist, by cycle 10).
+  The 2026-11-22 gym-while-shocked idea was not measured here (`sleeve_status.json` is not in the pull list). No change; `again` when shock reaches 40.
+
 **2026-11-26 13:12 Mac, scheduled check: BN11 run 2 cycle 3 healthy; install 2 by auto install at 11:37.** Not a stand-aside run (repo clean, last commit 11:12).
 ctl-status connected (31 pulled), DevTools up, save 13:10. Auto install: verdict install confirmed 11:31-11:36 ("best next Social Negotiation Assistant (S.N.A)
 adds +0.6%/h, under the cycle's +2.2%/h"), backup saves/pre-install-auto-20261126-1136.json.gz, installed (confirmed 11:38); installed 3 -> 7, no pause files.

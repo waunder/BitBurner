@@ -15,10 +15,10 @@ Owned 2026-11-22: SF 1.2, 2.1, 4.3, 5.3, 6.1, 10.3, 12.1, 15.1. Never finished: 
 | 7 | 9 | 1 | no cloud servers, hacking income 10%, exp 5% | Hacknet servers |
 | 8 | 13 | 1 | hardest: hacking level 25%, exp 10%, gang softcap 0.3 | Stanek's Gift |
 
-**Next finish: BitNode 11** (BN11 run 1 is live; runs 2 and 3 follow, then BitNode 7). Check-ins read this line
+**Next finish: BitNode 11** (BN11 run 2 is live; run 3 follows, then BitNode 7). Check-ins read this line
 when the World Daemon is ready and update it after each finish.
 
-11 runs from here, counting the current one. Revisit after each; give Ken the reason with any change.
+10 runs from here, counting the current one. Revisit after each; give Ken the reason with any change.
 
 ## After it: the full play-through
 
@@ -27,6 +27,8 @@ separate game. It never replaces, deletes or overwrites this save (the handover 
 
 ## Progress
 
+- 2026-11-26 05:13 (check-in): BN11 run 1 finished by tools/finish_node.py --next 11 (backup saves/pre-finish-bn11-20261126-051247.json.gz),
+  ~61h from entry (2026-11-23 15:55), 17 installs; Source-File 11.1. BN11 run 2 entered on profile bn11, residents running.
 - 2026-11-23 21:12 (check-in): BN7: docs/finish-procedure.md describes the Bladeburner finish path. Still needed: core HUD
   wording when bn7 is next, and a disposable-copy rehearsal of a Bladeburner finish.
 - 2026-11-23 19:12 (check-in): BN7: profiles/bn7/config/bladeburner_config.json allows the controller to win Operation Daedalus

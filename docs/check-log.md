@@ -7,6 +7,20 @@ measurement or decision, not at every session start.
 Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 `docs/archive/state-2026-11-10/STATE-full.md`, the full STATE.md as it stood on 2026-11-10.
 
+## BN11 run 2
+
+**2026-11-26 05:12 Mac, scheduled check: BN11 run 1 finished; BN11 run 2 entered; Source-File 11.1.** Not a stand-aside run (repo clean, last commit 03:12).
+ctl-status connected, DevTools up. Since the last check, auto install ran install 16 (03:26, backup saves/pre-install-auto-20261126-0326.json.gz) and
+install 17 (04:40, backup saves/pre-install-auto-20261126-0440.json.gz): installed 81, The Red Pill in. At 05:12: $84.1b, hacking 4573 (World Daemon needs 4500),
+karma -331.3k, cycle 17, graft none, run page note "The World Daemon is ready". route.md "Next finish": BitNode 11.
+- Finish: preflight `finish_node.py --next 11` passed (no switch, callback startup.js); notify sent 05:12; `--go` in the background, log
+  runtime/finish-11-to-11-20261126-0512.log: backup saves/pre-finish-bn11-20261126-051247.json.gz decoded (BN11, ready by worldDaemon), finish_node.js typed
+  05:12:52, DONE 05:13:01 (Source-File 11.1, run stamp 1795695168310), finish_node.js removed, installs approved for BN11 run 2, residents running
+  (capital_bootstrap, early_crime, crawler, mcp_supervisor).
+- After: run page node 11, run 2, cycle 1, SF level 1, $1,262, no alarms. Run 1 took ~61h from entry (2026-11-23 15:55) with 17 installs.
+- Updated docs/route.md (Progress line; Next finish stays BitNode 11 for run 3), STATE.md (top note, Latest check, install rows 16 and 17; install 16's
+  count after was not recorded). Ken alerted before and after. No build-ahead; number review row skipped. run_report.json pushed.
+
 ## BN11 run 1
 
 **2026-11-26 03:12 Mac, scheduled check: BN11 run 1 cycle 15 healthy; install 15 by auto install at 01:56; joined Daedalus.** Not a stand-aside run (repo clean,

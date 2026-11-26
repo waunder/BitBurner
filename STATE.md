@@ -1,3 +1,5 @@
+**2026-11-26 05:13 (scheduled check-in): BN11 run 1 finished; BN11 run 2 entered. Source-File 11.1.** World Daemon ready at 05:12 (Red Pill installed by install 17 at 04:40, hacking 4573 of 4500, no graft). tools/finish_node.py --next 11 --go: backup saves/pre-finish-bn11-20261126-051247.json.gz, DONE 05:13, installs approved for BN11 run 2, log runtime/finish-11-to-11-20261126-0512.log. 05:14: BitNode 11 run 2 cycle 1, capital_bootstrap/early_crime/crawler/mcp_supervisor running, no alarms. Next finish: BN11 (run 3), then BN7.
+
 **2026-11-23 16:15 (Ken: "Yes, automate it"): scheduled check-ins now finish a ready BitNode themselves.** Into docs/route.md "Next finish" (now BitNode 11), only through tools/finish_node.py: preflight, alert Ken, --go in the background with the log read every 30 s (up to 10 min), then route/STATE/check-log, commit, alert Ken with the result; on STOP or timeout change nothing more and alert at priority 1; never restore. Changed: AGENTS.md handover, docs/mac-bn10-checkin-task.md World Daemon steps, docs/finish-procedure.md, the scheduled task prompt, and the run page alert (now a note, "The next check-in finishes it"; no longer a priority-1 "you" alarm). tools/tests/test_finish_node.py now checks manifest file lists only (bn7 notes mention the tool by name). Tests: run page, notify, finish_node 36 OK.
 
 **2026-11-23 15:55 (Ken: "session resumed"): BN12 run 3 finished, the hands-off test passed mark 1; BN11 run 1 entered. Source-File 12.3.** tools/finish_node.py --next 11 --go: backup saves/pre-finish-bn12-20261123-155426.json.gz, World Daemon destroyed with no callback, profile switch to bn11 (backup saves/pre-switch-bn11-20261123-155517.json.gz, pushed 168), startup.js run, installs approved for BN11 run 1 (handover); log runtime/finish-bn12-run3.log. 15:58: BitNode 11, capital_bootstrap/early_crime/crawler/mcp_supervisor running, Shoplift, no alarms; profile.py check OK. Watch in BN11: hacking money is 1% (server max money x0.01), so early cycles are slower; the stock engine starts once cash covers 3x access ($315b with 4S at x4); World Daemon at hacking 4500, Daedalus needs 30 augs. Result write-up: docs/hands-off-test.md.
@@ -159,6 +161,8 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 13 | 2026-11-25 17:42 | Auto install at 4.1h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261125-1742.json.gz | 41 -> 47 (page API) |
 | 14 | 2026-11-25 21:49 | Auto install at 4.1h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261125-2149.json.gz | 47 -> 54 (page API) |
 | 15 | 2026-11-26 01:56 | Auto install at 4.1h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261126-0156.json.gz | 54 -> 65 (page API) |
+| 16 | 2026-11-26 03:26 | Auto install at 1.5h (verdict: nothing left worth waiting for; Daedalus favor banked). Backup saves/pre-install-auto-20261126-0326.json.gz | 65 -> ? (not recorded) |
+| 17 | 2026-11-26 04:40 | Auto install at 1.2h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261126-0440.json.gz. The Red Pill installed | ? -> 81 (page API) |
 
 ## Installs BN12 run 1
 
@@ -236,10 +240,9 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-26 03:12 Mac (scheduled): BN11 run 1 cycle 15 healthy; install 15 by auto install at 01:56 (54 -> 65); joined Daedalus.** ctl-status connected, DevTools up, saved 03:11.
-Now $316b, hacking 2813, karma -325.2k, entropy 2, installed 65, no Red Pill yet; 25 scripts; home 16TB, 25 cloud, income $520m/s.
-Player and sleeve 0 work for Daedalus (favor 0 + 134.9 pending, 150 unlocks donations); 7 sleeves Heist, sync 100. Gang 12 members, territory-power mode, territory 14.3%.
-Advisor wait (Daedalus favor 134 of 150, ~6m left). Run page: no alarms. World Daemon needs hacking 4500.
+**2026-11-26 05:12 Mac (scheduled): BN11 run 1 finished into BN11 run 2; Source-File 11.1.** ctl-status connected, DevTools up.
+Installs 16 (03:26) and 17 (04:40) by auto install brought The Red Pill (65 -> 81); at 05:12 hacking 4573 of 4500, $84b, no graft, so the check-in finished
+the node with tools/finish_node.py (DONE 05:13). Now BitNode 11 run 2 cycle 1, $1.3k, 4 residents running, run page no alarms. Ken alerted before and after.
 
 ## Daedalus ready (2026-11-16 21:35)
 

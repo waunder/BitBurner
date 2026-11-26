@@ -9,6 +9,12 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 1
 
+**2026-11-25 17:12 Mac, scheduled check: BN11 run 1 cycle 12 healthy.** Not a stand-aside run (repo clean, last commit 15:12). ctl-status connected,
+DevTools up, save 17:11. No install since 13:38 (auto install idle, no pause files). $18.1b, hacking 1243, karma -313.7k, entropy 2, installed 41; 25 scripts;
+gang 12 members, territory-power mode (7 Human Trafficking, 5 Territory Warfare), territory 14.3%; 8 sleeves Heist, sync 100, shock 0. Advisor wait (gang
+cycle minimum 26m; waiting to join Daedalus; plan 3 augs $12.3b). Graft: no pick. No alarms.
+- Interventions: none needed. No alert. No build-ahead; number review row skipped. run_report.json pushed.
+
 **2026-11-25 15:12 Mac, scheduled check: BN11 run 1 cycle 12 healthy; install 12 by auto install at 13:38.** Not a stand-aside run (repo clean,
 last commit 13:12). ctl-status connected, DevTools up, save 15:11. Auto install: verdict install confirmed 13:31-13:36 ("nothing left worth waiting
 for"), backup saves/pre-install-auto-20261125-1336.json.gz, installed 13:38 (36 -> 41). Now $7.43b, hacking 1070, karma -313.0k, entropy 2; 24 scripts;

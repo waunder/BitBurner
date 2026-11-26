@@ -157,6 +157,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 11 | 2026-11-25 09:28 | Auto install at 4.1h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261125-0928.json.gz | 31 -> 36 (page API) |
 | 12 | 2026-11-25 13:36 | Auto install at 4.1h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261125-1336.json.gz | 36 -> 41 (page API) |
 | 13 | 2026-11-25 17:42 | Auto install at 4.1h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261125-1742.json.gz | 41 -> 47 (page API) |
+| 14 | 2026-11-25 21:49 | Auto install at 4.1h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261125-2149.json.gz | 47 -> 54 (page API) |
 
 ## Installs BN12 run 1
 
@@ -234,10 +235,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-25 21:12 Mac (scheduled): BN11 run 1 cycle 13 healthy.** ctl-status connected, DevTools up, saved 21:11. No install since 17:43.
-Now $212.9b, hacking 1869, karma -316.5k, entropy 2, installed 47, no queued augs, no Red Pill; 24 scripts; home 4TB, 25 cloud (200TB), income $278m/s. Gang 12 members,
-territory-power mode, territory 14.3%. Player studying Algorithms; sleeves Heist, sync 100. Advisor wait (gang cycle minimum 31m more; waiting to join
-Daedalus: cash now covers $100b, hacking 1869 of 2500). Run page: no alarms. World Daemon needs hacking 4500.
+**2026-11-25 23:12 Mac (scheduled): BN11 run 1 cycle 14 healthy; install 14 by auto install at 21:51.** ctl-status connected, DevTools up, saved 23:11.
+Now $9.23b, hacking 1678, karma -318.7k, entropy 2, installed 54, queued The H4mmer of Daedalus, no Red Pill; 25 scripts; home 4TB, 25 cloud, income $199m/s.
+Gang 12 members, territory-power mode, territory 14.3%. Player studying Algorithms; sleeves 7 Heist, 1 Homicide, sync 100. Advisor wait (gang cycle minimum
+2.6h more; waiting to join Daedalus, hacking 1678 of 2500). Run page: no alarms. World Daemon needs hacking 4500.
 
 ## Daedalus ready (2026-11-16 21:35)
 

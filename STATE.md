@@ -156,6 +156,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 10 | 2026-11-25 05:21 | Auto install at 2.6h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261125-0521.json.gz | 27 -> 31 (page API) |
 | 11 | 2026-11-25 09:28 | Auto install at 4.1h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261125-0928.json.gz | 31 -> 36 (page API) |
 | 12 | 2026-11-25 13:36 | Auto install at 4.1h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261125-1336.json.gz | 36 -> 41 (page API) |
+| 13 | 2026-11-25 17:42 | Auto install at 4.1h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261125-1742.json.gz | 41 -> 47 (page API) |
 
 ## Installs BN12 run 1
 
@@ -233,11 +234,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-25 17:12 Mac (scheduled): BN11 run 1 cycle 12 healthy.** ctl-status connected, DevTools up, saved 17:11. No install since 13:38.
-Now $18.1b, hacking 1243, karma -313.7k, entropy 2, installed 41, no queued augs, no Red Pill; 25 scripts; home 4TB. Gang 12 members, territory-power
-mode (7 Human Trafficking, 5 Territory Warfare), territory 14.3%. Player studying Algorithms; 8 sleeves Heist, sync 100. Advisor wait (gang cycle minimum
-26m; waiting to join Daedalus; plan Unstable Circadian Modulator, Bionic Legs, Augmented Targeting III, $12.3b). Run page: no alarms. World Daemon needs
-hacking 4500.
+**2026-11-25 19:12 Mac (scheduled): BN11 run 1 cycle 13 healthy; install 13 by auto install at 17:43.** ctl-status connected, DevTools up, saved 19:10.
+Now $4.50b, hacking 1623, karma -315.0k, entropy 2, installed 47, no queued augs, no Red Pill; 24 scripts; home 4TB, 25 cloud (50TB). Gang 12 members,
+territory-power mode (7 Human Trafficking, 5 Territory Warfare), territory 14.3%. Player studying Algorithms; sleeves 7 Heist, 1 Mug, sync 100. Advisor wait
+(gang cycle minimum 2.5h; waiting to join Daedalus: needs $100b and hacking 2500). Run page: no alarms. World Daemon needs hacking 4500.
 
 ## Daedalus ready (2026-11-16 21:35)
 

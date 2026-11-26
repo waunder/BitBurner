@@ -158,6 +158,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 12 | 2026-11-25 13:36 | Auto install at 4.1h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261125-1336.json.gz | 36 -> 41 (page API) |
 | 13 | 2026-11-25 17:42 | Auto install at 4.1h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261125-1742.json.gz | 41 -> 47 (page API) |
 | 14 | 2026-11-25 21:49 | Auto install at 4.1h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261125-2149.json.gz | 47 -> 54 (page API) |
+| 15 | 2026-11-26 01:56 | Auto install at 4.1h (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261126-0156.json.gz | 54 -> 65 (page API) |
 
 ## Installs BN12 run 1
 
@@ -235,10 +236,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-26 01:12 Mac (scheduled): BN11 run 1 cycle 14 healthy.** ctl-status connected, DevTools up, saved 01:11. No install since 21:51.
-Now $937.8b, hacking 1977, karma -320.6k, entropy 2, installed 54, queued The H4mmer of Daedalus, no Red Pill; 24 scripts; home 4TB, 25 cloud, income $3.87b/s.
-Gang 12 members, territory-power mode, territory 14.3%. Player studying Algorithms; sleeves 8 Heist, sync 100. Advisor wait (gang cycle minimum 38m more;
-waiting to join Daedalus, hacking 1977 of 2500). Run page: no alarms. World Daemon needs hacking 4500.
+**2026-11-26 03:12 Mac (scheduled): BN11 run 1 cycle 15 healthy; install 15 by auto install at 01:56 (54 -> 65); joined Daedalus.** ctl-status connected, DevTools up, saved 03:11.
+Now $316b, hacking 2813, karma -325.2k, entropy 2, installed 65, no Red Pill yet; 25 scripts; home 16TB, 25 cloud, income $520m/s.
+Player and sleeve 0 work for Daedalus (favor 0 + 134.9 pending, 150 unlocks donations); 7 sleeves Heist, sync 100. Gang 12 members, territory-power mode, territory 14.3%.
+Advisor wait (Daedalus favor 134 of 150, ~6m left). Run page: no alarms. World Daemon needs hacking 4500.
 
 ## Daedalus ready (2026-11-16 21:35)
 

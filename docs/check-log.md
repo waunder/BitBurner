@@ -9,6 +9,14 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 1
 
+**2026-11-26 03:12 Mac, scheduled check: BN11 run 1 cycle 15 healthy; install 15 by auto install at 01:56; joined Daedalus.** Not a stand-aside run (repo clean,
+last commit 01:12). ctl-status connected, DevTools up, save 03:11. Auto install: verdict install confirmed 01:50-01:56 ("nothing left worth waiting for"),
+backup saves/pre-install-auto-20261126-0156.json.gz, installed (54 -> 65, confirmed 01:58). Now $316b, hacking 2813, karma -325.2k, entropy 2; 25 scripts; home 16TB;
+income $520m/s; player on Daedalus hacking work, sleeve 0 Daedalus field work, 7 sleeves Heist, sync 100, shock 0; gang 12 members, territory-power mode
+(7 Human Trafficking, 5 Territory Warfare), territory 14.3%, power 5,345. Advisor wait (Daedalus favor 134 of 150 for donations, ~6m left; cycle 1.2h).
+Graft: no pick. No alarms; no pause files. Red Pill not yet bought; World Daemon needs hacking 4500.
+- Interventions: none needed. Added the install 15 row to STATE.md. No alert. No build-ahead; number review row skipped. run_report.json pushed.
+
 **2026-11-26 01:12 Mac, scheduled check: BN11 run 1 cycle 14 healthy.** Not a stand-aside run (repo clean, last commit 23:12). ctl-status connected,
 DevTools up, save 01:11. No install since 21:51 (auto install idle, no pause files). $937.8b, hacking 1977, karma -320.6k, entropy 2, installed 54; 24 scripts;
 income $3.87b/s; gang 12 members, territory-power mode (7 Human Trafficking, 5 Territory Warfare), territory 14.3%, power 4,606; 8 sleeves Heist, sync 100, shock 0.

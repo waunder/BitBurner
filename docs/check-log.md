@@ -9,6 +9,17 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 2
 
+**2026-11-26 09:12 Mac, scheduled check: BN11 run 2 cycle 2 healthy; no install since 06:49.** Not a stand-aside run (repo clean, last commit 07:13).
+ctl-status connected (168 synced, 31 pulled), DevTools up, save 09:11. Auto install: HOLD at 07:25 and 07:35 (cycle under 1h), then the verdict turned to wait;
+no pause files. At 09:12: $194m, hacking 258, karma -12.2k, entropy 0, installed 3, queued The W1ngs of Icarus; player Homicide (karmaFirst), 8 sleeves Homicide,
+shock 92, sync 100; no gang yet; home 512GB, 25 cloud servers 11TB (3.2TB at 07:12); MCP on money objective, 397 hacking xp/s; income ~$583k/s; advisor wait
+2.5h for BitWire (+2.0%/h vs the cycle's +0.4%/h); graft none (prereqs, price cap, karma phase). Run page no alarms.
+- Nothing to fix. No build-ahead (as at 07:12).
+- Number review row 23 (cycle spending): this cycle earned $4.81b (darknet $4.03b, crime $0.56b, hacking $0.12b, sleeves $0.08b, contracts $0.02b) and spent
+  $4.62b on cloud servers, $2.2m other, $0.6m class; no sleeve augs (shock 92 blocks them). The cloud's direct cash return is small (BN11 hacking money x0.01:
+  $0.12b), but it carries the hacking xp the route's gates need (Daedalus 2500, World Daemon 4500); run 1 used the same policy and finished in ~61h.
+  No change; `again` once the gang is up, when cloud money competes with gang equipment.
+
 **2026-11-26 07:12 Mac, scheduled check: BN11 run 2 cycle 2 healthy; install 1 by auto install at 06:49.** Not a stand-aside run (repo clean, last commit 05:13).
 ctl-status connected (168 synced, 31 pulled), DevTools up, save 07:11. Auto install: verdict install confirmed 06:43-06:48 ("best next BitWire adds +2.5%/h,
 under the cycle's +4.8%/h"), backup saves/pre-install-auto-20261126-0648.json.gz, installed (confirmed 06:51); installed 3. At 07:12: $17.8m, hacking 153,

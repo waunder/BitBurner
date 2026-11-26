@@ -142,6 +142,12 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
   Its first pass granted all 13 sleeve aug batches bought after install 4 (early phase, no batch reserve). Next:
   judge it this cycle, then R2 (the gang's reserveInstallPlan is a local stand-in for its batch reserve).
 
+## Installs BN11 run 2
+
+| # | When (Mac clock) | Bought | Installed after |
+|---|---|---|---|
+| 1 | 2026-11-26 06:49 | Auto install at ~1.6h (verdict: best next BitWire +2.5%/h, under the cycle's +4.8%/h). Backup saves/pre-install-auto-20261126-0648.json.gz | 0 -> 3 (page API) |
+
 ## Installs BN11 run 1
 
 | # | When (Mac clock) | Bought | Installed after |
@@ -240,9 +246,9 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-26 05:12 Mac (scheduled): BN11 run 1 finished into BN11 run 2; Source-File 11.1.** ctl-status connected, DevTools up.
-Installs 16 (03:26) and 17 (04:40) by auto install brought The Red Pill (65 -> 81); at 05:12 hacking 4573 of 4500, $84b, no graft, so the check-in finished
-the node with tools/finish_node.py (DONE 05:13). Now BitNode 11 run 2 cycle 1, $1.3k, 4 residents running, run page no alarms. Ken alerted before and after.
+**2026-11-26 07:12 Mac (scheduled): BN11 run 2 cycle 2 healthy; install 1 by auto install at 06:49.** ctl-status connected, DevTools up, save 07:11.
+Now $17.8m, hacking 153, karma -3.4k (player and 8 sleeves on Homicide for the gang at -54k), installed 3, home 512GB, 25 cloud (3.2TB), 22 scripts,
+income ~$233k/s; advisor build (next BitWire in ~25h). Run page no alarms. No build-ahead (BN7's left items wait for bn7 to be next or need a copy rehearsal); number review row 22 (IPvGO).
 
 ## Daedalus ready (2026-11-16 21:35)
 

@@ -9,6 +9,15 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 2
 
+**2026-11-26 07:12 Mac, scheduled check: BN11 run 2 cycle 2 healthy; install 1 by auto install at 06:49.** Not a stand-aside run (repo clean, last commit 05:13).
+ctl-status connected (168 synced, 31 pulled), DevTools up, save 07:11. Auto install: verdict install confirmed 06:43-06:48 ("best next BitWire adds +2.5%/h,
+under the cycle's +4.8%/h"), backup saves/pre-install-auto-20261126-0648.json.gz, installed (confirmed 06:51); installed 3. At 07:12: $17.8m, hacking 153,
+karma -3.4k, entropy 0, player Homicide (karmaFirst), 8 sleeves Homicide at shock 96, sync 100; no gang yet; home 512GB, 25 cloud servers 3.2TB; MCP preparing
+silver-helix; income ~$233k/s (darknet $314m this cycle is the main earner); advisor build (BitWire in ~25h); graft none (prereqs, price cap). Run page no alarms.
+- Nothing to fix. No build-ahead: BN7's open items are core HUD wording (core is live in bn11; change when bn7 is next) and a fresh-BN7 copy rehearsal (too large for a slot).
+- Number review row 22 (IPvGO): runtime/ipvgo_status.json is from 2026-09-07 (BN15); ipvgo_player.js is not in bn11's startup, so it holds no RAM and earns no bonus.
+  Last record 42 of 84 won (50%) against The Black Hand on 9x9. No change; `again` in BN14 (route 4, Go power x4), where opponent choice matters.
+
 **2026-11-26 05:12 Mac, scheduled check: BN11 run 1 finished; BN11 run 2 entered; Source-File 11.1.** Not a stand-aside run (repo clean, last commit 03:12).
 ctl-status connected, DevTools up. Since the last check, auto install ran install 16 (03:26, backup saves/pre-install-auto-20261126-0326.json.gz) and
 install 17 (04:40, backup saves/pre-install-auto-20261126-0440.json.gz): installed 81, The Red Pill in. At 05:12: $84.1b, hacking 4573 (World Daemon needs 4500),

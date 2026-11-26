@@ -234,10 +234,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-25 19:12 Mac (scheduled): BN11 run 1 cycle 13 healthy; install 13 by auto install at 17:43.** ctl-status connected, DevTools up, saved 19:10.
-Now $4.50b, hacking 1623, karma -315.0k, entropy 2, installed 47, no queued augs, no Red Pill; 24 scripts; home 4TB, 25 cloud (50TB). Gang 12 members,
-territory-power mode (7 Human Trafficking, 5 Territory Warfare), territory 14.3%. Player studying Algorithms; sleeves 7 Heist, 1 Mug, sync 100. Advisor wait
-(gang cycle minimum 2.5h; waiting to join Daedalus: needs $100b and hacking 2500). Run page: no alarms. World Daemon needs hacking 4500.
+**2026-11-25 21:12 Mac (scheduled): BN11 run 1 cycle 13 healthy.** ctl-status connected, DevTools up, saved 21:11. No install since 17:43.
+Now $212.9b, hacking 1869, karma -316.5k, entropy 2, installed 47, no queued augs, no Red Pill; 24 scripts; home 4TB, 25 cloud (200TB), income $278m/s. Gang 12 members,
+territory-power mode, territory 14.3%. Player studying Algorithms; sleeves Heist, sync 100. Advisor wait (gang cycle minimum 31m more; waiting to join
+Daedalus: cash now covers $100b, hacking 1869 of 2500). Run page: no alarms. World Daemon needs hacking 4500.
 
 ## Daedalus ready (2026-11-16 21:35)
 

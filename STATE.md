@@ -248,10 +248,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-26 23:12 Mac (scheduled): BN11 run 2 cycle 5 healthy, 1.7h in; install 4 by auto install at 21:28.** ctl-status connected, DevTools up, save 23:11, no pause files.
-Now $1.27b, hacking 345, karma -55.5k, installed 14, nothing queued, gang Slum Snakes 8 members (Mug People, respect 7.5k), 8 sleeves Shock recovery (30.0), player Tian Di Hui hacking work.
-Advisor wait: gang cycle minimum (2.3h more of 4h); the BN11 settle rule cannot lapse it while gang rep (104, ~60/h) is far below the 1.875m its augs need. Run page no alarms.
-Number review row 17: gang rep is the binding 4h floor in BN11 for now; written to docs/opportunities.md ("BN11 gang floor"), no live change.
+**2026-11-27 01:12 Mac (scheduled): BN11 run 2 cycle 5 healthy, 3.7h in; graft Neurotrainer III done 01:10.** ctl-status connected, DevTools up, save 01:11, no pause files.
+Now $1.26b, hacking 389, karma -55.9k, installed 15 (graft 23:37-01:10, $390m), entropy 1, nothing queued, gang Slum Snakes 8 members (Mug People, respect 13.3k), 8 sleeves Shock recovery (18.6), player The Black Hand hacking work.
+Advisor wait: gang cycle minimum, 17m more of 4h; auto install should follow. Run page no alarms.
+Number review row 1: no hacking stack has run in BN11 (first-stack floor 20 batches = 57-90TB vs 19.35TB fleet); docs/opportunities.md ("BN11 stack floor"), no live change.
 
 ## Daedalus ready (2026-11-16 21:35)
 

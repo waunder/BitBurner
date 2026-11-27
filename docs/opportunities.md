@@ -349,3 +349,13 @@ arrive inside a cycle; cycle 4 installed at 4.1h, minutes after the floor. Idea:
 not owned (here 1.9k rep needs ~30h). Gain unknown: depends on whether the batch average peaks before 4h; replay cycles 2-5 in metrics_log.txt first. Live install
 timing, so not changed in a check-in.
 
+## BN11 stack floor (2026-11-27, number review row 1)
+
+BN11 run 2: stack_manager has started no stack this run. `planStacks` (core/mcp/stack_logic.js) lets the first stack start short of its full need only with a
+budget of 20 batches (`minBudgetBatches`). At hacking 389 and hackFraction 0.4 one batch is 2.8-4.5TB (omega-net 3.24TB), so the floor is 57-90TB, while the fleet's
+stack capacity is 19.35TB (0.9 of 25 servers, 21.5TB) and installs reset the fleet each cycle. Formula estimates at 01:12: omega-net $15.6k/s per TB, the-hub $9.9k/s,
+against MCP's target yield $7.4k/s per TB. A full-fleet omega-net stack would be ~$0.30m/s by estimate vs all hacking now $0.12m/s (1h rate), out of ~$1.85m/s income
+(darknet $1.73m/s), so the gain is ~+10% of income at best, before prep time. Ideas: a lower first-stack floor (e.g. 5 batches), or a smaller hackFraction in bn11 so
+batches are smaller. Doubts: with 5 batches in flight the prep cost and any reset weigh more; stacks would take the RAM MCP and xp_filler use for hacking exp toward the
+4500 World Daemon gate. Needs a measured trial (one stack, one cycle) rather than a check-in change; the floor will matter less as hacking rises.
+

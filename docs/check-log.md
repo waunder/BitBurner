@@ -9,6 +9,19 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 2
 
+**2026-11-27 01:12 Mac, scheduled check: BN11 run 2 cycle 5 healthy, 3.7h in; graft Neurotrainer III finished 01:10.** Not a stand-aside run (repo clean, last commit 23:13).
+ctl-status connected (168 synced, 31 pulled), DevTools up, save 01:11. Auto install: no lines since 21:29 (verdict wait); no pause files.
+At 01:12: $1.26b, hacking 389, karma -55.9k, installed 14 -> 15 and entropy 0 -> 1 from graft_controller's Neurotrainer III (start 23:37, finished 01:10, $390m, 1.53h predicted);
+nothing queued; gang Slum Snakes 8 members on Mug People, reputation mode, respect 13.3k (7.5k at 23:12), rep 245, territory 14.3%; player The Black Hand hacking work
+(+98.2k rep for its aug, cash ready); 8 sleeves Shock recovery at shock 18.6 (30.0 at 23:12); home 1TB (646GB used), 25 cloud 21.5TB;
+this cycle darknet $17.9b, hacking $0.70b, gang $56m, crime $41m; spent $17.1b on servers, $390m on the graft. Advisor wait: gang cycle minimum, 17m more of 4h. Run page no alarms.
+Nothing to fix. No build-ahead (as at 07:12).
+- Number review row 1 (hacking per TB, stacks vs MCP), from stack_manager_status.json and money_status.json over ctl-get: stack_manager runs but has started no stack.
+  `planStacks` starts a first partial stack only with 20 batches of budget; at hacking 389 a batch is 2.8-4.5TB, so the floor is 57-90TB against 19.35TB capacity.
+  Estimates: omega-net $15.6k/s/TB, the-hub $9.9k/s/TB vs MCP targets $7.4k/s/TB. All hacking is $0.12m/s (1h) of ~$1.85m/s (darknet $1.73m/s), so a whole-fleet stack
+  is ~+10% of income at best by estimate, before prep. The 20-batch floor is a guess from BN10 (guard against partial budgets). Not changed (live hacking code, cycle
+  ends in minutes); docs/opportunities.md "BN11 stack floor" with the trial needed.
+
 **2026-11-26 23:12 Mac, scheduled check: BN11 run 2 cycle 5 healthy; install 4 by auto install at 21:28.** Not a stand-aside run (repo clean, last commit 21:13).
 ctl-status connected (168 synced, 31 pulled), DevTools up, save 23:11. Auto install: verdict install confirmed 21:22-21:27 ("best next DataJack adds +0.5%/h, under the cycle's +5.7%/h"),
 backup saves/pre-install-auto-20261126-2127.json.gz, installed (confirmed 21:29); installed 11 -> 14, no pause files.

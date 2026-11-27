@@ -9,6 +9,14 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 2
 
+**2026-11-27 07:12 Mac, scheduled check: BN11 run 2 cycle 6 healthy, 5.2h in.** Not a stand-aside run (repo clean, last commit 05:13).
+ctl-status connected (168 synced, 31 pulled), DevTools up, save 07:11. Auto install: no lines since 02:01 (verdict wait); no pause files.
+At 07:12: $2.26b, hacking 483 (448 at 05:12), karma -116.3k, entropy 1, installed 17, The B00ts of Perseus queued; gang Slum Snakes 9 members on Mug People, reputation mode (gang rep does not cover its augs yet),
+respect 14.7k (8.4k at 05:12), territory 14.3%; player The Black Hand hacking work (NiteSec needs +7.2k rep for Cranial Signal Processors Gen III, cash ready); 8 sleeves Homicide, shock 0; 24 scripts running; graft: no pick.
+Advisor: wait 1.5h for Cranial Signal Processors Gen III (+7.1%/h vs cycle +3.1%/h). Income: darknet ~$1.07m/s, sleeves $0.30m/s, hacking $0.20-0.49m/s. Run page: no alerts.
+Number review row 2 (stack estimates vs measured): stack_manager running but plan and started empty; capacity 23,040GB, smallest full need phantasy 283TB, the-hub 1,745TB (BN11 server money x0.01 inflates need).
+Estimates scale ~$10-22k/s per TB, so the 22.5TB would earn ~$0.5m/s as a stack, the same order as MCP now; nothing to measure, no change. Revisit if cloud capacity passes ~300TB.
+
 **2026-11-27 05:12 Mac, scheduled check: BN11 run 2 cycle 6 healthy, 3.2h in.** Not a stand-aside run (repo clean, last commit 03:14).
 ctl-status connected (168 synced, 31 pulled), DevTools up, save 05:11. Auto install: no lines since 02:01 (verdict wait); no pause files.
 At 05:12: $742m, hacking 448 (375 at 03:12), karma -70.3k (-56.3k: sleeves on Homicide), entropy 1, installed 17, nothing queued; gang Slum Snakes 9 members on Mug People, reputation mode,

@@ -9,6 +9,16 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 2
 
+**2026-11-26 21:12 Mac, scheduled check: BN11 run 2 cycle 4 healthy, 3.8h in.** Not a stand-aside run (repo clean, last commit 19:13).
+ctl-status connected (31 pulled), DevTools up, save 21:11. Auto install: no lines since 17:22 (verdict wait); no pause files.
+At 21:12: $775m, hacking 362, karma -55.1k, entropy 0, installed 11, nothing queued; gang Slum Snakes 8 members on Mug People, reputation mode, respect 2.5k, territory 14.3%;
+player NiteSec hacking work; 8 sleeves Shock recovery at shock 41.5 (53 at 19:12, ~6/h; recover continues to 5); home 1TB (385GB used), 25 cloud 17.9TB;
+this cycle darknet $12.8b, hacking $0.51b, gang $46m, crime $41m; spent $12.4b on servers; cash/h 345m, hacking income accelerating (204 -> 37.9k $/s over 3h).
+Advisor wait: NiteSec needs +77.9k rep for DataJack (cash ready). Graft no pick. Run page no alarms. Nothing to fix. No build-ahead (as at 07:12).
+- Number review row 24 (`again` after the gang), metrics.py summary 3x60m: no DECELERATING line. cash/h 160m>771m>345m swings with cloud buys; hacking $/s and hackExp/h
+  ACCELERATING; lvl/h falling is the level curve; rep work SWITCH is the player moving faction. Gang rep is the slow line: Slum Snakes 52 rep/h with 8 members on Mug People
+  (respect 2.5k), so its augs (1.9k-5k rep) are 30-100h away at today's rate; expected while the gang is young and recruiting. No change; `again` next cycle with the gang larger.
+
 **2026-11-26 19:12 Mac, scheduled check: BN11 run 2 cycle 4 healthy; install 3 by auto install at 17:21.** Not a stand-aside run (repo clean, last commit 17:14).
 ctl-status connected, DevTools up, save 19:11. Auto install: verdict install confirmed 17:16-17:21 ("best next Power Recirculation Core adds +5.1%/h, under the cycle's +5.8%/h"),
 backup saves/pre-install-auto-20261126-1721.json.gz, installed (confirmed 17:22); installed 7 -> 11, no pause files.

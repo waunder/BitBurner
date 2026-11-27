@@ -248,10 +248,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-26 19:12 Mac (scheduled): BN11 run 2 cycle 4 healthy; install 3 by auto install at 17:21.** ctl-status connected, DevTools up, save 19:11.
-Now $303m, hacking 315, karma -54.9k, installed 11, nothing queued, gang Slum Snakes 8 members, 8 sleeves Shock recovery (53), player Tian Di Hui hacking work.
-Advisor wait: gang cycle minimum (2.2h more of 4h). Run page no alarms.
-Number review row 10: cycle 3 batch average peaked 0.073/h at 3.8h; install came at 5.6h (0.038/h) because the verdict flipped within the 5-min confirm (15:37, 17:10); finding in docs/opportunities.md, no change.
+**2026-11-26 21:12 Mac (scheduled): BN11 run 2 cycle 4 healthy, 3.8h in.** ctl-status connected, DevTools up, save 21:11, no pause files.
+Now $775m, hacking 362, karma -55.1k, installed 11, nothing queued, gang Slum Snakes 8 members (Mug People, rep 200), 8 sleeves Shock recovery (41.5), player NiteSec hacking work.
+Advisor wait: NiteSec needs +77.9k rep for DataJack (cash ready). Run page no alarms.
+Number review row 24: no DECELERATING line; Slum Snakes rep only 52/h (gang young, Mug People), so gang augs (1.9k-5k rep) are far off; `again` next cycle.
 
 ## Daedalus ready (2026-11-16 21:35)
 

@@ -247,9 +247,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-26 15:12 Mac (scheduled): BN11 run 2 cycle 3 healthy; gang formed (Slum Snakes, 7 members).** ctl-status connected, DevTools up, save 15:11.
-Now $1.34b, hacking 318, karma -54.3k, installed 7, nothing queued, home 1TB, 25 cloud (17.4TB), player NiteSec hacking work, 8 sleeves Shock recovery (76).
-Advisor wait (gang 4h minimum, 25m more; gang rep does not cover its augs yet). Run page no alarms. Nothing to fix; number review row 15.
+**2026-11-26 17:12 Mac (scheduled): BN11 run 2 cycle 3 healthy; money panel number format fixed.** ctl-status connected, DevTools up, save 17:11.
+Now $741m-877m, hacking 344, karma -54.6k, installed 7, nothing queued, gang Slum Snakes 8 members, 8 sleeves Shock recovery (64), player Tetrads field work.
+Advisor wait 3m for LuminCloaking-V1 (+4.5%/h vs cycle +3.9%/h); auto install is watching (verdict install seen 15:37 and 17:10, not held 5 min). Run page no alarms.
+Number review row 25: core/capital/money_logic.js `money()` now prints q, Q and an exponent (712 bn11 tests pass); pushed and money.js re-run 17:14, panel shows 3.01e23.
 
 ## Daedalus ready (2026-11-16 21:35)
 

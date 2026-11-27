@@ -10,7 +10,10 @@ const LABELS = {
 
 export function money(value) {
   const n = Number(value) || 0, abs = Math.abs(n), sign = n < 0 ? "-" : ""
-  for (const [scale, suffix] of [[1e12, "t"], [1e9, "b"], [1e6, "m"], [1e3, "k"]]) {
+  // Past the game's own suffixes (q, Q) print an exponent: "301165908381t" was the all-augs cost
+  // in BN11 run 2 (number review row 25, 2026-11-26).
+  if (abs >= 1e21) return sign + abs.toExponential(2).replace("+", "")
+  for (const [scale, suffix] of [[1e18, "Q"], [1e15, "q"], [1e12, "t"], [1e9, "b"], [1e6, "m"], [1e3, "k"]]) {
     if (abs >= scale) return sign + (abs / scale).toFixed(abs / scale >= 100 ? 0 : abs / scale >= 10 ? 1 : 2) + suffix
   }
   return sign + abs.toFixed(0)

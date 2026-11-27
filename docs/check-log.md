@@ -9,6 +9,19 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 2
 
+**2026-11-26 17:12 Mac, scheduled check: BN11 run 2 cycle 3 healthy; money panel number format fixed.** Not a stand-aside run (repo clean, last commit 15:13).
+ctl-status connected (31 pulled), DevTools up, save 17:11. Auto install: WAIT verdict install, confirming at 15:37 and 17:10 (verdict flipped back to wait each time); no pause files.
+At 17:12: $741m, hacking 344, karma -54.6k, entropy 0, installed 7, nothing queued; gang Slum Snakes 8 members on Mug People, reputation mode, territory 14.3%;
+player Tetrads field work (+413 rep for LuminCloaking-V1); 8 sleeves Shock recovery at shock 64 (76 at 15:12, ~6/h); home 1TB, 25 cloud 23.5TB; this cycle darknet $20.2b,
+hacking $0.92b, sleeves $0.83b, crime $0.52b, gang $24m; spent $21.5b on servers; income ~$1.22m/s. Advisor wait 3m (LuminCloaking-V1 +4.5%/h beats the cycle's +3.9%/h);
+floor: gang rep does not cover its augs yet. Graft no pick. Run page no alarms.
+- Number review row 25 (run report and HUD lines), read from the live tail windows over DevTools (Runtime.evaluate, read only):
+  - Money panel "all 63 offered 301165908381t": `money()` in core/capital/money_logic.js had no suffix above t. Now q (1e15), Q (1e18), then exponent from 1e21;
+    tests added, money_logic 13/13, staged bn11 712/712. Pushed money_logic.js, `run money.js` again (lesson 10) at 17:14; live panel shows "3.01e23", one window.
+    ops_hud.js shares the formatter and picks it up at its next start.
+  - Not fixed, `again`: HUD IPvGO line "9x9 The Black Hand 50% (84g)" is the BN15 status file (2026-09-07, row 22) with no age shown; HUD Advice line ends
+    "Covenant needs hacking mult x2.09 (24h cycle)", BN10/12 context and not BN11's goal (Daedalus, Red Pill, hacking 4500). Run report lines were true.
+
 **2026-11-26 15:12 Mac, scheduled check: BN11 run 2 cycle 3 healthy; gang formed.** Not a stand-aside run (repo clean, last commit 13:12).
 ctl-status connected (168 synced, 31 pulled), DevTools up, save 15:11. Auto install: no lines since 11:38 (verdict wait); no pause files.
 At 15:12: $1.34b, hacking 318, karma -54.3k, entropy 0, installed 7, nothing queued; gang Slum Snakes 7 members on Mug People, reputation mode, territory 14.3%;

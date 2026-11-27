@@ -9,6 +9,17 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 2
 
+**2026-11-27 05:12 Mac, scheduled check: BN11 run 2 cycle 6 healthy, 3.2h in.** Not a stand-aside run (repo clean, last commit 03:14).
+ctl-status connected (168 synced, 31 pulled), DevTools up, save 05:11. Auto install: no lines since 02:01 (verdict wait); no pause files.
+At 05:12: $742m, hacking 448 (375 at 03:12), karma -70.3k (-56.3k: sleeves on Homicide), entropy 1, installed 17, nothing queued; gang Slum Snakes 9 members on Mug People, reputation mode,
+respect 8.4k (2.3k at 03:12), territory 14.3%; player Tetrads field work (+9.95k rep for Power Recirculation Core, cash ready); 8 sleeves Homicide at shock 1.9 (below 5, so working);
+home 1TB (543GB used), 25 cloud 18TB; this cycle darknet $12.0b, sleeves $1.30b, hacking $0.66b, gang $49m, crime $41m; spent $13.1b on servers, $0.24b gang.
+Advisor wait: gang cycle minimum (48m more of 4h); rep/h 14.0k. Graft no pick. Run page no alarms. Nothing to fix. No build-ahead (as at 07:12).
+- Number review row 11 (aug plan cost and order), from augmentation_readiness.json: installPlan HemoRecirculator + LuminCloaking-V2 (Tetrads), $199.44m.
+  That is 90m + 60m x 1.824 exactly: `rules.priceStep` is 1.9 x 0.96 (SF11.1), and augmentation_readiness, install_advisor_logic, aug_install and valuation_logic all read it.
+  Dearest first, which is optimal for a fixed set. The batch is rep-bound: cash $742m vs $199m. With the next aug, Power Recirculation Core ($360m, ~0.7h), the plan becomes
+  360m + 164m + 200m = $724m against $742m, so it still fits if cash holds (late-cycle cap limits server buys). graft_logic.js keeps its own `factionStepRatio` 1.9 (graft valuation only; ~4% off). No change.
+
 **2026-11-27 03:12 Mac, scheduled check: BN11 run 2 cycle 6 healthy, 1.2h in; install 5 by auto install at 02:01.** Not a stand-aside run (repo clean, last commit 01:14).
 ctl-status connected (168 synced, 31 pulled), DevTools up, save 03:11. Auto install: verdict install 01:47 (one HOLD at 01:50, autosave being written), confirmed 01:54-01:59 ("best next Neuralstimulator adds +3.3%/h, under the cycle's +3.5%/h"),
 backup saves/pre-install-auto-20261127-0159.json.gz, installed (confirmed 02:01); installed 15 -> 17, no pause files.

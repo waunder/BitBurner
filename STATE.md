@@ -248,10 +248,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-27 03:12 Mac (scheduled): BN11 run 2 cycle 6 healthy, 1.2h in; install 5 by auto install at 02:01.** ctl-status connected, DevTools up, save 03:11, no pause files.
-Now $428m, hacking 375, karma -56.3k, installed 17, entropy 1, nothing queued, gang Slum Snakes 9 members (Mug People, reputation mode), 8 sleeves Shock recovery (7.1), player Tian Di Hui hacking work.
-Advisor wait: gang cycle minimum, 2.8h more of 4h. Run page no alarms.
-Number review row 16: no sleeve aug bought this run (game needs shock 0; recovery stops at 5, then slow drain); 'no affordable' reason mislabels the shock gate. No change.
+**2026-11-27 05:12 Mac (scheduled): BN11 run 2 cycle 6 healthy, 3.2h in.** ctl-status connected, DevTools up, save 05:11, no pause files; no auto install since 02:01.
+Now $742m, hacking 448, karma -70.3k, installed 17, entropy 1, nothing queued, gang Slum Snakes 9 members (Mug People, reputation mode, respect 8.4k), 8 sleeves on Homicide (shock 1.9), player Tetrads field work.
+Advisor wait: gang cycle minimum, 48m more of 4h; next Power Recirculation Core in ~0.7h (+9.5k Tetrads rep). Run page no alarms.
+Number review row 11: plan $199.44m = 90m + 60m x 1.824 (SF11.1 step, 1.9 x 0.96), used by advisor and installer; dearest first; rep-bound, not cash. No change.
 
 ## Daedalus ready (2026-11-16 21:35)
 

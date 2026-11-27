@@ -248,10 +248,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-27 01:12 Mac (scheduled): BN11 run 2 cycle 5 healthy, 3.7h in; graft Neurotrainer III done 01:10.** ctl-status connected, DevTools up, save 01:11, no pause files.
-Now $1.26b, hacking 389, karma -55.9k, installed 15 (graft 23:37-01:10, $390m), entropy 1, nothing queued, gang Slum Snakes 8 members (Mug People, respect 13.3k), 8 sleeves Shock recovery (18.6), player The Black Hand hacking work.
-Advisor wait: gang cycle minimum, 17m more of 4h; auto install should follow. Run page no alarms.
-Number review row 1: no hacking stack has run in BN11 (first-stack floor 20 batches = 57-90TB vs 19.35TB fleet); docs/opportunities.md ("BN11 stack floor"), no live change.
+**2026-11-27 03:12 Mac (scheduled): BN11 run 2 cycle 6 healthy, 1.2h in; install 5 by auto install at 02:01.** ctl-status connected, DevTools up, save 03:11, no pause files.
+Now $428m, hacking 375, karma -56.3k, installed 17, entropy 1, nothing queued, gang Slum Snakes 9 members (Mug People, reputation mode), 8 sleeves Shock recovery (7.1), player Tian Di Hui hacking work.
+Advisor wait: gang cycle minimum, 2.8h more of 4h. Run page no alarms.
+Number review row 16: no sleeve aug bought this run (game needs shock 0; recovery stops at 5, then slow drain); 'no affordable' reason mislabels the shock gate. No change.
 
 ## Daedalus ready (2026-11-16 21:35)
 

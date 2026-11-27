@@ -9,6 +9,19 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 2
 
+**2026-11-27 03:12 Mac, scheduled check: BN11 run 2 cycle 6 healthy, 1.2h in; install 5 by auto install at 02:01.** Not a stand-aside run (repo clean, last commit 01:14).
+ctl-status connected (168 synced, 31 pulled), DevTools up, save 03:11. Auto install: verdict install 01:47 (one HOLD at 01:50, autosave being written), confirmed 01:54-01:59 ("best next Neuralstimulator adds +3.3%/h, under the cycle's +3.5%/h"),
+backup saves/pre-install-auto-20261127-0159.json.gz, installed (confirmed 02:01); installed 15 -> 17, no pause files.
+At 03:12: $428m, hacking 375, karma -56.3k, entropy 1, nothing queued; gang Slum Snakes 9 members on Mug People, reputation mode, respect 2.3k, territory 14.3%;
+player Tian Di Hui hacking work (+26.5k rep for Nanofiber Weave, ~0.9h); 8 sleeves Shock recovery at shock 7.1 (18.6 at 01:12); home 1TB (641GB used), 25 cloud 9.7TB;
+this cycle darknet $3.97b, hacking $67m, crime $41m, gang $15m; spent $3.60b on servers. Advisor wait: gang cycle minimum (2.8h more of 4h). Graft no pick. Run page no alarms.
+Nothing to fix. No build-ahead (as at 07:12).
+- Number review row 16 (sleeve buyer), from sleeve_buyer_status.json over ctl-get and the run page: 50 purchases on record, the newest 24.5h ago (BN11 run 1); none in run 2.
+  The game sells sleeve augs only at shock 0 (sleeve_buyer.js passes offers only when `s.shock === 0`); all 8 are at 7.1. sleeve_logic.js recovers above 40 until 5
+  (`shockResumeBelow`), then the sleeves work, which drains shock at 0.0001/cycle against 0.0003 while recovering, so 5 -> 0 takes ~2.6h instead of ~0.9h.
+  Wanted: 104 augs, $5.73b, against ~$6.7b/h of income (darknet ~$1.7m/s); sleeves earn little here (crime $41m this cycle), so either order is worth little. The 5 is a guess.
+  Label: the buyer's action reason reads "no affordable sleeve augmentation" while the binding gate is shock, not cash. Not changed (live sleeve code; small value); `again` at shock 0.
+
 **2026-11-27 01:12 Mac, scheduled check: BN11 run 2 cycle 5 healthy, 3.7h in; graft Neurotrainer III finished 01:10.** Not a stand-aside run (repo clean, last commit 23:13).
 ctl-status connected (168 synced, 31 pulled), DevTools up, save 01:11. Auto install: no lines since 21:29 (verdict wait); no pause files.
 At 01:12: $1.26b, hacking 389, karma -55.9k, installed 14 -> 15 and entropy 0 -> 1 from graft_controller's Neurotrainer III (start 23:37, finished 01:10, $390m, 1.53h predicted);

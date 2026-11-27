@@ -9,6 +9,16 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 2
 
+**2026-11-27 09:12 Mac, scheduled check: BN11 run 2 cycle 6 healthy, 7.2h in.** Not a stand-aside run (repo clean, last commit 07:13).
+ctl-status connected (168 synced, 31 pulled), DevTools up, save 09:11. Auto install: WAIT verdict install 07:26 (0s of 300s), then no further line (verdict went back to wait; lines are written on events only); no install since 02:01; no pause files; LaunchAgent loaded.
+At 09:12: $4.84b, hacking 504 (483 at 07:12), karma -168.0k, entropy 1, installed 17, The B00ts of Perseus queued; gang Slum Snakes 12 members (9 at 07:12), respect 1.05m (14.7k at 07:12), mode wanted-recovery (5 Mug People, 4 Terrorism, 2 Vigilante Justice, 1 Train Combat), territory 14.3%;
+player The Black Hand hacking work (+30.5k rep for Enhanced Myelin Sheathing, cash ready); 8 sleeves Homicide, shock 0; home 1TB (704GB used), 25 cloud 28TB; this cycle darknet $29.5b, sleeves $5.67b, hacking $3.17b, gang $107m; spent $30.6b on servers, $3.05b gang.
+Advisor: wait 58m for Enhanced Myelin Sheathing (+16.2%/h vs cycle +5.1%/h; batch value 0.36 over 7.2h). Graft no pick. Run page: no alerts. Nothing to fix. No build-ahead (as at 07:12).
+- Number review row 4 (MCP targets and phases), from mcp_status.json (09:12): plan multi, 22 targets. Harvest: 10 targets, 19.4TB, projected $478k/s ($24.6k/s per TB, in line with row 2's $10-22k/s per TB for stacks); 9 of 10 partial harvests.
+  Prepare: 12 targets, 2.7TB (12% of MCP RAM; prep fraction 0.85 does not bind), 9 of them under 50GB and already at 0.94-0.95 money; the large ones are netlink 1.35TB (0.76), computek 0.71TB (0.87), phantasy 0.42TB (0.87). No orphan prep: each is a harvest candidate once at 0.95.
+  Weakest harvest: zer0 3.3TB at 0.40 money for $19.6k/s ($5.9k/s per TB, a quarter of the average); it is refilling, not a misplacement. Waiting: sigma-cosmetics (12TB) and foodnstuff (23TB) harvests do not fit; RAM utilization 0.86.
+  Measured hacking this cycle $3.17b over 7.2h = $122k/s (mcp avgRate $122k/s), about a quarter of the current projection: cloud grew 18TB -> 28TB during the cycle and harvests ramp, so the gap is expected; recheck the measured rate next cycle. mcp_multi is dry-run (uplift 0.36, not used). No change.
+
 **2026-11-27 07:12 Mac, scheduled check: BN11 run 2 cycle 6 healthy, 5.2h in.** Not a stand-aside run (repo clean, last commit 05:13).
 ctl-status connected (168 synced, 31 pulled), DevTools up, save 07:11. Auto install: no lines since 02:01 (verdict wait); no pause files.
 At 07:12: $2.26b, hacking 483 (448 at 05:12), karma -116.3k, entropy 1, installed 17, The B00ts of Perseus queued; gang Slum Snakes 9 members on Mug People, reputation mode (gang rep does not cover its augs yet),

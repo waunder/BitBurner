@@ -248,10 +248,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-27 07:12 Mac (scheduled): BN11 run 2 cycle 6 healthy, 5.2h in.** ctl-status connected, DevTools up, save 07:11, no pause files; no auto install since 02:01.
-Now $2.26b, hacking 483, karma -116.3k, installed 17, entropy 1, The B00ts of Perseus queued, gang Slum Snakes 9 members (Mug People, reputation mode, respect 14.7k), 8 sleeves on Homicide (shock 0), player The Black Hand hacking work.
-Advisor wait: 1.5h for Cranial Signal Processors Gen III (+7.1%/h beats the cycle's +3.1%/h; NiteSec needs +7.2k rep). Run page no alarms.
-Number review row 2: no stacks run in BN11 (capacity 22.5TB vs the smallest full need 283TB); partial-stack yield ~$22k/s per TB, same order as MCP. No change.
+**2026-11-27 09:12 Mac (scheduled): BN11 run 2 cycle 6 healthy, 7.2h in.** ctl-status connected, DevTools up, save 09:11, no pause files; auto install: one WAIT line at 07:26 (verdict flipped back to wait), no install since 02:01.
+Now $4.84b, hacking 504, karma -168.0k, installed 17, entropy 1, The B00ts of Perseus queued, gang Slum Snakes 12 members (respect 1.05m, wanted-recovery mode), 8 sleeves on Homicide (shock 0), player The Black Hand hacking work.
+Advisor wait: 58m for Enhanced Myelin Sheathing (+16.2%/h beats the cycle's +5.1%/h; The Black Hand needs +30.5k rep). Run page no alarms.
+Number review row 4: MCP holds 19.4TB on 10 harvest targets (projected $478k/s) and 2.7TB (12%) preparing 12 targets, all near 0.95 money; no orphan prep. No change.
 
 ## Daedalus ready (2026-11-16 21:35)
 

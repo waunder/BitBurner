@@ -9,6 +9,15 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 2
 
+**2026-11-27 13:12 Mac, scheduled check: BN11 run 2 cycle 7 healthy, 3.1h in.** Not a stand-aside run (repo clean, last commit 11:13).
+ctl-status connected (168 synced, 31 pulled), DevTools up, save 13:11. Auto install: no lines since 10:04 (verdict wait); no pause files.
+At 13:12: $1.30b, hacking 492 (407 at 11:12), karma -244.3k, entropy 1, installed 24, nothing queued; gang Slum Snakes 12 members, respect 5.27m (448k at 11:12), reputation mode (gang rep does not cover its augs yet), 7 Terrorism, 5 Mug People, territory 14.3%;
+player Algorithms at Rothman (hacking 492 -> 525 for server `.`); 8 sleeves shock 0 (7 Homicide, 1 Speakers for the Dead security work); home 1TB (760GB used), 25 cloud 25.1TB (6.9TB at 11:12); 23 scripts; income $3.63m/s.
+This cycle: darknet $23.4b, hacking $0.90b, sleeves +$0.28b, gang $37m; spent $21.9b servers, $1.43b gang. Advisor wait: gang cycle minimum (53m more of 4h); install plan Bionic Spine, Combat Rib II, Augmented Targeting I ($587m, Slum Snakes); next Synthetic Heart 130h of rep away. Graft no pick. Run page no alerts.
+Nothing to fix. No build-ahead (as at 07:12).
+- Number review row 16 (`again` from 11:12): resolved. tools/run_page_data.py:88 splits each money source by the sign of its net, and the game books both sleeve earnings and sleeve aug buys to the one `sleeves` source. At 11:12 that net was -$1.55b (~$0.92b earned - $2.47b bought); the buyer has bought nothing since 11:11, and the net is now +$0.28b, so sleeves earned $1.83b in ~2h ($0.25m/s), consistent.
+  The buyer's ledger is right; the page's "spent sleeves" means net. Cloud caught up (25.1TB vs 28TB last cycle), so the aug buys delayed it by about 2h only. No change.
+
 **2026-11-27 11:12 Mac, scheduled check: BN11 run 2 cycle 7 healthy, 1.1h in; install 6 by auto install at 10:04.** Not a stand-aside run (repo clean, last commit 09:13).
 ctl-status connected (168 synced, 31 pulled), DevTools up, save 11:11. Auto install: WAIT 09:58, verdict install 10:03 ("best next Embedded Netburner Module Core Implant adds +0.1%/h, under the cycle's +4.7%/h"), backup saves/pre-install-auto-20261127-1003.json.gz, installed (confirmed 10:04); installed 17 -> 24 incl. The B00ts of Perseus; no pause files. STATE install table: rows 4 and 5 (missed by earlier check-ins) and 6 added.
 At 11:12: $105m, hacking 407, karma -196.3k, entropy 1, nothing queued; gang Slum Snakes 12 members, respect 448k, wanted-recovery (4 Mug People, 6 Terrorism, 2 Vigilante Justice), territory 14.3%;

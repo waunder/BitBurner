@@ -251,10 +251,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-27 11:12 Mac (scheduled): BN11 run 2 cycle 7 healthy, 1.1h in; install 6 by auto install at 10:04.** ctl-status connected, DevTools up, save 11:11, no pause files; auto install verdict install 10:03 (best next ENM Core Implant +0.1%/h vs cycle +4.7%/h), backup saves/pre-install-auto-20261127-1003.json.gz, installed 17 -> 24.
-Now $105m, hacking 407, karma -196.3k, entropy 1, nothing queued, gang Slum Snakes 12 members (respect 448k, wanted-recovery), 8 sleeves at shock 0 on Mug/Shoplift/Homicide, player Algorithms at Rothman (hacking 422 for aevum-police).
-Advisor wait: gang cycle minimum (2.9h more of 4h). Graft no pick. Run page no alerts.
-Number review row 16: at shock 0 the sleeve buyer bought 95 sleeve augs in 50 purchases, $2.47b, 10:12-11:10 (cost equals its cash delta); the page's spent row says sleeves $1.55b, unexplained. No change.
+**2026-11-27 13:12 Mac (scheduled): BN11 run 2 cycle 7 healthy, 3.1h in.** ctl-status connected, DevTools up, save 13:11, no pause files; no auto install since 10:04.
+Now $1.30b, hacking 492, karma -244.3k, entropy 1, installed 24, nothing queued, gang Slum Snakes 12 members (respect 5.27m, reputation mode, 7 Terrorism, 5 Mug), 8 sleeves shock 0 (7 Homicide, 1 faction work), player Algorithms at Rothman (hacking 525 for `.`).
+Advisor wait: gang cycle minimum (53m more of 4h); next aug Synthetic Heart 130h of rep away. Graft no pick. Run page no alerts.
+Number review row 16 resolved: the page's sleeves "spent" is the net of the game's one `sleeves` money source (earnings minus aug buys); the buyer's ledger is right. No change.
 
 ## Daedalus ready (2026-11-16 21:35)
 

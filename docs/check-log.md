@@ -9,6 +9,16 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 2
 
+**2026-11-27 11:12 Mac, scheduled check: BN11 run 2 cycle 7 healthy, 1.1h in; install 6 by auto install at 10:04.** Not a stand-aside run (repo clean, last commit 09:13).
+ctl-status connected (168 synced, 31 pulled), DevTools up, save 11:11. Auto install: WAIT 09:58, verdict install 10:03 ("best next Embedded Netburner Module Core Implant adds +0.1%/h, under the cycle's +4.7%/h"), backup saves/pre-install-auto-20261127-1003.json.gz, installed (confirmed 10:04); installed 17 -> 24 incl. The B00ts of Perseus; no pause files. STATE install table: rows 4 and 5 (missed by earlier check-ins) and 6 added.
+At 11:12: $105m, hacking 407, karma -196.3k, entropy 1, nothing queued; gang Slum Snakes 12 members, respect 448k, wanted-recovery (4 Mug People, 6 Terrorism, 2 Vigilante Justice), territory 14.3%;
+player Algorithms at Rothman University (hacking 407 -> 422 for aevum-police); 8 sleeves shock 0 (6 Mug, 1 Shoplift, 1 Homicide); home 1TB (767GB used), 25 cloud 6.9TB; 23 scripts incl. stock_engine;
+this cycle darknet $3.43b, hacking $82m, gang $18m; spent $1.75b on servers, $1.55b sleeves (page), $93m gang. Advisor wait: gang cycle minimum (2.9h more of 4h); next aug ENM Core Implant 49.6h of rep away. Graft no pick. Run page no alerts.
+Nothing to fix. No build-ahead (as at 07:12).
+- Number review row 16 (sleeve buyer), `again` at shock 0: from sleeve_buyer_status.json over ctl-get. Since the install, 50 purchases (all ok), 95 augs, $2.47b, 10:12-11:10, spread over all 8 sleeves (5-8 purchases each); each recorded cost equals its cashBefore - cashAfter.
+  The run page's spent row says sleeves $1.55b and balances with cash (earned $3.53b - spent $3.43b = $0.10b ≈ $105m), so one of the two is wrong by ~$0.9b; not resolved (the buyer's list keeps 50, so it cannot under-count). Buyer action now "save: no affordable sleeve augmentation" with 240 wanted at $121.8b and income $0.81m/s, augHold 0, so it does not hold cloud buys.
+  Value: sleeves earn little here (crime), so ~$2.5b at cycle start went to augs instead of cloud servers; cloud is 6.9TB vs 28TB last cycle. Not changed; `again` next cycle: the page's sleeves spent vs the buyer's ledger, and whether cloud catch-up lags.
+
 **2026-11-27 09:12 Mac, scheduled check: BN11 run 2 cycle 6 healthy, 7.2h in.** Not a stand-aside run (repo clean, last commit 07:13).
 ctl-status connected (168 synced, 31 pulled), DevTools up, save 09:11. Auto install: WAIT verdict install 07:26 (0s of 300s), then no further line (verdict went back to wait; lines are written on events only); no install since 02:01; no pause files; LaunchAgent loaded.
 At 09:12: $4.84b, hacking 504 (483 at 07:12), karma -168.0k, entropy 1, installed 17, The B00ts of Perseus queued; gang Slum Snakes 12 members (9 at 07:12), respect 1.05m (14.7k at 07:12), mode wanted-recovery (5 Mug People, 4 Terrorism, 2 Vigilante Justice, 1 Train Combat), territory 14.3%;

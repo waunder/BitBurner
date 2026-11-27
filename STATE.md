@@ -149,6 +149,9 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 1 | 2026-11-26 06:49 | Auto install at ~1.6h (verdict: best next BitWire +2.5%/h, under the cycle's +4.8%/h). Backup saves/pre-install-auto-20261126-0648.json.gz | 0 -> 3 (page API) |
 | 2 | 2026-11-26 11:37 | Auto install at ~4.8h (verdict: best next Social Negotiation Assistant (S.N.A) +0.6%/h, under the cycle's +2.2%/h; queued The W1ngs of Icarus and others, names not kept). Backup saves/pre-install-auto-20261126-1136.json.gz | 3 -> 7 (page API) |
 | 3 | 2026-11-26 17:21 | Auto install at ~5.7h (verdict: best next Power Recirculation Core +5.1%/h, under the cycle's +5.8%/h). Backup saves/pre-install-auto-20261126-1721.json.gz | 7 -> 11 (page API) |
+| 4 | 2026-11-26 21:29 | Auto install (verdict: best next DataJack +0.5%/h, under the cycle's +5.7%/h). Backup saves/pre-install-auto-20261126-2127.json.gz | 11 -> 14 (page API) |
+| 5 | 2026-11-27 02:01 | Auto install (verdict: best next Neuralstimulator +3.3%/h, under the cycle's +3.5%/h; graft Neurotrainer III made 15 before it). Backup saves/pre-install-auto-20261127-0159.json.gz | 15 -> 17 (page API) |
+| 6 | 2026-11-27 10:04 | Auto install at ~8h (verdict: best next Embedded Netburner Module Core Implant +0.1%/h, under the cycle's +4.7%/h; incl. queued The B00ts of Perseus). Backup saves/pre-install-auto-20261127-1003.json.gz | 17 -> 24 (page API) |
 
 ## Installs BN11 run 1
 
@@ -248,10 +251,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-27 09:12 Mac (scheduled): BN11 run 2 cycle 6 healthy, 7.2h in.** ctl-status connected, DevTools up, save 09:11, no pause files; auto install: one WAIT line at 07:26 (verdict flipped back to wait), no install since 02:01.
-Now $4.84b, hacking 504, karma -168.0k, installed 17, entropy 1, The B00ts of Perseus queued, gang Slum Snakes 12 members (respect 1.05m, wanted-recovery mode), 8 sleeves on Homicide (shock 0), player The Black Hand hacking work.
-Advisor wait: 58m for Enhanced Myelin Sheathing (+16.2%/h beats the cycle's +5.1%/h; The Black Hand needs +30.5k rep). Run page no alarms.
-Number review row 4: MCP holds 19.4TB on 10 harvest targets (projected $478k/s) and 2.7TB (12%) preparing 12 targets, all near 0.95 money; no orphan prep. No change.
+**2026-11-27 11:12 Mac (scheduled): BN11 run 2 cycle 7 healthy, 1.1h in; install 6 by auto install at 10:04.** ctl-status connected, DevTools up, save 11:11, no pause files; auto install verdict install 10:03 (best next ENM Core Implant +0.1%/h vs cycle +4.7%/h), backup saves/pre-install-auto-20261127-1003.json.gz, installed 17 -> 24.
+Now $105m, hacking 407, karma -196.3k, entropy 1, nothing queued, gang Slum Snakes 12 members (respect 448k, wanted-recovery), 8 sleeves at shock 0 on Mug/Shoplift/Homicide, player Algorithms at Rothman (hacking 422 for aevum-police).
+Advisor wait: gang cycle minimum (2.9h more of 4h). Graft no pick. Run page no alerts.
+Number review row 16: at shock 0 the sleeve buyer bought 95 sleeve augs in 50 purchases, $2.47b, 10:12-11:10 (cost equals its cash delta); the page's spent row says sleeves $1.55b, unexplained. No change.
 
 ## Daedalus ready (2026-11-16 21:35)
 

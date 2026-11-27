@@ -9,6 +9,14 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 2
 
+**2026-11-27 15:12 Mac, scheduled check: BN11 run 2 cycle 8 healthy, 1.0h in; install 7 by auto install at 14:12.** Not a stand-aside run (repo clean, last commit 13:13).
+ctl-status connected (168 synced, 31 pulled), DevTools up, save 15:11. Auto install: WAIT 14:05, verdict install 14:10 ("nothing left worth waiting for"), backup saves/pre-install-auto-20261127-1410.json.gz (18.3MB), installed (confirmed 14:12); installed 24 -> 28 (Bionic Spine, Augmented Targeting I among them); no pause files. STATE install table row 7 added.
+At 15:12: $278m, hacking 494, karma -297.2k, entropy 1, nothing queued; gang Slum Snakes 12 members, respect 11.6m, reputation mode, 8 Terrorism, 4 Mug People, territory 14.3%; player Algorithms at Rothman (494 -> 511 for `.`); 8 sleeves shock 0 (7 Homicide, 1 Speakers for the Dead security work); home 1TB (767GB used), 25 cloud 11.5TB; 23 scripts; income $2.84m/s.
+This cycle: darknet $3.84b, sleeves $1.16b, hacking $118m, crime $66m; spent $4.79b servers, $140m gang. Advisor wait: gang cycle minimum (3.0h more of 4h); install plan Augmented Targeting II ($85m). Graft no pick. Run page no alerts.
+Nothing to fix. No build-ahead (as at 07:12).
+- Number review row 17 (gang, `again` when rep/h passes ~10k): gang_status.json over ctl-get. Faction rep 1.18m of 1.875m needed (gangRepNeeded), observed 303/s = ~1.09m/h (respect 11.6m), so the gang's augs are covered by ~15:50 and `gangCycleSettles` may lapse the 4h floor after the batch is flat 15 min.
+  10 ascensions, last at x1.27. Gear: 16 of 60 rootkits, 0 augs. Power 1 vs strongest rival 1,726: no member on Territory Warfare, so territory holds at 14.3% and clashes are off (odds gate). Gang money $9m this cycle, negligible beside darknet. No change; `again` after this cycle's install: did the floor lapse, and was the batch worth its cycle.
+
 **2026-11-27 13:12 Mac, scheduled check: BN11 run 2 cycle 7 healthy, 3.1h in.** Not a stand-aside run (repo clean, last commit 11:13).
 ctl-status connected (168 synced, 31 pulled), DevTools up, save 13:11. Auto install: no lines since 10:04 (verdict wait); no pause files.
 At 13:12: $1.30b, hacking 492 (407 at 11:12), karma -244.3k, entropy 1, installed 24, nothing queued; gang Slum Snakes 12 members, respect 5.27m (448k at 11:12), reputation mode (gang rep does not cover its augs yet), 7 Terrorism, 5 Mug People, territory 14.3%;

@@ -152,6 +152,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 4 | 2026-11-26 21:29 | Auto install (verdict: best next DataJack +0.5%/h, under the cycle's +5.7%/h). Backup saves/pre-install-auto-20261126-2127.json.gz | 11 -> 14 (page API) |
 | 5 | 2026-11-27 02:01 | Auto install (verdict: best next Neuralstimulator +3.3%/h, under the cycle's +3.5%/h; graft Neurotrainer III made 15 before it). Backup saves/pre-install-auto-20261127-0159.json.gz | 15 -> 17 (page API) |
 | 6 | 2026-11-27 10:04 | Auto install at ~8h (verdict: best next Embedded Netburner Module Core Implant +0.1%/h, under the cycle's +4.7%/h; incl. queued The B00ts of Perseus). Backup saves/pre-install-auto-20261127-1003.json.gz | 17 -> 24 (page API) |
+| 7 | 2026-11-27 14:12 | Auto install at ~4.1h (verdict: nothing left worth waiting for): 4 augs incl. Bionic Spine, Augmented Targeting I (Slum Snakes). Backup saves/pre-install-auto-20261127-1410.json.gz | 24 -> 28 (page API) |
 
 ## Installs BN11 run 1
 
@@ -251,10 +252,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-27 13:12 Mac (scheduled): BN11 run 2 cycle 7 healthy, 3.1h in.** ctl-status connected, DevTools up, save 13:11, no pause files; no auto install since 10:04.
-Now $1.30b, hacking 492, karma -244.3k, entropy 1, installed 24, nothing queued, gang Slum Snakes 12 members (respect 5.27m, reputation mode, 7 Terrorism, 5 Mug), 8 sleeves shock 0 (7 Homicide, 1 faction work), player Algorithms at Rothman (hacking 525 for `.`).
-Advisor wait: gang cycle minimum (53m more of 4h); next aug Synthetic Heart 130h of rep away. Graft no pick. Run page no alerts.
-Number review row 16 resolved: the page's sleeves "spent" is the net of the game's one `sleeves` money source (earnings minus aug buys); the buyer's ledger is right. No change.
+**2026-11-27 15:12 Mac (scheduled): BN11 run 2 cycle 8 healthy, 1.0h in; install 7 by auto install at 14:12.** ctl-status connected, DevTools up, save 15:11, no pause files.
+Now $278m, hacking 494, karma -297.2k, entropy 1, installed 28, nothing queued, gang Slum Snakes 12 members (respect 11.6m, reputation mode, 8 Terrorism, 4 Mug), 8 sleeves shock 0 (7 Homicide, 1 faction work), player Algorithms at Rothman.
+Advisor wait: gang cycle minimum (3.0h more of 4h; gang rep 1.18m of 1.875m). Graft no pick. Run page no alerts.
+Number review row 17: gang rep now ~1.09m/h (was ~60/h on 2026-11-26), so its augs are covered in ~40 min and `gangCycleSettles` may then lapse the 4h floor. No change.
 
 ## Daedalus ready (2026-11-16 21:35)
 

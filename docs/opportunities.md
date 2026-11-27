@@ -340,3 +340,12 @@ and 17:10, and flipped back to wait inside auto install's 5-minute confirm both 
 cloud purchases dip cash so one aug drops out of the affordable batch for a pass. Ideas: record `cashLimited` and batchValue per pass in the advisor status,
 then either value the batch against cash plus the capital reserve, or let auto install accept install in 4 of 5 passes. Gain: ~1.5h per affected cycle.
 Needs a replay over metrics_log.txt before any change to live install timing.
+
+## BN11 gang floor (2026-11-26, number review row 17)
+
+BN11 run 2: the advisor holds every cycle to the gang faction's 4h minimum. `gangCycleSettles` is on in bn11, but its lapse needs gang rep to cover the gang's augs
+(`gangRepNeeded` 1.875m) and Slum Snakes earns ~50-60 rep/h (8 members on Mug People, respect 2.5k -> 7.5k over 21:12-23:12). So the floor waits for rep that cannot
+arrive inside a cycle; cycle 4 installed at 4.1h, minutes after the floor. Idea: let the floor lapse when gang rep/h x the cap hours cannot buy the cheapest gang aug
+not owned (here 1.9k rep needs ~30h). Gain unknown: depends on whether the batch average peaks before 4h; replay cycles 2-5 in metrics_log.txt first. Live install
+timing, so not changed in a check-in.
+

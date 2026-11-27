@@ -9,6 +9,19 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 2
 
+**2026-11-26 23:12 Mac, scheduled check: BN11 run 2 cycle 5 healthy; install 4 by auto install at 21:28.** Not a stand-aside run (repo clean, last commit 21:13).
+ctl-status connected (168 synced, 31 pulled), DevTools up, save 23:11. Auto install: verdict install confirmed 21:22-21:27 ("best next DataJack adds +0.5%/h, under the cycle's +5.7%/h"),
+backup saves/pre-install-auto-20261126-2127.json.gz, installed (confirmed 21:29); installed 11 -> 14, no pause files.
+At 23:12: $1.27b, hacking 345, karma -55.5k, entropy 0, nothing queued; gang Slum Snakes 8 members on Mug People, reputation mode, respect 7.5k (2.5k at 21:12), territory 14.3%;
+player Tian Di Hui hacking work (+26.0k rep for Nanofiber Weave); 8 sleeves Shock recovery at shock 30.0 (41.5 at 21:12, ~5.7/h); home 1TB (576GB used), 25 cloud 13.3TB;
+this cycle darknet $7.38b, hacking $0.13b, crime $41m, gang $24m; spent $6.31b on servers. Advisor wait: gang cycle minimum (2.3h more of 4h). Graft no pick. Run page no alarms.
+Nothing to fix. No build-ahead (as at 07:12).
+- Number review row 17 (gang), from augmentation_readiness.json and the run page (gang_status.json read over game_terminal came back empty):
+  Slum Snakes rep 104 after 1.7h of cycle 5 (~60/h; 52/h in cycle 4) against `gangRepNeeded` 1.875m for every aug it sells. bn11 has `gangCycleSettles` on,
+  but its floor lapses only once gang rep covers those augs, so in BN11 the plain 4h minimum binds every cycle (cycle 4 installed at 4.1h, minutes after it).
+  The gang adds no aug inside a 4h cycle at this rate, so the floor buys nothing yet. Not changed (live install timing); written to docs/opportunities.md
+  ("BN11 gang floor") with the replay needed. Respect tripled in 2h, so the rate will rise; `again` once members reach Terrorism or rep/h passes ~10k.
+
 **2026-11-26 21:12 Mac, scheduled check: BN11 run 2 cycle 4 healthy, 3.8h in.** Not a stand-aside run (repo clean, last commit 19:13).
 ctl-status connected (31 pulled), DevTools up, save 21:11. Auto install: no lines since 17:22 (verdict wait); no pause files.
 At 21:12: $775m, hacking 362, karma -55.1k, entropy 0, installed 11, nothing queued; gang Slum Snakes 8 members on Mug People, reputation mode, respect 2.5k, territory 14.3%;

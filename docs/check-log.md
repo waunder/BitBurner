@@ -9,6 +9,21 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 2
 
+**2026-11-26 19:12 Mac, scheduled check: BN11 run 2 cycle 4 healthy; install 3 by auto install at 17:21.** Not a stand-aside run (repo clean, last commit 17:14).
+ctl-status connected, DevTools up, save 19:11. Auto install: verdict install confirmed 17:16-17:21 ("best next Power Recirculation Core adds +5.1%/h, under the cycle's +5.8%/h"),
+backup saves/pre-install-auto-20261126-1721.json.gz, installed (confirmed 17:22); installed 7 -> 11, no pause files.
+At 19:12: $303m, hacking 315, karma -54.9k, entropy 0, nothing queued; gang Slum Snakes 8 members on Mug People, reputation mode, territory 14.3%;
+player Tian Di Hui hacking work (+33.5k rep for Nanofiber Weave); 8 sleeves Shock recovery at shock 53 (64 at 17:12); home 1TB (761GB used), 25 cloud 12TB;
+this cycle darknet $5.43b, hacking $0.11b, crime $41m, gang $22m; spent $5.29b on servers; income ~$857k/s. Advisor wait: gang cycle minimum (2.2h more of 4h).
+Graft no pick. Run page no alarms. Nothing to fix. No build-ahead (as at 07:12).
+- Number review row 10 (install advisor), from metrics_log.txt (advisor average = batchValue / cycle hours):
+  - Cycle 2 (06:50-11:37): average peaked 0.0187/h at 3.1h when BitWire's batch arrived, install at 4.8h at 0.0125/h.
+  - Cycle 3 (11:38-17:21): no batch until 3.0h; average 0.060 (3.0h) -> 0.073 peak (3.8h) -> 0.038 at the 5.6h install. batchValue swung 0.293 -> 0.212 -> 0.293 -> 0.212
+    (16:10, 16:50), and the verdict turned install at 15:37 (4.1h, just past the gang 4h minimum) and 17:10 but flipped back inside the 5-min confirm each time.
+  - Meaning: label honest. Doubt: the batchValue swings are unexplained; likely cash dips from cloud buys ($21.5b on servers in cycle 3) making an aug unaffordable
+    for a pass (not verified: no history of `cashLimited`). Better: an install near 4.1h instead of 5.6h would have run cycle 4 about 1.5h sooner. Written to
+    docs/opportunities.md ("Install verdict flicker"); not changed in a check-in because the live advisor and auto install guards are Ken-approved install timing.
+
 **2026-11-26 17:12 Mac, scheduled check: BN11 run 2 cycle 3 healthy; money panel number format fixed.** Not a stand-aside run (repo clean, last commit 15:13).
 ctl-status connected (31 pulled), DevTools up, save 17:11. Auto install: WAIT verdict install, confirming at 15:37 and 17:10 (verdict flipped back to wait each time); no pause files.
 At 17:12: $741m, hacking 344, karma -54.6k, entropy 0, installed 7, nothing queued; gang Slum Snakes 8 members on Mug People, reputation mode, territory 14.3%;

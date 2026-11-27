@@ -332,3 +332,11 @@ first sleeve augmentation batches; gang power after gear.
 - 2026-11-16 **Bladeburner rank and sleeve tasks now in metrics_logger** (8a1aba9); the run page charts them.
 - 2026-11-16 **Nothing read script status files.** tools/audit.py added (b916843) and put in the 2-hourly check.
 - 2026-11-16 **Two crawler.js copies running.** crawler.js now replaces older copies (5b226f2).
+
+## Install verdict flicker (2026-11-26, number review row 10)
+
+BN11 run 2 cycle 3: the advisor's batch average peaked 0.073/h at 3.8h, but the install came at 5.6h (0.038/h). The verdict turned install at 15:37 (4.1h)
+and 17:10, and flipped back to wait inside auto install's 5-minute confirm both times, while batchValue swung 0.293 <-> 0.212. Likely cause (unverified):
+cloud purchases dip cash so one aug drops out of the affordable batch for a pass. Ideas: record `cashLimited` and batchValue per pass in the advisor status,
+then either value the batch against cash plus the capital reserve, or let auto install accept install in 4 of 5 passes. Gain: ~1.5h per affected cycle.
+Needs a replay over metrics_log.txt before any change to live install timing.

@@ -148,6 +148,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 |---|---|---|---|
 | 1 | 2026-11-26 06:49 | Auto install at ~1.6h (verdict: best next BitWire +2.5%/h, under the cycle's +4.8%/h). Backup saves/pre-install-auto-20261126-0648.json.gz | 0 -> 3 (page API) |
 | 2 | 2026-11-26 11:37 | Auto install at ~4.8h (verdict: best next Social Negotiation Assistant (S.N.A) +0.6%/h, under the cycle's +2.2%/h; queued The W1ngs of Icarus and others, names not kept). Backup saves/pre-install-auto-20261126-1136.json.gz | 3 -> 7 (page API) |
+| 3 | 2026-11-26 17:21 | Auto install at ~5.7h (verdict: best next Power Recirculation Core +5.1%/h, under the cycle's +5.8%/h). Backup saves/pre-install-auto-20261126-1721.json.gz | 7 -> 11 (page API) |
 
 ## Installs BN11 run 1
 
@@ -247,10 +248,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-26 17:12 Mac (scheduled): BN11 run 2 cycle 3 healthy; money panel number format fixed.** ctl-status connected, DevTools up, save 17:11.
-Now $741m-877m, hacking 344, karma -54.6k, installed 7, nothing queued, gang Slum Snakes 8 members, 8 sleeves Shock recovery (64), player Tetrads field work.
-Advisor wait 3m for LuminCloaking-V1 (+4.5%/h vs cycle +3.9%/h); auto install is watching (verdict install seen 15:37 and 17:10, not held 5 min). Run page no alarms.
-Number review row 25: core/capital/money_logic.js `money()` now prints q, Q and an exponent (712 bn11 tests pass); pushed and money.js re-run 17:14, panel shows 3.01e23.
+**2026-11-26 19:12 Mac (scheduled): BN11 run 2 cycle 4 healthy; install 3 by auto install at 17:21.** ctl-status connected, DevTools up, save 19:11.
+Now $303m, hacking 315, karma -54.9k, installed 11, nothing queued, gang Slum Snakes 8 members, 8 sleeves Shock recovery (53), player Tian Di Hui hacking work.
+Advisor wait: gang cycle minimum (2.2h more of 4h). Run page no alarms.
+Number review row 10: cycle 3 batch average peaked 0.073/h at 3.8h; install came at 5.6h (0.038/h) because the verdict flipped within the 5-min confirm (15:37, 17:10); finding in docs/opportunities.md, no change.
 
 ## Daedalus ready (2026-11-16 21:35)
 

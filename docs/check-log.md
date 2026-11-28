@@ -9,6 +9,15 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 2
 
+**2026-11-27 21:12 Mac, scheduled check: BN11 run 2 cycle 10 started; install 9 by auto install at 21:12.** Not a stand-aside run (repo clean, last commit 19:13).
+ctl-status connected (31 pulled), DevTools up, save 21:11. Auto install: WAIT 21:04, verdict install 21:10 ("best next BitRunners Neurolink adds +3.7%/h, under the cycle's +12.7%/h"), backup saves/pre-install-auto-20261127-2109.json.gz (16.8MB), installed (confirmed 21:12); installed 32 -> 38; no pause files. STATE install table row 9 added.
+Cycle 9 (17:04-21:10, ~4.1h, metrics 21:10): gang $112.4b, darknet $33.3b, hacking $5.40b, contracts $0.13b; spent $122.6b servers (cloud 58TB), $1.50b gang, sleeves net -$8.79b. Pre-install hacking 689, gang respect 28.8m, territory-power (7 Human Trafficking, 5 Territory Warfare), power 311.
+At 21:11 save: $120m, hacking 139, karma -337.2k, entropy 1, nothing queued; gang 12 members, reputation mode; player Powerhouse Gym defense (strength 6/30 for Slum Snakes baseline); sleeves 6 Heist, 2 Idle (the two on faction work before the install; sleeve_controller running, not re-checked); home 1TB, 25 cloud 5TB; advisor wait: gang cycle minimum 4.0h, floor "waiting to join Daedalus". Run page no alerts.
+Nothing to fix. No build-ahead (as at 07:12).
+- Number review row 17 answered: the money phase repeated and grew: gang $112.4b of $151b this cycle (cycle 8 $21.9b), with 5 on Territory Warfare from 18:xx; power 311 vs rivals still far ahead (no clashes), territory 14.3%. Gear payback not measured. No change.
+- Number review row 23 (`again`): sleeve net on the run page went -$20.18b (18:42) -> -$16.62b (19:32) -> -$13.06b (20:22) -> -$8.79b (21:10), so after the 17:49-18:32 aug buys ($21.2b) sleeves earned ~$4.3b/h on Heist, vs ~$0.2b/h in cycle 8 (row 23 at 19:12 under-estimated it at $1.3b/h).
+  At install the buy was still -$8.8b net in cash (~6% of the cycle's earnings), with payback ~5h against a 4.1h cycle; the earlier the buy in a cycle, the better it does. No change; next: whether buying at shock 0 just after install pays within the cycle.
+
 **2026-11-27 19:12 Mac, scheduled check: BN11 run 2 cycle 9 healthy, 2.1h in.** Not a stand-aside run (repo clean, last commit 17:13).
 ctl-status connected, pull complete, DevTools up, save 19:11. Auto install: no lines since INSTALLED 17:04 (verdict wait); no pause files.
 At 19:12: $5.07b, hacking 596 (326 at 17:12), karma -336.7k, entropy 1, installed 32, nothing queued; gang Slum Snakes 12 members, respect 18.3m, objective money ("gang rep 2.70m covers every aug (1.875m)"), mode territory-power: 7 Human Trafficking, 5 Territory Warfare, power 115 vs strongest rival 2,797 (no clashes), territory 14.3%, rootkits 37 of 60;

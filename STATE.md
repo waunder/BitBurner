@@ -154,6 +154,7 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 6 | 2026-11-27 10:04 | Auto install at ~8h (verdict: best next Embedded Netburner Module Core Implant +0.1%/h, under the cycle's +4.7%/h; incl. queued The B00ts of Perseus). Backup saves/pre-install-auto-20261127-1003.json.gz | 17 -> 24 (page API) |
 | 7 | 2026-11-27 14:12 | Auto install at ~4.1h (verdict: nothing left worth waiting for): 4 augs incl. Bionic Spine, Augmented Targeting I (Slum Snakes). Backup saves/pre-install-auto-20261127-1410.json.gz | 24 -> 28 (page API) |
 | 8 | 2026-11-27 17:04 | Auto install at ~2.85h (gang 4h floor lapsed once gang rep covered its augs; verdict: best next Neural Accelerator +4.1%/h, under the cycle's +6.7%/h). Backup saves/pre-install-auto-20261127-1702.json.gz | 28 -> 32 (page API) |
+| 9 | 2026-11-27 21:12 | Auto install at ~4.1h (verdict: best next BitRunners Neurolink +3.7%/h, under the cycle's +12.7%/h). Backup saves/pre-install-auto-20261127-2109.json.gz | 32 -> 38 (page API) |
 
 ## Installs BN11 run 1
 
@@ -253,10 +254,9 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-27 19:12 Mac (scheduled): BN11 run 2 cycle 9 healthy, 2.1h in.** ctl-status connected, DevTools up, save 19:11, no pause files; no auto install lines since 17:04.
-Now $5.07b, hacking 596, karma -336.7k, entropy 1, installed 32, nothing queued, gang Slum Snakes 12 members (respect 18.3m, objective money, mode territory-power: 7 Human Trafficking, 5 Territory Warfare; power 115 vs 2,797), 8 sleeves shock 0, player BitRunners hacking work.
-Advisor wait: gang cycle minimum (1.9h more of 4h), floor "waiting to join Daedalus"; next Neural Accelerator 1.7h of rep. Graft no pick. Run page no alerts.
-Number review row 23: sleeve augs took $21.2b of this cycle's $58.0b (wiped at install, no payback model; likely a cash loss). No change; `again` next cycle.
+**2026-11-27 21:12 Mac (scheduled): BN11 run 2 cycle 10 started; install 9 by auto install at 21:12.** ctl-status connected, DevTools up, save 21:11, no pause files. Backup saves/pre-install-auto-20261127-2109.json.gz (16.8MB); installed 32 -> 38.
+Cycle 9 (17:04-21:10, metrics 21:10): gang $112.4b, darknet $33.3b, hacking $5.40b; spent $122.6b servers, $1.50b gang, sleeves net -$8.79b. Now $120m, hacking 139, karma -337.2k, entropy 1, gang reputation mode, advisor wait (gang 4h minimum). Run page no alerts.
+Number review row 23: sleeves earned ~$4.3b/h after their $21.2b of augs (not $1.3b/h), so the buy was -$8.8b net at install (~6% of the cycle's $151b); payback ~5h against a 4.1h cycle. No change.
 
 ## Daedalus ready (2026-11-16 21:35)
 

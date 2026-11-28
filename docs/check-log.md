@@ -9,6 +9,16 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 2
 
+**2026-11-27 19:12 Mac, scheduled check: BN11 run 2 cycle 9 healthy, 2.1h in.** Not a stand-aside run (repo clean, last commit 17:13).
+ctl-status connected, pull complete, DevTools up, save 19:11. Auto install: no lines since INSTALLED 17:04 (verdict wait); no pause files.
+At 19:12: $5.07b, hacking 596 (326 at 17:12), karma -336.7k, entropy 1, installed 32, nothing queued; gang Slum Snakes 12 members, respect 18.3m, objective money ("gang rep 2.70m covers every aug (1.875m)"), mode territory-power: 7 Human Trafficking, 5 Territory Warfare, power 115 vs strongest rival 2,797 (no clashes), territory 14.3%, rootkits 37 of 60;
+player BitRunners hacking work (+126k rep for Neural Accelerator, cash ready); 8 sleeves shock 0 (6 Heist, 1 BitRunners, 1 Speakers for the Dead); home 1TB (749GB used), 25 cloud 29TB; 23 scripts.
+This cycle: gang $42.3b, darknet $14.5b, hacking $1.04b, contracts $0.13b; spent $33.3b servers, $18.0b sleeves (net), $1.49b gang. Advisor wait: gang cycle minimum (1.9h more of 4h), floor "waiting to join Daedalus"; install plan Neuronal Densification, Nanofiber Weave, BrachiBlades ($3.80b, Slum Snakes). Graft no pick. Run page no alerts.
+Nothing to fix. No build-ahead (as at 07:12).
+- Number review row 17 answered: the money phase repeated: gang rep covered its augs again this cycle and the gang earned $42.3b in 2.1h, the top source; it now also builds power (5 on Territory Warfare, share 0.35).
+- Number review row 23 (`again` when the gang competes for cash): sleeve_buyer_status.json over ctl-get. 50 sleeve aug purchases since the install, all 17:49-18:32, $21.2b (all ok); page net sleeves -$18.0b, so sleeves earned ~$3.1b this cycle (~$1.5b/h; cycle 8 $0.49b over 2.85h).
+  The augs are wiped at install and the buyer records `paybackHours` null. At +$1.3b/h the $21b pays back in ~16h against a ~3-4h cycle, so in cash it is probably a loss; the rep from sleeves on faction work is not counted. Buying stopped once `cyclePhase` went late (limit for wiped items 0). No change yet; `again` next cycle: sleeve earnings/h before vs after their augs.
+
 **2026-11-27 17:12 Mac, scheduled check: BN11 run 2 cycle 9 healthy, 0.1h in; install 8 by auto install at 17:04.** Not a stand-aside run (repo clean, last commit 15:13).
 ctl-status connected (168 synced, 31 pulled), DevTools up, save 17:11. Auto install: verdict install at 16:07 and 16:57 did not hold 5 min; 17:02 verdict install ("best next Neural Accelerator adds +4.1%/h, under the cycle's +6.7%/h"), backup saves/pre-install-auto-20261127-1702.json.gz (14.3MB), installed (confirmed 17:04); installed 28 -> 32; no pause files. STATE install table row 8 added.
 At 17:12: $10.4m, hacking 326, karma -326.2k, entropy 1, nothing queued; gang Slum Snakes 12 members, respect 6.07m, reputation mode (rep 444k of 1.875m for the next gang augs), 11 Terrorism, 1 Mug People, territory 14.3%; player Heist (hacking 326 -> 354 for I.I.I.I); 8 sleeves Heist shock 0; home 1TB (767GB used), 25 cloud 2.2TB; income $1.75m/s.

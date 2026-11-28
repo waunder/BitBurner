@@ -253,10 +253,10 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-27 17:12 Mac (scheduled): BN11 run 2 cycle 9 healthy, 0.1h in; install 8 by auto install at 17:04.** ctl-status connected, DevTools up, save 17:11, no pause files.
-Now $10.4m, hacking 326, karma -326.2k, entropy 1, installed 32, nothing queued, gang Slum Snakes 12 members (respect 6.07m, reputation mode, 11 Terrorism, 1 Mug), 8 sleeves Heist shock 0, player Heist.
-Advisor wait: gang cycle minimum (3.9h more of 4h), floor held by "waiting to join Daedalus" (hacking 2500 gate far off). Graft no pick. Run page no alerts.
-Number review row 17: the floor lapsed in cycle 8 (install at 2.85h), and once gang rep covered its augs the gang switched to money and earned $21.9b, the cycle's top source (darknet $15.2b). No change.
+**2026-11-27 19:12 Mac (scheduled): BN11 run 2 cycle 9 healthy, 2.1h in.** ctl-status connected, DevTools up, save 19:11, no pause files; no auto install lines since 17:04.
+Now $5.07b, hacking 596, karma -336.7k, entropy 1, installed 32, nothing queued, gang Slum Snakes 12 members (respect 18.3m, objective money, mode territory-power: 7 Human Trafficking, 5 Territory Warfare; power 115 vs 2,797), 8 sleeves shock 0, player BitRunners hacking work.
+Advisor wait: gang cycle minimum (1.9h more of 4h), floor "waiting to join Daedalus"; next Neural Accelerator 1.7h of rep. Graft no pick. Run page no alerts.
+Number review row 23: sleeve augs took $21.2b of this cycle's $58.0b (wiped at install, no payback model; likely a cash loss). No change; `again` next cycle.
 
 ## Daedalus ready (2026-11-16 21:35)
 

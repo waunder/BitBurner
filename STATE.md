@@ -256,8 +256,8 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-28 11:29 Mac (scheduled): BN11 run 2 cycle 12, healthy; installs 10 (03:29) and 11 (09:06) by auto install while no check-in ran.** The scheduler fired no check-in from 23:12 to 09:12 (task run list: last run 21:12, then this one); the game, daemon and auto install ran on. ctl-status connected, DevTools up, save 11:28, no pause files, run page no alerts.
-Now (2.4h into cycle 12): $92.5b, hacking 3230 of 4500 for the World Daemon, 55 augs, entropy 4 (grafts), karma -354k, gang territory-power 14.3%. Cycle 12 so far: hacking $709b, gang $199b, darknet $32.8b; spent $577b servers, $142b sleeves, $130b stock. Advisor wait: gang 4h minimum (1.6h more) and waiting to join Daedalus ($100b cash needed; cash is spent on servers/stock as it comes). Next check: Daedalus joined, then The Red Pill.
+**2026-11-28 13:11 Mac (scheduled): BN11 run 2 cycle 12, healthy; Daedalus joined, the favor install is ~17 min out.** ctl-status connected, DevTools up, save 13:10, no pause files, run page no alerts; auto install quiet since install 11 (09:06).
+Now (4.1h into cycle 12): $545b, income ~$1.02b/s, hacking 3555 of 4500 for the World Daemon, 55 augs, entropy 4, karma -356k; player on Daedalus hacking work (rep 376k, favor 0 +139.5 pending). Advisor wait: "waiting for Daedalus favor 140 of 150, 17m left"; install plan 11 Slum Snakes augs ($2.82t). Next check: install 12 banks Daedalus favor 150, then The Red Pill by donation.
 
 ## Daedalus ready (2026-11-16 21:35)
 

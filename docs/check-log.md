@@ -9,6 +9,14 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 2
 
+**2026-11-28 13:11 Mac, scheduled check: BN11 run 2 cycle 12, Daedalus joined, favor install near.** Not a stand-aside run (repo clean, last commit 11:30).
+- ctl-status connected (168 synced, 31 pulled), DevTools up, save 13:10, no pause files; auto install: no lines since INSTALLED 09:06.
+- Live 13:11: $545b, income $1.02b/s, hacking 3555 (World Daemon 4500; 3230 at 11:29), str 5043, karma -356k, entropy 4, 55 installed, nothing queued; gang 12 members territory-power (7 trafficking, 5 warfare), power 3,987, territory 14.3%; home 4TB, 25 cloud 409.6TB (122.9TB at 11:29); 24 scripts.
+- Run so far (run page): hacking $7.02t, gang $353b, darknet $63.7b; spent servers $5.77t, stock $1.04t, sleeves $88.1b.
+- Advisor: wait, "waiting for Daedalus favor 140 of 150, 17m left" (player on Daedalus hacking work, rep 376k, favor 0 +139.5 pending). Install plan: 11 Slum Snakes augs, $2.82t. Graft: no pick. Run page: no alerts.
+- Nothing to fix. No build-ahead this run.
+- Number review row 12 (`again` at Daedalus): bn11 weights are hacking 1, hacking_exp 0.6, hacking_speed 0.4, faction_rep 0.5, combat 0.05; the gates left are Daedalus favor 150 (the next install) and hacking 4500, so they fit. The Red Pill's rep comes by donation after that install (cash $545b at ~$1b/s), so rep should not bind. The plan still carries combat augs (Graphene Bone Lacings, Synfibril Muscle), each raising the price of later augs; not changed this close to the install. `again` after the Red Pill: hours from pill to hacking 4500.
+
 **2026-11-28 11:29 Mac, scheduled check: BN11 run 2 cycle 12, healthy; installs 10 and 11 by auto install overnight.** Not a stand-aside run (repo clean, last commit 21:13 yesterday). No check-in ran 23:12-09:12 (the scheduler's run list has none); nothing broke meanwhile.
 - Auto install: install 10 at 03:29 (verdict nothing left worth waiting for; backup saves/pre-install-auto-20261128-0326.json.gz; 39 -> 45), install 11 at 09:06 (same verdict; backup saves/pre-install-auto-20261128-0903.json.gz; 47 -> 55). Grafts 00:42, 07:17, 09:03 (entropy 4).
 - Live 11:29: $92.5b, income $303m/s, hacking 3230 (World Daemon 4500), str 4522, karma -354k, 8 sleeves on Heist, gang 12 members territory-power (7 trafficking, 5 warfare) territory 14.3%, 25 cloud servers 122.9TB, home 4TB. Scripts all present, stock engine running.

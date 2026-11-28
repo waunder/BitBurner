@@ -155,6 +155,8 @@ Owned source files: SF 1.2, 2.1, 4.3, 5.3, 10.2, 15.1 (10.2 assumed from the 7th
 | 7 | 2026-11-27 14:12 | Auto install at ~4.1h (verdict: nothing left worth waiting for): 4 augs incl. Bionic Spine, Augmented Targeting I (Slum Snakes). Backup saves/pre-install-auto-20261127-1410.json.gz | 24 -> 28 (page API) |
 | 8 | 2026-11-27 17:04 | Auto install at ~2.85h (gang 4h floor lapsed once gang rep covered its augs; verdict: best next Neural Accelerator +4.1%/h, under the cycle's +6.7%/h). Backup saves/pre-install-auto-20261127-1702.json.gz | 28 -> 32 (page API) |
 | 9 | 2026-11-27 21:12 | Auto install at ~4.1h (verdict: best next BitRunners Neurolink +3.7%/h, under the cycle's +12.7%/h). Backup saves/pre-install-auto-20261127-2109.json.gz | 32 -> 38 (page API) |
+| 10 | 2026-11-28 03:29 | Auto install (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261128-0326.json.gz (16.6MB) | 39 -> 45 (page API; 38 -> 39 by graft 00:42) |
+| 11 | 2026-11-28 09:06 | Auto install (verdict: nothing left worth waiting for). Backup saves/pre-install-auto-20261128-0903.json.gz (22.8MB) | 47 -> 55 (page API; grafts 07:17 and 09:03 made 46, 47) |
 
 ## Installs BN11 run 1
 
@@ -254,9 +256,8 @@ Run 2's 13 installs are in `docs/check-log.md`. Backups are `saves/bitburnerSave
 
 ## Latest check
 
-**2026-11-27 21:12 Mac (scheduled): BN11 run 2 cycle 10 started; install 9 by auto install at 21:12.** ctl-status connected, DevTools up, save 21:11, no pause files. Backup saves/pre-install-auto-20261127-2109.json.gz (16.8MB); installed 32 -> 38.
-Cycle 9 (17:04-21:10, metrics 21:10): gang $112.4b, darknet $33.3b, hacking $5.40b; spent $122.6b servers, $1.50b gang, sleeves net -$8.79b. Now $120m, hacking 139, karma -337.2k, entropy 1, gang reputation mode, advisor wait (gang 4h minimum). Run page no alerts.
-Number review row 23: sleeves earned ~$4.3b/h after their $21.2b of augs (not $1.3b/h), so the buy was -$8.8b net at install (~6% of the cycle's $151b); payback ~5h against a 4.1h cycle. No change.
+**2026-11-28 11:29 Mac (scheduled): BN11 run 2 cycle 12, healthy; installs 10 (03:29) and 11 (09:06) by auto install while no check-in ran.** The scheduler fired no check-in from 23:12 to 09:12 (task run list: last run 21:12, then this one); the game, daemon and auto install ran on. ctl-status connected, DevTools up, save 11:28, no pause files, run page no alerts.
+Now (2.4h into cycle 12): $92.5b, hacking 3230 of 4500 for the World Daemon, 55 augs, entropy 4 (grafts), karma -354k, gang territory-power 14.3%. Cycle 12 so far: hacking $709b, gang $199b, darknet $32.8b; spent $577b servers, $142b sleeves, $130b stock. Advisor wait: gang 4h minimum (1.6h more) and waiting to join Daedalus ($100b cash needed; cash is spent on servers/stock as it comes). Next check: Daedalus joined, then The Red Pill.
 
 ## Daedalus ready (2026-11-16 21:35)
 

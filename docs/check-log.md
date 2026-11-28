@@ -9,6 +9,13 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 2
 
+**2026-11-28 11:29 Mac, scheduled check: BN11 run 2 cycle 12, healthy; installs 10 and 11 by auto install overnight.** Not a stand-aside run (repo clean, last commit 21:13 yesterday). No check-in ran 23:12-09:12 (the scheduler's run list has none); nothing broke meanwhile.
+- Auto install: install 10 at 03:29 (verdict nothing left worth waiting for; backup saves/pre-install-auto-20261128-0326.json.gz; 39 -> 45), install 11 at 09:06 (same verdict; backup saves/pre-install-auto-20261128-0903.json.gz; 47 -> 55). Grafts 00:42, 07:17, 09:03 (entropy 4).
+- Live 11:29: $92.5b, income $303m/s, hacking 3230 (World Daemon 4500), str 4522, karma -354k, 8 sleeves on Heist, gang 12 members territory-power (7 trafficking, 5 warfare) territory 14.3%, 25 cloud servers 122.9TB, home 4TB. Scripts all present, stock engine running.
+- Cycle 12 (from 09:06): hacking $709b, gang $199b, darknet $32.8b, crime $1.35b; spent servers $577b, sleeves $142b, stock $130b.
+- Advisor: wait, gang 4h minimum (1.6h left), floor "waiting to join Daedalus" (needs $100b cash; cash hovers $47-92b while servers and stock take it). Graft: no pick (install-plan reserve, price cap, prereqs). Run page: no alerts.
+- No fixes needed; no build-ahead or number review this run.
+
 **2026-11-27 21:12 Mac, scheduled check: BN11 run 2 cycle 10 started; install 9 by auto install at 21:12.** Not a stand-aside run (repo clean, last commit 19:13).
 ctl-status connected (31 pulled), DevTools up, save 21:11. Auto install: WAIT 21:04, verdict install 21:10 ("best next BitRunners Neurolink adds +3.7%/h, under the cycle's +12.7%/h"), backup saves/pre-install-auto-20261127-2109.json.gz (16.8MB), installed (confirmed 21:12); installed 32 -> 38; no pause files. STATE install table row 9 added.
 Cycle 9 (17:04-21:10, ~4.1h, metrics 21:10): gang $112.4b, darknet $33.3b, hacking $5.40b, contracts $0.13b; spent $122.6b servers (cloud 58TB), $1.50b gang, sleeves net -$8.79b. Pre-install hacking 689, gang respect 28.8m, territory-power (7 Human Trafficking, 5 Territory Warfare), power 311.

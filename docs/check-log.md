@@ -9,6 +9,14 @@ Entries before 2026-11-10 (BN10 run 1, BN15, earlier) are in
 
 ## BN11 run 2
 
+**2026-11-27 17:12 Mac, scheduled check: BN11 run 2 cycle 9 healthy, 0.1h in; install 8 by auto install at 17:04.** Not a stand-aside run (repo clean, last commit 15:13).
+ctl-status connected (168 synced, 31 pulled), DevTools up, save 17:11. Auto install: verdict install at 16:07 and 16:57 did not hold 5 min; 17:02 verdict install ("best next Neural Accelerator adds +4.1%/h, under the cycle's +6.7%/h"), backup saves/pre-install-auto-20261127-1702.json.gz (14.3MB), installed (confirmed 17:04); installed 28 -> 32; no pause files. STATE install table row 8 added.
+At 17:12: $10.4m, hacking 326, karma -326.2k, entropy 1, nothing queued; gang Slum Snakes 12 members, respect 6.07m, reputation mode (rep 444k of 1.875m for the next gang augs), 11 Terrorism, 1 Mug People, territory 14.3%; player Heist (hacking 326 -> 354 for I.I.I.I); 8 sleeves Heist shock 0; home 1TB (767GB used), 25 cloud 2.2TB; income $1.75m/s.
+Cycle 8 (14:12-17:04, metrics 17:00): gang $21.9b, darknet $15.2b, hacking $1.69b, sleeves $0.49b; spent $33.3b servers, $2.19b gang. Advisor wait: gang cycle minimum (3.9h); floor "waiting to join Daedalus". Graft no pick. Run page no alerts.
+Nothing to fix. No build-ahead (as at 07:12).
+- Number review row 17 (`again` after the install): the floor lapsed: install 8 came at 2.85h of the 4h minimum, after gang rep covered its augs (~15:50 forecast). The objective then went to money: gang $9m at 15:12 -> $21.9b by 17:00, the cycle's largest source, so the gang now competes for cash and row 23 applies.
+  Batch 28 -> 32 augs; verdict +4.1%/h next vs +6.7%/h cycle. After the install rep is back to reputation mode (444k of 1.875m) on 11 Terrorism. Power 1 vs strongest rival 2,241, no warfare, territory 14.3%. No change; `again` next cycle: does the money phase repeat, and gear payback once the gang earns.
+
 **2026-11-27 15:12 Mac, scheduled check: BN11 run 2 cycle 8 healthy, 1.0h in; install 7 by auto install at 14:12.** Not a stand-aside run (repo clean, last commit 13:13).
 ctl-status connected (168 synced, 31 pulled), DevTools up, save 15:11. Auto install: WAIT 14:05, verdict install 14:10 ("nothing left worth waiting for"), backup saves/pre-install-auto-20261127-1410.json.gz (18.3MB), installed (confirmed 14:12); installed 24 -> 28 (Bionic Spine, Augmented Targeting I among them); no pause files. STATE install table row 7 added.
 At 15:12: $278m, hacking 494, karma -297.2k, entropy 1, nothing queued; gang Slum Snakes 12 members, respect 11.6m, reputation mode, 8 Terrorism, 4 Mug People, territory 14.3%; player Algorithms at Rothman (494 -> 511 for `.`); 8 sleeves shock 0 (7 Homicide, 1 Speakers for the Dead security work); home 1TB (767GB used), 25 cloud 11.5TB; 23 scripts; income $2.84m/s.
